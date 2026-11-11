@@ -1671,13 +1671,13 @@
   <div id="sessionRadarBar" style="background: linear-gradient(90deg, #090d16 0%, #111827 50%, #090d16 100%); border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding: 7px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; z-index: 100;">
     <div style="display: flex; align-items: center; gap: 8px;">
       <span class="live-dot" style="display:inline-block; width:8px; height:8px; background:#a855f7; border-radius:50%; box-shadow:0 0 8px #a855f7;"></span>
-      <span id="sessionStatusTxt" style="font-weight: 800; color: #38bdf8;">🌙 [야간 세션: KRX 야간선물 & 美 나스닥 선물 랠리 진행 중]</span>
-      <span id="sessionCountdownTxt" style="color: #cbd5e1; font-size: 11px;">(익일 06:00 마감까지 07시간 45분)</span>
+      <span id="sessionStatusTxt" style="font-weight: 800; color: #38bdf8;">🌅 [장전 프리마켓 & 08:50 브리핑 완료: 09:00 개장 대기]</span>
+      <span id="sessionCountdownTxt" style="color: #cbd5e1; font-size: 11px;">(09:00 개장 직전)</span>
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
       <button id="autoRefreshBtn" onclick="toggleAutoRefresh()" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 4px; cursor: pointer;">⚡ 30초 자동갱신: ON</button>
       <button onclick="forceLiveRefresh()" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; cursor: pointer;">🔄 즉시 새로고침</button>
-      <span id="lastSyncTxt" style="color: #94a3b8; font-size: 10.5px;">최근 갱신: 22:00</span>
+      <span id="lastSyncTxt" style="color: #38bdf8; font-size: 10.5px; font-weight: 800;">최근 갱신: 08:50 (스탁이지 100% 동기화 🟢)</span>
     </div>
   </div>
 
@@ -6367,8 +6367,15 @@
 
     function forceLiveRefresh() {
       var syncTxt = document.getElementById('lastSyncTxt');
-      if (syncTxt) syncTxt.innerText = '실시간 동기화 중...';
-      window.location.href = window.location.pathname + '?refresh=' + Date.now();
+      if (syncTxt) syncTxt.innerText = '캐시 삭제 및 실시간 동기화 중...';
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          names.forEach(function(name) { caches.delete(name); });
+        });
+      }
+      setTimeout(function() {
+        window.location.href = window.location.pathname + '?v=' + Date.now();
+      }, 150);
     }
     window.forceLiveRefresh = forceLiveRefresh;
 
