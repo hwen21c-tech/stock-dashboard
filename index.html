@@ -3699,12 +3699,20 @@
         </div>
                 <!-- INTERACTIVE LIVE MODAL CHART (STOCKS & INDICES) -->
         <div id="modalChartBox" style="margin: 8px 0 10px 0; background: #070c14; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px; position: relative;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
             <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 11px; font-weight: 800; color: #38bdf8;">📊 30거래일 실시간 캔들 & 추세 차트</span>
-              <span style="font-size: 9.5px; color: #94a3b8;">(5일선 황금 · 20일선 빨강 · 60일선 초록)</span>
+              <span style="font-size: 11px; font-weight: 800; color: #38bdf8;">📊 실시간 캔들 & 추세 차트</span>
+              <span style="font-size: 9.5px; color: #94a3b8;">(5선 황금 · 20선 빨강)</span>
             </div>
-            <span id="modalChartTypeBadge" style="font-size: 10px; padding: 2px 6px; background: rgba(34,197,94,0.15); color: #4ade80; border-radius: 4px; font-weight: 800;">실시간 일봉</span>
+            <!-- ZOOM & PAN CONTROLLERS -->
+            <div style="display: flex; gap: 3px; align-items: center;">
+              <button onclick="modalZoomIn()" title="확대" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">🔍 +</button>
+              <button onclick="modalZoomOut()" title="축소" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">🔍 -</button>
+              <button onclick="modalPanLeft()" title="과거로 이동" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">◀</button>
+              <button onclick="modalPanRight()" title="최근으로 이동" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">▶</button>
+              <button onclick="modalResetZoom()" title="초기화" style="padding: 2px 6px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">⟲</button>
+              <span id="modalChartZoomCount" style="font-size: 9.5px; color: #cbd5e1; margin-left: 2px;">30봉</span>
+            </div>
           </div>
           <div style="width: 100%; height: 210px; position: relative;">
             <canvas id="modalChartCanvas" style="width: 100%; height: 100%; display: block;"></canvas>
@@ -5763,9 +5771,56 @@
       return candles;
     }
 
-    function renderUniversalModalChart(seriesKey, title) {
+    
+    // Modal Chart Zoom & Pan State
+    var modalAllCandles = [];
+    var modalViewCount = 30;
+    var modalViewOffset = 0;
+    var modalCurrentTitle = '';
+    var modalCurrentKey = null;
+
+    function modalZoomIn() {
+      if (modalViewCount > 8) {
+        modalViewCount = Math.max(8, modalViewCount - 4);
+        drawModalCandles();
+      }
+    }
+    window.modalZoomIn = modalZoomIn;
+
+    function modalZoomOut() {
+      if (modalViewCount < modalAllCandles.length) {
+        modalViewCount = Math.min(modalAllCandles.length, modalViewCount + 4);
+        drawModalCandles();
+      }
+    }
+    window.modalZoomOut = modalZoomOut;
+
+    function modalPanLeft() {
+      if (modalAllCandles.length > modalViewCount) {
+        modalViewOffset = Math.min(modalAllCandles.length - modalViewCount, modalViewOffset + 4);
+        drawModalCandles();
+      }
+    }
+    window.modalPanLeft = modalPanLeft;
+
+    function modalPanRight() {
+      if (modalViewOffset > 0) {
+        modalViewOffset = Math.max(0, modalViewOffset - 4);
+        drawModalCandles();
+      }
+    }
+    window.modalPanRight = modalPanRight;
+
+    function modalResetZoom() {
+      modalViewCount = Math.min(30, modalAllCandles.length);
+      modalViewOffset = 0;
+      drawModalCandles();
+    }
+    window.modalResetZoom = modalResetZoom;
+
+    function drawModalCandles() {
       var canvas = document.getElementById('modalChartCanvas');
-      if (!canvas) return;
+      if (!canvas || !modalAllCandles || modalAllCandles.length === 0) return;
 
       var ctx = canvas.getContext('2d');
       var dpr = window.devicePixelRatio || 1;
@@ -5777,65 +5832,29 @@
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      // Determine candles data
-      var candles = [];
-      var highStr = '-';
-      var lowStr = '-';
-      var trendStr = '상승 추세 돌파 🎯';
+      var elCount = document.getElementById('modalChartZoomCount');
+      if (elCount) elCount.innerText = modalViewCount + '봉';
 
-      // 1. Check if it is a stock from RnZone or Jongbe data
-      var matchedStock = null;
-      if (!seriesKey) {
-        if (typeof RnZone !== 'undefined' && RnZone.stocks) {
-          for (var i = 0; i < RnZone.stocks.length; i++) {
-            if (title.indexOf(RnZone.stocks[i].name) !== -1) {
-              matchedStock = RnZone.stocks[i];
-              break;
-            }
-          }
-        }
-        if (!matchedStock && typeof Jongbe !== 'undefined' && Jongbe.stocks) {
-          for (var j = 0; j < Jongbe.stocks.length; j++) {
-            if (title.indexOf(Jongbe.stocks[j].name) !== -1) {
-              matchedStock = Jongbe.stocks[j];
-              break;
-            }
-          }
-        }
+      // Slice visible candles
+      var startIdx = Math.max(0, modalAllCandles.length - modalViewOffset - modalViewCount);
+      var endIdx = modalAllCandles.length - modalViewOffset;
+      var candles = modalAllCandles.slice(startIdx, endIdx);
+      if (candles.length === 0) candles = modalAllCandles;
+
+      // Min/Max in visible view
+      var minC = Infinity, maxC = -Infinity;
+      for (var k = 0; k < candles.length; k++) {
+        if (candles[k].high > maxC) maxC = candles[k].high;
+        if (candles[k].low < minC) minC = candles[k].low;
       }
-
-      if (matchedStock && matchedStock.candles && matchedStock.candles.length > 0) {
-        candles = matchedStock.candles.slice(-30);
-        var minC = Infinity, maxC = -Infinity;
-        for (var k = 0; k < candles.length; k++) {
-          if (candles[k].high > maxC) maxC = candles[k].high;
-          if (candles[k].low < minC) minC = candles[k].low;
-        }
-        highStr = maxC.toLocaleString() + '원';
-        lowStr = minC.toLocaleString() + '원';
-        trendStr = candles[candles.length - 1].close >= candles[0].close ? '단기 정배열 상승 🎯' : '눌림목 지지 반등';
-      } else {
-        // Generate index or default stock trajectory
-        var sInfo = cachedIndexSeries[seriesKey];
-        if (!sInfo) {
-          // Fallback based on title
-          var defBase = title.indexOf('원') !== -1 ? 30000 : 1000;
-          sInfo = { base: defBase * 0.9, cur: defBase, high: defBase * 1.08, low: defBase * 0.88 };
-        }
-        candles = generateCandlesForSeries(sInfo);
-        highStr = sInfo.high ? sInfo.high.toString() : '-';
-        lowStr = sInfo.low ? sInfo.low.toString() : '-';
-      }
-
-      document.getElementById('modalChartHigh').innerText = highStr;
-      document.getElementById('modalChartLow').innerText = lowStr;
-      document.getElementById('modalChartTrend').innerText = trendStr;
+      var isPrice = maxC >= 500;
+      document.getElementById('modalChartHigh').innerText = isPrice ? Math.round(maxC).toLocaleString() + '원' : maxC.toFixed(1);
+      document.getElementById('modalChartLow').innerText = isPrice ? Math.round(minC).toLocaleString() + '원' : minC.toFixed(1);
 
       // Draw Background
       ctx.fillStyle = '#070c14';
       ctx.fillRect(0, 0, w, h);
 
-      // Find Min / Max Price and Volume
       var minP = Infinity, maxP = -Infinity;
       var maxVol = 0;
       for (var c = 0; c < candles.length; c++) {
@@ -5850,7 +5869,6 @@
 
       var chartH = h * 0.72;
       var volH = h * 0.22;
-      var volY = h * 0.76;
       var padR = 48;
       var chartW = w - padR;
 
@@ -5944,7 +5962,7 @@
       }
       ctx.stroke();
 
-      // Draw 20-day SMA Line (Red/Pink)
+      // Draw 20-day SMA Line (Red)
       ctx.strokeStyle = '#ef4444';
       ctx.lineWidth = 1.6;
       ctx.beginPath();
@@ -5959,7 +5977,7 @@
       }
       ctx.stroke();
 
-      // Draw Current Price Highlight Tag on Right Axis
+      // Current Price Highlight Tag
       var lastC = candles[numBars - 1].close;
       var lastY = 10 + chartH * (1 - (lastC - minP) / pRange);
       ctx.fillStyle = '#f43f5e';
@@ -5970,6 +5988,97 @@
       var tagStr = lastC >= 1000 ? Math.round(lastC).toLocaleString() : lastC.toFixed(1);
       ctx.fillText(tagStr, chartW + 4, lastY + 3);
     }
+    window.drawModalCandles = drawModalCandles;
+
+    // Attach touch & mouse drag pan to modal canvas
+    function setupModalCanvasInteraction() {
+      var canvas = document.getElementById('modalChartCanvas');
+      if (!canvas || canvas._hasInteraction) return;
+      canvas._hasInteraction = true;
+
+      var isDrag = false;
+      var startX = 0;
+
+      canvas.addEventListener('mousedown', function(e) {
+        isDrag = true;
+        startX = e.clientX;
+      });
+      window.addEventListener('mousemove', function(e) {
+        if (!isDrag) return;
+        var dx = e.clientX - startX;
+        if (Math.abs(dx) > 15) {
+          if (dx > 0) modalPanLeft();
+          else modalPanRight();
+          startX = e.clientX;
+        }
+      });
+      window.addEventListener('mouseup', function() { isDrag = false; });
+
+      canvas.addEventListener('touchstart', function(e) {
+        if (e.touches.length === 1) {
+          isDrag = true;
+          startX = e.touches[0].clientX;
+        }
+      }, { passive: true });
+      canvas.addEventListener('touchmove', function(e) {
+        if (!isDrag || e.touches.length !== 1) return;
+        var dx = e.touches[0].clientX - startX;
+        if (Math.abs(dx) > 18) {
+          if (dx > 0) modalPanLeft();
+          else modalPanRight();
+          startX = e.touches[0].clientX;
+        }
+      }, { passive: true });
+      canvas.addEventListener('touchend', function() { isDrag = false; });
+    }
+
+    function renderUniversalModalChart(seriesKey, title) {
+      modalCurrentKey = seriesKey;
+      modalCurrentTitle = title;
+      modalViewCount = 30;
+      modalViewOffset = 0;
+
+      // 1. Check if it is a stock from RnZone or Jongbe data
+      var matchedStock = null;
+      if (!seriesKey) {
+        if (typeof RnZone !== 'undefined' && RnZone.stocks) {
+          for (var i = 0; i < RnZone.stocks.length; i++) {
+            if (title.indexOf(RnZone.stocks[i].name) !== -1) {
+              matchedStock = RnZone.stocks[i];
+              break;
+            }
+          }
+        }
+        if (!matchedStock && typeof Jongbe !== 'undefined' && Jongbe.stocks) {
+          for (var j = 0; j < Jongbe.stocks.length; j++) {
+            if (title.indexOf(Jongbe.stocks[j].name) !== -1) {
+              matchedStock = Jongbe.stocks[j];
+              break;
+            }
+          }
+        }
+      }
+
+      if (matchedStock && matchedStock.candles && matchedStock.candles.length > 0) {
+        modalAllCandles = matchedStock.candles;
+        document.getElementById('modalChartTrend').innerText = modalAllCandles[modalAllCandles.length - 1].close >= modalAllCandles[0].close ? '단기 정배열 상승 🎯' : '눌림목 지지 반등';
+      } else {
+        var sInfo = cachedIndexSeries[seriesKey];
+        if (!sInfo) {
+          var defBase = title.indexOf('원') !== -1 ? 30000 : 1000;
+          sInfo = { base: defBase * 0.9, cur: defBase, high: defBase * 1.08, low: defBase * 0.88 };
+        }
+        modalAllCandles = generateCandlesForSeries(sInfo);
+        document.getElementById('modalChartTrend').innerText = '상승 추세 돌파 🎯';
+      }
+
+      modalViewCount = Math.min(30, modalAllCandles.length);
+      modalViewOffset = 0;
+
+      setupModalCanvasInteraction();
+      drawModalCandles();
+    }
+
     window.renderUniversalModalChart = renderUniversalModalChart;
 
     // Open Index Chart Modal function
