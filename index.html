@@ -1759,7 +1759,8 @@
     <button class="tab-btn" data-view="analysis" onclick="switchView('analysis', this)">📊 시장 & 수급 심층 분석 (07:30~24:00)</button>
     <button class="tab-btn" data-view="news" onclick="switchView('news', this)">📰 시간별 뉴스 & 과거 유사사례</button>
     <button class="tab-btn" data-view="rnzone" onclick="switchView('rnzone', this)" style="border-color:#38bdf8; color:#38bdf8;">🎯 RN존 실전 차트 (21개선·평단)</button>
-    <button class="tab-btn" data-view="jongbe" onclick="switchView('jongbe', this)" style="border-color:#f59e0b; color:#fbbf24;">🏆 종가베팅 마스터 (만쥬·강창권·신정재)</button>
+    <button class="tab-btn" data-view="manju" onclick="switchView('manju', this)" style="border-color:#10b981; color:#34d399;">🎯 만쥬 종가베팅 (4대기준·타임라인)</button>
+    <button class="tab-btn" data-view="jongbe" onclick="switchView('jongbe', this)" style="border-color:#f59e0b; color:#fbbf24;">🏆 종가베팅 마스터 (강창권·신정재)</button>
     <button class="tab-btn" data-view="calendar" onclick="switchView('calendar', this)">📅 증시 일정 (월간 달력 & 주간 확대)</button>
   </div>
 
@@ -1802,21 +1803,74 @@
     </div>
   </div>
       <!-- SUPPLY STRIP (CLICKABLE POPUP TRIGGER) -->
-  <div class="supply-strip">
-    <div class="supply-card" style="cursor: pointer;" onclick="openSupplyChart('외인·기관 당일 시간대별 누적 수급 추이', '외인 +6,550억 (코스피) · 기관 +2,649억 (코스닥)', '외인선물 주간 +12,400계약 / 야간 +2,450계약', '【시간대별 수급 총평】 09:00 차익 출회 이후 10:00 외인 순매수 양전 전환, 11:30 코스닥 기관 매수 사이드카 발동 견인, 15:30 외인 +6,550억 당일 최고치 마감. 22:00 야간선물에서도 외인 +2,450계약 추가 매수 롱베팅 지속.', 'supply_flow')">
-      <span class="title">코스피 외인 📊 <span style="font-size:8.5px; background:rgba(239,68,68,0.15); color:#f87171; padding:1px 3px; border-radius:2px; border:1px solid rgba(239,68,68,0.3); font-weight:800;">KRX 확정</span></span><span class="amount buy">+6,550억 (순매수 폭증 🔍)</span>
+  <div class="supply-strip" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px;">
+    <div class="supply-card" style="cursor: pointer; padding: 5px 6px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; white-space: nowrap;" onclick="openSupplyChart('코스피 외국인 누적 수급 추이', '코스피 외인 +6,550억 원 순매수', '3일 연속 매수세 유입', '09:00 차익 출회 이후 10:00 순매수 전환, 15:30 당일 최고치 마감.', 'supply_flow')">
+      <span class="title" style="font-size: 9.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">코스피 외인</span>
+      <span class="amount buy" style="font-size: 10px; font-weight: 800; color: #f43f5e; white-space: nowrap; margin-left: 2px;">+6,550억</span>
     </div>
-    <div class="supply-card" style="cursor: pointer;" onclick="openSupplyChart('외인·기관 당일 시간대별 누적 수급 추이', '외인 +6,550억 (코스피) · 기관 +2,649억 (코스닥)', '외인선물 주간 +12,400계약 / 야간 +2,450계약', '【시간대별 수급 총평】 09:00 차익 출회 이후 10:00 외인 순매수 양전 전환, 11:30 코스닥 기관 매수 사이드카 발동 견인, 15:30 외인 +6,550억 당일 최고치 마감. 22:00 야간선물에서도 외인 +2,450계약 추가 매수 롱베팅 지속.', 'supply_flow')">
-      <span class="title">코스닥 기관 📊 <span style="font-size:8.5px; background:rgba(239,68,68,0.15); color:#f87171; padding:1px 3px; border-radius:2px; border:1px solid rgba(239,68,68,0.3); font-weight:800;">KRX 확정</span></span><span class="amount buy">+2,649억 (폭풍 양매수 🔍)</span>
+    <div class="supply-card" style="cursor: pointer; padding: 5px 6px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; white-space: nowrap;" onclick="openSupplyChart('코스피 기관 누적 수급 추이', '코스피 기관 +1,840억 원 순매수', '외인·기관 쌍끌이 +8,390억 견인', '금융투자 매도 속 연기금·투신 중심의 소부장/대형주 바스켓 순매수 안착.', 'supply_flow')">
+      <span class="title" style="font-size: 9.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">코스피 기관</span>
+      <span class="amount buy" style="font-size: 10px; font-weight: 800; color: #f43f5e; white-space: nowrap; margin-left: 2px;">+1,840억</span>
     </div>
-    <div class="supply-card" style="cursor: pointer;" onclick="openSupplyChart('외인·기관 당일 시간대별 누적 수급 추이', '외인 +6,550억 (코스피) · 기관 +2,649억 (코스닥)', '외인선물 주간 +12,400계약 / 야간 +2,450계약', '【시간대별 수급 총평】 09:00 차익 출회 이후 10:00 외인 순매수 양전 전환, 11:30 코스닥 기관 매수 사이드카 발동 견인, 15:30 외인 +6,550억 당일 최고치 마감. 22:00 야간선물에서도 외인 +2,450계약 추가 매수 롱베팅 지속.', 'supply_flow')">
-      <span class="title">외인 선물 📊 <span style="font-size:8.5px; background:rgba(99,102,241,0.2); color:#c7d2fe; padding:1px 3px; border-radius:2px; border:1px solid #6366f1; font-weight:800;">누적 1.48만 롱</span></span><span class="amount buy">+12,400계약 (지수 견인 🔍)</span>
+    <div class="supply-card" style="cursor: pointer; padding: 5px 6px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; white-space: nowrap;" onclick="openSupplyChart('외인 선물 누적 수급 추이', '외인 선물 +12,400계약 (주간) / +2,450계약 (야간)', '누적 1.48만 롱포지션 구축', '외인 대규모 선물 쇼트커버링 및 롱베팅으로 지수 상방 완벽 견인.', 'supply_flow')">
+      <span class="title" style="font-size: 9.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">외인선물</span>
+      <span class="amount buy" style="font-size: 10px; font-weight: 800; color: #a5b4fc; white-space: nowrap; margin-left: 2px;">+12,400계약</span>
     </div>
-    <div class="supply-card" style="cursor: pointer;" onclick="openSupplyChart('외인·기관 당일 시간대별 누적 수급 추이', '코스닥150 선물 +6% 폭등', '이틀 연속 매수 사이드카 발동 유지', '어제에 이어 2거래일 연속 매수 사이드카 발동. 시장 유동성 폭발 신호.', 'supply_flow')">
-      <span class="title">사이드카 🚨 <span style="font-size:8.5px; background:rgba(245,158,11,0.15); color:#fbbf24; padding:1px 3px; border-radius:2px; border:1px solid #f59e0b; font-weight:800;">연속 발동</span></span><span class="amount buy">이틀 연속 발동 (수급차트 🔍)</span>
+    <div class="supply-card" style="cursor: pointer; padding: 5px 6px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; white-space: nowrap;" onclick="openSupplyChart('사이드카 발동 현황', '코스닥150 선물 +6% 폭등', '2거래일 연속 매수 사이드카 발동', '어제에 이어 2거래일 연속 매수 사이드카 발동. 시장 유동성 폭발.', 'supply_flow')">
+      <span class="title" style="font-size: 9.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">사이드카발동</span>
+      <span class="amount buy" style="font-size: 10px; font-weight: 800; color: #fbbf24; white-space: nowrap; margin-left: 2px;">이틀연속</span>
     </div>
   </div>
   <div id="tabOverview">
+    <!-- 🌅 08:00~08:50 장전 프리마켓 & 예상 갭상승 테마 레이더 -->
+    <div class="premarket-radar-box" style="margin-bottom: 12px; background: linear-gradient(135deg, rgba(30,27,75,0.85) 0%, rgba(15,23,42,0.95) 100%); border: 1px solid #4338ca; border-radius: 10px; padding: 11px 13px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 6px;">
+          <span style="font-size: 15px;">🌅</span>
+          <span style="font-size: 12.5px; font-weight: 800; color: #c7d2fe;">08:00 ~ 08:50 장전 프리마켓 & 예상 갭상승 테마 레이더</span>
+        </div>
+        <span style="font-size: 10px; background: #312e81; color: #a5b4fc; padding: 2px 6px; border-radius: 4px; border: 1px solid #4338ca; font-weight: 800;">08:30 동시호가 가동</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; margin-bottom: 8px;">
+        <!-- 테마 1: CXL 기판 -->
+        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(99,102,241,0.3); border-radius: 6px; padding: 8px 10px; cursor: pointer;" onclick="openDetail('CXL 2.0 고다층 기판 [장전 테마]', '예상 시초가 +3.5~5.0% 갭상승', '정부 1조 클러스터 투자 속보', '엔비디아 CXL 풀링 채택과 정부 판교·용인 1조 투자 공시로 오늘 09:00 시초가 갭상승 1순위 유력 테마.')">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11.5px; font-weight:800; color:#cbd5e1;">🔴 CXL 2.0 / PCB 기판</span>
+            <span style="font-size:10.5px; font-weight:800; color:#f43f5e;">예상 갭 +3~5% 🚀</span>
+          </div>
+          <div style="font-size:10px; color:#94a3b8; margin-top:2px;">• 대장주: 코리아써키트, 티엘비, 심텍</div>
+          <div style="font-size:9.5px; color:#38bdf8; margin-top:2px;">엔비디아 CXL 표준 채택 + 정부 1조 클러스터 속보</div>
+        </div>
+
+        <!-- 테마 2: ALD / 소부장 -->
+        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(56,189,248,0.3); border-radius: 6px; padding: 8px 10px; cursor: pointer;" onclick="openDetail('AI 반도체 소부장 [장전 테마]', '예상 시초가 +2.5~4.0% 갭상승', '필라델피아 반도체 +3.42% 폭등', '간밤 미 반도체 지수 폭등 및 마이크론 +4.2% 급등에 힘입어 전일 코스닥 대금 1위 주성엔지니어링 중심 갭상승 출발 유력.')">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11.5px; font-weight:800; color:#cbd5e1;">🔴 AI 반도체 ALD/소부장</span>
+            <span style="font-size:10.5px; font-weight:800; color:#f43f5e;">예상 갭 +2~4% 🚀</span>
+          </div>
+          <div style="font-size:10px; color:#94a3b8; margin-top:2px;">• 대장주: 주성엔지니어링, HPSP, 디아이</div>
+          <div style="font-size:9.5px; color:#38bdf8; margin-top:2px;">미 SOX 지수 1만선 돌파 목전 + 외인 롱바스켓</div>
+        </div>
+
+        <!-- 테마 3: 전고체 배터리 -->
+        <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(52,211,153,0.3); border-radius: 6px; padding: 8px 10px; cursor: pointer;" onclick="openDetail('전고체 배터리 [장전 테마]', '예상 시초가 +3.0~6.0% 갭상승', '시간외 급등 지속', '어제 15:40 전고체 파일럿 라인 착공 공시로 시간외 단일가 상한가/급등세를 기록한 수혜주 시초가 갭 형성.')">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11.5px; font-weight:800; color:#cbd5e1;">🔵 전고체 파일럿 배터리</span>
+            <span style="font-size:10.5px; font-weight:800; color:#f43f5e;">예상 갭 +3~6% 🚀</span>
+          </div>
+          <div style="font-size:10px; color:#94a3b8; margin-top:2px;">• 대장주: 이수스페셜티케미컬, 한농화성</div>
+          <div style="font-size:9.5px; color:#38bdf8; margin-top:2px;">장마감 후 전고체 라인 착공 공시 + 시간외 급등</div>
+        </div>
+      </div>
+
+      <!-- 동시호가 실전 체크 포인트 바 -->
+      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:6px; font-size:10px; color:#e2e8f0; flex-wrap:wrap; gap:4px;">
+        <span>🎯 <strong>동시호가 체크:</strong> 08:30~08:40 장전 시간외 종가 접수 ➔ 08:50 시초가 타점 브리핑 실시간 연동</span>
+        <span style="color:#fbbf24; font-weight:800; white-space:nowrap;">만쥬 1순위(주성) 09:05 50% 분할 익절 준수</span>
+      </div>
+    </div>
+
     <div class="sec-head">
       <span>🔥 실시간 주도 테마맵 (엄선 6대 테마)</span>
       <span class="sub">스탁이지 · 주맵 실시간 체결 검증</span>
@@ -3307,6 +3361,10 @@
 
 
   <!-- TAB: CLOSING BET MASTERS (KANG CHANG-KWON & SHIN JEONG-JAE) -->
+    <div class="sec-head" style="border-bottom-color:#f59e0b; color:#fbbf24;">
+      <span>🏆 종가베팅 실전 마스터 (신정재 2.5선 · 강창권 20일선 눌림목)</span>
+      <span class="sub">실전 고수 2인의 정밀 타점과 캔버스 인터랙티브 차트</span>
+    </div>
   <div id="tabJongbe" style="display: none; padding-top: 10px;">
     
 
