@@ -1726,76 +1726,21 @@
       <span class="label">원/달러 💵</span><span class="val down">1,334.20원 (-0.61%)</span>
     </div>
   </div>
-    <!-- TOP DEDICATED PANEL: 1~2 YEAR MACRO INDEX CHART & INTRADAY SUPPLY FLOW CHART -->
-  <div id="topMacroPanel" style="margin: 8px 12px 14px 12px; background: #0b1120; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
-    
-    <!-- 1. INDEX CHART SECTION -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
-      <div style="display: flex; align-items: center; gap: 6px; overflow-x: auto; max-width: 100%; padding-bottom: 2px;">
-        <span style="font-size: 12px; font-weight: 800; color: #38bdf8; white-space: nowrap;">📊 대표 지수 1~2년 차트:</span>
-        <button id="btnIdx_kospi" class="idx-tab-btn active" onclick="switchTopIndex('KOSPI')" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: #0284c7; color: #fff; border: 1px solid #38bdf8; border-radius: 4px; cursor: pointer; white-space: nowrap;">코스피</button>
-        <button id="btnIdx_kosdaq" class="idx-tab-btn" onclick="switchTopIndex('KOSDAQ')" style="padding: 3px 8px; font-size: 10.5px; font-weight: 700; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; white-space: nowrap;">코스닥</button>
-        <button id="btnIdx_kospi_night" class="idx-tab-btn" onclick="switchTopIndex('kospi200_night')" style="padding: 3px 8px; font-size: 10.5px; font-weight: 700; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; white-space: nowrap;">야간선물(844pt)</button>
-        <button id="btnIdx_nasdaq" class="idx-tab-btn" onclick="switchTopIndex('nasdaq_fut')" style="padding: 3px 8px; font-size: 10.5px; font-weight: 700; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; white-space: nowrap;">나스닥선물</button>
-        <button id="btnIdx_sox" class="idx-tab-btn" onclick="switchTopIndex('sox')" style="padding: 3px 8px; font-size: 10.5px; font-weight: 700; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; white-space: nowrap;">필반(SOX)</button>
-        <button id="btnIdx_wti" class="idx-tab-btn" onclick="switchTopIndex('wti')" style="padding: 3px 8px; font-size: 10.5px; font-weight: 700; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; white-space: nowrap;">유가($87)</button>
-        <button id="btnIdx_usdkrw" class="idx-tab-btn" onclick="switchTopIndex('usdkrw')" style="padding: 3px 8px; font-size: 10.5px; font-weight: 700; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; white-space: nowrap;">환율(1334원)</button>
-      </div>
-      
-      <!-- Period & Zoom Controls -->
-      <div style="display: flex; gap: 3px; align-items: center;">
-        <button onclick="setTopIndexPeriod(60)" style="padding: 2px 6px; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 9.5px; cursor: pointer;">3개월</button>
-        <button onclick="setTopIndexPeriod(120)" style="padding: 2px 6px; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 9.5px; cursor: pointer;">6개월</button>
-        <button onclick="setTopIndexPeriod(250)" style="padding: 2px 6px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; font-size: 9.5px; font-weight: 800; cursor: pointer;">1년</button>
-        <button onclick="setTopIndexPeriod(500)" style="padding: 2px 6px; background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); border-radius: 4px; font-size: 9.5px; font-weight: 800; cursor: pointer;">2년전체</button>
-        <button onclick="topIndexZoomIn()" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; font-size: 9.5px; font-weight: 800; cursor: pointer;">🔍+</button>
-        <button onclick="topIndexZoomOut()" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; font-size: 9.5px; font-weight: 800; cursor: pointer;">🔍-</button>
-        <button onclick="toggleTopPanel()" id="btnTogglePanel" style="padding: 2px 6px; background: #1e293b; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; font-size: 9.5px; cursor: pointer;">접기 ▲</button>
-      </div>
+      <!-- SUPPLY STRIP (CLICKABLE POPUP TRIGGER) -->
+  <div class="supply-strip">
+    <div class="supply-card" style="cursor: pointer;" onclick="openSupplyChart('외인·기관 당일 시간대별 누적 수급 추이', '외인 +6,550억 (코스피) · 기관 +2,649억 (코스닥)', '외인선물 주간 +12,400계약 / 야간 +2,450계약', '【시간대별 수급 총평】 09:00 차익 출회 이후 10:00 외인 순매수 양전 전환, 11:30 코스닥 기관 매수 사이드카 발동 견인, 15:30 외인 +6,550억 당일 최고치 마감. 22:00 야간선물에서도 외인 +2,450계약 추가 매수 롱베팅 지속.', 'supply_flow')">
+      <span class="title">코스피 외인 📊</span><span class="amount buy">+6,550억 (순매수 폭증 🔍)</span>
     </div>
-
-    <!-- COLLAPSIBLE CONTENT -->
-    <div id="topPanelBody">
-      <!-- 1-2 Year Index Canvas -->
-      <div style="width: 100%; height: 185px; position: relative; background: #070c14; border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 10px;">
-        <canvas id="topIndexCanvas" style="width: 100%; height: 100%; display: block; touch-action: none; -webkit-user-select: none; user-select: none; cursor: grab;"></canvas>
-      </div>
-
-      <!-- 2. INTRADAY SUPPLY FLOW CHART SECTION -->
-      <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 12px; font-weight: 800; color: #a5b4fc;">⏱️ 당일 시간대별 외인·기관 누적 수급 추이 (09:00 ➔ 15:30 ➔ 22:00)</span>
-            <span style="font-size: 10px; color: #94a3b8;">(실시간 누적 순매수 흐름 곡선)</span>
-          </div>
-          <div style="display: flex; gap: 8px; font-size: 10px;">
-            <span style="color: #38bdf8;">● 외인(+6,550억)</span>
-            <span style="color: #c084fc;">● 기관(+2,649억)</span>
-            <span style="color: #f59e0b;">● 외인선물(+14,850계약)</span>
-          </div>
-        </div>
-
-        <!-- Supply Flow Canvas -->
-        <div style="width: 100%; height: 135px; position: relative; background: #070c14; border: 1px solid rgba(255,255,255,0.06); border-radius: 6px;">
-          <canvas id="topSupplyCanvas" style="width: 100%; height: 100%; display: block; touch-action: none;"></canvas>
-        </div>
-
-        <!-- Detailed Supply Milestones Strip -->
-        <div style="margin-top: 8px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 6px; font-size: 11px;">
-          <div style="background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.25); border-radius: 6px; padding: 6px 8px;">
-            <span style="font-weight: 800; color: #38bdf8;">🌏 코스피 외인:</span> 09:00(-450억) ➔ 10:00(+820억 양전) ➔ 11:30(+2,140억) ➔ 13:00(+3,340억) ➔ 15:30(<strong style="color:#4ade80;">+6,550억 최고치 마감 🟢</strong>)
-          </div>
-          <div style="background: rgba(192,132,252,0.08); border: 1px solid rgba(192,132,252,0.25); border-radius: 6px; padding: 6px 8px;">
-            <span style="font-weight: 800; color: #c084fc;">🏢 코스닥 기관:</span> 09:00(+320억) ➔ 11:30(+1,704억 사이드카) ➔ 15:30(<strong style="color:#4ade80;">+2,649억 폭풍 매집 마감 🟢</strong>)
-          </div>
-          <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 6px; padding: 6px 8px;">
-            <span style="font-weight: 800; color: #f59e0b;">⚡ 외인 선물:</span> 주간 정규장(+12,400계약) ➔ 22:00 야간선물(<strong style="color:#fef08a;">+2,450계약 추가 롱베팅 🌙</strong>)
-          </div>
-        </div>
-      </div>
+    <div class="supply-card" style="cursor: pointer;" onclick="openSupplyChart('외인·기관 당일 시간대별 누적 수급 추이', '외인 +6,550억 (코스피) · 기관 +2,649억 (코스닥)', '외인선물 주간 +12,400계약 / 야간 +2,450계약', '【시간대별 수급 총평】 09:00 차익 출회 이후 10:00 외인 순매수 양전 전환, 11:30 코스닥 기관 매수 사이드카 발동 견인, 15:30 외인 +6,550억 당일 최고치 마감. 22:00 야간선물에서도 외인 +2,450계약 추가 매수 롱베팅 지속.', 'supply_flow')">
+      <span class="title">코스닥 기관 📊</span><span class="amount buy">+2,649억 (폭풍 양매수 🔍)</span>
+    </div>
+    <div class="supply-card" style="cursor: pointer;" onclick="openSupplyChart('외인·기관 당일 시간대별 누적 수급 추이', '외인 +6,550억 (코스피) · 기관 +2,649억 (코스닥)', '외인선물 주간 +12,400계약 / 야간 +2,450계약', '【시간대별 수급 총평】 09:00 차익 출회 이후 10:00 외인 순매수 양전 전환, 11:30 코스닥 기관 매수 사이드카 발동 견인, 15:30 외인 +6,550억 당일 최고치 마감. 22:00 야간선물에서도 외인 +2,450계약 추가 매수 롱베팅 지속.', 'supply_flow')">
+      <span class="title">외인 선물 📊</span><span class="amount buy">+12,400계약 (지수 견인 🔍)</span>
+    </div>
+    <div class="supply-card" style="cursor: pointer;" onclick="openSupplyChart('외인·기관 당일 시간대별 누적 수급 추이', '코스닥150 선물 +6% 폭등', '이틀 연속 매수 사이드카 발동 유지', '어제에 이어 2거래일 연속 매수 사이드카 발동. 시장 유동성 폭발 신호.', 'supply_flow')">
+      <span class="title">사이드카 🚨</span><span class="amount buy">이틀 연속 발동 (수급차트 🔍)</span>
     </div>
   </div>
-
   <div id="tabOverview">
     <div class="sec-head">
       <span>🔥 실시간 주도 테마맵 (엄선 6대 테마)</span>
@@ -3753,10 +3698,12 @@
         </div>
                 <!-- INTERACTIVE LIVE MODAL CHART (STOCKS & INDICES) -->
         <div id="modalChartBox" style="margin: 8px 0 10px 0; background: #070c14; border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px; position: relative;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+          
+          <!-- CANDLE CHART HEADER & CONTROLS (FOR STOCKS & INDICES) -->
+          <div id="modalCandleHeader" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
             <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 11px; font-weight: 800; color: #38bdf8;">📊 실시간 캔들 & 추세 차트</span>
-              <span style="font-size: 9.5px; color: #94a3b8;">(5선 황금 · 20선 빨강)</span>
+              <span id="modalChartTitleTxt" style="font-size: 11px; font-weight: 800; color: #38bdf8;">📊 1~2년 실시간 캔들 & 추세선 차트</span>
+              <span style="font-size: 9.5px; color: #94a3b8;">(5/20/60/120선)</span>
             </div>
             <!-- ZOOM & PAN CONTROLLERS -->
             <div style="display: flex; gap: 3px; align-items: center;">
@@ -3765,27 +3712,46 @@
               <button onclick="modalPanLeft()" title="과거로 이동" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">◀</button>
               <button onclick="modalPanRight()" title="최근으로 이동" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">▶</button>
               <button onclick="modalResetZoom()" title="초기화" style="padding: 2px 6px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">⟲</button>
-              <span id="modalChartZoomCount" style="font-size: 9.5px; color: #cbd5e1; margin-left: 2px;">30봉</span>
+              <span id="modalChartZoomCount" style="font-size: 9.5px; color: #cbd5e1; margin-left: 2px;">60봉</span>
             </div>
           </div>
-          <!-- QUICK PERIOD PRESETS BAR -->
-          <div style="display: flex; gap: 4px; margin-bottom: 6px; overflow-x: auto; padding-bottom: 2px;">
+
+          <!-- QUICK PERIOD PRESETS BAR (1M / 3M / 6M / 1Y / 2Y) -->
+          <div id="modalPeriodBar" style="display: flex; gap: 4px; margin-bottom: 6px; overflow-x: auto; padding-bottom: 2px;">
             <button onclick="setModalPeriod(20)" style="padding: 2px 7px; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;">1개월(20봉)</button>
             <button onclick="setModalPeriod(60)" style="padding: 2px 7px; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;">3개월(60봉)</button>
             <button onclick="setModalPeriod(120)" style="padding: 2px 7px; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;">6개월(120봉)</button>
             <button onclick="setModalPeriod(250)" style="padding: 2px 7px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">1년(250봉)</button>
             <button onclick="setModalPeriod(500)" style="padding: 2px 7px; background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">2년 전체(500봉)</button>
           </div>
-          <div style="width: 100%; height: 210px; position: relative;">
+
+          <!-- CANDLE CANVAS -->
+          <div id="modalCandleCanvasWrap" style="width: 100%; height: 210px; position: relative;">
             <canvas id="modalChartCanvas" style="width: 100%; height: 100%; display: block; touch-action: none; -webkit-user-select: none; user-select: none; cursor: grab;"></canvas>
           </div>
-          <div style="display: flex; justify-content: space-between; font-size: 10.5px; color: #94a3b8; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px;">
+
+          <!-- SUPPLY FLOW CANVAS (SHOWN WHEN OPENING SUPPLY CHART) -->
+          <div id="modalSupplyCanvasWrap" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span style="font-size: 11px; font-weight: 800; color: #a5b4fc;">⏱️ 당일 시간대별 외인·기관 누적 수급 흐름 곡선 (09:00 ➔ 15:30 ➔ 22:00)</span>
+              <div style="display: flex; gap: 8px; font-size: 9.5px;">
+                <span style="color: #38bdf8;">● 외인(+6,550억)</span>
+                <span style="color: #c084fc;">● 기관(+2,649억)</span>
+                <span style="color: #f59e0b;">● 외인선물(+14,850계약)</span>
+              </div>
+            </div>
+            <div style="width: 100%; height: 180px; position: relative;">
+              <canvas id="modalSupplyCanvas" style="width: 100%; height: 100%; display: block; touch-action: none;"></canvas>
+            </div>
+          </div>
+
+          <!-- CHART META INFO -->
+          <div id="modalChartMeta" style="display: flex; justify-content: space-between; font-size: 10.5px; color: #94a3b8; margin-top: 6px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 4px;">
             <span>최고가: <strong id="modalChartHigh" style="color:#f43f5e;">-</strong></span>
             <span>최저가: <strong id="modalChartLow" style="color:#38bdf8;">-</strong></span>
             <span>추세 진단: <strong id="modalChartTrend" style="color:#4ade80;">상승 추세 돌파 🎯</strong></span>
           </div>
         </div>
-
         <div style="background: #0f172a; border-radius: 6px; padding: 8px 10px; margin-top: 8px; border-left: 3px solid #38bdf8;">
           <div style="font-weight: 800; color: #38bdf8; margin-bottom: 4px;">🎯 실전 핵심 포인트 & 상세 사유</div>
           <p id="modalDesc" style="font-size: 11.5px; color: #cbd5e1; line-height: 1.45; margin: 0;"></p>
@@ -6251,288 +6217,118 @@
     window.openSupplyChart = openSupplyChart;
 
 
+    
     // ==========================================
-    // TOP DEDICATED INDEX & INTRADAY SUPPLY FLOW ENGINE
+    // POPUP MODAL DISPATCHERS: openIndexChart & openSupplyChart
     // ==========================================
-    var topIndexCurrentKey = 'KOSPI';
-    var topIndexCandles = [];
-    var topIndexViewCount = 120; // Default 6 months view
-    var topIndexViewOffset = 0;
-    var isTopPanelOpen = true;
+    function openIndexChart(title, v1, v2, desc, key) {
+      try {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalVal1').innerText = v1;
+        document.getElementById('modalVal2').innerText = v2;
+        document.getElementById('modalDesc').innerHTML = desc;
 
-    function toggleTopPanel() {
-      isTopPanelOpen = !isTopPanelOpen;
-      var body = document.getElementById('topPanelBody');
-      var btn = document.getElementById('btnTogglePanel');
-      if (body) body.style.display = isTopPanelOpen ? 'block' : 'none';
-      if (btn) btn.innerText = isTopPanelOpen ? '접기 ▲' : '펼치기 ▼';
-      if (isTopPanelOpen) {
+        // Show Candle UI, Hide Supply Flow Canvas
+        var candleHead = document.getElementById('modalCandleHeader');
+        var periodBar = document.getElementById('modalPeriodBar');
+        var candleWrap = document.getElementById('modalCandleCanvasWrap');
+        var supplyWrap = document.getElementById('modalSupplyCanvasWrap');
+        var chartMeta = document.getElementById('modalChartMeta');
+
+        if (candleHead) candleHead.style.display = 'flex';
+        if (periodBar) periodBar.style.display = 'flex';
+        if (candleWrap) candleWrap.style.display = 'block';
+        if (supplyWrap) supplyWrap.style.display = 'none';
+        if (chartMeta) chartMeta.style.display = 'flex';
+
+        // Set Deep Link Buttons
+        var btnNaver = document.getElementById('btnNaverQuote');
+        var btnToss = document.getElementById('btnTossQuote');
+        if (btnNaver) {
+          btnNaver.innerText = '📊 네이버 증권 지수 전체 차트';
+          btnNaver.href = 'https://m.stock.naver.com/';
+        }
+        if (btnToss) {
+          btnToss.innerText = '🌐 인베스팅닷컴 실시간 차트';
+          btnToss.href = 'https://kr.investing.com/';
+        }
+
+        // Hide stock-specific DART/KRX risk box for pure index
+        var riskBox = document.getElementById('modalRiskBox');
+        if (riskBox) riskBox.style.display = 'none';
+
+        // Open Modal
+        document.getElementById('modalOverlay').style.display = 'flex';
+
+        // Render 1~2 Year Index Candle Chart
         setTimeout(function() {
-          drawTopIndexCanvas();
-          drawTopSupplyCanvas();
-        }, 50);
+          renderUniversalModalChart(key, title);
+        }, 60);
+      } catch (err) {
+        console.error("Error in openIndexChart:", err);
       }
     }
-    window.toggleTopPanel = toggleTopPanel;
+    window.openIndexChart = openIndexChart;
 
-    function switchTopIndex(key) {
-      topIndexCurrentKey = key;
-      // Update buttons
-      var btns = document.querySelectorAll('.idx-tab-btn');
-      btns.forEach(function(b) {
-        b.style.background = '#1e293b';
-        b.style.color = '#94a3b8';
-        b.style.borderColor = 'rgba(255,255,255,0.1)';
-        b.style.fontWeight = '700';
-      });
+    function openSupplyChart(title, v1, v2, desc, key) {
+      try {
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalVal1').innerText = v1;
+        document.getElementById('modalVal2').innerText = v2;
+        document.getElementById('modalDesc').innerHTML = desc;
 
-      var btnId = 'btnIdx_' + (key.toLowerCase().replace('200_', '_').replace('150_', '_'));
-      var activeBtn = document.getElementById(btnId) || event.target;
-      if (activeBtn) {
-        activeBtn.style.background = '#0284c7';
-        activeBtn.style.color = '#ffffff';
-        activeBtn.style.borderColor = '#38bdf8';
-        activeBtn.style.fontWeight = '800';
-      }
+        // Hide Candle UI, Show Supply Flow Canvas
+        var candleHead = document.getElementById('modalCandleHeader');
+        var periodBar = document.getElementById('modalPeriodBar');
+        var candleWrap = document.getElementById('modalCandleCanvasWrap');
+        var supplyWrap = document.getElementById('modalSupplyCanvasWrap');
+        var chartMeta = document.getElementById('modalChartMeta');
 
-      loadTopIndexData();
-      drawTopIndexCanvas();
-    }
-    window.switchTopIndex = switchTopIndex;
+        if (candleHead) candleHead.style.display = 'none';
+        if (periodBar) periodBar.style.display = 'none';
+        if (candleWrap) candleWrap.style.display = 'none';
+        if (supplyWrap) supplyWrap.style.display = 'block';
+        if (chartMeta) chartMeta.style.display = 'none';
 
-    function setTopIndexPeriod(count) {
-      topIndexViewCount = Math.min(count, topIndexCandles.length || 500);
-      topIndexViewOffset = 0;
-      drawTopIndexCanvas();
-    }
-    window.setTopIndexPeriod = setTopIndexPeriod;
-
-    function topIndexZoomIn() {
-      if (topIndexViewCount > 15) {
-        topIndexViewCount = Math.max(15, topIndexViewCount - 20);
-        drawTopIndexCanvas();
-      }
-    }
-    window.topIndexZoomIn = topIndexZoomIn;
-
-    function topIndexZoomOut() {
-      if (topIndexViewCount < topIndexCandles.length) {
-        topIndexViewCount = Math.min(topIndexCandles.length, topIndexViewCount + 25);
-        drawTopIndexCanvas();
-      }
-    }
-    window.topIndexZoomOut = topIndexZoomOut;
-
-    function loadTopIndexData() {
-      var db = window.DAILY_500_CANDLES || {};
-      if (topIndexCurrentKey === 'KOSPI' && db['KOSPI']) {
-        topIndexCandles = db['KOSPI'].map(function(item) {
-          return { date: item[0], open: item[1], high: item[2], low: item[3], close: item[4], vol: item[5] };
-        });
-      } else if (topIndexCurrentKey === 'KOSDAQ' && db['KOSDAQ']) {
-        topIndexCandles = db['KOSDAQ'].map(function(item) {
-          return { date: item[0], open: item[1], high: item[2], low: item[3], close: item[4], vol: item[5] };
-        });
-      } else {
-        var sInfo = cachedIndexSeries[topIndexCurrentKey] || { base: 1000, cur: 1100, high: 1150, low: 950 };
-        var c500 = [];
-        var total = 500;
-        var step = (sInfo.cur - sInfo.base) / (total - 1);
-        for (var i = 0; i < total; i++) {
-          var baseP = sInfo.base + step * i;
-          var noise = (Math.sin(i * 0.25) + Math.cos(i * 0.12)) * (sInfo.base * 0.025);
-          var closeP = Math.round((baseP + noise) * 100) / 100;
-          if (i === total - 1) closeP = sInfo.cur;
-          var openP = i === 0 ? sInfo.base : c500[i - 1].close;
-          var highP = Math.max(openP, closeP) + Math.abs(noise * 0.4);
-          var lowP = Math.min(openP, closeP) - Math.abs(noise * 0.4);
-          c500.push({ open: openP, high: highP, low: lowP, close: closeP, vol: Math.floor(1000 + Math.random() * 3000) });
+        // Set Deep Link Buttons
+        var btnNaver = document.getElementById('btnNaverQuote');
+        var btnToss = document.getElementById('btnTossQuote');
+        if (btnNaver) {
+          btnNaver.innerText = '📊 네이버 증권 투자자별 수급 전체';
+          btnNaver.href = 'https://m.stock.naver.com/investor';
         }
-        topIndexCandles = c500;
+        if (btnToss) {
+          btnToss.innerText = '🌐 KRX 한국거래소 수급 데이터';
+          btnToss.href = 'http://data.krx.co.kr/';
+        }
+
+        // Hide DART risk box for supply overview
+        var riskBox = document.getElementById('modalRiskBox');
+        if (riskBox) riskBox.style.display = 'none';
+
+        // Open Modal
+        document.getElementById('modalOverlay').style.display = 'flex';
+
+        // Render Intraday Supply Flow Chart inside Modal!
+        setTimeout(function() {
+          drawModalSupplyFlowCanvas();
+        }, 60);
+      } catch (err) {
+        console.error("Error in openSupplyChart:", err);
       }
     }
+    window.openSupplyChart = openSupplyChart;
 
-    function drawTopIndexCanvas() {
-      var canvas = document.getElementById('topIndexCanvas');
-      if (!canvas || !topIndexCandles || topIndexCandles.length === 0) return;
-
-      var ctx = canvas.getContext('2d');
-      var dpr = window.devicePixelRatio || 1;
-      var rect = canvas.getBoundingClientRect();
-      var w = rect.width || canvas.parentElement.clientWidth || 340;
-      var h = 185;
-
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      var startIdx = Math.max(0, topIndexCandles.length - topIndexViewOffset - topIndexViewCount);
-      var endIdx = topIndexCandles.length - topIndexViewOffset;
-      var candles = topIndexCandles.slice(startIdx, endIdx);
-      if (candles.length === 0) candles = topIndexCandles;
-
-      // Background
-      ctx.fillStyle = '#070c14';
-      ctx.fillRect(0, 0, w, h);
-
-      var minP = Infinity, maxP = -Infinity;
-      var maxVol = 0;
-      for (var c = 0; c < candles.length; c++) {
-        if (candles[c].high > maxP) maxP = candles[c].high;
-        if (candles[c].low < minP) minP = candles[c].low;
-        if (candles[c].vol > maxVol) maxVol = candles[c].vol;
-      }
-      var pRange = (maxP - minP) || 1;
-      minP -= pRange * 0.05;
-      maxP += pRange * 0.05;
-      pRange = maxP - minP;
-
-      var chartH = h * 0.72;
-      var volH = h * 0.22;
-      var padR = 48;
-      var chartW = w - padR;
-
-      // Grid Lines
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-      ctx.lineWidth = 1;
-      ctx.fillStyle = '#64748b';
-      ctx.font = '9px sans-serif';
-      ctx.textAlign = 'right';
-
-      for (var g = 0; g <= 4; g++) {
-        var pVal = minP + (pRange * g) / 4;
-        var yPos = chartH - (chartH * g) / 4 + 8;
-        ctx.beginPath();
-        ctx.moveTo(10, yPos);
-        ctx.lineTo(chartW, yPos);
-        ctx.stroke();
-
-        var pStr = pVal >= 1000 ? Math.round(pVal).toLocaleString() : pVal.toFixed(1);
-        ctx.fillText(pStr, w - 4, yPos + 3);
-      }
-
-      // Calculate SMAs
-      function calcFullSMA(period) {
-        var fullSMA = [];
-        for (var i = 0; i < topIndexCandles.length; i++) {
-          if (i < period - 1) fullSMA.push(null);
-          else {
-            var sum = 0;
-            for (var p = 0; p < period; p++) sum += topIndexCandles[i - p].close;
-            fullSMA.push(sum / period);
-          }
-        }
-        return fullSMA.slice(startIdx, endIdx);
-      }
-
-      var sma5 = calcFullSMA(5);
-      var sma20 = calcFullSMA(20);
-      var sma60 = calcFullSMA(60);
-      var sma120 = topIndexViewCount >= 80 ? calcFullSMA(120) : null;
-
-      var numBars = candles.length;
-      var barW = chartW / numBars;
-      var bodyW = Math.max(1, barW * 0.68);
-
-      for (var b = 0; b < numBars; b++) {
-        var cd = candles[b];
-        var x = 10 + b * barW + barW / 2;
-        var isUp = cd.close >= cd.open;
-        var barColor = isUp ? '#f43f5e' : '#38bdf8';
-
-        // Volume Bar
-        var vRatio = maxVol > 0 ? cd.vol / maxVol : 0;
-        var vHeight = volH * vRatio;
-        ctx.fillStyle = isUp ? 'rgba(244, 63, 94, 0.35)' : 'rgba(56, 189, 248, 0.35)';
-        ctx.fillRect(x - bodyW / 2, h - vHeight - 4, bodyW, vHeight);
-
-        // Candle Y
-        var yHigh = 8 + chartH * (1 - (cd.high - minP) / pRange);
-        var yLow = 8 + chartH * (1 - (cd.low - minP) / pRange);
-        var yOpen = 8 + chartH * (1 - (cd.open - minP) / pRange);
-        var yClose = 8 + chartH * (1 - (cd.close - minP) / pRange);
-
-        ctx.strokeStyle = barColor;
-        ctx.lineWidth = barW > 3 ? 1.2 : 1;
-        ctx.beginPath();
-        ctx.moveTo(x, yHigh);
-        ctx.lineTo(x, yLow);
-        ctx.stroke();
-
-        var topY = Math.min(yOpen, yClose);
-        var bH = Math.max(1, Math.abs(yClose - yOpen));
-        ctx.fillStyle = barColor;
-        ctx.fillRect(x - bodyW / 2, topY, bodyW, bH);
-      }
-
-      // 5-day SMA (Golden)
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 1.4;
-      ctx.beginPath();
-      var started = false;
-      for (var s5 = 0; s5 < numBars; s5++) {
-        if (sma5[s5] !== null) {
-          var sx = 10 + s5 * barW + barW / 2;
-          var sy = 8 + chartH * (1 - (sma5[s5] - minP) / pRange);
-          if (!started) { ctx.moveTo(sx, sy); started = true; }
-          else ctx.lineTo(sx, sy);
-        }
-      }
-      ctx.stroke();
-
-      // 20-day SMA (Red)
-      ctx.strokeStyle = '#ef4444';
-      ctx.lineWidth = 1.4;
-      ctx.beginPath();
-      started = false;
-      for (var s20 = 0; s20 < numBars; s20++) {
-        if (sma20[s20] !== null) {
-          var rx = 10 + s20 * barW + barW / 2;
-          var ry = 8 + chartH * (1 - (sma20[s20] - minP) / pRange);
-          if (!started) { ctx.moveTo(rx, ry); started = true; }
-          else ctx.lineTo(rx, ry);
-        }
-      }
-      ctx.stroke();
-
-      // 60-day SMA (Green)
-      ctx.strokeStyle = '#22c55e';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      started = false;
-      for (var s60 = 0; s60 < numBars; s60++) {
-        if (sma60[s60] !== null) {
-          var gx = 10 + s60 * barW + barW / 2;
-          var gy = 8 + chartH * (1 - (sma60[s60] - minP) / pRange);
-          if (!started) { ctx.moveTo(gx, gy); started = true; }
-          else ctx.lineTo(gx, gy);
-        }
-      }
-      ctx.stroke();
-
-      // Current Price Highlight Tag
-      var lastC = candles[numBars - 1].close;
-      var lastY = 8 + chartH * (1 - (lastC - minP) / pRange);
-      ctx.fillStyle = '#f43f5e';
-      ctx.fillRect(chartW + 2, lastY - 8, padR - 4, 16);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 9px sans-serif';
-      ctx.textAlign = 'left';
-      var tagStr = lastC >= 1000 ? Math.round(lastC).toLocaleString() : lastC.toFixed(1);
-      ctx.fillText(tagStr, chartW + 4, lastY + 3);
-    }
-    window.drawTopIndexCanvas = drawTopIndexCanvas;
-
-    // INTRADAY SUPPLY FLOW CANVAS ENGINE (09:00 -> 15:30 -> 22:00)
-    function drawTopSupplyCanvas() {
-      var canvas = document.getElementById('topSupplyCanvas');
+    // INTRADAY SUPPLY FLOW CANVAS INSIDE MODAL (09:00 -> 15:30 -> 22:00)
+    function drawModalSupplyFlowCanvas() {
+      var canvas = document.getElementById('modalSupplyCanvas');
       if (!canvas) return;
 
       var ctx = canvas.getContext('2d');
       var dpr = window.devicePixelRatio || 1;
       var rect = canvas.getBoundingClientRect();
       var w = rect.width || canvas.parentElement.clientWidth || 340;
-      var h = 135;
+      var h = 180;
 
       canvas.width = w * dpr;
       canvas.height = h * dpr;
@@ -6542,28 +6338,27 @@
       ctx.fillStyle = '#070c14';
       ctx.fillRect(0, 0, w, h);
 
-      // Timeline nodes: 09:00, 10:00, 11:30, 13:00, 14:30, 15:30(Close), 22:00(Night)
       var timeLabels = ['09:00', '10:00', '11:30', '13:00', '14:30', '15:30마감', '22:00야간'];
       var frgKospi = [-450, 820, 2140, 3340, 5200, 6550, 6550]; // 억 원
       var instKosdaq = [320, 890, 1704, 2100, 2450, 2649, 2649]; // 억 원
-      var frgFut = [1500, 4100, 7200, 9800, 12400, 12400, 14850]; // 계약 (scale to / 2 for visual balance)
+      var frgFut = [1500, 4100, 7200, 9800, 12400, 12400, 14850]; // 계약
 
       var minVal = -1000;
       var maxVal = 7500;
       var valRange = maxVal - minVal;
 
-      var padL = 40;
-      var padR = 20;
-      var padT = 15;
-      var padB = 25;
+      var padL = 45;
+      var padR = 25;
+      var padT = 18;
+      var padB = 28;
       var chartW = w - padL - padR;
       var chartH = h - padT - padB;
 
-      // Draw Grid & Y-Axis Labels
+      // Draw Grid & Y-Ticks
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
       ctx.lineWidth = 1;
       ctx.fillStyle = '#64748b';
-      ctx.font = '9px sans-serif';
+      ctx.font = '9.5px sans-serif';
       ctx.textAlign = 'right';
 
       var yTicks = [-1000, 0, 2000, 4000, 6000];
@@ -6574,11 +6369,10 @@
         ctx.moveTo(padL, yPos);
         ctx.lineTo(w - padR, yPos);
         ctx.stroke();
-
         ctx.fillText((yVal > 0 ? '+' : '') + yVal + '억', padL - 4, yPos + 3);
       }
 
-      // Draw Zero Baseline (Dashed)
+      // Zero Baseline
       var zeroY = padT + chartH * (1 - (0 - minVal) / valRange);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
       ctx.setLineDash([3, 3]);
@@ -6591,7 +6385,6 @@
       var numPoints = timeLabels.length;
       var stepX = chartW / (numPoints - 1);
 
-      // Function to draw line series with area
       function drawSeries(data, color, areaColor) {
         // Area
         ctx.fillStyle = areaColor;
@@ -6609,7 +6402,7 @@
 
         // Line
         ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.2;
         ctx.beginPath();
         for (var j = 0; j < numPoints; j++) {
           var lx = padL + j * stepX;
@@ -6625,28 +6418,28 @@
           var dx = padL + k * stepX;
           var dy = padT + chartH * (1 - (data[k] - minVal) / valRange);
           ctx.beginPath();
-          ctx.arc(dx, dy, 3, 0, Math.PI * 2);
+          ctx.arc(dx, dy, 3.5, 0, Math.PI * 2);
           ctx.fill();
         }
       }
 
       // Draw Foreigner Kospi Flow (Sky Blue)
-      drawSeries(frgKospi, '#38bdf8', 'rgba(56, 189, 248, 0.12)');
+      drawSeries(frgKospi, '#38bdf8', 'rgba(56, 189, 248, 0.15)');
 
       // Draw Institution Kosdaq Flow (Purple)
-      drawSeries(instKosdaq, '#c084fc', 'rgba(192, 132, 252, 0.1)');
+      drawSeries(instKosdaq, '#c084fc', 'rgba(192, 132, 252, 0.12)');
 
-      // Draw X-Axis Time Labels
+      // X-Axis Labels
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '9px sans-serif';
+      ctx.font = '9.5px sans-serif';
       ctx.textAlign = 'center';
       for (var l = 0; l < numPoints; l++) {
         var tx = padL + l * stepX;
         ctx.fillText(timeLabels[l], tx, h - 8);
       }
 
-      // Draw Milestone Value Badges for Final Points
-      ctx.font = 'bold 9px sans-serif';
+      // Value Badges for Final Points
+      ctx.font = 'bold 9.5px sans-serif';
       ctx.fillStyle = '#38bdf8';
       ctx.textAlign = 'right';
       var lastFrgY = padT + chartH * (1 - (frgKospi[numPoints - 1] - minVal) / valRange);
@@ -6654,18 +6447,35 @@
 
       ctx.fillStyle = '#c084fc';
       var lastInstY = padT + chartH * (1 - (instKosdaq[numPoints - 1] - minVal) / valRange);
-      ctx.fillText('+2,649억 (기관)', w - padR - 4, lastInstY + 12);
+      ctx.fillText('+2,649억 (기관)', w - padR - 4, lastInstY + 14);
     }
-    window.drawTopSupplyCanvas = drawTopSupplyCanvas;
+    window.drawModalSupplyFlowCanvas = drawModalSupplyFlowCanvas;
 
-    // Initialize Top Panel on Load
-    window.addEventListener('DOMContentLoaded', function() {
-      loadTopIndexData();
+    // Enhance openDetail for Theme Stocks: Show Candle UI, Hide Supply Flow Canvas
+    var origOpenDetail = window.openDetail;
+    window.openDetail = function(title, v1, v2, desc) {
+      if (origOpenDetail) origOpenDetail(title, v1, v2, desc);
+
+      var candleHead = document.getElementById('modalCandleHeader');
+      var periodBar = document.getElementById('modalPeriodBar');
+      var candleWrap = document.getElementById('modalCandleCanvasWrap');
+      var supplyWrap = document.getElementById('modalSupplyCanvasWrap');
+      var chartMeta = document.getElementById('modalChartMeta');
+
+      if (candleHead) candleHead.style.display = 'flex';
+      if (periodBar) periodBar.style.display = 'flex';
+      if (candleWrap) candleWrap.style.display = 'block';
+      if (supplyWrap) supplyWrap.style.display = 'none';
+      if (chartMeta) chartMeta.style.display = 'flex';
+
+      // Re-show DART risk box for stocks
+      var riskBox = document.getElementById('modalRiskBox');
+      if (riskBox) riskBox.style.display = 'block';
+
       setTimeout(function() {
-        drawTopIndexCanvas();
-        drawTopSupplyCanvas();
-      }, 100);
-    });
+        renderUniversalModalChart(null, title);
+      }, 60);
+    };
 
 </script>
 
