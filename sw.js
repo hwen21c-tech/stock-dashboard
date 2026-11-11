@@ -1,8 +1,9 @@
 // Service Worker for Yeonolang Stock Dashboard PWA
-const CACHE_NAME = 'yeonolang-terminal-v4';
+const CACHE_NAME = 'yeonolang-terminal-v5';
 const ASSETS_TO_CACHE = [
   './',
   'index.html',
+  'deals.html',
   'manifest.json',
   'downloads/app_icon_192.png',
   'downloads/app_icon_512.png'
