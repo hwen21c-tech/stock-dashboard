@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>✈️ 패밀리 특가 레이더 (여행 & 키즈 혜택 관제탑)</title>
+  <style>
+    :root {
+      --bg: #070c14;
+      --card-bg: #0b1120;
+      --card-hover: #111a2e;
+      --border: rgba(56, 189, 248, 0.2);
+      --text: #f8fafc;
+      --text-sub: #94a3b8;
+      --accent: #38bdf8;
+      --accent-grad: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+      --deal-red: #f43f5e;
+      --gold: #f59e0b;
+      --green: #22c55e;
+      --purple: #a855f7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Pretendard', 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.5;
+      padding: 10px;
+      max-width: 1400px;
+      margin: 0 auto;
+      -webkit-font-smoothing: antialiased;
+    }
+    /* HEADER */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      font-size: 26px;
+      background: rgba(56, 189, 248, 0.12);
+      padding: 6px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .brand-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+    .hdr-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn-nav {
+      padding: 6px 12px;
+      background: #1e293b;
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 800;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-nav:hover {
+      background: rgba(56, 189, 248, 0.15);
+    }
+
+    /* SEARCH BAR */
+    .search-box {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .search-input {
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: #fff;
+      font-size: 12.5px;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+
+    /* CATEGORY TABS */
+    .cat-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .cat-btn {
+      padding: 8px 16px;
+      background: var(--card-bg);
+      color: var(--text-sub);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .cat-btn.active {
+      background: var(--accent-grad);
+      color: #ffffff;
+      border-color: #38bdf8;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+
+    /* SUB FILTERS */
+    .filter-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .filter-chip {
+      padding: 4px 10px;
+      background: #111827;
+      color: var(--text-sub);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .filter-chip.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* GRID & CARDS */
+    .deals-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .deal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, border-color 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .deal-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+      background: var(--card-hover);
+    }
+
+    /* CARD HEADER */
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .card-tags {
+      display: flex;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .tag-resort { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .tag-city { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .tag-family { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .tag-snow { background: rgba(14, 165, 233, 0.15); color: #7dd3fc; border: 1px solid rgba(14, 165, 233, 0.3); }
+    .tag-discount { background: rgba(244, 63, 94, 0.2); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.4); font-size: 11px; }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+      line-height: 1.35;
+    }
+    .card-sub {
+      font-size: 11px;
+      color: var(--text-sub);
+      margin-bottom: 10px;
+    }
+
+    /* PRICE BOX */
+    .price-box {
+      background: #070c14;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .price-left {
+      display: flex;
+      flex-direction: column;
+    }
+    .price-normal {
+      font-size: 10.5px;
+      color: #64748b;
+      text-decoration: line-through;
+    }
+    .price-deal {
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--deal-red);
+    }
+    .price-pills {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      align-items: flex-end;
+    }
+    .pill-item {
+      font-size: 9.5px;
+      background: rgba(34, 197, 94, 0.12);
+      color: #4ade80;
+      padding: 1px 6px;
+      border-radius: 3px;
+      border: 1px solid rgba(34, 197, 94, 0.25);
+    }
+
+    /* CALLOUT BOXES */
+    .season-box {
+      background: rgba(245, 158, 11, 0.06);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 11.5px;
+      color: #fef08a;
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .season-label {
+      font-weight: 800;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin-bottom: 2px;
+    }
+    .family-box {
+      background: rgba(56, 189, 248, 0.06);
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 11px;
+      color: #cbd5e1;
+      line-height: 1.4;
+      margin-bottom: 12px;
+    }
+
+    /* ACTION BUTTON */
+    .btn-deal-action {
+      display: block;
+      text-align: center;
+      padding: 8px 12px;
+      background: var(--accent-grad);
+      color: #ffffff;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 3px 10px rgba(2, 132, 199, 0.3);
+      transition: opacity 0.15s;
+    }
+    .btn-deal-action:hover {
+      opacity: 0.92;
+    }
+
+    /* MODAL */
+    #dealModal {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+    }
+    .modal-box {
+      background: #0b1120;
+      border: 1px solid var(--accent);
+      border-radius: 14px;
+      max-width: 500px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">✈️</div>
+      <div>
+        <div class="brand-title">패밀리 특가 레이더 (Family Deal Radar)</div>
+        <div class="brand-sub">동탄 패밀리 맞춤형 · 국내외 여행 특가 & 키즈카페·박물관 혜택 관제탑</div>
+      </div>
+    </div>
+    <div class="hdr-actions">
+      <a href="index.html" class="btn-nav">📈 주식 관제탑 이동</a>
+    </div>
+  </header>
+
+  <!-- SEARCH -->
+  <div class="search-box">
+    <input type="text" id="dealSearchInput" class="search-input" placeholder="🔍 여행지, 박물관, 키즈카페, 온천, 할인 등 키워드 검색..." oninput="filterDeals()">
+  </div>
+
+  <!-- CATEGORY TABS -->
+  <div class="cat-tabs">
+    <button class="cat-btn active" id="tabBtnTravel" onclick="switchCategory('travel')">✈️ 국내 & 해외 여행 특가</button>
+    <button class="cat-btn" id="tabBtnKids" onclick="switchCategory('kids')">🎪 키즈카페 · 박물관 · 테마파크</button>
+  </div>
+
+  <!-- SUB FILTERS (TRAVEL) -->
+  <div class="filter-bar" id="travelFilters">
+    <button class="filter-chip active" onclick="setTravelFilter('all', this)">전체</button>
+    <button class="filter-chip" onclick="setTravelFilter('overseas', this)">🌏 해외 여행</button>
+    <button class="filter-chip" onclick="setTravelFilter('domestic', this)">🇰🇷 국내 여행</button>
+    <button class="filter-chip" onclick="setTravelFilter('resort', this)">🌴 휴양·힐링</button>
+    <button class="filter-chip" onclick="setTravelFilter('city', this)">🏛️ 관광·온천</button>
+    <button class="filter-chip" onclick="setTravelFilter('family', this)">🎡 가족·워터파크</button>
+    <button class="filter-chip" onclick="setTravelFilter('snow', this)">❄️ 눈꽃·스키</button>
+  </div>
+
+  <!-- SUB FILTERS (KIDS) -->
+  <div class="filter-bar" id="kidsFilters" style="display: none;">
+    <button class="filter-chip active" onclick="setKidsFilter('all', this)">전체</button>
+    <button class="filter-chip" onclick="setKidsFilter('dongtan', this)">🎯 동탄 30분권</button>
+    <button class="filter-chip" onclick="setKidsFilter('museum', this)">🦕 박물관·과학관</button>
+    <button class="filter-chip" onclick="setKidsFilter('kids_cafe', this)">🏰 대형 키즈카페</button>
+    <button class="filter-chip" onclick="setKidsFilter('themepark', this)">🎢 테마파크·아쿠아</button>
+  </div>
+
+  <!-- DEALS GRID -->
+  <div class="deals-grid" id="dealsGrid">
+    <!-- Rendered via JS -->
+  </div>
+
+  <!-- SCRIPT ENGINE -->
+  <script>
+    var travelDeals = [{"id": "tr1", "type": "overseas", "theme": "resort", "theme_label": "🌴 휴양·힐링", "title": "🇻🇳 베트남 나트랑(깜란) 오션뷰 패밀리 특가", "region": "동남아 · 베트남 나트랑", "flight_type": "인천 직항 (이스타/에어서울)", "normal_price": "580,000원", "deal_price": "329,000원", "discount": "-43% 특가", "benefit_pills": ["유류할증료·TAX 포함", "위탁수하물 15kg", "5성급 풀빌라 연계 혜택"], "season_reason": "11월~2월은 우기 끝자락에서 선선한 건기로 넘어가는 최적기! 한낮에도 28도 내외로 쾌적하며, 파도가 잔잔해 아이들과 프라이빗 비치 스노클링에 최적입니다.", "family_fit": "비행 4시간 40분 · 키즈클럽 완비 5성급 리조트 1박 10만원대 · 그랩 배달 편리", "link": "https://www.ttang.com/ttangair/search/discount/index.do", "link_label": "✈️ 땡처리닷컴 나트랑 특가 조회"}, {"id": "tr2", "type": "overseas", "theme": "family", "theme_label": "🎡 가족·휴양", "title": "🇺🇸 괌(GUAM) PIC 리조트 골드카드 패키지 얼리버드", "region": "미국령 · 괌 투몬베이", "flight_type": "인천/부산 직항 (대한/제주/진에어)", "normal_price": "980,000원", "deal_price": "599,000원", "discount": "-38% 특가", "benefit_pills": ["PIC 워터파크 무제한", "골드카드 전일정 식사", "만 12세 미만 아동 무료"], "season_reason": "11월~4월 괌 최고의 건기 황금시즌! 비가 거의 오지 않고 투명한 에메랄드빛 바다 유지. 비행시간 4시간 20분으로 영유아/초등 동반 가족여행 1순위 스테디셀러.", "family_fit": "비행 4시간 20분 · 한국인 키즈클럽 '클럽메이트' 무료 케어 · 한국어 소통 완벽", "link": "https://m.trip.com/flights/", "link_label": "✈️ 트립닷컴 괌 항공권 특가"}, {"id": "tr3", "type": "overseas", "theme": "city", "theme_label": "🏛️ 관광·온천", "title": "🇯🇵 일본 후쿠오카 & 유후인 료칸 힐링 왕복 특가", "region": "일본 · 규슈 후쿠오카", "flight_type": "인천 직항 (에어서울/제주항공)", "normal_price": "390,000원", "deal_price": "227,000원", "discount": "-42% 특가", "benefit_pills": ["비행시간 1시간 15분", "도심-공항 15분 직결", "유후인 온천패스 할인"], "season_reason": "늦가을 단풍과 쌀쌀해진 겨울 날씨에 즐기는 노천온천의 절정기! 후쿠오카 캐널시티 윈터 일루미네이션 개막과 미식 투어를 1시간 15분 짧은 비행으로 즐길 수 있습니다.", "family_fit": "비행 1시간 15분(초단기) · 킨더 아이도 피로도 제로 · 하카타역 인근 이동 편리", "link": "https://www.ttang.com/ttangair/search/ttang/list.do?arr0=A7ALL", "link_label": "✈️ 후쿠오카 20만원대 땡처리 항공"}, {"id": "tr4", "type": "overseas", "theme": "resort", "theme_label": "🌴 휴양·힐링", "title": "🇻🇳 다낭 & 호이안 올드타운 패밀리 에어텔 특가", "region": "동남아 · 베트남 다낭", "flight_type": "인천/대구 직항 (제주/티웨이/진에어)", "normal_price": "620,000원", "deal_price": "349,000원", "discount": "-44% 특가", "benefit_pills": ["바나힐 입장권 연계", "공항 픽업 포함", "미케비치 5성급 리조트"], "season_reason": "유네스코 세계문화유산 호이안의 야경 소원배와 바나힐 테마파크를 결합한 최고의 가성비 가족여행. 4인 가족 기준 100만원대로 항공+특급호텔 해결 가능.", "family_fit": "바나힐 놀이기구/케이블카 초등 취향 저격 · 호이안 야간 등불 체험", "link": "https://flight.naver.com/", "link_label": "✈️ 네이버항공 다낭 최저가 비교"}, {"id": "tr5", "type": "domestic", "theme": "resort", "theme_label": "🌴 힐링·체험", "title": "🇰🇷 제주도 감귤 따기 체험 & 동백 포레스트 윈터 패키지", "region": "국내 · 제주 서귀포 / 안덕", "flight_type": "김포/청주 직항 (편도 1만원대~)", "normal_price": "380,000원", "deal_price": "189,000원", "discount": "-50% 특가", "benefit_pills": ["평일 항공권 편도 1.8만~", "감귤 2kg 수확체험 무료", "서귀포 오션뷰 리조트 2박"], "season_reason": "지금 가야 하는 이유: 11월 중순부터 12월은 노지 감귤이 가장 달고 싱싱한 수확 피크이자, 카멜리아힐·위미리 동백꽃이 붉게 피어나는 1년 중 가장 예쁜 감성 시즌!", "family_fit": "아이들 직접 귤 따는 촉감 체험 · 뽀로로앤타요 테마파크 제주 인접", "link": "https://flight.naver.com/", "link_label": "✈️ 네이버 제주항공권 1만원대 조회"}, {"id": "tr6", "type": "domestic", "theme": "snow", "theme_label": "❄️ 눈꽃·스키", "title": "🇰🇷 평창 대관령 눈꽃 양떼목장 & 용평 모나파크 얼리버드", "region": "국내 · 강원 평창 / 대관령", "flight_type": "자차 이동 (동탄에서 2시간)", "normal_price": "340,000원", "deal_price": "165,000원", "discount": "-51% 특가", "benefit_pills": ["타워콘도 1박+조식 2인", "발왕산 케이블카 2인권", "사계절 눈썰매장 패키지"], "season_reason": "지금 가야 하는 이유: 스키 시즌 개막 직전 얼리버드로 객실 50% 반값 예약 가능! 대관령 양떼 건초주기 체험과 발왕산 천년주목숲 케이블카 설경을 만끽하는 겨울 여행 1번지.", "family_fit": "초등·킨더 모두 열광하는 양/알파카 먹이주기 · 눈썰매장 풀코스", "link": "https://www.yanolja.com/", "link_label": "🏨 야놀자 용평 리조트 특가 예매"}];
+    var kidsDeals = [{"id": "kd1", "category": "museum", "cat_label": "🦕 박물관·과학관", "title": "국립과천과학관 (과천 대공원)", "location": "경기 과천시 (동탄에서 자차 40분 / 4호선 대공원역)", "target_age": "킨더(유아체험관) & 초등(상설전시) 동시 만족 🎯", "price_info": "7세 미만(둘째) 무료 · 초등(아린) 2,000원 · 성인 4,000원", "benefit_tag": "다자녀 단체할인 · 유아체험관 무료", "tips": "★ 핵심 꿀팁: '유아체험관'은 이용일 3일 전 밤 9시(21:00) 온라인 선착순 오픈(계정당 4명)! 다자녀카드는 사전정산기 인증 시 주차료 50% 감면(하루 최대 5천원).", "highlights": "국내 최대 규모 자연사관(공룡 화석), 첨단과학관, 지진체험, 유아체험관 원스톱 코스.", "link": "https://www.sciencecenter.go.kr/", "link_label": "🎟️ 과천과학관 공식 통합예약"}, {"id": "kd2", "category": "museum", "cat_label": "🦕 어린이박물관", "title": "경기도어린이박물관 (용인 기흥)", "location": "경기 용인시 기흥구 (동탄에서 자차 20분 초근접 🎯)", "target_age": "만 3세 ~ 초등 저학년 최적화", "price_info": "정상 4,000원 ➔ 경기도민 50% 할인 (2,000원!) / 12개월 미만 무료", "benefit_tag": "경기도민 50% 할인 · 매월 1·3주 주말 무료", "tips": "★ 핵심 꿀팁: 100% 온라인 사전 예매제(방문 7일 전 00:00 오픈)! 1회차(10:00~13:30)와 2회차(14:00~17:30) 운영. 매월 1·3주 토·일요일은 사전예매 시 100% 무료 입장!", "highlights": "튼튼놀이터(클라이밍), 자연놀이터, 건축체험, 소방차/경찰차 직업체험 등 3층 전관 인터랙티브.", "link": "https://gcm.ggcf.kr/", "link_label": "🎟️ 경기문화재단 예약 바로가기"}, {"id": "kd3", "category": "museum", "cat_label": "🌾 무료박물관", "title": "국립농업박물관 어린이박물관 (수원 권선)", "location": "경기 수원시 권선구 서둔동 (동탄에서 자차 25분)", "target_age": "3세 ~ 초등 3학년", "price_info": "상설전시 & 어린이박물관 전관 100% 무료! (주차료 별도)", "benefit_tag": "입장료 완전 무료 🟢 · 쾌적한 신축 시설", "tips": "★ 핵심 꿀팁: 누리집에서 회차별 사전예약 필수. 농업체험, 트랙터 시뮬레이터 운전, 곤충관, 수직농장 식물원까지 최신식 시설로 붐비지 않고 매우 쾌적합니다.", "highlights": "트랙터 실물 탑승 가상운전 체험 + 벼 베기 쌀 가공 놀이 + 열대 식물원 유리온실.", "link": "https://www.namuk.or.kr/", "link_label": "🎟️ 국립농업박물관 무료 예약"}, {"id": "kd4", "category": "kids_cafe", "cat_label": "🏰 대형 키즈카페", "title": "챔피언더블랙벨트 롯데백화점 동탄점", "location": "경기 화성시 동탄역 롯데백화점 지하 1층 (동탄 관내)", "target_age": "에너지 넘치는 초등학생 & 활발한 킨더", "price_info": "어린이 2시간 25,000원 (네이버예약 / 플레이멤버스 평일할인 20%)", "benefit_tag": "플레이멤버스 신규 5천원 쿠폰 · 평일 마감특가", "tips": "★ 핵심 꿀팁: 플레이멤버스 앱 가입 시 5,000원 할인쿠폰 즉시 지급. 주말 오후에는 대기가 기므로 오전 11시 이전 입장 또는 평일 하교 후 방문 시 쾌적.", "highlights": "로프 마운틴, 짚라인, 밸런싱 바이크 등 전신 대근육 운동 익스트림 플레이파크.", "link": "https://m.place.naver.com/", "link_label": "🎟️ 네이버 지도 동탄 챔피언 확인"}, {"id": "kd5", "category": "themepark", "cat_label": "🐬 아쿠아리움", "title": "아쿠아플라넷 광교 (갤러리아 광교)", "location": "경기 수원시 영통구 광교호수공원로 (동탄에서 자차 25분)", "target_age": "킨더 & 초등 & 온 가족", "price_info": "대인/소인 정상 32,000원 ➔ 네이버 얼리버드/오후권 23,900원 (-25%)", "benefit_tag": "네이버 예약 25% 즉시할인 · 통신사/카드사 30% 제휴", "tips": "★ 핵심 꿀팁: 오후 4시 이후 입장하는 '오후엔 아쿠아' 권종이 가장 저렴. 샌드타이거샤크 먹이주기 쇼와 인어공주 매직쇼 시간표를 미리 캡처해 동선 짜기 필수.", "highlights": "도심 속 지하 메가 수조 + 펭귄 먹이주기 체험 + 젤리피시 월드.", "link": "https://www.aquaplanet.co.kr/gwanggyo/", "link_label": "🎟️ 아쿠아플라넷 광교 특가 예매"}, {"id": "kd6", "category": "themepark", "cat_label": "🎢 테마파크", "title": "용인 에버랜드 윈터 스노우 페스티벌", "location": "경기 용인시 처인구 포곡읍 (동탄에서 자차 35분)", "target_age": "초등(놀이기구/사파리) & 킨더(스노우버스터 썰매)", "price_info": "종일권 정상 68,000원 ➔ 제휴카드 스마트예약 28,000원~ (-58% 특가)", "benefit_tag": "제휴카드 50~58% 할인 · 동반인 우대할인", "tips": "★ 핵심 꿀팁: 에버랜드 앱 스마트예약 시 본인 55% + 동반 3인 30% 할인. 12월 개장하는 '스노우버스터(눈썰매장)'는 튜브 리프트로 편하게 올라가 아이들이 지치지 않습니다.", "highlights": "스노우버스터 눈썰매 3개 코스 + 사파리월드/로스트밸리 + 판다월드 바오패밀리.", "link": "https://www.everland.com/", "link_label": "🎟️ 에버랜드 스마트예약 특가"}];
+
+    var currentCat = 'travel';
+    var currentTravelSub = 'all';
+    var currentKidsSub = 'all';
+    var currentSearch = '';
+
+    function switchCategory(cat) {
+      currentCat = cat;
+      document.getElementById('tabBtnTravel').className = 'cat-btn' + (cat === 'travel' ? ' active' : '');
+      document.getElementById('tabBtnKids').className = 'cat-btn' + (cat === 'kids' ? ' active' : '');
+
+      document.getElementById('travelFilters').style.display = cat === 'travel' ? 'flex' : 'none';
+      document.getElementById('kidsFilters').style.display = cat === 'kids' ? 'flex' : 'none';
+
+      renderDeals();
+    }
+
+    function setTravelFilter(sub, el) {
+      currentTravelSub = sub;
+      document.querySelectorAll('#travelFilters .filter-chip').forEach(function(b) { b.classList.remove('active'); });
+      if (el) el.classList.add('active');
+      renderDeals();
+    }
+
+    function setKidsFilter(sub, el) {
+      currentKidsSub = sub;
+      document.querySelectorAll('#kidsFilters .filter-chip').forEach(function(b) { b.classList.remove('active'); });
+      if (el) el.classList.add('active');
+      renderDeals();
+    }
+
+    function filterDeals() {
+      currentSearch = document.getElementById('dealSearchInput').value.trim().toLowerCase();
+      renderDeals();
+    }
+
+    function renderDeals() {
+      var container = document.getElementById('dealsGrid');
+      container.innerHTML = '';
+
+      if (currentCat === 'travel') {
+        var list = travelDeals.filter(function(d) {
+          var matchSub = (currentTravelSub === 'all') ||
+                         (currentTravelSub === 'overseas' && d.type === 'overseas') ||
+                         (currentTravelSub === 'domestic' && d.type === 'domestic') ||
+                         (currentTravelSub === d.theme);
+          var matchSearch = !currentSearch || (
+            d.title.toLowerCase().indexOf(currentSearch) !== -1 ||
+            d.region.toLowerCase().indexOf(currentSearch) !== -1 ||
+            d.season_reason.toLowerCase().indexOf(currentSearch) !== -1
+          );
+          return matchSub && matchSearch;
+        });
+
+        if (list.length === 0) {
+          container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">일치하는 여행 특가가 없습니다.</div>';
+          return;
+        }
+
+        list.forEach(function(d) {
+          var pillsHtml = d.benefit_pills.map(function(p) {
+            return '<span class="pill-item">✓ ' + p + '</span>';
+          }).join('');
+
+          var tagClass = d.theme === 'resort' ? 'tag-resort' : (d.theme === 'city' ? 'tag-city' : (d.theme === 'family' ? 'tag-family' : 'tag-snow'));
+
+          var cardHtml = `
+            <div class="deal-card">
+              <div>
+                <div class="card-top">
+                  <div class="card-tags">
+                    <span class="tag ${tagClass}">${d.theme_label}</span>
+                    <span class="tag tag-discount">${d.discount}</span>
+                  </div>
+                  <span style="font-size: 11px; color: #38bdf8; font-weight: 700;">${d.region}</span>
+                </div>
+                <div class="card-title">${d.title}</div>
+                <div class="card-sub">${d.flight_type}</div>
+
+                <div class="price-box">
+                  <div class="price-left">
+                    <span class="price-normal">정상 ${d.normal_price}</span>
+                    <span class="price-deal">${d.deal_price}</span>
+                  </div>
+                  <div class="price-pills">
+                    ${pillsHtml}
+                  </div>
+                </div>
+
+                <div class="season-box">
+                  <div class="season-label">🌟 지금 이 시기에 가야 하는 이유:</div>
+                  ${d.season_reason}
+                </div>
+
+                <div class="family-box">
+                  <strong style="color: #38bdf8;">👨‍👩‍👧‍👦 가족 맞춤 팁:</strong> ${d.family_fit}
+                </div>
+              </div>
+
+              <a href="${d.link}" target="_blank" class="btn-deal-action">${d.link_label} ➔</a>
+            </div>
+          `;
+          container.innerHTML += cardHtml;
+        });
+
+      } else {
+        // KIDS DEALS
+        var list = kidsDeals.filter(function(k) {
+          var matchSub = (currentKidsSub === 'all') ||
+                         (currentKidsSub === 'dongtan' && k.location.indexOf('동탄') !== -1) ||
+                         (currentKidsSub === k.category);
+          var matchSearch = !currentSearch || (
+            k.title.toLowerCase().indexOf(currentSearch) !== -1 ||
+            k.location.toLowerCase().indexOf(currentSearch) !== -1 ||
+            k.tips.toLowerCase().indexOf(currentSearch) !== -1
+          );
+          return matchSub && matchSearch;
+        });
+
+        if (list.length === 0) {
+          container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #64748b; padding: 40px;">일치하는 시설 혜택이 없습니다.</div>';
+          return;
+        }
+
+        list.forEach(function(k) {
+          var cardHtml = `
+            <div class="deal-card">
+              <div>
+                <div class="card-top">
+                  <div class="card-tags">
+                    <span class="tag tag-city">${k.cat_label}</span>
+                    <span class="tag tag-discount" style="background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.3);">${k.benefit_tag}</span>
+                  </div>
+                  <span style="font-size: 11px; color: #fbbf24; font-weight: 700;">${k.target_age}</span>
+                </div>
+                <div class="card-title">${k.title}</div>
+                <div class="card-sub">📍 ${k.location}</div>
+
+                <div class="price-box">
+                  <div class="price-left">
+                    <span style="font-size: 10px; color: #94a3b8;">요금 & 혜택</span>
+                    <span style="font-size: 13.5px; font-weight: 800; color: #38bdf8;">${k.price_info}</span>
+                  </div>
+                </div>
+
+                <div class="season-box" style="background: rgba(168,85,247,0.08); border-color: rgba(168,85,247,0.3); color: #e9d5ff;">
+                  <div class="season-label" style="color: #c084fc;">💡 놓치면 안 되는 예약/할인 꿀팁:</div>
+                  ${k.tips}
+                </div>
+
+                <div class="family-box">
+                  <strong style="color: #4ade80;">🎪 핵심 즐길거리:</strong> ${k.highlights}
+                </div>
+              </div>
+
+              <a href="${k.link}" target="_blank" class="btn-deal-action" style="background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);">${k.link_label} ➔</a>
+            </div>
+          `;
+          container.innerHTML += cardHtml;
+        });
+      }
+    }
+
+    // Initial render
+    renderDeals();
+  </script>
+</body>
+</html>
