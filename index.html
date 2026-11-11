@@ -4514,7 +4514,7 @@
       try {
         const data = briefingData[timeKey] || briefingData['20:00'] || briefingData['16:00'] || {};
         const titleEl = document.getElementById('bmHeaderTitle');
-        if (titleEl) titleEl.innerHTML = `📊 ${data.title || (timeKey + ' 시장 브리핑')}`;
+        if (titleEl) titleEl.innerHTML = `📊 ${data.title || (timeKey + ' 시장 브리핑 전문')}`;
 
         let html = '';
         if (data.fullHtml) {
@@ -4578,10 +4578,51 @@
           }
           if (sEval) {
             html += `<div style="background:#131d2e; border-left:3px solid #34d399; padding:8px 10px; border-radius:4px; font-size:11.5px; color:#cbd5e1; line-height:1.45;">
-              <strong>• 수급 평가:</strong> ${sEval}
+              <strong>• 수급 총평:</strong> ${sEval}
             </div>`;
           }
           html += `</div>`;
+        }
+
+        // Section 4: Key Themes & Leaders
+        const themes = data.themes || data.topThemes || [];
+        if (themes.length > 0) {
+          html += `<div class="b-section">
+            <div class="b-sec-title blue">■ 시장 핵심 주도 테마 및 대장주 분석</div>
+            <ul class="b-list">`;
+          themes.forEach(item => {
+            html += `<li class="b-item">${item}</li>`;
+          });
+          html += `</ul></div>`;
+        }
+
+        // Section 5: News & Past Similar Cases
+        const nTitle = data.newsTitle || '';
+        const nAnalysis = data.newsAnalysis || [];
+        if (nTitle || nAnalysis.length > 0) {
+          html += `<div class="b-section">
+            <div class="b-sec-title purple">■ 최신 핵심 뉴스 & 과거 유사 사례·수혜주 추적</div>`;
+          if (nTitle) html += `<div style="font-size:12.5px; font-weight:800; color:#c084fc; margin-bottom:6px;">• ${nTitle}</div>`;
+          if (nAnalysis.length > 0) {
+            html += `<ul class="b-list">`;
+            nAnalysis.forEach(item => {
+              html += `<li class="b-item">${item}</li>`;
+            });
+            html += `</ul>`;
+          }
+          html += `</div>`;
+        }
+
+        // Section 6: Action Points & Target Stocks
+        const targets = data.targetStocks || data.closingBetTargets || [];
+        if (targets.length > 0) {
+          html += `<div class="b-section">
+            <div class="b-sec-title orange">■ 만쥬 실전 매매 타점 및 후보 압축</div>
+            <ul class="b-list">`;
+          targets.forEach(item => {
+            html += `<li class="b-item">${item}</li>`;
+          });
+          html += `</ul></div>`;
         }
 
         const bodyEl = document.getElementById('bmBodyContent');
