@@ -1594,6 +1594,20 @@
 </head>
 <body>
 
+    <!-- REAL-TIME LIVE MARKET SESSION RADAR & COUNTDOWN -->
+  <div id="sessionRadarBar" style="background: linear-gradient(90deg, #090d16 0%, #111827 50%, #090d16 100%); border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding: 7px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; z-index: 100;">
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="live-dot" style="display:inline-block; width:8px; height:8px; background:#a855f7; border-radius:50%; box-shadow:0 0 8px #a855f7;"></span>
+      <span id="sessionStatusTxt" style="font-weight: 800; color: #38bdf8;">🌙 [야간 세션: KRX 야간선물 & 美 나스닥 선물 랠리 진행 중]</span>
+      <span id="sessionCountdownTxt" style="color: #cbd5e1; font-size: 11px;">(익일 06:00 마감까지 07시간 45분)</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button id="autoRefreshBtn" onclick="toggleAutoRefresh()" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 4px; cursor: pointer;">⚡ 30초 자동갱신: ON</button>
+      <button onclick="forceLiveRefresh()" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; cursor: pointer;">🔄 즉시 새로고침</button>
+      <span id="lastSyncTxt" style="color: #94a3b8; font-size: 10.5px;">최근 갱신: 22:00</span>
+    </div>
+  </div>
+
   <!-- HEADER -->
   <header>
     <div>
@@ -2699,6 +2713,15 @@
             • <strong>글로벌 분석:</strong> 미 CPI 3.6% 쇼크로 10년물 국채금리 5% 위협. 코스피200 야간선물 -1.74% 급락 속 과거 유사사례 비교 및 오늘 주요 종목 압축.
           </div>
           <div class="tc-tap-hint">🔍 터치하여 07:30 장전 브리핑 전문 확인 ›</div>
+        </div>
+        <!-- 1-SECOND DIRECT LIVE MOBILE DEEP LINKS -->
+        <div id="modalDeepLinks" style="margin-top: 10px; display: flex; gap: 8px;">
+          <a id="btnNaverQuote" href="https://m.stock.naver.com/" target="_blank" style="flex: 1; text-align: center; padding: 7px 10px; background: #042f1a; border: 1px solid #10b981; border-radius: 6px; color: #34d399; font-size: 11px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
+            📊 네이버 1초 실시간 호가창
+          </a>
+          <a id="btnTossQuote" href="https://tossinvest.com/" target="_blank" style="flex: 1; text-align: center; padding: 7px 10px; background: #1e1b4b; border: 1px solid #6366f1; border-radius: 6px; color: #a5b4fc; font-size: 11px; font-weight: 800; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
+            📱 토스증권 실시간 차트
+          </a>
         </div>
       </div>
     </div>
@@ -5505,6 +5528,138 @@
         });
       });
     }
+
+
+    // ==========================================
+    // REAL-TIME ENGINE: SESSION RADAR & AUTO-POLLING
+    // ==========================================
+    var autoRefreshActive = true;
+    var autoRefreshTimer = null;
+    var stockCodes = {
+      '주성엔지니어링': '036930', '코리아써키트': '007810', '심텍': '222800', '티엘비': '356860',
+      '에코프로비엠': '247540', 'SK하이닉스': '000660', '삼성전자': '005930', '현대차': '005380',
+      '두산에너빌리티': '034020', '한화에어로스페이스': '012450', '피에스케이홀딩스': '031980',
+      '하나마이크론': '067310', 'HLB': '028300', '리노공업': '058470', 'SK스퀘어': '402340',
+      '원익IPS': '240810', '삼성SDI': '006400', '삼성바이오로직스': '207940', '삼성물산': '028260', '기아': '000270'
+    };
+
+    function updateSessionRadar() {
+      var now = new Date();
+      var kstHours = now.getHours();
+      var kstMins = now.getMinutes();
+      var timeVal = kstHours * 60 + kstMins;
+
+      var statusTxt = '';
+      var countdownTxt = '';
+
+      if (timeVal >= 540 && timeVal < 930) { // 09:00 ~ 15:30
+        statusTxt = '🟢 [정규장 진행 중] 국내 증시 실시간 거래';
+        var remMins = 930 - timeVal;
+        countdownTxt = '(15:30 정규장 마감까지 ' + Math.floor(remMins / 60) + '시간 ' + (remMins % 60) + '분)';
+      } else if (timeVal >= 930 && timeVal < 960) { // 15:30 ~ 16:00
+        statusTxt = '🔵 [장마감 정리 세션] 당일 수급 결산 및 시간외 대기';
+        countdownTxt = '(16:00 시간외 단일가 시작까지 ' + (960 - timeVal) + '분)';
+      } else if (timeVal >= 960 && timeVal < 1080) { // 16:00 ~ 18:00
+        statusTxt = '🟠 [시간외 단일가 거래 중] 10분 단위 단일가 체결';
+        countdownTxt = '(18:00 시간외 마감까지 ' + (1080 - timeVal) + '분)';
+      } else if (timeVal >= 1080 || timeVal < 360) { // 18:00 ~ 06:00
+        statusTxt = '🌙 [야간 세션] KRX 코스피200 야간선물 & 美 선물 랠리 진행 중';
+        var remNight = timeVal >= 1080 ? (1440 - timeVal + 360) : (360 - timeVal);
+        countdownTxt = '(익일 06:00 야간마감까지 ' + Math.floor(remNight / 60) + '시간 ' + (remNight % 60) + '분)';
+      } else { // 06:00 ~ 09:00
+        statusTxt = '🟡 [장전 프리마켓] 글로벌 매크로 분석 및 시초가 갭 준비';
+        countdownTxt = '(09:00 개장까지 ' + Math.floor((540 - timeVal) / 60) + '시간 ' + ((540 - timeVal) % 60) + '분)';
+      }
+
+      var elStatus = document.getElementById('sessionStatusTxt');
+      var elCount = document.getElementById('sessionCountdownTxt');
+      if (elStatus) elStatus.innerText = statusTxt;
+      if (elCount) elCount.innerText = countdownTxt;
+    }
+
+    function toggleAutoRefresh() {
+      autoRefreshActive = !autoRefreshActive;
+      var btn = document.getElementById('autoRefreshBtn');
+      if (autoRefreshActive) {
+        if (btn) {
+          btn.innerText = '⚡ 30초 자동갱신: ON';
+          btn.style.color = '#4ade80';
+          btn.style.background = 'rgba(34,197,94,0.15)';
+          btn.style.borderColor = 'rgba(34,197,94,0.3)';
+        }
+        startAutoRefresh();
+      } else {
+        if (btn) {
+          btn.innerText = '⏸️ 자동갱신: OFF';
+          btn.style.color = '#94a3b8';
+          btn.style.background = 'rgba(148,163,184,0.1)';
+          btn.style.borderColor = 'rgba(148,163,184,0.2)';
+        }
+        if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      }
+    }
+    window.toggleAutoRefresh = toggleAutoRefresh;
+
+    function startAutoRefresh() {
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      autoRefreshTimer = setInterval(function() {
+        if (!autoRefreshActive) return;
+        checkServerUpdate();
+      }, 30000);
+    }
+
+    function checkServerUpdate() {
+      var syncTxt = document.getElementById('lastSyncTxt');
+      var now = new Date();
+      var timeStr = (now.getHours() < 10 ? '0' : '') + now.getHours() + ':' + 
+                     (now.getMinutes() < 10 ? '0' : '') + now.getMinutes() + ':' + 
+                     (now.getSeconds() < 10 ? '0' : '') + now.getSeconds();
+      
+      fetch('./index.html?v=' + Date.now(), { method: 'HEAD', cache: 'no-store' })
+        .then(function(res) {
+          if (syncTxt) {
+            syncTxt.innerText = '최근 갱신: ' + timeStr + ' (실시간 동기화)';
+            syncTxt.style.color = '#38bdf8';
+          }
+        })
+        .catch(function(err) {
+          if (syncTxt) syncTxt.innerText = '최근 갱신: ' + timeStr;
+        });
+    }
+
+    function forceLiveRefresh() {
+      var syncTxt = document.getElementById('lastSyncTxt');
+      if (syncTxt) syncTxt.innerText = '실시간 동기화 중...';
+      window.location.href = window.location.pathname + '?refresh=' + Date.now();
+    }
+    window.forceLiveRefresh = forceLiveRefresh;
+
+    // Attach deep links in openDetail
+    var origOpenDetail = window.openDetail;
+    window.openDetail = function(title, v1, v2, desc) {
+      if (origOpenDetail) origOpenDetail(title, v1, v2, desc);
+
+      var matchedCode = '005930';
+      for (var name in stockCodes) {
+        if (title.indexOf(name) !== -1 || desc.indexOf(name) !== -1) {
+          matchedCode = stockCodes[name];
+          break;
+        }
+      }
+
+      var btnNaver = document.getElementById('btnNaverQuote');
+      var btnToss = document.getElementById('btnTossQuote');
+      if (btnNaver) {
+        btnNaver.href = 'https://m.stock.naver.com/item/' + matchedCode;
+      }
+      if (btnToss) {
+        btnToss.href = 'https://tossinvest.com/stocks/' + matchedCode;
+      }
+    };
+
+    setInterval(updateSessionRadar, 1000);
+    updateSessionRadar();
+    startAutoRefresh();
 
 </script>
 
