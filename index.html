@@ -4410,63 +4410,105 @@
     }
 
     function openDetail(title, v1, v2, desc) {
-      document.getElementById('modalTitle').innerText = title;
-      document.getElementById('modalVal1').innerText = v1;
-      document.getElementById('modalVal2').innerText = v2;
-      document.getElementById('modalDesc').innerHTML = desc;
+      try {
+        // 1. Text & Content
+        document.getElementById('modalTitle').innerText = title;
+        document.getElementById('modalVal1').innerText = v1;
+        document.getElementById('modalVal2').innerText = v2;
+        document.getElementById('modalDesc').innerHTML = desc;
 
-      // Real-time DART & KRX Market Warning Diagnosis
-      var riskBox = document.getElementById('modalRiskBox');
-      var riskBadge = document.getElementById('modalRiskBadge');
-      var dartTxt = document.getElementById('modalDartTxt');
-      var krxTxt = document.getElementById('modalKrxTxt');
+        // 2. Configure Modal UI for Stocks: Show Candle UI & Controls, Hide Supply Flow Canvas
+        var candleHead = document.getElementById('modalCandleHeader');
+        var periodBar = document.getElementById('modalPeriodBar');
+        var candleWrap = document.getElementById('modalCandleCanvasWrap');
+        var supplyWrap = document.getElementById('modalSupplyCanvasWrap');
+        var chartMeta = document.getElementById('modalChartMeta');
 
-      if (riskBox && riskBadge && dartTxt && krxTxt) {
-        riskBox.style.display = 'block';
+        if (candleHead) candleHead.style.display = 'flex';
+        if (periodBar) periodBar.style.display = 'flex';
+        if (candleWrap) candleWrap.style.display = 'block';
+        if (supplyWrap) supplyWrap.style.display = 'none';
+        if (chartMeta) chartMeta.style.display = 'flex';
 
-        if (title.indexOf('티엘비') !== -1 || desc.indexOf('티엘비') !== -1) {
-          riskBox.style.background = 'rgba(245, 158, 11, 0.08)';
-          riskBox.style.borderColor = 'rgba(245, 158, 11, 0.35)';
-          riskBadge.className = 'krx-caution';
-          riskBadge.innerHTML = '🟡 투자주의 관찰';
-          dartTxt.innerHTML = '<span style="color:#4ade80;">유상증자·CB발행 악재 없음 (DART 클린 🟢)</span>';
-          krxTxt.innerHTML = '<span style="color:#fbbf24;">오늘 +29.88% 상한가 직행에 따라 장마감 후 <strong>종가급변 또는 단기과열 완화장치 대상 검토</strong> 주의 필요 🟡 (익일 시초가 추격매수 금지 및 분할 대응 권고)</span>';
-        } else if (title.indexOf('코리아써키트') !== -1 || desc.indexOf('코리아써키트') !== -1) {
-          riskBox.style.background = 'rgba(16, 185, 129, 0.08)';
-          riskBox.style.borderColor = 'rgba(16, 185, 129, 0.25)';
-          riskBadge.className = 'krx-safe';
-          riskBadge.innerHTML = '🟢 경보 클린 (정상)';
-          dartTxt.innerHTML = '<span style="color:#4ade80;">유상증자·CB발행 없음, CXL 2.0 기판 수주 모멘텀 가속 (DART 클린 🟢)</span>';
-          krxTxt.innerHTML = '<span style="color:#cbd5e1;">3일 누적 +42%로 3일 100%·5일 60% 요건 미달 안전 🟢 (단, 익일 +15% 이상 추가 폭등 시 1차 주의권 진입 모니터링)</span>';
-        } else if (title.indexOf('주성엔지니어링') !== -1 || desc.indexOf('주성엔지니어링') !== -1) {
-          riskBox.style.background = 'rgba(16, 185, 129, 0.08)';
-          riskBox.style.borderColor = 'rgba(16, 185, 129, 0.25)';
-          riskBadge.className = 'krx-safe';
-          riskBadge.innerHTML = '🟢 경보 클린 (정상)';
-          dartTxt.innerHTML = '<span style="color:#4ade80;">악재성 지분희석 공시 없음, 반도체 수주 순항 (DART 클린 🟢)</span>';
-          krxTxt.innerHTML = '<span style="color:#cbd5e1;">단기 급등에도 시총 1.8조 중대형주로 소수계좌 과다 등 경보 요건 미해당 안전 🟢 (신용/미수 100% 정상)</span>';
-        } else if (title.indexOf('에코프로비엠') !== -1 || desc.indexOf('에코프로비엠') !== -1) {
-          riskBox.style.background = 'rgba(56, 189, 248, 0.08)';
-          riskBox.style.borderColor = 'rgba(56, 189, 248, 0.25)';
-          riskBadge.className = 'krx-safe';
-          riskBadge.innerHTML = '🔵 정상 투자공시 (클린)';
-          dartTxt.innerHTML = '<span style="color:#38bdf8;">15:35 인니 니켈 합작법인 6,271억 출자 공시 외 악재 없음 (클린 🟢)</span>';
-          krxTxt.innerHTML = '<span style="color:#cbd5e1;">바닥권 반등 국면으로 시장경보 요건 전혀 미해당 🟢</span>';
-        } else {
-          riskBox.style.background = 'rgba(16, 185, 129, 0.08)';
-          riskBox.style.borderColor = 'rgba(16, 185, 129, 0.25)';
-          riskBadge.className = 'krx-safe';
-          riskBadge.innerHTML = '🟢 정상 클린';
-          dartTxt.innerHTML = '<span style="color:#4ade80;">장마감 후 대규모 유증/CB/블록딜 악재 없음 (클린 🟢)</span>';
-          krxTxt.innerHTML = '<span style="color:#cbd5e1;">3일 100% / 5일 60% 급등 요건 미해당 안전 🟢 (정상 매매 가능)</span>';
+        // 3. Real-time DART & KRX Market Warning Diagnosis
+        var riskBox = document.getElementById('modalRiskBox');
+        var riskBadge = document.getElementById('modalRiskBadge');
+        var dartTxt = document.getElementById('modalDartTxt');
+        var krxTxt = document.getElementById('modalKrxTxt');
+
+        if (riskBox && riskBadge && dartTxt && krxTxt) {
+          riskBox.style.display = 'block';
+
+          if (title.indexOf('티엘비') !== -1 || desc.indexOf('티엘비') !== -1) {
+            riskBox.style.background = 'rgba(245, 158, 11, 0.08)';
+            riskBox.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+            riskBadge.className = 'krx-caution';
+            riskBadge.innerHTML = '🟡 투자주의 관찰';
+            dartTxt.innerHTML = '<span style="color:#4ade80;">유상증자·CB발행 악재 없음 (DART 클린 🟢)</span>';
+            krxTxt.innerHTML = '<span style="color:#fbbf24;">오늘 +29.88% 상한가 직행에 따라 장마감 후 <strong>종가급변 또는 단기과열 완화장치 대상 검토</strong> 주의 필요 🟡 (익일 시초가 추격매수 금지 및 분할 대응 권고)</span>';
+          } else if (title.indexOf('코리아써키트') !== -1 || desc.indexOf('코리아써키트') !== -1) {
+            riskBox.style.background = 'rgba(16, 185, 129, 0.08)';
+            riskBox.style.borderColor = 'rgba(16, 185, 129, 0.25)';
+            riskBadge.className = 'krx-safe';
+            riskBadge.innerHTML = '🟢 경보 클린 (정상)';
+            dartTxt.innerHTML = '<span style="color:#4ade80;">유상증자·CB발행 없음, CXL 2.0 기판 수주 모멘텀 가속 (DART 클린 🟢)</span>';
+            krxTxt.innerHTML = '<span style="color:#cbd5e1;">3일 누적 +42%로 3일 100%·5일 60% 요건 미달 안전 🟢 (단, 익일 +15% 이상 추가 폭등 시 1차 주의권 진입 모니터링)</span>';
+          } else if (title.indexOf('주성엔지니어링') !== -1 || desc.indexOf('주성엔지니어링') !== -1) {
+            riskBox.style.background = 'rgba(16, 185, 129, 0.08)';
+            riskBox.style.borderColor = 'rgba(16, 185, 129, 0.25)';
+            riskBadge.className = 'krx-safe';
+            riskBadge.innerHTML = '🟢 경보 클린 (정상)';
+            dartTxt.innerHTML = '<span style="color:#4ade80;">악재성 지분희석 공시 없음, 반도체 수주 순항 (DART 클린 🟢)</span>';
+            krxTxt.innerHTML = '<span style="color:#cbd5e1;">단기 급등에도 시총 1.8조 중대형주로 소수계좌 과다 등 경보 요건 미해당 안전 🟢 (신용/미수 100% 정상)</span>';
+          } else if (title.indexOf('에코프로비엠') !== -1 || desc.indexOf('에코프로비엠') !== -1) {
+            riskBox.style.background = 'rgba(56, 189, 248, 0.08)';
+            riskBox.style.borderColor = 'rgba(56, 189, 248, 0.25)';
+            riskBadge.className = 'krx-safe';
+            riskBadge.innerHTML = '🔵 정상 투자공시 (클린)';
+            dartTxt.innerHTML = '<span style="color:#38bdf8;">15:35 인니 니켈 합작법인 6,271억 출자 공시 외 악재 없음 (클린 🟢)</span>';
+            krxTxt.innerHTML = '<span style="color:#cbd5e1;">바닥권 반등 국면으로 시장경보 요건 전혀 미해당 🟢</span>';
+          } else {
+            riskBox.style.background = 'rgba(16, 185, 129, 0.08)';
+            riskBox.style.borderColor = 'rgba(16, 185, 129, 0.25)';
+            riskBadge.className = 'krx-safe';
+            riskBadge.innerHTML = '🟢 정상 클린';
+            dartTxt.innerHTML = '<span style="color:#4ade80;">장마감 후 대규모 유증/CB/블록딜 악재 없음 (클린 🟢)</span>';
+            krxTxt.innerHTML = '<span style="color:#cbd5e1;">3일 100% / 5일 60% 급등 요건 미해당 안전 🟢 (정상 매매 가능)</span>';
+          }
         }
-      }
 
-      document.getElementById('modalOverlay').style.display = 'flex';
-      setTimeout(function() {
-        renderUniversalModalChart(null, title);
-      }, 50);
+        // 4. Match Stock Code & Update Deep Links
+        var matchedCode = '005930';
+        var sCodes = window.stockCodes || {};
+        for (var name in sCodes) {
+          if (title.indexOf(name) !== -1 || desc.indexOf(name) !== -1) {
+            matchedCode = sCodes[name];
+            break;
+          }
+        }
+        var btnNaver = document.getElementById('btnNaverQuote');
+        var btnToss = document.getElementById('btnTossQuote');
+        if (btnNaver) {
+          btnNaver.innerText = '📊 네이버 증권 1초 실시간 호가창';
+          btnNaver.href = 'https://m.stock.naver.com/item/' + matchedCode;
+        }
+        if (btnToss) {
+          btnToss.innerText = '📱 토스증권 실시간 차트';
+          btnToss.href = 'https://tossinvest.com/stocks/' + matchedCode;
+        }
+
+        // 5. Open Modal
+        document.getElementById('modalOverlay').style.display = 'flex';
+
+        // 6. Render 1~2 Year Candle Chart
+        setTimeout(function() {
+          renderUniversalModalChart(null, title);
+        }, 60);
+      } catch (err) {
+        console.error("Error in master openDetail:", err);
+      }
     }
+    window.openDetail = openDetail;
 
     function closeModal() {
       document.getElementById('modalOverlay').style.display = 'none';
@@ -5789,29 +5831,6 @@
     }
     window.forceLiveRefresh = forceLiveRefresh;
 
-    // Attach deep links in openDetail
-    var origOpenDetail = window.openDetail;
-    window.openDetail = function(title, v1, v2, desc) {
-      if (origOpenDetail) origOpenDetail(title, v1, v2, desc);
-
-      var matchedCode = '005930';
-      for (var name in stockCodes) {
-        if (title.indexOf(name) !== -1 || desc.indexOf(name) !== -1) {
-          matchedCode = stockCodes[name];
-          break;
-        }
-      }
-
-      var btnNaver = document.getElementById('btnNaverQuote');
-      var btnToss = document.getElementById('btnTossQuote');
-      if (btnNaver) {
-        btnNaver.href = 'https://m.stock.naver.com/item/' + matchedCode;
-      }
-      if (btnToss) {
-        btnToss.href = 'https://tossinvest.com/stocks/' + matchedCode;
-      }
-    };
-
     setInterval(updateSessionRadar, 1000);
     updateSessionRadar();
     startAutoRefresh();
@@ -6515,33 +6534,6 @@
       ctx.fillText('+2,649억 (기관)', w - padR - 4, lastInstY + 14);
     }
     window.drawModalSupplyFlowCanvas = drawModalSupplyFlowCanvas;
-
-    // Enhance openDetail for Theme Stocks: Show Candle UI, Hide Supply Flow Canvas
-    var origOpenDetail = window.openDetail;
-    window.openDetail = function(title, v1, v2, desc) {
-      if (origOpenDetail) origOpenDetail(title, v1, v2, desc);
-
-      var candleHead = document.getElementById('modalCandleHeader');
-      var periodBar = document.getElementById('modalPeriodBar');
-      var candleWrap = document.getElementById('modalCandleCanvasWrap');
-      var supplyWrap = document.getElementById('modalSupplyCanvasWrap');
-      var chartMeta = document.getElementById('modalChartMeta');
-
-      if (candleHead) candleHead.style.display = 'flex';
-      if (periodBar) periodBar.style.display = 'flex';
-      if (candleWrap) candleWrap.style.display = 'block';
-      if (supplyWrap) supplyWrap.style.display = 'none';
-      if (chartMeta) chartMeta.style.display = 'flex';
-
-      // Re-show DART risk box for stocks
-      var riskBox = document.getElementById('modalRiskBox');
-      if (riskBox) riskBox.style.display = 'block';
-
-      setTimeout(function() {
-        renderUniversalModalChart(null, title);
-      }, 60);
-    };
-
 
     // ==========================================
     // PIN SECURITY LOCK & AUTO-LOGIN ENGINE (PIN: 9035)
