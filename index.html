@@ -1590,9 +1590,73 @@
       padding: 18px 20px;
     }
 
+
+    /* PIN Keypad Styling */
+    .pin-num-btn {
+      height: 48px;
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pin-num-btn:active {
+      background: #0284c7 !important;
+      transform: scale(0.95);
+    }
 </style>
 </head>
 <body>
+
+  <!-- PIN CODE SECURITY LOCK OVERLAY -->
+  <div id="pinLockOverlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #070c14; z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <div style="background: #0b1120; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 18px; padding: 28px 24px; max-width: 320px; width: 100%; box-shadow: 0 12px 40px rgba(0,0,0,0.85); text-align: center;">
+      <div style="font-size: 34px; margin-bottom: 8px;">🛡️</div>
+      <div style="font-size: 16px; font-weight: 800; color: #f8fafc; margin-bottom: 4px;">태수 님의 실전 주식 관제탑</div>
+      <div style="font-size: 11.5px; color: #94a3b8; margin-bottom: 22px;">보안 잠금 해제를 위해 PIN을 입력하세요</div>
+
+      <!-- PIN Dots Display -->
+      <div id="pinDotsWrap" style="display: flex; justify-content: center; gap: 14px; margin-bottom: 18px;">
+        <span class="pin-dot" id="dot0" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid #38bdf8; background: transparent; display: inline-block; transition: background 0.15s, transform 0.15s;"></span>
+        <span class="pin-dot" id="dot1" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid #38bdf8; background: transparent; display: inline-block; transition: background 0.15s, transform 0.15s;"></span>
+        <span class="pin-dot" id="dot2" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid #38bdf8; background: transparent; display: inline-block; transition: background 0.15s, transform 0.15s;"></span>
+        <span class="pin-dot" id="dot3" style="width: 14px; height: 14px; border-radius: 50%; border: 2px solid #38bdf8; background: transparent; display: inline-block; transition: background 0.15s, transform 0.15s;"></span>
+      </div>
+
+      <!-- Error Msg -->
+      <div id="pinErrMsg" style="font-size: 11px; color: #f43f5e; height: 16px; margin-bottom: 12px; font-weight: 700;"></div>
+
+      <!-- Numeric Keypad -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px;">
+        <button onclick="pressPin('1')" class="pin-num-btn">1</button>
+        <button onclick="pressPin('2')" class="pin-num-btn">2</button>
+        <button onclick="pressPin('3')" class="pin-num-btn">3</button>
+        <button onclick="pressPin('4')" class="pin-num-btn">4</button>
+        <button onclick="pressPin('5')" class="pin-num-btn">5</button>
+        <button onclick="pressPin('6')" class="pin-num-btn">6</button>
+        <button onclick="pressPin('7')" class="pin-num-btn">7</button>
+        <button onclick="pressPin('8')" class="pin-num-btn">8</button>
+        <button onclick="pressPin('9')" class="pin-num-btn">9</button>
+        <button onclick="clearPin()" style="background: transparent; color: #94a3b8; border: none; font-size: 13px; font-weight: 700; cursor: pointer;">C</button>
+        <button onclick="pressPin('0')" class="pin-num-btn">0</button>
+        <button onclick="backspacePin()" style="background: transparent; color: #94a3b8; border: none; font-size: 14px; font-weight: 700; cursor: pointer;">⌫</button>
+      </div>
+
+      <!-- Auto Login Checkbox -->
+      <label style="display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11.5px; color: #cbd5e1; cursor: pointer; user-select: none;">
+        <input type="checkbox" id="chkAutoLogin" checked style="accent-color: #0284c7; width: 15px; height: 15px;">
+        <span>이 기기에서 자동 로그인 유지</span>
+      </label>
+    </div>
+  </div>
+
 
     <!-- REAL-TIME LIVE MARKET SESSION RADAR & COUNTDOWN -->
   <div id="sessionRadarBar" style="background: linear-gradient(90deg, #090d16 0%, #111827 50%, #090d16 100%); border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding: 7px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; z-index: 100;">
@@ -1620,6 +1684,7 @@
       </div>
     </div>
     <div class="header-actions" style="display:flex; gap:6px; flex-wrap:wrap;">
+      <button class="btn-action" style="background:#2a1215; color:#fda4af; border-color:#f43f5e; font-weight:800; cursor:pointer;" onclick="lockDashboard()" title="보안 잠금">🔒 잠금</button>
       <button class="btn-action" style="background:#1e1b4b; color:#c7d2fe; border-color:#6366f1; font-weight:800; cursor:pointer;" onclick="openPwaInstallGuide()">📲 앱 설치 가이드</button>
       <button class="btn-action" style="background:#06281e; color:#34d399; border-color:#10b981; font-weight:800; cursor:pointer;" onclick="openDartModal()">🛡️ DART 레이더</button>
       <button class="btn-action" style="background:#0e2638; color:#38bdf8; border-color:#38bdf8; font-weight:800; cursor:pointer;" onclick="switchView('rnzone', null)">🎯 RN존 탭</button>
@@ -6476,6 +6541,103 @@
         renderUniversalModalChart(null, title);
       }, 60);
     };
+
+
+    // ==========================================
+    // PIN SECURITY LOCK & AUTO-LOGIN ENGINE (PIN: 9035)
+    // ==========================================
+    var enteredPin = '';
+    var CORRECT_PIN = '9035';
+
+    function checkSavedAuth() {
+      try {
+        var saved = localStorage.getItem('stock_dashboard_pin_auth');
+        if (saved === '9035_verified') {
+          var overlay = document.getElementById('pinLockOverlay');
+          if (overlay) overlay.style.display = 'none';
+        }
+      } catch (e) {
+        console.error("Auth check error:", e);
+      }
+    }
+
+    function updatePinDots() {
+      for (var i = 0; i < 4; i++) {
+        var dot = document.getElementById('dot' + i);
+        if (dot) {
+          if (i < enteredPin.length) {
+            dot.style.background = '#38bdf8';
+            dot.style.transform = 'scale(1.2)';
+          } else {
+            dot.style.background = 'transparent';
+            dot.style.transform = 'scale(1)';
+          }
+        }
+      }
+    }
+
+    function pressPin(num) {
+      if (enteredPin.length < 4) {
+        enteredPin += num;
+        updatePinDots();
+        document.getElementById('pinErrMsg').innerText = '';
+
+        if (enteredPin.length === 4) {
+          setTimeout(function() {
+            verifyPin();
+          }, 100);
+        }
+      }
+    }
+    window.pressPin = pressPin;
+
+    function clearPin() {
+      enteredPin = '';
+      updatePinDots();
+      document.getElementById('pinErrMsg').innerText = '';
+    }
+    window.clearPin = clearPin;
+
+    function backspacePin() {
+      if (enteredPin.length > 0) {
+        enteredPin = enteredPin.slice(0, -1);
+        updatePinDots();
+        document.getElementById('pinErrMsg').innerText = '';
+      }
+    }
+    window.backspacePin = backspacePin;
+
+    function verifyPin() {
+      if (enteredPin === CORRECT_PIN) {
+        var chk = document.getElementById('chkAutoLogin');
+        if (chk && chk.checked) {
+          try {
+            localStorage.setItem('stock_dashboard_pin_auth', '9035_verified');
+          } catch (e) {}
+        }
+        var overlay = document.getElementById('pinLockOverlay');
+        if (overlay) overlay.style.display = 'none';
+        enteredPin = '';
+      } else {
+        document.getElementById('pinErrMsg').innerText = '❌ 비밀번호가 올바르지 않습니다.';
+        enteredPin = '';
+        updatePinDots();
+      }
+    }
+
+    function lockDashboard() {
+      try {
+        localStorage.removeItem('stock_dashboard_pin_auth');
+      } catch (e) {}
+      var overlay = document.getElementById('pinLockOverlay');
+      if (overlay) overlay.style.display = 'flex';
+      clearPin();
+    }
+    window.lockDashboard = lockDashboard;
+
+    // Check auth immediately on DOM ready
+    checkSavedAuth();
+    window.addEventListener('DOMContentLoaded', checkSavedAuth);
 
 </script>
 
