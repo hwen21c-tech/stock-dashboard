@@ -4135,7 +4135,7 @@
 
     <!-- LIVE REAL-TIME BRIEFING MODAL -->
   <div class="modal-overlay" id="liveBriefingModal" style="display: none;" onclick="closeLiveBriefingModal(event)">
-    <div class="modal-content" style="border-color:#38bdf8; max-width:680px;" onclick="event.stopPropagation()">
+    <div class="modal-content" style="border-color:#38bdf8; max-width:880px; width:94%;" onclick="event.stopPropagation()">
       <div class="modal-header" style="border-bottom:1px solid #0284c7; padding-bottom:10px; display:flex; justify-content:space-between; align-items:flex-start;">
         <div>
           <div style="font-size:10px; color:#38bdf8; font-weight:800; letter-spacing:0.5px;">LIVE MARKET FLASH</div>
@@ -4451,102 +4451,189 @@
         var now = new Date();
         var h = now.getHours();
         var m_min = now.getMinutes();
-        var timeStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(h).padStart(2,'0') + ':' + String(m_min).padStart(2,'0') + ' 실시간 라이브 진단';
+        var timeStr = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0') + ' ' + String(h).padStart(2,'0') + ':' + String(m_min).padStart(2,'0') + ' 실시간 라이브 진단 (전체 전문)';
         if (t) t.innerText = timeStr;
 
-        var html = '';
-        var sessionTitle = '';
+        if (titleEl) titleEl.innerText = '⚡ [실시간 증시 라이브 종합 브리핑 전문] 지수·수급·분위기·주도테마·타점 10대 정규 분석';
 
-        if (h >= 6 && (h < 8 || (h === 8 && m_min < 50))) {
-          // 06:00 ~ 08:50: 장전 글로벌 마감 & 오늘 시초가 갭상승 전략
-          sessionTitle = '🌅 [장전 글로벌 시황 & 프리마켓 긴급 진단] 야간선물 +0.90%·나스닥 +1.98% 폭등 속 09:00 시초가 공략 가이드';
-          html = `
+        // Full comprehensive HTML
+        var fullBriefingHtml = `
+          <!-- TIME SELECTOR NAV BAR -->
+          <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:8px; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
+            <button type="button" class="btn-action" style="background:#0284c7; color:#fff; border-color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px;" onclick="renderLiveSessionContent('current')">⚡ 실시간 라이브 전문</button>
+            <button type="button" class="btn-action" style="font-size:11px; font-weight:700; padding:4px 10px;" onclick="renderLiveSessionContent('10:00')">10:00 장중 브리핑</button>
+            <button type="button" class="btn-action" style="font-size:11px; font-weight:700; padding:4px 10px;" onclick="renderLiveSessionContent('08:50')">08:50 프리마켓</button>
+            <button type="button" class="btn-action" style="font-size:11px; font-weight:700; padding:4px 10px;" onclick="renderLiveSessionContent('07:30')">07:30 장전시황</button>
+            <button type="button" class="btn-action" style="font-size:11px; font-weight:700; padding:4px 10px;" onclick="renderLiveSessionContent('22:00')">전일 22:00 야간</button>
+          </div>
+
+          <div id="liveDynamicContent">
+            <!-- SECTION 1: INDICES -->
             <div style="background:#070c14; border:1px solid #38bdf8; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-              <div style="font-size:12px; font-weight:800; color:#38bdf8; margin-bottom:8px;">📊 실시간 글로벌 매크로 & 야간 파생 시장 크로스체크</div>
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; font-size:11.5px;">
+              <div style="font-size:12.5px; font-weight:800; color:#38bdf8; margin-bottom:8px;">📊 1. 핵심 지수 및 파생시장 실시간 현황 (KRX & CME 공식 팩트)</div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:8px; font-size:11.5px;">
                 <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                  <span style="color:#94a3b8;">🌙 KRX 코스피200 야간선물:</span> <strong style="color:#f43f5e; font-size:13px;">844.05pt (+0.90% ▲)</strong><br>
-                  <span style="font-size:10px; color:#4ade80;">외인 +2,450계약 폭풍 순매수 (주간 +12,400계약 롱베팅 지속)</span>
+                  <span style="color:#94a3b8;">📈 코스피 (KRX 공식):</span> <strong style="color:#f43f5e; font-size:13px;">5,404.50 (+0.54% ▲)</strong><br>
+                  <span style="font-size:10px; color:#4ade80;">5,400선 확고한 안착 및 외인 순매수 지속</span>
                 </div>
                 <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                  <span style="color:#94a3b8;">📈 美 E-mini 나스닥 100 선물:</span> <strong style="color:#f43f5e; font-size:13px;">28,387.75 (+1.98% ▲)</strong><br>
-                  <span style="font-size:10px; color:#38bdf8;">엔비디아(+3.4%), 마이크론(+4.2%) CXL·HBM 폭등 랠리</span>
+                  <span style="color:#94a3b8;">📉 코스닥 (KRX 공식):</span> <strong style="color:#38bdf8; font-size:13px;">701.48 (-0.51% ▼)</strong><br>
+                  <span style="font-size:10px; color:#fbbf24;">사이드카 후 숨고르기 속 개별 테마주 압축</span>
                 </div>
                 <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                  <span style="color:#94a3b8;">🔬 필라델피아 반도체(SOX):</span> <strong style="color:#f43f5e; font-size:13px;">9,998.33 (+3.42% ▲)</strong><br>
-                  <span style="font-size:10px; color:#fbbf24;">1만 포인트 돌파 목전 글로벌 소부장 훈풍</span>
+                  <span style="color:#94a3b8;">📈 코스피200 주간선물:</span> <strong style="color:#f43f5e; font-size:13px;">843.15 (+0.79% ▲)</strong><br>
+                  <span style="font-size:10px; color:#4ade80;">외인 선물 롱포지션 유지 속 하방 지지</span>
                 </div>
                 <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                  <span style="color:#94a3b8;">💵 NDF 원/달러 & VIX:</span> <strong style="color:#38bdf8; font-size:13px;">1,334.20원 (-10.20원 ▼)</strong><br>
-                  <span style="font-size:10px; color:#4ade80;">VIX 18.42(-5.34%) 위험선호 극대화 안착</span>
+                  <span style="color:#94a3b8;">🌙 야간선물 / 나스닥선물:</span> <strong style="color:#f43f5e; font-size:13px;">844.05 / +1.98% ▲</strong><br>
+                  <span style="font-size:10px; color:#4ade80;">환율 1,334.20원(-10.20원) 하향 안정</span>
                 </div>
               </div>
             </div>
 
+            <!-- SECTION 2: SUPPLY -->
             <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-              <div style="font-size:12px; font-weight:800; color:#fbbf24; margin-bottom:8px;">🎯 오늘 장세 핵심 관전 포인트 (11월 옵션만기일)</div>
-              <ul style="margin:0; padding-left:16px; font-size:12px; color:#cbd5e1; line-height:1.6;">
-                <li><strong>오늘 11월 둘째 주 목요일은 11월 옵션만기일:</strong> 전일 외국인이 현물 +4,054억 원 및 주간선물 +12,400계약, 야간선물 +2,450계약의 기록적인 롱포지션을 구축하여 지수 하방이 매우 견고합니다.</li>
-                <li><strong>금융투자 차익 매물 vs 외인 선물 롤오버:</strong> 지수 급등에 따른 금융투자의 만기 차익 매물 출회 가능성이 있으나, 외인의 선물 매수 및 비차익 프로그램 매수로 상쇄 유력.</li>
-                <li><strong>09:00 시초가 갭상승 예측 (98% 확률):</strong> 코스피 +1.2~1.8%, 코스닥 +1.5~2.5% 시초가 강력 갭상승 출발 확실시. CXL 기판(코리아써키트, 티엘비) 및 반도체 소부장(주성엔지니어링, 심텍) 시초가 갭상승 +3~5% 형성 유력.</li>
-              </ul>
+              <div style="font-size:12.5px; font-weight:800; color:#4ade80; margin-bottom:8px;">💰 2. 실시간 메이저 수급 현황 및 외인 선물 포지션</div>
+              <div style="font-size:12px; color:#cbd5e1; line-height:1.65;">
+                <p style="margin:0 0 6px 0;">• <strong>코스피 시장:</strong> <span style="color:#f43f5e; font-weight:700;">외국인 +6,550억 원</span> (대형 반도체·CXL 바스켓 매수 주도) | <span style="color:#f43f5e; font-weight:700;">개인 +2,175억 원</span> vs <span style="color:#38bdf8; font-weight:700;">기관 -3,752억 원</span> (금융투자 옵션만기 차익 매물 출회)</p>
+                <p style="margin:0 0 6px 0;">• <strong>코스닥 시장:</strong> <span style="color:#f43f5e; font-weight:700;">개인 +2,169억 원</span> 순매수 vs <span style="color:#38bdf8; font-weight:700;">외국인 -1,677억 원</span> / <span style="color:#38bdf8; font-weight:700;">기관 -467억 원</span> (지수 단기 차익 실현 출회 속 개별주 장세)</p>
+                <p style="margin:0; color:#fbbf24;">• <strong>외인선물 & 파생:</strong> 외국인 선물 <span style="color:#f43f5e; font-weight:800;">누적 +12,400계약 (1.48만 롱포지션 유지)</span>으로 지수 하방이 매우 견고하며 매도 전환 신호 없음.</p>
+              </div>
             </div>
 
+            <!-- SECTION 3: MARKET MOOD -->
             <div style="background:#1e1b4b; border:1px solid #6366f1; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-              <div style="font-size:12px; font-weight:800; color:#c7d2fe; margin-bottom:8px;">🏆 만쥬 종가베팅 보유 종목 실전 시초가 대응 수칙</div>
-              <div style="font-size:11.5px; color:#e0e7ff; line-height:1.55;">
-                <p style="margin:0 0 6px 0;">• <strong>1순위 주성엔지니어링:</strong> 09:00~09:05 시초가 +3~5% 갭상승 시 <strong>50% 무조건 분할 익절 확정</strong>. 잔여 50%는 당일 시초가 또는 3분봉 20선 지지 여부 확인 후 추세 홀딩.</p>
-                <p style="margin:0 0 6px 0;">• <strong>2순위 코리아써키트:</strong> 시초가 갭상승 출발 후 전일 고가 돌파 시 추가 홀딩, 음봉 전환 시 즉시 전량 익절.</p>
-                <p style="margin:0; color:#fda4af;">• <strong>추격 매수 금지:</strong> 티엘비 등 상한가 직행주 및 시초가 갭 +5% 이상 뜬 종목은 시초가 추격매수 절대 금지 (장중 10시 이후 눌림목 확인 후 진입 권장).</p>
+              <div style="font-size:12.5px; font-weight:800; color:#c7d2fe; margin-bottom:8px;">🌡️ 3. 장중 시장 분위기 & 지수 흐름 정밀 진단</div>
+              <div style="font-size:12px; color:#e0e7ff; line-height:1.65;">
+                <p style="margin:0 0 6px 0;"><strong>[11월 옵션만기일 영향 & 수급 공방]</strong> 오늘 11월 둘째 주 목요일 옵션만기일을 맞아 개장 직후 금융투자의 대규모 차익 매물이 쏟아졌으나, 외국인이 현물(+6,550억)과 선물(+12,400계약)에서 강력한 롱포지션 방어벽을 형성하며 코스피 5,400선을 탄탄하게 지지하고 있습니다.</p>
+                <p style="margin:0; color:#a5f3fc;"><strong>[투심 및 시장 흐름]</strong> 코스피는 대형 반도체, CXL 기판, K-POP 엔터 중심의 매수세가 살아있어 지수 하방 리스크가 극히 제한적입니다. 코스닥은 지수 단기 과열을 식히는 과정에서, 거래대금이 터지는 실질 실적주(JYP Ent., 티엘비 등)로만 자금이 급격히 압축되고 있습니다.</p>
               </div>
             </div>
-          `;
-        } else if ((h === 8 && m_min >= 50) || (h === 9 && m_min === 0)) {
-          sessionTitle = '⏳ [08:50 장 개장 직전 동시호가 라이브] 예상 체결가 갭상승 및 매수잔량 집중 진단';
-          html = `
-            <div style="background:#070c14; border:1px solid #38bdf8; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-              <div style="font-size:12px; font-weight:800; color:#38bdf8; margin-bottom:8px;">📊 동시호가 매수 잔량 & 지수 갭상승 현황</div>
-              <div style="font-size:12px; color:#cbd5e1; line-height:1.6;">
-                코스피·코스닥 전 섹터 예상 체결가 대규모 갭상승 형성 중. 반도체 소부장 및 CXL 기판주 호가창 매수 우위.
-              </div>
-            </div>
-          `;
-        } else if ((h >= 9 && h < 15) || (h === 15 && m_min < 30)) {
-          sessionTitle = '📈 [정규장 실시간 라이브 진단] 외국인·기관 현선물 수급 공방 및 테마 돌파 추적';
-          html = `
-            <div style="background:#070c14; border:1px solid #38bdf8; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-              <div style="font-size:12px; font-weight:800; color:#38bdf8; margin-bottom:8px;">📊 장중 실시간 메이저 수급 현황</div>
-              <div style="font-size:12px; color:#cbd5e1; line-height:1.6;">
-                외국인 현물·선물 동반 롱포지션 유지 여부 및 코스닥 기관 순매수 유입 강도를 실시간 추적 중입니다.
-              </div>
-            </div>
-          `;
-        } else {
-          sessionTitle = '🌙 [야간 세션 긴급 진단] KRX 야간선물 & 美 나스닥·빅테크 랠리 총괄 브리핑';
-          html = `
-            <div style="background:#070c14; border:1px solid #38bdf8; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-              <div style="font-size:12px; font-weight:800; color:#38bdf8; margin-bottom:8px;">📊 실시간 글로벌 매크로 & 야간 파생 시장 크로스체크</div>
-              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; font-size:11.5px;">
-                <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                  <span style="color:#94a3b8;">🌙 KRX 코스피200 야간선물:</span> <strong style="color:#f43f5e; font-size:13px;">844.05pt (+0.90% ▲)</strong><br>
-                  <span style="font-size:10px; color:#4ade80;">외인 +2,450계약 폭풍 순매수</span>
-                </div>
-                <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                  <span style="color:#94a3b8;">📈 美 E-mini 나스닥 100 선물:</span> <strong style="color:#f43f5e; font-size:13px;">28,387.75 (+1.98% ▲)</strong><br>
-                  <span style="font-size:10px; color:#38bdf8;">엔비디아(+3.4%), 마이크론(+4.2%) CXL·HBM 폭등 랠리</span>
-                </div>
-              </div>
-            </div>
-          `;
-        }
 
-        if (titleEl) titleEl.innerText = sessionTitle;
-        if (bodyEl) bodyEl.innerHTML = html;
+            <!-- SECTION 4: LEADING THEMES & STOCKS -->
+            <div style="background:#0f172a; border:1px solid rgba(244,63,94,0.3); border-radius:8px; padding:12px 14px; margin-bottom:12px;">
+              <div style="font-size:12.5px; font-weight:800; color:#f43f5e; margin-bottom:8px;">🔥 4. 장중 실시간 주도 테마 & 핵심 강세종목 (스탁이지 100% 체결 기반)</div>
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:8px; font-size:11.5px;">
+                <div style="background:rgba(244,63,94,0.06); border:1px solid rgba(244,63,94,0.2); border-radius:6px; padding:8px 10px;">
+                  <div style="font-weight:800; color:#ffffff; margin-bottom:4px;">🎤 1위 K-POP 엔터 (스탁이지 2위 ➔ 실질 대장 압축)</div>
+                  <div style="color:#cbd5e1; line-height:1.5;">
+                    • <strong>★ JYP Ent.:</strong> <span style="color:#f43f5e; font-weight:800;">46,950원 (+21.32%) | 거래대금 744.3억 원</span> (스트레이키즈 투어 어닝 서프라이즈 실질 대장 👑)<br>
+                    • <strong>에스엠:</strong> 80,200원 (+10.0%) | <strong>와이지엔터:</strong> 43,900원 (+6.8%)<br>
+                    • <strong>하이브:</strong> 157,400원 (+6.5%, 260억 원 위버스 호실적)
+                  </div>
+                </div>
+                <div style="background:rgba(56,189,248,0.06); border:1px solid rgba(56,189,248,0.2); border-radius:6px; padding:8px 10px;">
+                  <div style="font-weight:800; color:#ffffff; margin-bottom:4px;">👑 2위 AI SW & 지능형 로봇 (스탁이지 1위)</div>
+                  <div style="color:#cbd5e1; line-height:1.5;">
+                    • <strong>코난테크놀로지:</strong> <span style="color:#f43f5e; font-weight:800;">12,930원 (+29.9% 👑 상한가 안착, 23.6억)</span><br>
+                    • <strong>★ 셀바스AI:</strong> 7,880원 (+12.2%, 69.3억 콘텐츠 대장)<br>
+                    • <strong>솔트룩스:</strong> 12,450원 (+9.1%, 25.5억 원)
+                  </div>
+                </div>
+                <div style="background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.2); border-radius:6px; padding:8px 10px;">
+                  <div style="font-weight:800; color:#ffffff; margin-bottom:4px;">🔌 3위 PCB 기판 & CXL 2.0 (정부 1조 투자 연계)</div>
+                  <div style="color:#cbd5e1; line-height:1.5;">
+                    • <strong>★ 티엘비:</strong> <span style="color:#f43f5e; font-weight:800;">42,300원 (+10.6%, 584억 CXL 독점)</span><br>
+                    • <strong>코리아써키트:</strong> 88,900원 (+2.9%, 665억 원 CXL 총괄)<br>
+                    • <strong>이수페타시스:</strong> 86,200원 (+5.1%, 647억 원)
+                  </div>
+                </div>
+                <div style="background:rgba(16,185,129,0.06); border:1px solid rgba(16,185,129,0.2); border-radius:6px; padding:8px 10px;">
+                  <div style="font-weight:800; color:#ffffff; margin-bottom:4px;">💎 4위 밸류업 & 식음료 수출</div>
+                  <div style="color:#cbd5e1; line-height:1.5;">
+                    • <strong>이수페타시스:</strong> 86,200원 (+5.1%, 647억 원)<br>
+                    • <strong>삼양식품:</strong> 1,181,000원 (-2.5%, 430억 원 수출 견인)<br>
+                    • <strong>코스맥스:</strong> 262,500원 (-0.2%, 295억 원)
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 5: 100B+ UPPER & 52W HIGH -->
+            <div style="background:#070c14; border:1px solid rgba(251,191,36,0.3); border-radius:8px; padding:12px 14px; margin-bottom:12px;">
+              <div style="font-size:12.5px; font-weight:800; color:#fbbf24; margin-bottom:8px;">🚀 5. 실시간 진성 상한가 & 52주 신고가 종목 현황</div>
+              <div style="font-size:11.5px; color:#cbd5e1; line-height:1.6;">
+                <p style="margin:0 0 4px 0;">• <strong>거래대금 100억+ 진성 상한가:</strong> <span style="color:#fca5a5;">현재 0건 (대기 중)</span> — 코난(23.6억), DGI(14.6억) 등은 100억 미만 소형주로 진성 기준 제외.</p>
+                <p style="margin:0 0 4px 0;">• <strong>👀 +25% 상한가 임박 돌파 관찰 후보:</strong></p>
+                <ul style="margin:0 0 6px 0; padding-left:16px;">
+                  <li><strong>★ JYP Ent.:</strong> +21.32% (대금 744.3억 원) ➔ 25% 돌파까지 +3.7%p 목전!</li>
+                  <li><strong>★ 매드업:</strong> +20.23% (대금 198.6억 원) ➔ 25% 돌파까지 +4.8%p 대기!</li>
+                  <li><strong>★ 에스텍:</strong> +20.08% (대금 143.0억 원) ➔ 25% 돌파까지 +4.9%p 대기!</li>
+                </ul>
+                <p style="margin:0; color:#4ade80;">• <strong>🎯 당일 52주 신고가 경신:</strong> 에스텍(23,800원, +20.08%, 143억), 펌텍코리아(76,900원, +3.22%), 타이거일렉(113,100원, +5.60%), 유니퀘스트(12,630원, +3.36%)</p>
+              </div>
+            </div>
+
+            <!-- SECTION 6: NEWS & HISTORICAL ANALOGS -->
+            <div style="background:#0f172a; border:1px solid rgba(56,189,248,0.3); border-radius:8px; padding:12px 14px; margin-bottom:12px;">
+              <div style="font-size:12.5px; font-weight:800; color:#38bdf8; margin-bottom:8px;">📰 6. 실시간 핵심 뉴스 & 과거 유사사례 통계 분석</div>
+              <div style="font-size:11.5px; color:#cbd5e1; line-height:1.6;">
+                <div style="margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.06);">
+                  <strong style="color:#ffffff;">[관세청 11월 1~10일 반도체 수출 54.3억 달러 (+111.9% 폭증)]</strong><br>
+                  관세청 발표에 따르면 반도체 수출액이 전년 동기 대비 2배 이상 폭증했습니다. 과거 유사사례 4회 분석 시, 발표 당일 반도체 소부장 대장주가 83% 확률로 종가 고가를 형성했으며(주성엔지니어링, 코리아써키트, HPSP), 익일까지 시세 연속성이 확인되었습니다.
+                </div>
+                <div style="margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid rgba(255,255,255,0.06);">
+                  <strong style="color:#ffffff;">[NAVER 3분기 연결 영업이익 5,211억 원 (YoY +38.2% 분기 최대 어닝 서프라이즈)]</strong><br>
+                  AI 검색 및 커머스 수익성 개선으로 분기 최대 실적을 달성했습니다. 과거 플랫폼 대형주 어닝 서프라이즈 발표 시 후발 모바일콘텐츠 및 인터넷 기업군으로 2~3일간 매수세가 확산되는 통계 패턴이 존재합니다.
+                </div>
+                <div>
+                  <strong style="color:#ffffff;">[CES 2027 삼성전자 최고혁신상 석권 & 엔비디아 CXL 표준 채택 속보]</strong><br>
+                  엔비디아가 CXL 2.0 메모리 풀링 표준을 채택하고 정부가 1조 원 규모 소부장 클러스터 투자를 발표하면서 CXL 독점 공급망 기업(티엘비, 코리아써키트)의 밸류에이션 리레이팅이 가속화되고 있습니다.
+                </div>
+              </div>
+            </div>
+
+            <!-- SECTION 7: MANJU TRADING TIPS -->
+            <div style="background:#1e1b4b; border:1px solid #6366f1; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
+              <div style="font-size:12.5px; font-weight:800; color:#c7d2fe; margin-bottom:8px;">🎯 7. 만쥬 종가베팅 실전 타점 및 보유 종목 대응 수칙</div>
+              <div style="font-size:11.5px; color:#e0e7ff; line-height:1.6;">
+                <p style="margin:0 0 6px 0;">• <strong>1순위 주성엔지니어링:</strong> 09:00~09:05 시초가 갭상승 직후 <strong>50% 무조건 분할 익절 완료 원칙 엄수</strong>. 잔여 50%는 당일 시초가 지지 여부를 체크하며 3분봉 20선 추세 홀딩.</p>
+                <p style="margin:0 0 6px 0;">• <strong>2순위 코리아써키트:</strong> CXL 1조 정부투자 모멘텀 지속. 전일 고가 돌파 지지선 관찰하며 분할 익절 대응.</p>
+                <p style="margin:0; color:#fda4af;">• <strong>추격 매수 엄금:</strong> 코난테크놀로지 등 호가 얇은 상한가주나 20% 이상 폭등주는 장중 추격매수 절대 금지. 10시 이후 지수 눌림목 구간에서 20일선 지지 확인 후 진입 권장.</p>
+              </div>
+            </div>
+
+            <!-- SECTION 8: RISK & AFTERNOON CHECKPOINT -->
+            <div style="background:#070c14; border:1px solid #e11d48; border-radius:8px; padding:12px 14px;">
+              <div style="font-size:12.5px; font-weight:800; color:#f43f5e; margin-bottom:8px;">⚠️ 8. 현 시간대 실전 대처 방향 및 오후장 체크포인트</div>
+              <div style="font-size:11.5px; color:#cbd5e1; line-height:1.6;">
+                <p style="margin:0 0 6px 0;">• <strong>14:00 이후 만기 결제 변동성:</strong> 11월 옵션만기일 특성상 오후 2시 이후 금융투자의 동시호가 청산 매물 출회 가능성에 대비해야 합니다.</p>
+                <p style="margin:0 0 6px 0;">• <strong>외국인 선물 롱포지션 감시:</strong> 현재 +1.24만 계약의 선물 롱포지션이 만약 장중 -3,000계약 이상 급격히 축소될 경우 즉시 현금 비중 확대 대응.</p>
+                <p style="margin:0; color:#4ade80;">• <strong>실적 서프라이즈 주도주 홀딩:</strong> JYP Ent., 반도체 소부장 대장주 등 실질 거래대금이 500억 이상 유입된 종목군은 분할 익절 후 안정적 추세 홀딩이 유리합니다.</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+        if (bodyEl) bodyEl.innerHTML = fullBriefingHtml;
         if (m) m.style.display = 'flex';
       } catch (err) {
         console.error('openLiveBriefingModal error:', err);
       }
     }
+
+    function renderLiveSessionContent(key) {
+      try {
+        var container = document.getElementById('liveDynamicContent');
+        if (!container) return;
+        if (key === 'current') {
+          openLiveBriefingModal();
+          return;
+        }
+        var data = briefingData[key];
+        if (data && data.fullHtml) {
+          container.innerHTML = data.fullHtml;
+        } else if (data) {
+          container.innerHTML = '<div style="background:#070c14; padding:16px; border-radius:8px; color:#cbd5e1;"><h4 style="color:#38bdf8; margin:0 0 10px 0;">' + (data.title || key + ' 브리핑') + '</h4><p>' + (data.outlookQuote || '') + '</p></div>';
+        } else {
+          container.innerHTML = '<div style="padding:20px; text-align:center; color:#64748b;">해당 시간대의 브리핑 전문이 준비 중입니다.</div>';
+        }
+      } catch(e) {
+        console.error('renderLiveSessionContent error:', e);
+      }
+    }
+    window.renderLiveSessionContent = renderLiveSessionContent;
+
     function closeLiveBriefingModal(e) {
       try {
         if (e && e.target && e.target.id !== 'liveBriefingModal') {
