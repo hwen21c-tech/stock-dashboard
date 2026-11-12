@@ -59,12 +59,71 @@ def main():
             html
         )
 
-    # 3. Fetch Top 6 Themes
-    themes_res = fetch_json('https://m.stock.naver.com/api/stocks/theme?page=1&pageSize=6')
-    if themes_res and 'groups' in themes_res and len(themes_res['groups']) >= 6:
-        print("Fetched top 6 themes successfully from Naver Finance.")
-        # We can dynamically refresh theme blocks if needed
-        # Or preserve established focus themes while updating real prices
+    # 3. Fetch Real-time Polling Quotes for all 30 Theme & Key Stocks
+    STOCK_CODES = {
+        '코난테크놀로지': '402030', '셀바스AI': '108860', '솔트룩스': '304100', '한글과컴퓨터': '030520', '한컴': '030520',
+        'JYP Ent.': '035900', '와이지엔터': '122870', '에스엠': '041510', '하이브': '352820',
+        '이수페타시스': '007660', '삼양식품': '003230', '코스맥스': '192820', '메리츠금융': '138040',
+        '티엘비': '356860', '펨트론': '143240', '코리아써키트': '007810',
+        '컴투스': '078340', 'NHN': '181710',
+        '삼현': '437730', '레인보우로보': '277810',
+        '주성엔지니어링': '036930', '피에스케이홀딩스': '031980', '하나마이크론': '067310',
+        'HLB': '028300', '리노공업': '058470', '삼성전자': '005930', 'SK하이닉스': '000660',
+        '삼성전기': '009150', 'NAVER': '035420', '두산에너빌리티': '034020', '심텍': '222800'
+    }
+    codes_list = list(set(STOCK_CODES.values()))
+    poll_url = f"https://polling.finance.naver.com/api/realtime/domestic/stock/{','.join(codes_list)}"
+    poll_res = fetch_json(poll_url)
+    realtime_data = {}
+    if poll_res and 'datas' in poll_res:
+        for d in poll_res['datas']:
+            c = d.get('itemCode')
+            if c:
+                realtime_data[c] = {
+                    'name': d.get('stockName'),
+                    'price': d.get('closePrice'),
+                    'ratio': float(d.get('fluctuationsRatio', 0.0)),
+                    'open': d.get('openPrice'),
+                    'high': d.get('highPrice'),
+                    'low': d.get('lowPrice'),
+                    'val': d.get('accumulatedTradingValue'),
+                    'vol': d.get('accumulatedTradingVolume')
+                }
+        print(f"Updated live quotes for {len(realtime_data)} theme stocks from Naver Polling API.")
+
+    def update_tile_content(tile_html, name, code):
+        if code not in realtime_data:
+            return tile_html
+        d = realtime_data[code]
+        p = d['price']
+        r = d['ratio']
+        r_str = f"{r:+.1f}%" if r != 0 else "0.0%"
+        o = d['open']
+        h = d['high']
+        l = d['low']
+        v = d['val']
+        color = "#f43f5e" if r > 0 else ("#38bdf8" if r < 0 else "#94a3b8")
+        tile_html = re.sub(r"openDetail\('([^']*)',\s*'[^']*',\s*'[^']*'", f"openDetail('\\1', '{r_str}', '대금 {v} | 현재가 {p}원'", tile_html)
+        tile_html = re.sub(r'<span class="st-change"[^>]*>[^<]+</span>', f'<span class="st-change" style="color:{color}; font-weight:800;">{r_str}</span>', tile_html)
+        tile_html = re.sub(r'<div class="st-ohlc">[^<]*<strong>[^<]*</strong>[^<]*</div>', f'<div class="st-ohlc">종 <strong>{p}</strong> | 시 {o} 고 {h} 저 {l}</div>', tile_html)
+        if v:
+            tile_html = re.sub(r'<span class="st-vol">[^<]+</span>', f'<span class="st-vol">{v}</span>', tile_html)
+        if r >= 29.5:
+            tile_html = re.sub(r'<span class="st-role">[^<]+</span>', '<span class="st-role" style="background:#dc2626; color:#fff;">👑 상한가</span>', tile_html)
+        return tile_html
+
+    def tile_replacer(m):
+        tile_html = m.group(0)
+        for name, code in STOCK_CODES.items():
+            if f'>{name}<' in tile_html or f'>★ {name}<' in tile_html or f'>👑 ★ {name}<' in tile_html:
+                return update_tile_content(tile_html, name, code)
+        return tile_html
+
+    html = re.sub(r'<div class="stock-tile[^"]*"[^>]*>[\s\S]*?</div>\s*</div>', tile_replacer, html)
+
+    c_d = realtime_data.get('402030', {})
+    if c_d:
+        html = re.sub(r'(👑 AI SW \(스탁이지 1위\)[\s\S]*?<span class="theme-tag [^"]*">)[^<]+(</span>)', f"\\g<1>+{c_d['ratio']:.1f}% 상한가 🚀\\2", html)
 
     # 4. Fetch Top News from Naver Finance
     news_res = fetch_json('https://m.stock.naver.com/api/news/list?category=mainnews&pageSize=4')
