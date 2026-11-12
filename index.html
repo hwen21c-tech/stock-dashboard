@@ -4470,13 +4470,13 @@
 
         // Full comprehensive HTML
         var fullBriefingHtml = `
-          <!-- TIME SELECTOR NAV BAR -->
-          <div style="display:flex; gap:6px; overflow-x:auto; padding-bottom:8px; margin-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.08);">
-            <button type="button" class="btn-action" style="background:#0284c7; color:#fff; border-color:#38bdf8; font-size:11px; font-weight:800; padding:4px 10px;" onclick="renderLiveSessionContent('current')">⚡ 실시간 라이브 전문</button>
-            <button type="button" class="btn-action" style="font-size:11px; font-weight:700; padding:4px 10px;" onclick="renderLiveSessionContent('10:00')">10:00 장중 브리핑</button>
-            <button type="button" class="btn-action" style="font-size:11px; font-weight:700; padding:4px 10px;" onclick="renderLiveSessionContent('08:50')">08:50 프리마켓</button>
-            <button type="button" class="btn-action" style="font-size:11px; font-weight:700; padding:4px 10px;" onclick="renderLiveSessionContent('07:30')">07:30 장전시황</button>
-            <button type="button" class="btn-action" style="font-size:11px; font-weight:700; padding:4px 10px;" onclick="renderLiveSessionContent('22:00')">전일 22:00 야간</button>
+          <!-- CLEAN LIVE FOCUSED HEADER -->
+          <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(2,132,199,0.12); border:1px solid rgba(56,189,248,0.3); border-radius:6px; padding:7px 12px; margin-bottom:12px;">
+            <div style="font-size:11.5px; color:#38bdf8; font-weight:800; display:flex; align-items:center; gap:6px;">
+              <span>⚡ 실시간 라이브 단독 전문</span>
+              <span style="font-size:10.5px; color:#cbd5e1; font-weight:400;">(지금 이 순간의 시장 팩트 10대 정규 분석 집약)</span>
+            </div>
+            <button type="button" class="btn-action" style="font-size:10.5px; padding:3px 8px; background:rgba(56,189,248,0.15); color:#7dd3fc; border-color:rgba(56,189,248,0.4);" onclick="closeLiveBriefingModal(null); switchView('market', null);">📊 지난 시간대별 브리핑 보러가기 ➔</button>
           </div>
 
           <div id="liveDynamicContent">
@@ -4624,27 +4624,7 @@
       }
     }
 
-    function renderLiveSessionContent(key) {
-      try {
-        var container = document.getElementById('liveDynamicContent');
-        if (!container) return;
-        if (key === 'current') {
-          openLiveBriefingModal();
-          return;
-        }
-        var data = briefingData[key];
-        if (data && data.fullHtml) {
-          container.innerHTML = data.fullHtml;
-        } else if (data) {
-          container.innerHTML = '<div style="background:#070c14; padding:16px; border-radius:8px; color:#cbd5e1;"><h4 style="color:#38bdf8; margin:0 0 10px 0;">' + (data.title || key + ' 브리핑') + '</h4><p>' + (data.outlookQuote || '') + '</p></div>';
-        } else {
-          container.innerHTML = '<div style="padding:20px; text-align:center; color:#64748b;">해당 시간대의 브리핑 전문이 준비 중입니다.</div>';
-        }
-      } catch(e) {
-        console.error('renderLiveSessionContent error:', e);
-      }
-    }
-    window.renderLiveSessionContent = renderLiveSessionContent;
+
 
     function closeLiveBriefingModal(e) {
       try {
