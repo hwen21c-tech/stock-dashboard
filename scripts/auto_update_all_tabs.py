@@ -14,8 +14,8 @@ def fetch_fchart(code):
     url = f'https://fchart.stock.naver.com/sise.nhn?symbol={code}&timeframe=day&count=250&requestType=0'
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
     try:
-        html = urllib.request.urlopen(req, timeout=8).read().decode('euc-kr', errors='replace')
-        root = ET.fromstring(html)
+        html_text = urllib.request.urlopen(req, timeout=8).read().decode('euc-kr', errors='replace')
+        root = ET.fromstring(html_text)
         items = root.findall('.//item')
         candles = []
         for it in items:
@@ -28,7 +28,7 @@ def fetch_fchart(code):
         return None
 
 def main():
-    now_kst = datetime.datetime.utcnow() + datetime.timedelta(hours=9)
+    now_kst = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)
     time_str = now_kst.strftime("%H:%M:%S")
     date_str = now_kst.strftime("%Y-%m-%d")
     print(f"[{time_str}] Starting auto_update_all_tabs...")
@@ -38,35 +38,61 @@ def main():
         index_path = "deploy_repo/index.html"
 
     with open(index_path, "r", encoding="utf-8") as f:
-        html = f.read()
+        html_content = f.read()
 
     # 1. Update Header Sync Timestamp
-    html = re.sub(
+    html_content = re.sub(
         r'<span id="lastSyncTxt"[^>]*>.*?</span>',
-        f'<span id="lastSyncTxt" style="color: #38bdf8; font-size: 10.5px; font-weight: 800;">최근 갱신: {time_str} (전체탭 자동 동기화 🟢)</span>',
-        html
+        f'<span id="lastSyncTxt" style="color: #38bdf8; font-size: 10.5px; font-weight: 800;">최근 갱신: {time_str} (통합 거래대금 100% 동기화 🟢)</span>',
+        html_content
     )
 
-    # 2. Update Live Indices (KOSPI & KOSDAQ)
-    kospi_data = fetch_json('https://m.stock.naver.com/api/index/KOSPI/price?pageSize=1')
-    if kospi_data and len(kospi_data) > 0:
-        k_close = kospi_data[0].get('closePrice', '')
-        k_ratio = kospi_data[0].get('fluctuationsRatio', '')
-        sign = "+" if not k_ratio.startswith("-") else ""
-        html = re.sub(
-            r'(<div class="ind-name">코스피 📈 KRX 공식</div>\s*<div class="ind-val">)[\d,.]+(\s*\([^)]+\)</div>)',
-            rf'\g<1>{k_close}\g<2>',
-            html
+    # 2. Update Live Indices (KOSPI, KOSDAQ, Futures) & Investor Supply
+    idx_res = fetch_json('https://polling.finance.naver.com/api/realtime/domestic/index/KOSPI,KOSDAQ')
+    if idx_res and 'datas' in idx_res:
+        for it in idx_res['datas']:
+            code = it.get('itemCode')
+            close_p = it.get('closePrice', '')
+            ratio = it.get('fluctuationsRatio', '')
+            sign = "+" if not str(ratio).startswith("-") else ""
+            if code == 'KOSPI':
+                html_content = re.sub(
+                    r'(<span class="label">코스피 📈[\s\S]*?</span>\s*<span class="val [^"]*">)[^<]+(</span>)',
+                    rf'\g<1>{close_p} ({sign}{ratio}%)\g<2>',
+                    html_content
+                )
+            elif code == 'KOSDAQ':
+                html_content = re.sub(
+                    r'(<span class="label">코스닥 📈[\s\S]*?</span>\s*<span class="val [^"]*">)[^<]+(</span>)',
+                    rf'\g<1>{close_p} ({sign}{ratio}%)\g<2>',
+                    html_content
+                )
+
+    inv_k = fetch_json('https://m.stock.naver.com/api/index/KOSPI/trend')
+    if inv_k:
+        f_val = inv_k.get('foreignValue', '') + '억'
+        i_val = inv_k.get('institutionalValue', '') + '억'
+        f_col = "#f43f5e" if f_val.startswith('+') else "#38bdf8"
+        i_col = "#f43f5e" if i_val.startswith('+') else "#38bdf8"
+        html_content = re.sub(
+            r'(<span class="title"[^>]*>코스피 외인</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
+            rf'\g<1>{f_val}\g<2>',
+            html_content
+        )
+        html_content = re.sub(
+            r'(<span class="title"[^>]*>코스피 기관</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
+            rf'\g<1>{i_val}\g<2>',
+            html_content
         )
 
-    # 3. Fetch Real-time Polling Quotes for all 30 Theme & Key Stocks
+    # 3. Fetch Real-time Polling Quotes for all 30 Theme & Key Stocks with INTEGRATED TRADING VALUE
     STOCK_CODES = {
         '코난테크놀로지': '402030', '셀바스AI': '108860', '솔트룩스': '304100', '한글과컴퓨터': '030520', '한컴': '030520',
-        'JYP Ent.': '035900', '와이지엔터': '122870', '에스엠': '041510', '하이브': '352820',
-        '이수페타시스': '007660', '삼양식품': '003230', '코스맥스': '192820', '메리츠금융': '138040',
-        '티엘비': '356860', '펨트론': '143240', '코리아써키트': '007810',
+        'JYP Ent.': '035900', '와이지엔터': '122870', '와이지엔터테인먼트': '122870', '에스엠': '041510', '하이브': '352820',
+        '이수페타시스': '007660', '삼양식품': '003230', '코스맥스': '192820', '메리츠금융': '138040', '메리츠금융지주': '138040',
+        '티엘비': '356860', '펨트론': '168360', '코리아써키트': '007810',
         '컴투스': '078340', 'NHN': '181710',
-        '삼현': '437730', '레인보우로보': '277810',
+        '삼현': '437730', '레인보우로보': '277810', '레인보우로보틱스': '277810',
         '주성엔지니어링': '036930', '피에스케이홀딩스': '031980', '하나마이크론': '067310',
         'HLB': '028300', '리노공업': '058470', '삼성전자': '005930', 'SK하이닉스': '000660',
         '삼성전기': '009150', 'NAVER': '035420', '두산에너빌리티': '034020', '심텍': '222800'
@@ -79,17 +105,23 @@ def main():
         for d in poll_res['datas']:
             c = d.get('itemCode')
             if c:
+                int_info = d.get('integratedPriceInfo') or {}
+                val = int_info.get('accumulatedTradingValue') or d.get('accumulatedTradingValue')
+                vol = int_info.get('accumulatedTradingVolume') or d.get('accumulatedTradingVolume')
+                o = int_info.get('openPrice') or d.get('openPrice')
+                h = int_info.get('highPrice') or d.get('highPrice')
+                l = int_info.get('lowPrice') or d.get('lowPrice')
                 realtime_data[c] = {
                     'name': d.get('stockName'),
                     'price': d.get('closePrice'),
                     'ratio': float(d.get('fluctuationsRatio', 0.0)),
-                    'open': d.get('openPrice'),
-                    'high': d.get('highPrice'),
-                    'low': d.get('lowPrice'),
-                    'val': d.get('accumulatedTradingValue'),
-                    'vol': d.get('accumulatedTradingVolume')
+                    'open': o,
+                    'high': h,
+                    'low': l,
+                    'val': val,
+                    'vol': vol
                 }
-        print(f"Updated live quotes for {len(realtime_data)} theme stocks from Naver Polling API.")
+        print(f"Updated integrated live quotes for {len(realtime_data)} theme stocks from Naver Polling API.")
 
     def update_tile_content(tile_html, name, code):
         if code not in realtime_data:
@@ -119,11 +151,11 @@ def main():
                 return update_tile_content(tile_html, name, code)
         return tile_html
 
-    html = re.sub(r'<div class="stock-tile[^"]*"[^>]*>[\s\S]*?</div>\s*</div>', tile_replacer, html)
+    html_content = re.sub(r'<div class="stock-tile[^"]*"[^>]*>[\s\S]*?</div>\s*</div>', tile_replacer, html_content)
 
     c_d = realtime_data.get('402030', {})
     if c_d:
-        html = re.sub(r'(👑 AI SW \(스탁이지 1위\)[\s\S]*?<span class="theme-tag [^"]*">)[^<]+(</span>)', f"\\g<1>+{c_d['ratio']:.1f}% 상한가 🚀\\2", html)
+        html_content = re.sub(r'(👑 AI SW \(스탁이지 1위\)[\s\S]*?<span class="theme-tag [^"]*">)[^<]+(</span>)', f"\\g<1>+{c_d['ratio']:.1f}% 상한가 🚀\\2", html_content)
 
     # 4. Fetch Top News from Naver Finance
     news_res = fetch_json('https://m.stock.naver.com/api/news/list?category=mainnews&pageSize=4')
@@ -136,8 +168,7 @@ def main():
             news_time = f"{t_hour}:{t_min}"
             news_tit = n.get('tit', '').replace('"', '&quot;').replace("'", "&#39;")
             
-            # Check if this news is already in HTML
-            if news_tit[:20] in html:
+            if news_tit[:20] in html_content:
                 continue
 
             oid = n.get('oid', '')
@@ -163,11 +194,11 @@ def main():
 
         if new_cards_html:
             marker = '<div class="panel-box purple">'
-            sub_idx = html.find(marker)
+            sub_idx = html_content.find(marker)
             if sub_idx != -1:
-                insert_idx = html.find('<!--', sub_idx)
+                insert_idx = html_content.find('<!--', sub_idx)
                 if insert_idx != -1:
-                    html = html[:insert_idx] + new_cards_html + html[insert_idx:]
+                    html_content = html_content[:insert_idx] + new_cards_html + html_content[insert_idx:]
                     print(f"Injected {len(news_res)} fresh real-time news cards into #tabNews.")
 
     # 6. Real-time Bottom Grid (52W High & 100억+ Upper Limit / +25% Near Upper)
@@ -275,29 +306,29 @@ def main():
             up_html += f'''        <div style="font-size: 10px; color: #64748b; margin-top: 6px;">\n          ※ <strong>상한가 임박 기준은 '상승률 +25% 이상 & 거래대금 100억 이상'</strong>에만 부여됩니다.<br>\n          ※ 코난테크놀로지, DGI 등은 <strong>거래대금 100억 미만 소형주({small_upper_names})</strong>이므로 진성 기준에서 제외되었습니다. 장중 100억 돌파 시 즉시 자동 편입됩니다.\n        </div>\n      </div>\n'''
 
             new_grid = f'''    <!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->\n    <div class="main-bottom-grid">\n{h52_html}\n{up_html}\n    </div>'''
-            b_start = html.find('<!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->')
-            b_end = html.find('<!-- TAB 2: SUPPLY STOCKS', b_start)
+            b_start = html_content.find('<!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->')
+            b_end = html_content.find('<!-- TAB 2: SUPPLY STOCKS', b_start)
             if b_start != -1 and b_end != -1:
-                html = html[:b_start] + new_grid + '\n  </div>\n\n  ' + html[b_end:]
+                html_content = html_content[:b_start] + new_grid + '\n  </div>\n\n  ' + html_content[b_end:]
                 print("auto_update_all_tabs: updated 52W High & 100억+ Upper Limit / +25% Near Upper successfully!")
     except Exception as e:
         print(f"[WARN] Failed updating bottom grid: {e}")
 
     # 5. Check Integrity
-    open_divs = len(re.findall(r'<div\b', html, re.IGNORECASE))
-    close_divs = len(re.findall(r'</div\b', html, re.IGNORECASE))
+    open_divs = len(re.findall(r'<div\b', html_content, re.IGNORECASE))
+    close_divs = len(re.findall(r'</div\b', html_content, re.IGNORECASE))
     assert open_divs == close_divs, f"DIV mismatch: {open_divs} != {close_divs}"
 
     # Write out
     with open(index_path, "w", encoding="utf-8") as f:
-        f.write(html)
+        f.write(html_content)
 
     if os.path.exists("stock_dashboard.html"):
         with open("stock_dashboard.html", "w", encoding="utf-8") as f:
-            f.write(html)
+            f.write(html_content)
     if os.path.exists("widgets/stock-theme-map/bundle/index.html"):
         with open("widgets/stock-theme-map/bundle/index.html", "w", encoding="utf-8") as f:
-            f.write(html)
+            f.write(html_content)
 
     print(f"[{time_str}] auto_update_all_tabs completed successfully!")
 
