@@ -104,13 +104,13 @@ def main():
             if code == 'KOSPI':
                 html_content = re.sub(
                     r'(<span class="label">코스피 📈[\s\S]*?</span>\s*<span class="val [^"]*">)[^<]+(</span>)',
-                    rf'\g<1>{close_p} ({ratio_str})\g<2>',
+                    rf'\\g<1>{close_p} ({ratio_str})\g<2>',
                     html_content
                 )
             elif code == 'KOSDAQ':
                 html_content = re.sub(
                     r'(<span class="label">코스닥 📈[\s\S]*?</span>\s*<span class="val [^"]*">)[^<]+(</span>)',
-                    rf'\g<1>{close_p} ({ratio_str})\g<2>',
+                    rf'\\g<1>{close_p} ({ratio_str})\g<2>',
                     html_content
                 )
 
@@ -121,12 +121,12 @@ def main():
         i_val = inv_k.get('institutionalValue', '') + '억'
         html_content = re.sub(
             r'(<span class="title"[^>]*>코스피 외인</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
-            rf'\g<1>{f_val}\g<2>',
+            rf'\\g<1>{f_val}\g<2>',
             html_content
         )
         html_content = re.sub(
             r'(<span class="title"[^>]*>코스피 기관</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
-            rf'\g<1>{i_val}\g<2>',
+            rf'\\g<1>{i_val}\g<2>',
             html_content
         )
 
@@ -230,7 +230,7 @@ def main():
                 return update_tile_content(tile_html, name, code)
         return tile_html
 
-    html_content = re.sub(r'<div class="stock-tile[^"]*"[^>]*>[\s\S]*?</div>\s*</div>', tile_replacer, html_content)
+    html_content = re.sub(r"""<div class="stock-tile\b[^"]*"[^>]*>[\s\S]*?</div>\s*</div>""", tile_replacer, html_content)
 
     # Dynamically update theme-avg for all 8 themes using robust keyword matching
     theme_keyword_map = {
@@ -496,6 +496,65 @@ def main():
             html_content = html_content[:m_jb.start(2)] + new_jb_json + html_content[m_jb.end(2):]
             print(f"auto_update_all_tabs: updated {jb_updated} Jongbe Master stocks real-time quotes!")
 
+        # Update tabRnzone static header price
+        psk_d = realtime_data.get('031980')
+        if psk_d:
+            psk_p = psk_d['price']
+            psk_r = psk_d['ratio']
+            r_col = 'price-up' if psk_r > 0 else ('price-down' if psk_r < 0 else '')
+            html_content = re.sub(
+                r'<span class="stock-price-box [^"]*" id="selectedStockPrice">[^<]+</span>',
+                f'<span class="stock-price-box {r_col}" id="selectedStockPrice">{psk_p}원 ({psk_r:+.2f}%)</span>',
+                html_content
+            )
+
+        # Update tabJongbe static header price
+        jus_d = realtime_data.get('036930')
+        if jus_d:
+            jus_p = jus_d['price']
+            jus_r = jus_d['ratio']
+            jus_v = jus_d['val']
+            r_col = 'up' if jus_r > 0 else ('down' if jus_r < 0 else '')
+            html_content = re.sub(
+                r'<span class="stock-price" id="dispPrice">[^<]+</span>',
+                f'<span class="stock-price" id="dispPrice">{jus_p}원</span>',
+                html_content
+            )
+            html_content = re.sub(
+                r'<span class="stock-change [^"]*" id="dispChange">[^<]+</span>',
+                f'<span class="stock-change {r_col}" id="dispChange">{jus_r:+.2f}%</span>',
+                html_content
+            )
+            html_content = re.sub(
+                r'<span class="stock-track-badge badge-shin" id="dispBadge">[^<]+</span>',
+                f'<span class="stock-track-badge badge-shin" id="dispBadge">⚡ 신정재 1픽: {jus_v} 코스닥 대금 1위</span>',
+                html_content
+            )
+
+        # Update tabManju dynamic prices
+        if 'tabManju' in html_content:
+            ctk_d = realtime_data.get('451760')
+            gen_d = realtime_data.get('263860')
+            jyp_d = realtime_data.get('035900')
+            if ctk_d:
+                html_content = re.sub(
+                    r'(<span class="mi-title">컨텍</span></div>\s*<span class="mi-price"[^>]*>)[^<]+(</span>)',
+                    f'\\g<1>{ctk_d["ratio"]:+.2f}% ({ctk_d["price"]}원)',
+                    html_content
+                )
+            if gen_d:
+                html_content = re.sub(
+                    r'(<span class="mi-title">지니언스</span></div>\s*<span class="mi-price"[^>]*>)[^<]+(</span>)',
+                    f'\\g<1>{gen_d["ratio"]:+.2f}% ({gen_d["price"]}원)',
+                    html_content
+                )
+            if jyp_d:
+                html_content = re.sub(
+                    r'(<span class="mi-title">JYP Ent\.</span></div>\s*<span class="mi-price"[^>]*>)[^<]+(</span>)',
+                    f'\\g<1>{jyp_d["ratio"]:+.2f}% ({jyp_d["price"]}원)',
+                    html_content
+                )
+
         # Update DART Radar real-time scan timestamp
         html_content = re.sub(
             r'(오늘 종가베팅 엄선 10종목 장마감 후 유상증자·CB발행·블록딜 공시 전수 스캔:).*?(</div>)',
@@ -637,7 +696,7 @@ def main():
                 r = d['ratio']
                 r_str = f"{r:+.2f}%" if r != 0 else "0.00%"
                 pat = rf'(<span class="ssc-name">[^<]*{re.escape(s_name)}[^<]*</span>\s*<span class="ssc-price"[^>]*>)[^<]+(</span>)'
-                html_content = re.sub(pat, rf'\g<1>{p}원 ({r_str})\2', html_content)
+                html_content = re.sub(pat, rf'\\g<1>{p}원 ({r_str})\2', html_content)
                 supply_updated += 1
         print(f"auto_update_all_tabs: updated {supply_updated} supply stock cards live quotes!")
 
@@ -652,8 +711,8 @@ def main():
             flow_text = """\n                <span>10:00 안착 🟢</span><span class="stb-arrow">➔</span>\n                <span>12:00 유지 🟢</span><span class="stb-arrow">➔</span>\n                <span>14:00 확대 🟢</span><span class="stb-arrow">➔</span>\n                <span class="stb-final">15:30 최종 확정 안착 🟢</span>\n              """
             title_status = "당일 최종 수급 확정 안착 완료 🟢"
 
-        html_content = re.sub(r'(<div class="stb-flow">)[\s\S]*?(</div>)', rf'\g<1>{flow_text}\2', html_content)
-        html_content = re.sub(r'(<div class="stb-title"><span>[^<]*</span>)<span[^>]*>[^<]*</span>(</div>)', rf'\g<1><span style="color:#38bdf8;">{title_status}</span>\2', html_content)
+        html_content = re.sub(r'(<div class="stb-flow">)[\s\S]*?(</div>)', lambda m: m.group(1) + flow_text + m.group(2), html_content)
+        html_content = re.sub(r'(<div class="stb-title"><span>[^<]*</span>)<span[^>]*>[^<]*</span>(</div>)', lambda m: m.group(1) + f'<span style="color:#38bdf8;">{title_status}</span>' + m.group(2), html_content)
 
         # 11. Cross-check Automation: Tab 3 (Aftermarket) Indices Line
         if idx_res and 'datas' in idx_res:
