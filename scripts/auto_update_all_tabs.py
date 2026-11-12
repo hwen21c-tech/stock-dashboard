@@ -112,15 +112,17 @@ def main():
 
     # 3. Fetch Real-time Polling Quotes for all 30 Theme & Key Stocks with INTEGRATED TRADING VALUE
     STOCK_CODES = {
-        '코난테크놀로지': '402030', '셀바스AI': '108860', '솔트룩스': '304100', '한글과컴퓨터': '030520', '한컴': '030520',
+        '코난테크놀로지': '402030', '지니언스': '263860', '셀바스AI': '108860', '솔트룩스': '304100', '한글과컴퓨터': '030520', '한컴': '030520',
         'JYP Ent.': '035900', '와이지엔터': '122870', '와이지엔터테인먼트': '122870', '에스엠': '041510', '하이브': '352820',
-        '이수페타시스': '007660', '삼양식품': '003230', '코스맥스': '192820', '메리츠금융': '138040', '메리츠금융지주': '138040',
-        '티엘비': '356860', '펨트론': '168360', '코리아써키트': '007810',
-        '컴투스': '078340', 'NHN': '181710',
-        '삼현': '437730', '레인보우로보': '277810', '레인보우로보틱스': '277810',
-        '주성엔지니어링': '036930', '피에스케이홀딩스': '031980', '하나마이크론': '067310',
-        'HLB': '028300', '리노공업': '058470', '삼성전자': '005930', 'SK하이닉스': '000660',
-        '삼성전기': '009150', 'NAVER': '035420', '두산에너빌리티': '034020', '심텍': '222800'
+        '컨텍': '451760', 'AP위성': '211270', '미래에셋증권': '006800', '한국항공우주': '047810',
+        '코리아써키트': '007810', '티엘비': '356860', '심텍': '222800', '이수페타시스': '007660', '펨트론': '168360',
+        '주성엔지니어링': '036930', '피에스케이홀딩스': '031980', '하나마이크론': '067310', '리노공업': '058470',
+        '메리츠금융': '138040', '메리츠금융지주': '138040', '우리금융지주': '316140', '신한지주': '055550', '하나금융지주': '086790',
+        '핑거스토리': '417180', '디앤씨미디어': '263720', '와이랩': '432430', '미스터블루': '207760',
+        '레인보우로보': '277810', '레인보우로보틱스': '277810', '두산로보틱스': '454910', '엔젤로보틱스': '455900', '유진로봇': '056080',
+        '삼성전자': '005930', 'SK하이닉스': '000660', '삼성전기': '009150', 'NAVER': '035420', '두산에너빌리티': '034020',
+        '대덕전자': '008060', '티에스이': '131290', '에코프로': '086520', '에코프로비엠': '247540', '한화에어로스페이스': '012450',
+        '현대차': '005380', '이수스페셜티': '457190', '컴투스': '078340', 'NHN': '181710'
     }
     codes_list = list(set(STOCK_CODES.values()))
     poll_url = f"https://polling.finance.naver.com/api/realtime/domestic/stock/{','.join(codes_list)}"
@@ -178,6 +180,29 @@ def main():
 
     html_content = re.sub(r'<div class="stock-tile[^"]*"[^>]*>[\s\S]*?</div>\s*</div>', tile_replacer, html_content)
 
+    
+    # Dynamically update theme-avg for all 8 themes
+    themes_stocks = {
+        '🚀 우주항공 / 스페이스X': ['451760', '211270', '006800', '047810'],
+        '👑 AI SW / 보안': ['402030', '263860', '108860', '304100'],
+        '🎤 K-POP 엔터': ['035900', '122870', '041510', '352820'],
+        '🔌 CXL / PCB 기판': ['007810', '356860', '222800', '007660'],
+        '🔬 반도체 소부장 / HBM': ['036930', '031980', '067310', '058470'],
+        '💎 밸류업 / 금융': ['138040', '316140', '055550', '086790'],
+        '📱 모바일콘텐츠': ['417180', '263720', '432430', '207760'],
+        '🤖 지능형로봇/AI': ['277810', '454910', '455900', '056080']
+    }
+    for th_name, codes in themes_stocks.items():
+        ratios = [realtime_data[c]['ratio'] for c in codes if c in realtime_data]
+        if ratios:
+            avg_r = sum(ratios) / len(ratios)
+            avg_color = "#f43f5e" if avg_r > 0 else ("#38bdf8" if avg_r < 0 else "#94a3b8")
+            avg_str = f"{avg_r:+.1f}%"
+            # Pattern to replace theme-avg for this block
+            pat = rf'(<span class="theme-name">[^<]*{re.escape(th_name[:4])}[^<]*</span>\s*<span class="theme-avg"[^>]*>)[^<]+(</span>)'
+            repl_str = r'\g<1>' + avg_str + r'\g<2>'
+            html_content = re.sub(pat, repl_str, html_content)
+
     c_d = realtime_data.get('402030', {})
     if c_d:
         html_content = re.sub(r'(👑 AI SW \(스탁이지 1위\)[\s\S]*?<span class="theme-tag [^"]*">)[^<]+(</span>)', f"\\g<1>+{c_d['ratio']:.1f}% 상한가 🚀\\2", html_content)
@@ -234,6 +259,16 @@ def main():
             # Collect top candidate codes to fetch their integratedPriceInfo
             cand_codes = list(set([s.get('itemcode') for s in up_stocks[:35] if s.get('itemcode')] + [s.get('itemcode') for s in h52_stocks[:15] if s.get('itemcode')]))
             poll_map = {}
+            for c, rd in realtime_data.items():
+                val_str = rd.get('val') or ''
+                num_match = re.search(r'([\d,.]+)\s*억', val_str) if val_str else None
+                num_val = float(num_match.group(1).replace(',', '')) if num_match else 0.0
+                poll_map[c] = {
+                    'price': rd.get('price'),
+                    'ratio': rd.get('ratio', 0.0),
+                    'val_str': val_str,
+                    'val_num': num_val
+                }
             if cand_codes:
                 p_url = f"https://polling.finance.naver.com/api/realtime/domestic/stock/{','.join(cand_codes)}"
                 p_res = fetch_json(p_url)
@@ -241,6 +276,8 @@ def main():
                     for it in p_res['datas']:
                         c = it.get('itemCode')
                         if c:
+                            if c in realtime_data:
+                                continue
                             int_info = it.get('integratedPriceInfo') or {}
                             val_str = int_info.get('accumulatedTradingValue') or it.get('accumulatedTradingValue')
                             # parse numeric 억
@@ -314,7 +351,7 @@ def main():
                 code = s.get('itemcode')
                 name = s.get('itemname')
                 now_p = f"{now_p_str}원"
-                r_str = f"+{r:.2f}%" if r > 0 else f"{r:.2f}%"
+                r_str = f"+{r:.1f}%" if r > 0 else f"{r:.2f}%"
                 high_p = f"{int(float(s.get('highPrice', 0))):,}원"
                 w52_p = f"{int(float(s.get('week52HighPrice', 0))):,}원"
                 reason = REASONS.get(code, f"당일 고가 {high_p}로 52주 최고가({w52_p}) 경신 돌파 및 거래대금 유입.")
@@ -337,7 +374,7 @@ def main():
                     code = s.get('itemcode')
                     name = s.get('itemname')
                     now_p = f"{now_p_str}원"
-                    r_str = f"+{r:.2f}%" if r > 0 else f"{r:.2f}%"
+                    r_str = f"+{r:.1f}%" if r > 0 else f"{r:.2f}%"
                     status_tag = "100억+ 진성 상한가 🚀" if kind == "UPPER" else "상한가 임박 (+25% 돌파) 🚨"
                     role_tag = f"👑 ★ {name}" if kind == "UPPER" else f"🚨 ★ {name}"
                     color_style = "color:#f43f5e; font-weight:800; font-size:12px;" if kind == "UPPER" else "color:#fbbf24; font-weight:800; font-size:12px;"
@@ -353,7 +390,7 @@ def main():
                     name = s.get('itemname')
                     now_p = f"{now_p_str}원"
                     gap_to_25 = round(25.0 - r, 1)
-                    up_html += f'''        <div class="reason-item" style="border-left: 3px solid #fbbf24; background: rgba(251,191,36,0.05);" onclick="openDetail('{name} ({code})', '{now_p} (+{r:.2f}%)', '대금 {val_disp}', '25% 상한가 임박까지 +{gap_to_25}%p 남음')">\n          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">★ {name}</span> <span style="color:#fde047; font-weight:800; font-size:11.5px;">+{r:.2f}% (25% 돌파까지 +{gap_to_25}%p)</span></div>\n          <div class="ri-meta">거래대금 {val_disp} | 현재가 {now_p}</div>\n        </div>\n'''
+                    up_html += f'''        <div class="reason-item" style="border-left: 3px solid #fbbf24; background: rgba(251,191,36,0.05);" onclick="openDetail('{name} ({code})', '{now_p} (+{r:.1f}%)', '대금 {val_disp}', '25% 상한가 임박까지 +{gap_to_25:.1f}%p 남음')">\n          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">★ {name}</span> <span style="color:#fde047; font-weight:800; font-size:11.5px;">+{r:.1f}% (25% 돌파까지 +{gap_to_25:.1f}%p)</span></div>\n          <div class="ri-meta">거래대금 {val_disp} | 현재가 {now_p}</div>\n        </div>\n'''
 
             small_upper_names = ", ".join([f"{s.get('itemname')}({r}%, {val_disp})" for s, r, amt, val_disp in excluded_sub_100b[:3]])
             up_html += f'''        <div style="font-size: 10px; color: #64748b; margin-top: 6px;">\n          ※ <strong>상한가 임박 기준은 '상승률 +25% 이상 & 거래대금 100억 이상'</strong>에만 부여됩니다.<br>\n          ※ 코난테크놀로지, DGI 등은 <strong>거래대금 100억 미만 소형주({small_upper_names})</strong>이므로 진성 기준에서 제외되었습니다. 장중 100억 돌파 시 즉시 자동 편입됩니다.\n        </div>\n      </div>\n'''
