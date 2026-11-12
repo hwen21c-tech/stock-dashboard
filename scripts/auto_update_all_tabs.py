@@ -255,7 +255,7 @@ def main():
 
     c_d = realtime_data.get('402030', {})
     if c_d:
-        html_content = re.sub(r'(👑 AI SW \(스탁이지 1위\)[\s\S]*?<span class="theme-tag [^"]*">)[^<]+(</span>)', f"\\g<1>+{c_d['ratio']:.2f}% 상한가 🚀\\2", html_content)
+        html_content = re.sub(r'(👑 AI SW \(스탁이지 1위\)[\s\S]*?<span class="theme-tag [^"]*">)[^<]+(</span>)', f"\\g<1>+{c_d['ratio']:.2f}% 상한가 🚀\g<2>", html_content)
 
     # 4. Fetch Top News from Naver Finance
     news_res = fetch_json('https://m.stock.naver.com/api/news/list?category=mainnews&pageSize=4')
@@ -558,7 +558,7 @@ def main():
         # Update DART Radar real-time scan timestamp
         html_content = re.sub(
             r'(오늘 종가베팅 엄선 10종목 장마감 후 유상증자·CB발행·블록딜 공시 전수 스캔:).*?(</div>)',
-            f'\\g<1> <strong>전 종목 악재 없음(클린 🟢)</strong> <span style="font-size:10px; color:#34d399; margin-left:6px;">[실시간 스캔: {time_str}]</span>\\2',
+            f'\\g<1> <strong>전 종목 악재 없음(클린 🟢)</strong> <span style="font-size:10px; color:#34d399; margin-left:6px;">[실시간 스캔: {time_str}]</span>\g<2>',
             html_content
         )
 
@@ -589,27 +589,27 @@ def main():
 
         html_content = re.sub(
             r'(<span id="sessionStatusTxt"[^>]*>)[^<]+(</span>)',
-            f'\\g<1>{sess_title}\\2',
+            f'\\g<1>{sess_title}\g<2>',
             html_content
         )
         html_content = re.sub(
             r'(<span id="sessionCountdownTxt"[^>]*>)[^<]+(</span>)',
-            f'\\g<1>({sess_badge})\\2',
+            f'\\g<1>({sess_badge})\g<2>',
             html_content
         )
         html_content = re.sub(
             r'(<span style="font-size: 12.5px; font-weight: 800; color: #c7d2fe;">)[^<]+(</span>)',
-            f'\\g<1>{sess_title}\\2',
+            f'\\g<1>{sess_title}\g<2>',
             html_content
         )
         html_content = re.sub(
             r'(<span style="font-size: 10px; background: #064e3b;[^>]*>)[^<]+(</span>)',
-            f'\\g<1>{sess_badge}\\2',
+            f'\\g<1>{sess_badge}\g<2>',
             html_content
         )
         html_content = re.sub(
             r'(<div style="font-size: 10px; color: #94a3b8; margin-bottom: 8px;">)[\s\S]*?(</div>)',
-            f'\\g<1>\n        {sess_desc}\n      \\2',
+            f'\\g<1>\n        {sess_desc}\n      \g<2>',
             html_content
         )
 
