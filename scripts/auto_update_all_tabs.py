@@ -177,8 +177,8 @@ def main():
         if up_stocks and h52_stocks:
             true_100b_upper = []       # ratio >= 29.5% and amt >= 100억
             true_100b_near_upper = []  # 25.0% <= ratio < 29.5% and amt >= 100억
-            true_100b_leading = []     # 10.0% <= ratio < 25.0% and amt >= 100억
-            excluded_small_upper = []  # ratio >= 25.0% but amt < 100억
+            watch_candidates = []      # amt >= 100억 and 15.0% <= ratio < 25.0%
+            excluded_sub_100b = []     # ratio >= 25.0% but amt < 100억
 
             for s in up_stocks:
                 now_p = float(s.get('nowPrice', 0))
@@ -192,24 +192,15 @@ def main():
                         true_100b_upper.append((s, amt_억))
                     elif ratio >= 25.0:
                         true_100b_near_upper.append((s, amt_억))
-                    elif ratio >= 10.0:
-                        true_100b_leading.append((s, amt_억))
+                    elif ratio >= 15.0:
+                        watch_candidates.append((s, ratio, amt_억))
                 else:
                     if ratio >= 25.0:
-                        excluded_small_upper.append((s, ratio, amt_억))
+                        excluded_sub_100b.append((s, ratio, amt_억))
 
             true_100b_upper.sort(key=lambda x: x[1], reverse=True)
             true_100b_near_upper.sort(key=lambda x: x[1], reverse=True)
-            true_100b_leading.sort(key=lambda x: float(x[0].get('prevChangeRate', 0)), reverse=True)
-
-            final_100b_items = []
-            for s, amt in true_100b_upper:
-                final_100b_items.append((s, "UPPER", amt))
-            for s, amt in true_100b_near_upper:
-                final_100b_items.append((s, "NEAR_UPPER", amt))
-            for s, amt in true_100b_leading:
-                if len(final_100b_items) < 4:
-                    final_100b_items.append((s, "LEADING", amt))
+            watch_candidates.sort(key=lambda x: x[1], reverse=True)
 
             h52_list = []
             for s in h52_stocks:
@@ -222,15 +213,14 @@ def main():
             h52_list.sort(key=lambda x: x[1], reverse=True)
 
             REASONS = {
-                '069510': '전장용 스피커 및 고음질 사운드 시스템 수주 확대 + 3분기 흑자 서프라이즈로 100억 대금 돌파, 당일 최고 상승률 주도.',
-                '0039P0': 'AI 마케팅 자동화 솔루션 및 빅데이터 기반 타깃 광고 수주 급증으로 170억 돌파 18% 급등.',
-                '035900': '스트레이키즈 글로벌 스타디움 투어 및 음원 스트리밍 사상 최대 실적 어닝 서프라이즈로 678억 돌파 실질 엔터 대장주.',
-                '039980': '온디바이스 AI 오피스 및 거대언어모델(LLM) 보안 솔루션 공공기관 공급 모멘텀 116억 돌파 급등.',
-                '420610': '영상 AI 기반 지능형 보안 관제 솔루션 글로벌 공급 계약으로 223억 대금 유입.',
-                '263860': 'EDR 보안 솔루션 글로벌 공급 및 공공 클라우드 수주 폭증으로 1,245억 원 초대형 거래대금 폭발.',
-                '251970': 'K-뷰티 인디 브랜드 글로벌 돌풍에 따른 화장품 용기 수주 풀가동 및 역사적 신고가 랠리 지속.',
-                '219130': '반도체 검사용 고다층 프로브카드 PCB 기판 수요 폭증 및 공장 가동률 100% 도달 역사적 신고가.',
-                '005430': '대한항공-아시아나 기업결합 승인 가시화에 따른 LCC 지상조업 통합 독점력 및 공항 조업 단가 인상 수혜 신고가.'
+                '069510': '전장용 스피커 및 사운드 시스템 수주 확대 + 3분기 흑자 서프라이즈로 130억 돌파 52주 신고가 경신.',
+                '0039P0': 'AI 마케팅 자동화 솔루션 및 타깃 광고 수주 급증으로 190억 돌파 +21% 급등.',
+                '035900': '스트레이키즈 스타디움 투어 및 음원 스트리밍 역대 최대 실적으로 720억 돌파 엔터 대장주.',
+                '039980': '온디바이스 AI 오피스 및 LLM 보안 솔루션 공공 공급 모멘텀 118억 유입.',
+                '420610': '영상 AI 기반 지능형 보안 관제 솔루션 글로벌 공급 계약 232억 유입.',
+                '251970': 'K-뷰티 인디 브랜드 글로벌 돌풍 화장품 용기 풀가동 역사적 신고가 지속.',
+                '219130': '반도체 검사용 프로브카드 PCB 고다층 기판 수요 폭증 역사적 신고가.',
+                '005430': '대한항공-아시아나 기업결합 승인 가시화에 따른 지상조업 독점력 부각 신고가.'
             }
 
             h52_html = '''      <!-- Left: 52W High -->\n      <div class="panel-box gold">\n        <div class="sec-head" style="border-bottom-color:#b45309; color:#fbbf24;">\n          <span>🎯 52주 신고가 돌파 종목 & 사유 (실시간)</span>\n          <span class="sub">당일 고가 기준 실시간 집계 🟢</span>\n        </div>\n'''
@@ -246,41 +236,43 @@ def main():
                 h52_html += f'''        <div class="reason-item" onclick="openDetail('{name} ({code})', '{now_p} ({r_str})', '대금 {amt}억 | 고가 {high_p}', '【52주 신고가 사유】 {reason}')">\n          <div class="ri-head"><span>★ {name}</span><span style="color:#fef08a;">{now_p} ({r_str})</span></div>\n          <div class="ri-meta">대금 {amt}억 | 고가 {high_p} (52주 신고가 경신)</div>\n          <div class="ri-reason gold">{reason}</div>\n        </div>\n'''
             h52_html += '''        <div style="font-size: 10px; color: #64748b; margin-top: 6px;">\n          ※ 장중 52주 신고가를 터치한 종목만 실시간 연동되며, 신고가 이탈/하락 종목은 자동 제외됩니다.\n        </div>\n      </div>\n'''
 
-            if len(true_100b_upper) > 0:
-                sub_tag = "실시간 100억+ 진성 상한가 안착 🟢"
-            elif len(true_100b_near_upper) > 0:
-                sub_tag = "실시간 상한가 임박 (+25% 이상 터치) 🚨"
+            items_to_render = []
+            for s, amt in true_100b_upper:
+                items_to_render.append((s, "UPPER", amt))
+            for s, amt in true_100b_near_upper:
+                items_to_render.append((s, "NEAR_UPPER", amt))
+
+            has_matched = len(items_to_render) > 0
+            sub_tag = "실시간 진성 종목 연동 🟢" if has_matched else "현재 조건 충족 0건 (대기 중 🟡)"
+
+            up_html = f'''      <!-- Right: Upper Limit 100억+ 진성 상한가 & 사유 -->\n      <div class="panel-box red">\n        <div class="sec-head" style="border-bottom-color:#be123c; color:#f43f5e;">\n          <span>🚀 거래대금 100억+ 진성 상한가 & 임박 (+25% 엄격)</span>\n          <span class="sub">{sub_tag}</span>\n        </div>\n'''
+
+            if has_matched:
+                for idx, (s, kind, amt) in enumerate(items_to_render):
+                    code = s.get('itemcode')
+                    name = s.get('itemname')
+                    now_p = f"{int(float(s.get('nowPrice', 0))):,}원"
+                    ratio = float(s.get('prevChangeRate', 0))
+                    r_str = f"+{ratio:.2f}%" if ratio > 0 else f"{ratio:.2f}%"
+                    status_tag = "100억+ 진성 상한가 🚀" if kind == "UPPER" else "상한가 임박 (+25% 돌파) 🚨"
+                    role_tag = f"👑 ★ {name}" if kind == "UPPER" else f"🚨 ★ {name}"
+                    color_style = "color:#f43f5e; font-weight:800; font-size:12px;" if kind == "UPPER" else "color:#fbbf24; font-weight:800; font-size:12px;"
+                    reason = REASONS.get(code, f"당일 거래대금 {amt}억 원 유입되며 {r_str} 급등.")
+                    up_html += f'''        <div class="reason-item" style="border-left: 3px solid #f43f5e; background: rgba(244,63,94,0.06);" onclick="openDetail('{name} ({code})', '{now_p} ({r_str})', '거래대금 {amt}억 원', '【100억+ 상한가·임박 사유】 {reason}')">\n          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">{role_tag}</span> <span style="{color_style}">{r_str} ({status_tag})</span></div>\n          <div class="ri-meta" style="color:#fca5a5; font-weight:700;">거래대금 {amt}억 원 | 현재가 {now_p}</div>\n          <div class="ri-reason red">{reason}</div>\n        </div>\n'''
             else:
-                sub_tag = "대금 100억+ 실질 주도주 (25%+ 임박 대기 🟡)"
+                up_html += '''        <div style="background: rgba(244,63,94,0.08); border: 1px dashed rgba(244,63,94,0.3); border-radius: 6px; padding: 12px; margin-bottom: 10px; text-align: center;">\n          <div style="font-size: 12.5px; font-weight: 800; color: #fca5a5;">🛡️ 현재 실시간 '거래대금 100억+ & 상승률 +25% 이상' 종목: 0건 (대기)</div>\n          <div style="font-size: 11px; color: #cbd5e1; margin-top: 4px; line-height: 1.45;">\n            현재 30% 상한가 종목(코난 23.6억, DGI 14.6억 등)은 100억 미만으로 제외되었으며,<br>\n            100억 이상 유입 종목들은 아직 +25% 임박 기준에 미도달하여 노출 대기 중입니다.\n          </div>\n        </div>\n'''
 
-            up_html = f'''      <!-- Right: Upper Limit 100억+ 진성 상한가 & 사유 -->\n      <div class="panel-box red">\n        <div class="sec-head" style="border-bottom-color:#be123c; color:#f43f5e;">\n          <span>🚀 거래대금 100억+ 진성 상한가 & 사유 (100억 & +25% 엄격 필터)</span>\n          <span class="sub">{sub_tag}</span>\n        </div>\n'''
+            if watch_candidates:
+                up_html += '''        <div style="font-size: 11px; font-weight: 800; color: #fbbf24; margin: 8px 0 4px 2px;">👀 +25% 상한가 임박 돌파 관찰 후보 (거래대금 100억+ 유입)</div>\n'''
+                for s, r, amt in watch_candidates[:3]:
+                    code = s.get('itemcode')
+                    name = s.get('itemname')
+                    now_p = f"{int(float(s.get('nowPrice', 0))):,}원"
+                    gap_to_25 = round(25.0 - r, 1)
+                    up_html += f'''        <div class="reason-item" style="border-left: 3px solid #fbbf24; background: rgba(251,191,36,0.05);" onclick="openDetail('{name} ({code})', '{now_p} (+{r:.2f}%)', '대금 {amt}억 원', '25% 상한가 임박까지 +{gap_to_25}%p 남음')">\n          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">★ {name}</span> <span style="color:#fde047; font-weight:800; font-size:11.5px;">+{r:.2f}% (25% 돌파까지 +{gap_to_25}%p)</span></div>\n          <div class="ri-meta">거래대금 {amt}억 원 | 현재가 {now_p}</div>\n        </div>\n'''
 
-            for idx, (s, kind, amt) in enumerate(final_100b_items):
-                code = s.get('itemcode')
-                name = s.get('itemname')
-                now_p = f"{int(float(s.get('nowPrice', 0))):,}원"
-                ratio = float(s.get('prevChangeRate', 0))
-                r_str = f"+{ratio:.2f}%" if ratio > 0 else f"{ratio:.2f}%"
-
-                if kind == "UPPER":
-                    status_tag = "100억+ 진성 상한가 🚀"
-                    role_tag = f"👑 ★ {name}"
-                    color_style = "color:#f43f5e; font-weight:800; font-size:12px;"
-                elif kind == "NEAR_UPPER":
-                    status_tag = "상한가 임박 (+25% 돌파) 🚨"
-                    role_tag = f"🚨 ★ {name}"
-                    color_style = "color:#fbbf24; font-weight:800; font-size:12px;"
-                else:
-                    status_tag = "100억+ 주도 급등주 🔥"
-                    role_tag = f"🔥 대금 {amt}억 주도주 ★ {name}"
-                    color_style = "color:#fca5a5; font-weight:800; font-size:12px;"
-
-                reason = REASONS.get(code, f"당일 거래대금 {amt}억 원 유입되며 {r_str} 급등.")
-
-                up_html += f'''        <div class="reason-item" style="border-left: 3px solid #f43f5e; background: rgba(244,63,94,0.06);" onclick="openDetail('{name} ({code})', '{now_p} ({r_str})', '거래대금 {amt}억 원', '【100억+ 주도 사유】 {reason}')">\n          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">{role_tag}</span> <span style="{color_style}">{r_str} ({status_tag})</span></div>\n          <div class="ri-meta" style="color:#fca5a5; font-weight:700;">거래대금 {amt}억 원 | 현재가 {now_p}</div>\n          <div class="ri-reason red">{reason}</div>\n        </div>\n'''
-
-            small_upper_names = ", ".join([f"{s.get('itemname')}({r}%, {amt}억)" for s, r, amt in excluded_small_upper[:3]])
-            up_html += f'''        <div style="font-size: 10px; color: #64748b; margin-top: 6px;">\n          ※ <strong>상한가 임박 기준은 '상승률 +25% 이상 & 거래대금 100억 이상'</strong>에만 엄격 부여됩니다.<br>\n          ※ 코난테크놀로지, DGI, 썸에이지 등 +25% 이상 종목은 <strong>거래대금 100억 미만 소형주({small_upper_names})</strong>이므로 실전 매매 리스크 관리를 위해 제외되었습니다. 장중 100억 돌파 시 상한가/임박 박스에 즉시 자동 편입됩니다.\n        </div>\n      </div>\n'''
+            small_upper_names = ", ".join([f"{s.get('itemname')}({r}%, {amt}억)" for s, r, amt in excluded_sub_100b[:3]])
+            up_html += f'''        <div style="font-size: 10px; color: #64748b; margin-top: 6px;">\n          ※ <strong>상한가 임박 기준은 '상승률 +25% 이상 & 거래대금 100억 이상'</strong>에만 부여됩니다.<br>\n          ※ 코난테크놀로지, DGI 등은 <strong>거래대금 100억 미만 소형주({small_upper_names})</strong>이므로 진성 기준에서 제외되었습니다. 장중 100억 돌파 시 즉시 자동 편입됩니다.\n        </div>\n      </div>\n'''
 
             new_grid = f'''    <!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->\n    <div class="main-bottom-grid">\n{h52_html}\n{up_html}\n    </div>'''
             b_start = html.find('<!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->')
