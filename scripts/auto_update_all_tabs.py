@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import urllib.request, json, re, datetime, os, sys, xml.etree.ElementTree as ET
+import urllib.request, urllib.parse, json, re, datetime, os, sys, xml.etree.ElementTree as ET
 
 def fetch_json(url):
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)'})
@@ -81,9 +81,20 @@ def main():
             if news_tit[:20] in html:
                 continue
 
+            oid = n.get('oid', '')
+            aid = n.get('aid', '')
+            if oid and aid:
+                article_url = f"https://n.news.naver.com/mnews/article/{oid}/{aid}"
+            else:
+                clean_q = urllib.parse.quote(news_tit[:30])
+                article_url = f"https://search.naver.com/search.naver?where=news&query={clean_q}"
+
             card = f"""<!-- AUTO HOURLY NEWS {news_time} -->
-      <div class="news-timeline-card" style="border-left-color:#38bdf8;" onclick="openDetail('{news_tit[:15]}', '실시간 속보', '장중 시장 연동', '【뉴스 내용】 {news_tit}<br><br>【과거 유사사례】 주요 호재/실적 공시 및 시장 속보 출회 시 관련 섹터 단기 수급 유입.')">
-        <span class="nt-time" style="background:#0c4a6e; color:#bae6fd;">{news_time} 실시간 속보 ⚡</span>
+      <div class="news-timeline-card" style="border-left-color:#38bdf8;" onclick="openNewsDetail('{news_tit}', '{news_time} 속보', '{article_url}', '{news_tit}', '장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성.', '실시간 거래대금 급증 종목 연동')">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <span class="nt-time" style="background:#0c4a6e; color:#bae6fd;">{news_time} 실시간 속보 ⚡</span>
+          <a href="{article_url}" target="_blank" rel="noopener noreferrer" style="font-size:10.5px; background:rgba(56,189,248,0.15); color:#7dd3fc; border:1px solid rgba(56,189,248,0.4); padding:2px 7px; border-radius:4px; text-decoration:none; font-weight:800;" onclick="event.stopPropagation()">🔗 기사 원문 ↗</a>
+        </div>
         <div class="nt-title">{news_tit}</div>
         <div class="nt-move">🔥 장중 연동: 주요 속보 및 실시간 시장 수급 반응 관찰</div>
         <div class="nt-history">과거: 장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성</div>
