@@ -40,9 +40,9 @@ def main():
     with open(index_path, "r", encoding="utf-8") as f:
         html_content = f.read()
 
-    # 1. Update Header Sync Timestamp & Auto Sync Badge
+    # 1. Update Header Sync Timestamp & Auto Sync Badge (5-min interval)
     curr_m = now_kst.minute
-    next_m = (curr_m // 15 + 1) * 15
+    next_m = (curr_m // 5 + 1) * 5
     next_dt = now_kst.replace(minute=0, second=0, microsecond=0) + datetime.timedelta(minutes=next_m)
     next_sync_time = next_dt.strftime("%H:%M:35")
 
@@ -54,7 +54,7 @@ def main():
 
     html_content = re.sub(
         r'<div id="autoSyncBadge"[^>]*>.*?</div>|<button id="autoRefreshBtn"[^>]*>.*?</button>',
-        f'<div id="autoSyncBadge" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 4px;">⚡ 15분 자동 배포 중 (다음: {next_sync_time})</div>',
+        f'<div id="autoSyncBadge" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 4px;">⚡ 5분 초밀착 자동 배포 (다음: {next_sync_time})</div>',
         html_content
     )
 
