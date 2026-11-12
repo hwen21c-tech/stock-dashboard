@@ -760,6 +760,7 @@ def main():
     assert 'id="tabJongbe"' in html_content, "Tab 8 (Jongbe) missing!"
     assert 'id="tabCalendar"' in html_content, "Tab 9 (Calendar) missing!"
     assert 'id="calCellToday"' in html_content and '<span class="cal-date-num">12</span>' in html_content, "Tab 9 Calendar today cell is not set to Day 12!"
+    assert '사이드카발동' not in html_content[:75000], "Outdated sidecar pill found in top supply strip!"
     
     # Assert Tab 3 (Aftermarket) contains today's date and not stale 11/11 archive banner
     assert '11/11 마감 아카이브' not in html_content, "Stale 11/11 archive notice found in Tab 3!"
