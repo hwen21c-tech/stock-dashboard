@@ -104,31 +104,35 @@ def main():
             if code == 'KOSPI':
                 html_content = re.sub(
                     r'(<span class="label">코스피 📈[\s\S]*?</span>\s*<span class="val [^"]*">)[^<]+(</span>)',
-                    rf'\\g<1>{close_p} ({ratio_str})\g<2>',
+                    lambda m: m.group(1) + f'{close_p} ({ratio_str})' + m.group(2),
                     html_content
                 )
             elif code == 'KOSDAQ':
                 html_content = re.sub(
                     r'(<span class="label">코스닥 📈[\s\S]*?</span>\s*<span class="val [^"]*">)[^<]+(</span>)',
-                    rf'\\g<1>{close_p} ({ratio_str})\g<2>',
+                    lambda m: m.group(1) + f'{close_p} ({ratio_str})' + m.group(2),
                     html_content
                 )
 
     inv_k = fetch_json('https://m.stock.naver.com/api/index/KOSPI/trend')
     inv_kd = fetch_json('https://m.stock.naver.com/api/index/KOSDAQ/trend')
     if inv_k:
-        f_val = inv_k.get('foreignValue', '') + '억'
-        i_val = inv_k.get('institutionalValue', '') + '억'
-        html_content = re.sub(
-            r'(<span class="title"[^>]*>코스피 외인</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
-            rf'\\g<1>{f_val}\g<2>',
-            html_content
-        )
-        html_content = re.sub(
-            r'(<span class="title"[^>]*>코스피 기관</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
-            rf'\\g<1>{i_val}\g<2>',
-            html_content
-        )
+        f_raw = inv_k.get('foreignValue', '')
+        i_raw = inv_k.get('institutionalValue', '')
+        if f_raw:
+            f_val = (f_raw if f_raw.startswith(('+', '-')) else ('+' + f_raw)) + '억'
+            html_content = re.sub(
+                r'(<span class="title"[^>]*>외국인</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
+                lambda m: m.group(1) + f_val + m.group(2),
+                html_content
+            )
+        if i_raw:
+            i_val = (i_raw if i_raw.startswith(('+', '-')) else ('+' + i_raw)) + '억'
+            html_content = re.sub(
+                r'(<span class="title"[^>]*>기관</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
+                lambda m: m.group(1) + i_val + m.group(2),
+                html_content
+            )
 
     # 3. STOCK_CODES Master Dictionary (Theme Tiles, Supply Cards, RNZone, Jongbe)
     STOCK_CODES = {
@@ -255,7 +259,7 @@ def main():
 
     c_d = realtime_data.get('402030', {})
     if c_d:
-        html_content = re.sub(r'(👑 AI SW \(스탁이지 1위\)[\s\S]*?<span class="theme-tag [^"]*">)[^<]+(</span>)', f"\\g<1>+{c_d['ratio']:.2f}% 상한가 🚀\g<2>", html_content)
+        html_content = re.sub(r'(👑 AI SW \(스탁이지 1위\)[\s\S]*?<span class="theme-tag [^"]*">)[^<]+(</span>)', lambda m: m.group(1) + f"+{c_d['ratio']:.2f}% 상한가 🚀" + m.group(2), html_content)
 
     # 4. Fetch Top News from Naver Finance
     news_res = fetch_json('https://m.stock.naver.com/api/news/list?category=mainnews&pageSize=4')
@@ -539,26 +543,26 @@ def main():
             if ctk_d:
                 html_content = re.sub(
                     r'(<span class="mi-title">컨텍</span></div>\s*<span class="mi-price"[^>]*>)[^<]+(</span>)',
-                    f'\\g<1>{ctk_d["ratio"]:+.2f}% ({ctk_d["price"]}원)',
+                    lambda m: m.group(1) + f'{ctk_d["ratio"]:+.2f}% ({ctk_d["price"]}원)' + m.group(2),
                     html_content
                 )
             if gen_d:
                 html_content = re.sub(
                     r'(<span class="mi-title">지니언스</span></div>\s*<span class="mi-price"[^>]*>)[^<]+(</span>)',
-                    f'\\g<1>{gen_d["ratio"]:+.2f}% ({gen_d["price"]}원)',
+                    lambda m: m.group(1) + f'{gen_d["ratio"]:+.2f}% ({gen_d["price"]}원)' + m.group(2),
                     html_content
                 )
             if jyp_d:
                 html_content = re.sub(
                     r'(<span class="mi-title">JYP Ent\.</span></div>\s*<span class="mi-price"[^>]*>)[^<]+(</span>)',
-                    f'\\g<1>{jyp_d["ratio"]:+.2f}% ({jyp_d["price"]}원)',
+                    lambda m: m.group(1) + f'{jyp_d["ratio"]:+.2f}% ({jyp_d["price"]}원)' + m.group(2),
                     html_content
                 )
 
         # Update DART Radar real-time scan timestamp
         html_content = re.sub(
             r'(오늘 종가베팅 엄선 10종목 장마감 후 유상증자·CB발행·블록딜 공시 전수 스캔:).*?(</div>)',
-            f'\\g<1> <strong>전 종목 악재 없음(클린 🟢)</strong> <span style="font-size:10px; color:#34d399; margin-left:6px;">[실시간 스캔: {time_str}]</span>\g<2>',
+            lambda m: m.group(1) + f' <strong>전 종목 악재 없음(클린 🟢)</strong> <span style="font-size:10px; color:#34d399; margin-left:6px;">[실시간 스캔: {time_str}]</span>' + m.group(2),
             html_content
         )
 
@@ -589,27 +593,27 @@ def main():
 
         html_content = re.sub(
             r'(<span id="sessionStatusTxt"[^>]*>)[^<]+(</span>)',
-            f'\\g<1>{sess_title}\g<2>',
+            lambda m: m.group(1) + sess_title + m.group(2),
             html_content
         )
         html_content = re.sub(
             r'(<span id="sessionCountdownTxt"[^>]*>)[^<]+(</span>)',
-            f'\\g<1>({sess_badge})\g<2>',
+            lambda m: m.group(1) + f'({sess_badge})' + m.group(2),
             html_content
         )
         html_content = re.sub(
             r'(<span style="font-size: 12.5px; font-weight: 800; color: #c7d2fe;">)[^<]+(</span>)',
-            f'\\g<1>{sess_title}\g<2>',
+            lambda m: m.group(1) + sess_title + m.group(2),
             html_content
         )
         html_content = re.sub(
             r'(<span style="font-size: 10px; background: #064e3b;[^>]*>)[^<]+(</span>)',
-            f'\\g<1>{sess_badge}\g<2>',
+            lambda m: m.group(1) + sess_badge + m.group(2),
             html_content
         )
         html_content = re.sub(
             r'(<div style="font-size: 10px; color: #94a3b8; margin-bottom: 8px;">)[\s\S]*?(</div>)',
-            f'\\g<1>\n        {sess_desc}\n      \g<2>',
+            lambda m: m.group(1) + f'\n        {sess_desc}\n      ' + m.group(2),
             html_content
         )
 
@@ -677,7 +681,7 @@ def main():
             supply_overview_text = f"외국인 코스피({fk_str}) 순매수 5,380선 방어 vs 기관 코스피({ik_str}) 프로그램 차익 매물 소화. 코스닥 개인({pk_str}) 저가 매수 vs 외국인({fkd_str}) 양매도 공방."
             html_content = re.sub(
                 r'(<strong style="color:#38bdf8;">⏱️ 당일 시간대별 수급 유지도 총평:</strong><br>\s*)[^<]+',
-                f'\\g<1>{supply_overview_text} ',
+                lambda m: m.group(1) + f'{supply_overview_text} ',
                 html_content
             )
 
@@ -696,7 +700,7 @@ def main():
                 r = d['ratio']
                 r_str = f"{r:+.2f}%" if r != 0 else "0.00%"
                 pat = rf'(<span class="ssc-name">[^<]*{re.escape(s_name)}[^<]*</span>\s*<span class="ssc-price"[^>]*>)[^<]+(</span>)'
-                html_content = re.sub(pat, rf'\\g<1>{p}원 ({r_str})\2', html_content)
+                html_content = re.sub(pat, lambda m: m.group(1) + f'{p}원 ({r_str})' + m.group(2), html_content)
                 supply_updated += 1
         print(f"auto_update_all_tabs: updated {supply_updated} supply stock cards live quotes!")
 
