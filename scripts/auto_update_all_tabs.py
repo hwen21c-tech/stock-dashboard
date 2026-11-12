@@ -40,11 +40,18 @@ def main():
     with open(index_path, "r", encoding="utf-8") as f:
         html_content = f.read()
 
-    # 1. Update Header Sync Timestamp & Auto Sync Badge (5-min interval)
-    curr_m = now_kst.minute
-    next_m = (curr_m // 5 + 1) * 5
-    next_dt = now_kst.replace(minute=0, second=0, microsecond=0) + datetime.timedelta(minutes=next_m)
-    next_sync_time = next_dt.strftime("%H:%M:35")
+    # 1. Update Header Sync Timestamp & Smart 24H Auto Sync Badge
+    is_day = '08:00' <= now_kst.strftime("%H:%M") <= '20:05'
+    if is_day:
+        next_m = (now_kst.minute // 5 + 1) * 5
+        next_dt = now_kst.replace(minute=0, second=0, microsecond=0) + datetime.timedelta(minutes=next_m)
+        badge_text = f"⚡ 스마트 24시: 주간 5분 초밀착 (다음: {next_dt.strftime('%H:%M:35')})"
+        badge_style = "background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3);"
+    else:
+        next_m = 30 if now_kst.minute < 30 else 60
+        next_dt = now_kst.replace(minute=0, second=0, microsecond=0) + datetime.timedelta(minutes=next_m)
+        badge_text = f"🌙 스마트 24시: 야간 30분 안심 (다음: {next_dt.strftime('%H:%M:35')})"
+        badge_style = "background: rgba(99,102,241,0.18); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.35);"
 
     html_content = re.sub(
         r'<span id="lastSyncTxt"[^>]*>.*?</span>',
@@ -54,7 +61,7 @@ def main():
 
     html_content = re.sub(
         r'<div id="autoSyncBadge"[^>]*>.*?</div>|<button id="autoRefreshBtn"[^>]*>.*?</button>',
-        f'<div id="autoSyncBadge" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 4px;">⚡ 5분 초밀착 자동 배포 (다음: {next_sync_time})</div>',
+        f'<div id="autoSyncBadge" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; {badge_style} border-radius: 4px;">{badge_text}</div>',
         html_content
     )
 
