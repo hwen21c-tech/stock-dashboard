@@ -9,6 +9,219 @@
   </script>
   <style>
     #pinLockOverlay { display: none !important; }
+  
+    /* ========================================================
+       FOLD 8 PRO MULTI-SCREEN RESPONSIVE ENGINE
+       Mode 1: 외부 세로 (width <= 640px)
+       Mode 2: 외부 가로 (height <= 520px and width <= 920px)
+       Mode 3: 내부 가로 (width >= 900px, 기본 고화질 유지)
+       ======================================================== */
+    .session-radar-bar {
+      background: linear-gradient(90deg, #090d16 0%, #111827 50%, #090d16 100%);
+      border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+      padding: 7px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+      z-index: 100;
+      gap: 8px 14px;
+      flex-wrap: wrap;
+    }
+    .srb-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      flex-wrap: nowrap;
+    }
+    .live-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: #a855f7;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #a855f7;
+      flex-shrink: 0;
+    }
+    .srb-status-txt {
+      font-weight: 800;
+      color: #38bdf8;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .srb-countdown-txt {
+      color: #cbd5e1;
+      font-size: 11px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .srb-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      flex-wrap: nowrap;
+    }
+    .srb-badge-sync {
+      padding: 3px 8px;
+      font-size: 10.5px;
+      font-weight: 800;
+      background: rgba(99,102,241,0.18);
+      color: #a5b4fc;
+      border: 1px solid rgba(99,102,241,0.35);
+      border-radius: 4px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .srb-btn-refresh {
+      padding: 3px 8px;
+      font-size: 10.5px;
+      font-weight: 800;
+      background: rgba(56,189,248,0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56,189,248,0.3);
+      border-radius: 4px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .srb-last-sync {
+      color: #38bdf8;
+      font-size: 10.5px;
+      font-weight: 800;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .auto-validation-badge {
+      margin-left: 6px;
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-weight: 800;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* 1. 폴드8 외부액정 세로 화면 (width <= 640px) */
+    @media (max-width: 640px) {
+      .session-radar-bar {
+        padding: 6px 10px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
+      .srb-left {
+        width: 100%;
+        overflow-x: auto;
+        scrollbar-width: none;
+      }
+      .srb-left::-webkit-scrollbar { display: none; }
+      .srb-right {
+        width: 100%;
+        justify-content: flex-start;
+        overflow-x: auto;
+        scrollbar-width: none;
+        gap: 6px;
+      }
+      .srb-right::-webkit-scrollbar { display: none; }
+      
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding-bottom: 8px;
+      }
+      .brand-title {
+        font-size: 16px;
+        white-space: nowrap;
+        width: 100%;
+      }
+      .brand-subtitle {
+        font-size: 10.5px;
+        line-height: 1.35;
+      }
+      .header-actions {
+        width: 100%;
+        display: flex;
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        gap: 5px;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+      }
+      .header-actions::-webkit-scrollbar { display: none; }
+      .header-actions .btn-action {
+        flex-shrink: 0;
+        font-size: 11px;
+        padding: 5px 8px;
+        white-space: nowrap;
+      }
+      .signal-ticker-wrap {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        padding: 8px 10px;
+      }
+      .signal-chips-scroll {
+        width: 100%;
+      }
+      .supply-strip {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 5px !important;
+      }
+    }
+
+    /* 2. 폴드8 외부액정 가로 화면 (height <= 520px and width <= 920px) */
+    @media (max-height: 520px) and (max-width: 920px) {
+      .session-radar-bar {
+        padding: 4px 10px;
+        font-size: 10.5px;
+        gap: 4px 10px;
+      }
+      .srb-status-txt {
+        font-size: 11px;
+      }
+      .srb-countdown-txt {
+        font-size: 10px;
+      }
+      header {
+        padding-bottom: 4px;
+        margin-bottom: 6px;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand-title {
+        font-size: 14.5px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+      .brand-subtitle {
+        display: none; /* 외부 가로 화면에서 높이 절약 */
+      }
+      .header-actions {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 3px 5px;
+      }
+      .header-actions .btn-action {
+        font-size: 10px;
+        padding: 3px 6px;
+      }
+      .signal-ticker-wrap {
+        margin-bottom: 6px;
+        padding: 4px 8px;
+        gap: 6px;
+      }
+      .ticker-bar {
+        padding: 4px 8px !important;
+      }
+      .supply-strip {
+        margin-bottom: 6px !important;
+      }
+    }
+
   </style>
 
   <meta charset="UTF-8">
@@ -1717,82 +1930,17 @@
   </div>
 
 
-    <!-- REAL-TIME LIVE MARKET SESSION RADAR & COUNTDOWN -->
-  <div id="sessionRadarBar" style="background: linear-gradient(90deg, #090d16 0%, #111827 50%, #090d16 100%); border-bottom: 1px solid rgba(56, 189, 248, 0.2); padding: 7px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; z-index: 100;">
-    <div style="display: flex; align-items: center; gap: 8px;">
-      <span class="live-dot" style="display:inline-block; width:8px; height:8px; background:#a855f7; border-radius:50%; box-shadow:0 0 8px #a855f7;"></span>
-      <span id="sessionStatusTxt" style="font-weight: 800; color: #38bdf8;">🌐 20:00 ~ 익일 08:00 글로벌 야간선물 & 미 증시 본장 레이더</span>
-      <span id="sessionCountdownTxt" style="color: #cbd5e1; font-size: 11px;">(KRX 야간선물 & CME 나스닥 연동 🌙)</span>
+      <!-- REAL-TIME LIVE MARKET SESSION RADAR & COUNTDOWN -->
+  <div id="sessionRadarBar" class="session-radar-bar">
+    <div class="srb-left">
+      <span class="live-dot"></span>
+      <span id="sessionStatusTxt" class="srb-status-txt">🌐 20:00 ~ 익일 08:00 글로벌 야간선물 & 미 증시 본장 레이더</span>
+      <span id="sessionCountdownTxt" class="srb-countdown-txt">(KRX 야간선물 & CME 나스닥 연동 🌙)</span>
     </div>
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <div class="srb-right">
       <div id="autoSyncBadge" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(99,102,241,0.18); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.35); border-radius: 4px;">🌙 스마트 24시: 야간 30분 안심 (다음: 08:00:35)</div>
-      <button onclick="forceLiveRefresh()" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; cursor: pointer;">🔄 즉시 새로고침</button>
-      <span id="lastSyncTxt" style="color: #38bdf8; font-size: 10.5px; font-weight: 800;">최근 갱신: 07:34:35 (통합 거래대금 100% 동기화 🟢)</span>
-    </div>
-  </div>
-
-  <!-- HEADER -->
-  <header>
-    <div>
-      <div class="brand-title">
-        📈 증시 실시간 와이드 대시보드
-        <span class="badge-fold">FOLD8 PRO</span>
-      </div>
-      <div class="brand-subtitle">
-        스탁이지 · 주맵 · 네이버증권 · 만쥬 매매법 실시간 팩트 결합 (15:30 장마감)
-      </div>
-    </div>
-    <div class="header-actions" style="display:flex; gap:6px; flex-wrap:wrap;">
-      <button class="btn-action" style="background:#2a1215; color:#fda4af; border-color:#f43f5e; font-weight:800; cursor:pointer;" onclick="lockDashboard()" title="보안 잠금">🔒 잠금</button>
-      <a href="deals.html" class="btn-action" style="background:#022c22; color:#6ee7b7; border-color:#10b981; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;">✈️ 특가 레이더</a>
-      <button class="btn-action" style="background:#1e1b4b; color:#c7d2fe; border-color:#6366f1; font-weight:800; cursor:pointer;" onclick="openPwaInstallGuide()">📲 앱 설치 가이드</button>
-      <button class="btn-action" style="background:#06281e; color:#34d399; border-color:#10b981; font-weight:800; cursor:pointer;" onclick="openDartModal()">🛡️ DART 레이더</button>
-      <button class="btn-action" style="background:#0e2638; color:#38bdf8; border-color:#38bdf8; font-weight:800; cursor:pointer;" onclick="switchView('rnzone', null)">🎯 RN존 탭</button>
-      <button class="btn-action" style="background:#2a2113; color:#fbbf24; border-color:#f59e0b; font-weight:800; cursor:pointer;" onclick="switchView('jongbe', null)">🏆 종베 탭</button>
-      <button class="btn-action" style="background:#0284c7; color:#ffffff; border-color:#38bdf8; font-weight:800; box-shadow:0 2px 8px rgba(2,132,199,0.4); cursor:pointer;" onclick="openLiveBriefingModal()">⚡ 실시간 브리핑</button>
-      <button class="btn-action" style="color:#34d399; border-color:#059669;" onclick="saveTodayToStorage()">💾 오늘 저장</button>
-      <button class="btn-action" style="color:#fbbf24; border-color:#b45309;" onclick="openHistoryModal()">📁 보관함</button>
-    </div>
-  </header>
-
-  <!-- VIEW TABS (7 TABS IN EXACT REQUESTED ORDER) -->
-  
-  <!-- ADVANCED 1: REAL-TIME SIGNAL ALERT TICKER BAR -->
-  <div class="signal-ticker-wrap">
-    <div class="signal-label">
-      <span>🎯 실전 타점 신호등:</span>
-    </div>
-    <div class="signal-chips-scroll">
-      <div class="signal-chip green" onclick="navigateToSignalStock('rnzone', '031980')">
-        <span>🟢 [RN존 하단안착]</span>
-        <strong>피에스케이홀딩스:</strong>
-        <span>156,000원 이하 체결존 안착 (현재 141,700원 🎯)</span>
-      </div>
-      <div class="signal-chip green" onclick="navigateToSignalStock('rnzone', '067310')">
-        <span>🟢 [RN존 하단안착]</span>
-        <strong>하나마이크론:</strong>
-        <span>31,200원 이하 체결존 안착 (현재 28,700원 🎯)</span>
-      </div>
-      <div class="signal-chip red" onclick="switchView('overview', null)">
-        <span>👑 [우주항공 대장]</span>
-        <strong>컨텍:</strong>
-        <span>+29.94% 장중 상한가 폭발 (대금 338억 🚀)</span>
-      </div>
-      <div class="signal-chip purple" onclick="switchView('overview', null)">
-        <span>⚡ [신고가 대장주]</span>
-        <strong>JYP Ent.:</strong>
-        <span>+16.41% 랠리 · 통합대금 - 폭발 (현재 45,050원)</span>
-      </div>
-      <div class="signal-chip yellow" onclick="navigateToSignalStock('jongbe', 0)">
-        <span>🏆 [만쥬 1순위]</span>
-        <strong>주성엔지니어링:</strong>
-        <span>코스닥 1위 대금 3,932억 · 시초가 50% 분할 익절 완료 (현재 170,400원)</span>
-      </div>
-      <div class="signal-chip blue" onclick="switchView('overview', null)">
-        <span>👑 [CXL 기판 대장]</span>
-        <strong>티엘비:</strong>
-        <span>+8.24% 2차 시세 분출 · 통합대금 - (현재 41,400원)</span>
-      </div>
+      <button onclick="forceLiveRefresh()" class="srb-btn-refresh">🔄 즉시 새로고침</button>
+      <span id="lastSyncTxt" style="color: #38bdf8; font-size: 10.5px; font-weight: 800;">최근 갱신: 07:51:09 (통합 거래대금 100% 동기화 🟢)</span>
     </div>
   </div>
 
@@ -2176,7 +2324,7 @@
         </div>
       </div>
     </div>
-                                                                                                                                                                                                                                                                                                                                    <!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->
+                                                                                                                                                                                                                                                                                                                                            <!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->
     <div class="main-bottom-grid">
       <!-- Left: 52W High -->
       <div class="panel-box gold">
@@ -2893,6 +3041,50 @@
   <!-- TAB 4: NEWS & HISTORICAL CASES TIMELINE (SYNCHRONIZED WITH POST-MARKET) -->
   <div id="tabNews" style="display: none;">
     <div class="panel-box purple">
+      <!-- AUTO HOURLY NEWS 07:38 -->
+      <div class="news-timeline-card" style="border-left-color:#38bdf8;" onclick="openNewsDetail('젠슨 황 사임에 엔비디아 급락…코스피 향방은[오늘의 증시]', '07:38 속보', 'https://n.news.naver.com/mnews/article/003/0014319772', '젠슨 황 사임에 엔비디아 급락…코스피 향방은[오늘의 증시]', '장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성.', '실시간 거래대금 급증 종목 연동')">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <span class="nt-time" style="background:#0c4a6e; color:#bae6fd;">07:38 실시간 속보 ⚡</span>
+          <a href="https://n.news.naver.com/mnews/article/003/0014319772" target="_blank" rel="noopener noreferrer" style="font-size:10.5px; background:rgba(56,189,248,0.15); color:#7dd3fc; border:1px solid rgba(56,189,248,0.4); padding:2px 7px; border-radius:4px; text-decoration:none; font-weight:800;" onclick="event.stopPropagation()">🔗 기사 원문 ↗</a>
+        </div>
+        <div class="nt-title">젠슨 황 사임에 엔비디아 급락…코스피 향방은[오늘의 증시]</div>
+        <div class="nt-history">과거: 장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성</div>
+        <div class="nt-beneficiary">🎯 시장 관찰: 실시간 거래대금 급증 종목 연동</div>
+      </div>
+
+      <!-- AUTO HOURLY NEWS 07:35 -->
+      <div class="news-timeline-card" style="border-left-color:#38bdf8;" onclick="openNewsDetail('앤스로픽 고밸류 논란에도…VC &quot;AI투자 끝까지 간다&quot;[VC는 지금]', '07:35 속보', 'https://n.news.naver.com/mnews/article/277/0005842058', '앤스로픽 고밸류 논란에도…VC &quot;AI투자 끝까지 간다&quot;[VC는 지금]', '장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성.', '실시간 거래대금 급증 종목 연동')">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <span class="nt-time" style="background:#0c4a6e; color:#bae6fd;">07:35 실시간 속보 ⚡</span>
+          <a href="https://n.news.naver.com/mnews/article/277/0005842058" target="_blank" rel="noopener noreferrer" style="font-size:10.5px; background:rgba(56,189,248,0.15); color:#7dd3fc; border:1px solid rgba(56,189,248,0.4); padding:2px 7px; border-radius:4px; text-decoration:none; font-weight:800;" onclick="event.stopPropagation()">🔗 기사 원문 ↗</a>
+        </div>
+        <div class="nt-title">앤스로픽 고밸류 논란에도…VC &quot;AI투자 끝까지 간다&quot;[VC는 지금]</div>
+        <div class="nt-history">과거: 장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성</div>
+        <div class="nt-beneficiary">🎯 시장 관찰: 실시간 거래대금 급증 종목 연동</div>
+      </div>
+
+      <!-- AUTO HOURLY NEWS 07:32 -->
+      <div class="news-timeline-card" style="border-left-color:#38bdf8;" onclick="openNewsDetail('젠슨 황 사임 충격에 뉴욕증시 동반 하락…엔비디아 4% 급락[투자360]', '07:32 속보', 'https://n.news.naver.com/mnews/article/016/0002722873', '젠슨 황 사임 충격에 뉴욕증시 동반 하락…엔비디아 4% 급락[투자360]', '장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성.', '실시간 거래대금 급증 종목 연동')">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <span class="nt-time" style="background:#0c4a6e; color:#bae6fd;">07:32 실시간 속보 ⚡</span>
+          <a href="https://n.news.naver.com/mnews/article/016/0002722873" target="_blank" rel="noopener noreferrer" style="font-size:10.5px; background:rgba(56,189,248,0.15); color:#7dd3fc; border:1px solid rgba(56,189,248,0.4); padding:2px 7px; border-radius:4px; text-decoration:none; font-weight:800;" onclick="event.stopPropagation()">🔗 기사 원문 ↗</a>
+        </div>
+        <div class="nt-title">젠슨 황 사임 충격에 뉴욕증시 동반 하락…엔비디아 4% 급락[투자360]</div>
+        <div class="nt-history">과거: 장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성</div>
+        <div class="nt-beneficiary">🎯 시장 관찰: 실시간 거래대금 급증 종목 연동</div>
+      </div>
+
+      <!-- AUTO HOURLY NEWS 07:30 -->
+      <div class="news-timeline-card" style="border-left-color:#38bdf8;" onclick="openNewsDetail('테슬라 투자자는 정말 양도세를 내게 될까', '07:30 속보', 'https://n.news.naver.com/mnews/article/648/0000052589', '테슬라 투자자는 정말 양도세를 내게 될까', '장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성.', '실시간 거래대금 급증 종목 연동')">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+          <span class="nt-time" style="background:#0c4a6e; color:#bae6fd;">07:30 실시간 속보 ⚡</span>
+          <a href="https://n.news.naver.com/mnews/article/648/0000052589" target="_blank" rel="noopener noreferrer" style="font-size:10.5px; background:rgba(56,189,248,0.15); color:#7dd3fc; border:1px solid rgba(56,189,248,0.4); padding:2px 7px; border-radius:4px; text-decoration:none; font-weight:800;" onclick="event.stopPropagation()">🔗 기사 원문 ↗</a>
+        </div>
+        <div class="nt-title">테슬라 투자자는 정말 양도세를 내게 될까</div>
+        <div class="nt-history">과거: 장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성</div>
+        <div class="nt-beneficiary">🎯 시장 관찰: 실시간 거래대금 급증 종목 연동</div>
+      </div>
+
       <!-- AUTO HOURLY NEWS 07:05 -->
       <div class="news-timeline-card" style="border-left-color:#38bdf8;" onclick="openNewsDetail('종전 기대감에 K방산 &#39;흔들&#39;…유럽 재무장이 반등 이끌까', '07:05 속보', 'https://n.news.naver.com/mnews/article/119/0003154655', '종전 기대감에 K방산 &#39;흔들&#39;…유럽 재무장이 반등 이끌까', '장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성.', '실시간 거래대금 급증 종목 연동')">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
@@ -4817,7 +5009,7 @@
         <span style="font-size: 16px;">🛡️</span>
         <div>
           <div style="font-size: 12px; font-weight: 800; color: #34d399;">DART 전자공시 실시간 악재 레이더 가동 중</div>
-          <div style="font-size: 11px; color: #94a3b8;">오늘 종가베팅 엄선 10종목 장마감 후 유상증자·CB발행·블록딜 공시 전수 스캔: <strong>전 종목 악재 없음(클린 🟢)</strong> <span style="font-size:10px; color:#34d399; margin-left:6px;">[실시간 스캔: 07:34:35]</span></div>
+          <div style="font-size: 11px; color: #94a3b8;">오늘 종가베팅 엄선 10종목 장마감 후 유상증자·CB발행·블록딜 공시 전수 스캔: <strong>전 종목 악재 없음(클린 🟢)</strong> <span style="font-size:10px; color:#34d399; margin-left:6px;">[실시간 스캔: 07:51:09]</span></div>
         </div>
       </div>
       <button class="dart-badge-btn" onclick="openDartModal()">
@@ -5033,7 +5225,7 @@
       <div class="cal-wrapper">
         <div class="cal-header">
           <span class="cal-title">🗓️ 2026년 11월 (November 2026)</span>
-          <span class="cal-month-nav">⭐ 오늘: 11월 13일(금) 미 10월 소매판매 발표 & 금요 주간 결산 마감</span>
+          <span class="cal-month-nav">⭐ 오늘: 11월 13일(금) 미 10월 PPI 발표 & 금요 주간 결산 마감</span>
         </div>
 
         <div class="cal-grid">
@@ -5092,7 +5284,7 @@
           </div>
           <div class="cal-cell today selected" id="calCellToday" onclick="selectCalWeek(2)">
             <span class="cal-date-num">13</span>
-            <span class="cal-badge ipo" style="background:#b45309; color:#fef08a;">★오늘 소매판매</span>
+            <span class="cal-badge ipo" style="background:#b45309; color:#fef08a;">★오늘 미 PPI</span>
           </div>
           <div class="cal-cell" onclick="selectCalWeek(2)">
             <span class="cal-date-num" style="color:#60a5fa;">14</span>
@@ -5478,21 +5670,22 @@
         var stiOk = !!db['에스티아이'] && db['에스티아이'].length > 0;
         var statusOk = (totalSeries >= 40 && totalCodes >= 40 && tseOk && stiOk);
 
-        var radarWrap = document.getElementById('sessionRadarBar') ? document.getElementById('sessionRadarBar').children[0] : null;
+        var radarWrap = document.getElementById('sessionRadarBar') ? (document.getElementById('sessionRadarBar').querySelector('.srb-left') || document.getElementById('sessionRadarBar').children[0]) : null;
         var badge = document.getElementById('autoValidationBadge');
         if (!badge && radarWrap) {
           badge = document.createElement('span');
           badge.id = 'autoValidationBadge';
-          badge.style.cssText = 'margin-left:8px; font-size:10px; padding:2px 7px; border-radius:4px; font-weight:800; white-space:nowrap;';
+          badge.className = 'auto-validation-badge';
           radarWrap.appendChild(badge);
         }
 
         if (badge) {
+          var isNarrowScreen = window.innerWidth <= 820;
           if (statusOk) {
             badge.style.background = 'rgba(16,185,129,0.15)';
             badge.style.color = '#34d399';
             badge.style.border = '1px solid #059669';
-            badge.innerText = '🛡️ 거래소 공식 검증: KRX 06:00 마감 & CME 최근월물 연동 (' + totalCodes + '종목 클린) 🟢';
+            badge.innerText = isNarrowScreen ? '🛡️ KRX·CME 검증 🟢' : ('🛡️ 거래소 공식 검증: KRX 06:00 마감 & CME 최근월물 연동 (' + totalCodes + '종목 클린) 🟢');
           } else {
             badge.style.background = 'rgba(245,158,11,0.15)';
             badge.style.color = '#fbbf24';
