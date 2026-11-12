@@ -40,10 +40,28 @@ def main():
     with open(index_path, "r", encoding="utf-8") as f:
         html_content = f.read()
 
-    # 1. Update Header Sync Timestamp
+    # 1. Update Header Sync Timestamp & Auto Sync Badge
+    curr_m = now_kst.minute
+    next_m = (curr_m // 15 + 1) * 15
+    next_dt = now_kst.replace(minute=0, second=0, microsecond=0) + datetime.timedelta(minutes=next_m)
+    next_sync_time = next_dt.strftime("%H:%M:35")
+
     html_content = re.sub(
         r'<span id="lastSyncTxt"[^>]*>.*?</span>',
         f'<span id="lastSyncTxt" style="color: #38bdf8; font-size: 10.5px; font-weight: 800;">최근 갱신: {time_str} (통합 거래대금 100% 동기화 🟢)</span>',
+        html_content
+    )
+
+    html_content = re.sub(
+        r'<div id="autoSyncBadge"[^>]*>.*?</div>|<button id="autoRefreshBtn"[^>]*>.*?</button>',
+        f'<div id="autoSyncBadge" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 4px;">⚡ 15분 자동 배포 중 (다음: {next_sync_time})</div>',
+        html_content
+    )
+
+    # Remove redundant general refresh button in banner
+    html_content = re.sub(
+        r'\s*<button class="btn-action" onclick="location\.reload\(\)">🔄 새로고침</button>',
+        '',
         html_content
     )
 

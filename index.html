@@ -1715,9 +1715,9 @@
       <span id="sessionCountdownTxt" style="color: #cbd5e1; font-size: 11px;">(09:00 개장 직전)</span>
     </div>
     <div style="display: flex; align-items: center; gap: 10px;">
-      <button id="autoRefreshBtn" onclick="toggleAutoRefresh()" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 4px; cursor: pointer;">⚡ 30초 자동갱신: ON</button>
+      <div id="autoSyncBadge" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 4px;">⚡ 15분 자동 배포 중 (다음: 12:00:35)</div>
       <button onclick="forceLiveRefresh()" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; cursor: pointer;">🔄 즉시 새로고침</button>
-      <span id="lastSyncTxt" style="color: #38bdf8; font-size: 10.5px; font-weight: 800;">최근 갱신: 11:45:39 (통합 거래대금 100% 동기화 🟢)</span>
+      <span id="lastSyncTxt" style="color: #38bdf8; font-size: 10.5px; font-weight: 800;">최근 갱신: 11:47:45 (통합 거래대금 100% 동기화 🟢)</span>
     </div>
   </div>
 
@@ -1742,7 +1742,6 @@
       <button class="btn-action" style="background:#0284c7; color:#ffffff; border-color:#38bdf8; font-weight:800; box-shadow:0 2px 8px rgba(2,132,199,0.4); cursor:pointer;" onclick="openLiveBriefingModal()">⚡ 실시간 브리핑</button>
       <button class="btn-action" style="color:#34d399; border-color:#059669;" onclick="saveTodayToStorage()">💾 오늘 저장</button>
       <button class="btn-action" style="color:#fbbf24; border-color:#b45309;" onclick="openHistoryModal()">📁 보관함</button>
-      <button class="btn-action" onclick="location.reload()">🔄 새로고침</button>
     </div>
   </header>
 
@@ -1807,11 +1806,11 @@
     <!-- TICKER BAR (ALL 9 CORE INDICES CLICKABLE WITH CHART POPUPS) -->
   <div class="ticker-bar" style="overflow-x: auto; white-space: nowrap; padding: 7px 12px; gap: 8px; display: flex; align-items: center;">
     <div class="ticker-item" style="cursor: pointer; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.03);" onclick="openIndexChart('코스피 (KOSPI)', '5,375.36pt (+2.60%)', '거래대금 14.8조 원', '외국인 +6,550억 순매수로 5,370선 안착 돌파. 30거래일 기준 강력한 우상향 골든크로스 지속.', 'kospi')">
-      <span class="label">코스피 📈 <span style="font-size:8.5px; background:rgba(255,255,255,0.08); padding:1px 3px; border-radius:2px; color:#cbd5e1;">KRX 공식</span></span><span class="val up">5,425.22 (+0.93%)</span>
+      <span class="label">코스피 📈 <span style="font-size:8.5px; background:rgba(255,255,255,0.08); padding:1px 3px; border-radius:2px; color:#cbd5e1;">KRX 공식</span></span><span class="val up">5,428.59 (+0.99%)</span>
     </div>
     <span class="ticker-sep">|</span>
     <div class="ticker-item" style="cursor: pointer; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.03);" onclick="openIndexChart('코스닥 (KOSDAQ)', '705.10pt (+5.62%)', '거래대금 11.2조 원', '이틀 연속 매수 사이드카 발동 유지. 기관 +2,649억 대량 양매수로 700선 돌파 안착.', 'kosdaq')">
-      <span class="label">코스닥 📈 <span style="font-size:8.5px; background:rgba(255,255,255,0.08); padding:1px 3px; border-radius:2px; color:#cbd5e1;">KRX 공식</span></span><span class="val up">701.89 (-0.46%)</span>
+      <span class="label">코스닥 📈 <span style="font-size:8.5px; background:rgba(255,255,255,0.08); padding:1px 3px; border-radius:2px; color:#cbd5e1;">KRX 공식</span></span><span class="val up">702.49 (-0.37%)</span>
     </div>
     <span class="ticker-sep">|</span>
     <div class="ticker-item" style="cursor: pointer; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.03);" onclick="openIndexChart('코스피200 주간선물', '836.35pt (+2.99%)', '외인 +12,400계약 순매수', '주간 정규장에서 외인 1만 계약 이상 폭풍 매수 유입으로 지수 상방 견인.', 'kospi200_day')">
@@ -1846,11 +1845,11 @@
   <div class="supply-strip" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px;">
     <div class="supply-card" style="cursor: pointer; padding: 5px 6px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; white-space: nowrap;" onclick="openSupplyChart('코스피 외국인 누적 수급 추이', '코스피 외인 +6,550억 원 순매수', '3일 연속 매수세 유입', '09:00 차익 출회 이후 10:00 순매수 전환, 15:30 당일 최고치 마감.', 'supply_flow')">
       <span class="title" style="font-size: 9.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">코스피 외인</span>
-      <span class="amount buy" style="font-size: 10px; font-weight: 800; color: #f43f5e; white-space: nowrap; margin-left: 2px;">+2,444억</span>
+      <span class="amount buy" style="font-size: 10px; font-weight: 800; color: #f43f5e; white-space: nowrap; margin-left: 2px;">+2,446억</span>
     </div>
     <div class="supply-card" style="cursor: pointer; padding: 5px 6px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; white-space: nowrap;" onclick="openSupplyChart('코스피 기관 누적 수급 추이', '코스피 기관 +1,840억 원 순매수', '외인·기관 쌍끌이 +8,390억 견인', '금융투자 매도 속 연기금·투신 중심의 소부장/대형주 바스켓 순매수 안착.', 'supply_flow')">
       <span class="title" style="font-size: 9.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">코스피 기관</span>
-      <span class="amount buy" style="font-size: 10px; font-weight: 800; color: #f43f5e; white-space: nowrap; margin-left: 2px;">-4,490억</span>
+      <span class="amount buy" style="font-size: 10px; font-weight: 800; color: #f43f5e; white-space: nowrap; margin-left: 2px;">-4,492억</span>
     </div>
     <div class="supply-card" style="cursor: pointer; padding: 5px 6px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; white-space: nowrap;" onclick="openSupplyChart('외인 선물 누적 수급 추이', '외인 선물 +12,400계약 (주간) / +2,450계약 (야간)', '누적 1.48만 롱포지션 구축', '외인 대규모 선물 쇼트커버링 및 롱베팅으로 지수 상방 완벽 견인.', 'supply_flow')">
       <span class="title" style="font-size: 9.5px; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">외인선물</span>
@@ -1946,20 +1945,20 @@
             <div class="st-ohlc">종 <strong>12,930</strong> | 시 10,050 고 12,930 저 10,050</div>
             <div class="st-bottom"><span class="st-vol">93.6억</span><span class="st-role" style="background:#dc2626; color:#fff;">👑 상한가</span></div>
           </div>
-          <div class="stock-tile leader" onclick="openDetail('셀바스AI', '+9.8%', '대금 316억 | 현재가 7,710원', '의료 AI 음성인식 및 온디바이스 AI 소프트웨어 수요 급증으로 146억 실질 거래대금 대장 안착.')">
-            <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ 셀바스AI</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+9.8%</span></div>
-            <div class="st-ohlc">종 <strong>7,710</strong> | 시 7,150 고 8,400 저 7,150</div>
+          <div class="stock-tile leader" onclick="openDetail('셀바스AI', '+9.7%', '대금 316억 | 현재가 7,700원', '의료 AI 음성인식 및 온디바이스 AI 소프트웨어 수요 급증으로 146억 실질 거래대금 대장 안착.')">
+            <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ 셀바스AI</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+9.7%</span></div>
+            <div class="st-ohlc">종 <strong>7,700</strong> | 시 7,150 고 8,400 저 7,150</div>
             <div class="st-bottom"><span class="st-vol">316억</span><span class="st-role">대금대장</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('솔트룩스', '+8.5%', '대금 133억 | 현재가 12,380원', '루시아 LLM 엔터프라이즈 공급 확대 및 정부 AI 바우처 사업 연속 수혜.')">
-            <div class="st-top"><span class="st-name">솔트룩스</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+8.5%</span></div>
-            <div class="st-ohlc">종 <strong>12,380</strong> | 시 11,470 고 13,350 저 11,450</div>
+          <div class="stock-tile" onclick="openDetail('솔트룩스', '+8.2%', '대금 133억 | 현재가 12,340원', '루시아 LLM 엔터프라이즈 공급 확대 및 정부 AI 바우처 사업 연속 수혜.')">
+            <div class="st-top"><span class="st-name">솔트룩스</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+8.2%</span></div>
+            <div class="st-ohlc">종 <strong>12,340</strong> | 시 11,470 고 13,350 저 11,450</div>
             <div class="st-bottom"><span class="st-vol">133억</span><span class="st-role">후발수혜</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('한글과컴퓨터', '-1.1%', '대금 32.2억 | 현재가 14,640원', '한컴 어시스턴트 AI 출시 및 B2B AI 오피스 구독 성장세.')">
+          <div class="stock-tile" onclick="openDetail('한글과컴퓨터', '-1.1%', '대금 32.3억 | 현재가 14,640원', '한컴 어시스턴트 AI 출시 및 B2B AI 오피스 구독 성장세.')">
             <div class="st-top"><span class="st-name">한글과컴퓨터</span><span class="st-change" style="color:#38bdf8; font-weight:800;">-1.1%</span></div>
             <div class="st-ohlc">종 <strong>14,640</strong> | 시 14,950 고 15,900 저 14,600</div>
-            <div class="st-bottom"><span class="st-vol">32.2억</span><span class="st-role">AI오피스</span></div>
+            <div class="st-bottom"><span class="st-vol">32.3억</span><span class="st-role">AI오피스</span></div>
           </div>
         </div>
       </div>
@@ -1971,25 +1970,25 @@
           <span class="theme-avg">+13.3%</span>
         </div>
         <div class="stock-tiles">
-          <div class="stock-tile leader" onclick="openDetail('JYP Ent.', '+20.0%', '대금 2,335억 | 현재가 46,450원', '스트레이키즈 글로벌 월드투어 매진 및 4분기 음반 매출 서프라이즈 기대감으로 458억 대량 수급 유입.')">
-            <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ JYP Ent.</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+20.0%</span></div>
-            <div class="st-ohlc">종 <strong>46,450</strong> | 시 41,400 고 47,600 저 40,800</div>
-            <div class="st-bottom"><span class="st-vol">2,335억</span><span class="st-role">엔터대장</span></div>
+          <div class="stock-tile leader" onclick="openDetail('JYP Ent.', '+20.4%', '대금 2,340억 | 현재가 46,600원', '스트레이키즈 글로벌 월드투어 매진 및 4분기 음반 매출 서프라이즈 기대감으로 458억 대량 수급 유입.')">
+            <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ JYP Ent.</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+20.4%</span></div>
+            <div class="st-ohlc">종 <strong>46,600</strong> | 시 41,400 고 47,600 저 40,800</div>
+            <div class="st-bottom"><span class="st-vol">2,340억</span><span class="st-role">엔터대장</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('와이지엔터테인먼트', '+6.5%', '대금 80.9억 | 현재가 43,750원', '베이비몬스터 첫 정규앨범 글로벌 흥행 및 블랙핑크 완전체 컴백 가시화.')">
-            <div class="st-top"><span class="st-name">와이지엔터</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+6.5%</span></div>
-            <div class="st-ohlc">종 <strong>43,750</strong> | 시 41,550 고 44,450 저 41,500</div>
-            <div class="st-bottom"><span class="st-vol">80.9억</span><span class="st-role">후발연동</span></div>
+          <div class="stock-tile" onclick="openDetail('와이지엔터테인먼트', '+6.2%', '대금 81.3억 | 현재가 43,650원', '베이비몬스터 첫 정규앨범 글로벌 흥행 및 블랙핑크 완전체 컴백 가시화.')">
+            <div class="st-top"><span class="st-name">와이지엔터</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+6.2%</span></div>
+            <div class="st-ohlc">종 <strong>43,650</strong> | 시 41,550 고 44,450 저 41,500</div>
+            <div class="st-bottom"><span class="st-vol">81.3억</span><span class="st-role">후발연동</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('에스엠', '+7.0%', '대금 129억 | 현재가 78,000원', '에스파 신곡 글로벌 차트 1위 및 신인 보이그룹 데뷔 모멘텀.')">
+          <div class="stock-tile" onclick="openDetail('에스엠', '+7.0%', '대금 130억 | 현재가 78,000원', '에스파 신곡 글로벌 차트 1위 및 신인 보이그룹 데뷔 모멘텀.')">
             <div class="st-top"><span class="st-name">에스엠</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+7.0%</span></div>
             <div class="st-ohlc">종 <strong>78,000</strong> | 시 73,600 고 80,500 저 73,600</div>
-            <div class="st-bottom"><span class="st-vol">129억</span><span class="st-role">음원강세</span></div>
+            <div class="st-bottom"><span class="st-vol">130억</span><span class="st-role">음원강세</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('하이브', '+6.1%', '대금 573억 | 현재가 156,800원', 'BTS 완전체 복귀 기대감 및 위버스 구독 서비스 안착.')">
-            <div class="st-top"><span class="st-name">하이브</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+6.1%</span></div>
-            <div class="st-ohlc">종 <strong>156,800</strong> | 시 149,900 고 157,700 저 149,200</div>
-            <div class="st-bottom"><span class="st-vol">573억</span><span class="st-role">위버스</span></div>
+          <div class="stock-tile" onclick="openDetail('하이브', '+5.8%', '대금 576억 | 현재가 156,400원', 'BTS 완전체 복귀 기대감 및 위버스 구독 서비스 안착.')">
+            <div class="st-top"><span class="st-name">하이브</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+5.8%</span></div>
+            <div class="st-ohlc">종 <strong>156,400</strong> | 시 149,900 고 157,700 저 149,200</div>
+            <div class="st-bottom"><span class="st-vol">576억</span><span class="st-role">위버스</span></div>
           </div>
         </div>
       </div>
@@ -2001,25 +2000,25 @@
           <span class="theme-avg">+7.1%</span>
         </div>
         <div class="stock-tiles">
-          <div class="stock-tile leader" onclick="openDetail('이수페타시스', '+8.2%', '대금 1,852억 | 현재가 88,700원', '초고다층 MLB 기판 글로벌 빅테크 독점 수주 및 밸류업 공시 수혜로 350억 외인 수급 집중.')">
-            <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ 이수페타시스</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+8.2%</span></div>
-            <div class="st-ohlc">종 <strong>88,700</strong> | 시 83,100 고 90,200 저 82,000</div>
-            <div class="st-bottom"><span class="st-vol">1,852억</span><span class="st-role">밸류대장</span></div>
+          <div class="stock-tile leader" onclick="openDetail('이수페타시스', '+8.7%', '대금 1,861억 | 현재가 89,100원', '초고다층 MLB 기판 글로벌 빅테크 독점 수주 및 밸류업 공시 수혜로 350억 외인 수급 집중.')">
+            <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ 이수페타시스</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+8.7%</span></div>
+            <div class="st-ohlc">종 <strong>89,100</strong> | 시 83,100 고 90,200 저 82,000</div>
+            <div class="st-bottom"><span class="st-vol">1,861억</span><span class="st-role">밸류대장</span></div>
           </div>
-          <div class="stock-tile leader" onclick="openDetail('삼양식품', '-1.2%', '대금 926억 | 현재가 1,197,000원', '불닭볶음면 글로벌 수출 사상 최대치 및 3분기 어닝 서프라이즈로 밸류업 지수 편입 효과.')">
-            <div class="st-top"><span class="st-name">삼양식품</span><span class="st-change" style="color:#38bdf8; font-weight:800;">-1.2%</span></div>
-            <div class="st-ohlc">종 <strong>1,197,000</strong> | 시 1,260,000 고 1,303,000 저 1,163,000</div>
-            <div class="st-bottom"><span class="st-vol">926억</span><span class="st-role">수출원탑</span></div>
+          <div class="stock-tile leader" onclick="openDetail('삼양식품', '-1.5%', '대금 929억 | 현재가 1,193,000원', '불닭볶음면 글로벌 수출 사상 최대치 및 3분기 어닝 서프라이즈로 밸류업 지수 편입 효과.')">
+            <div class="st-top"><span class="st-name">삼양식품</span><span class="st-change" style="color:#38bdf8; font-weight:800;">-1.5%</span></div>
+            <div class="st-ohlc">종 <strong>1,193,000</strong> | 시 1,260,000 고 1,303,000 저 1,163,000</div>
+            <div class="st-bottom"><span class="st-vol">929억</span><span class="st-role">수출원탑</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('코스맥스', '+0.9%', '대금 606억 | 현재가 265,500원', 'K-뷰티 인디 브랜드 글로벌 주문 폭주 및 화장품 ODM 가동률 풀가동.')">
-            <div class="st-top"><span class="st-name">코스맥스</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+0.9%</span></div>
-            <div class="st-ohlc">종 <strong>265,500</strong> | 시 263,500 고 292,000 저 258,000</div>
-            <div class="st-bottom"><span class="st-vol">606억</span><span class="st-role">K뷰티</span></div>
+          <div class="stock-tile" onclick="openDetail('코스맥스', '+1.1%', '대금 610억 | 현재가 266,000원', 'K-뷰티 인디 브랜드 글로벌 주문 폭주 및 화장품 ODM 가동률 풀가동.')">
+            <div class="st-top"><span class="st-name">코스맥스</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+1.1%</span></div>
+            <div class="st-ohlc">종 <strong>266,000</strong> | 시 263,500 고 292,000 저 258,000</div>
+            <div class="st-bottom"><span class="st-vol">610억</span><span class="st-role">K뷰티</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('메리츠금융지주', '-14.1%', '대금 567억 | 현재가 111,300원', '자사주 소각 및 주주환원율 50% 정책 지속 안착.')">
+          <div class="stock-tile" onclick="openDetail('메리츠금융지주', '-14.1%', '대금 570억 | 현재가 111,200원', '자사주 소각 및 주주환원율 50% 정책 지속 안착.')">
             <div class="st-top"><span class="st-name">메리츠금융</span><span class="st-change" style="color:#38bdf8; font-weight:800;">-14.1%</span></div>
-            <div class="st-ohlc">종 <strong>111,300</strong> | 시 125,100 고 126,800 저 110,500</div>
-            <div class="st-bottom"><span class="st-vol">567억</span><span class="st-role">주주환원</span></div>
+            <div class="st-ohlc">종 <strong>111,200</strong> | 시 125,100 고 126,800 저 110,500</div>
+            <div class="st-bottom"><span class="st-vol">570억</span><span class="st-role">주주환원</span></div>
           </div>
         </div>
       </div>
@@ -2031,25 +2030,25 @@
           <span class="theme-avg">+5.8%</span>
         </div>
         <div class="stock-tiles">
-          <div class="stock-tile leader" onclick="openDetail('이수페타시스', '+8.2%', '대금 1,852억 | 현재가 88,700원', '엔비디아 및 구글 TPU 차세대 통신 기판 공급 확대로 PCB 테마 실질 수급 주도.')">
-            <div class="st-top"><span class="st-name">이수페타시스</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+8.2%</span></div>
-            <div class="st-ohlc">종 <strong>88,700</strong> | 시 83,100 고 90,200 저 82,000</div>
-            <div class="st-bottom"><span class="st-vol">1,852억</span><span class="st-role">기판원탑</span></div>
+          <div class="stock-tile leader" onclick="openDetail('이수페타시스', '+8.7%', '대금 1,861억 | 현재가 89,100원', '엔비디아 및 구글 TPU 차세대 통신 기판 공급 확대로 PCB 테마 실질 수급 주도.')">
+            <div class="st-top"><span class="st-name">이수페타시스</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+8.7%</span></div>
+            <div class="st-ohlc">종 <strong>89,100</strong> | 시 83,100 고 90,200 저 82,000</div>
+            <div class="st-bottom"><span class="st-vol">1,861억</span><span class="st-role">기판원탑</span></div>
           </div>
-          <div class="stock-tile leader" onclick="openDetail('티엘비', '+11.1%', '대금 1,632억 | 현재가 42,500원', '전일 상한가에 이어 차세대 메모리 모듈 기판 독점 수혜 및 외국인 러브콜 지속.')">
-            <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ 티엘비</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+11.1%</span></div>
-            <div class="st-ohlc">종 <strong>42,500</strong> | 시 39,750 고 44,400 저 38,750</div>
-            <div class="st-bottom"><span class="st-vol">1,632억</span><span class="st-role">CXL독점</span></div>
+          <div class="stock-tile leader" onclick="openDetail('티엘비', '+11.2%', '대금 1,635억 | 현재가 42,550원', '전일 상한가에 이어 차세대 메모리 모듈 기판 독점 수혜 및 외국인 러브콜 지속.')">
+            <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ 티엘비</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+11.2%</span></div>
+            <div class="st-ohlc">종 <strong>42,550</strong> | 시 39,750 고 44,400 저 38,750</div>
+            <div class="st-bottom"><span class="st-vol">1,635억</span><span class="st-role">CXL독점</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('펨트론', '+3.8%', '대금 19.6억 | 현재가 8,410원', '반도체 패키징 및 SMT 3D 검사장비 수주 확대 연동.')">
-            <div class="st-top"><span class="st-name">펨트론</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+3.8%</span></div>
-            <div class="st-ohlc">종 <strong>8,410</strong> | 시 8,300 고 8,570 저 8,080</div>
-            <div class="st-bottom"><span class="st-vol">19.6억</span><span class="st-role">검사장비</span></div>
+          <div class="stock-tile" onclick="openDetail('펨트론', '+3.7%', '대금 19.7억 | 현재가 8,400원', '반도체 패키징 및 SMT 3D 검사장비 수주 확대 연동.')">
+            <div class="st-top"><span class="st-name">펨트론</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+3.7%</span></div>
+            <div class="st-ohlc">종 <strong>8,400</strong> | 시 8,300 고 8,570 저 8,080</div>
+            <div class="st-bottom"><span class="st-vol">19.7억</span><span class="st-role">검사장비</span></div>
           </div>
-          <div class="stock-tile leader" onclick="openDetail('코리아써키트', '+4.0%', '대금 2,244억 | 현재가 89,900원', 'CXL 2.0 및 FC-BGA 정부 판교·용인 1조 클러스터 투자 실질 대장주.')">
-            <div class="st-top"><span class="st-name">코리아써키트</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+4.0%</span></div>
-            <div class="st-ohlc">종 <strong>89,900</strong> | 시 90,900 고 94,500 저 85,500</div>
-            <div class="st-bottom"><span class="st-vol">2,244억</span><span class="st-role">CXL총괄</span></div>
+          <div class="stock-tile leader" onclick="openDetail('코리아써키트', '+4.6%', '대금 2,252억 | 현재가 90,400원', 'CXL 2.0 및 FC-BGA 정부 판교·용인 1조 클러스터 투자 실질 대장주.')">
+            <div class="st-top"><span class="st-name">코리아써키트</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+4.6%</span></div>
+            <div class="st-ohlc">종 <strong>90,400</strong> | 시 90,900 고 94,500 저 85,500</div>
+            <div class="st-bottom"><span class="st-vol">2,252억</span><span class="st-role">CXL총괄</span></div>
           </div>
         </div>
       </div>
@@ -2061,25 +2060,25 @@
           <span class="theme-avg">+13.8%</span>
         </div>
         <div class="stock-tiles">
-          <div class="stock-tile leader" onclick="openDetail('셀바스AI', '+9.8%', '대금 316억 | 현재가 7,710원', '모바일 음성인식 솔루션 및 대화형 인터페이스 확산 수혜로 테마 견인.')">
-            <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ 셀바스AI</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+9.8%</span></div>
-            <div class="st-ohlc">종 <strong>7,710</strong> | 시 7,150 고 8,400 저 7,150</div>
+          <div class="stock-tile leader" onclick="openDetail('셀바스AI', '+9.7%', '대금 316억 | 현재가 7,700원', '모바일 음성인식 솔루션 및 대화형 인터페이스 확산 수혜로 테마 견인.')">
+            <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ 셀바스AI</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+9.7%</span></div>
+            <div class="st-ohlc">종 <strong>7,700</strong> | 시 7,150 고 8,400 저 7,150</div>
             <div class="st-bottom"><span class="st-vol">316억</span><span class="st-role">콘텐츠대장</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('컴투스', '-1.4%', '대금 10.5억 | 현재가 34,150원', '글로벌 모바일 게임 신작 런칭 및 야구 라인업 호조.')">
-            <div class="st-top"><span class="st-name">컴투스</span><span class="st-change" style="color:#38bdf8; font-weight:800;">-1.4%</span></div>
-            <div class="st-ohlc">종 <strong>34,150</strong> | 시 35,800 고 35,800 저 33,700</div>
+          <div class="stock-tile" onclick="openDetail('컴투스', '-1.3%', '대금 10.5억 | 현재가 34,200원', '글로벌 모바일 게임 신작 런칭 및 야구 라인업 호조.')">
+            <div class="st-top"><span class="st-name">컴투스</span><span class="st-change" style="color:#38bdf8; font-weight:800;">-1.3%</span></div>
+            <div class="st-ohlc">종 <strong>34,200</strong> | 시 35,800 고 35,800 저 33,700</div>
             <div class="st-bottom"><span class="st-vol">10.5억</span><span class="st-role">게임연동</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('한글과컴퓨터', '-1.1%', '대금 32.2억 | 현재가 14,640원', '클라우드 웹 오피스 및 모바일 앱 인터페이스 고도화.')">
+          <div class="stock-tile" onclick="openDetail('한글과컴퓨터', '-1.1%', '대금 32.3억 | 현재가 14,640원', '클라우드 웹 오피스 및 모바일 앱 인터페이스 고도화.')">
             <div class="st-top"><span class="st-name">한컴</span><span class="st-change" style="color:#38bdf8; font-weight:800;">-1.1%</span></div>
             <div class="st-ohlc">종 <strong>14,640</strong> | 시 14,950 고 15,900 저 14,600</div>
-            <div class="st-bottom"><span class="st-vol">32.2억</span><span class="st-role">오피스</span></div>
+            <div class="st-bottom"><span class="st-vol">32.3억</span><span class="st-role">오피스</span></div>
           </div>
-          <div class="stock-tile leader" onclick="openDetail('NHN', '-15.7%', '대금 334억 | 현재가 67,700원', '모바일 결제·게임 호조 및 AI 데이터센터 클라우드 신고가 경신.')">
-            <div class="st-top"><span class="st-name">NHN</span><span class="st-change" style="color:#38bdf8; font-weight:800;">-15.7%</span></div>
-            <div class="st-ohlc">종 <strong>67,700</strong> | 시 - 고 78,300 저 -</div>
-            <div class="st-bottom"><span class="st-vol">334억</span><span class="st-role">AI센터</span></div>
+          <div class="stock-tile leader" onclick="openDetail('NHN', '-15.4%', '대금 336억 | 현재가 67,900원', '모바일 결제·게임 호조 및 AI 데이터센터 클라우드 신고가 경신.')">
+            <div class="st-top"><span class="st-name">NHN</span><span class="st-change" style="color:#38bdf8; font-weight:800;">-15.4%</span></div>
+            <div class="st-ohlc">종 <strong>67,900</strong> | 시 - 고 78,300 저 -</div>
+            <div class="st-bottom"><span class="st-vol">336억</span><span class="st-role">AI센터</span></div>
           </div>
         </div>
       </div>
@@ -2091,31 +2090,31 @@
           <span class="theme-avg">+14.0%</span>
         </div>
         <div class="stock-tiles">
-          <div class="stock-tile leader" onclick="openDetail('삼현', '+0.8%', '대금 475억 | 현재가 43,600원', '로봇용 스마트 액추에이터 대량 수주 및 현대차 피지컬 AI 연동 810억 폭증.')">
+          <div class="stock-tile leader" onclick="openDetail('삼현', '+0.8%', '대금 478억 | 현재가 43,600원', '로봇용 스마트 액추에이터 대량 수주 및 현대차 피지컬 AI 연동 810억 폭증.')">
             <div class="st-top"><span class="st-name" style="color:#ffffff; font-weight:800;">★ 삼현</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+0.8%</span></div>
             <div class="st-ohlc">종 <strong>43,600</strong> | 시 43,750 고 46,600 저 42,400</div>
-            <div class="st-bottom"><span class="st-vol">475억</span><span class="st-role">로봇대장</span></div>
+            <div class="st-bottom"><span class="st-vol">478억</span><span class="st-role">로봇대장</span></div>
           </div>
-          <div class="stock-tile leader" onclick="openDetail('레인보우로보틱스', '+1.6%', '대금 302억 | 현재가 353,500원', '삼성전자 휴머노이드 로봇 양산 협력 및 공장 자동화 모멘텀 지속.')">
-            <div class="st-top"><span class="st-name">레인보우로보</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+1.6%</span></div>
-            <div class="st-ohlc">종 <strong>353,500</strong> | 시 353,000 고 363,000 저 343,000</div>
-            <div class="st-bottom"><span class="st-vol">302억</span><span class="st-role">휴머노이드</span></div>
+          <div class="stock-tile leader" onclick="openDetail('레인보우로보틱스', '+1.4%', '대금 303억 | 현재가 353,000원', '삼성전자 휴머노이드 로봇 양산 협력 및 공장 자동화 모멘텀 지속.')">
+            <div class="st-top"><span class="st-name">레인보우로보</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+1.4%</span></div>
+            <div class="st-ohlc">종 <strong>353,000</strong> | 시 353,000 고 363,000 저 343,000</div>
+            <div class="st-bottom"><span class="st-vol">303억</span><span class="st-role">휴머노이드</span></div>
           </div>
           <div class="stock-tile" onclick="openDetail('코난테크놀로지', '+29.9%', '대금 93.6억 | 현재가 12,930원', '피지컬 AI 음성 및 비전 지능형 로봇 소프트웨어 탑재.')">
             <div class="st-top"><span class="st-name">코난테크놀로지</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+29.9%</span></div>
             <div class="st-ohlc">종 <strong>12,930</strong> | 시 10,050 고 12,930 저 10,050</div>
             <div class="st-bottom"><span class="st-vol">93.6억</span><span class="st-role" style="background:#dc2626; color:#fff;">👑 상한가</span></div>
           </div>
-          <div class="stock-tile" onclick="openDetail('솔트룩스', '+8.5%', '대금 133억 | 현재가 12,380원', '산업용 지능형 자율 에이전트 솔루션 공급 확대.')">
-            <div class="st-top"><span class="st-name">솔트룩스</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+8.5%</span></div>
-            <div class="st-ohlc">종 <strong>12,380</strong> | 시 11,470 고 13,350 저 11,450</div>
+          <div class="stock-tile" onclick="openDetail('솔트룩스', '+8.2%', '대금 133억 | 현재가 12,340원', '산업용 지능형 자율 에이전트 솔루션 공급 확대.')">
+            <div class="st-top"><span class="st-name">솔트룩스</span><span class="st-change" style="color:#f43f5e; font-weight:800;">+8.2%</span></div>
+            <div class="st-ohlc">종 <strong>12,340</strong> | 시 11,470 고 13,350 저 11,450</div>
             <div class="st-bottom"><span class="st-vol">133억</span><span class="st-role">자율에이전트</span></div>
           </div>
         </div>
       </div>
     </div>
 
-                                                                        <!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->
+                                                                            <!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->
     <div class="main-bottom-grid">
       <!-- Left: 52W High -->
       <div class="panel-box gold">
@@ -2128,19 +2127,19 @@
           <div class="ri-meta">대금 161억 | 고가 23,800원 (52주 신고가 경신)</div>
           <div class="ri-reason gold">전장용 스피커 및 사운드 시스템 수주 확대 + 3분기 흑자 서프라이즈로 130억 돌파 52주 신고가 경신.</div>
         </div>
-        <div class="reason-item" onclick="openDetail('롯데렌탈 (089860)', '58,500원 (+0.17%)', '대금 88.7억 | 고가 58,500원', '【52주 신고가 사유】 당일 고가 58,500원로 52주 최고가(58,500원) 경신 돌파 및 거래대금 유입.')">
+        <div class="reason-item" onclick="openDetail('롯데렌탈 (089860)', '58,500원 (+0.17%)', '대금 88.9억 | 고가 58,500원', '【52주 신고가 사유】 당일 고가 58,500원로 52주 최고가(58,500원) 경신 돌파 및 거래대금 유입.')">
           <div class="ri-head"><span>★ 롯데렌탈</span><span style="color:#fef08a;">58,500원 (+0.17%)</span></div>
-          <div class="ri-meta">대금 88.7억 | 고가 58,500원 (52주 신고가 경신)</div>
+          <div class="ri-meta">대금 88.9억 | 고가 58,500원 (52주 신고가 경신)</div>
           <div class="ri-reason gold">당일 고가 58,500원로 52주 최고가(58,500원) 경신 돌파 및 거래대금 유입.</div>
         </div>
-        <div class="reason-item" onclick="openDetail('펌텍코리아 (251970)', '76,300원 (+2.42%)', '대금 80.9억 | 고가 79,400원', '【52주 신고가 사유】 K-뷰티 인디 브랜드 글로벌 돌풍 화장품 용기 풀가동 역사적 신고가 지속.')">
-          <div class="ri-head"><span>★ 펌텍코리아</span><span style="color:#fef08a;">76,300원 (+2.42%)</span></div>
-          <div class="ri-meta">대금 80.9억 | 고가 79,400원 (52주 신고가 경신)</div>
+        <div class="reason-item" onclick="openDetail('펌텍코리아 (251970)', '76,250원 (+2.35%)', '대금 81.2억 | 고가 79,400원', '【52주 신고가 사유】 K-뷰티 인디 브랜드 글로벌 돌풍 화장품 용기 풀가동 역사적 신고가 지속.')">
+          <div class="ri-head"><span>★ 펌텍코리아</span><span style="color:#fef08a;">76,250원 (+2.35%)</span></div>
+          <div class="ri-meta">대금 81.2억 | 고가 79,400원 (52주 신고가 경신)</div>
           <div class="ri-reason gold">K-뷰티 인디 브랜드 글로벌 돌풍 화장품 용기 풀가동 역사적 신고가 지속.</div>
         </div>
-        <div class="reason-item" onclick="openDetail('아스플로 (159010)', '37,050원 (+10.27%)', '대금 64.4억 | 고가 37,200원', '【52주 신고가 사유】 당일 고가 37,200원로 52주 최고가(37,200원) 경신 돌파 및 거래대금 유입.')">
-          <div class="ri-head"><span>★ 아스플로</span><span style="color:#fef08a;">37,050원 (+10.27%)</span></div>
-          <div class="ri-meta">대금 64.4억 | 고가 37,200원 (52주 신고가 경신)</div>
+        <div class="reason-item" onclick="openDetail('아스플로 (159010)', '37,150원 (+10.57%)', '대금 64.7억 | 고가 37,200원', '【52주 신고가 사유】 당일 고가 37,200원로 52주 최고가(37,200원) 경신 돌파 및 거래대금 유입.')">
+          <div class="ri-head"><span>★ 아스플로</span><span style="color:#fef08a;">37,150원 (+10.57%)</span></div>
+          <div class="ri-meta">대금 64.7억 | 고가 37,200원 (52주 신고가 경신)</div>
           <div class="ri-reason gold">당일 고가 37,200원로 52주 최고가(37,200원) 경신 돌파 및 거래대금 유입.</div>
         </div>
         <div style="font-size: 10px; color: #64748b; margin-top: 6px;">
@@ -2160,13 +2159,13 @@
           <div class="ri-reason red">AI 마케팅 자동화 솔루션 및 타깃 광고 수주 급증으로 190억 돌파 +21% 급등.</div>
         </div>
         <div style="font-size: 11px; font-weight: 800; color: #fbbf24; margin: 8px 0 4px 2px;">👀 +25% 상한가 임박 돌파 관찰 후보 (거래대금 100억+ 유입)</div>
-        <div class="reason-item" style="border-left: 3px solid #fbbf24; background: rgba(251,191,36,0.05);" onclick="openDetail('파이버프로 (368770)', '11,290원 (+22.05%)', '대금 136억', '25% 상한가 임박까지 +2.9%p 남음')">
-          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">★ 파이버프로</span> <span style="color:#fde047; font-weight:800; font-size:11.5px;">+22.05% (25% 돌파까지 +2.9%p)</span></div>
-          <div class="ri-meta">거래대금 136억 | 현재가 11,290원</div>
+        <div class="reason-item" style="border-left: 3px solid #fbbf24; background: rgba(251,191,36,0.05);" onclick="openDetail('파이버프로 (368770)', '11,300원 (+22.16%)', '대금 137억', '25% 상한가 임박까지 +2.8%p 남음')">
+          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">★ 파이버프로</span> <span style="color:#fde047; font-weight:800; font-size:11.5px;">+22.16% (25% 돌파까지 +2.8%p)</span></div>
+          <div class="ri-meta">거래대금 137억 | 현재가 11,300원</div>
         </div>
-        <div class="reason-item" style="border-left: 3px solid #fbbf24; background: rgba(251,191,36,0.05);" onclick="openDetail('JYP Ent. (035900)', '46,400원 (+19.90%)', '대금 2,335억', '25% 상한가 임박까지 +5.1%p 남음')">
-          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">★ JYP Ent.</span> <span style="color:#fde047; font-weight:800; font-size:11.5px;">+19.90% (25% 돌파까지 +5.1%p)</span></div>
-          <div class="ri-meta">거래대금 2,335억 | 현재가 46,400원</div>
+        <div class="reason-item" style="border-left: 3px solid #fbbf24; background: rgba(251,191,36,0.05);" onclick="openDetail('JYP Ent. (035900)', '46,600원 (+20.41%)', '대금 2,340억', '25% 상한가 임박까지 +4.6%p 남음')">
+          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">★ JYP Ent.</span> <span style="color:#fde047; font-weight:800; font-size:11.5px;">+20.41% (25% 돌파까지 +4.6%p)</span></div>
+          <div class="ri-meta">거래대금 2,340억 | 현재가 46,600원</div>
         </div>
         <div class="reason-item" style="border-left: 3px solid #fbbf24; background: rgba(251,191,36,0.05);" onclick="openDetail('에스텍 (069510)', '23,750원 (+19.83%)', '대금 161억', '25% 상한가 임박까지 +5.2%p 남음')">
           <div class="ri-head"><span style="color:#ffffff; font-weight:800;">★ 에스텍</span> <span style="color:#fde047; font-weight:800; font-size:11.5px;">+19.83% (25% 돌파까지 +5.2%p)</span></div>
