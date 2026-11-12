@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import urllib.request, urllib.parse, json, re, datetime, os, sys, xml.etree.ElementTree as ET
+import urllib.request, html, urllib.parse, json, re, datetime, os, sys, xml.etree.ElementTree as ET
 
 def fetch_json(url):
     req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)'})
