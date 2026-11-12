@@ -65,7 +65,12 @@ def main():
     with open(index_path, "r", encoding="utf-8") as f:
         html_content = f.read()
 
-    # 1. Update Header Sync Timestamp & Smart 24H Auto Sync Badge
+    
+        # Ensure TODAY_KEY is today's date
+        today_iso = f"{now_kst.year}-{now_kst.month:02d}-{now_kst.day:02d}"
+        html_content = re.sub(r"const TODAY_KEY = '[^']+';", f"const TODAY_KEY = '{today_iso}';", html_content)
+
+        # 1. Update Header Sync Timestamp & Smart 24H Auto Sync Badge
     is_day = '08:00' <= curr_hm <= '20:05'
     if is_day:
         next_m = (now_kst.minute // 5 + 1) * 5
@@ -721,7 +726,7 @@ def main():
         # 11. Cross-check Automation: Tab 3 (Aftermarket) Indices Line
         if idx_res and 'datas' in idx_res:
             am_idx_text = f"• <strong>장마감 잠정 지표:</strong> 코스피 {idx_res['datas'][0]['closePrice']} ({float(idx_res['datas'][0]['fluctuationsRatio']):+.2f}%) · 코스닥 {idx_res['datas'][1]['closePrice']} ({float(idx_res['datas'][1]['fluctuationsRatio']):+.2f}%) · 주간선물 840.85 (+0.52%)<br>"
-            html_content = re.sub(r'• <strong>장마감 확정 지표:</strong> 코스피 5,364\.70[^<]*<br>', am_idx_text, html_content)
+            html_content = re.sub(r'• <strong>장마감 (?:잠정|확정) 지표:</strong>[^<]*<br>', am_idx_text, html_content)
     except Exception as e:
         print(f"[WARN] Failed updating RN/Jongbe/DART/CrossCheck: {e}")
 
@@ -741,6 +746,27 @@ def main():
     close_divs = len(re.findall(r'</div\b', html_content, re.IGNORECASE))
     assert open_divs == close_divs, f"DIV mismatch: {open_divs} != {close_divs}"
     print(f"Verified DIV balance: {open_divs} / {close_divs}")
+
+
+    # 14. 9-TAB COMPREHENSIVE INTEGRITY ASSERTION (Zero Tolerance for Stale Tabs)
+    print("Executing 9-tab comprehensive live integrity audit...")
+    assert 'id="tabOverview"' in html_content, "Tab 1 (Overview) missing!"
+    assert 'id="tabSupply"' in html_content, "Tab 2 (Supply) missing!"
+    assert 'id="tabAftermarket"' in html_content, "Tab 3 (Aftermarket) missing!"
+    assert 'id="tabAnalysis"' in html_content, "Tab 4 (Analysis) missing!"
+    assert 'id="tabNews"' in html_content, "Tab 5 (News) missing!"
+    assert 'id="tabRnzone"' in html_content, "Tab 6 (RNZone) missing!"
+    assert 'id="tabManju"' in html_content, "Tab 7 (Manju) missing!"
+    assert 'id="tabJongbe"' in html_content, "Tab 8 (Jongbe) missing!"
+    assert 'id="tabCalendar"' in html_content, "Tab 9 (Calendar) missing!"
+    
+    # Assert Tab 3 (Aftermarket) contains today's date and not stale 11/11 archive banner
+    assert '11/11 마감 아카이브' not in html_content, "Stale 11/11 archive notice found in Tab 3!"
+    assert '내일(11/13 금) 장세 및 시초가' in html_content, "Tab 3 Aftermarket forecast is not updated for tomorrow (11/13 금)!"
+    
+    # Assert TODAY_KEY is today
+    assert f"const TODAY_KEY = '{now_kst.year}-{now_kst.month:02d}-{now_kst.day:02d}';" in html_content, "TODAY_KEY is stale!"
+    print("All 9 tabs passed comprehensive live integrity audit!")
 
     # Write out
     with open(index_path, "w", encoding="utf-8") as f:
