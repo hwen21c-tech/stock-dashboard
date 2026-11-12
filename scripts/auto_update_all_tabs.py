@@ -122,14 +122,14 @@ def main():
         if f_raw:
             f_val = (f_raw if f_raw.startswith(('+', '-')) else ('+' + f_raw)) + '억'
             html_content = re.sub(
-                r'(<span class="title"[^>]*>외국인</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
+                r'(<span class="title"[^>]*>외국인(?:\(코스피\))?</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
                 lambda m: m.group(1) + f_val + m.group(2),
                 html_content
             )
         if i_raw:
             i_val = (i_raw if i_raw.startswith(('+', '-')) else ('+' + i_raw)) + '억'
             html_content = re.sub(
-                r'(<span class="title"[^>]*>기관</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
+                r'(<span class="title"[^>]*>기관(?:\(코스피\))?</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
                 lambda m: m.group(1) + i_val + m.group(2),
                 html_content
             )
