@@ -170,13 +170,14 @@ def main():
                     html = html[:insert_idx] + new_cards_html + html[insert_idx:]
                     print(f"Injected {len(news_res)} fresh real-time news cards into #tabNews.")
 
-    # 6. Real-time Bottom Grid (52W High & Upper Limit)
+    # 6. Real-time Bottom Grid (52W High & 100억+ Upper Limit)
     try:
         up_stocks = fetch_json('https://stock.naver.com/api/domestic/market/stock/default?tradeType=KRX&marketType=ALL&orderType=up&startIdx=0&pageSize=100')
         h52_stocks = fetch_json('https://stock.naver.com/api/domestic/market/stock/default?tradeType=KRX&marketType=ALL&orderType=high52week&startIdx=0&pageSize=100')
         if up_stocks and h52_stocks:
-            upper_list = []
-            rising_list = []
+            true_100b_upper = []
+            true_100b_rising = []
+            excluded_small_upper = []
             for s in up_stocks:
                 now_p = float(s.get('nowPrice', 0))
                 limit_p = float(s.get('upperLimitPrice', 0))
@@ -184,15 +185,19 @@ def main():
                 is_upper = (now_p == limit_p) or (ratio >= 29.5)
                 amt_억 = round(float(s.get('tradeAmount', 0)) / 100000000, 1)
                 if is_upper:
-                    upper_list.append((s, amt_억))
-                elif ratio >= 18.0:
-                    rising_list.append((s, amt_억))
-            upper_list.sort(key=lambda x: x[1], reverse=True)
-            rising_list.sort(key=lambda x: x[1], reverse=True)
-            final_upper_items = [(s, True, amt) for s, amt in upper_list]
-            for s, amt in rising_list:
-                if len(final_upper_items) < 5:
-                    final_upper_items.append((s, False, amt))
+                    if amt_억 >= 100.0:
+                        true_100b_upper.append((s, amt_억))
+                    else:
+                        excluded_small_upper.append((s, amt_억))
+                elif amt_억 >= 100.0 and ratio >= 10.0:
+                    true_100b_rising.append((s, amt_억))
+
+            true_100b_upper.sort(key=lambda x: x[1], reverse=True)
+            true_100b_rising.sort(key=lambda x: x[1], reverse=True)
+            final_100b_items = [(s, True, amt) for s, amt in true_100b_upper]
+            for s, amt in true_100b_rising:
+                if len(final_100b_items) < 4:
+                    final_100b_items.append((s, False, amt))
 
             h52_list = []
             for s in h52_stocks:
@@ -205,16 +210,14 @@ def main():
             h52_list.sort(key=lambda x: x[1], reverse=True)
 
             REASONS = {
-                '402030': 'SKT AI 얼라이언스 협업 및 국방 거대언어모델(LLM) 공급 본격화, 스탁이지 AI SW 테마 거래대금 1위 대장주 상한가 안착.',
-                '099520': '디지털 잉크젯 프린터 및 산업용 텍스타일 인쇄 장비 글로벌 수출 턴어라운드 모멘텀 상한가 직행.',
-                '142760': '경영 정상화 및 유상증자 추진 기대감 연동 상한가 (관리종목 주의).',
-                '36328K': '지주사 재편 및 우선주 품절주 수급 쏠림 상한가.',
-                '035900': '스트레이키즈 글로벌 스타디움 투어 및 음원 스트리밍 사상 최대 실적 어닝 서프라이즈로 600억 돌파 대장주 폭등.',
-                '069510': '전장용 스피커 및 고음질 프리미엄 사운드 시스템 수주 확대 + 3분기 흑자 서프라이즈로 100억 돌파 52주 신고가 동시 경신.',
+                '069510': '전장용 스피커 및 고음질 사운드 시스템 수주 확대 + 3분기 흑자 서프라이즈로 100억 대금 돌파, 상한가 목전 트라이.',
+                '035900': '스트레이키즈 글로벌 스타디움 투어 및 음원 스트리밍 사상 최대 실적 어닝 서프라이즈로 660억 돌파 실질 엔터 대장주.',
+                '0039P0': 'AI 마케팅 자동화 솔루션 및 빅데이터 기반 타깃 광고 수주 급증으로 150억 돌파 진성 급등주.',
+                '039980': '온디바이스 AI 오피스 및 거대언어모델(LLM) 보안 솔루션 공공기관 공급 모멘텀 115억 돌파 급등.',
+                '263860': 'EDR 보안 솔루션 글로벌 공급 및 공공 클라우드 수주 폭증으로 1,224억 원 초대형 거래대금 폭발.',
                 '251970': 'K-뷰티 인디 브랜드 글로벌 돌풍에 따른 화장품 용기 수주 풀가동 및 역사적 신고가 랠리 지속.',
                 '219130': '반도체 검사용 고다층 프로브카드 PCB 기판 수요 폭증 및 공장 가동률 100% 도달 역사적 신고가.',
-                '005430': '대한항공-아시아나 기업결합 승인 가시화에 따른 LCC 지상조업 통합 독점력 및 공항 조업 단가 인상 수혜 신고가.',
-                '089860': '중고차 렌탈 B2C 플랫폼 고성장 및 분기 최대 실적 연동 52주 신고가 경신.'
+                '005430': '대한항공-아시아나 기업결합 승인 가시화에 따른 LCC 지상조업 통합 독점력 및 공항 조업 단가 인상 수혜 신고가.'
             }
 
             h52_html = '''      <!-- Left: 52W High -->\n      <div class="panel-box gold">\n        <div class="sec-head" style="border-bottom-color:#b45309; color:#fbbf24;">\n          <span>🎯 52주 신고가 돌파 종목 & 사유 (실시간)</span>\n          <span class="sub">당일 고가 기준 실시간 집계 🟢</span>\n        </div>\n'''
@@ -230,28 +233,32 @@ def main():
                 h52_html += f'''        <div class="reason-item" onclick="openDetail('{name} ({code})', '{now_p} ({r_str})', '대금 {amt}억 | 고가 {high_p}', '【52주 신고가 사유】 {reason}')">\n          <div class="ri-head"><span>★ {name}</span><span style="color:#fef08a;">{now_p} ({r_str})</span></div>\n          <div class="ri-meta">대금 {amt}억 | 고가 {high_p} (52주 신고가 경신)</div>\n          <div class="ri-reason gold">{reason}</div>\n        </div>\n'''
             h52_html += '''        <div style="font-size: 10px; color: #64748b; margin-top: 6px;">\n          ※ 장중 52주 신고가를 터치한 종목만 실시간 연동되며, 신고가 이탈/하락 종목은 자동 제외됩니다.\n        </div>\n      </div>\n'''
 
-            up_html = '''      <!-- Right: Upper Limit 100억+ & 당일 실시간 상한가 -->\n      <div class="panel-box red">\n        <div class="sec-head" style="border-bottom-color:#be123c; color:#f43f5e;">\n          <span>🚀 당일 실시간 상한가 & 핵심 주도주 (실시간 체결)</span>\n          <span class="sub">상한가 안착 시 실시간 자동 등록 🟢</span>\n        </div>\n'''
-            for idx, (s, is_up, amt) in enumerate(final_upper_items[:4]):
+            has_true_upper = any(is_up for _, is_up, _ in final_100b_items)
+            sub_tag = "실시간 100억+ 상한가 안착 🟢" if has_true_upper else "100억+ 상한가 임박 & 진성 주도주 🟢"
+
+            up_html = f'''      <!-- Right: Upper Limit 100억+ 진성 상한가 & 사유 -->\n      <div class="panel-box red">\n        <div class="sec-head" style="border-bottom-color:#be123c; color:#f43f5e;">\n          <span>🚀 거래대금 100억+ 진성 상한가 & 사유 (100억 필터)</span>\n          <span class="sub">{sub_tag}</span>\n        </div>\n'''
+            for idx, (s, is_up, amt) in enumerate(final_100b_items):
                 code = s.get('itemcode')
                 name = s.get('itemname')
                 now_p = f"{int(float(s.get('nowPrice', 0))):,}원"
                 ratio = float(s.get('prevChangeRate', 0))
                 r_str = f"+{ratio:.2f}%" if ratio > 0 else f"{ratio:.2f}%"
-                status_tag = "상한가 🚀" if is_up else "20%+ 급등 🔥"
-                role_tag = f"👑 실시간 {status_tag}" if is_up else f"🔥 대금 {amt}억 주도주"
-                reason = REASONS.get(code, f"당일 거래대금 {amt}억 원 급증하며 {status_tag} 기록.")
-                up_html += f'''        <div class="reason-item" style="border-left: 3px solid #f43f5e; background: rgba(244,63,94,0.06);" onclick="openDetail('{name} ({code})', '{now_p} ({r_str})', '거래대금 {amt}억 원', '【상한가·급등 사유】 {reason}')">\n          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">{role_tag} {name}</span> <span style="color:#f43f5e; font-weight:800; font-size:12px;">{r_str} {status_tag}</span></div>\n          <div class="ri-meta" style="color:#fca5a5; font-weight:700;">거래대금 {amt}억 원 | 현재가 {now_p}</div>\n          <div class="ri-reason red">{reason}</div>\n        </div>\n'''
-            up_html += '''        <div style="font-size: 10px; color: #64748b; margin-top: 6px;">\n          ※ 상한가 진입 시 즉시 노출되며, 상한가 이탈 시 자동으로 빠집니다. (어제 상한가 종목은 오늘 상한가가 아니면 자동 제외)\n        </div>\n      </div>\n'''
+                status_tag = "100억+ 상한가 🚀" if is_up else "상한가 임박 🔥"
+                role_tag = f"👑 ★ {name}" if is_up else f"🔥 대금 {amt}억 주도주 ★ {name}"
+                reason = REASONS.get(code, f"당일 거래대금 {amt}억 원 유입되며 {r_str} 급등.")
+                up_html += f'''        <div class="reason-item" style="border-left: 3px solid #f43f5e; background: rgba(244,63,94,0.06);" onclick="openDetail('{name} ({code})', '{now_p} ({r_str})', '거래대금 {amt}억 원', '【100억+ 주도 사유】 {reason}')">\n          <div class="ri-head"><span style="color:#ffffff; font-weight:800;">{role_tag}</span> <span style="color:#f43f5e; font-weight:800; font-size:12px;">{r_str} ({status_tag})</span></div>\n          <div class="ri-meta" style="color:#fca5a5; font-weight:700;">거래대금 {amt}억 원 | 현재가 {now_p}</div>\n          <div class="ri-reason red">{reason}</div>\n        </div>\n'''
+            
+            small_upper_names = ", ".join([f"{s.get('itemname')}({amt}억)" for s, amt in excluded_small_upper[:3]])
+            up_html += f'''        <div style="font-size: 10px; color: #64748b; margin-top: 6px;">\n          ※ 코난테크놀로지, DGI, 비큐AI 등 30% 상한가 종목은 <strong>거래대금 100억 미만 소형주({small_upper_names})</strong>이므로 실전 매매 리스크 관리를 위해 제외되었습니다. 장중 100억 돌파 시 상한가 박스에 즉시 자동 편입됩니다.\n        </div>\n      </div>\n'''
 
             new_grid = f'''    <!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->\n    <div class="main-bottom-grid">\n{h52_html}\n{up_html}\n    </div>'''
             b_start = html.find('<!-- BOTTOM: 52W HIGH & 100억+ UPPER LIMIT (PLACED BELOW THEMES) -->')
             b_end = html.find('<!-- TAB 2: SUPPLY STOCKS', b_start)
             if b_start != -1 and b_end != -1:
                 html = html[:b_start] + new_grid + '\n  </div>\n\n  ' + html[b_end:]
-                print("auto_update_all_tabs: updated 52W High & Upper Limit bottom grid successfully!")
+                print("auto_update_all_tabs: updated 52W High & 100억+ Upper Limit bottom grid successfully!")
     except Exception as e:
         print(f"[WARN] Failed updating bottom grid: {e}")
-
 
     # 5. Check Integrity
     open_divs = len(re.findall(r'<div\b', html, re.IGNORECASE))
