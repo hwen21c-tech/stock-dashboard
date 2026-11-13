@@ -132,19 +132,25 @@ def sync_to_file(filepath, time_key, title, summary, full_html, indices_text=Non
 
     # 2. Update top callout banner in tabAnalysis
     callout_pat = re.compile(r'<div class="callout-top"[^>]*>.*?</div>\s*</div>\s*<div class="ct-btn"[^>]*>.*?</div>\s*</div>', re.DOTALL)
-    new_callout = f'''<div class="callout-top" onclick="openBriefingModal('{time_key}')" style="background: linear-gradient(90deg, #0369a1 0%, #0284c7 100%);">
+    new_callout = f'''<div class="callout-top" onclick="openBriefingModal('{time_key}')" style="background: linear-gradient(90deg, #064e3b 0%, #059669 100%); border: 1px solid #34d399;">
         <div>
-          <div class="ct-text">🌅 {time_key} {title} 전문 보기 (최신)</div>
-          <div style="font-size:10.5px; color:#e0f2fe; margin-top:2px;">
+          <div class="ct-text">👑 {time_key} {title} 전문 보기 (최신 11/13 금)</div>
+          <div style="font-size:10.5px; color:#d1fae5; margin-top:2px;">
             {summary}
           </div>
         </div>
-        <div class="ct-btn" style="background:#0284c7; border:1px solid #38bdf8;">전문 열기 ›</div>
+        <div class="ct-btn" style="background:#059669; border:1px solid #34d399;">전문 열기 ›</div>
       </div>'''
     if callout_pat.search(content):
         content = callout_pat.sub(lambda _: new_callout, content, count=1)
 
-    # 3. Dynamic Timeline Card Replacement (if matching card exists in Tab 4)
+    # 3. Dynamic Timeline Card Replacement / Insertion in Tab 4
+    now_kst = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)
+    day_str = f"{now_kst.month}/{now_kst.day} " + ["월","화","수","목","금","토","일"][now_kst.weekday()]
+    new_time_text = f"👑 {time_key} {title} ({day_str}) (최신)"
+    new_ind = indices_text if indices_text else summary
+    new_dsc = desc_text if desc_text else summary
+
     card_pat = re.compile(
         rf'(<div class="timeline-card"[^>]*onclick="openBriefingModal\(\'{re.escape(time_key)}\'\)"[^>]*>.*?'
         r'<span class="tc-time"[^>]*>).*?(</span>.*?'
@@ -153,21 +159,44 @@ def sync_to_file(filepath, time_key, title, summary, full_html, indices_text=Non
         re.DOTALL
     )
     
+    # Remove previous "👑 ... (최신)" glow styling from other cards
+    content = re.sub(
+        r'class="timeline-card"\s+style="border-left-color:\s*#34d399;\s*background:\s*linear-gradient\(180deg,\s*rgba\(52,211,153,0.14\)\s*0%,\s*rgba\(15,23,42,0.6\)\s*100%\);"',
+        'class="timeline-card" style="border-left-color: #38bdf8;"',
+        content
+    )
+    content = re.sub(r'👑\s*(\d{2}:\d{2}[^<]*?)\s*\(최신\)', r'\1', content)
+
     if card_pat.search(content):
-        now_kst = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)
-        day_str = f"{now_kst.month}/{now_kst.day} " + ["월","화","수","목","금","토","일"][now_kst.weekday()]
-        new_time_text = f"👑 {time_key} {title} ({day_str}) (최신)"
-        new_ind = indices_text if indices_text else summary
-        new_dsc = f"\n          • <strong>시장 흐름:</strong> {desc_text if desc_text else summary}\n        "
-        
         def repl_card(m):
             card_start = m.group(1).replace(
                 'class="timeline-card"',
                 'class="timeline-card" style="border-left-color: #34d399; background: linear-gradient(180deg, rgba(52,211,153,0.14) 0%, rgba(15,23,42,0.6) 100%);"'
             )
-            return card_start + new_time_text + m.group(2) + new_ind + m.group(3) + new_dsc + m.group(4)
-            
+            return card_start + new_time_text + m.group(2) + new_ind + m.group(3) + f"\n          • <strong>시장 흐름:</strong> {new_dsc}\n        " + m.group(4)
         content = card_pat.sub(repl_card, content, count=1)
+    else:
+        # Insert new active card at the top of TODAY SESSIONS
+        new_card_html = f'''      <!-- {time_key} Session (LATEST ACTIVE) -->
+      <div class="timeline-card" style="border-left-color: #34d399; background: linear-gradient(180deg, rgba(52,211,153,0.14) 0%, rgba(15,23,42,0.6) 100%); cursor: pointer;" onclick="openBriefingModal('{time_key}')">
+        <div class="tc-header">
+          <span class="tc-time" style="background:#064e3b; color:#34d399;">{new_time_text}</span>
+          <span class="tc-indices" style="color:#6ee7b7; font-weight:700;">{new_ind}</span>
+        </div>
+        <div class="tc-desc">
+          • <strong>시장 흐름:</strong> {new_dsc}
+        </div>
+        <div class="tc-tap-hint">🔍 터치하여 {time_key} 브리핑 전문 확인 ›</div>
+      </div>\n\n'''
+      
+        insert_marker = re.compile(r'(<!-- TODAY \([^)]+\) SESSIONS -->\s*)')
+        if insert_marker.search(content):
+            content = insert_marker.sub(lambda m: m.group(1) + new_card_html, content, count=1)
+        else:
+            # Fallback insertion before the first timeline-card in tabAnalysis
+            first_card = re.compile(r'(<div id="tabAnalysis"[^>]*>.*?)(<div class="timeline-card")', re.DOTALL)
+            if first_card.search(content):
+                content = first_card.sub(lambda m: m.group(1) + new_card_html + m.group(2), content, count=1)
 
     # 4. Ensure todayDoneSlots includes time_key
     slots_pat = re.compile(r"todayDoneSlots\s*=\s*\[(.*?)\]")
