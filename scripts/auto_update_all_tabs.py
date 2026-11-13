@@ -51,6 +51,251 @@ def parse_trading_value(val_str, raw_val=0):
 
     return 0.0
 
+
+
+def safe_float(val, default=0.0):
+    try:
+        s = str(val).replace(',', '').strip()
+        if not s or s in ('-', 'None'):
+            return default
+        return float(s)
+    except (ValueError, TypeError):
+        return default
+
+def run_manju_auto_screener(realtime_data, up_stocks, h52_codes, stock_codes_map):
+    """
+    만쥬 종가베팅 4대 핵심 기준(100점 만점)으로 전 종목을 실시간 자동 채점하여 Top 5 추출:
+      ① 유동성(거래대금) 점수 (35점): 1,500억+(35점), 1,000억+(33점), 500억+(29점), 300억+(24점)
+      ② 캔들·윗꼬리 관리 점수 (25점): 당일 고가 대비 종가 이격도 -1.0% 이내(25점), -2.5% 이내(21점)
+      ③ 등락률 탄력 점수 (20점): 상한가(20점), +15~29.4%(18점), +8~14.9%(16점)
+      ④ 주도 테마·신고가 점수 (20점): 52주 신고가 또는 핵심 테마 대장주 소속(+14~20점)
+    """
+    candidates = {}
+    core_code_set = set(stock_codes_map.values())
+
+    for code, d in realtime_data.items():
+        candidates[code] = {
+            'code': code,
+            'name': d.get('name') or code,
+            'price_str': str(d.get('price', '0')),
+            'price': safe_float(d.get('price')),
+            'high': safe_float(d.get('high')),
+            'low': safe_float(d.get('low')),
+            'ratio': safe_float(d.get('ratio')),
+            'val_num': safe_float(d.get('val_num')),
+            'val_str': d.get('val') or f"{d.get('val_num', 0.0)}억"
+        }
+
+    if up_stocks:
+        for s in up_stocks[:40]:
+            c = s.get('itemcode')
+            if not c or c in candidates:
+                continue
+            amt = parse_trading_value('', s.get('tradeAmount', 0))
+            if amt >= 100.0:
+                p_num = float(s.get('nowPrice', 0))
+                candidates[c] = {
+                    'code': c,
+                    'name': s.get('itemname', c),
+                    'price_str': f'{int(p_num):,}',
+                    'price': p_num,
+                    'high': float(s.get('highPrice', p_num)),
+                    'low': float(s.get('lowPrice', p_num)),
+                    'ratio': float(s.get('prevChangeRate', 0.0)),
+                    'val_num': amt,
+                    'val_str': f'{amt}억'
+                }
+
+    scored_list = []
+    for code, item in candidates.items():
+        val = item['val_num']
+        ratio = item['ratio']
+        price = item['price']
+        high = max(item['high'], price)
+
+        if val < 100.0 or ratio < 3.0 or price <= 0:
+            continue
+
+        if val >= 1500: s_val = 35
+        elif val >= 1000: s_val = 33
+        elif val >= 500: s_val = 29
+        elif val >= 300: s_val = 24
+        else: s_val = 16
+
+        upper_wick_pct = ((price - high) / high * 100.0) if high > 0 else 0.0
+        if upper_wick_pct >= -1.0:
+            s_candle, wick_label = 25, "고가 밀착 장대양봉"
+        elif upper_wick_pct >= -2.5:
+            s_candle, wick_label = 21, "윗꼬리 짧은 양봉"
+        elif upper_wick_pct >= -4.5:
+            s_candle, wick_label = 15, "매물 소화 양봉"
+        else:
+            s_candle, wick_label = 8, "윗꼬리 주의"
+
+        if ratio >= 29.5: s_mom = 20
+        elif ratio >= 15.0: s_mom = 18
+        elif ratio >= 8.0: s_mom = 16
+        else: s_mom = 11
+
+        s_theme = 10
+        if code in core_code_set: s_theme += 6
+        if code in h52_codes: s_theme += 4
+        s_theme = min(20, s_theme)
+
+        total_score = s_val + s_candle + s_mom + s_theme
+        grade = "S+" if total_score >= 90 else ("S" if total_score >= 82 else ("A+" if total_score >= 75 else "A"))
+
+        buy_low = int(round(price * 0.985, -1))
+        target_p = int(round(price * 1.045, -1))
+        stop_p = int(round(price * 0.97, -1))
+
+        scored_list.append({
+            **item,
+            'score': total_score,
+            'grade': grade,
+            'wick_pct': round(upper_wick_pct, 2),
+            'wick_label': wick_label,
+            'buy_zone': f'{buy_low:,} ~ {int(price):,}원',
+            'target_price': f'{target_p:,}원 (+4.5%)',
+            'stop_price': f'{stop_p:,}원 (-3.0%)'
+        })
+
+    scored_list.sort(key=lambda x: (x['score'], x['val_num']), reverse=True)
+    return scored_list[:5]
+
+def build_manju_screener_html(top_picks, time_str):
+    if not top_picks:
+        return ""
+    rows = []
+    for idx, p in enumerate(top_picks, 1):
+        r_col = '#f43f5e' if p['ratio'] > 0 else '#38bdf8'
+        badge_bg = '#dc2626' if idx == 1 else ('#0284c7' if idx == 2 else '#334155')
+        rows.append(
+            f'          <div style="background:#0f172a; border:1px solid rgba(56,189,248,0.25); border-left:4px solid {badge_bg}; border-radius:6px; padding:10px 12px; display:flex; flex-direction:column; gap:4px;">\n'
+            f'            <div style="display:flex; justify-content:space-between; align-items:center;">\n'
+            f'              <div style="display:flex; align-items:center; gap:6px;">\n'
+            f'                <span style="background:{badge_bg}; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px;">{idx}순위 · {p["grade"]} ({p["score"]}점)</span>\n'
+            f'                <strong style="color:#ffffff; font-size:13px;">{p["name"]} ({p["code"]})</strong>\n'
+            f'              </div>\n'
+            f'              <span style="color:{r_col}; font-weight:800; font-size:12.5px;">{p["price_str"]}원 ({p["ratio"]:+.2f}%)</span>\n'
+            f'            </div>\n'
+            f'            <div style="font-size:11px; color:#94a3b8; display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px;">\n'
+            f'              <span>• 통합대금: <strong style="color:#38bdf8;">{p["val_str"]}</strong></span>\n'
+            f'              <span>• 캔들상태: <strong style="color:#fde047;">{p["wick_label"]} (고가대비 {p["wick_pct"]:+.2f}%)</strong></span>\n'
+            f'            </div>\n'
+            f'            <div style="font-size:10.5px; color:#cbd5e1; background:rgba(16,185,129,0.08); border:1px dashed rgba(16,185,129,0.3); padding:4px 8px; border-radius:4px; margin-top:2px;">\n'
+            f'              🎯 <strong>자동 타점:</strong> 매수존 {p["buy_zone"]} | 익일 시초가 목표 <span style="color:#34d399; font-weight:700;">{p["target_price"]}</span> | 손절선 <span style="color:#fca5a5;">{p["stop_price"]}</span>\n'
+            f'            </div>\n'
+            f'          </div>'
+        )
+    rows_joined = "\n".join(rows)
+    return (
+        '      <!-- AUTO MANJU 4-CRITERIA SCREENER PANEL -->\n'
+        '      <div style="background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9)); border: 1px solid #10b981; border-radius: 10px; padding: 14px; margin-bottom: 14px;">\n'
+        '        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">\n'
+        f'          <div style="font-size:13px; font-weight:800; color:#34d399;">🤖 실시간 만쥬 종가베팅 4대 기준 자동 채점 스크리너 (Top {len(top_picks)})</div>\n'
+        f'          <span style="font-size:10.5px; background:rgba(16,185,129,0.15); color:#6ee7b7; padding:2px 8px; border-radius:4px; font-weight:700;">채점 기준: 대금(35)·윗꼬리(25)·등락(20)·테마(20) | 갱신 {time_str}</span>\n'
+        '        </div>\n'
+        '        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px;">\n'
+        f'{rows_joined}\n'
+        '        </div>\n'
+        '      </div>\n'
+        '      <!-- /AUTO MANJU 4-CRITERIA SCREENER PANEL -->'
+    )
+
+# ==============================================================================
+# 2. 모듈 B: NXT 애프터마켓(15:30~20:00) 전용 실시간 랭킹 파서 (AftermarketParser)
+# ==============================================================================
+
+def fetch_and_rank_aftermarket(codes_list, realtime_data):
+    """
+    구 시간외단일가 폐지 및 대체거래소(NXT) 체제에 맞춰 15:30~20:00 애프터마켓 및
+    KRX+NXT 통합 실시간 체결 데이터를 파싱하여 거래대금·등락률 상위 Top 6 랭킹을 추출합니다.
+    """
+    poll_url = f"https://polling.finance.naver.com/api/realtime/domestic/stock/{','.join(codes_list)}"
+    poll_res = fetch_json(poll_url)
+    ranked = []
+
+    if poll_res and 'datas' in poll_res:
+        for d in poll_res['datas']:
+            c = d.get('itemCode')
+            if not c:
+                continue
+            name = d.get('stockName', c)
+            int_info = d.get('integratedPriceInfo') or {}
+            over_info = d.get('overMarketPriceInfo') or {}
+
+            over_p = over_info.get('overPrice') or int_info.get('closePrice') or d.get('closePrice') or '0'
+            over_r_raw = over_info.get('overFluctuationsRatio') or int_info.get('fluctuationsRatio') or d.get('fluctuationsRatio') or 0.0
+            try:
+                over_r = float(over_r_raw)
+            except (ValueError, TypeError):
+                over_r = 0.0
+
+            val_str = int_info.get('accumulatedTradingValue') or d.get('accumulatedTradingValue') or ''
+            raw_val = int_info.get('accumulatedTradingValueRaw') or d.get('accumulatedTradingValueRaw') or 0
+            val_num = parse_trading_value(val_str, raw_val)
+
+            if val_num < 50.0:
+                continue
+
+            if over_r >= 29.5:
+                status, s_col = "🚀 애프터 상한가 잠금", "#f43f5e"
+            elif over_r >= 10.0:
+                status, s_col = "🔥 애프터 강세 지속", "#fb923c"
+            elif over_r > 0:
+                status, s_col = "🟢 종가 지지 안착", "#34d399"
+            else:
+                status, s_col = "🟡 매물 소화 중", "#94a3b8"
+
+            ranked.append({
+                'code': c, 'name': name, 'price': over_p, 'ratio': over_r,
+                'val_num': val_num, 'val_str': val_str or f'{val_num}억',
+                'status': status, 's_col': s_col
+            })
+
+    ranked.sort(key=lambda x: (x['val_num'], x['ratio']), reverse=True)
+    return ranked[:6]
+
+def build_aftermarket_ranking_html(am_list, today_kor_short, time_str):
+    if not am_list:
+        return ""
+    cards = []
+    for idx, item in enumerate(am_list, 1):
+        r_col = '#f43f5e' if item['ratio'] > 0 else ('#38bdf8' if item['ratio'] < 0 else '#cbd5e1')
+        cards.append(
+            f'          <div style="background:#0f172a; border:1px solid rgba(168,85,247,0.3); border-radius:6px; padding:9px 11px; display:flex; justify-content:space-between; align-items:center;">\n'
+            f'            <div>\n'
+            f'              <div style="display:flex; align-items:center; gap:6px;">\n'
+            f'                <span style="font-size:10px; font-weight:800; background:#581c87; color:#f3e8ff; padding:1px 6px; border-radius:4px;">TOP {idx}</span>\n'
+            f'                <strong style="color:#fff; font-size:12.5px;">{item["name"]}</strong>\n'
+            f'                <span style="font-size:10px; color:{item["s_col"]}; font-weight:700;">{item["status"]}</span>\n'
+            f'              </div>\n'
+            f'              <div style="font-size:10.5px; color:#94a3b8; margin-top:3px;">KRX+NXT 통합대금: <strong style="color:#c084fc;">{item["val_str"]}</strong></div>\n'
+            f'            </div>\n'
+            f'            <div style="text-align:right;">\n'
+            f'              <div style="font-size:13px; font-weight:800; color:{r_col};">{item["price"]}원</div>\n'
+            f'              <div style="font-size:11px; font-weight:700; color:{r_col};">{item["ratio"]:+.2f}%</div>\n'
+            f'            </div>\n'
+            f'          </div>'
+        )
+    cards_joined = "\n".join(cards)
+    return (
+        '      <!-- AUTO NXT AFTERMARKET RANKING PANEL -->\n'
+        '      <div style="background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,27,75,0.85)); border: 1px solid #a855f7; border-radius: 10px; padding: 14px; margin-bottom: 14px;">\n'
+        '        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:6px;">\n'
+        f'          <div style="font-size:13px; font-weight:800; color:#e9d5ff;">🌙 [{today_kor_short}] NXT 애프터마켓(15:30~20:00) 통합 체결·수급 Top 6 랭킹</div>\n'
+        f'          <span style="font-size:10.5px; background:rgba(168,85,247,0.2); color:#d8b4fe; padding:2px 8px; border-radius:4px; font-weight:700;">KRX+NXT 통합 실시간 파서 가동 중 ({time_str})</span>\n'
+        '        </div>\n'
+        '        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px;">\n'
+        f'{cards_joined}\n'
+        '        </div>\n'
+        '      </div>\n'
+        '      <!-- /AUTO NXT AFTERMARKET RANKING PANEL -->'
+    )
+
+
+
 def main():
     now_kst = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=9)
     time_str = now_kst.strftime("%H:%M:%S")
@@ -523,6 +768,63 @@ def main():
     except Exception as e:
         print(f"[WARN] Failed updating bottom grid: {e}")
 
+
+    # 5.1 Auto Manju 4-Criteria Screener Panel Injection (Top 5)
+    try:
+        h52_codes = set()
+        if 'h52_stocks' in locals() and h52_stocks:
+            for s in h52_stocks:
+                if s.get('itemcode'):
+                    h52_codes.add(s.get('itemcode'))
+        else:
+            h52_raw = fetch_json('https://stock.naver.com/api/domestic/market/stock/default?tradeType=KRX&marketType=ALL&orderType=high52week&startIdx=0&pageSize=100')
+            if h52_raw:
+                for s in h52_raw:
+                    if s.get('itemcode'):
+                        h52_codes.add(s.get('itemcode'))
+
+        active_up_stocks = locals().get('up_stocks') or fetch_json('https://stock.naver.com/api/domestic/market/stock/default?tradeType=KRX&marketType=ALL&orderType=up&startIdx=0&pageSize=100') or []
+        top_manju_picks = run_manju_auto_screener(realtime_data, active_up_stocks, h52_codes, STOCK_CODES)
+        manju_panel_html = build_manju_screener_html(top_manju_picks, time_str)
+        if manju_panel_html and 'id="tabManju"' in html_content:
+            m_start_tag = '<!-- AUTO MANJU 4-CRITERIA SCREENER PANEL -->'
+            m_end_tag = '<!-- /AUTO MANJU 4-CRITERIA SCREENER PANEL -->'
+            if m_start_tag in html_content:
+                p1 = html_content.find(m_start_tag)
+                p2 = html_content.find(m_end_tag) + len(m_end_tag)
+                html_content = html_content[:p1] + manju_panel_html + html_content[p2:]
+            else:
+                t_idx = html_content.find('id="tabManju"')
+                ins_idx = html_content.find('<div class="panel-box', t_idx)
+                if ins_idx != -1:
+                    html_content = html_content[:ins_idx] + manju_panel_html + chr(10) + "    " + html_content[ins_idx:]
+            print(f"auto_update_all_tabs: updated Manju 4-criteria auto screener Top {len(top_manju_picks)} successfully!")
+    except Exception as e:
+        print(f"[WARN] Failed updating Manju screener panel: {e}")
+
+    # 5.2 Auto NXT Aftermarket Top 6 Ranking Board Injection
+    try:
+        today_md = f"{now_kst.month}/{now_kst.day}"
+        w_name = ['월', '화', '수', '목', '금', '토', '일'][now_kst.weekday()]
+        today_kor_short = f"{today_md} {w_name}"
+        am_ranked = fetch_and_rank_aftermarket(codes_list, realtime_data)
+        am_panel_html = build_aftermarket_ranking_html(am_ranked, today_kor_short, time_str)
+        if am_panel_html and 'id="tabAftermarket"' in html_content:
+            a_start_tag = '<!-- AUTO NXT AFTERMARKET RANKING PANEL -->'
+            a_end_tag = '<!-- /AUTO NXT AFTERMARKET RANKING PANEL -->'
+            if a_start_tag in html_content:
+                p1 = html_content.find(a_start_tag)
+                p2 = html_content.find(a_end_tag) + len(a_end_tag)
+                html_content = html_content[:p1] + am_panel_html + html_content[p2:]
+            else:
+                t_idx = html_content.find('id="tabAftermarket"')
+                ins_idx = html_content.find('<div class="panel-box', t_idx)
+                if ins_idx != -1:
+                    html_content = html_content[:ins_idx] + am_panel_html + chr(10) + "    " + html_content[ins_idx:]
+            print(f"auto_update_all_tabs: updated NXT aftermarket Top {len(am_ranked)} ranking panel successfully!")
+    except Exception as e:
+        print(f"[WARN] Failed updating Aftermarket ranking panel: {e}")
+
     # 6. Update RNZone & Jongbe Master & DART Radar real-time quotes
     try:
         # Update RNZone RAW_STOCKS
@@ -979,3 +1281,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
