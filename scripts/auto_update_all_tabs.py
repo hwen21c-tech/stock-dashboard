@@ -798,66 +798,6 @@ def main():
         if idx_res and 'datas' in idx_res:
             am_idx_text = f"• <strong>장마감 잠정 지표:</strong> 코스피 {idx_res['datas'][0]['closePrice']} ({float(idx_res['datas'][0]['fluctuationsRatio']):+.2f}%) · 코스닥 {idx_res['datas'][1]['closePrice']} ({float(idx_res['datas'][1]['fluctuationsRatio']):+.2f}%) · 주간선물 840.85 (+0.52%)<br>"
             html_content = re.sub(r'• <strong>장마감 (?:잠정|확정) 지표:</strong>[^<]*<br>', am_idx_text, html_content)
-
-        # 12. Cross-check Automation: Tab 4 (Market & Supply Deep Analysis) Hourly Briefing Auto-Injection
-        try:
-            current_hour = now_kst.hour
-            current_min = now_kst.minute
-            
-            if 8 <= current_hour < 9:
-                b_time_tag = "08:30 장전 프리마켓 리포트"
-                b_title = "미 증시 마감 연동 및 08:30 동시호가 수급 결산"
-                b_summary = "CME 나스닥 선물 혼조세 마감 속 국내 증시 08:30 동시호가 접수 중. AI SW 및 우주항공 테마 선취매 유입 관측."
-            elif 9 <= current_hour < 11:
-                b_time_tag = "10:00 오전장 주도주 리포트"
-                b_title = "개장 직후 거래대금 쏠림 및 상한가 임박 종목 추적"
-                b_summary = "코스피/코스닥 개장 후 외국인·기관 수급 공방 가속화. 코스닥 거래대금 1위 주성엔지니어링 및 우주항공(컨텍) 중심 자금 집중."
-            elif 11 <= current_hour < 13:
-                b_time_tag = "12:00 점심시간 중간 결산"
-                b_title = "오전장 수급 유지도 점검 및 외인·기관 잠정 순매수 분석"
-                b_summary = "오전장 전반적인 매물 소화 완료 후 2차 시세 분출 국면 진입. CXL 기판(티엘비) 및 K-POP(JYP Ent.) 수급 이탈 없음."
-            elif 13 <= current_hour < 15:
-                b_time_tag = "14:00 오후장 변동성 리포트"
-                b_title = "오후장 프로그램 매매 동향 및 종가베팅 후보군 압축"
-                b_summary = "기관 순매수 확대 종목 중심 숏스퀴즈 가능성 점검. 만쥬 매매법 4대 기준(이슈·차트·대금·수급) 부합 종목 탐색 시작."
-            elif 15 <= current_hour < 18:
-                b_time_tag = "15:30 정규장 마감 및 애프터마켓"
-                b_title = "당일 정규장 최종 마감 지표 및 시간외 단일가 레이더"
-                b_summary = "코스피/코스닥 정규장 마감 완료. 외인·기관 최종 수급 확정치 반영 및 16:00부터 시작되는 시간외 단일가/애프터마켓 돌입."
-            else:
-                b_time_tag = "19:30 야간선물 및 익일 리포트"
-                b_title = "KRX 야간선물 및 미 증시 본장 연동 야간 관제"
-                b_summary = "국내 정규장 종료 후 야간선물 흐름 및 익일 주요 경제 일정(미 물가지수 등) 점검 페이즈."
-
-            hourly_briefing_card = f'''<!-- AUTO HOURLY BRIEFING TAB 4 -->
-      <div class="analysis-card" style="border-left: 4px solid #38bdf8; background: rgba(56,189,248,0.04); padding: 14px; border-radius: 6px; margin-bottom: 12px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <span style="background:#0c4a6e; color:#bae6fd; font-size:11px; font-weight:800; padding:2px 8px; border-radius:4px;">⚡ {b_time_tag}</span>
-          <span style="font-size:10.5px; color:#38bdf8; font-weight:700;">실시간 자동 생성: {time_str}</span>
-        </div>
-        <div style="font-size:13px; font-weight:800; color:#f8fafc; margin-bottom:4px;">{b_title}</div>
-        <div style="font-size:11.5px; color:#cbd5e1; line-height:1.5;">{b_summary}</div>
-      </div>\n\n      '''
-
-            auto_marker = '<!-- AUTO HOURLY BRIEFING TAB 4 -->'
-            if auto_marker in html_content:
-                html_content = re.sub(
-                    r'<!-- AUTO HOURLY BRIEFING TAB 4 -->[\s\S]*?</div>\s*</div>\s*',
-                    hourly_briefing_card,
-                    html_content,
-                    count=1
-                )
-                print(f"Updated hourly briefing ({b_time_tag}) in #tabAnalysis successfully!")
-            else:
-                analysis_marker = '<div id="tabAnalysis"'
-                an_idx = html_content.find(analysis_marker)
-                if an_idx != -1:
-                    ins_target = html_content.find('<div class="panel-box', an_idx)
-                    if ins_target != -1:
-                        html_content = html_content[:ins_target] + hourly_briefing_card + html_content[ins_target:]
-                        print(f"Injected hourly briefing ({b_time_tag}) into #tabAnalysis successfully!")
-        except Exception as e:
-            print(f"[WARN] Failed generating hourly briefing for Tab 4: {e}")
     except Exception as e:
         print(f"[WARN] Failed updating RN/Jongbe/DART/CrossCheck: {e}")
 
