@@ -785,6 +785,49 @@ def main():
         # Dynamic calendar top bar
         cal_today_text = f"⭐ 오늘: {now_kst.month}월 {now_kst.day}일({w_name}) 미 10월 PPI 발표 & 주간 결산 마감"
         html_content = re.sub(r'⭐ 오늘:[^<]*', cal_today_text, html_content)
+        html_content = re.sub(r'★오늘 소매판매', '★오늘 미 PPI', html_content)
+
+        # Tab 9 (Calendar) Macro Impact Traffic Light & Sector Event Panel
+        try:
+            cal_upgraded_panel = f"""      <!-- UPGRADED MACRO IMPACT & SECTOR EVENT PANEL FOR TAB 9 -->
+      <div style="background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.8)); border: 1px solid rgba(56,189,248,0.3); border-radius: 8px; padding: 14px; margin-bottom: 14px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:12px; font-weight:800; color:#38bdf8;">📊 거시경제 지표 임팩트 신호등 & 핵심 섹터 이벤트 관제</span>
+          <span style="font-size:10.5px; background:rgba(34,197,94,0.15); color:#4ade80; padding:2px 8px; border-radius:4px; font-weight:700;">실시간 자동 갱신: {time_str}</span>
+        </div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
+          <div style="background:rgba(239,68,68,0.08); border-left:3px solid #ef4444; padding:8px 10px; border-radius:4px;">
+            <div style="font-size:11px; font-weight:800; color:#fca5a5;">🔴 [하방 충격 위험] 미국 10월 PPI 발표</div>
+            <div style="font-size:10.5px; color:#cbd5e1; margin-top:3px;">발표 시각: 오늘(금) 22:30 | 예상치 상회 시 국채금리 반등 및 성장주 단기 수급 이탈 주의</div>
+          </div>
+          <div style="background:rgba(234,179,8,0.08); border-left:3px solid #eab308; padding:8px 10px; border-radius:4px;">
+            <div style="font-size:11px; font-weight:800; color:#fde047;">🟡 [변동성 주의] 금요 주간결산 동시호가</div>
+            <div style="font-size:10.5px; color:#cbd5e1; margin-top:3px;">15:20~15:30 주간 결산 기관·외인 프로그램 차익 매물 및 리밸런싱 동시호가 변동성 대비</div>
+          </div>
+          <div style="background:rgba(56,189,248,0.08); border-left:3px solid #38bdf8; padding:8px 10px; border-radius:4px;">
+            <div style="font-size:11px; font-weight:800; color:#7dd3fc;">🔵 [주도주 모멘텀] 스페이스X & CXL 기판</div>
+            <div style="font-size:10.5px; color:#cbd5e1; margin-top:3px;">스페이스X 350조 돌파(컨텍) 및 CXL 2.0 메모리 양산 수혜(티엘비·코리아써키트) 자금 집중</div>
+          </div>
+        </div>
+      </div>
+      <!-- /UPGRADED MACRO IMPACT & SECTOR EVENT PANEL FOR TAB 9 -->"""
+
+            marker_start = '<!-- UPGRADED MACRO IMPACT & SECTOR EVENT PANEL FOR TAB 9 -->'
+            marker_end = '<!-- /UPGRADED MACRO IMPACT & SECTOR EVENT PANEL FOR TAB 9 -->'
+
+            if marker_start in html_content:
+                p_start = html_content.find(marker_start)
+                p_end = html_content.find(marker_end) + len(marker_end)
+                html_content = html_content[:p_start] + cal_upgraded_panel + html_content[p_end:]
+            else:
+                c_idx = html_content.find('id="tabCalendar"')
+                if c_idx != -1:
+                    ins_target = html_content.find('<div class="panel-box', c_idx)
+                    if ins_target != -1:
+                        html_content = html_content[:ins_target] + cal_upgraded_panel + '\n    ' + html_content[ins_target:]
+                        print("Successfully injected Macro Impact Panel into #tabCalendar.")
+        except Exception as e:
+            print(f"[WARN] Failed updating Tab 9 Calendar: {e}")
 
         # Tab 2 (Supply) header update to current date
         html_content = re.sub(r'\(11/12 KRX 확정\)', f'({now_kst.month}/{now_kst.day} 실시간 관제)', html_content)
