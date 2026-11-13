@@ -21,6 +21,52 @@ def fetch_json(url):
         print(f"[WARN] Failed fetching {url}: {e}")
         return None
 
+
+def fetch_stock_candles_auto(code, count=45):
+    """Fetch daily candles from Naver fchart API."""
+    url = f"https://fchart.stock.naver.com/sise.nhn?symbol={code}&timeframe=day&count={count}&requestType=0"
+    req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+    try:
+        with urllib.request.urlopen(req, timeout=4) as res:
+            xml_data = res.read().decode('euc-kr')
+        root = ET.fromstring(xml_data)
+        items = root.findall('.//item')
+        candles = []
+        prev_close = None
+        for it in items:
+            data_str = it.attrib['data']
+            p = data_str.split('|')
+            c = int(p[4])
+            ratio = round(((c - prev_close) / prev_close) * 100, 2) if prev_close else 0.0
+            prev_close = c
+            date_formatted = f"{p[0][:4]}-{p[0][4:6]}-{p[0][6:]}"
+            candles.append({
+                "date": date_formatted,
+                "open": int(p[1]),
+                "high": int(p[2]),
+                "low": int(p[3]),
+                "close": c,
+                "vol": int(p[5]),
+                "ratio": ratio
+            })
+        return candles
+    except Exception as e:
+        print(f"[WARN] fetch_stock_candles_auto failed for {code}: {e}")
+        return []
+
+def auto_screen_market_close_leaders(realtime_data, today_iso):
+    """
+    Automatically screen top market leaders for RNZone and Jongbe Master on market close.
+    Picks top trading value and top momentum stocks and builds candle datasets.
+    """
+    sorted_stocks = []
+    for c, d in realtime_data.items():
+        val = d.get('val_num', 0)
+        ratio = d.get('ratio', 0.0)
+        sorted_stocks.append((c, d.get('name', c), val, ratio, d.get('price', 0)))
+    sorted_stocks.sort(key=lambda x: x[2], reverse=True)
+    return sorted_stocks
+
 def parse_trading_value(val_str, raw_val=0):
     """
     거래대금 문자열('1조 2,345억', '333억', '9,500만') 또는 raw 수치를 억 단위 float로 정확히 환산
