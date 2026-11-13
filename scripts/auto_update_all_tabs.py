@@ -567,7 +567,7 @@ def main():
     }
     for kw, codes in theme_keyword_map.items():
         ratios = [realtime_data[c]['ratio'] for c in codes if c in realtime_data]
-        tot_val = sum(realtime_data[c].get('val_eok', 0.0) for c in codes if c in realtime_data)
+        tot_val = sum(realtime_data[c].get('val_num', 0.0) for c in codes if c in realtime_data)
         if ratios:
             avg_r = sum(ratios) / len(ratios)
             avg_str = f"{avg_r:+.2f}%"
