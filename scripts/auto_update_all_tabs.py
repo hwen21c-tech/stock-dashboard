@@ -724,21 +724,42 @@ def main():
             inner_start = c_idx1 + len('<div class="signal-chips-scroll">\n')
             html_content = html_content[:inner_start] + chips_html + '\n    ' + html_content[c_idx2:]
 
-        # 9. Cross-check Automation: Tab 2 (Supply) & Tab 9 (Calendar) Live Date Sync
-        cal_today_text = f"⭐ 오늘: {now_kst.month}월 {now_kst.day}일(목) 11월 옵션만기일 동시청산 & 관세청 수출입동향"
-        html_content = re.sub(r'⭐ 오늘: 11월 11일\(수\)[^<]*', cal_today_text, html_content)
+        # 9. Cross-check Automation: Tab 2 (Supply), Tab 3 (Aftermarket), Tab 9 (Calendar) Live Sync
+        weekday_names = ['월', '화', '수', '목', '금', '토', '일']
+        w_name = weekday_names[now_kst.weekday()]
+        
+        # Dynamic calendar top bar
+        cal_today_text = f"⭐ 오늘: {now_kst.month}월 {now_kst.day}일({w_name}) 미 10월 PPI 발표 & 주간 결산 마감"
+        html_content = re.sub(r'⭐ 오늘:[^<]*', cal_today_text, html_content)
+
+        # Tab 2 (Supply) header update to current date
+        html_content = re.sub(r'\(11/12 KRX 확정\)', f'({now_kst.month}/{now_kst.day} 실시간 관제)', html_content)
+        html_content = re.sub(r'\(11/11 수요일\)', f'({now_kst.month}/{now_kst.day} {w_name}요일)', html_content)
 
         if inv_k and inv_kd:
-            fk_str = inv_k.get('foreignValue', '+2,099') + '억'
-            ik_str = inv_k.get('institutionalValue', '-5,617') + '억'
-            pk_str = inv_kd.get('personalValue', '+3,201') + '억'
-            fkd_str = inv_kd.get('foreignValue', '-2,882') + '억'
-            supply_overview_text = f"외국인 코스피({fk_str}) 순매수 5,380선 방어 vs 기관 코스피({ik_str}) 프로그램 차익 매물 소화. 코스닥 개인({pk_str}) 저가 매수 vs 외국인({fkd_str}) 양매도 공방."
+            fk_str = inv_k.get('foreignValue', '0') + '억'
+            ik_str = inv_k.get('institutionalValue', '0') + '억'
+            pk_str = inv_k.get('personalValue', '0') + '억'
+            fkd_str = inv_kd.get('foreignValue', '0') + '억'
+            ikd_str = inv_kd.get('institutionalValue', '0') + '억'
+            pkd_str = inv_kd.get('personalValue', '0') + '억'
+            supply_overview_text = f"코스피 외국인({fk_str}) · 기관({ik_str}) · 개인({pk_str}) | 코스닥 외국인({fkd_str}) · 기관({ikd_str}) · 개인({pkd_str}) 실시간 수급 공방 중."
             html_content = re.sub(
                 r'(<strong style="color:#38bdf8;">⏱️ 당일 시간대별 수급 유지도 총평:</strong><br>\s*)[^<]+',
                 lambda m: m.group(1) + f'{supply_overview_text} ',
                 html_content
             )
+
+        # Tab 3 (Aftermarket) header update to current status
+        if now_kst.hour < 15 or (now_kst.hour == 15 and now_kst.minute < 30):
+            after_status_txt = f"⚡ 1. [{now_kst.month}/{now_kst.day} {w_name} 정규장 진행 중] 실시간 지수 선물 & 장마감 후 애프터마켓(16:00~) 가동 대기"
+        else:
+            after_status_txt = f"⚡ 1. [{now_kst.month}/{now_kst.day} {w_name} 애프터마켓] 시간외 단일가 & 마감 선물 결산"
+        html_content = re.sub(
+            r'⚡ 1\.[^<]*?(?=</span>)',
+            after_status_txt,
+            html_content
+        )
 
         # 10. Cross-check Automation: Tab 2 (Supply) Stock Cards Live Quotes & Flow Tracker
         supply_stocks_map = {
