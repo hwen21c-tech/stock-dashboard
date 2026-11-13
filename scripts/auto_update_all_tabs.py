@@ -371,18 +371,34 @@ def main():
         i_raw = inv_k.get('institutionalValue', '')
         if f_raw:
             f_val = (f_raw if f_raw.startswith(('+', '-')) else ('+' + f_raw)) + '억'
-            html_content = re.sub(
-                r'(<span class="title"[^>]*>외국인(?:\(코스피\))?</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
-                lambda m: m.group(1) + f_val + m.group(2),
-                html_content
+            f_class = 'sell' if f_raw.startswith('-') else 'buy'
+            f_act = '순매도' if f_raw.startswith('-') else '순매수'
+            f_stat = '외인 차익 매도 우위' if f_raw.startswith('-') else '외인 순매수 유입'
+            f_desc = f'09:00 시초 이후 차익 매물 출회 지속, 15:30 외인 {f_val} {f_act} 마감.'
+            # Update onclick & amount class & value
+            f_card_pat = re.compile(r'<div class="supply-card"[^>]*onclick="openSupplyChart\([^)]*외국인[^)]*\)"[^>]*>[\s\S]*?</div>', re.MULTILINE)
+            f_card_html = (
+                f'<div class="supply-card" style="cursor: pointer; padding: 5px 6px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; white-space: nowrap;" '
+                f'onclick="openSupplyChart(\'코스피 외국인 누적 수급 흐름\', \'코스피 외인 {f_val} 원 {f_act}\', \'{f_stat}\', \'{f_desc}\', \'foreign_kospi\')">\n'
+                f'      <span class="title">외국인(코스피)</span><span class="amount {f_class}">{f_val}</span>\n'
+                f'    </div>'
             )
+            html_content = f_card_pat.sub(f_card_html, html_content, count=1)
+
         if i_raw:
             i_val = (i_raw if i_raw.startswith(('+', '-')) else ('+' + i_raw)) + '억'
-            html_content = re.sub(
-                r'(<span class="title"[^>]*>기관(?:\(코스피\))?</span>\s*<span class="amount [^"]*"[^>]*>)[^<]+(</span>)',
-                lambda m: m.group(1) + i_val + m.group(2),
-                html_content
+            i_class = 'sell' if i_raw.startswith('-') else 'buy'
+            i_act = '순매도' if i_raw.startswith('-') else '순매수'
+            i_stat = '기관 매도세 출회' if i_raw.startswith('-') else '장마감 강보합 방어'
+            i_desc = f'금융투자/연기금 등 기관 수급 종합 집계, {i_val} 원 {i_act} 마감.'
+            i_card_pat = re.compile(r'<div class="supply-card"[^>]*onclick="openSupplyChart\([^)]*기관[^)]*\)"[^>]*>[\s\S]*?</div>', re.MULTILINE)
+            i_card_html = (
+                f'<div class="supply-card" style="cursor: pointer; padding: 5px 6px; display: flex; align-items: center; justify-content: space-between; overflow: hidden; white-space: nowrap;" '
+                f'onclick="openSupplyChart(\'코스피 기관 누적 수급 흐름\', \'코스피 기관 {i_val} 원 {i_act}\', \'{i_stat}\', \'{i_desc}\', \'inst_kospi\')">\n'
+                f'      <span class="title">기관(코스피)</span><span class="amount {i_class}">{i_val}</span>\n'
+                f'    </div>'
             )
+            html_content = i_card_pat.sub(i_card_html, html_content, count=1)
 
     # 3. STOCK_CODES Master Dictionary (Theme Tiles, Supply Cards, RNZone, Jongbe)
     STOCK_CODES = {
