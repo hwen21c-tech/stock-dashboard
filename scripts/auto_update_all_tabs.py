@@ -449,7 +449,7 @@ def main():
     rn_jongbe_codes = [
         '006400', '207940', '028260', '000270', '402340', '058470', '240810', '031980', '067310', '028300', '000660',
         '036930', '007810', '222800', '356860', '247540', '012450', '034020', '009150', '005380',
-        '353200', '131290', '086520', '451760', '211270', '263860'
+        '353200', '131290', '086520', '451760', '211270', '263860', '002990', '241520', '001440'
     ]
     codes_list = list(set(list(STOCK_CODES.values()) + rn_jongbe_codes))
     poll_url = f"https://polling.finance.naver.com/api/realtime/domestic/stock/{','.join(codes_list)}"
@@ -952,38 +952,38 @@ def main():
             html_content = html_content[:m_jb.start(2)] + new_jb_json + html_content[m_jb.end(2):]
             print(f"auto_update_all_tabs: updated {jb_updated} Jongbe Master stocks real-time candles & quotes!")
 
-        # Update tabRnzone static header price
-        psk_d = realtime_data.get('031980')
-        if psk_d:
-            psk_p = psk_d['price']
-            psk_r = psk_d['ratio']
-            r_col = 'price-up' if psk_r > 0 else ('price-down' if psk_r < 0 else '')
+        # Update tabRnzone static header price (Top 1: Korea Circuit 007810)
+        kc_d = realtime_data.get('007810')
+        if kc_d:
+            kc_p = kc_d['price']
+            kc_r = kc_d['ratio']
+            r_col = 'price-up' if kc_r > 0 else ('price-down' if kc_r < 0 else '')
             html_content = re.sub(
                 r'<span class="stock-price-box [^"]*" id="selectedStockPrice">[^<]+</span>',
-                f'<span class="stock-price-box {r_col}" id="selectedStockPrice">{psk_p}원 ({psk_r:+.2f}%) [RN존 실시간 안착 🟢]</span>',
+                f'<span class="stock-price-box {r_col}" id="selectedStockPrice">{kc_p}원 ({kc_r:+.2f}%) [RN존 상단 돌파 🟢]</span>',
                 html_content
             )
 
-        # Update tabJongbe static header price
-        jus_d = realtime_data.get('036930')
-        if jus_d:
-            jus_p = jus_d['price']
-            jus_r = jus_d['ratio']
-            jus_v = jus_d['val']
-            r_col = 'up' if jus_r > 0 else ('down' if jus_r < 0 else '')
+        # Update tabJongbe static header price (Top 1: Genians 263860)
+        gen_d = realtime_data.get('263860')
+        if gen_d:
+            gen_p = gen_d['price']
+            gen_r = gen_d['ratio']
+            gen_v = gen_d.get('val', '2,150억')
+            r_col = 'up' if gen_r > 0 else ('down' if gen_r < 0 else '')
             html_content = re.sub(
                 r'<span class="stock-price" id="dispPrice">[^<]+</span>',
-                f'<span class="stock-price" id="dispPrice">{jus_p}원</span>',
+                f'<span class="stock-price" id="dispPrice">{gen_p}원</span>',
                 html_content
             )
             html_content = re.sub(
                 r'<span class="stock-change [^"]*" id="dispChange">[^<]+</span>',
-                f'<span class="stock-change {r_col}" id="dispChange">{jus_r:+.2f}%</span>',
+                f'<span class="stock-change {r_col}" id="dispChange">{gen_r:+.2f}%</span>',
                 html_content
             )
             html_content = re.sub(
                 r'<span class="stock-track-badge badge-shin" id="dispBadge">[^<]+</span>',
-                f'<span class="stock-track-badge badge-shin" id="dispBadge">⚡ 신정재 1픽: {jus_v} 코스닥 대금 1위</span>',
+                f'<span class="stock-track-badge badge-shin" id="dispBadge">⚡ 신정재 1픽: {gen_v} EDR 대장 고가 마감</span>',
                 html_content
             )
 
