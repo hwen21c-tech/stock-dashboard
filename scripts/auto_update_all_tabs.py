@@ -515,15 +515,42 @@ def main():
                 if c in realtime_data:
                     p_val = int(str(realtime_data[c]['price']).replace(',', ''))
                     r_val = float(realtime_data[c]['ratio'])
+                    h_raw = realtime_data[c].get('high')
+                    l_raw = realtime_data[c].get('low')
+                    o_raw = realtime_data[c].get('open')
+                    v_raw = realtime_data[c].get('vol')
+                    high_val = int(str(h_raw).replace(',', '')) if h_raw else p_val
+                    low_val = int(str(l_raw).replace(',', '')) if l_raw else p_val
+                    open_val = int(str(o_raw).replace(',', '')) if o_raw else p_val
+                    vol_val = int(str(v_raw).replace(',', '')) if v_raw else 0
+
                     s['price'] = p_val
                     s['changeRatio'] = r_val
+
                     if s.get('candles') and len(s['candles']) > 0:
-                        s['candles'][-1]['close'] = p_val
-                        s['candles'][-1]['ratio'] = r_val
+                        if s['candles'][-1].get('date') == today_iso:
+                            last_c = s['candles'][-1]
+                            last_c['close'] = p_val
+                            last_c['high'] = max(last_c.get('high', p_val), high_val)
+                            last_c['low'] = min(last_c.get('low', p_val), low_val)
+                            last_c['ratio'] = r_val
+                            if vol_val:
+                                last_c['vol'] = vol_val
+                        else:
+                            new_c = {
+                                'date': today_iso,
+                                'open': open_val,
+                                'high': high_val,
+                                'low': low_val,
+                                'close': p_val,
+                                'vol': vol_val,
+                                'ratio': r_val
+                            }
+                            s['candles'].append(new_c)
                     rn_updated += 1
             new_rn_json = json.dumps(rn_stocks, ensure_ascii=False)
             html_content = html_content[:m_rn.start(2)] + new_rn_json + html_content[m_rn.end(2):]
-            print(f"auto_update_all_tabs: updated {rn_updated} RNZone stocks real-time quotes!")
+            print(f"auto_update_all_tabs: updated {rn_updated} RNZone stocks real-time candles & quotes!")
 
         # Update Jongbe STOCKS
         m_jb = re.search(r'(window\.Jongbe\s*=\s*\(function\(\)\s*\{[\s\S]*?const STOCKS = )(\[.*?\])(;)', html_content)
@@ -535,15 +562,42 @@ def main():
                 if c in realtime_data:
                     p_val = int(str(realtime_data[c]['price']).replace(',', ''))
                     r_val = float(realtime_data[c]['ratio'])
+                    h_raw = realtime_data[c].get('high')
+                    l_raw = realtime_data[c].get('low')
+                    o_raw = realtime_data[c].get('open')
+                    v_raw = realtime_data[c].get('vol')
+                    high_val = int(str(h_raw).replace(',', '')) if h_raw else p_val
+                    low_val = int(str(l_raw).replace(',', '')) if l_raw else p_val
+                    open_val = int(str(o_raw).replace(',', '')) if o_raw else p_val
+                    vol_val = int(str(v_raw).replace(',', '')) if v_raw else 0
+
                     s['price'] = p_val
                     s['changeRatio'] = r_val
+
                     if s.get('candles') and len(s['candles']) > 0:
-                        s['candles'][-1]['close'] = p_val
-                        s['candles'][-1]['ratio'] = r_val
+                        if s['candles'][-1].get('date') == today_iso:
+                            last_c = s['candles'][-1]
+                            last_c['close'] = p_val
+                            last_c['high'] = max(last_c.get('high', p_val), high_val)
+                            last_c['low'] = min(last_c.get('low', p_val), low_val)
+                            last_c['ratio'] = r_val
+                            if vol_val:
+                                last_c['vol'] = vol_val
+                        else:
+                            new_c = {
+                                'date': today_iso,
+                                'open': open_val,
+                                'high': high_val,
+                                'low': low_val,
+                                'close': p_val,
+                                'vol': vol_val,
+                                'ratio': r_val
+                            }
+                            s['candles'].append(new_c)
                     jb_updated += 1
             new_jb_json = json.dumps(jb_stocks, ensure_ascii=False)
             html_content = html_content[:m_jb.start(2)] + new_jb_json + html_content[m_jb.end(2):]
-            print(f"auto_update_all_tabs: updated {jb_updated} Jongbe Master stocks real-time quotes!")
+            print(f"auto_update_all_tabs: updated {jb_updated} Jongbe Master stocks real-time candles & quotes!")
 
         # Update tabRnzone static header price
         psk_d = realtime_data.get('031980')
