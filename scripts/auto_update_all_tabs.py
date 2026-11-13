@@ -328,10 +328,30 @@ def main():
                 clean_q = urllib.parse.quote(news_tit[:30])
                 article_url = f"https://search.naver.com/search.naver?where=news&query={clean_q}"
 
+            # Determine theme tag based on news title keywords
+            tag_name = "시장 속보"
+            if any(k in news_tit for k in ["보안", "지니언스", "해킹", "EDR", "백신"]):
+                tag_name = "AI 보안·EDR"
+            elif any(k in news_tit for k in ["CXL", "기판", "코리아써키트", "티엘비", "심텍"]):
+                tag_name = "CXL·반도체 기판"
+            elif any(k in news_tit for k in ["반도체", "하이닉스", "삼성전자", "HBM", "주성"]):
+                tag_name = "반도체·HBM"
+            elif any(k in news_tit for k in ["로봇", "레인보우", "휴머노이드", "두산로보"]):
+                tag_name = "AI 로봇·팩토리"
+            elif any(k in news_tit for k in ["우주", "위성", "스페이스X", "컨텍"]):
+                tag_name = "우주항공·위성"
+            elif any(k in news_tit for k in ["2차전지", "배터리", "리튬", "에코프로"]):
+                tag_name = "2차전지·소재"
+            elif any(k in news_tit for k in ["엔터", "JYP", "하이브", "음원", "와이지"]):
+                tag_name = "K-POP 엔터"
+
             card = f"""<!-- AUTO HOURLY NEWS {news_time} -->
       <div class="news-timeline-card" style="border-left-color:#38bdf8;" onclick="openNewsDetail('{news_tit}', '{news_time} 속보', '{article_url}', '{news_tit}', '장중 대형 속보 출회 시 관련 테마 및 주도 섹터 단기 수급 쏠림 형성.', '실시간 거래대금 급증 종목 연동')">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-          <span class="nt-time" style="background:#0c4a6e; color:#bae6fd;">{news_time} 실시간 속보 ⚡</span>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="nt-time" style="background:#0c4a6e; color:#bae6fd;">{news_time} 실시간 속보 ⚡</span>
+            <span style="font-size:10px; padding:2px 6px; border-radius:4px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.3); font-weight:700;">🏷️ {tag_name}</span>
+          </div>
           <a href="{article_url}" target="_blank" rel="noopener noreferrer" style="font-size:10.5px; background:rgba(56,189,248,0.15); color:#7dd3fc; border:1px solid rgba(56,189,248,0.4); padding:2px 7px; border-radius:4px; text-decoration:none; font-weight:800;" onclick="event.stopPropagation()">🔗 기사 원문 ↗</a>
         </div>
         <div class="nt-title">{news_tit}</div>
@@ -634,15 +654,15 @@ def main():
                 html_content
             )
 
-        # Update tabManju dynamic prices
+        # Update tabManju dynamic prices (11/13 today's leaders: 코리아써키트, 지니언스, 레인보우로보틱스)
         if 'tabManju' in html_content:
-            ctk_d = realtime_data.get('451760')
+            cir_d = realtime_data.get('007810')
             gen_d = realtime_data.get('263860')
-            jyp_d = realtime_data.get('035900')
-            if ctk_d:
+            rbw_d = realtime_data.get('277810')
+            if cir_d:
                 html_content = re.sub(
-                    r'(<span class="mi-title">컨텍</span></div>\s*<span class="mi-price"[^>]*>)[^<]+(</span>)',
-                    lambda m: m.group(1) + f'{ctk_d["ratio"]:+.2f}% ({ctk_d["price"]}원)' + m.group(2),
+                    r'(<span class="mi-title">코리아써키트</span></div>\s*<span class="mi-price"[^>]*>)[^<]+(</span>)',
+                    lambda m: m.group(1) + f'{cir_d["ratio"]:+.2f}% ({cir_d["price"]}원)' + m.group(2),
                     html_content
                 )
             if gen_d:
@@ -651,10 +671,10 @@ def main():
                     lambda m: m.group(1) + f'{gen_d["ratio"]:+.2f}% ({gen_d["price"]}원)' + m.group(2),
                     html_content
                 )
-            if jyp_d:
+            if rbw_d:
                 html_content = re.sub(
-                    r'(<span class="mi-title">JYP Ent\.</span></div>\s*<span class="mi-price"[^>]*>)[^<]+(</span>)',
-                    lambda m: m.group(1) + f'{jyp_d["ratio"]:+.2f}% ({jyp_d["price"]}원)' + m.group(2),
+                    r'(<span class="mi-title">레인보우로보틱스</span></div>\s*<span class="mi-price"[^>]*>)[^<]+(</span>)',
+                    lambda m: m.group(1) + f'{rbw_d["ratio"]:+.2f}% ({rbw_d["price"]}원)' + m.group(2),
                     html_content
                 )
 
