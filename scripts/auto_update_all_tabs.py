@@ -607,7 +607,7 @@ def main():
             r_col = 'price-up' if psk_r > 0 else ('price-down' if psk_r < 0 else '')
             html_content = re.sub(
                 r'<span class="stock-price-box [^"]*" id="selectedStockPrice">[^<]+</span>',
-                f'<span class="stock-price-box {r_col}" id="selectedStockPrice">{psk_p}원 ({psk_r:+.2f}%)</span>',
+                f'<span class="stock-price-box {r_col}" id="selectedStockPrice">{psk_p}원 ({psk_r:+.2f}%) [RN존 실시간 안착 🟢]</span>',
                 html_content
             )
 
