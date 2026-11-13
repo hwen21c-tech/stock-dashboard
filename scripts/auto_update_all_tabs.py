@@ -211,9 +211,49 @@ def main():
                 }
         print(f"Updated integrated live quotes for {len(realtime_data)} stocks from Naver Polling API.")
 
+    DEFAULT_ROLES = {
+        '코난테크놀로지': 'AI검색', '지니언스': 'EDR보안', '셀바스AI': '음성AI', '솔트룩스': '후발수혜',
+        'JYP Ent.': '엔터대장', '와이지엔터': '후발연동', '와이지엔터테인먼트': '후발연동', '에스엠': '음원수혜', '하이브': '플랫폼',
+        '컨텍': '우주지상국', 'AP위성': '위성대장', '미래에셋증권': '스페이스X지분', '한국항공우주': '항공방산',
+        '코리아써키트': '기판대장', '티엘비': 'CXL원탑', '심텍': 'FCBGA', '이수페타시스': 'MLB기판',
+        '주성엔지니어링': '코스닥1위', '피에스케이홀딩스': 'HBM패키징', '하나마이크론': 'OSAT', '리노공업': '소켓대장',
+        '메리츠금융지주': '밸류업대장', '메리츠금융': '밸류업대장', '우리금융지주': '고배당', '신한지주': '환원확대', '하나금융지주': '자사주소각',
+        '핑거스토리': 'K웹툰', '디앤씨미디어': '글로벌IP', '와이랩': '웹툰제작', '미스터블루': 'IP플랫폼',
+        '레인보우로보': '로봇대장', '레인보우로보틱스': '로봇대장', '두산로보틱스': '협동로봇', '엔젤로보틱스': '웨어러블', '유진로봇': '자율주행'
+    }
+
     def update_tile_content(tile_html, name, code):
         if code not in realtime_data:
             return tile_html
+        d = realtime_data[code]
+        p = d['price']
+        r = d['ratio']
+        r_str = f"{r:+.2f}%" if r != 0 else "0.00%"
+        o = d['open']
+        h = d['high']
+        l = d['low']
+        v = d['val']
+        color = "#f43f5e" if r > 0 else ("#38bdf8" if r < 0 else "#94a3b8")
+        tile_html = re.sub(r"openDetail\('([^']*)',\s*'[^']*',\s*'[^']*'", f"openDetail('\\1', '{r_str}', '대금 {v} | 현재가 {p}원'", tile_html)
+        tile_html = re.sub(r'<span class="st-change"[^>]*>[^<]+</span>', f'<span class="st-change" style="color:{color}; font-weight:800;">{r_str}</span>', tile_html)
+        tile_html = re.sub(r'<div class="st-ohlc">[^<]*<strong>[^<]*</strong>[^<]*</div>', f'<div class="st-ohlc">종 <strong>{p}</strong> | 시 {o} 고 {h} 저 {l}</div>', tile_html)
+        if v:
+            tile_html = re.sub(r'<span class="st-vol">[^<]+</span>', f'<span class="st-vol">{v}</span>', tile_html)
+
+        # Dynamic st-role assignment: strip yesterday's upper limit badge if ratio < 29.5%
+        def_role = DEFAULT_ROLES.get(name, '대장주')
+        if r >= 29.5:
+            role_tag = '<span class="st-role" style="background:#dc2626; color:#fff;">👑 상한가</span>'
+        elif r >= 25.0 and d.get('val_num', 0) >= 100:
+            role_tag = '<span class="st-role" style="background:#be123c; color:#fff;">🚨 임박</span>'
+        else:
+            role_tag = f'<span class="st-role">{def_role}</span>'
+        tile_html = re.sub(r'<span class="st-role"[^>]*>[^<]+</span>', role_tag, tile_html)
+
+        # Clean past upper limit mentions in openDetail description
+        if r < 29.5:
+            tile_html = tile_html.replace('1위 상한가 기록.', '1위 강세.').replace('장중 상한가(12,370원) 터치 👑', '스페이스X 350조 수혜 유입.').replace('전일 상한가에 이어 연속 랠리.', 'CXL 전용 R-DIMM 기판 랠리.')
+        return tile_html
         d = realtime_data[code]
         p = d['price']
         r = d['ratio']
@@ -637,6 +677,16 @@ def main():
         ctk_r = realtime_data.get('451760', {}).get('ratio', 29.94)
         ctk_v = realtime_data.get('451760', {}).get('val', '333억')
 
+        if ctk_r >= 29.5:
+            ctk_cls = "red"
+            ctk_txt = f"{ctk_r:+.2f}% 장중 상한가 폭발 (대금 {ctk_v} 🚀)"
+        elif ctk_r > 0:
+            ctk_cls = "blue"
+            ctk_txt = f"{ctk_r:+.2f}% 스페이스X 350조 모멘텀 (대금 {ctk_v})"
+        else:
+            ctk_cls = "yellow"
+            ctk_txt = f"{ctk_r:+.2f}% 시초가 매물 소화 (대금 {ctk_v})"
+
         chips_html = f'''      <div class="signal-chip green" onclick="navigateToSignalStock('rnzone', '031980')">
         <span>🟢 [RN존 하단안착]</span>
         <strong>피에스케이홀딩스:</strong>
@@ -647,10 +697,10 @@ def main():
         <strong>하나마이크론:</strong>
         <span>31,200원 이하 체결존 안착 (현재 {hana_p}원 🎯)</span>
       </div>
-      <div class="signal-chip red" onclick="switchView('overview', null)">
+      <div class="signal-chip {ctk_cls}" onclick="switchView('overview', null)">
         <span>👑 [우주항공 대장]</span>
         <strong>컨텍:</strong>
-        <span>{ctk_r:+.2f}% 장중 상한가 폭발 (대금 {ctk_v} 🚀)</span>
+        <span>{ctk_txt}</span>
       </div>
       <div class="signal-chip purple" onclick="switchView('overview', null)">
         <span>⚡ [신고가 대장주]</span>
