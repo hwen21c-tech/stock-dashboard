@@ -567,11 +567,14 @@ def main():
     }
     for kw, codes in theme_keyword_map.items():
         ratios = [realtime_data[c]['ratio'] for c in codes if c in realtime_data]
+        tot_val = sum(realtime_data[c].get('val_eok', 0.0) for c in codes if c in realtime_data)
         if ratios:
             avg_r = sum(ratios) / len(ratios)
             avg_str = f"{avg_r:+.2f}%"
-            pat = rf'(<span class="theme-name">[^<]*{re.escape(kw)}[^<]*</span>\s*<span class="theme-avg"[^>]*>)[^<]+(</span>)'
-            html_content, sub_cnt = re.subn(pat, r'\g<1>' + avg_str + r'\g<2>', html_content)
+            vol_str = f"합산 {tot_val/10000:.1f}조" if tot_val >= 10000 else f"합산 {int(round(tot_val)):,}억"
+            full_str = f"{avg_str} <span style=\"font-size:10px; color:#94a3b8; font-weight:600; margin-left:4px; letter-spacing:-0.2px;\">({vol_str})</span>"
+            pat = rf'(<span class="theme-name">[^<]*{re.escape(kw)}[^<]*</span>\s*<span class="theme-avg"[^>]*>)[\s\S]*?(</span>)'
+            html_content, sub_cnt = re.subn(pat, r'\g<1>' + full_str + r'\g<2>', html_content)
             if sub_cnt == 0:
                 print(f"[WARN] Failed updating theme-avg for keyword '{kw}'")
 
