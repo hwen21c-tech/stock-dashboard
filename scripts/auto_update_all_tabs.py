@@ -1246,7 +1246,7 @@ def main():
 
         # 11. Cross-check Automation: Tab 3 (Aftermarket) Indices Line
         if idx_res and 'datas' in idx_res:
-            am_idx_text = f"• <strong>장마감 잠정 지표:</strong> 코스피 {idx_res['datas'][0]['closePrice']} ({float(idx_res['datas'][0]['fluctuationsRatio']):+.2f}%) · 코스닥 {idx_res['datas'][1]['closePrice']} ({float(idx_res['datas'][1]['fluctuationsRatio']):+.2f}%) · 주간선물 840.85 (+0.52%)<br>"
+            am_idx_text = f"• <strong>장마감 잠정 지표:</strong> 코스피 {idx_res['datas'][0]['closePrice']} ({float(idx_res['datas'][0]['fluctuationsRatio']):+.2f}%) · 코스닥 {idx_res['datas'][1]['closePrice']} ({float(idx_res['datas'][1]['fluctuationsRatio']):+.2f}%) · 코스피200 주간선물 836.35 (+2.99%)<br>"
             html_content = re.sub(r'• <strong>장마감 (?:잠정|확정) 지표:</strong>[^<]*<br>', am_idx_text, html_content)
     except Exception as e:
         print(f"[WARN] Failed updating RN/Jongbe/DART/CrossCheck: {e}")
