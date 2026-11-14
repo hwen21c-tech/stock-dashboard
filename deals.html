@@ -1489,9 +1489,11 @@
       var fields = dealFieldList(item, kind).map(normalizeText);
       var title = fields[0] || '';
       var kw = normalizeText(item.search_kw || '');
+      var second = fields[1] || ''; // 여행=지역, 키즈=위치
       var score = 0;
-      if (title.indexOf(nq) !== -1) score += 40;
-      if (kw && kw.indexOf(nq) !== -1) score += 30;
+      var coreHit = false;
+      if (title.indexOf(nq) !== -1) { score += 40; coreHit = true; }
+      if (kw && kw.indexOf(nq) !== -1) { score += 30; coreHit = true; }
       var tokens = searchTokens(query);
       var hitCount = 0;
       for (var t = 0; t < tokens.length; t++) {
@@ -1504,9 +1506,13 @@
             hit = true;
           }
         }
+        // 상품명·검색키워드·지역(위치)에 걸린 토큰만 '그 상품을 찾는 검색어'로 인정한다.
+        // 설명·출발지 문장에만 스친 단어(예: '부산 출발'의 부산)로 엉뚱한 상품을 1순위로 올리지 않는다.
+        if (title.indexOf(nt) !== -1 || kw.indexOf(nt) !== -1 || second.indexOf(nt) !== -1) coreHit = true;
         if (hit) hitCount++;
       }
       if (hitCount === 0) return 0;
+      if (!coreHit) return 0;
       return score;
     }
 
@@ -1842,8 +1848,11 @@
       var srcLabel = item.source_badge || item.source;
       var subLine = kind === 'travel' ? item.flight_type : item.location;
       var featLine = kind === 'travel' ? (item.price_level_text || item.family_fit) : (item.highlights || item.benefit_tag);
+      var priceLabel = item.room_basis
+        ? ('1박 요금 (기준 ' + (Number(item.pax_included) || 2) + '인) ')
+        : (item.type === 'overseas' ? '1인 기준 특가 ' : '패키지 특가 ');
       var priceLine = kind === 'travel'
-        ? ((item.type === 'overseas' ? '1인 기준 특가 ' : '패키지 특가 ') + item.deal_price + ' · 정가 ' + item.normal_price)
+        ? (priceLabel + item.deal_price + (item.normal_price ? ' · 정상가 ' + item.normal_price : ''))
         : item.price_info;
       var badge = kind === 'travel' ? item.discount : item.benefit_tag;
       var amountLine;
@@ -1863,6 +1872,8 @@
         savedLine = '정가 대비 약 <strong style="color:#4ade80;">' + formatWon(est.saved) + '</strong> 절약' + (est.pct ? ' (-' + est.pct + '%)' : '');
       } else if (est.note) {
         savedLine = '<span style="color:#86efac;">' + est.note + '</span>';
+      } else if (kind === 'travel') {
+        savedLine = '정상가 미표기 · 판매가 기준';
       } else {
         savedLine = '인원별 최종 금액은 예약 화면에서 확인';
       }
