@@ -929,6 +929,78 @@
       text-decoration: none;
     }
 
+    /* 📌 핀 고정 UI */
+    .fdr-pin-btn {
+      background: rgba(251, 191, 36, 0.10);
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      color: #fbbf24;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 999px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+    }
+    .fdr-pin-btn:hover { background: rgba(251, 191, 36, 0.22); }
+    .fdr-pin-btn.pinned {
+      background: rgba(251, 191, 36, 0.92);
+      border-color: #fbbf24;
+      color: #1e293b;
+    }
+    .fdr-pin-tag {
+      display: inline-block;
+      font-size: 9.5px;
+      font-weight: 900;
+      color: #1e293b;
+      background: #fbbf24;
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-right: 5px;
+      vertical-align: middle;
+    }
+    .fdr-pin-bar {
+      background: linear-gradient(135deg, rgba(251,191,36,0.14) 0%, rgba(15,23,42,0.95) 65%);
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      border-radius: 10px;
+      padding: 9px 12px;
+      margin-bottom: 12px;
+    }
+    .fdr-pin-bar-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #fef08a;
+      margin-bottom: 6px;
+      line-height: 1.55;
+    }
+    .fdr-pin-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .fdr-pin-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #fde68a;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(251, 191, 36, 0.4);
+      border-radius: 999px;
+      padding: 3px 4px 3px 9px;
+    }
+    .fdr-pin-x {
+      background: rgba(248, 113, 113, 0.18);
+      border: 1px solid rgba(248, 113, 113, 0.5);
+      color: #fca5a5;
+      font-size: 10px;
+      font-weight: 900;
+      width: 16px;
+      height: 16px;
+      line-height: 1;
+      border-radius: 999px;
+      cursor: pointer;
+      padding: 0;
+    }
+    .fdr-pin-x:hover { background: rgba(248, 113, 113, 0.35); }
+
 </style>
 </head>
 <body>
@@ -948,7 +1020,8 @@
       </a>
       <div id="dealsSyncWrap" style="display: flex; align-items: center; gap: 8px;">
         <span id="dealsSyncBadge" style="font-size: 10.5px; font-weight: 800; color: #4ade80; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); padding: 4px 8px; border-radius: 4px;">⚡ 하루 3회 정기 자동 갱신 (다음: 내일 08:00)</span>
-        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 11:10 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
+        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 12:14 🟢 [🚀 오후 여행 & 키즈 핫딜 가동] · 여행 11 · 키즈 11건 교체</span>
+        <span id="dealsScanMeta" style="font-size: 10.5px; color: #93c5fd; font-weight:700;">🗂️ 실측 스캔 대기</span>
       </div>
       <div class="calc-controls">
         <div class="counter-group">
@@ -1057,6 +1130,9 @@
   </div>
 
   
+  <!-- 📌 고정된 특가 요약 바 (동기화로 목록이 교체돼도 유지) -->
+  <div id="fdrPinBar" class="fdr-pin-bar" style="display: none;"></div>
+
   <!-- RADAR CUSTOM SEARCH CONTAINER -->
   <div id="radarSearchContainer" class="radar-search-container" style="display: block;">
     <!-- TRAVEL / KIDS ACTIVITY FORM -->
@@ -1149,7 +1225,7 @@
     <button type="button" class="filter-chip" data-filter="kakao" onclick="setTravelFilter('kakao', this)" style="border-color: rgba(254,229,0,0.4); color: #fee500;">💬 카카오톡 특가</button>
     <button type="button" class="filter-chip" data-filter="overseas" onclick="setTravelFilter('overseas', this)">🌏 해외 여행</button>
     <button type="button" class="filter-chip" data-filter="domestic" onclick="setTravelFilter('domestic', this)">🇰🇷 국내 여행</button>
-    <button type="button" class="filter-chip" data-filter="homeshopping" onclick="setTravelFilter('homeshopping', this)">📺 홈쇼핑 패키지</button>
+    <button type="button" class="filter-chip" data-filter="room" onclick="setTravelFilter('room', this)">🏨 숙소 1박</button>
     <button type="button" class="filter-chip" data-filter="resort" onclick="setTravelFilter('resort', this)">🌴 휴양·풀빌라</button>
     <button type="button" class="filter-chip" data-filter="family" onclick="setTravelFilter('family', this)">🎡 워터파크·가족</button>
     <button type="button" class="filter-chip" data-filter="snow" onclick="setTravelFilter('snow', this)">❄️ 눈꽃·스키</button>
@@ -1160,7 +1236,7 @@
     <button type="button" class="filter-chip active" data-filter="all" onclick="setKidsFilter('all', this)">전체</button>
     <button type="button" class="filter-chip" data-filter="kakao" onclick="setKidsFilter('kakao', this)" style="border-color: rgba(254,229,0,0.4); color: #fee500;">💬 카카오톡 예약</button>
     <button type="button" class="filter-chip" data-filter="dongtan" onclick="setKidsFilter('dongtan', this)">🎯 동탄·화성권</button>
-    <button type="button" class="filter-chip" data-filter="tourpass" onclick="setKidsFilter('tourpass', this)">🎫 경기투어패스</button>
+    <button type="button" class="filter-chip" data-filter="aquarium" onclick="setKidsFilter('aquarium', this)">🐠 아쿠아리움</button>
     <button type="button" class="filter-chip" data-filter="museum" onclick="setKidsFilter('museum', this)">🦕 박물관·체험관</button>
     <button type="button" class="filter-chip" data-filter="kids_cafe" onclick="setKidsFilter('kids_cafe', this)">🏰 대형 키즈카페</button>
     <button type="button" class="filter-chip" data-filter="themepark" onclick="setKidsFilter('themepark', this)">🎢 테마파크·썰매장</button>
@@ -1328,21 +1404,25 @@
       var heads = h.adult + h.school + h.preschool;
       var weight = h.adult + (h.school * 0.9) + (h.preschool * 0.75);
       var total = 0;
-      if (d.type === 'overseas') {
+      if (d.room_basis) {
+        // 숙소형(1박 요금): 기준 인원 초과 시 1인 15% 추가
+        var incl = Number(d.pax_included) || 2;
+        total = unit + Math.max(0, heads - incl) * Math.round(unit * 0.15);
+      } else if (d.type === 'overseas') {
+        // 해외 1인 상품: 성인1 · 초등0.9 · 미취학0.75 가중
         total = Math.round(unit * weight);
       } else {
-        total = unit + Math.max(0, heads - 3) * Math.round(unit * 0.12);
+        var incl2 = Number(d.pax_included) || 3;
+        total = unit + Math.max(0, heads - incl2) * Math.round(unit * 0.12);
       }
+      if (heads === 0) total = unit; // 인원 미선택 시 1인/1박 기준 금액
       if (total < 0) total = 0;
-      // 절약액은 카드에 적힌 정가·특가 차이를 그대로 인원 비례로 환산 (사용자가 직접 검산 가능)
+      // 절약액은 카드에 적힌 정상가·특가 차이를 그대로 인원 비례로 환산 (직접 검산 가능)
       var saved = 0;
       var pct = 0;
       if (unit > 0 && normalUnit > unit) {
         saved = Math.round(total * (normalUnit - unit) / unit);
         pct = Math.round((normalUnit - unit) / normalUnit * 100);
-      } else {
-        pct = parsePercent(d.discount);
-        saved = pct > 0 ? Math.round(total * pct / (100 - pct)) : 0;
       }
       return { total: total, saved: saved, unit: unit, pct: pct };
     }
@@ -1350,51 +1430,29 @@
     // 키즈카페·박물관·테마파크: 시설별 실제 요금 체계 반영
     function kidsEstimate(k, h) {
       var heads = h.adult + h.school + h.preschool;
-      var childOnlyPriced = (k.id === 'kd_mrt_museum' || k.id === 'kd7');
-      var noChildSelected = childOnlyPriced && ((h.school + h.preschool) === 0);
+      var childHeads = h.school + h.preschool;
+      var unit = Number(k.unit_price) || 0;
+      var normal = Number(k.normal_unit_price) || 0;
+      var priced = unit > 0;
+      var childOnly = (k.child_only === true);
+      var noChildSelected = childOnly && (childHeads === 0);
+      var zeroSelected = (heads === 0);
       var total = 0;
-      if (k.id === 'kd_zoolung') {
-        total = heads * 17900;
-      } else if (k.id === 'kd_klook_bird') {
-        total = heads * 11900;
-      } else if (k.id === 'kd_mrt_museum') {
-        total = (h.school + h.preschool) * 29000;
-      } else if (k.id === 'kd_kakao1') {
-        total = (h.adult * 5000) + ((h.school + h.preschool) * 17900);
-      } else if (k.id === 'kd_kakao2') {
-        total = Math.round(72000 * heads / 4);
-      } else if (k.id === 'kd7') {
-        total = (h.school + h.preschool) * 2000;
-      } else if (k.id === 'kd8') {
-        total = heads * 19900;
-      } else if (k.id === 'kd1') {
-        total = (h.adult * 4000) + (h.school * 2000);
-        if (heads >= 4) total = Math.round(total * 0.75);
-      } else if (k.id === 'kd2') {
-        total = heads * 2000;
-      } else if (k.id === 'kd3') {
-        total = 0;
-      } else if (k.id === 'kd4') {
-        total = ((h.school + h.preschool) * 20000) + (h.adult * 5000);
-      } else if (k.id === 'kd6') {
-        total = (h.adult * 28000) + ((h.school + h.preschool) * 34000);
+      if (priced) {
+        total = childOnly ? childHeads * unit : heads * unit;
+        if (zeroSelected) total = unit; // 인원 미선택 시 1인 기준 금액
       }
-      var pct = parsePercent(k.price_info) || parsePercent(k.benefit_tag);
+      var pct = 0;
       var saved = 0;
       var note = '';
-      if (total > 0) {
-        if (pct > 0) {
-          saved = Math.round(total * pct / (100 - pct));
-        } else {
-          saved = Math.round(parseSavedText(k.family_saved) * heads / 4);
-        }
-        // 절약액이 실제 결제액보다 크면(사립 시설 등 다른 기준과 비교한 값) 숫자 대신 원문 비교 문구를 보여준다
-        if (saved > total) {
-          note = k.family_saved;
-          saved = 0;
-        }
+      if (priced && normal > unit) {
+        pct = Math.round((normal - unit) / normal * 100);
+        saved = Math.round(total * (normal - unit) / unit);
       }
-      return { total: total, saved: saved, pct: pct, note: note, noChildSelected: noChildSelected };
+      if (saved > total) { note = k.family_saved; saved = 0; }
+      return { total: total, saved: saved, pct: pct, note: note,
+               noChildSelected: noChildSelected, zeroSelected: zeroSelected,
+               priced: priced, unit: unit };
     }
 
     // ===== 키워드 매칭 엔진 (여행·키즈 등록 상품 전체 대상) =====
@@ -1454,11 +1512,11 @@
     function searchHits(query) {
       var t = [];
       var k = [];
-      travelDeals.forEach(function(d) {
+      fdrMergedList('travel').forEach(function(d) {
         var s = matchScore(query, d, 'travel');
         if (s > 0) t.push({ item: d, score: s });
       });
-      kidsDeals.forEach(function(d) {
+      fdrMergedList('kids').forEach(function(d) {
         var s = matchScore(query, d, 'kids');
         if (s > 0) k.push({ item: d, score: s });
       });
@@ -1692,7 +1750,9 @@
 
     function comparisonModeHtml(place, h, links) {
       var c = lowestPriceConditions(place);
-      var total = travelDeals.length + kidsDeals.length;
+      var _tAll = fdrMergedList('travel');
+      var _kAll = fdrMergedList('kids');
+      var total = _tAll.length + _kAll.length;
       var channelList = links && links.length ? links : buildDirectLinks(place);
       var rows = channelList.map(function(l, i) {
         var isReflected = l.carry === '날짜·인원 반영';
@@ -1713,7 +1773,7 @@
       return '<div style="background: linear-gradient(160deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.92) 60%); border: 1px solid #f59e0b; border-radius: 12px; padding: 14px; margin-bottom: 12px;">' +
         '<div style="font-size: 13.5px; font-weight: 900; color: #fbbf24; line-height: 1.5;">⚡ 등록된 단독 특가가 없어 \'실시간 최저가 비교 모드\'로 전환되었습니다</div>' +
         '<div style="font-size: 11.5px; color: #cbd5e1; line-height: 1.65; margin-top: 6px;">\'' + place + '\'는 특가 레이더 등록 상품(' +
-          total + '건: 여행 ' + travelDeals.length + ' · 키즈 ' + kidsDeals.length +
+          total + '건: 여행 ' + _tAll.length + ' · 키즈 ' + _kAll.length +
           ')에 아직 없습니다. 아래 ' + channelList.length + '개 공식 채널이 <strong style="color:#ffffff;">같은 조건(장소·날짜·인원)</strong>으로 바로 열리니 실시간 최저가를 비교해 보세요.</div>' +
         '<div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px 0;">' +
           condChip('📍 장소', c.query, '#38bdf8') +
@@ -1815,7 +1875,8 @@
                 <span class="tag tag-discount" style="background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.3);">${badge}</span>
               </div>
             </div>
-            <div class="card-title">${item.title}</div>
+            <div class="card-title">${item._pinned ? '<span class="fdr-pin-tag">📌 고정 유지 중</span>' : ''}${item.title}</div>
+            <div style="margin: 2px 0 6px 0;"><button type="button" class="fdr-pin-btn ${fdrPinClass(kind, item.id)}" onclick="fdrTogglePin('${kind}','${item.id}',event)">${fdrPinLabel(kind, item.id)}</button></div>
             <div class="card-sub">📍 ${subLine}</div>
             <div class="calc-result-box">
               <div class="cr-title">👨‍👩‍👧‍👦 ${headLabel(h)} 예상 ${kind === 'travel' ? '총액' : '입장·이용료'}</div>
@@ -1968,7 +2029,7 @@
         <div class="res-section-title"><span>🔎 여행 · 키즈 특가 맞춤 검색기</span></div>
         <div style="background: #1e293b; border: 1px solid #7c3aed; border-radius: 12px; padding: 16px; margin-bottom: 12px;">
           <div style="font-size: 14px; font-weight: 800; color: #c084fc; margin-bottom: 8px;">
-            등록 특가 ${travelDeals.length + kidsDeals.length}건(여행 ${travelDeals.length} · 키즈 ${kidsDeals.length}) 전체에서 찾아드립니다
+            등록 특가 ${fdrMergedList('travel').length + fdrMergedList('kids').length}건(여행 ${fdrMergedList('travel').length} · 키즈 ${fdrMergedList('kids').length}) 전체에서 찾아드립니다
           </div>
           <div style="font-size: 12px; color: #cbd5e1; line-height: 1.7;">
             ① 1번 칸에 장소·체험명을 입력하세요 (예: 제주, 괌, 푸꾸옥, 나트랑, 주렁주렁, 에버랜드, 국립중앙박물관)<br>
@@ -2133,10 +2194,161 @@
     window.filterDeals = filterDeals;
 
     // DATA ARRAYS
-    var travelDeals = [{"id": "tr_yeogi_poolvilla", "type": "domestic", "theme": "family", "theme_label": "🎡 키즈풀빌라", "source": "🏨 여기어때 블랙", "source_badge": "🏨 여기어때 키즈 윈터 얼리버드", "source_color": "#f43f5e", "title": "🇰🇷 가평/포천 윈터 미온수풀 대형 키즈 풀빌라 단독 타임딜", "region": "국내 · 경기 가평 / 포천", "flight_type": "자차 이동 (동탄에서 1시간 30분 🎯)", "normal_price": "550,000원", "deal_price": "239,000원", "discount": "-57% 단독특가", "peak_price": "750,000원", "family_saved": "4인 가족 성수기 대비 약 51만 원 세이브! 💰", "price_level_text": "사계절 미온수풀 무료 & 대형 정글짐 완비 🟢", "rating": "4.94", "review_count": "3,850건", "benefit_pills": ["개별 온수풀 미온수 무료", "객실 내 2층 정글짐", "조식 바구니 무료 제공"], "season_reason": "겨울철 아이들과 밖에서 떨지 않고 프라이빗하게 따뜻한 온수풀에서 물놀이와 정글짐을 즐길 수 있는 최고의 호캉스! 여기어때 블랙 얼리버드로 57% 반값 이하 예약 찬스.", "family_fit": "동탄 자차 1시간 반 · 튜브/구명조끼 무상 구비 · 층간소음 걱정 없는 독채", "reviews": ["\"방 안에 2층 정글짐이랑 미온수 풀이 있어서 아이들이 체크인부터 다음 날 아침까지 지치지 않고 놀았어요.\"", "\"여기어때 쿠폰 먹여서 23만원대에 다녀왔는데 가성비 끝판왕이었습니다. 또 갈 거예요!\""], "link": "https://www.yeogi.com/domestic-accommodations?keyword=%EA%B0%80%ED%8F%89%20%ED%82%A4%EC%A6%88%ED%92%80%EB%B9%8C%EB%9D%BC", "link_label": "🏨 여기어때 [가평 키즈풀빌라] 검색결과 바로가기", "search_kw": "가평 키즈풀빌라"}, {"id": "tr_kakao1", "type": "domestic", "theme": "snow", "theme_label": "❄️ 눈꽃·스키", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 단독 톡딜", "source_color": "#fee500", "title": "🇰🇷 소노호텔앤리조트(비발디파크) 윈터 올인클루시브 단독 톡딜", "region": "국내 · 강원 홍천 / 비발디파크", "flight_type": "자차 이동 (동탄에서 1시간 40분 🎯)", "normal_price": "450,000원", "deal_price": "189,000원", "discount": "-58% 단독특가", "peak_price": "580,000원", "family_saved": "4인 가족 성수기 대비 약 390만 원 세이브! 💰", "price_level_text": "카카오페이 머니 결제 시 10% 추가할인 🟢", "rating": "4.95", "review_count": "4,850건", "benefit_pills": ["소노벨 객실 1박", "스노위랜드 눈썰매 3인권", "조식 뷔페 2인 무료", "카카오페이 10% 중복할인"], "season_reason": "겨울방학 시즌을 앞두고 카카오톡 예약하기에서 단독으로 풀린 특선 톡딜! 아이들이 열광하는 비발디파크 스노위랜드 튜브 눈썰매와 곤돌라를 패키지로 묶어 정상가 대비 58% 반값 이하로 이용 가능합니다.", "family_fit": "동탄 자차 1시간 40분 · 스노위랜드 튜브 썰매 리프트 완비 · 실내 오션월드 연계", "reviews": ["\"카카오톡 예약하기 알림톡 뜨자마자 예약했는데 스노위랜드 3인권 포함이라 가성비 최고예요.\"", "\"카카오페이 머니로 결제하니 10% 추가 할인까지 돼서 17만원대에 4인 가족 알차게 놀다 왔습니다.\"", "\"동탄에서 평일 오전에 출발하니 1시간 40분 만에 도착해서 아이들 썰매 지칠 때까지 탔어요.\""], "link": "https://booking.kakao.com/search/result?query=%EB%B9%84%EB%B0%9C%EB%94%94%ED%8C%8C%ED%81%AC", "link_label": "💬 카톡 예약하기 [비발디파크] 검색결과 바로가기", "search_kw": "비발디파크"}, {"id": "tr_kakao2", "type": "domestic", "theme": "resort", "theme_label": "🌴 온천·힐링", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 단독 타임딜", "source_color": "#fee500", "title": "🇰🇷 한화리조트 설악 쏘라노 뽀로로룸 + 워터피아 나이트스파 패키지", "region": "국내 · 강원 속초 / 설악", "flight_type": "자차 이동 (동탄에서 2시간 20분)", "normal_price": "390,000원", "deal_price": "165,000원", "discount": "-58% 단독특가", "peak_price": "520,000원", "family_saved": "4인 가족 정상가 대비 약 35만 원 세이브! 💰", "price_level_text": "뽀로로 캐릭터룸 + 온천 스파 3인 🟢", "rating": "4.92", "review_count": "3,120건", "benefit_pills": ["뽀로로 캐릭터룸 1박", "워터피아 온천스파 3인", "조식 뷔페 20% 할인권"], "season_reason": "추운 겨울 설악산 설경을 바라보며 따뜻한 100% 천연 온천수 스파를 즐길 수 있는 가족 온천의 명소! 미취학 킨더와 초등 첫째가 열광하는 뽀로로 캐릭터룸이 카카오 단독으로 특가 오픈되었습니다.", "family_fit": "객실 내 뽀로로 테마 인테리어 · 49도 천연 보양 온천수 워터피아 · 속초 중앙시장 15분", "reviews": ["\"둘째 킨더 아이가 뽀로로방 문 열자마자 소리 지르며 침대에서 뒹굴었어요. 부모는 온천 스파로 피로 풀었습니다.\"", "\"카카오톡 예약하기로 예약하면 카톡으로 모바일 바코드가 바로 와서 체크인 대기 없이 바로 방으로 가니 너무 편해요.\""], "link": "https://booking.kakao.com/search/result?query=%EC%84%A4%EC%95%85%20%EC%8F%98%EB%9D%BC%EB%85%B8", "link_label": "💬 카톡 예약하기 [설악 쏘라노] 검색결과 바로가기", "search_kw": "설악 쏘라노"}, {"id": "tr1", "type": "overseas", "theme": "resort", "theme_label": "🌴 휴양·힐링", "source": "✈️ 땡처리닷컴 긴급모객", "source_badge": "✈️ 땡처리 항공 긴급모객", "source_color": "#38bdf8", "title": "🇻🇳 베트남 나트랑(깜란) 오션뷰 패밀리 풀빌라 특가", "region": "동남아 · 베트남 나트랑", "flight_type": "인천 직항 (이스타/에어서울)", "normal_price": "580,000원", "deal_price": "329,000원", "discount": "-43% 특가", "peak_price": "1,180,000원", "family_saved": "4인 가족 성수기 대비 약 340만 원 세이브! 💰", "price_level_text": "연중 최저점 하위 5% 초특가 구간 🟢", "rating": "4.92", "review_count": "3,410건", "benefit_pills": ["유류할증료·TAX 포함", "위탁수하물 15kg", "5성급 풀빌라 연계 혜택"], "season_reason": "11월~2월은 우기 끝자락에서 선선한 건기로 넘어가는 최적기! 한낮에도 28도 내외로 쾌적하며, 파도가 잔잔해 아이들과 프라이빗 비치 스노클링에 최적입니다.", "family_fit": "비행 4시간 40분 · 키즈클럽 완비 5성급 리조트 1박 10만원대 · 그랩 배달 편리", "reviews": ["\"초3 딸이랑 킨더 둘째 데리고 갔는데 풀빌라 수영장에서만 3박 4일 동안 살았어요. 11월 날씨가 선선해서 부모도 피로도 제로였습니다.\"", "\"그랩 배달로 한식, 망고 한 박스 1만 원대에 푸짐하게 시켜 먹을 수 있어 편의성 끝판왕입니다.\"", "\"비행시간 4시간 반이라 아이들 칭얼거림 없이 도착했고 공항-리조트 15분 컷이라 최고였어요.\""], "link": "https://m.search.naver.com/search.naver?query=%EB%82%98%ED%8A%B8%EB%9E%91%20%ED%92%80%EB%B9%8C%EB%9D%BC%20%ED%8A%B9%EA%B0%80", "link_label": "✈️ [나트랑 풀빌라] 실시간 특가 검색결과 바로가기", "search_kw": "나트랑 풀빌라"}, {"id": "tr2", "type": "overseas", "theme": "family", "theme_label": "🎡 가족·휴양", "source": "📺 홈쇼핑 라이브", "source_badge": "📺 CJ온스타일 방송 패키지", "source_color": "#f43f5e", "title": "🇺🇸 괌(GUAM) PIC 리조트 골드카드 패키지 얼리버드", "region": "미국령 · 괌 투몬베이", "flight_type": "인천/부산 직항 (대한/제주/진에어)", "normal_price": "980,000원", "deal_price": "599,000원", "discount": "-38% 특가", "peak_price": "1,650,000원", "family_saved": "4인 가족 성수기 대비 약 420만 원 세이브! 💰", "price_level_text": "골드카드 포함 연중 최저가 찬스 🟢", "rating": "4.89", "review_count": "4,120건", "benefit_pills": ["PIC 워터파크 무제한", "골드카드 전일정 식사", "만 12세 미만 아동 무료"], "season_reason": "11월~4월 괌 최고의 건기 황금시즌! 비가 거의 오지 않고 투명한 에메랄드빛 바다 유지. 비행시간 4시간 20분으로 영유아/초등 동반 가족여행 1순위 스테디셀러.", "family_fit": "비행 4시간 20분 · 한국인 키즈클럽 '클럽메이트' 무료 케어 · 한국어 소통 완벽", "reviews": ["\"아이들 클럽메이트에 맡기고 남편이랑 둘이서 카약 타고 여유롭게 스노클링했어요. 진정한 육아 해방입니다.\"", "\"골드카드로 리조트 안에서 삼시세끼 다 해결되니 돈 쓸 일이 없었어요. 워터슬라이드 초등 아이 무한 반복!\"", "\"미국령이라 치안도 안전하고 병원 접근성도 좋아서 아이 있는 집은 고민할 필요가 없습니다.\""], "link": "https://m.search.naver.com/search.naver?query=%EA%B4%8C%20PIC%20%EA%B3%A8%EB%93%9C%EC%B9%B4%EB%93%9C%20%ED%8A%B9%EA%B0%80", "link_label": "📺 [괌 PIC 골드카드] 홈쇼핑·특가 검색결과 바로가기", "search_kw": "괌 PIC"}, {"id": "tr7", "type": "overseas", "theme": "family", "theme_label": "🎡 가족·워터파크", "source": "📺 홈쇼핑 라이브", "source_badge": "📺 현대홈쇼핑 패밀리 특선", "source_color": "#f43f5e", "title": "🇲🇵 사이판 월드리조트 골드카드 + 웨이브정글 워터파크", "region": "대양주 · 사이판 수수페", "flight_type": "인천 직항 (제주/티웨이)", "normal_price": "890,000원", "deal_price": "529,000원", "discount": "-40% 특가", "peak_price": "1,450,000원", "family_saved": "4인 가족 성수기 대비 약 370만 원 세이브! 💰", "price_level_text": "아동 2인 전일정 무료 식사 🟢", "rating": "4.91", "review_count": "2,780건", "benefit_pills": ["웨이브정글 워터파크 무료", "골드카드 뷔페 포함", "만 11세 이하 소아 2인 투숙 무료"], "season_reason": "남태평양 에메랄드빛 바다와 한국인 맞춤형 키즈 워터파크의 결합! 사이판 최대 규모 슬라이드 4종과 유수풀, 뽀로로 캐릭터룸 구비.", "family_fit": "비행 4시간 15분 · 리조트 전 구역 한식 뷔페 제공 · 영유아 구명조끼/튜브 무료 대여", "reviews": ["\"워터파크 파도풀이랑 슬라이드가 리조트 바로 앞이라 하루 종일 물놀이만 해도 시간이 모자라요.\"", "\"홈쇼핑 방송 혜택으로 레이트 체크아웃(18시) 받아서 마지막 날까지 알차게 놀다 밤 비행기 탔습니다.\""], "link": "https://m.search.naver.com/search.naver?query=%EC%82%AC%EC%9D%B4%ED%8C%90%20%EC%9B%94%EB%93%9C%EB%A6%AC%EC%A1%B0%ED%8A%B8%20%EA%B3%A8%EB%93%9C%EC%B9%B4%EB%93%9C", "link_label": "📺 [사이판 월드리조트] 패키지 검색결과 바로가기", "search_kw": "사이판 월드리조트"}, {"id": "tr8", "type": "overseas", "theme": "resort", "theme_label": "🌴 휴양·사파리", "source": "📸 인스타그램 핫딜", "source_badge": "📸 인스타 12만뷰 핫딜 PICK", "source_color": "#e1306c", "title": "🇻🇳 베트남 푸꾸옥 빈펄 원더월드 3베드 풀빌라 패키지", "region": "동남아 · 베트남 푸꾸옥", "flight_type": "인천/부산 직항 (진에어/비엣젯)", "normal_price": "750,000원", "deal_price": "419,000원", "discount": "-44% 특가", "peak_price": "1,390,000원", "family_saved": "4인 가족 성수기 대비 약 390만 원 세이브! 💰", "price_level_text": "빈원더스+사파리 무제한 콤보 🟢", "rating": "4.93", "review_count": "3,650건", "benefit_pills": ["빈원더스 테마파크 무제한", "아시아 최대 오픈 사파리", "프라이빗 3베드 풀빌라"], "season_reason": "베트남 유일 무비자 30일 청정 섬! 11월~4월 건기 파도가 잔잔하고 수온이 따뜻해 기린에게 직접 먹이 주는 오픈 사파리와 대형 워터파크 투어에 최적.", "family_fit": "기린 레스토랑 조식 체험 · 빈원더스 놀이기구 키 100cm 이상 탑승 다양", "reviews": ["\"사파리에서 기린 코앞에서 밥 주는 레스토랑은 아이들이 입을 못 다물더라고요. 인스타 인생샷 성지입니다.\"", "\"3베드 풀빌라라 거실도 넓고 전용 수영장 있어서 온 가족이 프라이빗하게 쉬기 완벽했습니다.\""], "link": "https://m.search.naver.com/search.naver?query=%ED%91%B8%EA%BE%B8%EC%98%A5%20%EB%B9%88%ED%8E%84%20%ED%92%80%EB%B9%8C%EB%9D%BC%20%ED%8A%B9%EA%B0%80", "link_label": "📸 [푸꾸옥 빈펄 풀빌라] 핫딜 검색결과 바로가기", "search_kw": "푸꾸옥 빈펄 풀빌라"}, {"id": "tr3", "type": "overseas", "theme": "city", "theme_label": "🏛️ 관광·온천", "source": "🔥 커뮤니티·스사사", "source_badge": "🔥 스사사(스마트컨슈머) 인증", "source_color": "#f59e0b", "title": "🇯🇵 일본 후쿠오카 & 유후인 료칸 힐링 왕복 특가", "region": "일본 · 규슈 후쿠오카", "flight_type": "인천 직항 (에어서울/제주항공)", "normal_price": "390,000원", "deal_price": "227,000원", "discount": "-42% 특가", "peak_price": "680,000원", "family_saved": "4인 가족 성수기 대비 약 180만 원 세이브! 💰", "price_level_text": "단거리 왕복 20만원대 초특가 🟢", "rating": "4.86", "review_count": "2,890건", "benefit_pills": ["비행시간 1시간 15분", "도심-공항 15분 직결", "유후인 온천패스 할인"], "season_reason": "늦가을 단풍과 쌀쌀해진 겨울 날씨에 즐기는 노천온천의 절정기! 후쿠오카 캐널시티 윈터 일루미네이션 개막과 미식 투어를 1시간 15분 짧은 비행으로 즐길 수 있습니다.", "family_fit": "비행 1시간 15분(초단기) · 킨더 아이도 피로도 제로 · 하카타역 인근 이동 편리", "reviews": ["\"비행기 이륙하고 주스 한 잔 마시니 착륙 안내방송 나옵니다. 아이가 지루해할 틈이 없어요.\"", "\"유후인에서 프라이빗 가족 노천탕 딸린 료칸 묵었는데 물이 너무 좋아서 아이들 피부가 뽀송뽀송해졌어요.\""], "link": "https://m.search.naver.com/search.naver?query=%ED%9B%84%EC%BF%A0%EC%98%A4%EC%B9%B4%20%EC%9C%A0%ED%9B%84%EC%9D%B8%20%EB%A3%8C%EC%B9%B8%20%ED%8A%B9%EA%B0%80", "link_label": "🇯🇵 [후쿠오카 유후인 료칸] 특가 검색결과 바로가기", "search_kw": "후쿠오카 유후인 료칸"}, {"id": "tr5", "type": "domestic", "theme": "resort", "theme_label": "🌴 힐링·체험", "source": "🔥 커뮤니티·스사사", "source_badge": "🔥 뽐뿌·스사사 실전 꿀조합", "source_color": "#f59e0b", "title": "🇰🇷 제주도 감귤 따기 체험 & 동백 포레스트 윈터 패키지", "region": "국내 · 제주 서귀포 / 안덕", "flight_type": "김포/청주 직항 (편도 1만원대~)", "normal_price": "380,000원", "deal_price": "189,000원", "discount": "-50% 특가", "peak_price": "890,000원", "family_saved": "4인 가족 성수기 대비 약 280만 원 세이브! 💰", "price_level_text": "주중 항공권 1만원대 + 리조트 반값 🟢", "rating": "4.94", "review_count": "5,210건", "benefit_pills": ["평일 항공권 편도 1.8만~", "감귤 2kg 수확체험 무료", "서귀포 오션뷰 리조트 2박"], "season_reason": "지금 가야 하는 이유: 11월 중순부터 12월은 노지 감귤이 가장 달고 싱싱한 수확 피크이자, 카멜리아힐·위미리 동백꽃이 붉게 피어나는 1년 중 가장 예쁜 감성 시즌!", "family_fit": "아이들 직접 귤 따는 촉감 체험 · 뽀로로앤타요 테마파크 제주 인접", "reviews": ["\"아이들이 직접 가위로 귤 따서 바구니에 담으며 하루 종일 먹었는데 마트 귤이랑 비교가 안 되게 달아요!\"", "\"동백꽃 군락지에서 가족사진 찍었는데 인생 사진 건졌습니다. 가을~겨울 제주는 무조건 추천해요.\""], "link": "https://m.booking.naver.com/booking/6/bizes/search?query=%EC%A0%9C%EC%A3%BC%EB%8F%84%20%EA%B0%90%EA%B7%A4%EC%B2%B4%ED%97%98", "link_label": "🟢 네이버 예약 [제주도 감귤체험] 검색결과 바로가기", "search_kw": "제주도 감귤체험"}, {"id": "tr6", "type": "domestic", "theme": "snow", "theme_label": "❄️ 눈꽃·스키", "source": "✈️ 땡처리·야놀자", "source_badge": "🏨 야놀자 윈터 얼리버드 타임딜", "source_color": "#0284c7", "title": "🇰🇷 평창 대관령 눈꽃 양떼목장 & 용평 모나파크 얼리버드", "region": "국내 · 강원 평창 / 대관령", "flight_type": "자차 이동 (동탄에서 2시간)", "normal_price": "340,000원", "deal_price": "165,000원", "discount": "-51% 특가", "peak_price": "550,000원", "family_saved": "4인 가족 스키시즌 대비 약 150만 원 세이브! 💰", "price_level_text": "시즌 오픈 전 얼리버드 50% 반값 🟢", "rating": "4.88", "review_count": "2,430건", "benefit_pills": ["타워콘도 1박+조식 2인", "발왕산 케이블카 2인권", "사계절 눈썰매장 패키지"], "season_reason": "지금 가야 하는 이유: 스키 시즌 개막 직전 얼리버드로 객실 50% 반값 예약 가능! 대관령 양떼 건초주기 체험과 발왕산 천년주목숲 케이블카 설경을 만끽하는 겨울 여행 1번지.", "family_fit": "초등·킨더 모두 열광하는 양/알파카 먹이주기 · 눈썰매장 풀코스", "reviews": ["\"대관령 양떼목장에서 양들에게 건초 주는데 아이들이 까르르 웃으며 너무 좋아했어요.\"", "\"동탄에서 영동고속도로 타고 2시간이면 도착하니 주말 1박 2일 코스로 운전 부담도 적어요.\""], "link": "https://m.booking.naver.com/booking/6/bizes/search?query=%EB%8C%80%EA%B4%80%EB%A0%B9%20%EC%96%91%EB%96%BC%EB%AA%A9%EC%9E%A5", "link_label": "🟢 네이버 예약 [대관령 양떼목장] 검색결과 바로가기", "search_kw": "대관령 양떼목장"}];
-    var kidsDeals = [{"id": "kd_zoolung", "category": "kids_cafe", "cat_label": "🦙 실내 애니멀파크", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 단독 톡딜", "source_color": "#fee500", "title": "주렁주렁 동탄 라크몽점 (도심형 실내 애니멀 테마파크) 카카오 단독 톡딜", "location": "경기 화성시 동탄대로5길 21 라크몽 3~5층 (동탄 호수공원 바로 앞 자차 5분 🎯)", "target_age": "미취학 킨더(둘째) & 초등생(아린) 최애 실내 교감 동물원", "price_info": "1인 정상 27,000원 ➔ 카카오 톡딜 17,900원 (-34% 특가) / 3종 먹이 바구니 포함 21,900원", "benefit_tag": "카카오 단독 34% 할인 · 라크몽 무료주차 3시간", "family_saved": "현장 4인 정가(10.8만) 대비 약 36,400원 세이브! 💰", "price_level_text": "카톡 바코드 제시 즉시 입장 (주말 대기 프리패스) 🟢", "rating": "4.96", "review_count": "7,240건", "tips": "★ 동탄 라크몽 핵심 꿀팁: 라크몽 지하·지상 주차장 3시간 100% 무료! 카카오톡 예약하기 바코드 보여주면 매표소 대기 없이 게이트로 바로 직행합니다. 카누 타기 체험과 '주렁 캐니언' 대형 그물놀이터는 키 100cm 이상 이용 가능하며, 동물 먹이 교환권은 카톡 예약 패키지로 사야 1,000원 추가 절약!", "highlights": "알파카, 카피바라, 수달, 사막여우 직접 먹이주기 + 실내 카누 탐험 + 대형 정글 놀이터.", "reviews": ["\"동탄 라크몽 주렁주렁 카톡 예약하기로 30% 넘게 할인받고 먹이 패키지까지 샀는데 아이들이 카피바라랑 알파카 직접 만지며 3시간 넘게 놀았어요.\"", "\"비 오거나 추운 날 동탄맘들의 실내 탈출 1순위 성지입니다. 카톡 바코드 찍고 들어가니 주말에도 대기 없어서 너무 좋았어요.\"", "\"라크몽 지하 푸드홀 메리골드에서 밥 먹고 주렁주렁 갔는데 주차도 넉넉하고 아이 둘 다 대만족했습니다.\""], "link": "https://booking.kakao.com/search/result?query=%EC%A3%BC%EB%A0%81%EC%A3%BC%EB%A0%81", "link_label": "💬 카톡 예약하기 [주렁주렁] 검색결과 바로가기", "search_kw": "주렁주렁"}, {"id": "kd_klook_bird", "category": "kids_cafe", "cat_label": "🦜 실내 버드파크", "source": "🎫 클룩 (Klook) 패밀리", "source_badge": "🎫 클룩 모바일 최저가 보장", "source_color": "#ff5b00", "title": "오산 버드파크 (오산시청 실내 조류·파충류 생태체험관) 클룩 최저가", "location": "경기 오산시 성호대로 141 오산시청 (동탄에서 자차 12분 초근접 🎯)", "target_age": "초등생(아린) & 킨더(둘째) 조류/동물 오감체험", "price_info": "정상 18,500원 ➔ 클룩 패밀리 특가 11,900원 (-36% 특가)", "benefit_tag": "클룩 단독 36% 할인 · 시청 무료주차 1시간", "family_saved": "현장 결제(4인가족 7.4만) 대비 약 26,400원 세이브! 💰", "price_level_text": "국내 최대 규모 실내 4층 생태 타워 🟢", "rating": "4.91", "review_count": "4,350건", "tips": "★ 핵심 꿀팁: 동탄에서 차로 12분 거리. 오산시청 1~4층을 통째로 쓰는 초대형 온실 식물원 구조라 한겨울에도 따뜻합니다. 잉꼬새 1,000마리가 손에 올라와 모이 먹는 체험은 아이들에게 평생 추억!", "highlights": "잉꼬새 방사장 모이주기 + 대형 앵무새 어깨 얹기 + 카피바라/토끼 먹이주기.", "reviews": ["\"동탄 바로 옆이라 주말에 가볍게 다녀왔는데 앵무새들이 손바닥에 날아와 밥 먹으니 아이들이 너무 신기해해요.\"", "\"클룩으로 예매하니 현장 발권보다 훨씬 저렴하고 실내라 날씨 걱정 없이 2시간 뚝딱 보냈습니다.\""], "link": "https://www.klook.com/ko/search/result/?query=%EC%98%A4%EC%82%B0%20%EB%B2%84%EB%93%9C%ED%8C%8C%ED%81%AC", "link_label": "🎫 클룩 [오산 버드파크] 모바일 예매 바로가기", "search_kw": "오산 버드파크"}, {"id": "kd_mrt_museum", "category": "museum", "cat_label": "🏛️ 역사 탐험 도슨트", "source": "🗺️ 마이리얼트립 키즈", "source_badge": "🗺️ 마이리얼트립 평점 4.98 1위", "source_color": "#2b96ed", "title": "국립중앙박물관 어린이박물관 + 초등 맞춤 역사탐험 도슨트 (마이리얼트립 키즈 1위)", "location": "서울 용산구 서빙고로 (동탄역 SRT ➔ 수서 ➔ 용산 40분 / 자차 50분)", "target_age": "초등생(아린) 역사 스토리텔링 & 킨더(둘째) 감각체험", "price_info": "어린이 소수정예 도슨트(2시간) 정상 45,000원 ➔ 타임특가 29,000원 (-36%)", "benefit_tag": "전문 역사선생님 밀착 인솔 · 부모 2시간 자유시간", "family_saved": "개별 사설 역사교실 대비 약 32,000원 세이브! 💰", "price_level_text": "초등 교과연계 100% 필수 코스 🟢", "rating": "4.98", "review_count": "6,120건", "tips": "★ 핵심 꿀팁: 전문 도슨트 선생님이 아이들(최대 5명)만 인솔하여 2시간 동안 삼국시대부터 조선까지 스토리텔링으로 설명해 줍니다. 아이들이 수업받는 동안 부모님은 박물관 거울못 카페에서 조용히 커피 마시며 휴식 가능!", "highlights": "금동대향로 실물 관람 + 신라 금관 퍼즐 + 유물 탐정 워크북 완성.", "reviews": ["\"초등 딸아이가 선생님 설명 너무 재미있었다고 집에 와서 역사책을 스스로 찾아 읽네요.\"", "\"아이 맡겨두고 남편이랑 2시간 동안 박물관 정원 산책하며 진정한 힐링했습니다. 부모와 아이 둘 다 대만족!\""], "link": "https://www.myrealtrip.com/search?q=%EA%B5%AD%EB%A6%BD%EC%A4%91%EC%95%99%EB%B0%95%EB%AC%BC%EA%B4%80%20%EC%96%B4%EB%A6%B0%EC%9D%B4", "link_label": "🗺️ 마이리얼트립 [어린이박물관 도슨트] 검색결과 바로가기", "search_kw": "국립중앙박물관 어린이"}, {"id": "kd_kakao1", "category": "kids_cafe", "cat_label": "🏰 테마 키즈카페", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 단독 톡딜", "source_color": "#fee500", "title": "뽀로로파크 & 타요키즈카페 통합 패밀리 이용권 (동탄/용인/수원점)", "location": "동탄·수원·용인 전 지점 통합 사용 가능 (자차 10~25분 🎯)", "target_age": "미취학 킨더(둘째) & 초등 저학년(아린) 최애 성지", "price_info": "어른 1인 + 어린이 1인권 정상 30,000원 ➔ 카카오 톡딜 17,900원 (-40% 특가)", "benefit_tag": "카카오 단독 40% 할인 · 바코드 즉시 입장", "family_saved": "현장 결제(4인가족 6만원) 대비 약 24,000원 세이브! 💰", "price_level_text": "카톡 알림톡 바코드 제시 즉시 입장 🟢", "rating": "4.93", "review_count": "5,840건", "tips": "★ 핵심 꿀팁: 카카오톡 예약하기에서 구매 시 예약 당일부터 60일간 유효하며, 주말/평일 상관없이 사용 가능. 동탄점뿐 아니라 비 오는 날 용인 기흥점이나 수원점 교차 이용도 가능합니다.", "highlights": "뽀로로 싱어롱 라이브 공연 + 타요 트랙 전동차 운전 체험 + 대형 트램펄린/볼풀장.", "reviews": ["\"카톡으로 바로 바코드 날아와서 매표소 줄 안 서고 입장 1초 컷이었어요. 둘째가 뽀로로 만나고 기절하게 좋아했습니다.\"", "\"카카오톡 톡딜 뜰 때마다 쟁여두는데 주말에 급하게 나갈 때 이만한 비상약이 없어요.\""], "link": "https://booking.kakao.com/search/result?query=%EB%BD%80%EB%A1%9C%EB%A1%9C%ED%8C%8C%ED%81%AC", "link_label": "💬 카톡 예약하기 [뽀로로파크] 검색결과 바로가기", "search_kw": "뽀로로파크"}, {"id": "kd_kakao2", "category": "themepark", "cat_label": "🐠 실내 아쿠아리움", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 단독 특가", "source_color": "#fee500", "title": "아쿠아플라넷 광교 (갤러리아 백화점 광교점) 패밀리 올패스", "location": "경기 수원시 영통구 광교호수공원로 (동탄에서 자차 20분 🎯)", "target_age": "초등생 & 킨더 온 가족 실내 해양탐험", "price_info": "4인 가족권 정상 112,000원 ➔ 카카오 예약하기 단독 72,000원 (-36% 특가)", "benefit_tag": "카카오 단독 36% 할인 · 갤러리아 무료주차 2시간", "family_saved": "현장 정상가 대비 4인 가족 약 40,000원 세이브! 💰", "price_level_text": "날씨 무관 실내 초대형 아쿠아리움 🟢", "rating": "4.90", "review_count": "4,720건", "tips": "★ 핵심 꿀팁: 갤러리아 백화점 지하와 직결되어 있어 추운 날 외투 없이 관람 가능. 매시간 정각 메인 수조 '머메이드 쇼(인어공주)'와 가오리 먹이주기 쇼는 10분 전 좌석 선점 필수!", "highlights": "샌드타이거샤크 상어 수조 + 펭귄 생태설명회 + 플레이그라운드 실내 해양놀이터.", "reviews": ["\"동탄에서 차로 20분이면 가고 주차도 갤러리아라 너무 쾌적해요. 카카오톡 예약하기로 할인받으니 가격 부담도 덜했습니다.\"", "\"인어공주 쇼 보고 펭귄 먹이 주는 것까지 보고 갤러리아 푸드코트에서 밥 먹으니 주말 반나절 코스로 완벽해요.\""], "link": "https://booking.kakao.com/search/result?query=%EC%95%84%EC%BF%A0%EC%95%84%ED%94%8C%EB%9D%BC%EB%84%B7%20%EA%B4%91%EA%B5%90", "link_label": "💬 카톡 예약하기 [아쿠아플라넷 광교] 검색결과 바로가기", "search_kw": "아쿠아플라넷 광교"}, {"id": "kd7", "category": "museum", "cat_label": "🏛️ 직업체험관", "source": "🏛️ 지자체·공공 혜택", "source_badge": "🏛️ 화성시 직영 문화시설", "source_color": "#10b981", "title": "화성시 어린이문화센터 (동탄 옆 봉담)", "location": "경기 화성시 봉담읍 동화길 (동탄에서 자차 20분 🎯)", "target_age": "만 4세 ~ 초등 4학년 직업체험 성지", "price_info": "어린이 체험관 4,000원 (화성시민 50% 할인 시 2,000원!)", "benefit_tag": "화성시민 50% 할인 · 키자니아 1/10 가격", "family_saved": "사립 키자니아(4인가족 16만원) 대비 약 15만 원 세이브! 💰", "price_level_text": "화성시민 4인 가족 단돈 6천원 종일 체험 🟢", "rating": "4.94", "review_count": "4,180건", "tips": "★ 핵심 꿀팁: 키즈 직업체험관(키즈 리틀 파이터, 로보틱스 연구소, 스마트농부 등 8개관) 100% 온라인 사전예약제! 화성시민 신분증 지참 시 50% 즉시 감면.", "highlights": "키자니아 축소판 직업체험 8개 코스 + 실내 대형 그물 놀이터.", "reviews": ["\"화성시민 50% 할인받아서 아이 둘 4,000원에 들어갔어요. 키자니아 갈 필요가 전혀 없습니다.\"", "\"소방관, 로봇 공학자, 건축가 체험까지 퀄리티가 너무 훌륭하고 주차비도 무료입니다.\""], "link": "https://childrenjob.hscity.go.kr/index.do", "link_label": "🏛️ 화성시 어린이문화센터 공식 홈페이지·예약 바로가기", "search_kw": "화성시 어린이문화센터"}, {"id": "kd8", "category": "themepark", "cat_label": "🎫 통합 자유이용권", "source": "🏛️ 경기관광공사", "source_badge": "🏛️ 경기투어패스 48시간권", "source_color": "#a855f7", "title": "경기투어패스 48시간 올패스권 (경기 남부권)", "location": "용인·수원·화성·안성 30여 개 박물관·키즈카페·목장 프리패스 🎯", "target_age": "초등 & 킨더 온 가족 주말 1박 2일", "price_info": "48시간 통합권 19,900원 (가맹점 3곳만 가도 본전 회수!)", "benefit_tag": "30개 시설 48시간 무제한 입장 · 바코드 1개로 입장", "family_saved": "개별 발권 대비 4인 가족 약 14만 원 세이브! 💰", "price_level_text": "경기관광공사 공인 가성비 종결자 🟢", "rating": "4.91", "review_count": "5,320건", "tips": "★ 핵심 동탄 코스: 첫날 [경기도어린이박물관 ➔ 한국민속촌 ➔ 용인 기흥 카페], 둘째 날 [안성팜랜드 양/소 먹이주기 ➔ 키즈파크] 동선 추천!", "highlights": "안성팜랜드, 한국민속촌, 백남준아트센터, 곤충테마파크 등 100% 무료 입장.", "reviews": ["\"안성팜랜드랑 민속촌만 가도 인당 3만원 넘는데 투어패스 19,900원으로 이틀 내내 뽕을 뽑았습니다.\"", "\"아이들이랑 주말에 어디 갈지 고민할 필요 없이 패스 목록 보고 골라 다녔어요.\""], "link": "https://m.booking.naver.com/booking/6/bizes/search?query=%EA%B2%BD%EA%B8%B0%ED%88%AC%EC%96%B4%ED%8C%A8%EC%8A%A4", "link_label": "🟢 네이버 예약 [경기투어패스] 공식 구매창 바로가기", "search_kw": "경기투어패스"}, {"id": "kd1", "category": "museum", "cat_label": "🦕 박물관·과학관", "source": "📸 인스타그램 핫딜", "source_badge": "📸 맘카페&인스타 성지", "source_color": "#e1306c", "title": "국립과천과학관 (과천 대공원)", "location": "경기 과천시 (동탄에서 자차 40분 / 4호선 대공원역)", "target_age": "킨더(유아체험관) & 초등(상설전시) 동시 만족 🎯", "price_info": "7세 미만(둘째) 무료 · 초등(아린) 2,000원 · 성인 4,000원", "benefit_tag": "다자녀 단체할인 · 유아체험관 무료", "family_saved": "사립 키즈 테마파크(12만원) 대비 약 11만 원 세이브! 💰", "price_level_text": "국립 최고 가성비 (4인 가족 총 1만원 미만) 🟢", "rating": "4.95", "review_count": "8,920건", "tips": "★ 핵심 꿀팁: '유아체험관'은 이용일 3일 전 밤 9시(21:00) 온라인 선착순 오픈(계정당 4명)! 다자녀카드는 사전정산기 인증 시 주차료 50% 감면(하루 최대 5천원).", "highlights": "국내 최대 규모 자연사관(공룡 화석), 첨단과학관, 지진체험, 유아체험관 원스톱 코스.", "reviews": ["\"유아체험관 3일 전 밤 9시 알람 맞추고 광클 성공해서 둘째 킨더 대만족, 초등 첫째는 공룡 보며 종일 놀았습니다.\"", "\"다자녀카드로 주차비 5,000원 할인받고 4인 가족 입장료 8,000원에 종일 놀았어요. 무조건 추천!\""], "link": "https://www.sciencecenter.go.kr/", "link_label": "🏛️ 국립과천과학관 공식 상설전시 예약 바로가기", "search_kw": "국립과천과학관"}, {"id": "kd2", "category": "museum", "cat_label": "🦕 어린이박물관", "source": "🏛️ 경기문화재단", "source_badge": "🏛️ 경기문화재단 공인", "source_color": "#10b981", "title": "경기도어린이박물관 (용인 기흥)", "location": "경기 용인시 기흥구 (동탄에서 자차 20분 초근접 🎯)", "target_age": "만 3세 ~ 초등 저학년 최적화", "price_info": "정상 4,000원 ➔ 경기도민 50% 할인 (2,000원!) / 12개월 미만 무료", "benefit_tag": "경기도민 50% 할인 · 매월 1·3주 주말 무료", "family_saved": "사립 대형 키즈카페 대비 약 9만 원 세이브! 💰", "price_level_text": "도민 할인 시 4인 가족 8천원 종일 체험 🟢", "rating": "4.93", "review_count": "6,410건", "tips": "★ 핵심 꿀팁: 100% 온라인 사전 예매제(방문 7일 전 00:00 오픈)! 1회차(10:00~13:30)와 2회차(14:00~17:30) 운영. 매월 1·3주 토·일요일은 사전예매 시 100% 무료 입장!", "highlights": "튼튼놀이터(클라이밍), 자연놀이터, 건축체험, 소방차/경찰차 직업체험 등 3층 전관 인터랙티브.", "reviews": ["\"동탄 집에서 차로 20분이면 가서 주말에 가볍게 다녀오기 최고예요. 시설 관리 너무 잘 되어 있습니다.\"", "\"도민 할인 받아서 4인 가족 8,000원에 결제했어요. 사립 키즈카페 갈 돈으로 몇 번을 가네요.\""], "link": "https://gcm.ggcf.kr/", "link_label": "🏛️ 경기도어린이박물관 공식 사전예약 바로가기", "search_kw": "경기도어린이박물관"}, {"id": "kd3", "category": "museum", "cat_label": "🌾 무료박물관", "source": "📸 인스타그램 핫딜", "source_badge": "📸 인스타 15만뷰 무료 성지", "source_color": "#e1306c", "title": "국립농업박물관 어린이박물관 (수원 권선)", "location": "경기 수원시 권선구 서둔동 (동탄에서 자차 25분)", "target_age": "3세 ~ 초등 3학년", "price_info": "상설전시 & 어린이박물관 전관 100% 무료! (주차료 별도)", "benefit_tag": "입장료 완전 무료 🟢 · 쾌적한 신축 시설", "family_saved": "완전 무료 입장으로 문화비 100% 절감! 💰", "price_level_text": "신축 국립 시설 무료 개방 🟢", "rating": "4.91", "review_count": "3,890건", "tips": "★ 핵심 꿀팁: 누리집에서 회차별 사전예약 필수. 농업체험, 트랙터 시뮬레이터 운전, 곤충관, 수직농장 식물원까지 최신식 시설로 붐비지 않고 매우 쾌적합니다.", "highlights": "트랙터 실물 탑승 가상운전 체험 + 벼 베기 쌀 가공 놀이 + 열대 식물원 유리온실.", "reviews": ["\"트랙터 시뮬레이터 실제 운전석처럼 흔들려서 아이들이 줄 서서 세 번이나 탔습니다.\"", "\"신축이라 화장실부터 수유실까지 호텔급으로 깨끗하고 사람도 붐비지 않아 자주 갑니다.\""], "link": "https://www.namuk.or.kr/", "link_label": "🏛️ 국립농업박물관 무료 어린이체험 예약 바로가기", "search_kw": "국립농업박물관"}, {"id": "kd4", "category": "kids_cafe", "cat_label": "🏰 대형 키즈카페", "source": "🔥 커뮤니티·스사사", "source_badge": "🔥 동탄맘카페 추천", "source_color": "#f59e0b", "title": "챔피언더블랙벨트 롯데백화점 동탄점", "location": "경기 화성시 동탄역 롯데백화점 지하 1층 (동탄 관내)", "target_age": "에너지 넘치는 초등학생 & 활발한 킨더", "price_info": "어린이 2시간 25,000원 (플레이멤버스 앱 쿠폰 & 평일 다회권 20% 할인)", "benefit_tag": "플레이멤버스 신규 5천원 쿠폰 · 평일 마감특가", "family_saved": "다회권 및 쿠폰 적용 시 회당 7,000원 절감! 💰", "price_level_text": "백화점 대형 프리미엄 키즈카페 🟡", "rating": "4.85", "review_count": "1,920건", "tips": "★ 핵심 꿀팁: 플레이멤버스 앱 가입 시 5,000원 할인쿠폰 즉시 지급. 주말 오후에는 대기가 기므로 오전 11시 이전 입장 또는 평일 하교 후 방문 시 쾌적.", "highlights": "로프 마운틴, 짚라인, 밸런싱 바이크 등 전신 대근육 운동 익스트림 플레이파크.", "reviews": ["\"동탄 롯백 안에 있어서 주차 편하고, 아이들 넣어두고 부모는 커피 한잔하기 딱 좋습니다.\"", "\"짚라인이랑 로프 타워가 잘 되어 있어서 초등학생 첫째도 신나게 뛰놀아요.\""], "link": "https://m.place.naver.com/place/list?query=%EC%B1%94%ED%94%BC%EC%96%B8%EB%8D%94%EB%B8%94%EB%9E%99%EB%B2%A8%ED%8A%B8%20%EB%8F%99%ED%83%84", "link_label": "🟢 네이버 플레이스 [챔피언 동탄점] 예매 바로가기", "search_kw": "챔피언 동탄점"}, {"id": "kd6", "category": "themepark", "cat_label": "🎢 테마파크", "source": "📺 홈쇼핑 라이브", "source_badge": "📺 스마트예약 제휴특가", "source_color": "#0284c7", "title": "용인 에버랜드 윈터 스노우 페스티벌", "location": "경기 용인시 처인구 포곡읍 (동탄에서 자차 35분)", "target_age": "초등(놀이기구/사파리) & 킨더(스노우버스터 썰매)", "price_info": "종일권 정상 68,000원 ➔ 제휴카드 스마트예약 28,000원~ (-58% 특가)", "benefit_tag": "제휴카드 50~58% 할인 · 동반인 우대할인", "family_saved": "4인 가족 정상가 27만 ➔ 특가 11만원대 (약 16만원 세이브!) 💰", "price_level_text": "제휴카드 스마트예약 연중 최대 할인율 🟢", "rating": "4.92", "review_count": "12,500건", "tips": "★ 핵심 꿀팁: 에버랜드 앱 스마트예약 시 본인 55% + 동반 3인 30% 할인. 12월 개장하는 '스노우버스터(눈썰매장)'는 튜브 리프트로 편하게 올라가 아이들이 지치지 않습니다.", "highlights": "스노우버스터 눈썰매 3개 코스 + 사파리월드/로스트밸리 + 판다월드 바오패밀리.", "reviews": ["\"스노우버스터 썰매 타고 튜브 리프트로 올라오니 엄마 아빠 무릎이 안 아파서 감동했습니다.\"", "\"삼성/국민 제휴카드로 55% 할인받아서 인당 2만 8천원에 종일 놀다 왔어요. 겨울 에버랜드 추천!\""], "link": "https://booking.kakao.com/search/result?query=%EC%97%90%EB%B2%84%EB%9E%9C%EB%93%9C", "link_label": "💬 카톡 예약하기 [에버랜드] 특가 예매 바로가기", "search_kw": "에버랜드"}];
+    var travelDeals = [{"id": "tr_kakao_bibaldi", "type": "domestic", "theme": "snow", "theme_label": "❄️ 눈꽃·스키", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 숙소", "source_color": "#fee500", "title": "🇰🇷 소노벨 비발디파크 B·C 패밀리룸 (4인 기준) 1박", "region": "국내 · 강원 홍천 / 비발디파크", "flight_type": "자차 이동 (동탄에서 약 1시간 40분)", "normal_price": "", "deal_price": "135,000원", "discount": "카톡 최저가 · 룸온리", "peak_price": "", "family_saved": "4인 기준 1박 135,000원 (실측 판매가)", "price_level_text": "오션월드 입장권 37,000원 별도 판매 🟢", "rating": "", "review_count": "", "room_basis": true, "pax_included": 4, "benefit_pills": ["패밀리 B·C동 4인 기준", "룸온리 135,000원~", "오션월드 32% 할인권"], "season_reason": "카카오톡 예약하기에서 실제로 판매 중인 숙소입니다. 2026-11-14 12시 기준 패밀리(B동 취사/스탠다드/침대형) 4인 기준 룸온리가 135,000원~이고, 같은 날 오션월드 입장권은 37,000원(정상가 55,000원 · 32% 할인)으로 따로 팔리고 있습니다.", "family_fit": "4인 기준 객실 · 오션월드·스노위랜드 연계 · 동탄 자차 1시간 40분", "scan_notes": ["숙소 판매가 135,000원~ / 1박 (패밀리 B·C동 · 4인 기준)", "오션월드 입장권 37,000원 (정상가 55,000원 · 32% 할인)", "가격·재고는 날짜를 고른 뒤 예약 화면에서 다시 확인해야 함"], "link": "https://booking.kakao.com/detail/accommodation/69086", "link_label": "💬 카톡 예약하기 [소노벨 비발디파크] 바로가기", "search_kw": "비발디파크 소노벨 오션월드 홍천"}, {"id": "tr_kakao_sorano", "type": "domestic", "theme": "resort", "theme_label": "🌴 온천·힐링", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 숙소", "source_color": "#fee500", "title": "🇰🇷 한화리조트 설악 쏘라노 본관 디럭스 (4인) 라스트미닛 1박", "region": "국내 · 강원 속초 / 설악", "flight_type": "자차 이동 (동탄에서 약 2시간 20분)", "normal_price": "", "deal_price": "134,000원", "discount": "라스트미닛 · 룸온리", "peak_price": "", "family_saved": "4인 기준 1박 134,000원 (실측 판매가)", "price_level_text": "워터피아 포함 패키지 176,000원~ 🟢", "rating": "", "review_count": "", "room_basis": true, "pax_included": 4, "benefit_pills": ["본관 디럭스 4인 기준", "라스트미닛 134,000원~", "워터피아·조식 패키지 별도"], "season_reason": "설악 쏘라노는 본관 디럭스 4인 기준 라스트미닛 룸온리가 134,000원~으로 확인됐습니다. 같은 숙소에서 워터피아 종일권 포함 상품(2인, 176,000원~)과 워터피아+조식 올인클루시브(2인, 227,000원~)가 함께 판매 중이라 온천 목적이면 그쪽이 낫습니다.", "family_fit": "4인 기준 객실 · 워터피아 온천 연계 · 속초 중앙시장 인접", "scan_notes": ["숙소 판매가 134,000원~ / 1박 (본관 디럭스 · 4인 기준 · 라스트미닛)", "가을 힐링 트립(워터피아 종일권 포함) 176,000원~ (2인)", "추캉스 ALL INCLUSIVE(워터피아+조식) 227,000원~ (2인)"], "link": "https://booking.kakao.com/detail/accommodation/21888", "link_label": "💬 카톡 예약하기 [한화리조트 설악 쏘라노] 바로가기", "search_kw": "설악 쏘라노 한화리조트 속초 온천"}, {"id": "tr_kakao_lily", "type": "domestic", "theme": "family", "theme_label": "🎡 키즈풀빌라", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 숙소", "source_color": "#fee500", "title": "🇰🇷 가평 릴리브 풀빌라 101호 (미온수 실내수영장 · 42평 복층)", "region": "국내 · 경기 가평 / 상면", "flight_type": "자차 이동 (동탄에서 약 1시간 30분)", "normal_price": "159,000원", "deal_price": "94,050원", "discount": "-40% (정상가 159,000원)", "peak_price": "", "family_saved": "정상가 159,000원 → 94,050원 (1박)", "price_level_text": "실내 미온수풀 1박당 70,000원 현장결제 별도 🟡", "rating": "", "review_count": "3", "room_basis": true, "pax_included": 2, "benefit_pills": ["2인 기준 · 최대 6인", "42평 복층 · 2베드", "개별 바베큐 · 세탁기"], "season_reason": "101·201·203호 룸온리가 94,050원~(정상가 159,000원, 40% 할인)으로 실측됐습니다. 실내 개별 미온수 수영장은 예약 시 필수 이용이고 1박당 70,000원을 현장에서 따로 내야 하므로, 결제 총액은 164,050원이 됩니다.", "family_fit": "2인 기준 최대 6인 · 42평 복층 · 개별 바베큐(1박 30,000원 현장결제)", "scan_notes": ["101·201·203호 룸온리 94,050원~ / 1박 (정상가 159,000원 · 40% 할인)", "실내 개별 수영장 필수 이용 · 현장결제 70,000원/1박 (퇴실까지 31~32도 유지)", "가스그릴 바베큐 30,000원/1박 현장결제 · 체크인 15:00 / 체크아웃 11:00", "야외 인피니티풀은 2026년 운영 종료"], "link": "https://booking.kakao.com/detail/accommodation/38716", "link_label": "💬 카톡 예약하기 [가평 릴리브 풀빌라] 바로가기", "search_kw": "가평 풀빌라 릴리브 미온수수영장"}, {"id": "tr_kakao_pangpang", "type": "domestic", "theme": "family", "theme_label": "🎡 키즈풀빌라", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 숙소", "source_color": "#fee500", "title": "🇰🇷 가평 팡팡키즈풀빌라 1박 (키즈 전용 풀빌라)", "region": "국내 · 경기 가평군", "flight_type": "자차 이동 (동탄에서 약 1시간 30분)", "normal_price": "130,000원", "deal_price": "58,500원", "discount": "-55% (정상가 130,000원)", "peak_price": "", "family_saved": "정상가 130,000원 → 58,500원 (1박)", "price_level_text": "검색 화면에 노출된 최저가 기준 🟢", "rating": "", "review_count": "", "room_basis": true, "pax_included": 2, "benefit_pills": ["키즈 전용 풀빌라", "1박 58,500원~", "55% 할인"], "season_reason": "가평 키즈 풀빌라 중 55% 할인으로 내려온 상품입니다. 카카오톡 예약하기 검색 화면에서 58,500원~(정상가 130,000원)으로 확인됐고, 객실·인원 조건은 날짜를 고른 뒤 예약 화면에서 확정됩니다.", "family_fit": "가평 키즈 풀빌라 · 동탄 자차 1시간 30분", "scan_notes": ["가평 팡팡키즈풀빌라 58,500원~ / 1박 (정상가 130,000원 · 55% 할인)", "객실별 인원·수영장 조건은 예약 화면에서 확인 필요"], "link": "https://booking.kakao.com/search/result?query=%EA%B0%80%ED%8F%89%20%ED%8C%A1%ED%8C%A1%ED%82%A4%EC%A6%88%ED%92%80%EB%B9%8C%EB%9D%BC", "link_label": "💬 카톡 예약하기 [가평 팡팡키즈풀빌라] 검색 바로가기", "search_kw": "가평 팡팡키즈풀빌라"}, {"id": "tr_kakao_aurora", "type": "domestic", "theme": "family", "theme_label": "🎡 키즈풀빌라", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 숙소", "source_color": "#fee500", "title": "🇰🇷 가평 오로라키즈풀빌라 1박 (키즈 전용 풀빌라)", "region": "국내 · 경기 가평군", "flight_type": "자차 이동 (동탄에서 약 1시간 30분)", "normal_price": "179,000원", "deal_price": "69,000원", "discount": "-61% (정상가 179,000원)", "peak_price": "", "family_saved": "정상가 179,000원 → 69,000원 (1박)", "price_level_text": "61% 할인 · 검색 화면 최저가 🟢", "rating": "", "review_count": "", "room_basis": true, "pax_included": 2, "benefit_pills": ["키즈 전용 풀빌라", "1박 69,000원~", "61% 할인"], "season_reason": "가평 키즈 풀빌라 상품 중 할인 폭이 가장 큰 축(61%)입니다. 69,000원~(정상가 179,000원)으로 검색 화면에서 확인했고, 실제 결제 전 날짜별 요금을 다시 확인해야 합니다.", "family_fit": "가평 키즈 풀빌라 · 동탄 자차 1시간 30분", "scan_notes": ["가평 오로라키즈풀빌라 69,000원~ / 1박 (정상가 179,000원 · 61% 할인)", "날짜별 요금·객실 조건은 예약 화면에서 확인 필요"], "link": "https://booking.kakao.com/search/result?query=%EA%B0%80%ED%8F%89%20%EC%98%A4%EB%A1%9C%EB%9D%BC%ED%82%A4%EC%A6%88%ED%92%80%EB%B9%8C%EB%9D%BC", "link_label": "💬 카톡 예약하기 [가평 오로라키즈풀빌라] 검색 바로가기", "search_kw": "가평 오로라키즈풀빌라"}, {"id": "tr_kakao_hamsal", "type": "domestic", "theme": "resort", "theme_label": "🌴 힐링·글램핑", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 숙소", "source_color": "#fee500", "title": "🇰🇷 연천 임진강 햇살글램핑 1박 (45% 할인)", "region": "국내 · 경기 연천군", "flight_type": "자차 이동 (동탄에서 약 1시간 30분)", "normal_price": "109,000원", "deal_price": "59,000원", "discount": "-45% (정상가 109,000원)", "peak_price": "", "family_saved": "정상가 109,000원 → 59,000원 (1박)", "price_level_text": "45% 할인 글램핑 🟢", "rating": "", "review_count": "", "room_basis": true, "pax_included": 2, "benefit_pills": ["임진강 글램핑", "1박 59,000원~", "45% 할인"], "season_reason": "경기 북부 글램핑 상품으로 59,000원~(정상가 109,000원, 45% 할인)에 올라와 있습니다. 캠핑 장비 없이 1박 하기 좋은 가격대지만, 겨울철 난방·온수 조건은 예약 화면에서 확인해야 합니다.", "family_fit": "글램핑 · 동탄 자차 1시간 30분 · 겨울 난방 조건 확인 필요", "scan_notes": ["연천 임진강 햇살글램핑 59,000원~ / 1박 (정상가 109,000원 · 45% 할인)", "난방·온수·화장실 형태는 예약 화면에서 확인 필요"], "link": "https://booking.kakao.com/search/result?query=%EC%97%B0%EC%B2%9C%20%EC%9E%84%EC%A7%84%EA%B0%95%20%ED%96%87%EC%82%B4%EA%B8%80%EB%9E%A8%ED%95%91", "link_label": "💬 카톡 예약하기 [연천 임진강 햇살글램핑] 검색 바로가기", "search_kw": "연천 글램핑 임진강"}, {"id": "tr_kakao_whistler", "type": "domestic", "theme": "city", "theme_label": "🏛️ 도심·제주", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 숙소", "source_color": "#fee500", "title": "🇰🇷 호텔 휘슬락 제주 (제주시 건입동) 1박", "region": "국내 · 제주 제주시 / 건입동", "flight_type": "김포·청주 항공 + 렌터카 (제주공항 10분)", "normal_price": "91,762원", "deal_price": "81,669원", "discount": "-10% (정상가 91,762원)", "peak_price": "", "family_saved": "정상가 91,762원 → 81,669원 (1박)", "price_level_text": "제주시 도심 · 공항 10분 🟢", "rating": "", "review_count": "", "room_basis": true, "pax_included": 2, "benefit_pills": ["제주시 도심", "1박 81,669원~", "공항 인접"], "season_reason": "제주시 건입동 호텔로 81,669원~(정상가 91,762원, 10% 할인)에 판매 중입니다. 제주 감귤·동백 시즌(11월~12월)에 공항과 가까운 숙소로 쓰기 좋은 가격대입니다.", "family_fit": "제주시 도심 · 공항 10분 · 아이 동반 시 침구·조식 조건 확인", "scan_notes": ["호텔 휘슬락 제주 81,669원~ / 1박 (정상가 91,762원 · 10% 할인)", "객실 타입·조식 포함 여부는 예약 화면에서 확인 필요"], "link": "https://booking.kakao.com/search/result?query=%ED%98%B8%ED%85%94%20%ED%9C%98%EC%8A%AC%EB%9D%BD%20%EC%A0%9C%EC%A3%BC", "link_label": "💬 카톡 예약하기 [호텔 휘슬락 제주] 검색 바로가기", "search_kw": "제주 호텔 휘슬락 제주시"}, {"id": "tr_kakao_damora", "type": "domestic", "theme": "resort", "theme_label": "🌴 휴양·리조트", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 숙소", "source_color": "#fee500", "title": "🇰🇷 제주 담모라 호텔&리조트 (서귀포 안덕) 1박", "region": "국내 · 제주 서귀포 / 안덕면", "flight_type": "김포·청주 항공 + 렌터카", "normal_price": "", "deal_price": "49,200원", "discount": "카톡 최저가 · 1박", "peak_price": "", "family_saved": "1박 49,200원 (실측 판매가)", "price_level_text": "서귀포 안덕 · 1박 4만원대 🟢", "rating": "", "review_count": "", "room_basis": true, "pax_included": 2, "benefit_pills": ["서귀포 안덕", "1박 49,200원~", "정상가 미표기"], "season_reason": "서귀포 안덕면 숙소로 49,200원~/1박에 올라와 있습니다. 정상가는 화면에 표시되지 않아 할인율을 계산할 수 없으니, 예약 화면의 날짜별 요금을 기준으로 보셔야 합니다.", "family_fit": "서귀포 안덕 · 감귤체험·동백 명소와 가까움", "scan_notes": ["제주 담모라 호텔&리조트 49,200원~ / 1박", "정상가가 표시되지 않아 할인율 계산 불가"], "link": "https://booking.kakao.com/search/result?query=%EC%A0%9C%EC%A3%BC%20%EB%8B%B4%EB%AA%A8%EB%9D%BC%20%ED%98%B8%ED%85%94", "link_label": "💬 카톡 예약하기 [제주 담모라] 검색 바로가기", "search_kw": "제주 담모라 서귀포 안덕"}, {"id": "tr_mrt_natrang", "type": "overseas", "theme": "resort", "theme_label": "🌴 휴양·풀빌라", "source": "🗺️ 마이리얼트립", "source_badge": "🗺️ 마이리얼트립 에어텔", "source_color": "#2b96ed", "title": "🇻🇳 나트랑 멜리아 빈펄 깜란 풀빌라 5일 (조식·왕복픽업·18시 레이트체크아웃)", "region": "동남아 · 베트남 나트랑 / 깜란", "flight_type": "인천·부산·청주 출발 (상품별 상이)", "normal_price": "", "deal_price": "549,000원", "discount": "1인 기준 에어텔", "peak_price": "", "family_saved": "1인 549,000원 (실측 판매가)", "price_level_text": "풀빌라 + 조식 + 왕복 픽업 포함 🟢", "rating": "5.0", "review_count": "1", "benefit_pills": ["풀빌라 5일", "조식 포함", "왕복 픽업·18시 레이트체크아웃"], "season_reason": "마이리얼트립에서 549,000원(1인 기준)에 판매 중인 나트랑 자유여행 상품입니다. 조식과 공항 왕복 픽업, 18시 레이트체크아웃이 포함돼 있고 후기는 1건(5.0)뿐이라 판단 근거로는 약합니다.", "family_fit": "풀빌라형 숙소 · 아이 물놀이 중심 일정에 적합 · 항공편은 상품 조건 확인", "scan_notes": ["상품가 549,000원 (1인 기준) · 후기 1건(5.0)", "조식 포함 · 공항 왕복 픽업 · 18시 레이트체크아웃 포함", "출발일·항공사·좌석은 예약 화면에서 확정"], "link": "https://www.myrealtrip.com/search?q=%EB%82%98%ED%8A%B8%EB%9E%91%20%EB%A9%9C%EB%A6%AC%EC%95%84%20%EB%B9%88%ED%8E%84%20%EA%B9%9C%EB%9E%80%20%ED%92%80%EB%B9%8C%EB%9D%BC", "link_label": "🗺️ 마이리얼트립 [나트랑 빈펄 풀빌라] 검색 바로가기", "search_kw": "나트랑 멜리아 빈펄 깜란 풀빌라"}, {"id": "tr_mrt_vinpearl", "type": "overseas", "theme": "resort", "theme_label": "🌴 휴양·리조트", "source": "🗺️ 마이리얼트립", "source_badge": "🗺️ 마이리얼트립 숙소", "source_color": "#2b96ed", "title": "🇻🇳 멜리아 빈펄 깜란 비치 리조트 1박 (나트랑)", "region": "동남아 · 베트남 나트랑 / 깜란", "flight_type": "인천 직항 (나트랑 깜란공항)", "normal_price": "", "deal_price": "164,528원", "discount": "-8% 표기", "peak_price": "", "family_saved": "1박 164,528원 (세금 포함·실측 판매가)", "price_level_text": "리조트 1박 · 후기 567건 4.7 🟢", "rating": "4.7", "review_count": "567", "room_basis": true, "pax_included": 2, "benefit_pills": ["비치 리조트", "1박 164,528원~", "후기 567건"], "season_reason": "나트랑 깜란의 멜리아 빈펄 리조트가 세금 포함 164,528원/박(세전 149,571원/박, 8% 할인)으로 올라와 있습니다. 후기 567건에 평점 4.7로, 위의 에어텔 상품보다 숙소 단품으로 비교하기 좋습니다.", "family_fit": "비치프론트 리조트 · 키즈풀 연계 · 공항 15분 내외", "scan_notes": ["리조트 1박 164,528원 (세금 포함) · 세전 149,571원/박 · 8% 할인 표기", "후기 567건 · 평점 4.7 (마이리얼트립 화면 표기)", "더 레벨 빌라 295,262원/박 · 조식·객실 등급은 예약 화면에서 확인"], "link": "https://www.myrealtrip.com/search?q=%EB%A9%9C%EB%A6%AC%EC%95%84%20%EB%B9%88%ED%8E%84%20%EA%B9%9C%EB%9E%80%20%EB%B9%84%EC%B9%98%20%EB%A6%AC%EC%A1%B0%ED%8A%B8", "link_label": "🗺️ 마이리얼트립 [멜리아 빈펄 깜란] 검색 바로가기", "search_kw": "나트랑 멜리아 빈펄 깜란 리조트"}, {"id": "tr_mrt_vinwonders", "type": "overseas", "theme": "family", "theme_label": "🎡 가족·테마파크", "source": "🗺️ 마이리얼트립", "source_badge": "🗺️ 마이리얼트립 입장권", "source_color": "#2b96ed", "title": "🇻🇳 빈원더스 나트랑 입장권 + 왕복 케이블카 (QR 바로입장)", "region": "동남아 · 베트남 나트랑 / 혼째섬", "flight_type": "인천 직항 (나트랑 깜란공항)", "normal_price": "", "deal_price": "28,177원", "discount": "1인 입장권", "peak_price": "", "family_saved": "1인 28,177원 (실측 판매가)", "price_level_text": "케이블카 포함 · QR 즉시 입장 🟢", "rating": "4.4", "review_count": "184", "benefit_pills": ["종일권·오후권 선택", "왕복 케이블카 포함", "QR 바로입장"], "season_reason": "나트랑 가족 여행에서 실제로 가장 많이 쓰는 입장권입니다. 28,177원(1인)에 왕복 케이블카가 포함되고 QR로 바로 입장하며, 후기 184건에 평점 4.4입니다.", "family_fit": "워터파크·놀이공원 · 케이블카 이동 · 유아 동반 시 이용 가능 기구 확인", "scan_notes": ["입장권 + 왕복 케이블카 28,177원 (1인)", "종일권·오후권·식사권 옵션 · QR 바로입장", "후기 184건 · 평점 4.4 (마이리얼트립 화면 표기)"], "link": "https://www.myrealtrip.com/search?q=%EB%B9%88%EC%9B%90%EB%8D%94%EC%8A%A4%20%EB%82%98%ED%8A%B8%EB%9E%91%20%EC%9E%85%EC%9E%A5%EA%B6%8C", "link_label": "🗺️ 마이리얼트립 [빈원더스 나트랑] 검색 바로가기", "search_kw": "나트랑 빈원더스 입장권 케이블카"}];
+    var kidsDeals = [{"id": "kd_zoolung", "category": "kids_cafe", "cat_label": "🦙 실내 애니멀파크", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 레저", "source_color": "#fee500", "title": "주렁주렁 실내동물원 동탄점 (라크몽 4층) 1인권", "location": "경기 화성시 동탄구 동탄대로5길 21 라크몽 B동 4층 (동탄 호수공원 앞)", "target_age": "미취학·초등 모두 (실내 교감 동물원)", "price_info": "1인권 정상 29,000원 → 카톡 특가 19,800원 (31% 할인)", "benefit_tag": "31% 할인 · 무료주차 3시간", "family_saved": "4인 기준 116,000원 → 79,200원 (36,800원 절약)", "price_level_text": "동탄 관내 · 주차 3시간 무료 🟢", "rating": "", "review_count": "86", "unit_price": 19800, "normal_unit_price": 29000, "child_only": false, "tips": "★ 실측 확인: 라크몽 건물 주차 3시간 무료, 쿠폰 적용 상품. 카카오톡 예약하기 화면에서 1인권 19,800원(정상가 29,000원)으로 표시되며, 예약 후 바코드로 입장합니다.", "highlights": "알파카·카피바라 등 실내 교감 동물원 + 실내 놀이 시설 (라크몽 4층)", "scan_notes": ["1인권 19,800원 (정상가 29,000원 · 31% 할인)", "주차 3시간 무료 · 쿠폰 적용 상품", "후기 86건 (카카오톡 예약하기 화면 표기)"], "link": "https://booking.kakao.com/detail/ticketStore/34994", "link_label": "💬 카톡 예약하기 [주렁주렁 동탄점] 바로가기", "search_kw": "주렁주렁 동탄 라크몽 실내동물원"}, {"id": "kd_kakao_akua", "category": "themepark", "cat_label": "🐠 실내 아쿠아리움", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 레저", "source_color": "#fee500", "title": "아쿠아플라넷 광교 입장권 (갤러리아광교 지하1층)", "location": "경기 수원시 영통구 광교호수공원로 300 갤러리아광교 파사쥬 지하1층", "target_age": "전 연령 (실내 아쿠아리움)", "price_info": "입장권 정상 30,000원 → 카톡 특가 19,500원 (35% 할인)", "benefit_tag": "35% 할인 · 주차 2시간 무료", "family_saved": "4인 기준 120,000원 → 78,000원 (42,000원 절약)", "price_level_text": "동탄 자차 20분 · 주차 2시간 무료 🟢", "rating": "", "review_count": "", "unit_price": 19500, "normal_unit_price": 30000, "child_only": false, "tips": "★ 실측 확인: 갤러리아광교 파사쥬 지하1층에 있고 주차 최대 2시간 무료입니다. 카카오톡 예약하기에서 19,500원(정상가 30,000원)으로 판매 중이며, 영업시간은 토·일 10:00~18:00으로 표시돼 있습니다.", "highlights": "대형 수조·상어·펭귄 관람 + 실내 해양 체험 (백화점 직결)", "scan_notes": ["입장권 19,500원 (정상가 30,000원 · 35% 할인)", "주차 최대 2시간 무료 · 영업 토·일 10:00~18:00 표기", "전화 문의 031-320-5000 (예약 문의 02-6933-6480)"], "link": "https://booking.kakao.com/detail/ticketStore/74", "link_label": "💬 카톡 예약하기 [아쿠아플라넷 광교] 바로가기", "search_kw": "아쿠아플라넷 광교 수원 아쿠아리움"}, {"id": "kd_mrt_museum", "category": "museum", "cat_label": "🏛️ 역사 탐험 도슨트", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 체험", "source_color": "#fee500", "title": "국립중앙박물관 키즈투어 '사다리한국사 & 세계사' (초등 체험)", "location": "서울 용산구 서빙고로 137 국립중앙박물관 (동탄역 SRT → 수서 → 용산)", "target_age": "초등학생 (보호자 분리 진행)", "price_info": "체험 1인 정상 40,000원 → 카톡 특가 34,900원 (12% 할인)", "benefit_tag": "12% 할인 · 주차 가능", "family_saved": "어린이 2명 기준 69,800원 (정상가 80,000원)", "price_level_text": "초등 교과 연계 · 소수 인원 진행 🟢", "rating": "", "review_count": "", "unit_price": 34900, "normal_unit_price": 40000, "child_only": true, "tips": "★ 실측 확인: 체험 대상이 초등학생이고 보호자는 100% 분리되는 상품입니다. 카카오톡 예약하기에서 34,900원(정상가 40,000원)으로 판매 중이며, 날짜별 회차를 골라 예약합니다.", "highlights": "박물관 유물을 따라가며 한국사·세계사 흐름을 잇는 키즈 투어 (약 2시간)", "scan_notes": ["체험 34,900원 (정상가 40,000원 · 12% 할인)", "체험 대상: 초등학생 · 보호자 분리 진행", "장소: 서울 용산구 서빙고로 137 (국립중앙박물관)"], "link": "https://booking.kakao.com/detail/ticketStore/34851", "link_label": "💬 카톡 예약하기 [국립중앙박물관 키즈투어] 바로가기", "search_kw": "국립중앙박물관 국립박물관 어린이박물관 도슨트 역사 키즈투어"}, {"id": "kd_igogo_museum", "category": "museum", "cat_label": "🏛️ 역사 도슨트", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 체험", "source_color": "#fee500", "title": "아이고고 국립중앙박물관 짱짱히스토리 (초등 역사 도슨트)", "location": "서울 용산구 용산동6가 국립중앙박물관", "target_age": "초등 저학년~고학년", "price_info": "정상 40,000원 → 카톡 특가 22,900원~ (42% 할인)", "benefit_tag": "42% 할인 · 주차 가능", "family_saved": "어린이 2명 기준 45,800원 (정상가 80,000원)", "price_level_text": "도슨트 특강 중 최저가 축 🟢", "rating": "", "review_count": "", "unit_price": 22900, "normal_unit_price": 40000, "child_only": true, "tips": "★ 실측 확인: 같은 박물관에서 아이고고가 진행하는 초등 역사 프로그램입니다. 카카오톡 예약하기 검색에서 22,900원~(정상가 40,000원, 42% 할인)으로, 위의 키즈투어보다 12,000원 저렴합니다.", "highlights": "국립중앙박물관 유물로 배우는 초등 한국사 스토리텔링", "scan_notes": ["22,900원~ (정상가 40,000원 · 42% 할인)", "같은 박물관의 다른 프로그램: 한국사 특강 29,900원~(40% 할인)", "회차·소요시간은 예약 화면에서 확인"], "link": "https://booking.kakao.com/search/result?query=%EC%95%84%EC%9D%B4%EA%B3%A0%EA%B3%A0%20%EA%B5%AD%EB%A6%BD%EC%A4%91%EC%95%99%EB%B0%95%EB%AC%BC%EA%B4%80", "link_label": "💬 카톡 예약하기 [아이고고 박물관 도슨트] 검색 바로가기", "search_kw": "국립중앙박물관 국립박물관 도슨트 아이고고 초등한국사"}, {"id": "kd_everland", "category": "themepark", "cat_label": "🎢 테마파크", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 레저", "source_color": "#fee500", "title": "용인 에버랜드 이용권 (오후권 / 종일권)", "location": "경기 용인시 처인구 포곡읍 에버랜드로 199", "target_age": "전 연령 (36개월 미만 무료)", "price_info": "오후권 34,000원(정상 65,000원·47%) / 종일권 38,000원(41% 할인)", "benefit_tag": "최대 47% 할인 · 쿠폰", "family_saved": "4인 오후권 136,000원 (정상가 260,000원)", "price_level_text": "오후권 3만원대 · 11월 운영 🟢", "rating": "", "review_count": "", "unit_price": 34000, "normal_unit_price": 65000, "child_only": false, "tips": "★ 실측 확인: 2026-11-14 기준 오후이용권 34,000원(정상가 65,000원), 종일이용권 38,000원(41% 할인)으로 판매 중입니다. 36개월 미만은 무료이며, 이용일 지정 상품입니다.", "highlights": "스노우버스터 눈썰매(겨울 개장) + 사파리·판다월드 + 어트랙션", "scan_notes": ["오후이용권 34,000원 (정상가 65,000원 · 47% 할인)", "종일이용권 38,000원 (41% 할인)", "36개월 미만 무료 · 이용일 지정"], "link": "https://booking.kakao.com/detail/ticketStore/1125", "link_label": "💬 카톡 예약하기 [에버랜드] 바로가기", "search_kw": "에버랜드 용인 스노우버스터 눈썰매"}, {"id": "kd_carib", "category": "themepark", "cat_label": "🌊 워터파크", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 레저", "source_color": "#fee500", "title": "캐리비안베이 이용권 (로시즌 · 실내외)", "location": "경기 용인시 처인구 포곡읍 에버랜드로 199", "target_age": "전 연령 (물놀이)", "price_info": "이용권 정상 45,000원 → 카톡 특가 20,000원 (55% 할인)", "benefit_tag": "55% 할인 · 쿠폰", "family_saved": "4인 기준 180,000원 → 80,000원 (100,000원 절약)", "price_level_text": "비수기 실내 위주 운영 🟡", "rating": "", "review_count": "502", "unit_price": 20000, "normal_unit_price": 45000, "child_only": false, "tips": "★ 실측 확인: [로시즌] 이용권 20,000원(정상가 45,000원, 55% 할인). 영업시간은 토·일 10:00~18:00으로 표시되고, 후기 502건 중에는 '비수기라 실내만 이용 가능'하다는 내용이 있습니다.", "highlights": "실내외 워터파크 · 겨울 비수기는 실내 위주 운영", "scan_notes": ["[로시즌] 이용권 20,000원 (정상가 45,000원 · 55% 할인)", "영업 토·일 10:00~18:00 표기 · 비수기 실내 위주", "후기 502건 (카카오톡 예약하기 화면 표기)"], "link": "https://booking.kakao.com/detail/ticketStore/2453", "link_label": "💬 카톡 예약하기 [캐리비안베이] 바로가기", "search_kw": "캐리비안베이 용인 워터파크"}, {"id": "kd_seoul_land", "category": "themepark", "cat_label": "🎢 테마파크", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 레저", "source_color": "#fee500", "title": "과천 서울랜드 이용권 (66% 할인)", "location": "경기 과천시 막계동 (서울대공원 옆)", "target_age": "전 연령", "price_info": "이용권 정상 45,000원 → 카톡 특가 14,900원~ (66% 할인)", "benefit_tag": "66% 할인 · 쿠폰", "family_saved": "4인 기준 180,000원 → 59,600원", "price_level_text": "동탄 자차 40분 · 1만원대 입장 🟢", "rating": "", "review_count": "", "unit_price": 14900, "normal_unit_price": 45000, "child_only": false, "tips": "★ 실측 확인: 과천서울랜드 이용권이 14,900원~(정상가 45,000원, 66% 할인)으로 검색 상위에 노출됩니다. 같은 화면에 서울대공원 스카이리프트 7,000원(정상 8,000원)도 함께 있어 코스로 묶기 좋습니다.", "highlights": "서울랜드 어트랙션 + 서울대공원·스카이리프트 연계", "scan_notes": ["이용권 14,900원~ (정상가 45,000원 · 66% 할인)", "서울대공원 스카이리프트 7,000원 (정상가 8,000원)", "이용일·권종은 예약 화면에서 선택"], "link": "https://booking.kakao.com/search/result?query=%EA%B3%BC%EC%B2%9C%EC%84%9C%EC%9A%B8%EB%9E%9C%EB%93%9C", "link_label": "💬 카톡 예약하기 [과천서울랜드] 검색 바로가기", "search_kw": "서울랜드 과천 테마파크"}, {"id": "kd_legoland", "category": "themepark", "cat_label": "🧱 레고랜드", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 레저", "source_color": "#fee500", "title": "춘천 레고랜드 이용권 (45% 할인)", "location": "강원 춘천시 중도동 (춘천역 인접)", "target_age": "미취학~초등 저학년 최적", "price_info": "이용권 정상 40,000원 → 카톡 특가 22,000원~ (45% 할인)", "benefit_tag": "45% 할인 · 쿠폰", "family_saved": "4인 기준 160,000원 → 88,000원", "price_level_text": "춘천 · 리조트 연계 가능 🟢", "rating": "", "review_count": "", "unit_price": 22000, "normal_unit_price": 40000, "child_only": false, "tips": "★ 실측 확인: 레고랜드 이용권 22,000원~(정상가 40,000원, 45% 할인). 같은 화면에 레고랜드 코리아 리조트 숙소가 275,000원~/1박으로 함께 검색돼 1박 2일 코스로 묶을 수 있습니다.", "highlights": "레고 테마 어트랙션 + 레고랜드 리조트(숙소 275,000원~)", "scan_notes": ["이용권 22,000원~ (정상가 40,000원 · 45% 할인)", "레고랜드 코리아 리조트 275,000원~ / 1박 (같은 검색 결과)", "이용일·권종은 예약 화면에서 선택"], "link": "https://booking.kakao.com/search/result?query=%EB%A0%88%EA%B3%A0%EB%9E%9C%EB%93%9C", "link_label": "💬 카톡 예약하기 [레고랜드] 검색 바로가기", "search_kw": "레고랜드 춘천"}, {"id": "kd_coex", "category": "themepark", "cat_label": "🐠 실내 아쿠아리움", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 레저", "source_color": "#fee500", "title": "코엑스 아쿠아리움 입장권 (19% 할인)", "location": "서울 강남구 영동대로 513 코엑스 B1", "target_age": "전 연령 (실내)", "price_info": "입장권 정상 31,000원 → 카톡 특가 25,000원~ (19% 할인)", "benefit_tag": "19% 할인 · 쿠폰", "family_saved": "4인 기준 124,000원 → 100,000원", "price_level_text": "실내 · 지하철 직결 🟢", "rating": "", "review_count": "", "unit_price": 25000, "normal_unit_price": 31000, "child_only": false, "tips": "★ 실측 확인: 코엑스 아쿠아리움 입장권 25,000원~(정상가 31,000원, 19% 할인). 할인 폭은 광교(35%)보다 작지만, 실내라 날씨 영향이 없고 지하철로 바로 닿습니다.", "highlights": "대형 수조·상어·펭귄 · 코엑스 몰 직결", "scan_notes": ["입장권 25,000원~ (정상가 31,000원 · 19% 할인)", "권종·이용일은 예약 화면에서 선택"], "link": "https://booking.kakao.com/search/result?query=%EC%BD%94%EC%97%91%EC%8A%A4%20%EC%95%84%EC%BF%A0%EC%95%84%EB%A6%AC%EC%9B%80", "link_label": "💬 카톡 예약하기 [코엑스 아쿠아리움] 검색 바로가기", "search_kw": "코엑스 아쿠아리움 삼성역"}, {"id": "kd_sky_lift", "category": "themepark", "cat_label": "🚡 케이블카", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 레저", "source_color": "#fee500", "title": "서울대공원 스카이리프트 (과천)", "location": "경기 과천시 막계동 서울대공원", "target_age": "전 연령", "price_info": "정상 8,000원 → 카톡 특가 7,000원 (12% 할인)", "benefit_tag": "12% 할인 · 쿠폰", "family_saved": "4인 기준 32,000원 → 28,000원", "price_level_text": "서울랜드·동물원과 동선 연결 🟢", "rating": "", "review_count": "", "unit_price": 7000, "normal_unit_price": 8000, "child_only": false, "tips": "★ 실측 확인: 서울대공원 스카이리프트 7,000원(정상 8,000원, 12% 할인). 할인 폭은 작지만 서울랜드·동물원과 같은 날 묶으면 이동 시간을 줄일 수 있습니다.", "highlights": "서울대공원 리프트 · 서울랜드와 도보 연계", "scan_notes": ["스카이리프트 7,000원 (정상가 8,000원 · 12% 할인)", "탑승권 종류·운영시간은 예약 화면에서 확인"], "link": "https://booking.kakao.com/search/result?query=%EC%84%9C%EC%9A%B8%EB%8C%80%EA%B3%B5%EC%9B%90%20%EC%8A%A4%EC%B9%B4%EC%9D%B4%EB%A6%AC%ED%94%84%ED%8A%B8", "link_label": "💬 카톡 예약하기 [서울대공원 스카이리프트] 검색 바로가기", "search_kw": "서울대공원 스카이리프트 과천"}, {"id": "kd_flystation", "category": "kids_cafe", "cat_label": "🪂 실내 액티비티", "source": "💬 카카오톡 예약하기", "source_badge": "💬 카톡 예약하기 레저", "source_color": "#fee500", "title": "플라이스테이션 (용인 · 실내 스카이다이빙 체험)", "location": "경기 용인시 (에버랜드 인근)", "target_age": "초등 고학년 이상 (체험 제한 확인)", "price_info": "정상가 대비 50% 할인 → 33,000원~", "benefit_tag": "50% 할인 · 쿠폰", "family_saved": "1인 33,000원 (실측 판매가)", "price_level_text": "에버랜드 458m 인접 🟢", "rating": "", "review_count": "", "unit_price": 33000, "normal_unit_price": 0, "child_only": false, "tips": "★ 실측 확인: 에버랜드에서 1.8km 거리의 실내 액티비티로 33,000원~(50% 할인 표기)에 노출됩니다. 정상가가 숫자로 표시되지 않아 할인 후 금액만 확인됐고, 키·연령 제한은 예약 화면에서 확인해야 합니다.", "highlights": "실내 수직풍동 체험 · 에버랜드와 같은 날 코스 가능", "scan_notes": ["플라이스테이션 33,000원~ (50% 할인 표기)", "정상가 숫자 미표기 · 키·연령 제한은 예약 화면 확인", "에버랜드에서 1.8km"], "link": "https://booking.kakao.com/search/result?query=%ED%94%8C%EB%9D%BC%EC%9D%B4%EC%8A%A4%ED%85%8C%EC%9D%B4%EC%85%98", "link_label": "💬 카톡 예약하기 [플라이스테이션] 검색 바로가기", "search_kw": "플라이스테이션 용인 스카이다이빙"}];
+    var DEALS_SCAN_META = {"scannedAt": "2026-11-14 12:40", "source": "카카오톡 예약하기(booking.kakao.com) · 마이리얼트립(myrealtrip.com) 화면 실측", "travel": 11, "kids": 11, "total": 22};
     
     var upcomingEvents = [{"category": "💬 카카오톡 예약하기 정기 톡딜", "source": "💬 카카오톡 공식 채널", "title": "카카오톡 예약하기 매주 화·목 10:00 전국 리조트/호텔 타임어택 톡딜", "open_date": "매주 화요일 & 목요일 오전 10:00 오픈", "d_day": "매주 화·목 10시", "tag": "카카오 단독 최저가 & 카카오페이 10% 추가할인", "tag_color": "#fee500", "desc": "전국 인기 리조트(소노, 한화, 켄싱턴, 용평) 및 테마파크/키즈카페 단독 특가 타임세일. 카카오톡 알림톡 사전 알림 신청 시 5분 전 자동 푸시 발송.", "tip": "카카오톡 예약하기 채널을 친구추가 해두면 10시 정각 알림톡이 오며, 선착순 카카오페이머니 추가 10% 쿠폰(최대 2만원)은 오픈 3분 내 마감되므로 쿠폰 먼저 받기 필수!"}, {"category": "💬 카카오톡 예약하기 정기 톡딜", "source": "💬 카카오톡 × 아쿠아플라넷", "title": "아쿠아플라넷 윈터 패밀리 페스타 카카오 단독 타임딜", "open_date": "2026년 11월 20일(금) 10:00 오픈", "d_day": "D-8", "tag": "최대 42% 카카오 단독", "tag_color": "#fee500", "desc": "광교, 일산, 63, 여수, 제주 전 지점 패밀리권 선착순 1,000매 한정 단독 할인.", "tip": "카카오톡 예약하기 모바일 바코드로 발권 대기 없이 게이트 즉시 태그 입장 가능."}, {"category": "✈️ 항공사 정기 빅세일", "source": "✈️ 제주항공 공식", "title": "제주항공 2027 상반기 찜(JJIM) 메가 특가", "open_date": "2027년 1월 초 오픈 예정", "d_day": "D-50", "tag": "연중 최대 세일", "tag_color": "#f43f5e", "desc": "국내선 편도 1만원대, 일본/동남아 5~8만원대 초특가 선착순 오픈. 모바일 앱 사전 회원가입 및 카드 간편결제 등록 필수.", "tip": "오픈 당일 오전 10시 동시접속 10만 명 몰리므로 9시 50분 앱 로그인 대기 필수!"}, {"category": "✈️ 항공사 정기 빅세일", "source": "✈️ 진에어 공식", "title": "진에어 진마켓(JIN MARKET) 연중 최대 할인", "open_date": "2027년 1월 중순 오픈 예정", "d_day": "D-65", "tag": "무료 위탁수하물 15kg 포함", "tag_color": "#38bdf8", "desc": "LCC 유일 15kg 무료 위탁수하물 기본 제공 특가. 괌, 다낭, 후쿠오카, 오사카 전 노선 70~80% 얼리버드.", "tip": "아이 짐이 많은 4인 가족에게 위탁수하물 무료는 인당 왕복 6~8만원 추가 세이브 효과!"}, {"category": "📺 홈쇼핑 주말 특집", "source": "📺 CJ온스타일 / GS샵", "title": "동남아 5성급 풀빌라 패밀리 패키지 주말 본방송 타임특가", "open_date": "매주 일요일 21:35 ~ 23:45 생방송", "d_day": "매주 일요일 심야", "tag": "방송 중 룸업그레이드 & 레이트체크아웃", "tag_color": "#f43f5e", "desc": "TV 홈쇼핑 및 모바일 라이브 동시 송출. 아동 2인 노차일드차지(무료 투숙) 및 24시간 식음료 포함 올인클루시브 특선.", "tip": "방송 중에만 제공되는 무료 취소 100% 혜택을 걸어두고 날짜를 천천히 맞추는 전략 추천!"}, {"category": "❄️ 겨울방학 스키 & 테마파크", "source": "🏨 야놀자 / 소노호텔", "title": "비발디파크 & 휘닉스파크 윈터 패키지 2차 타임딜", "open_date": "2026년 11월 18일(수) 10:00 오픈", "d_day": "D-7", "tag": "45% 얼리버드", "tag_color": "#a855f7", "desc": "소노벨 객실 1박 + 스노위랜드(눈썰매) 3인권 + 곤돌라 패키지 선착순 500실 한정.", "tip": "야놀자/여기어때 라이브 방송 중 구매 시 추가 10% 쿠폰 중복 적용 가능."}, {"category": "❄️ 겨울방학 스키 & 테마파크", "source": "🎢 에버랜드 리조트", "title": "용인 에버랜드 '스노우버스터(눈썰매장)' 개장 & 스마트예약", "open_date": "2026년 12월 1일(화) 정식 개장", "d_day": "D-20", "tag": "튜브 리프트 무료", "tag_color": "#22c55e", "desc": "아이들이 걸어 올라갈 필요 없이 튜브에 앉아서 올라가는 패밀리 코스 개장. 제휴카드 55% 스마트예약 병행.", "tip": "스노우버스터는 오픈런하지 않으면 주말 대기 60분 이상이므로 오전 10시 입장 즉시 썰매장으로 직행 권장."}, {"category": "🦕 국립/도립 박물관 정기 예약", "source": "🔬 국립과천과학관", "title": "국립과천과학관 '유아체험관' 정기 광클 캘린더", "open_date": "방문 희망일 3일 전 밤 9시(21:00) 칼오픈", "d_day": "상시 오픈 (3일 전 21:00)", "tag": "미취학 킨더 필수", "tag_color": "#f59e0b", "desc": "미취학 유아 전용 인터랙티브 과학 놀이터. 회차당 120명 선착순. 계정당 최대 4명 예약.", "tip": "20시 58분 국립과천과학관 통합예약 로그인 후 프로그램 탭에서 대기하다가 21:00 정각 새로고침!"}, {"category": "🦕 국립/도립 박물관 정기 예약", "source": "🏛️ 경기문화재단", "title": "경기도어린이박물관 1·3주 주말 무료 입장 예약", "open_date": "방문 희망일 7일 전 00:00 오픈", "d_day": "방문 7일 전 00시", "tag": "도민 무료 개방", "tag_color": "#10b981", "desc": "용인 기흥 소재 (동탄 20분). 매월 첫째·셋째 주 토·일요일 100% 무료 입장 사전 예약.", "tip": "자정(00:00)에 오픈되므로 7일 전 밤 11시 59분에 경기문화재단 지지씨멤버스 로그인 대기!"}];
+
+    // ===== 📌 핀 고정 엔진 (동기화로 목록이 교체돼도 localStorage 에 남겨 유지) =====
+    var FDR_PIN_KEY = 'fdr_pinned_deals_v1';
+
+    function fdrLoadPins() {
+      try {
+        var raw = window.localStorage.getItem(FDR_PIN_KEY);
+        if (!raw) return [];
+        var arr = JSON.parse(raw);
+        return Object.prototype.toString.call(arr) === '[object Array]' ? arr : [];
+      } catch (e) { return []; }
+    }
+
+    function fdrSavePins(pins) {
+      try { window.localStorage.setItem(FDR_PIN_KEY, JSON.stringify(pins)); return true; }
+      catch (e) { return false; }
+    }
+
+    function fdrIsPinned(kind, id) {
+      var pins = fdrLoadPins();
+      for (var i = 0; i < pins.length; i++) {
+        if (pins[i].kind === kind && pins[i].id === id) return true;
+      }
+      return false;
+    }
+
+    function fdrPinLabel(kind, id) {
+      return fdrIsPinned(kind, id) ? '📌 고정됨' : '📌 핀 고정';
+    }
+
+    function fdrPinClass(kind, id) {
+      return fdrIsPinned(kind, id) ? 'pinned' : '';
+    }
+
+    function fdrTogglePin(kind, id, ev) {
+      if (ev) {
+        if (ev.stopPropagation) ev.stopPropagation();
+        if (ev.preventDefault) ev.preventDefault();
+      }
+      var pins = fdrLoadPins();
+      var idx = -1;
+      for (var i = 0; i < pins.length; i++) {
+        if (pins[i].kind === kind && pins[i].id === id) { idx = i; break; }
+      }
+      if (idx >= 0) {
+        pins.splice(idx, 1);
+      } else {
+        var src = (kind === 'travel') ? travelDeals : kidsDeals;
+        var item = null;
+        for (var j = 0; j < src.length; j++) { if (src[j].id === id) { item = src[j]; break; } }
+        if (!item) return;
+        pins.push({
+          kind: kind,
+          id: id,
+          pinnedAt: new Date().toISOString(),
+          item: JSON.parse(JSON.stringify(item))
+        });
+      }
+      if (!fdrSavePins(pins)) {
+        window.alert('브라우저 저장 공간(localStorage)을 쓸 수 없어 고정을 저장하지 못했습니다.');
+        return;
+      }
+      fdrRefreshAfterPin();
+    }
+    window.fdrTogglePin = fdrTogglePin;
+
+    function fdrRemovePin(kind, id) {
+      var pins = fdrLoadPins();
+      var next = [];
+      for (var i = 0; i < pins.length; i++) {
+        if (!(pins[i].kind === kind && pins[i].id === id)) next.push(pins[i]);
+      }
+      if (fdrSavePins(next)) fdrRefreshAfterPin();
+    }
+    window.fdrRemovePin = fdrRemovePin;
+
+    // 고정된 상품 스냅샷을 먼저, 그 뒤에 이번 동기화로 새로 들어온 상품을 붙인다.
+    // 같은 id 또는 같은 제목이면 고정 항목만 남겨 중복 노출하지 않는다.
+    function fdrMergedList(kind) {
+      var scanned = (kind === 'travel') ? travelDeals : kidsDeals;
+      var pins = fdrLoadPins();
+      var pinned = [];
+      var seenId = {};
+      var seenTitle = {};
+      for (var i = 0; i < pins.length; i++) {
+        if (pins[i].kind !== kind || !pins[i].item) continue;
+        var copy = JSON.parse(JSON.stringify(pins[i].item));
+        copy._pinned = true;
+        copy._pinnedAt = pins[i].pinnedAt;
+        pinned.push(copy);
+        seenId[copy.id] = true;
+        seenTitle[(copy.title || '').replace(/\s+/g, '')] = true;
+      }
+      var rest = [];
+      for (var j = 0; j < scanned.length; j++) {
+        var d = scanned[j];
+        if (seenId[d.id]) continue;
+        if (seenTitle[(d.title || '').replace(/\s+/g, '')]) continue;
+        rest.push(d);
+      }
+      return pinned.concat(rest);
+    }
+    window.fdrMergedList = fdrMergedList;
+
+    function fdrPinDateText(iso) {
+      if (!iso) return '';
+      var d = new Date(iso);
+      if (isNaN(d.getTime())) return '';
+      return (d.getMonth() + 1) + '/' + d.getDate();
+    }
+
+    function fdrRenderPinBar() {
+      var bar = document.getElementById('fdrPinBar');
+      if (!bar) return;
+      var pins = fdrLoadPins();
+      if (!pins.length) { bar.style.display = 'none'; bar.innerHTML = ''; return; }
+      var chips = [];
+      for (var i = 0; i < pins.length; i++) {
+        var p = pins[i];
+        var t = (p.item && p.item.title) ? p.item.title : p.id;
+        if (t.length > 34) t = t.slice(0, 33) + '…';
+        t = t.replace(/</g, '&lt;').replace(/'/g, '&#39;');
+        var kindLabel = (p.kind === 'travel') ? '✈️' : '🎪';
+        chips.push('<span class="fdr-pin-chip">' + kindLabel + ' ' + t +
+          '<span style="color:#64748b; font-weight:700;"> · ' + fdrPinDateText(p.pinnedAt) + ' 고정</span>' +
+          '<button type="button" class="fdr-pin-x" title="고정 해제" onclick="fdrRemovePin(\'' + p.kind + '\',\'' + p.id + '\')">✕</button></span>');
+      }
+      bar.style.display = 'block';
+      bar.innerHTML = '<div class="fdr-pin-bar-title">📌 고정된 특가 <strong style="color:#fbbf24;">' + pins.length + '건</strong> (동기화 시 유지됨)' +
+        '<span style="font-weight:600; color:#94a3b8; font-size:10.5px;"> — 정기 동기화로 목록이 통째로 교체돼도 아래 상품은 그대로 남습니다. ✕ 를 누르면 해제됩니다.</span></div>' +
+        '<div class="fdr-pin-chips">' + chips.join('') + '</div>';
+    }
+    window.fdrRenderPinBar = fdrRenderPinBar;
+
+    function fdrRenderScanMeta() {
+      var el = document.getElementById('dealsScanMeta');
+      if (!el || typeof DEALS_SCAN_META === 'undefined' || !DEALS_SCAN_META) return;
+      el.textContent = '🗂️ 실측 스캔 ' + DEALS_SCAN_META.scannedAt + ' · 여행 ' + DEALS_SCAN_META.travel + ' · 키즈 ' + DEALS_SCAN_META.kids + '건';
+      el.title = '출처: ' + (DEALS_SCAN_META.source || '');
+    }
+    window.fdrRenderScanMeta = fdrRenderScanMeta;
+
+    function fdrRefreshAfterPin() {
+      fdrRenderPinBar();
+      try {
+        if (currentCat === 'search') { executeTravelSearch(); }
+        else if (currentCat === 'travel' || currentCat === 'kids') { renderDeals(); }
+      } catch (e) { console.error('pin refresh error', e); }
+    }
+    window.fdrRefreshAfterPin = fdrRefreshAfterPin;
 
     // RENDERERS
     function renderDeals() {
@@ -2145,12 +2357,12 @@
 
       
       if (currentCat === 'travel') {
-        var list = travelDeals.filter(function(d) {
+        var list = fdrMergedList('travel').filter(function(d) {
           var matchSub = (currentTravelSub === 'all') ||
                          (currentTravelSub === 'kakao' && (d.source.indexOf('카카오') !== -1 || (d.source_badge && d.source_badge.indexOf('카톡') !== -1))) ||
                          (currentTravelSub === 'overseas' && d.type === 'overseas') ||
                          (currentTravelSub === 'domestic' && d.type === 'domestic') ||
-                         (currentTravelSub === 'homeshopping' && d.source.indexOf('홈쇼핑') !== -1) ||
+                         (currentTravelSub === 'room' && d.room_basis === true) ||
                          (currentTravelSub === d.theme);
           var matchSearch = !currentSearch || (
             d.title.toLowerCase().indexOf(currentSearch) !== -1 ||
@@ -2173,8 +2385,8 @@
 
           var tagClass = d.theme === 'resort' ? 'tag-resort' : (d.theme === 'city' ? 'tag-city' : (d.theme === 'family' ? 'tag-family' : 'tag-snow'));
 
-          var reviewsHtml = d.reviews.map(function(r) {
-            return '<div class="review-quote">' + r + '</div>';
+          var reviewsHtml = (d.scan_notes || []).map(function(r) {
+            return '<div class="review-quote">✔ ' + r + '</div>';
           }).join('');
 
           // 선택 인원 반영 예상 총액·절약액
@@ -2191,22 +2403,22 @@
                     <span class="tag ${tagClass}">${d.theme_label}</span>
                     <span class="tag tag-discount">${d.discount}</span>
                   </div>
-                  <span style="font-size: 11px; color: #38bdf8; font-weight: 700;">${d.region}</span>
+                  <span style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                    <button type="button" class="fdr-pin-btn ${fdrPinClass('travel', d.id)}" onclick="fdrTogglePin('travel','${d.id}',event)">${fdrPinLabel('travel', d.id)}</button>
+                    <span style="font-size: 11px; color: #38bdf8; font-weight: 700;">${d.region}</span>
+                  </span>
                 </div>
-                <div class="card-title">${d.title}</div>
+                <div class="card-title">${d._pinned ? '<span class="fdr-pin-tag">📌 고정 유지 중</span>' : ''}${d.title}</div>
                 <div class="card-sub">${d.flight_type}</div>
 
                 <!-- Rating -->
-                <div class="rating-badge">
-                  <span>⭐ <span class="rating-num">${d.rating}</span> / 5.0</span>
-                  <span class="rating-cnt">(부모 후기 ${d.review_count})</span>
-                </div>
+                ${d.review_count ? '<div class="rating-badge"><span>⭐ <span class="rating-num">' + (d.rating || '—') + '</span> / 5.0</span><span class="rating-cnt">(후기 ' + d.review_count + '건 · 예약 화면 표기)</span></div>' : ''}
 
                 <!-- ESTIMATED FAMILY TOTAL -->
                 <div class="calc-result-box">
                   <div class="cr-title">👨‍👩‍👧‍👦 ${headLabel(hCalc)} 예상 총액</div>
                   <div class="cr-total">약 ${formatWon(estTotal)}</div>
-                  <div style="font-size: 10.5px; color: #cbd5e1; margin-top: 4px;">정가 대비 약 <strong style="color:#4ade80;">${formatWon(travelEst.saved)}</strong> 절약${travelEst.pct ? ' (-' + travelEst.pct + '%)' : ''}</div>
+                  <div style="font-size: 10.5px; color: #cbd5e1; margin-top: 4px;">${travelEst.saved > 0 ? '정가 대비 약 <strong style="color:#4ade80;">' + formatWon(travelEst.saved) + '</strong> 절약' + (travelEst.pct ? ' (-' + travelEst.pct + '%)' : '') : '정상가 미표기 · 판매가 기준'}</div>
                 </div>
 
                 <!-- Price & Benchmark Box -->
@@ -2224,8 +2436,8 @@
                   <!-- Historical Price Benchmark -->
                   <div class="benchmark-wrap">
                     <div class="bm-history">
-                      <span>여름 성수기: <del>${d.peak_price}</del></span>
-                      <span>평수기 평균: <del>${d.normal_price}</del></span>
+                      <span>${d.peak_price ? '성수기: <del>' + d.peak_price + '</del>' : '성수기 정상가 미표기'}</span>
+                      <span>${d.normal_price ? '정상가: <del>' + d.normal_price + '</del>' : '정상가 미표기'}</span>
                     </div>
                     <div class="bm-saved">
                       <span>${d.family_saved}</span>
@@ -2248,8 +2460,8 @@
                 <!-- Real Parent Reviews -->
                 <div class="review-box">
                   <div class="review-header">
-                    <span>💬 다녀온 부모님들의 생생 후기</span>
-                    <span style="font-size: 10px; color: #38bdf8;">검증 완료 ✓</span>
+                    <span>🔎 예약 화면에서 실측 확인한 내용</span>
+                    <span style="font-size: 10px; color: #38bdf8;">${DEALS_SCAN_META && DEALS_SCAN_META.scannedAt ? DEALS_SCAN_META.scannedAt + ' 실측' : '실측 확인'}</span>
                   </div>
                   ${reviewsHtml}
                 </div>
@@ -2268,11 +2480,11 @@
 
       } else if (currentCat === 'kids') {
         // KIDS DEALS
-        var list = kidsDeals.filter(function(k) {
+        var list = fdrMergedList('kids').filter(function(k) {
           var matchSub = (currentKidsSub === 'all') ||
                          (currentKidsSub === 'kakao' && (k.source.indexOf('카카오') !== -1 || (k.source_badge && k.source_badge.indexOf('카톡') !== -1))) ||
                          (currentKidsSub === 'dongtan' && (k.location.indexOf('동탄') !== -1 || k.location.indexOf('화성') !== -1)) ||
-                         (currentKidsSub === 'tourpass' && k.id === 'kd8') ||
+                         (currentKidsSub === 'aquarium' && (k.cat_label || '').indexOf('아쿠아리움') !== -1) ||
                          (currentKidsSub === k.category);
           var matchSearch = !currentSearch || (
             k.title.toLowerCase().indexOf(currentSearch) !== -1 ||
@@ -2289,8 +2501,8 @@
         }
 
         var cardsHtml = list.map(function(k) {
-          var reviewsHtml = k.reviews.map(function(r) {
-            return '<div class="review-quote">' + r + '</div>';
+          var reviewsHtml = (k.scan_notes || []).map(function(r) {
+            return '<div class="review-quote">✔ ' + r + '</div>';
           }).join('');
 
           // 선택 인원 반영 예상 입장·이용료
@@ -2301,7 +2513,9 @@
             ? '정가 대비 약 <strong style="color:#4ade80;">' + formatWon(kidsEst.saved) + '</strong> 절약'
             : (kidsEst.noChildSelected ? '취학(초등)·미취학(킨더) 인원을 선택하면 요금이 계산됩니다'
               : (estTotal === 0 ? '입장료 0원' : (kidsEst.note || '인원별 최종 금액은 예약 화면에서 확인')));
-          var kidsAmount = kidsEst.noChildSelected ? '아동 인원 선택 필요' : (estTotal === 0 ? '100% 전액 무료 🟢' : '약 ' + formatWon(estTotal));
+          var kidsAmount = kidsEst.noChildSelected ? '초등·킨더 인원을 선택하세요'
+            : (!kidsEst.priced ? '요금은 예약 화면에서 확인'
+            : (kidsEst.zeroSelected ? '1인 ' + formatWon(kidsEst.unit) + ' 기준' : '약 ' + formatWon(estTotal)));
 
           return `
             <div class="deal-card">
@@ -2312,16 +2526,16 @@
                     <span class="tag tag-city">${k.cat_label}</span>
                     <span class="tag tag-discount" style="background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.3);">${k.benefit_tag}</span>
                   </div>
-                  <span style="font-size: 11px; color: #fbbf24; font-weight: 700;">${k.target_age}</span>
+                  <span style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                    <button type="button" class="fdr-pin-btn ${fdrPinClass('kids', k.id)}" onclick="fdrTogglePin('kids','${k.id}',event)">${fdrPinLabel('kids', k.id)}</button>
+                    <span style="font-size: 11px; color: #fbbf24; font-weight: 700;">${k.target_age}</span>
+                  </span>
                 </div>
-                <div class="card-title">${k.title}</div>
+                <div class="card-title">${k._pinned ? '<span class="fdr-pin-tag">📌 고정 유지 중</span>' : ''}${k.title}</div>
                 <div class="card-sub">📍 ${k.location}</div>
 
                 <!-- Rating -->
-                <div class="rating-badge">
-                  <span>⭐ <span class="rating-num">${k.rating}</span> / 5.0</span>
-                  <span class="rating-cnt">(부모 후기 ${k.review_count})</span>
-                </div>
+                ${k.review_count ? '<div class="rating-badge"><span>⭐ <span class="rating-num">' + (k.rating || '—') + '</span> / 5.0</span><span class="rating-cnt">(후기 ' + k.review_count + '건 · 예약 화면 표기)</span></div>' : ''}
 
                 <!-- ESTIMATED FAMILY TOTAL -->
                 <div class="calc-result-box" style="background: #1e1b4b; border-color: #818cf8;">
@@ -2354,8 +2568,8 @@
                 <!-- Real Parent Reviews -->
                 <div class="review-box">
                   <div class="review-header">
-                    <span>💬 동탄/수도권 부모님들의 실전 후기</span>
-                    <span style="font-size: 10px; color: #4ade80;">방문 인증 ✓</span>
+                    <span>🔎 예약 화면에서 실측 확인한 내용</span>
+                    <span style="font-size: 10px; color: #4ade80;">${DEALS_SCAN_META && DEALS_SCAN_META.scannedAt ? DEALS_SCAN_META.scannedAt + ' 실측' : '실측 확인'}</span>
                   </div>
                   ${reviewsHtml}
                 </div>
@@ -2425,12 +2639,16 @@
 
       // 4. Initial Render
       updateCalcUI();
+      fdrRenderPinBar();
+      fdrRenderScanMeta();
       switchCategory('search');
     });
 
     // Fallback immediate render if DOM is already ready
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
       updateCalcUI();
+      fdrRenderPinBar();
+      fdrRenderScanMeta();
       switchCategory('search');
     }
   </script>
