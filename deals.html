@@ -2365,12 +2365,7 @@
                          (currentTravelSub === 'domestic' && d.type === 'domestic') ||
                          (currentTravelSub === 'room' && d.room_basis === true) ||
                          (currentTravelSub === d.theme);
-          var matchSearch = !currentSearch || (
-            d.title.toLowerCase().indexOf(currentSearch) !== -1 ||
-            d.region.toLowerCase().indexOf(currentSearch) !== -1 ||
-            d.source.toLowerCase().indexOf(currentSearch) !== -1 ||
-            d.season_reason.toLowerCase().indexOf(currentSearch) !== -1
-          );
+          var matchSearch = !currentSearch || matchScore(currentSearch, d, 'travel') > 0;
           return matchSub && matchSearch;
         });
 
@@ -2487,12 +2482,7 @@
                          (currentKidsSub === 'dongtan' && (k.location.indexOf('동탄') !== -1 || k.location.indexOf('화성') !== -1)) ||
                          (currentKidsSub === 'aquarium' && (k.cat_label || '').indexOf('아쿠아리움') !== -1) ||
                          (currentKidsSub === k.category);
-          var matchSearch = !currentSearch || (
-            k.title.toLowerCase().indexOf(currentSearch) !== -1 ||
-            k.location.toLowerCase().indexOf(currentSearch) !== -1 ||
-            k.source.toLowerCase().indexOf(currentSearch) !== -1 ||
-            k.tips.toLowerCase().indexOf(currentSearch) !== -1
-          );
+          var matchSearch = !currentSearch || matchScore(currentSearch, k, 'kids') > 0;
           return matchSub && matchSearch;
         });
 
