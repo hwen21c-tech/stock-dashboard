@@ -948,7 +948,7 @@
       </a>
       <div id="dealsSyncWrap" style="display: flex; align-items: center; gap: 8px;">
         <span id="dealsSyncBadge" style="font-size: 10.5px; font-weight: 800; color: #4ade80; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); padding: 4px 8px; border-radius: 4px;">⚡ 하루 3회 정기 자동 갱신 (다음: 내일 08:00)</span>
-        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 10:42 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
+        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 11:10 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
       </div>
       <div class="calc-controls">
         <div class="counter-group">
@@ -1128,9 +1128,10 @@
     <!-- DIRECT DEEP-LINK COMPARISON HUB -->
     <div class="direct-links-bar" id="directLinksBar">
       <div class="dl-title">
-        <span>⚡ 자동검색 6대 공식 채널 직통 딥링크 (원클릭 최저가 화면 직결)</span>
+        <span>⚡ 실시간 최저가 7대 공식 채널 직통 딥링크 (장소·날짜·인원·가격낮은순 자동 반영)</span>
         <span style="font-size: 10px; color: #4ade80; font-weight: 700;">비로그인 공개 검색 지원 ✓</span>
       </div>
+      <div id="directLinksConditions" style="font-size: 10.5px; color: #94a3b8; line-height: 1.65; padding: 0 2px 8px 2px;"></div>
       <div class="dl-grid" id="directLinksGrid">
         <!-- Rendered via JS -->
       </div>
@@ -1504,27 +1505,158 @@
     }
     window.toggleDateUndecided = toggleDateUndecided;
 
-    // TRAVEL · KIDS RESERVATION PLATFORM DEEP LINKS
-    function buildDirectLinks(query) {
+    // ===== 실시간 최저가 비교 모드 (등록 특가 미발견 시 자동 전환) =====
+    function kstNowDate() {
+      var now = new Date();
+      var utcMs = now.getTime() + now.getTimezoneOffset() * 60000;
+      return new Date(utcMs + 9 * 3600 * 1000);
+    }
+
+    function ymdOf(d) {
+      return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    }
+
+    function prettyDate(ymd) {
+      var p = (ymd || '').split('-');
+      if (p.length !== 3) return ymd || '';
+      return parseInt(p[0], 10) + '\uB144 ' + parseInt(p[1], 10) + '\uC6D4 ' + parseInt(p[2], 10) + '\uC77C';
+    }
+
+    function addDaysToYmd(ymd, days) {
+      var p = (ymd || '').split('-');
+      if (p.length !== 3) return ymd;
+      var d = new Date(parseInt(p[0], 10), parseInt(p[1], 10) - 1, parseInt(p[2], 10) + days);
+      return ymdOf(d);
+    }
+
+    // 방문 날짜: 입력한 날짜(체크아웃 +1일) 또는 '날짜 미정'이면 오늘+14일 ~ +15일
+    function resolveVisitDates() {
+      var dateEl = document.getElementById('tDate');
+      var undecidedEl = document.getElementById('tUndecidedDate');
+      var picked = dateEl ? (dateEl.value || '').trim() : '';
+      var undecided = undecidedEl ? undecidedEl.checked : false;
+      if (!undecided && picked) {
+        return { checkIn: picked, checkOut: addDaysToYmd(picked, 1), isDefault: false };
+      }
+      var base = kstNowDate();
+      var ci = ymdOf(new Date(base.getFullYear(), base.getMonth(), base.getDate() + 14));
+      return { checkIn: ci, checkOut: addDaysToYmd(ci, 1), isDefault: true };
+    }
+
+    function visitDateText(dates) {
+      return prettyDate(dates.checkIn) + ' ~ ' + prettyDate(dates.checkOut) + ' (1\uBC15)' +
+        (dates.isDefault ? ' · 날짜 미정 → 2주 뒤 기본값' : '');
+    }
+
+    // 인원: 선택값 그대로 쓰고, 0명이면 링크는 1인 기준으로 만든다
+    function visitPax() {
+      var a = numAdult, s = numSchool, p = numPreschool;
+      var zero = (a + s + p) === 0;
+      if (zero) a = 1;
+      var ages = [];
+      for (var i = 0; i < s; i++) ages.push(9);
+      for (var j = 0; j < p; j++) ages.push(5);
+      return { adult: a, school: s, preschool: p, child: s + p, childAges: ages.join(','), zeroSelected: zero };
+    }
+
+    function visitPaxText() {
+      if ((numAdult + numSchool + numPreschool) === 0) return '인원 미선택 (1인 기준)';
+      return '성인 ' + numAdult + ' · 취학(만 9세) ' + numSchool + ' · 미취학(만 5세) ' + numPreschool;
+    }
+
+    var DOMESTIC_PLACE_HINTS = ['가평', '포천', '제주', '서울', '부산', '강원', '속초', '평창', '대관령', '용인', '수원',
+      '화성', '동탄', '오산', '과천', '홍천', '안성', '여수', '경주', '전주', '인천', '춘천', '태안', '제천',
+      '단양', '군산', '통영', '거제', '남해', '양양', '고성', '보성', '담양', '푸른바다'];
+    function looksDomesticPlace(q) {
+      var s = (q || '').toString();
+      for (var i = 0; i < DOMESTIC_PLACE_HINTS.length; i++) {
+        if (s.indexOf(DOMESTIC_PLACE_HINTS[i]) !== -1) return true;
+      }
+      return false;
+    }
+
+    function currentPlaceValue() {
+      var el = document.getElementById('tPlace');
+      return el ? (el.value || '').trim() : '';
+    }
+
+    function lowestPriceConditions(query) {
       var q = (query || '').trim();
+      var dates = resolveVisitDates();
+      var pax = visitPax();
+      return {
+        query: q,
+        checkIn: dates.checkIn,
+        checkOut: dates.checkOut,
+        dateText: visitDateText(dates),
+        isDefaultDate: dates.isDefault,
+        adult: pax.adult,
+        child: pax.child,
+        childAges: pax.childAges,
+        school: pax.school,
+        preschool: pax.preschool,
+        paxText: visitPaxText()
+      };
+    }
+
+    // TRAVEL · KIDS RESERVATION PLATFORM DEEP LINKS (장소·날짜·인원·정렬 조건 반영)
+    function buildDirectLinks(query) {
+      var c = lowestPriceConditions(query);
+      var q = c.query;
       var qEnc = encodeURIComponent(q);
       if (!q) {
         return [
-          { name: '💬 카카오톡 예약하기', url: 'https://store.kakao.com/', color: '#fee500', textDark: true },
-          { name: '🗺️ 네이버 플레이스/예약', url: 'https://map.naver.com/', color: '#22c55e' },
-          { name: '🏨 야놀자 레저/티켓', url: 'https://www.yanolja.com/', color: '#ef4444' },
-          { name: '🌴 여기어때 숙소·펜션', url: 'https://www.yeogi.com/', color: '#f43f5e' },
-          { name: '🎫 NOL 티켓', url: 'https://nol.yanolja.com/ticket', color: '#a855f7' },
-          { name: '📷 인스타 방문후기/할인', url: 'https://www.instagram.com/explore/', color: '#ec4899' }
+          { name: '💬 카카오톡 예약하기', url: 'https://store.kakao.com/', color: '#fee500', textDark: true, carry: '채널 홈' },
+          { name: '🗺️ 마이리얼트립', url: 'https://www.myrealtrip.com/main/unionstay?stayType=overseas', color: '#2b96ed', carry: '채널 홈' },
+          { name: '🔎 구글 호텔 최저가', url: 'https://www.google.com/travel/search?hl=ko&gl=kr&curr=KRW', color: '#4285f4', carry: '채널 홈' },
+          { name: '🏨 야놀자 레저/티켓', url: 'https://www.yanolja.com/', color: '#ef4444', carry: '채널 홈' },
+          { name: '🌴 여기어때 숙소·펜션', url: 'https://www.yeogi.com/', color: '#f43f5e', carry: '채널 홈' },
+          { name: '🎫 NOL 티켓', url: 'https://nol.yanolja.com/ticket', color: '#a855f7', carry: '채널 홈' },
+          { name: '🗺️ 네이버 플레이스/예약', url: 'https://map.naver.com/', color: '#22c55e', carry: '채널 홈' }
         ];
       }
+      var stayType = looksDomesticPlace(q) ? 'domestic' : 'overseas';
       return [
-        { name: '💬 카카오톡 예약하기', url: 'https://store.kakao.com/search/result/product?q=' + qEnc, color: '#fee500', textDark: true },
-        { name: '🗺️ 네이버 플레이스/예약', url: 'https://map.naver.com/p/search/' + qEnc, color: '#22c55e' },
-        { name: '🏨 야놀자 레저/티켓', url: 'https://www.yanolja.com/search/' + qEnc, color: '#ef4444' },
-        { name: '🌴 여기어때 숙소·펜션', url: 'https://www.yeogi.com/domestic-accommodations?keyword=' + qEnc, color: '#f43f5e' },
-        { name: '🎫 NOL 티켓', url: 'https://nol.yanolja.com/ticket?query=' + qEnc, color: '#a855f7' },
-        { name: '📷 인스타 방문후기/할인', url: 'https://www.instagram.com/explore/tags/' + encodeURIComponent(q.replace(/\s+/g, '')) + '/', color: '#ec4899' }
+        {
+          name: '🗺️ 마이리얼트립',
+          url: 'https://www.myrealtrip.com/main/unionstay?stayType=' + stayType + '&keyword=' + qEnc +
+            '&checkIn=' + c.checkIn + '&checkOut=' + c.checkOut + '&adultCount=' + c.adult +
+            '&childCount=' + c.child + '&childAges=' + c.childAges + '&sort=price_asc',
+          color: '#2b96ed', carry: '날짜·인원 반영'
+        },
+        {
+          name: '🌴 여기어때 숙소·펜션',
+          url: 'https://www.yeogi.com/domestic-accommodations?keyword=' + qEnc + '&checkIn=' + c.checkIn +
+            '&checkOut=' + c.checkOut + '&adult=' + c.adult + '&child=' + c.child + '&sort=price_asc',
+          color: '#f43f5e', carry: '날짜·인원 반영'
+        },
+        {
+          name: '🏨 야놀자 레저/티켓',
+          url: 'https://www.yanolja.com/search/' + qEnc + '?checkIn=' + c.checkIn + '&checkOut=' + c.checkOut +
+            '&adult=' + c.adult + '&child=' + c.child + '&sort=price_asc',
+          color: '#ef4444', carry: '키워드 반영'
+        },
+        {
+          name: '🔎 구글 호텔 최저가',
+          url: 'https://www.google.com/travel/search?q=' + encodeURIComponent(q + ' 호텔') +
+            '&checkin=' + c.checkIn + '&checkout=' + c.checkOut + '&hl=ko&gl=kr&curr=KRW',
+          color: '#4285f4', carry: '키워드 반영'
+        },
+        {
+          name: '🎫 NOL 티켓',
+          url: 'https://nol.yanolja.com/ticket?query=' + qEnc,
+          color: '#a855f7', carry: '키워드 반영'
+        },
+        {
+          name: '🗺️ 네이버 플레이스·예약',
+          url: 'https://map.naver.com/p/search/' + qEnc,
+          color: '#22c55e', carry: '키워드 반영'
+        },
+        {
+          name: '💬 카카오톡 예약하기',
+          url: 'https://store.kakao.com/search/result/product?q=' + qEnc,
+          color: '#fee500', textDark: true, carry: '키워드 반영'
+        }
       ];
     }
 
@@ -1534,9 +1666,113 @@
       grid.innerHTML = links.map(function(l) {
         var style = 'border-color: ' + l.color + ';';
         if (l.textDark) style += ' color: #1e293b; background: #fee500; font-weight: 800;';
-        return '<a href="' + l.url + '" target="_blank" class="dl-btn" style="' + style + '">' + l.name + ' ➔</a>';
+        return '<a href="' + l.url + '" target="_blank" rel="noopener" class="dl-btn" style="' + style + '">' + l.name + ' ➔</a>';
       }).join('');
+
+      var cond = document.getElementById('directLinksConditions');
+      if (!cond) return;
+      var c = lowestPriceConditions(currentPlaceValue());
+      if (!c.query) {
+        cond.innerHTML = '위 1번 칸에 장소·체험명을 입력하면 7개 채널 링크에 <strong style="color:#e2e8f0;">장소 + 방문 날짜(' +
+          prettyDate(c.checkIn) + ' 기준) + 성인/취학/미취학 인원 + 가격 낮은순 정렬</strong> 조건이 자동으로 실려 생성됩니다.';
+        return;
+      }
+      cond.innerHTML = '적용 조건 → <strong style="color:#e2e8f0;">' + c.query + '</strong> · ' + c.dateText + ' · ' +
+        c.paxText + ' · 정렬: 가격 낮은순<br>' +
+        '<span style="font-size: 10px; color: #64748b;">※ 날짜·인원 파라미터는 마이리얼트립·여기어때에서 자동 반영을 실측 확인했습니다. ' +
+        '정렬 파라미터를 지원하지 않는 채널은 열린 화면에서 "가격 낮은순"을 한 번 눌러 주세요.</span>';
     }
+
+    // ===== 실시간 최저가 비교 카드 (가격 숫자는 넣지 않는다: 실시간 확인 전 금액은 판단을 흐린다) =====
+    function condChip(label, value, color) {
+      return '<span style="font-size: 10.5px; font-weight: 700; color: ' + color +
+        '; background: rgba(255,255,255,0.06); border: 1px solid ' + color +
+        '55; border-radius: 999px; padding: 3px 9px;">' + label + ' ' + value + '</span>';
+    }
+
+    function comparisonModeHtml(place, h, links) {
+      var c = lowestPriceConditions(place);
+      var total = travelDeals.length + kidsDeals.length;
+      var channelList = links && links.length ? links : buildDirectLinks(place);
+      var rows = channelList.map(function(l, i) {
+        var isReflected = l.carry === '날짜·인원 반영';
+        var carryColor = isReflected ? '#4ade80' : '#94a3b8';
+        return '<div style="display: flex; align-items: center; gap: 8px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px 10px; margin-bottom: 6px;">' +
+          '<span style="font-size: 11px; font-weight: 800; color: #64748b; min-width: 12px;">' + (i + 1) + '</span>' +
+          '<div style="flex: 1; min-width: 0;">' +
+            '<div style="font-size: 12px; font-weight: 800; color: #e2e8f0;">' + l.name + '</div>' +
+            '<div style="font-size: 10px; color: ' + carryColor + '; margin-top: 2px;">' + l.carry +
+              (isReflected ? ' ✓' : '') + ' · 정렬: 가격 낮은순</div>' +
+          '</div>' +
+          '<a href="' + l.url + '" target="_blank" rel="noopener" style="background: ' + l.color + '; color: ' +
+            (l.textDark ? '#1e293b' : '#ffffff') +
+            '; font-size: 11px; font-weight: 900; padding: 7px 10px; border-radius: 6px; text-decoration: none; white-space: nowrap;">열기 ➔</a>' +
+          '</div>';
+      }).join('');
+
+      return '<div style="background: linear-gradient(160deg, rgba(245,158,11,0.16) 0%, rgba(15,23,42,0.92) 60%); border: 1px solid #f59e0b; border-radius: 12px; padding: 14px; margin-bottom: 12px;">' +
+        '<div style="font-size: 13.5px; font-weight: 900; color: #fbbf24; line-height: 1.5;">⚡ 등록된 단독 특가가 없어 \'실시간 최저가 비교 모드\'로 전환되었습니다</div>' +
+        '<div style="font-size: 11.5px; color: #cbd5e1; line-height: 1.65; margin-top: 6px;">\'' + place + '\'는 특가 레이더 등록 상품(' +
+          total + '건: 여행 ' + travelDeals.length + ' · 키즈 ' + kidsDeals.length +
+          ')에 아직 없습니다. 아래 ' + channelList.length + '개 공식 채널이 <strong style="color:#ffffff;">같은 조건(장소·날짜·인원)</strong>으로 바로 열리니 실시간 최저가를 비교해 보세요.</div>' +
+        '<div style="display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 12px 0;">' +
+          condChip('📍 장소', c.query, '#38bdf8') +
+          condChip('🗓️ 날짜', prettyDate(c.checkIn) + '~' + prettyDate(c.checkOut) + ' (1박)', '#fbbf24') +
+          condChip('👨‍👩‍👧‍👦 인원', c.paxText, '#a855f7') +
+          condChip('💸 정렬', '가격 낮은순', '#4ade80') +
+        '</div>' +
+        rows +
+        '<button type="button" onclick="copyLowestPriceRequest(this)" style="width: 100%; margin-top: 4px; background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%); color: #ffffff; border: none; border-radius: 8px; padding: 11px 12px; font-size: 12px; font-weight: 900; cursor: pointer;">📋 이 조건으로 연오랑에게 최저가 실측 요청 복사</button>' +
+        '<div id="lowestPriceCopyHint" style="font-size: 10.5px; color: #94a3b8; line-height: 1.6; margin-top: 7px;">복사될 문구 → <strong style="color:#e2e8f0;">[특가레이더 최저가 실측 요청] 장소: ' +
+          place + ' / 날짜: ' + c.checkIn + ' / 인원: 성인 ' + c.adult + ', 취학 ' + c.school + ', 미취학 ' + c.preschool +
+          '</strong> · 대화창에 붙여넣으면 제가 채널별 실제 최저가를 확인해 드립니다.</div>' +
+        '<div style="font-size: 10px; color: #64748b; line-height: 1.6; margin-top: 8px; border-top: 1px dashed #334155; padding-top: 8px;">※ 이 카드에 가격 숫자를 넣지 않은 이유: 실제 결제가는 각 사이트의 실시간 화면에서만 확정되므로, 확인하지 않은 금액을 적으면 오히려 선택을 흐립니다. 실측이 필요하면 아래 복사 버튼을 눌러 주세요.</div>' +
+        '</div>';
+    }
+
+    function copyLowestPriceRequest(btn) {
+      var place = currentPlaceValue();
+      var c = lowestPriceConditions(place);
+      var text = '[특가레이더 최저가 실측 요청] 장소: ' + (place || '미입력') + ' / 날짜: ' + c.checkIn +
+        ' / 인원: 성인 ' + c.adult + ', 취학 ' + c.school + ', 미취학 ' + c.preschool;
+      var hint = document.getElementById('lowestPriceCopyHint');
+      var done = function(ok) {
+        if (btn) {
+          btn.textContent = ok ? '✅ 복사 완료 — 대화창에 붙여넣어 주세요' : '⚠️ 자동 복사 차단 — 아래 문구를 길게 눌러 복사해 주세요';
+          btn.style.background = ok ? 'linear-gradient(135deg, #15803d 0%, #22c55e 100%)' : 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)';
+          setTimeout(function() {
+            btn.textContent = '📋 이 조건으로 연오랑에게 최저가 실측 요청 복사';
+            btn.style.background = 'linear-gradient(135deg, #7c3aed 0%, #9333ea 100%)';
+          }, 4000);
+        }
+        if (hint) hint.innerHTML = '복사된 문구 → <strong style="color:#e2e8f0;">' + text + '</strong>';
+      };
+      var fallback = function() {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.top = '-1000px';
+          ta.style.left = '-1000px';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          ta.setSelectionRange(0, text.length);
+          var ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          done(!!ok);
+        } catch (e) {
+          done(false);
+        }
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() { done(true); }, fallback);
+      } else {
+        fallback();
+      }
+    }
+    window.copyLowestPriceRequest = copyLowestPriceRequest;
 
     // ===== 결과 카드 =====
     function searchCardHtml(item, h, kind) {
@@ -1743,26 +1979,26 @@
       `;
     }
 
+    function relatedUpcomingHtml(place, limit) {
+      var tokens = searchTokens(place);
+      if (!tokens.length) return '';
+      var up = upcomingEvents.filter(function(u) {
+        var text = (u.title + ' ' + u.category + ' ' + u.source + ' ' + u.desc + ' ' + u.tag).toLowerCase();
+        return tokens.some(function(t) { return text.indexOf(t.toLowerCase()) !== -1; });
+      }).slice(0, limit || 3);
+      if (!up.length) return '';
+      var html = '<div class="res-section-title" style="margin-top: 10px;"><span>📅 \'' + place + '\' 관련 다가오는 특가·예약 일정</span></div>';
+      return html + up.map(upcomingCardHtml).join('');
+    }
+
+    // 1순위: 등록 단독 특가가 있으면 특가 카드를 최상단에 먼저 보여준다
     function matchedSectionHtml(hits, place, h) {
       var total = hits.travel.length + hits.kids.length;
-      if (total === 0) {
-        var tokens = searchTokens(place);
-        var up = upcomingEvents.filter(function(u) {
-          var text = (u.title + ' ' + u.category + ' ' + u.source + ' ' + u.desc + ' ' + u.tag).toLowerCase();
-          return tokens.some(function(t) { return text.indexOf(t.toLowerCase()) !== -1; });
-        }).slice(0, 3);
-        var html = '<div style="background: #1e293b; border: 1px solid #475569; border-radius: 12px; padding: 14px; margin-bottom: 12px;">'
-          + '<div style="font-size: 13.5px; font-weight: 800; color: #fbbf24; margin-bottom: 6px;">🔎 \'' + place + '\'로 등록된 특가 상품은 아직 없습니다</div>'
-          + '<div style="font-size: 11.5px; color: #cbd5e1; line-height: 1.65;">이 검색기는 특가 레이더에 등록된 상품(여행 ' + travelDeals.length + '건 · 키즈 ' + kidsDeals.length + '건)을 먼저 찾아드립니다. '
-          + '등록 상품에 없는 곳은 위 <strong>⚡ 6대 공식 채널 직통 딥링크</strong>에서 실시간 최저가를 확인하시거나, 대화창에 <strong>"연오랑, ' + place + ' ' + (h.isZero ? '1인' : h.total + '인') + ' 가족 최저가 찾아줘"</strong>라고 말씀해 주세요.</div>'
-          + '</div>';
-        if (up.length) {
-          html += '<div class="res-section-title" style="margin-top: 10px;"><span>📅 \'' + place + '\' 관련 다가오는 특가·예약 일정</span></div>';
-          html += up.map(upcomingCardHtml).join('');
-        }
-        return html;
-      }
-      var html2 = '<div class="res-section-title" style="margin-top: 6px;"><span>📌 \'' + place + '\' 등록 특가 ' + total + '건 (여행 ' + hits.travel.length + ' · 키즈 ' + hits.kids.length + ')</span></div>';
+      if (total === 0) return '';
+      var html2 = '<div class="res-section-title" style="margin-top: 6px;"><span>🥇 1순위 · \'' + place + '\' 등록 단독 특가 ' +
+        total + '건 (여행 ' + hits.travel.length + ' · 키즈 ' + hits.kids.length + ')</span></div>';
+      html2 += '<div style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.45); border-radius: 8px; padding: 9px 11px; margin-bottom: 12px; font-size: 11.5px; color: #86efac; font-weight: 700; line-height: 1.6;">' +
+        '✅ 등록된 단독 특가가 확인되어 <strong>공식 특가 카드를 1순위</strong>로 먼저 보여드립니다. 이 경우에는 실시간 최저가 비교 모드로 전환하지 않습니다.</div>';
       html2 += '<div class="deals-grid" style="margin-bottom: 16px;">';
       hits.travel.forEach(function(x) { html2 += searchCardHtml(x.item, h, 'travel'); });
       hits.kids.forEach(function(x) { html2 += searchCardHtml(x.item, h, 'kids'); });
@@ -1791,6 +2027,7 @@
       }
 
       var hits = searchHits(place);
+      var hitTotal = hits.travel.length + hits.kids.length;
       var isZoorung = place.indexOf('주렁') !== -1 || hits.kids.some(function(x) { return x.item.id === 'kd_zoolung'; });
 
       var html = '<div class="res-section-title"><span>🏆 \'' + place + '\' 검색 결과 — ' + headLabel(h) + ' · ' + dateText + '</span></div>';
@@ -1802,7 +2039,14 @@
       if (isZoorung) {
         html += zoorungDetailHtml(place, dateText, h);
       }
-      html += matchedSectionHtml(hits, place, h);
+      if (hitTotal > 0) {
+        // 1순위: 등록 단독 특가 카드
+        html += matchedSectionHtml(hits, place, h);
+      } else {
+        // 2순위: 등록 특가 미발견 → 실시간 최저가 비교 모드 자동 전환
+        html += comparisonModeHtml(place, h, buildDirectLinks(place));
+        html += relatedUpcomingHtml(place);
+      }
       resSec.innerHTML = html;
     }
     window.executeTravelSearch = executeTravelSearch;
