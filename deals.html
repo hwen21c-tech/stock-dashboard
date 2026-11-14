@@ -948,7 +948,7 @@
       </a>
       <div id="dealsSyncWrap" style="display: flex; align-items: center; gap: 8px;">
         <span id="dealsSyncBadge" style="font-size: 10.5px; font-weight: 800; color: #4ade80; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); padding: 4px 8px; border-radius: 4px;">⚡ 하루 3회 정기 자동 갱신 (다음: 내일 08:00)</span>
-        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 10:07 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
+        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 10:09 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
       </div>
       <div class="calc-controls">
         <div class="counter-group">
@@ -1286,6 +1286,10 @@
         searchHeadPreschool = Math.max(0, searchHeadPreschool + delta);
       }
       updateHeadDisplay();
+      // 인원을 바꾸면 검색 결과의 가족 총액도 즉시 다시 계산
+      if (currentCat === 'search') {
+        executeTravelSearch();
+      }
     }
 
     function updateHeadDisplay() {
