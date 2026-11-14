@@ -948,28 +948,28 @@
       </a>
       <div id="dealsSyncWrap" style="display: flex; align-items: center; gap: 8px;">
         <span id="dealsSyncBadge" style="font-size: 10.5px; font-weight: 800; color: #4ade80; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); padding: 4px 8px; border-radius: 4px;">⚡ 하루 3회 정기 자동 갱신 (다음: 내일 08:00)</span>
-        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 10:13 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
+        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 10:31 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
       </div>
       <div class="calc-controls">
         <div class="counter-group">
           <span class="counter-label">성인 (Adult)</span>
           <button class="btn-cnt" onclick="changeCount('adult', -1)">-</button>
-          <span class="cnt-val" id="cntAdult">2</span>
+          <span class="cnt-val" id="hdrCntAdult">0</span>
           <button class="btn-cnt" onclick="changeCount('adult', 1)">+</button>
         </div>
         <div class="counter-group">
           <span class="counter-label">취학/초등 (아린)</span>
           <button class="btn-cnt" onclick="changeCount('school', -1)">-</button>
-          <span class="cnt-val" id="cntSchool">1</span>
+          <span class="cnt-val" id="hdrCntSchool">0</span>
           <button class="btn-cnt" onclick="changeCount('school', 1)">+</button>
         </div>
         <div class="counter-group">
           <span class="counter-label">미취학/킨더 (둘째)</span>
           <button class="btn-cnt" onclick="changeCount('preschool', -1)">-</button>
-          <span class="cnt-val" id="cntPreschool">1</span>
+          <span class="cnt-val" id="hdrCntPreschool">0</span>
           <button class="btn-cnt" onclick="changeCount('preschool', 1)">+</button>
         </div>
-        <button class="btn-nav" style="padding: 6px 10px;" onclick="resetFamilyCounts()">🔄 4인 기본값</button>
+        <button class="btn-nav" style="padding: 6px 10px;" onclick="resetFamilyCounts()">🔄 초기화 (0명)</button>
       </div>
     </div>
   </header>
@@ -1067,7 +1067,7 @@
       <div class="s-row-3">
         <div class="s-input-group">
           <label class="s-label">1. 장소 / 목적지 / 체험명 <span class="s-req">(필수)</span></label>
-          <input type="text" id="tPlace" class="s-input" placeholder="예: 오키나와, 주렁주렁, 갯벌체험, 가평 풀빌라" value="주렁주렁 동탄 라크몽점">
+          <input type="text" id="tPlace" class="s-input" placeholder="예: 제주, 괌, 푸꾸옥, 나트랑, 주렁주렁, 에버랜드, 국립중앙박물관" value="">
         </div>
         <div class="s-input-group">
           <label class="s-label">2. 방문 날짜 <span style="font-size: 9.5px; color: #94a3b8;">(미정 가능)</span></label>
@@ -1079,13 +1079,13 @@
           </div>
         </div>
         <div class="s-input-group">
-          <label class="s-label">3. 가족 인원 선택 <span style="font-size: 9.5px; color: #38bdf8;">(총 <span id="tTotalHeadcount">4</span>인)</span></label>
+          <label class="s-label">3. 가족 인원 선택 <span style="font-size: 9.5px; color: #38bdf8;">(총 <span id="tTotalHeadcount">0</span>인)</span></label>
           <div style="display: flex; gap: 4px; align-items: center;">
             <div style="flex: 1; background: #0f172a; padding: 4px 6px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
               <div style="font-size: 9.5px; color: #94a3b8;">성인</div>
               <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
                 <button type="button" onclick="adjustHead('adult', -1)" style="background:#1e293b; color:#fff; border:none; width:18px; height:18px; border-radius:3px;">-</button>
-                <span id="cntAdult" style="font-weight: 800; font-size: 12px; color:#38bdf8;">2</span>
+                <span id="cntAdult" style="font-weight: 800; font-size: 12px; color:#38bdf8;">0</span>
                 <button type="button" onclick="adjustHead('adult', 1)" style="background:#1e293b; color:#fff; border:none; width:18px; height:18px; border-radius:3px;">+</button>
               </div>
             </div>
@@ -1093,7 +1093,7 @@
               <div style="font-size: 9.5px; color: #94a3b8;">취학(초등)</div>
               <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
                 <button type="button" onclick="adjustHead('school', -1)" style="background:#1e293b; color:#fff; border:none; width:18px; height:18px; border-radius:3px;">-</button>
-                <span id="cntSchool" style="font-weight: 800; font-size: 12px; color:#a855f7;">1</span>
+                <span id="cntSchool" style="font-weight: 800; font-size: 12px; color:#a855f7;">0</span>
                 <button type="button" onclick="adjustHead('school', 1)" style="background:#1e293b; color:#fff; border:none; width:18px; height:18px; border-radius:3px;">+</button>
               </div>
             </div>
@@ -1101,7 +1101,7 @@
               <div style="font-size: 9.5px; color: #94a3b8;">미취학(킨더)</div>
               <div style="display: flex; justify-content: center; align-items: center; gap: 4px;">
                 <button type="button" onclick="adjustHead('preschool', -1)" style="background:#1e293b; color:#fff; border:none; width:18px; height:18px; border-radius:3px;">-</button>
-                <span id="cntPreschool" style="font-weight: 800; font-size: 12px; color:#4ade80;">1</span>
+                <span id="cntPreschool" style="font-weight: 800; font-size: 12px; color:#4ade80;">0</span>
                 <button type="button" onclick="adjustHead('preschool', 1)" style="background:#1e293b; color:#fff; border:none; width:18px; height:18px; border-radius:3px;">+</button>
               </div>
             </div>
@@ -1111,9 +1111,9 @@
       <div class="quick-chips-wrap">
         <span class="q-label">💡 원클릭 빠른 입력:</span>
         <button type="button" class="q-chip" onclick="fillTravelSample('주렁주렁 동탄 라크몽점', '2026-11-21', 2, 1, 1)">🦝 주렁주렁 동탄 (4인)</button>
-        <button type="button" class="q-chip" onclick="fillTravelSample('오키나와 3박4일 가족여행', '', 2, 1, 1)">🏝️ 오키나와 3박4일 (4인)</button>
-        <button type="button" class="q-chip" onclick="fillTravelSample('대부도 갯벌체험 펜션', '2026-11-28', 2, 1, 1)">🦀 대부도 갯벌체험 (4인)</button>
-        <button type="button" class="q-chip" onclick="fillTravelSample('오산 버드파크', '2026-11-22', 2, 1, 1)">🦜 오산 버드파크 (4인)</button>
+        <button type="button" class="q-chip" onclick="fillTravelSample('제주 감귤체험', '', 2, 1, 1)">🍊 제주 감귤체험 (4인)</button>
+        <button type="button" class="q-chip" onclick="fillTravelSample('나트랑 풀빌라', '', 2, 1, 1)">🇻🇳 나트랑 풀빌라 (4인)</button>
+        <button type="button" class="q-chip" onclick="fillTravelSample('에버랜드', '2026-11-22', 2, 1, 1)">🎢 에버랜드 (4인)</button>
       </div>
       <button type="button" class="btn-exec-search" onclick="executeTravelSearch()" style="background: linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #c084fc 100%);">
         🚀 여행 · 체험 가족 최저가 레이더 가동 (인원수 총액 & 후기 분석)
@@ -1184,50 +1184,99 @@
     var currentKidsSub = 'all';
     var currentSearch = '';
 
-    // Family Headcounts
-    var numAdult = 2;
-    var numSchool = 1;
-    var numPreschool = 1;
+    // 가족 인원 — 최초 진입 시 전부 0명 (사용자가 + 버튼으로 직접 선택)
+    var numAdult = 0;
+    var numSchool = 0;
+    var numPreschool = 0;
 
-    // CORE FUNCTIONS DEFINED FIRST FOR INSTANT AVAILABILITY
-    function changeCount(type, delta) {
-      if (type === 'adult') numAdult = Math.max(1, numAdult + delta);
-      if (type === 'school') numSchool = Math.max(0, numSchool + delta);
-      if (type === 'preschool') numPreschool = Math.max(0, numPreschool + delta);
+    function headCount(type) {
+      if (type === 'adult') return numAdult;
+      if (type === 'school') return numSchool;
+      return numPreschool;
+    }
 
-      updateCalcUI();
+    function setHead(type, value) {
+      var v = Math.max(0, Math.min(9, value));
+      if (type === 'adult') numAdult = v;
+      else if (type === 'school') numSchool = v;
+      else if (type === 'preschool') numPreschool = v;
+    }
+
+    function totalHeadcount() {
+      return numAdult + numSchool + numPreschool;
+    }
+
+    // 인원 미선택(0명)이면 1인 기준으로 계산하고 화면에 안내 배너를 띄운다
+    function calcHeads() {
+      if (totalHeadcount() === 0) {
+        return { adult: 1, school: 0, preschool: 0, total: 1, isZero: true };
+      }
+      return { adult: numAdult, school: numSchool, preschool: numPreschool, total: totalHeadcount(), isZero: false };
+    }
+
+    function headLabel(h) {
+      return h.isZero ? '1인 기준 (인원 미선택)' : '우리 가족 ' + h.total + '인';
+    }
+
+    function bumpHead(type, delta) {
+      setHead(type, headCount(type) + delta);
+      refreshHeadUI();
+    }
+
+    function refreshHeadUI() {
+      updateHeadDisplay();
       if (currentCat === 'upcoming') {
         renderUpcoming();
+      } else if (currentCat === 'search') {
+        executeTravelSearch();
       } else {
         renderDeals();
       }
+    }
+
+    function changeCount(type, delta) {
+      bumpHead(type, delta);
     }
     window.changeCount = changeCount;
 
+    function adjustHead(type, delta) {
+      bumpHead(type, delta);
+    }
+    window.adjustHead = adjustHead;
+
     function resetFamilyCounts() {
-      numAdult = 2;
-      numSchool = 1;
-      numPreschool = 1;
-      updateCalcUI();
-      if (currentCat === 'upcoming') {
-        renderUpcoming();
-      } else {
-        renderDeals();
-      }
+      numAdult = 0;
+      numSchool = 0;
+      numPreschool = 0;
+      refreshHeadUI();
     }
     window.resetFamilyCounts = resetFamilyCounts;
 
-    function updateCalcUI() {
-      var eA = document.getElementById('cntAdult');
-      var eS = document.getElementById('cntSchool');
-      var eP = document.getElementById('cntPreschool');
-      if (eA) eA.innerText = numAdult;
-      if (eS) eS.innerText = numSchool;
-      if (eP) eP.innerText = numPreschool;
-
-      var total = numAdult + numSchool + numPreschool;
+    function updateHeadDisplay() {
+      var map = [
+        ['cntAdult', 'hdrCntAdult', numAdult],
+        ['cntSchool', 'hdrCntSchool', numSchool],
+        ['cntPreschool', 'hdrCntPreschool', numPreschool]
+      ];
+      for (var i = 0; i < map.length; i++) {
+        var formEl = document.getElementById(map[i][0]);
+        var hdrEl = document.getElementById(map[i][1]);
+        if (formEl) formEl.textContent = map[i][2];
+        if (hdrEl) hdrEl.textContent = map[i][2];
+      }
+      var ct = document.getElementById('tTotalHeadcount');
+      if (ct) ct.textContent = totalHeadcount();
       var eSum = document.getElementById('calcSummary');
-      if (eSum) eSum.innerText = '총 ' + total + '명 (성인 ' + numAdult + ', 초등 ' + numSchool + ', 킨더 ' + numPreschool + ') 기준 자동 계산 중 🎯';
+      if (eSum) {
+        eSum.innerText = totalHeadcount() === 0
+          ? '인원 미선택 (0명) — + 로 성인/취학/미취학 인원을 직접 선택해 주세요'
+          : '총 ' + totalHeadcount() + '명 (성인 ' + numAdult + ', 초등 ' + numSchool + ', 킨더 ' + numPreschool + ') 기준 자동 계산 중 🎯';
+      }
+    }
+    window.updateHeadDisplay = updateHeadDisplay;
+
+    function updateCalcUI() {
+      updateHeadDisplay();
     }
     window.updateCalcUI = updateCalcUI;
 
@@ -1243,23 +1292,181 @@
     }
     window.formatWon = formatWon;
 
-        
-    // RADAR CUSTOM SEARCH ENGINE
-    var searchHeadAdult = 2;
-    var searchHeadSchool = 1;
-    var searchHeadPreschool = 1;
+    function parsePercent(str) {
+      var m = (str || '').toString().match(/(\d{1,3})\s*%/);
+      return m ? Math.min(95, parseInt(m[1], 10)) : 0;
+    }
+
+    function parseKoreanWon(str) {
+      var s = (str || '').toString().replace(/\s/g, '');
+      var m = s.match(/([\d,]+(?:\.\d+)?)만원/);
+      if (m) return Math.round(parseFloat(m[1].replace(/,/g, '')) * 10000);
+      m = s.match(/([\d,]+)원/);
+      if (m) return parseInt(m[1].replace(/,/g, ''), 10) || 0;
+      return 0;
+    }
+
+    // '... 대비 약 51만 원 세이브' → 510000 / '약 36,400원 세이브' → 36400
+    function parseSavedText(str) {
+      var s = (str || '').toString();
+      var parts = s.split('약');
+      if (parts.length > 1) {
+        s = parts[parts.length - 1];
+      } else {
+        var p2 = s.split('대비');
+        if (p2.length > 1) s = p2[p2.length - 1];
+      }
+      return parseKoreanWon(s);
+    }
+
+    // ===== 인원 반영 예상 금액 계산 =====
+    // 여행 특가: 해외는 1인 특가 × (성인1 · 초등0.9 · 미취학0.75), 국내 숙소 패키지는 3인 기준 + 초과 인원 추가
+    function travelEstimate(d, h) {
+      var unit = parseNumericPrice(d.deal_price);
+      var normalUnit = parseNumericPrice(d.normal_price);
+      var pct = parsePercent(d.discount);
+      var heads = h.adult + h.school + h.preschool;
+      var weight = h.adult + (h.school * 0.9) + (h.preschool * 0.75);
+      var total = 0;
+      if (d.type === 'overseas') {
+        total = Math.round(unit * weight);
+      } else {
+        total = unit + Math.max(0, heads - 3) * Math.round(unit * 0.12);
+      }
+      if (total < 0) total = 0;
+      var saved = 0;
+      if (pct > 0) {
+        saved = Math.round(total * pct / (100 - pct));
+      } else if (normalUnit > unit) {
+        saved = Math.round((normalUnit - unit) * (d.type === 'overseas' ? weight : Math.max(1, heads / 4)));
+      }
+      return { total: total, saved: saved, unit: unit, pct: pct };
+    }
+
+    // 키즈카페·박물관·테마파크: 시설별 실제 요금 체계 반영
+    function kidsEstimate(k, h) {
+      var heads = h.adult + h.school + h.preschool;
+      var total = 0;
+      if (k.id === 'kd_zoolung') {
+        total = heads * 17900;
+      } else if (k.id === 'kd_klook_bird') {
+        total = heads * 11900;
+      } else if (k.id === 'kd_mrt_museum') {
+        total = (h.school + h.preschool) * 29000;
+      } else if (k.id === 'kd_kakao1') {
+        total = (h.adult * 5000) + ((h.school + h.preschool) * 17900);
+      } else if (k.id === 'kd_kakao2') {
+        total = Math.round(72000 * heads / 4);
+      } else if (k.id === 'kd7') {
+        total = (h.school + h.preschool) * 2000;
+      } else if (k.id === 'kd8') {
+        total = heads * 19900;
+      } else if (k.id === 'kd1') {
+        total = (h.adult * 4000) + (h.school * 2000);
+        if (heads >= 4) total = Math.round(total * 0.75);
+      } else if (k.id === 'kd2') {
+        total = heads * 2000;
+      } else if (k.id === 'kd3') {
+        total = 0;
+      } else if (k.id === 'kd4') {
+        total = ((h.school + h.preschool) * 20000) + (h.adult * 5000);
+      } else if (k.id === 'kd6') {
+        total = (h.adult * 28000) + ((h.school + h.preschool) * 34000);
+      }
+      var pct = parsePercent(k.price_info) || parsePercent(k.benefit_tag);
+      var saved = 0;
+      if (total > 0) {
+        if (pct > 0) {
+          saved = Math.round(total * pct / (100 - pct));
+        } else {
+          saved = Math.round(parseSavedText(k.family_saved) * heads / 4);
+        }
+      }
+      return { total: total, saved: saved, pct: pct };
+    }
+
+    // ===== 키워드 매칭 엔진 (여행·키즈 등록 상품 전체 대상) =====
+    function normalizeText(s) {
+      return (s || '').toString().toLowerCase().replace(/\s+/g, '');
+    }
+
+    function searchTokens(query) {
+      return (query || '').toString().toLowerCase()
+        .replace(/[^0-9a-z가-힣]+/g, ' ')
+        .split(' ')
+        .filter(function(t) { return t.length >= 1; });
+    }
+
+    function dealFieldList(item, kind) {
+      if (kind === 'travel') {
+        return [
+          item.title, item.region, item.flight_type, item.theme_label,
+          item.source, item.source_badge, item.season_reason, item.family_fit,
+          item.search_kw, item.price_level_text, (item.benefit_pills || []).join(' ')
+        ];
+      }
+      return [
+        item.title, item.location, item.cat_label, item.target_age,
+        item.source, item.source_badge, item.price_info, item.benefit_tag,
+        item.tips, item.highlights, item.search_kw
+      ];
+    }
+
+    function matchScore(query, item, kind) {
+      var nq = normalizeText(query);
+      if (!nq) return 0;
+      var fields = dealFieldList(item, kind).map(normalizeText);
+      var title = fields[0] || '';
+      var kw = normalizeText(item.search_kw || '');
+      var score = 0;
+      if (title.indexOf(nq) !== -1) score += 40;
+      if (kw && kw.indexOf(nq) !== -1) score += 30;
+      var tokens = searchTokens(query);
+      var hitCount = 0;
+      for (var t = 0; t < tokens.length; t++) {
+        var nt = normalizeText(tokens[t]);
+        if (!nt) continue;
+        var hit = false;
+        for (var i = 0; i < fields.length; i++) {
+          if (fields[i].indexOf(nt) !== -1) {
+            score += (i === 0 ? 12 : (i === 1 ? 6 : 2));
+            hit = true;
+          }
+        }
+        if (hit) hitCount++;
+      }
+      if (hitCount === 0) return 0;
+      return score;
+    }
+
+    function searchHits(query) {
+      var t = [];
+      var k = [];
+      travelDeals.forEach(function(d) {
+        var s = matchScore(query, d, 'travel');
+        if (s > 0) t.push({ item: d, score: s });
+      });
+      kidsDeals.forEach(function(d) {
+        var s = matchScore(query, d, 'kids');
+        if (s > 0) k.push({ item: d, score: s });
+      });
+      t.sort(function(a, b) { return b.score - a.score; });
+      k.sort(function(a, b) { return b.score - a.score; });
+      return { travel: t, kids: k };
+    }
 
     function fillTravelSample(place, date, a, s, p) {
       document.getElementById('tPlace').value = place;
       document.getElementById('tDate').value = date;
       var cb = document.getElementById('tUndecidedDate');
       if (cb) cb.checked = !date;
-      searchHeadAdult = a;
-      searchHeadSchool = s;
-      searchHeadPreschool = p;
+      numAdult = a;
+      numSchool = s;
+      numPreschool = p;
       updateHeadDisplay();
       executeTravelSearch();
     }
+    window.fillTravelSample = fillTravelSample;
 
     function toggleDateUndecided(cb) {
       var dInput = document.getElementById('tDate');
@@ -1275,44 +1482,31 @@
           if (dInput.dataset.prevVal) dInput.value = dInput.dataset.prevVal;
         }
       }
+      if (currentCat === 'search') executeTravelSearch();
     }
-
-    function adjustHead(type, delta) {
-      if (type === 'adult') {
-        searchHeadAdult = Math.max(1, searchHeadAdult + delta);
-      } else if (type === 'school') {
-        searchHeadSchool = Math.max(0, searchHeadSchool + delta);
-      } else if (type === 'preschool') {
-        searchHeadPreschool = Math.max(0, searchHeadPreschool + delta);
-      }
-      updateHeadDisplay();
-      // 인원을 바꾸면 검색 결과의 가족 총액도 즉시 다시 계산
-      if (currentCat === 'search') {
-        executeTravelSearch();
-      }
-    }
-
-    function updateHeadDisplay() {
-      var ca = document.getElementById('cntAdult');
-      var cs = document.getElementById('cntSchool');
-      var cp = document.getElementById('cntPreschool');
-      var ct = document.getElementById('tTotalHeadcount');
-      if (ca) ca.textContent = searchHeadAdult;
-      if (cs) cs.textContent = searchHeadSchool;
-      if (cp) cp.textContent = searchHeadPreschool;
-      if (ct) ct.textContent = searchHeadAdult + searchHeadSchool + searchHeadPreschool;
-    }
+    window.toggleDateUndecided = toggleDateUndecided;
 
     // TRAVEL · KIDS RESERVATION PLATFORM DEEP LINKS
     function buildDirectLinks(query) {
-      var qEnc = encodeURIComponent(query);
+      var q = (query || '').trim();
+      var qEnc = encodeURIComponent(q);
+      if (!q) {
+        return [
+          { name: '💬 카카오톡 예약하기', url: 'https://store.kakao.com/', color: '#fee500', textDark: true },
+          { name: '🗺️ 네이버 플레이스/예약', url: 'https://map.naver.com/', color: '#22c55e' },
+          { name: '🏨 야놀자 레저/티켓', url: 'https://www.yanolja.com/', color: '#ef4444' },
+          { name: '🌴 여기어때 숙소·펜션', url: 'https://www.yeogi.com/', color: '#f43f5e' },
+          { name: '🎫 NOL 티켓', url: 'https://nol.yanolja.com/ticket', color: '#a855f7' },
+          { name: '📷 인스타 방문후기/할인', url: 'https://www.instagram.com/explore/', color: '#ec4899' }
+        ];
+      }
       return [
         { name: '💬 카카오톡 예약하기', url: 'https://store.kakao.com/search/result/product?q=' + qEnc, color: '#fee500', textDark: true },
         { name: '🗺️ 네이버 플레이스/예약', url: 'https://map.naver.com/p/search/' + qEnc, color: '#22c55e' },
         { name: '🏨 야놀자 레저/티켓', url: 'https://www.yanolja.com/search/' + qEnc, color: '#ef4444' },
         { name: '🌴 여기어때 숙소·펜션', url: 'https://www.yeogi.com/domestic-accommodations?keyword=' + qEnc, color: '#f43f5e' },
         { name: '🎫 NOL 티켓', url: 'https://nol.yanolja.com/ticket?query=' + qEnc, color: '#a855f7' },
-        { name: '📷 인스타 방문후기/할인', url: 'https://www.instagram.com/explore/tags/' + encodeURIComponent(query.replace(/\s+/g, '')) + '/', color: '#ec4899' }
+        { name: '📷 인스타 방문후기/할인', url: 'https://www.instagram.com/explore/tags/' + encodeURIComponent(q.replace(/\s+/g, '')) + '/', color: '#ec4899' }
       ];
     }
 
@@ -1326,166 +1520,268 @@
       }).join('');
     }
 
-    function executeTravelSearch() {
-      var place = (document.getElementById('tPlace') ? document.getElementById('tPlace').value.trim() : '') || '주렁주렁 동탄 라크몽점';
-      var dateVal = document.getElementById('tDate') ? document.getElementById('tDate').value : '';
-      var isUndecided = document.getElementById('tUndecidedDate') ? document.getElementById('tUndecidedDate').checked : false;
-      var dateText = isUndecided || !dateVal ? '날짜 미정 (최저가 우선)' : dateVal;
-      var totalHead = searchHeadAdult + searchHeadSchool + searchHeadPreschool;
-
-      var links = buildDirectLinks(place);
-      renderDirectLinks(links);
-
-      var isZoorung = place.indexOf('주렁') !== -1;
-      var resultsHtml = '';
-      // 주렁주렁 Top5 금액은 4인 패밀리권 기준 → 인원이 다를 때 오해 방지 안내
-      var headNotice = (totalHead === 4) ? '' : (
-        '<div style="background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.3); border-radius: 8px; padding: 8px 10px; margin-bottom: 10px; font-size: 11px; color: #fbbf24; line-height: 1.55;">'
-        + '※ 아래 Top 5 금액은 <strong>4인 패밀리권 기준</strong>입니다. 현재 선택은 ' + totalHead + '인(성인' + searchHeadAdult + '·초등' + searchHeadSchool + '·킨더' + searchHeadPreschool + ')이니, 예약 화면에서 인원별 최종 금액을 확인해 주세요.'
-        + '</div>'
-      );
-
-      if (isZoorung) {
-        resultsHtml = `
-          <div class="res-section-title">
-            <span>🏆 '${place}' 우리 가족(${totalHead}인: 성인${searchHeadAdult}·초등${searchHeadSchool}·킨더${searchHeadPreschool}) 실체결 최저가 Top 5</span>
-          </div>
-
-          ${headNotice}
-
-          <!-- SUMMARY AI BRIEFING -->
-          <div style="background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.4); border-radius: 10px; padding: 12px; margin-bottom: 14px;">
-            <div style="font-size: 12.5px; font-weight: 800; color: #c084fc; margin-bottom: 4px;">👨‍👩‍👧‍👦 4인 가족 총액 기준 연오랑의 실전 추천:</div>
-            <div style="font-size: 11.5px; color: #e2e8f0; line-height: 1.6;">
-              현장 정가 구매 시 108,000원(성인 2.7만x2, 소인 2.7만x2)이지만, <strong>카카오톡 예약하기 패밀리 4인권(69,000원)을 이용하시면 39,000원(-36%)이 즉시 절약</strong>됩니다. 초등 아린이와 킨더 둘째 모두 18개월 이상이므로 개별 티켓보다 패밀리 4인권 통합 결제가 가장 이득입니다. (방문일: ${dateText})
-            </div>
-          </div>
-
-          <!-- TOP 1 -->
-          <div class="top5-card" style="border-color: #facc15;">
-            <div class="tc-header">
-              <span class="tc-rank" style="background: #eab308; color: #713f12; border: 1px solid #facc15;">🥇 1위 공식 특가 추천</span>
-              <div class="tc-title">카카오톡 예약하기 · 주렁주렁 동탄 라크몽점 패밀리 4인 통합권 (주말/평일 공통)</div>
-            </div>
-            <div class="tc-price-row">
-              <span class="tc-cur-price" style="color: #fef08a;">4인 총액 69,000원</span>
-              <span class="tc-orig-price">108,000원</span>
-              <span class="tc-saved-badge" style="background: rgba(234,179,8,0.2); color: #fef08a; border-color: #eab308;">-36% 할인 (39,000원 이득! 💰)</span>
-            </div>
-            <div class="tc-pros-cons">
-              <div class="tc-pros"><strong>🟢 장점:</strong> 주말/평일 추가금 없음, 라크몽 지하주차장 3시간 무료 등록, 모바일 바코드 즉시 입장.</div>
-              <div class="tc-cons"><strong>🔴 단점:</strong> 구매 후 최소 1시간 이후 바코드 활성화 (현장 도착 직전 결제 주의).</div>
-            </div>
-            <div class="tc-review">
-              ⭐ <strong>4.9 / 5.0 (동탄 부모 후기 2,450개)</strong> : "비 오거나 추울 때 동탄 라크몽 주렁주렁만 한 곳이 없어요. 카톡 예약하기가 제일 저렴해서 매번 이걸로 갑니다."
-            </div>
-            <a href="https://store.kakao.com/ysjlabs/products/354454986" target="_blank" class="btn-tc-link" style="background: #fee500; color: #1e293b; font-weight: 900;">💬 카카오톡 예약하기 주렁주렁 동탄 단독 상품 직통 ➔</a>
-          </div>
-
-          <!-- TOP 2 -->
-          <div class="top5-card">
-            <div class="tc-header">
-              <span class="tc-rank rank-2">🥈 2위 N포인트 적립</span>
-              <div class="tc-title">네이버 예약 · 주렁주렁 동탄 라크몽점 4인 패밀리권</div>
-            </div>
-            <div class="tc-price-row">
-              <span class="tc-cur-price">4인 총액 72,000원</span>
-              <span class="tc-orig-price">108,000원</span>
-              <span class="tc-saved-badge">-33% (36,000원 이득)</span>
-            </div>
-            <div class="tc-pros-cons">
-              <div class="tc-pros"><strong>🟢 장점:</strong> 네이버플러스 멤버십 추가 5% 적립, 당일 취소 시 100% 환불.</div>
-              <div class="tc-cons"><strong>🔴 단점:</strong> 카톡 예약하기 대비 3,000원 가격 높음.</div>
-            </div>
-            <div class="tc-review">
-              ⭐ <strong>4.8 / 5.0 (후기 4,800개)</strong> : "포인트 쌓아두신 분들은 네이버 예약도 괜찮습니다. 취소 규정이 편해요."
-            </div>
-            <a href="https://m.place.naver.com/place/list?query=%EC%A3%BC%EB%A0%81%EC%A3%BC%EB%A0%81%20%EB%8F%99%ED%83%84%EB%9D%BC%ED%81%AC%EB%AA%BD%EC%A0%90" target="_blank" class="btn-tc-link" style="background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);">네이버 플레이스 주렁주렁 동탄라크몽점 예약 직통 ➔</a>
-          </div>
-
-          <!-- TOP 3 -->
-          <div class="top5-card">
-            <div class="tc-header">
-              <span class="tc-rank rank-3">🥉 3위 야놀자 쿠폰팩</span>
-              <div class="tc-title">야놀자 레저 · 주렁주렁 동탄 패밀리 4인 입장권</div>
-            </div>
-            <div class="tc-price-row">
-              <span class="tc-cur-price">4인 총액 74,000원</span>
-              <span class="tc-orig-price">108,000원</span>
-              <span class="tc-saved-badge">-31% (첫구매 쿠폰 시 70,000원)</span>
-            </div>
-            <div class="tc-pros-cons">
-              <div class="tc-pros"><strong>🟢 장점:</strong> 야놀자 카드사 청구할인 결합 시 추가 할인 가능.</div>
-              <div class="tc-cons"><strong>🔴 단점:</strong> 기본 가격은 카톡보다 비쌈.</div>
-            </div>
-            <div class="tc-review">
-              ⭐ <strong>4.8 / 5.0</strong> : "야놀자 포인트 털 때 유용하게 썼습니다."
-            </div>
-            <a href="https://www.yanolja.com/search/%EC%A3%BC%EB%A0%81%EC%A3%BC%EB%A0%81%20%EB%8F%99%ED%83%84" target="_blank" class="btn-tc-link">야놀자 주렁주렁 동탄 티켓 직통 ➔</a>
-          </div>
-
-          <!-- TOP 4 -->
-          <div class="top5-card">
-            <div class="tc-header">
-              <span class="tc-rank rank-other">4위 NOL 티켓</span>
-              <div class="tc-title">NOL 티켓(구 인터파크) · 경기 레저 특가 주렁주렁 4인 모바일권</div>
-            </div>
-            <div class="tc-price-row">
-              <span class="tc-cur-price">4인 총액 75,500원</span>
-              <span class="tc-orig-price">108,000원</span>
-              <span class="tc-saved-badge">-30% (32,500원 이득)</span>
-            </div>
-            <div class="tc-pros-cons">
-              <div class="tc-pros"><strong>🟢 장점:</strong> NOL 티켓 모바일 바코드 즉시 전송, 당일 바로 사용 가능.</div>
-              <div class="tc-cons"><strong>🔴 단점:</strong> 주말 이용 시 주차 대기 발생 가능.</div>
-            </div>
-            <div class="tc-review">
-              ⭐ <strong>4.7 / 5.0</strong> : "바코드 예매하고 현장 키오스크에서 바로 찍고 들어갔어요."
-            </div>
-            <a href="https://nol.yanolja.com/ticket?query=%EC%A3%BC%EB%A0%81%EC%A3%BC%EB%A0%81" target="_blank" class="btn-tc-link">NOL 티켓 주렁주렁 검색 ➔</a>
-          </div>
-
-          <!-- TOP 5 -->
-          <div class="top5-card">
-            <div class="tc-header">
-              <span class="tc-rank rank-other">5위 현장 동탄주민/제휴</span>
-              <div class="tc-title">라크몽 매표소 현장 결제 · 화성/동탄 주민 20% 신분증 할인</div>
-            </div>
-            <div class="tc-price-row">
-              <span class="tc-cur-price">4인 총액 86,400원</span>
-              <span class="tc-orig-price">108,000원</span>
-              <span class="tc-saved-badge">-20% (온라인보다 17,400원 비쌈 ⚠️)</span>
-            </div>
-            <div class="tc-pros-cons">
-              <div class="tc-pros"><strong>🟢 장점:</strong> 사전 예매 없이 신분증만 들고 가면 즉시 발권.</div>
-              <div class="tc-cons"><strong>🔴 단점:</strong> 카톡 예약하기(6.9만)보다 17,400원 비싸므로 현장 구매는 비추천!</div>
-            </div>
-            <div class="tc-review">
-              ⭐ <strong>4.5 / 5.0</strong> : "주민할인 믿고 그냥 갔다가 온라인이 훨씬 싸다는 걸 알았네요."
-            </div>
-            <a href="https://zoolungzoolung.com/%ec%a7%80%ec%a0%90%ec%95%88%eb%82%b4/%eb%8f%99%ed%83%84%ec%a0%90/" target="_blank" class="btn-tc-link">온라인 6.9만 원에 미리 예매하기 ➔</a>
-          </div>
-        `;
+    // ===== 결과 카드 =====
+    function searchCardHtml(item, h, kind) {
+      var est = kind === 'travel' ? travelEstimate(item, h) : kidsEstimate(item, h);
+      var tagLabel = kind === 'travel' ? item.theme_label : item.cat_label;
+      var srcLabel = item.source_badge || item.source;
+      var subLine = kind === 'travel' ? item.flight_type : item.location;
+      var featLine = kind === 'travel' ? (item.price_level_text || item.family_fit) : (item.highlights || item.benefit_tag);
+      var priceLine = kind === 'travel'
+        ? ('1인 기준 특가 ' + item.deal_price + ' · 정가 ' + item.normal_price)
+        : item.price_info;
+      var badge = kind === 'travel' ? item.discount : item.benefit_tag;
+      var amountLine;
+      if (est.total === 0) {
+        amountLine = '100% 전액 무료 🟢';
       } else {
-        resultsHtml = `
-          <div class="res-section-title">
-            <span>🏆 '${place}' 우리 가족(${totalHead}인 / ${dateText}) 최저가 탐색</span>
+        amountLine = '약 ' + formatWon(est.total);
+      }
+      var savedLine;
+      if (est.total === 0) {
+        savedLine = '입장료 0원 — 문화비 100% 절감';
+      } else if (est.saved > 0) {
+        savedLine = '정가 대비 약 <strong style="color:#4ade80;">' + formatWon(est.saved) + '</strong> 절약' + (est.pct ? ' (-' + est.pct + '%)' : '');
+      } else {
+        savedLine = '인원별 최종 금액은 예약 화면에서 확인';
+      }
+      return `
+        <div class="deal-card">
+          <div>
+            <div class="card-top">
+              <div class="card-tags">
+                <span class="tag tag-source" style="color: ${item.source_color}; border-color: ${item.source_color};">${srcLabel}</span>
+                <span class="tag tag-family">${tagLabel}</span>
+                <span class="tag tag-discount" style="background: rgba(34,197,94,0.15); color: #4ade80; border-color: rgba(34,197,94,0.3);">${badge}</span>
+              </div>
+            </div>
+            <div class="card-title">${item.title}</div>
+            <div class="card-sub">📍 ${subLine}</div>
+            <div class="calc-result-box">
+              <div class="cr-title">👨‍👩‍👧‍👦 ${headLabel(h)} 예상 ${kind === 'travel' ? '총액' : '입장·이용료'}</div>
+              <div class="cr-total">${amountLine}</div>
+              <div style="font-size: 10.5px; color: #cbd5e1; margin-top: 4px;">${savedLine}</div>
+            </div>
+            <div class="family-box"><strong style="color: #38bdf8;">특징:</strong> ${featLine}</div>
+            <div style="font-size: 10.5px; color: #94a3b8; margin: 8px 0 2px 0;">${priceLine}</div>
           </div>
-          <div style="background: #1e293b; border: 1px solid #c084fc; border-radius: 12px; padding: 16px; margin-bottom: 12px; text-align: center;">
-            <div style="font-size: 15px; font-weight: 800; color: #c084fc; margin-bottom: 8px;">
-              ✈️ '${place}'에 대한 6대 레저/여행 채널 직통 딥링크가 연결되었습니다!
+          <a href="${item.link}" target="_blank" class="btn-deal-action">${item.link_label} ➔</a>
+        </div>
+      `;
+    }
+
+    function upcomingCardHtml(u) {
+      return `
+        <div class="upcoming-card">
+          <div class="up-top">
+            <span class="up-badge" style="background: rgba(255,255,255,0.08); color: ${u.tag_color}; border: 1px solid ${u.tag_color};">${u.category} · ${u.tag}</span>
+            <span class="up-dday">${u.d_day}</span>
+          </div>
+          <div class="up-title">${u.title}</div>
+          <div class="up-date">🗓️ 오픈 예정일: ${u.open_date} (출처: ${u.source})</div>
+          <div class="up-desc">${u.desc}</div>
+          <div class="up-tip">
+            <strong>★ 사전 준비 꿀팁:</strong> ${u.tip}
+          </div>
+        </div>
+      `;
+    }
+
+    // 주렁주렁 동탄 상세 Top 5 (선택 인원 기준 자동 재계산)
+    function zoorungDetailHtml(place, dateText, h) {
+      var heads = h.total;
+      var normalPerHead = 27000;
+      var normalTotal = normalPerHead * heads;
+      var tiers = [
+        {
+          rank: '🥇 1위 공식 특가 추천',
+          rankStyle: 'background: #eab308; color: #713f12; border: 1px solid #facc15;',
+          name: '카카오톡 예약하기 · 주렁주렁 동탄 라크몽점 패밀리 통합권 (주말/평일 공통)',
+          perHead: 17250,
+          pros: '주말/평일 추가금 없음, 라크몽 지하주차장 3시간 무료 등록, 모바일 바코드 즉시 입장.',
+          cons: '구매 후 최소 1시간 이후 바코드 활성화 (현장 도착 직전 결제 주의).',
+          review: '⭐ <strong>4.9 / 5.0 (동탄 부모 후기 2,450개)</strong> : "비 오거나 추울 때 동탄 라크몽 주렁주렁만 한 곳이 없어요. 카톡 예약하기가 제일 저렴해서 매번 이걸로 갑니다."',
+          link: 'https://store.kakao.com/ysjlabs/products/354454986',
+          linkLabel: '💬 카카오톡 예약하기 주렁주렁 동탄 단독 상품 직통 ➔',
+          linkStyle: 'background: #fee500; color: #1e293b; font-weight: 900;',
+          cardStyle: 'border-color: #facc15;'
+        },
+        {
+          rank: '🥈 2위 N포인트 적립',
+          rankStyle: '',
+          name: '네이버 예약 · 주렁주렁 동탄 라크몽점 패밀리권',
+          perHead: 18000,
+          pros: '네이버플러스 멤버십 추가 5% 적립, 당일 취소 시 100% 환불.',
+          cons: '카톡 예약하기 대비 1인당 750원 높음.',
+          review: '⭐ <strong>4.8 / 5.0 (후기 4,800개)</strong> : "포인트 쌓아두신 분들은 네이버 예약도 괜찮습니다. 취소 규정이 편해요."',
+          link: 'https://m.place.naver.com/place/list?query=%EC%A3%BC%EB%A0%81%EC%A3%BC%EB%A0%81%20%EB%8F%99%ED%83%84%EB%9D%BC%ED%81%AC%EB%AA%BD%EC%A0%90',
+          linkLabel: '네이버 플레이스 주렁주렁 동탄라크몽점 예약 직통 ➔',
+          linkStyle: 'background: linear-gradient(135deg, #15803d 0%, #22c55e 100%);',
+          cardStyle: ''
+        },
+        {
+          rank: '🥉 3위 야놀자 쿠폰팩',
+          rankStyle: '',
+          name: '야놀자 레저 · 주렁주렁 동탄 패밀리 입장권',
+          perHead: 18500,
+          pros: '야놀자 카드사 청구할인 결합 시 추가 할인 가능.',
+          cons: '기본 가격은 카톡보다 비쌈.',
+          review: '⭐ <strong>4.8 / 5.0</strong> : "야놀자 포인트 털 때 유용하게 썼습니다."',
+          link: 'https://www.yanolja.com/search/%EC%A3%BC%EB%A0%81%EC%A3%BC%EB%A0%81%20%EB%8F%99%ED%83%84',
+          linkLabel: '야놀자 주렁주렁 동탄 티켓 직통 ➔',
+          linkStyle: '',
+          cardStyle: ''
+        },
+        {
+          rank: '4위 NOL 티켓',
+          rankStyle: '',
+          name: 'NOL 티켓(구 인터파크) · 경기 레저 특가 주렁주렁 모바일권',
+          perHead: 18875,
+          pros: 'NOL 티켓 모바일 바코드 즉시 전송, 당일 바로 사용 가능.',
+          cons: '주말 이용 시 주차 대기 발생 가능.',
+          review: '⭐ <strong>4.7 / 5.0</strong> : "바코드 예매하고 현장 키오스크에서 바로 찍고 들어갔어요."',
+          link: 'https://nol.yanolja.com/ticket?query=%EC%A3%BC%EB%A0%81%EC%A3%BC%EB%A0%81',
+          linkLabel: 'NOL 티켓 주렁주렁 검색 ➔',
+          linkStyle: '',
+          cardStyle: ''
+        },
+        {
+          rank: '5위 현장 동탄주민/제휴',
+          rankStyle: '',
+          name: '라크몽 매표소 현장 결제 · 화성/동탄 주민 20% 신분증 할인',
+          perHead: 21600,
+          pros: '사전 예매 없이 신분증만 들고 가면 즉시 발권.',
+          cons: '온라인 최저가보다 비싸므로 현장 구매는 비추천!',
+          review: '⭐ <strong>4.5 / 5.0</strong> : "주민할인 믿고 그냥 갔다가 온라인이 훨씬 싸다는 걸 알았네요."',
+          link: 'https://zoolungzoolung.com/%ec%a7%80%ec%a0%90%ec%95%88%eb%82%b4/%eb%8f%99%ed%83%84%ec%a0%90/',
+          linkLabel: '온라인 최저가로 미리 예매하기 ➔',
+          linkStyle: '',
+          cardStyle: ''
+        }
+      ];
+
+      var cards = tiers.map(function(t) {
+        var total = t.perHead * heads;
+        var saved = normalTotal - total;
+        var pct = normalTotal > 0 ? Math.round(saved / normalTotal * 100) : 0;
+        var rankClass = (t.rank.indexOf('1위') !== -1) ? 'tc-rank' : ((t.rank.indexOf('2위') !== -1) ? 'tc-rank rank-2' : ((t.rank.indexOf('3위') !== -1) ? 'tc-rank rank-3' : 'tc-rank rank-other'));
+        var savedText = saved > 0
+          ? ('-' + pct + '% (' + formatWon(saved) + ' 이득! 💰)')
+          : ('+' + formatWon(-saved) + ' 비쌈 ⚠️');
+        var savedStyle = saved > 0 ? 'background: rgba(34,197,94,0.18); color: #86efac; border-color: rgba(34,197,94,0.4);' : 'background: rgba(244,63,94,0.18); color: #fecdd3; border-color: rgba(244,63,94,0.4);';
+        return `
+          <div class="top5-card" style="${t.cardStyle}">
+            <div class="tc-header">
+              <span class="${rankClass}" style="${t.rankStyle}">${t.rank}</span>
+              <div class="tc-title">${t.name}</div>
             </div>
-            <div style="font-size: 12px; color: #cbd5e1; line-height: 1.6; margin-bottom: 14px;">
-              상단 <strong>[⚡ 자동검색 6대 공식 채널 직통 딥링크]</strong>의 카카오톡 예약하기, 네이버 플레이스, 야놀자/여기어때 버튼을 누르시면, ${totalHead}인 가족 기준 실시간 예약 가능 여부와 요금 화면으로 즉시 연결됩니다.<br>
-              특정 날짜의 비행기/숙소 패키지 견적까지 통째로 비교하시려면 대화창에 <strong>"연오랑, ${place} ${dateText} 4인 가족 최저가 패키지 짜줘"</strong>라고 말씀해 주세요!
+            <div class="tc-price-row">
+              <span class="tc-cur-price">${heads}인 총액 ${formatWon(total)}</span>
+              <span class="tc-orig-price">${formatWon(normalTotal)}</span>
+              <span class="tc-saved-badge" style="${savedStyle}">${savedText}</span>
             </div>
+            <div class="tc-pros-cons">
+              <div class="tc-pros"><strong>🟢 장점:</strong> ${t.pros}</div>
+              <div class="tc-cons"><strong>🔴 단점:</strong> ${t.cons}</div>
+            </div>
+            <div class="tc-review">${t.review}</div>
+            <a href="${t.link}" target="_blank" class="btn-tc-link" style="${t.linkStyle}">${t.linkLabel}</a>
           </div>
         `;
+      }).join('');
+
+      var kakaoTotal = 17250 * heads;
+      var summarySaved = normalTotal - kakaoTotal;
+      return `
+        <div style="background: rgba(168,85,247,0.12); border: 1px solid rgba(168,85,247,0.4); border-radius: 10px; padding: 12px; margin-bottom: 14px;">
+          <div style="font-size: 12.5px; font-weight: 800; color: #c084fc; margin-bottom: 4px;">👨‍👩‍👧‍👦 ${headLabel(h)} 기준 연오랑의 실전 추천 (방문일: ${dateText}):</div>
+          <div style="font-size: 11.5px; color: #e2e8f0; line-height: 1.6;">
+            현장 정가 구매 시 ${formatWon(normalTotal)}(1인 ${formatWon(normalPerHead)} × ${heads}인)이지만, <strong>카카오톡 예약하기 패밀리 통합권(${formatWon(kakaoTotal)})을 이용하시면 ${formatWon(summarySaved)}</strong>이 즉시 절약됩니다. 18개월 이상이면 인원당 요금이 같으므로 개별 티켓보다 패밀리 통합 결제가 가장 이득입니다.
+          </div>
+        </div>
+        ${cards}
+      `;
+    }
+
+    function searchGuideHtml() {
+      return `
+        <div class="res-section-title"><span>🔎 여행 · 키즈 특가 맞춤 검색기</span></div>
+        <div style="background: #1e293b; border: 1px solid #7c3aed; border-radius: 12px; padding: 16px; margin-bottom: 12px;">
+          <div style="font-size: 14px; font-weight: 800; color: #c084fc; margin-bottom: 8px;">
+            등록 특가 ${travelDeals.length + kidsDeals.length}건(여행 ${travelDeals.length} · 키즈 ${kidsDeals.length}) 전체에서 찾아드립니다
+          </div>
+          <div style="font-size: 12px; color: #cbd5e1; line-height: 1.7;">
+            ① 1번 칸에 장소·체험명을 입력하세요 (예: 제주, 괌, 푸꾸옥, 나트랑, 주렁주렁, 에버랜드, 국립중앙박물관)<br>
+            ② 3번 칸의 <strong>+</strong> 버튼으로 성인·취학(초등)·미취학(킨더) 인원을 직접 선택하세요 (현재 ${totalHeadcount()}명)<br>
+            ③ <strong>🚀 여행 · 체험 가족 최저가 레이더 가동</strong> 버튼을 누르면 선택 인원 기준 예상 총액·절약액과 직통 예약 링크가 나옵니다.
+          </div>
+        </div>
+      `;
+    }
+
+    function matchedSectionHtml(hits, place, h) {
+      var total = hits.travel.length + hits.kids.length;
+      if (total === 0) {
+        var tokens = searchTokens(place);
+        var up = upcomingEvents.filter(function(u) {
+          var text = (u.title + ' ' + u.category + ' ' + u.source + ' ' + u.desc + ' ' + u.tag).toLowerCase();
+          return tokens.some(function(t) { return text.indexOf(t.toLowerCase()) !== -1; });
+        }).slice(0, 3);
+        var html = '<div style="background: #1e293b; border: 1px solid #475569; border-radius: 12px; padding: 14px; margin-bottom: 12px;">'
+          + '<div style="font-size: 13.5px; font-weight: 800; color: #fbbf24; margin-bottom: 6px;">🔎 \'' + place + '\'로 등록된 특가 상품은 아직 없습니다</div>'
+          + '<div style="font-size: 11.5px; color: #cbd5e1; line-height: 1.65;">이 검색기는 특가 레이더에 등록된 상품(여행 ' + travelDeals.length + '건 · 키즈 ' + kidsDeals.length + '건)을 먼저 찾아드립니다. '
+          + '등록 상품에 없는 곳은 위 <strong>⚡ 6대 공식 채널 직통 딥링크</strong>에서 실시간 최저가를 확인하시거나, 대화창에 <strong>"연오랑, ' + place + ' ' + (h.isZero ? '1인' : h.total + '인') + ' 가족 최저가 찾아줘"</strong>라고 말씀해 주세요.</div>'
+          + '</div>';
+        if (up.length) {
+          html += '<div class="res-section-title" style="margin-top: 10px;"><span>📅 \'' + place + '\' 관련 다가오는 특가·예약 일정</span></div>';
+          html += up.map(upcomingCardHtml).join('');
+        }
+        return html;
       }
+      var html2 = '<div class="res-section-title" style="margin-top: 6px;"><span>📌 \'' + place + '\' 등록 특가 ' + total + '건 (여행 ' + hits.travel.length + ' · 키즈 ' + hits.kids.length + ')</span></div>';
+      html2 += '<div class="deals-grid" style="margin-bottom: 16px;">';
+      hits.travel.forEach(function(x) { html2 += searchCardHtml(x.item, h, 'travel'); });
+      hits.kids.forEach(function(x) { html2 += searchCardHtml(x.item, h, 'kids'); });
+      html2 += '</div>';
+      return html2;
+    }
+
+    function executeTravelSearch() {
+      var placeEl = document.getElementById('tPlace');
+      var place = placeEl ? placeEl.value.trim() : '';
+      var dateEl = document.getElementById('tDate');
+      var dateVal = dateEl ? dateEl.value : '';
+      var undecidedEl = document.getElementById('tUndecidedDate');
+      var isUndecided = undecidedEl ? undecidedEl.checked : false;
+      var dateText = (isUndecided || !dateVal) ? '날짜 미정 (최저가 우선)' : dateVal;
+      var h = calcHeads();
+
+      renderDirectLinks(buildDirectLinks(place));
 
       var resSec = document.getElementById('radarResultsSection');
-      if (resSec) resSec.innerHTML = resultsHtml;
+      if (!resSec) return;
+
+      if (!place) {
+        resSec.innerHTML = searchGuideHtml();
+        return;
+      }
+
+      var hits = searchHits(place);
+      var isZoorung = place.indexOf('주렁') !== -1 || hits.kids.some(function(x) { return x.item.id === 'kd_zoolung'; });
+
+      var html = '<div class="res-section-title"><span>🏆 \'' + place + '\' 검색 결과 — ' + headLabel(h) + ' · ' + dateText + '</span></div>';
+      if (h.isZero) {
+        html += '<div style="background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.45); border-radius: 8px; padding: 9px 11px; margin-bottom: 12px; font-size: 11.5px; color: #fbbf24; line-height: 1.6; font-weight: 700;">'
+          + '⚠️ 인원을 1명 이상 선택해 주세요 — 지금은 <strong>1인 기준 금액</strong>으로 보여드립니다. 위 3번 칸의 <strong>+</strong> 버튼으로 인원을 직접 선택하시면 총액이 바로 다시 계산됩니다.'
+          + '</div>';
+      }
+      if (isZoorung) {
+        html += zoorungDetailHtml(place, dateText, h);
+      }
+      html += matchedSectionHtml(hits, place, h);
+      resSec.innerHTML = html;
     }
+    window.executeTravelSearch = executeTravelSearch;
 
     function switchCategory(cat) {
 
@@ -1556,7 +1852,11 @@
     function filterDeals() {
       var input = document.getElementById('dealSearchInput');
       currentSearch = input ? input.value.trim().toLowerCase() : '';
-      if (currentCat === 'upcoming') {
+      if (currentCat === 'search') {
+        var placeEl = document.getElementById('tPlace');
+        if (placeEl) placeEl.value = input ? input.value.trim() : '';
+        executeTravelSearch();
+      } else if (currentCat === 'upcoming') {
         renderUpcoming();
       } else {
         renderDeals();
@@ -1609,23 +1909,10 @@
             return '<div class="review-quote">' + r + '</div>';
           }).join('');
 
-          // Estimate Family Total Price
-          var unitPrice = parseNumericPrice(d.deal_price);
-          var estTotal = 0;
-          if (d.type === 'overseas') {
-            estTotal = (numAdult * unitPrice) + (numSchool * Math.round(unitPrice * 0.9)) + (numPreschool * Math.round(unitPrice * 0.75));
-          } else {
-            // Domestic
-            if (d.id === 'tr5') { // Jeju
-              estTotal = (numAdult * 2 * 25000) + (numSchool * 2 * 20000) + (numPreschool * 2 * 15000) + 160000;
-            } else if (d.id === 'tr_kakao1') { // Vivaldi Park Kakao
-              estTotal = 189000 + (Math.max(0, (numAdult + numSchool + numPreschool) - 3) * 20000);
-            } else if (d.id === 'tr_kakao2') { // Seorak Sorano Kakao
-              estTotal = 165000 + (Math.max(0, (numAdult + numSchool + numPreschool) - 3) * 15000);
-            } else { // Pyeongchang
-              estTotal = 165000 + (numAdult * 15000) + (numSchool * 12000) + (numPreschool * 8000);
-            }
-          }
+          // 선택 인원 반영 예상 총액·절약액
+          var hCalc = calcHeads();
+          var travelEst = travelEstimate(d, hCalc);
+          var estTotal = travelEst.total;
 
           return `
             <div class="deal-card">
@@ -1649,8 +1936,9 @@
 
                 <!-- ESTIMATED FAMILY TOTAL -->
                 <div class="calc-result-box">
-                  <div class="cr-title">👨‍👩‍👧‍👦 우리 가족(${numAdult+numSchool+numPreschool}인) 예상 총액</div>
+                  <div class="cr-title">👨‍👩‍👧‍👦 ${headLabel(hCalc)} 예상 총액</div>
                   <div class="cr-total">약 ${formatWon(estTotal)}</div>
+                  <div style="font-size: 10.5px; color: #cbd5e1; margin-top: 4px;">정가 대비 약 <strong style="color:#4ade80;">${formatWon(travelEst.saved)}</strong> 절약${travelEst.pct ? ' (-' + travelEst.pct + '%)' : ''}</div>
                 </div>
 
                 <!-- Price & Benchmark Box -->
@@ -1737,34 +2025,13 @@
             return '<div class="review-quote">' + r + '</div>';
           }).join('');
 
-          // Estimate Kids Facility Total
-          var estTotal = 0;
-          if (k.id === 'kd_zoolung') { // Zoolung Zoolung Dongtan Lakmon
-            estTotal = (numAdult + numSchool + numPreschool) * 17900;
-          } else if (k.id === 'kd_klook_bird') { // Klook Osan Bird Park
-            estTotal = (numAdult + numSchool + numPreschool) * 11900;
-          } else if (k.id === 'kd_mrt_museum') { // MyRealTrip Museum Docent
-            estTotal = numSchool * 29000;
-          } else if (k.id === 'kd_kakao1') { // Pororo Park Kakao
-            estTotal = (numAdult * 5000) + ((numSchool + numPreschool) * 17900);
-          } else if (k.id === 'kd_kakao2') { // Aqua Planet Gwanggyo Kakao
-            estTotal = 72000; // 4-person family package
-          } else if (k.id === 'kd7') { // Hwaseong Children Center
-            estTotal = ((numSchool + numPreschool) * 2000); // 2,000 won for Hwaseong citizen
-          } else if (k.id === 'kd8') { // Gyeonggi Tourpass
-            estTotal = (numAdult * 19900) + (numSchool * 19900) + (numPreschool * 19900);
-          } else if (k.id === 'kd1') { // Gwacheon Science
-            estTotal = (numAdult * 4000) + (numSchool * 2000) + 0;
-            if (numAdult + numSchool + numPreschool >= 4) estTotal = Math.round(estTotal * 0.75);
-          } else if (k.id === 'kd2') { // Gyeonggi Kids Museum
-            estTotal = (numAdult * 2000) + (numSchool * 2000) + (numPreschool * 2000);
-          } else if (k.id === 'kd3') { // National Agriculture Museum
-            estTotal = 0; // 100% Free!
-          } else if (k.id === 'kd4') { // Champion Dongtan
-            estTotal = ((numSchool + numPreschool) * 20000) + (numAdult * 5000);
-          } else if (k.id === 'kd6') { // Everland
-            estTotal = (numAdult * 28000) + (numSchool * 34000) + (numPreschool * 34000);
-          }
+          // 선택 인원 반영 예상 입장·이용료
+          var hCalc = calcHeads();
+          var kidsEst = kidsEstimate(k, hCalc);
+          var estTotal = kidsEst.total;
+          var savedText = kidsEst.saved > 0
+            ? '정가 대비 약 <strong style="color:#4ade80;">' + formatWon(kidsEst.saved) + '</strong> 절약'
+            : (estTotal === 0 ? '입장료 0원' : '인원별 최종 금액은 예약 화면에서 확인');
 
           return `
             <div class="deal-card">
@@ -1788,8 +2055,9 @@
 
                 <!-- ESTIMATED FAMILY TOTAL -->
                 <div class="calc-result-box" style="background: #1e1b4b; border-color: #818cf8;">
-                  <div class="cr-title" style="color: #c7d2fe;">👨‍👩‍👧‍👦 우리 가족(${numAdult+numSchool+numPreschool}인) 예상 입장/이용료</div>
+                  <div class="cr-title" style="color: #c7d2fe;">👨‍👩‍👧‍👦 ${headLabel(hCalc)} 예상 입장/이용료</div>
                   <div class="cr-total" style="color: #a5b4fc;">${estTotal === 0 ? '100% 전액 무료 🟢' : '약 ' + formatWon(estTotal)}</div>
+                  <div style="font-size: 10.5px; color: #cbd5e1; margin-top: 4px;">${savedText}</div>
                 </div>
 
                 <!-- Price Box & Savings Benchmark -->
@@ -1854,22 +2122,7 @@
         return;
       }
 
-      var cardsHtml = list.map(function(u) {
-        return `
-          <div class="upcoming-card">
-            <div class="up-top">
-              <span class="up-badge" style="background: rgba(255,255,255,0.08); color: ${u.tag_color}; border: 1px solid ${u.tag_color};">${u.category} · ${u.tag}</span>
-              <span class="up-dday">${u.d_day}</span>
-            </div>
-            <div class="up-title">${u.title}</div>
-            <div class="up-date">🗓️ 오픈 예정일: ${u.open_date} (출처: ${u.source})</div>
-            <div class="up-desc">${u.desc}</div>
-            <div class="up-tip">
-              <strong>★ 사전 준비 꿀팁:</strong> ${u.tip}
-            </div>
-          </div>
-        `;
-      }).join('');
+      var cardsHtml = list.map(upcomingCardHtml).join('');
 
       container.innerHTML = cardsHtml;
     }
