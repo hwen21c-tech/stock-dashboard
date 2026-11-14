@@ -1450,6 +1450,13 @@
         var s = matchScore(query, d, 'kids');
         if (s > 0) k.push({ item: d, score: s });
       });
+      // 제목·키워드·지역에 걸린 상품을 우선하고, 설명 문장에만 스친 약한 일치는 덜어낸다
+      var maxScore = 0;
+      t.forEach(function(x) { if (x.score > maxScore) maxScore = x.score; });
+      k.forEach(function(x) { if (x.score > maxScore) maxScore = x.score; });
+      var cutoff = Math.max(2, Math.round(maxScore * 0.33));
+      t = t.filter(function(x) { return x.score >= cutoff; });
+      k = k.filter(function(x) { return x.score >= cutoff; });
       t.sort(function(a, b) { return b.score - a.score; });
       k.sort(function(a, b) { return b.score - a.score; });
       return { travel: t, kids: k };
@@ -1528,7 +1535,7 @@
       var subLine = kind === 'travel' ? item.flight_type : item.location;
       var featLine = kind === 'travel' ? (item.price_level_text || item.family_fit) : (item.highlights || item.benefit_tag);
       var priceLine = kind === 'travel'
-        ? ('1인 기준 특가 ' + item.deal_price + ' · 정가 ' + item.normal_price)
+        ? ((item.type === 'overseas' ? '1인 기준 특가 ' : '패키지 특가 ') + item.deal_price + ' · 정가 ' + item.normal_price)
         : item.price_info;
       var badge = kind === 'travel' ? item.discount : item.benefit_tag;
       var amountLine;
