@@ -948,7 +948,7 @@
       </a>
       <div id="dealsSyncWrap" style="display: flex; align-items: center; gap: 8px;">
         <span id="dealsSyncBadge" style="font-size: 10.5px; font-weight: 800; color: #4ade80; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); padding: 4px 8px; border-radius: 4px;">⚡ 하루 3회 정기 자동 갱신 (다음: 내일 08:00)</span>
-        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 10:31 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
+        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 10:35 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
       </div>
       <div class="calc-controls">
         <div class="counter-group">
@@ -1324,7 +1324,6 @@
     function travelEstimate(d, h) {
       var unit = parseNumericPrice(d.deal_price);
       var normalUnit = parseNumericPrice(d.normal_price);
-      var pct = parsePercent(d.discount);
       var heads = h.adult + h.school + h.preschool;
       var weight = h.adult + (h.school * 0.9) + (h.preschool * 0.75);
       var total = 0;
@@ -1334,11 +1333,15 @@
         total = unit + Math.max(0, heads - 3) * Math.round(unit * 0.12);
       }
       if (total < 0) total = 0;
+      // 절약액은 카드에 적힌 정가·특가 차이를 그대로 인원 비례로 환산 (사용자가 직접 검산 가능)
       var saved = 0;
-      if (pct > 0) {
-        saved = Math.round(total * pct / (100 - pct));
-      } else if (normalUnit > unit) {
-        saved = Math.round((normalUnit - unit) * (d.type === 'overseas' ? weight : Math.max(1, heads / 4)));
+      var pct = 0;
+      if (unit > 0 && normalUnit > unit) {
+        saved = Math.round(total * (normalUnit - unit) / unit);
+        pct = Math.round((normalUnit - unit) / normalUnit * 100);
+      } else {
+        pct = parsePercent(d.discount);
+        saved = pct > 0 ? Math.round(total * pct / (100 - pct)) : 0;
       }
       return { total: total, saved: saved, unit: unit, pct: pct };
     }
