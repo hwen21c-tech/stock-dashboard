@@ -1447,8 +1447,9 @@
       var note = '';
       if (priced && normal > unit) {
         pct = Math.round((normal - unit) / normal * 100);
-        saved = Math.round(total * (normal - unit) / unit);
+        saved = zeroSelected ? 0 : Math.round(total * (normal - unit) / unit);
       }
+      if (zeroSelected) note = '인원을 선택하면 인원수에 맞춰 총액이 다시 계산됩니다';
       if (saved > total) { note = k.family_saved; saved = 0; }
       return { total: total, saved: saved, pct: pct, note: note,
                noChildSelected: noChildSelected, zeroSelected: zeroSelected,
@@ -2412,7 +2413,7 @@
                 <div class="card-sub">${d.flight_type}</div>
 
                 <!-- Rating -->
-                ${d.review_count ? '<div class="rating-badge"><span>⭐ <span class="rating-num">' + (d.rating || '—') + '</span> / 5.0</span><span class="rating-cnt">(후기 ' + d.review_count + '건 · 예약 화면 표기)</span></div>' : ''}
+                ${d.review_count ? (d.rating ? '<div class="rating-badge"><span>⭐ <span class="rating-num">' + d.rating + '</span> / 5.0</span><span class="rating-cnt">(후기 ' + d.review_count + '건 · 예약 화면 표기)</span></div>' : '<div class="rating-badge"><span>💬 후기 ' + d.review_count + '건</span><span class="rating-cnt">(예약 화면 표기)</span></div>') : ''}
 
                 <!-- ESTIMATED FAMILY TOTAL -->
                 <div class="calc-result-box">
@@ -2509,10 +2510,11 @@
           var hCalc = calcHeads();
           var kidsEst = kidsEstimate(k, hCalc);
           var estTotal = kidsEst.total;
-          var savedText = kidsEst.saved > 0
-            ? '정가 대비 약 <strong style="color:#4ade80;">' + formatWon(kidsEst.saved) + '</strong> 절약'
-            : (kidsEst.noChildSelected ? '취학(초등)·미취학(킨더) 인원을 선택하면 요금이 계산됩니다'
-              : (estTotal === 0 ? '입장료 0원' : (kidsEst.note || '인원별 최종 금액은 예약 화면에서 확인')));
+          var savedText = kidsEst.noChildSelected
+            ? '취학(초등)·미취학(킨더) 인원을 선택하면 요금이 계산됩니다'
+            : (kidsEst.saved > 0
+              ? '정가 대비 약 <strong style="color:#4ade80;">' + formatWon(kidsEst.saved) + '</strong> 절약' + (kidsEst.pct ? ' (-' + kidsEst.pct + '%)' : '')
+              : (kidsEst.note || (estTotal === 0 ? '입장료 0원' : '인원별 최종 금액은 예약 화면에서 확인')));
           var kidsAmount = kidsEst.noChildSelected ? '초등·킨더 인원을 선택하세요'
             : (!kidsEst.priced ? '요금은 예약 화면에서 확인'
             : (kidsEst.zeroSelected ? '1인 ' + formatWon(kidsEst.unit) + ' 기준' : '약 ' + formatWon(estTotal)));
@@ -2535,7 +2537,7 @@
                 <div class="card-sub">📍 ${k.location}</div>
 
                 <!-- Rating -->
-                ${k.review_count ? '<div class="rating-badge"><span>⭐ <span class="rating-num">' + (k.rating || '—') + '</span> / 5.0</span><span class="rating-cnt">(후기 ' + k.review_count + '건 · 예약 화면 표기)</span></div>' : ''}
+                ${k.review_count ? (k.rating ? '<div class="rating-badge"><span>⭐ <span class="rating-num">' + k.rating + '</span> / 5.0</span><span class="rating-cnt">(후기 ' + k.review_count + '건 · 예약 화면 표기)</span></div>' : '<div class="rating-badge"><span>💬 후기 ' + k.review_count + '건</span><span class="rating-cnt">(예약 화면 표기)</span></div>') : ''}
 
                 <!-- ESTIMATED FAMILY TOTAL -->
                 <div class="calc-result-box" style="background: #1e1b4b; border-color: #818cf8;">
