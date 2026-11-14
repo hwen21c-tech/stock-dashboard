@@ -2412,7 +2412,7 @@
 
                 <!-- ESTIMATED FAMILY TOTAL -->
                 <div class="calc-result-box">
-                  <div class="cr-title">👨‍👩‍👧‍👦 ${headLabel(hCalc)} 예상 총액</div>
+                  <div class="cr-title">👨‍👩‍👧‍👦 ${headLabel(hCalc)} ${d.room_basis ? '1박 예상 금액' : '예상 총액'}</div>
                   <div class="cr-total">약 ${formatWon(estTotal)}</div>
                   <div style="font-size: 10.5px; color: #cbd5e1; margin-top: 4px;">${travelEst.saved > 0 ? '정가 대비 약 <strong style="color:#4ade80;">' + formatWon(travelEst.saved) + '</strong> 절약' + (travelEst.pct ? ' (-' + travelEst.pct + '%)' : '') : '정상가 미표기 · 판매가 기준'}</div>
                 </div>
@@ -2421,7 +2421,7 @@
                 <div class="price-box">
                   <div class="price-row">
                     <div>
-                      <span style="font-size: 10px; color: #94a3b8;">${d.type === 'overseas' ? '1인 기준 특가' : '패키지 특가'}</span><br>
+                      <span style="font-size: 10px; color: #94a3b8;">${d.room_basis ? '1박 요금 (기준 ' + (Number(d.pax_included) || 2) + '인)' : (d.type === 'overseas' ? '1인 기준 특가' : '패키지 특가')}</span><br>
                       <span class="price-deal">${d.deal_price}</span>
                     </div>
                     <div class="price-pills">
