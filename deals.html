@@ -948,7 +948,7 @@
       </a>
       <div id="dealsSyncWrap" style="display: flex; align-items: center; gap: 8px;">
         <span id="dealsSyncBadge" style="font-size: 10.5px; font-weight: 800; color: #4ade80; background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); padding: 4px 8px; border-radius: 4px;">⚡ 하루 3회 정기 자동 갱신 (다음: 내일 08:00)</span>
-        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 10:37 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
+        <span id="dealsLastSync" style="font-size: 10.5px; color: #34d399; font-weight:700;">최근 동기화: 2026-11-14 10:39 🟢 [🚀 오후 여행 & 키즈 핫딜 가동]</span>
       </div>
       <div class="calc-controls">
         <div class="counter-group">
@@ -1349,6 +1349,8 @@
     // 키즈카페·박물관·테마파크: 시설별 실제 요금 체계 반영
     function kidsEstimate(k, h) {
       var heads = h.adult + h.school + h.preschool;
+      var childOnlyPriced = (k.id === 'kd_mrt_museum' || k.id === 'kd7');
+      var noChildSelected = childOnlyPriced && ((h.school + h.preschool) === 0);
       var total = 0;
       if (k.id === 'kd_zoolung') {
         total = heads * 17900;
@@ -1391,7 +1393,7 @@
           saved = 0;
         }
       }
-      return { total: total, saved: saved, pct: pct, note: note };
+      return { total: total, saved: saved, pct: pct, note: note, noChildSelected: noChildSelected };
     }
 
     // ===== 키워드 매칭 엔진 (여행·키즈 등록 상품 전체 대상) =====
@@ -1548,13 +1550,17 @@
         : item.price_info;
       var badge = kind === 'travel' ? item.discount : item.benefit_tag;
       var amountLine;
-      if (est.total === 0) {
+      if (est.noChildSelected) {
+        amountLine = '아동 인원 선택 필요';
+      } else if (est.total === 0) {
         amountLine = '100% 전액 무료 🟢';
       } else {
         amountLine = '약 ' + formatWon(est.total);
       }
       var savedLine;
-      if (est.total === 0) {
+      if (est.noChildSelected) {
+        savedLine = '취학(초등)·미취학(킨더) 인원을 선택하면 요금이 계산됩니다';
+      } else if (est.total === 0) {
         savedLine = '입장료 0원 — 문화비 100% 절감';
       } else if (est.saved > 0) {
         savedLine = '정가 대비 약 <strong style="color:#4ade80;">' + formatWon(est.saved) + '</strong> 절약' + (est.pct ? ' (-' + est.pct + '%)' : '');
@@ -1963,7 +1969,7 @@
                 <div class="price-box">
                   <div class="price-row">
                     <div>
-                      <span style="font-size: 10px; color: #94a3b8;">1인 기준 특가</span><br>
+                      <span style="font-size: 10px; color: #94a3b8;">${d.type === 'overseas' ? '1인 기준 특가' : '패키지 특가'}</span><br>
                       <span class="price-deal">${d.deal_price}</span>
                     </div>
                     <div class="price-pills">
@@ -2049,7 +2055,9 @@
           var estTotal = kidsEst.total;
           var savedText = kidsEst.saved > 0
             ? '정가 대비 약 <strong style="color:#4ade80;">' + formatWon(kidsEst.saved) + '</strong> 절약'
-            : (estTotal === 0 ? '입장료 0원' : (kidsEst.note || '인원별 최종 금액은 예약 화면에서 확인'));
+            : (kidsEst.noChildSelected ? '취학(초등)·미취학(킨더) 인원을 선택하면 요금이 계산됩니다'
+              : (estTotal === 0 ? '입장료 0원' : (kidsEst.note || '인원별 최종 금액은 예약 화면에서 확인')));
+          var kidsAmount = kidsEst.noChildSelected ? '아동 인원 선택 필요' : (estTotal === 0 ? '100% 전액 무료 🟢' : '약 ' + formatWon(estTotal));
 
           return `
             <div class="deal-card">
@@ -2074,7 +2082,7 @@
                 <!-- ESTIMATED FAMILY TOTAL -->
                 <div class="calc-result-box" style="background: #1e1b4b; border-color: #818cf8;">
                   <div class="cr-title" style="color: #c7d2fe;">👨‍👩‍👧‍👦 ${headLabel(hCalc)} 예상 입장/이용료</div>
-                  <div class="cr-total" style="color: #a5b4fc;">${estTotal === 0 ? '100% 전액 무료 🟢' : '약 ' + formatWon(estTotal)}</div>
+                  <div class="cr-total" style="color: #a5b4fc;">${kidsAmount}</div>
                   <div style="font-size: 10.5px; color: #cbd5e1; margin-top: 4px;">${savedText}</div>
                 </div>
 
