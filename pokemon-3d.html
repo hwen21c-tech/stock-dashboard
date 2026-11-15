@@ -619,9 +619,10 @@ function makeTree(scale, pink) {
 }
 const trees = [];
 const treeSpots = [];
-function placeTree(x, z, scale, pink) {
+function placeTree(x, z, scale, pink, noShadow) {
   const y = terrainY(x, z);
   const t = makeTree(scale, pink);
+  if (noShadow) t.traverse((o) => { if (o.isMesh) o.castShadow = false; });
   t.position.set(x, y, z);
   t.rotation.y = rndRange(0, Math.PI * 2);
   world.add(t);
@@ -639,7 +640,7 @@ for (let i = 0; i < 15; i++) {
 for (let i = 0; i < 34; i++) {
   const a = rndRange(0, Math.PI * 2);
   const rad = rndRange(13, 23);
-  placeTree(Math.cos(a) * rad, Math.sin(a) * rad, rndRange(1.2, 1.9), rnd(0, 1) < 0.18);
+  placeTree(Math.cos(a) * rad, Math.sin(a) * rad, rndRange(1.2, 1.9), rnd(0, 1) < 0.18, true);
 }
 
 /* 연못 */
@@ -707,7 +708,7 @@ for (let i = 0; i < 22; i++) {
   );
   rock.position.set(x, -0.02, z);
   rock.rotation.set(rndRange(0, 3), rndRange(0, 3), rndRange(0, 3));
-  rock.castShadow = true; rock.receiveShadow = true;
+  rock.receiveShadow = true;
   world.add(rock);
 }
 
@@ -828,7 +829,7 @@ function makeFence() {
   pts.forEach((p) => {
     const post = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.9, 0.14), wood);
     post.position.set(p.x, p.y + 0.45, p.z);
-    post.castShadow = true; post.receiveShadow = true;
+    post.receiveShadow = true;
     g.add(post);
   });
   for (let i = 0; i < pts.length - 1; i++) {
@@ -839,7 +840,6 @@ function makeFence() {
       const rail = new THREE.Mesh(new THREE.BoxGeometry(len * 1.02, 0.07, 0.06), wood);
       rail.position.set((a.x + b.x) / 2, (a.y + b.y) / 2 + hh, (a.z + b.z) / 2);
       rail.rotation.y = -Math.atan2(dz, dx);
-      rail.castShadow = true;
       g.add(rail);
     });
   }
@@ -859,7 +859,7 @@ for (let i = 0; i < 54; i++) {
     const bl = new THREE.Mesh(new THREE.ConeGeometry(rndRange(0.08, 0.14), rndRange(0.35, 0.58), 5), tuftMat);
     bl.position.set(x + rndRange(-0.18, 0.18), y + 0.2, z + rndRange(-0.18, 0.18));
     bl.rotation.z = rndRange(-0.22, 0.22);
-    bl.castShadow = true;
+    bl.castShadow = false;
     world.add(bl);
   }
 }
@@ -873,7 +873,7 @@ for (let i = 0; i < 9; i++) {
   const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.07, 0.22, 7), mushStem);
   stem.position.y = 0.11; g.add(stem);
   const cap = new THREE.Mesh(new THREE.SphereGeometry(0.17, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), mushCap);
-  cap.position.y = 0.21; cap.castShadow = true; g.add(cap);
+  cap.position.y = 0.21; g.add(cap);
   const sc = rndRange(0.8, 1.35);
   g.scale.setScalar(sc);
   g.position.set(x, y, z);
