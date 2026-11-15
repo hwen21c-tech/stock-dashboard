@@ -2884,6 +2884,10 @@ const clock = new THREE.Clock();
 const tmpV = new THREE.Vector3();
 const tmpC = new THREE.Color();
 const badgeRight = new THREE.Vector3();
+const badgeProj = new THREE.Vector3();
+const badgeWorld = new THREE.Vector3();
+const badgePts = [];
+const placedPts = [];
 
 /* 포켓몬 다음 목적지 */
 function pickPokeTarget(pk) {
@@ -3115,17 +3119,42 @@ function animate() {
   camera.lookAt(camSmooth);
   camSmooth.lerp(camTarget, Math.min(1, dt * 4));
 
-  /* 이름 배지 — 카메라 기준으로 좌우로 벌려 머리 위에 띄운다 */
+  /* 이름 배지 — 카메라 기준으로 좌우로 벌리고, 화면에서 겹치면 위로 밀어 올린다 */
   camera.updateMatrixWorld();
   badgeRight.setFromMatrixColumn(camera.matrixWorld, 0);
+  badgePts.length = 0;
+  const tanHalf = Math.tan((camera.fov * Math.PI / 180) / 2);
+  const halfW = 38;
   people.forEach((P) => {
-    const b = P.parts.badge;
     const g = P.group.position;
-    b.position.set(
-      g.x + badgeRight.x * P.badgeX,
-      g.y + P.h * 1.98 + P.badgeLift,
-      g.z + badgeRight.z * P.badgeX
-    );
+    let bx = g.x + badgeRight.x * P.badgeX;
+    let bz = g.z + badgeRight.z * P.badgeX;
+    const by = g.y + P.h * 1.98 + P.badgeLift;
+    const dist = camera.position.distanceTo(badgeWorld.set(bx, by, bz));
+    const wpp = (2 * dist * tanHalf) / Math.max(1, window.innerHeight);
+    badgeProj.set(bx, by, bz).project(camera);
+    let sx = (badgeProj.x * 0.5 + 0.5) * window.innerWidth;
+    const sy = (-badgeProj.y * 0.5 + 0.5) * window.innerHeight;
+    /* 화면 밖으로 잘리지 않게 안쪽으로 당긴다 */
+    const dpx = sx < halfW ? halfW - sx : (sx > window.innerWidth - halfW ? (window.innerWidth - halfW) - sx : 0);
+    if (dpx) {
+      bx += badgeRight.x * dpx * wpp;
+      bz += badgeRight.z * dpx * wpp;
+      sx += dpx;
+    }
+    badgePts.push({ P, bx, by, bz, lift: 0, sx, sy, wpp });
+  });
+  badgePts.sort((a, b) => a.sy - b.sy);
+  placedPts.length = 0;
+  badgePts.forEach((p) => {
+    for (let k = 0; k < 4; k++) {
+      /* 위로 밀면 화면 y는 작아진다 */
+      const hit = placedPts.find((q) => Math.abs(q.sx - p.sx) < 58 && Math.abs(q.sy - (p.sy - p.lift)) < 26);
+      if (!hit) break;
+      p.lift += 27;
+    }
+    placedPts.push({ sx: p.sx, sy: p.sy - p.lift });
+    p.P.parts.badge.position.set(p.bx, p.by + p.lift * p.wpp, p.bz);
   });
 
   updateAudio();
@@ -3180,6 +3209,12 @@ window.__AJIT = {
     const v = new THREE.Vector3(CENTER.x, CENTER.y + 1.6, CENTER.z).project(camera);
     const out = { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight, z: v.z };
     return out;
+  },
+  badgeScreens() {
+    return people.map((P) => {
+      const v = P.parts.badge.position.clone().project(camera);
+      return { name: P.name, x: Math.round((v.x * 0.5 + 0.5) * window.innerWidth), y: Math.round((-v.y * 0.5 + 0.5) * window.innerHeight) };
+    });
   },
   personScreen(i) {
     const P = people[i]; if (!P) return null;
