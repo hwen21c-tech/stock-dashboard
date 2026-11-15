@@ -488,6 +488,56 @@ input[type="range"].sl::-moz-range-thumb { width: 17px; height: 17px; border-rad
 .mark-row .del { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 14px; }
 .empty-txt { font-size: 11.5px; color: var(--muted); padding: 10px 8px; line-height: 1.6; }
 
+/* ---------- 최근 읽은 책 책장(이어 읽기) ---------- */
+.section-label .shelf-sub {
+  display: inline-block; margin-left: 5px; text-transform: none; letter-spacing: 0;
+  font-size: 9.5px; font-weight: 700; color: var(--muted); opacity: .85;
+}
+.shelf {
+  display: flex; gap: 8px; align-items: stretch;
+  overflow-x: auto; overflow-y: hidden;
+  padding: 2px 2px 8px; margin: 0 -2px;
+  scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin; overscroll-behavior-x: contain;
+}
+.shelf::-webkit-scrollbar { height: 4px; }
+.shelf::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+.shelf .empty-txt { flex: 1 1 auto; padding: 8px 6px; }
+.shelf-card {
+  position: relative; flex: 0 0 auto; width: 106px; min-height: 116px;
+  display: flex; flex-direction: column; gap: 3px;
+  padding: 8px 8px 9px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--btn-line);
+  background: linear-gradient(158deg, var(--accent-soft) 0%, var(--btn) 68%);
+  scroll-snap-align: start;
+  transition: transform .12s ease, border-color .15s ease, box-shadow .15s ease;
+  overflow: hidden; text-align: left;
+}
+.shelf-card:active { transform: scale(.97); }
+.shelf-card.current { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.shelf-card::before {           /* 책등 느낌의 얇은 세로선 */
+  content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(to bottom, var(--accent), transparent 85%); opacity: .45;
+}
+.shelf-card .sc-ico { font-size: 17px; line-height: 1; margin: 0 0 auto 2px; }
+.shelf-card .sc-t {
+  font-size: 11.5px; font-weight: 800; line-height: 1.28; color: var(--sheet-fg);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  word-break: keep-all; overflow-wrap: anywhere; padding-left: 2px;
+}
+.shelf-card .sc-m {
+  display: block; font-size: 9px; font-weight: 700; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 2px;
+}
+.shelf-card .sc-bar { display: block; height: 3px; border-radius: 2px; background: var(--line); overflow: hidden; margin-top: 3px; }
+.shelf-card .sc-bar i { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
+.shelf-card .sc-x {
+  position: absolute; top: 1px; right: 1px; width: 22px; height: 22px; padding: 0;
+  border: 0; background: transparent; color: var(--muted);
+  font-size: 11px; font-weight: 800; line-height: 1; cursor: pointer; border-radius: 7px;
+}
+.shelf-card .sc-x:active { background: var(--line); }
+
 /* ---------- 오디오 플레이어 ---------- */
 .audio-now {
   display: flex; align-items: center; gap: 10px;
@@ -637,7 +687,7 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
     <button class="icon-btn" id="btnToc" title="목차" aria-label="목차">☰</button>
     <div class="eb-title" id="bookTitle">연오랑 eBook 오디오북<small id="bookSub">TXT를 올려 책처럼 읽고, 라디오처럼 들어요</small></div>
     <button class="icon-btn" id="btnSearch" title="본문 검색" aria-label="본문 검색">🔍</button>
-    <button class="icon-btn" id="btnLibrary" title="서재 · TXT 올리기">📚<span class="lbl">서재</span></button>
+    <button class="icon-btn" id="btnLibrary" title="서재 · 최근 읽은 책 이어 읽기 · TXT 올리기">📚<span class="lbl">서재</span></button>
     <button class="icon-btn" id="btnSettings" title="읽기 설정">Aa</button>
     <button class="icon-btn" id="btnTheme" title="검은 바탕으로" aria-label="테마 전환">🌙</button>
     <button class="icon-btn primary" id="btnAudio" title="오디오북">🎧<span class="lbl">듣기</span></button>
@@ -744,6 +794,8 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
     <button class="close-btn" data-close="librarySheet" aria-label="닫기">✕</button>
   </div>
   <div class="sheet-body">
+    <div class="section-label" id="recentLabel">최근 읽은 책<span class="shelf-sub" id="recentSub"></span></div>
+    <div class="shelf" id="recentShelf" aria-label="최근 읽은 책 · 이어 읽기"></div>
     <div class="dropzone" id="dropzone">
       <div class="dz-ico">📄</div>
       <div class="dz-t">TXT·PDF 파일을 끌어다 놓거나 눌러서 고르기</div>
@@ -1829,6 +1881,7 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
     vPut(S_POS + bk, pos, pos.at);
     lsSet(L_LAST, { bookId: b.id, at: pos.at });
     lsSet(LS_LAST, pos);                     /* 이전 판과 호환 */
+    markRead(b.id, pos.at);
   }
   var saveTimer = 0;
   function savePositionSoon() {
@@ -2222,17 +2275,19 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
      7. IndexedDB 서재
      ========================================================= */
   var DB = (function () {
-    var dbp = null, NAME = 'ebook-library', STORE = 'books', PDFS = 'pdfs';
+    var dbp = null, NAME = 'ebook-library', STORE = 'books', PDFS = 'pdfs', READS = 'reads';
     function open() {
       if (dbp) return dbp;
       dbp = new Promise(function (res, rej) {
         if (!window.indexedDB) { rej(new Error('no-idb')); return; }
-        var req = indexedDB.open(NAME, 2);
+        var req = indexedDB.open(NAME, 3);
         req.onupgradeneeded = function () {
           var db = req.result;
           if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'id' });
           /* PDF 원본 Blob 은 책 기록과 분리해 둔다 — 서재 목록을 읽을 때 큰 파일을 끌어오지 않게 */
           if (!db.objectStoreNames.contains(PDFS)) db.createObjectStore(PDFS);
+          /* 마지막으로 읽은 시각만 담는 작은 저장소 — 본문을 다시 쓰지 않고 책장 순서를 맞춘다 */
+          if (!db.objectStoreNames.contains(READS)) db.createObjectStore(READS);
         };
         req.onsuccess = function () { res(req.result); };
         req.onerror = function () { rej(req.error || new Error('idb-open')); };
@@ -2272,11 +2327,45 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
           return (v && v.blob) ? v : null;
         }, function () { return null; });
       },
-      delPdf: function (id) { return tx('readwrite', function (st) { st.delete(id); }, PDFS); }
+      delPdf: function (id) { return tx('readwrite', function (st) { st.delete(id); }, PDFS); },
+      /* 최근 읽은 시각(책별) */
+      putRead: function (id, at) { return tx('readwrite', function (st) { st.put({ at: at }, id); }, READS); },
+      delRead: function (id) { return tx('readwrite', function (st) { st.delete(id); }, READS); },
+      readsAll: function () {
+        return open().then(function (db) {
+          return new Promise(function (res, rej) {
+            var out = {};
+            var t = db.transaction(READS, 'readonly');
+            var cur = t.objectStore(READS).openCursor();
+            cur.onsuccess = function () {
+              var c = cur.result;
+              if (!c) { res(out); return; }
+              out[c.key] = (c.value && Number(c.value.at)) || 0;
+              c.continue();
+            };
+            cur.onerror = function () { rej(cur.error || new Error('idb-reads')); };
+          });
+        }).catch(function () { return {}; });
+      }
     };
   })();
 
   var memBooks = {};   // IDB 불가 시 폴백
+  var memReads = {};   // IDB 불가 시 폴백(책별 마지막 읽은 시각)
+
+  /* 책장에 세우는 최근 책 권수와 '작은 책' 기준.
+     작은 책(≈1.5MB 이하)은 본문까지 저장해 두어 다음에 파일을 다시 고르지 않고 이어 읽는다.
+     큰 책도 종전처럼 본문을 저장하고, 저장 공간이 모자랄 때만 본문 없이 기록만 남긴다. */
+  var SHELF_MAX = 8;
+  var SMALL_BOOK = 1.5 * 1024 * 1024;
+
+  /* 책을 펼 때마다 '마지막으로 읽은 시각'을 남긴다 — 책장 정렬 기준 */
+  function markRead(id, at) {
+    if (!id) return;
+    var t = at || nowMs();
+    memReads[id] = t;
+    DB.putRead(id, t).catch(function () { /* */ });
+  }
 
   function saveBook(book) {
     memBooks[book.id] = book;
@@ -2285,10 +2374,23 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
       ? DB.putPdf(book.id, { blob: book.pdfBlob, pages: book.pdfPages || 0, addedAt: Date.now() })
           .catch(function () { return null; })
       : Promise.resolve(null);
-    return Promise.all([DB.put({
-      id: book.id, title: book.title, text: book.text, chars: book.chars, addedAt: book.addedAt,
+    var rec = {
+      id: book.id, title: book.title, text: book.text, chars: book.chars,
+      addedAt: book.addedAt || Date.now(),
+      file: book.file || '', bytes: book.bytes || 0,
+      lastReadAt: book.lastReadAt || Date.now(),
+      big: (book.bytes || 0) > SMALL_BOOK ? 1 : 0,
       pdf: hasPdf ? 1 : 0, pdfPages: book.pdfPages || 0, scan: book.scan ? 1 : 0
-    }).catch(function () { return null; }), putPdf]);
+    };
+    var putBook = DB.put(rec).catch(function () {
+      /* 저장 공간(쿼터)이 모자라면 본문을 뺀 기록만 남긴다 — 책장에는 그대로 보이고, 열 때 파일만 다시 고르면 된다 */
+      var meta = {};
+      for (var k in rec) { if (Object.prototype.hasOwnProperty.call(rec, k)) meta[k] = rec[k]; }
+      meta.text = '';
+      meta.bodyDropped = 1;
+      return DB.put(meta).catch(function () { return null; });
+    });
+    return Promise.all([putBook, putPdf]);
   }
   function listBooks() {
     return DB.all().catch(function () {
@@ -2297,8 +2399,10 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
   }
   function deleteBook(id) {
     delete memBooks[id];
+    delete memReads[id];
     return Promise.all([DB.del(id).catch(function () { return null; }),
-      DB.delPdf(id).catch(function () { return null; })]);
+      DB.delPdf(id).catch(function () { return null; }),
+      DB.delRead(id).catch(function () { return null; })]);
   }
   function getBook(id) {
     if (memBooks[id]) return Promise.resolve(memBooks[id]);
@@ -2605,8 +2709,10 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
       book.pdfBlob = file;
       book.pdfPages = doc.numPages;
       book.scan = perPage < 40;          /* 글자가 거의 없으면 스캔본으로 본다 */
+      book.file = file.name || '';
+      book.bytes = file.size || 0;
       openBook(book, null);
-      saveBook(book).then(function () { renderBookList(); });
+      saveBook(book).then(function () { renderBookList(); renderShelf(); });
       closeAllSheets();
       if (book.scan) {
         toast('🖼️ 글자가 거의 없는 PDF예요 — 원본 페이지로 엽니다 (' + doc.numPages + '쪽)');
@@ -2633,6 +2739,9 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
       updateSleepUI();
     }
     state.book = book;
+    /* 이 책을 마지막으로 읽은 시각 — 최근 책장 정렬 기준 */
+    book.lastReadAt = nowMs();
+    markRead(book.id, book.lastReadAt);
     /* ☁️ 이 책의 읽던 위치가 저장돼 있으면 그것으로 이어 읽는다
        (다른 기기에서 올려 둔 기록도 책 키가 같으면 그대로 찾아진다) */
     if (!restore) {
@@ -2698,8 +2807,10 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
       var dec = decodeText(reader.result);
       var title = (file.name || 'TXT').replace(/\.(txt|md|text)$/i, '');
       var book = buildBook(title, dec.text, 'file-' + (file.name || 'x') + '-' + (file.size || 0) + '-' + (file.lastModified || 0));
+      book.file = file.name || '';
+      book.bytes = file.size || 0;
       openBook(book, null);
-      saveBook(book).then(function () { renderBookList(); });
+      saveBook(book).then(function () { renderBookList(); renderShelf(); });
       closeAllSheets();
       if (!book.sentences.length) {
         toast('본문을 읽지 못했어요 — 다른 인코딩의 TXT인지 확인해 주세요');
@@ -2713,12 +2824,37 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
     reader.readAsArrayBuffer(file);
   }
 
+  /* 서재 기록 하나를 실제 책으로 펼친다 — 서재 목록과 최근 책장이 같은 길을 쓴다 */
+  function openRecord(rec) {
+    if (!rec || !rec.id) { toast('책 내용을 찾지 못했어요'); return; }
+    var restore = posGet(rec.id);
+    var done = function (pdfRec) {
+      if (!rec.text && !pdfRec) {
+        toast('이 책 본문은 저장돼 있지 않아요 — TXT 파일을 다시 골라 주세요');
+        try { $('fileInput').click(); } catch (e) { /* */ }
+        return;
+      }
+      var book = buildBook(rec.title, rec.text || '', rec.id);
+      book.title = rec.title;
+      book.file = rec.file || '';
+      book.bytes = rec.bytes || 0;
+      if (pdfRec) { book.pdfBlob = pdfRec.blob; book.pdfPages = pdfRec.pages || rec.pdfPages || 0; }
+      book.scan = rec.scan === 1 || rec.scan === true;
+      openBook(book, restore);
+      closeAllSheets();
+    };
+    if (rec.pdf) DB.getPdf(rec.id).then(done, function () { done(null); });
+    else done(null);
+  }
+
   function renderBookList() {
     var box = $('bookList');
-    box.innerHTML = '';
+    var seq = ++listSeq;
     listBooks().then(function (books) {
+      if (seq !== listSeq) return;          /* 늦게 도착한 이전 그림은 버린다 */
       books = (books || []).filter(function (b) { return b && b.id && b.id !== 'sample-lighthouse'; });
       books.sort(function (a, b) { return (b.addedAt || 0) - (a.addedAt || 0); });
+      box.innerHTML = '';
       if (!books.length) {
         box.appendChild(el('div', 'empty-txt', '아직 올린 책이 없습니다. 위에 TXT를 올리거나 아래 샘플로 먼저 읽어 보세요.'));
         return;
@@ -2732,30 +2868,116 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
           meta + '</span></span><button class="del" title="삭제">🗑</button>';
         row.addEventListener('click', function (ev) {
           if (ev.target && ev.target.classList.contains('del')) return;
-          getBook(b.id).then(function (full) {
-            var src = full || b;
-            var restore = posGet(src.id);
-            var done = function (pdfRec) {
-              if (!src.text && !pdfRec) { toast('책 내용을 찾지 못했어요'); return; }
-              var book = buildBook(src.title, src.text || '', src.id);
-              book.title = src.title;
-              if (pdfRec) { book.pdfBlob = pdfRec.blob; book.pdfPages = pdfRec.pages || src.pdfPages || 0; }
-              book.scan = src.scan === 1 || src.scan === true;
-              openBook(book, restore);
-              closeAllSheets();
-            };
-            if (src.pdf) DB.getPdf(src.id).then(done, function () { done(null); });
-            else done(null);
-          });
+          getBook(b.id).then(function (full) { openRecord(full || b); });
         });
         row.querySelector('.del').addEventListener('click', function (ev) {
           ev.stopPropagation();
           if (!confirm('"' + b.title + '" 책을 서재에서 지울까요?')) return;
-          deleteBook(b.id).then(function () { renderBookList(); });
+          deleteBook(b.id).then(function () { renderBookList(); renderShelf(); });
         });
         box.appendChild(row);
       });
-    }).catch(function () { box.appendChild(el('div', 'empty-txt', '서재를 읽지 못했습니다.')); });
+    }).catch(function () {
+      if (seq !== listSeq) return;
+      box.innerHTML = '';
+      box.appendChild(el('div', 'empty-txt', '서재를 읽지 못했습니다.'));
+    });
+  }
+
+  var listSeq = 0, shelfSeq = 0;
+
+  /* =========================================================
+     8-B. 최근 읽은 책 책장(이어 읽기)
+     · 마지막으로 읽은 시각 순 최대 SHELF_MAX 권을 카드로 세운다
+     · 카드 제목을 한 번 누르면 클라우드 책갈피(읽던 위치)와 합쳐져 그 페이지로 바로 이어진다
+     ========================================================= */
+  function relTime(at) {
+    if (!at) return '';
+    var d = nowMs() - Number(at);
+    if (!isFinite(d)) return '';
+    if (d < 0) d = 0;
+    var mi = Math.round(d / 60000);
+    if (mi < 1) return '방금 전';
+    if (mi < 60) return mi + '분 전';
+    var h = Math.round(mi / 60);
+    if (h < 24) return h + '시간 전';
+    var day = Math.round(h / 24);
+    if (day === 1) return '어제';
+    if (day < 7) return day + '일 전';
+    var dt = new Date(Number(at));
+    return (dt.getMonth() + 1) + '월 ' + dt.getDate() + '일';
+  }
+  function fmtSize(n) {
+    n = Number(n) || 0;
+    if (n <= 0) return '';
+    if (n < 1024) return n + 'B';
+    if (n < 1024 * 1024) return Math.round(n / 1024) + 'KB';
+    return (Math.round(n / (1024 * 102.4)) / 10) + 'MB';
+  }
+
+  function renderShelf() {
+    var box = $('recentShelf'), sub = $('recentSub');
+    if (!box) return;
+    var seq = ++shelfSeq;
+    Promise.all([listBooks(), DB.readsAll()]).then(function (res) {
+      if (seq !== shelfSeq) return;          /* 늦게 도착한 이전 그림은 버린다 */
+      var books = (res[0] || []).filter(function (b) { return b && b.id && b.id !== 'sample-lighthouse'; });
+      var reads = res[1] || {};
+      books.forEach(function (b) {
+        var p = null;
+        try { p = posGet(b.id); } catch (e) { p = null; }
+        b.shelfPos = p;
+        b.shelfAt = Math.max(Number(reads[b.id]) || 0, (p && Number(p.at)) || 0, Number(b.lastReadAt) || 0, Number(b.addedAt) || 0);
+      });
+      books.sort(function (a, b) { return b.shelfAt - a.shelfAt; });
+      var top = books.slice(0, SHELF_MAX);
+      box.innerHTML = '';
+      if (!top.length) {
+        box.appendChild(el('div', 'empty-txt', '아직 담긴 책이 없어요. TXT를 올리면 여기에 최근 읽은 책으로 세워 둡니다.'));
+        if (sub) sub.textContent = '';
+        return;
+      }
+      if (sub) sub.textContent = top.length >= SHELF_MAX ? ('최근 ' + SHELF_MAX + '권') : (top.length + '권');
+      top.forEach(function (b) {
+        var pct = (b.shelfPos && typeof b.shelfPos.ratio === 'number') ? Math.round(b.shelfPos.ratio * 100) : 0;
+        pct = Math.max(0, Math.min(100, pct));
+        var prog = b.shelfPos ? (pct + '%') : '새 책';
+        var when = b.shelfAt ? relTime(b.shelfAt) : '';
+        var sizeTxt = fmtSize(b.bytes);
+        var meta = [prog, when].filter(Boolean).join(' · ') + (sizeTxt ? ' · ' + sizeTxt : '');
+        var card = el('div', 'shelf-card' + (state.book && state.book.id === b.id ? ' current' : ''));
+        card.setAttribute('data-id', b.id);
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.innerHTML =
+          '<span class="sc-ico">' + (b.pdf ? '📄' : '📕') + '</span>' +
+          '<button class="sc-x" title="책장에서 지우기" aria-label="책장에서 지우기">✕</button>' +
+          '<span class="sc-t">' + escHtml(b.title || b.file || 'TXT') + '</span>' +
+          '<span class="sc-m">' + escHtml(meta) + '</span>' +
+          '<span class="sc-bar"><i style="width:' + Math.max(3, pct) + '%"></i></span>';
+        card.addEventListener('click', function (ev) {
+          if (ev.target && ev.target.classList && ev.target.classList.contains('sc-x')) return;
+          getBook(b.id).then(function (full) { openRecord(full || b); });
+        });
+        card.addEventListener('keydown', function (ev) {
+          if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); getBook(b.id).then(function (full) { openRecord(full || b); }); }
+        });
+        card.querySelector('.sc-x').addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          if (!confirm('"' + (b.title || 'TXT') + '" 책을 책장에서 지울까요?')) return;
+          deleteBook(b.id).then(function () {
+            renderShelf();
+            renderBookList();
+            toast('🗑 책장에서 지웠어요 · 같은 파일을 다시 올리면 그 페이지에서 이어 읽어요');
+          });
+        });
+        box.appendChild(card);
+      });
+    }).catch(function () {
+      if (seq !== shelfSeq) return;
+      box.innerHTML = '';
+      box.appendChild(el('div', 'empty-txt', '최근 읽은 책을 불러오지 못했어요.'));
+    });
   }
 
   /* =========================================================
@@ -3560,7 +3782,7 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
     s.classList.add('open');
     s.setAttribute('aria-hidden', 'false');
     $('backdrop').classList.add('show');
-    if (id === 'librarySheet') renderBookList();
+    if (id === 'librarySheet') { renderShelf(); renderBookList(); }
     if (id === 'audioSheet') { updateAudioNow(null, state.playing ? '낭독 중' : '대기 중'); }
   }
   function closeAllSheets() {
@@ -3915,8 +4137,8 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
   }
 
   function getBooksThenOpen() {
+    /* openSheet 이 서재(최근 책장 + 책 목록)를 그린다 — 두 번 그리면 비동기 순서에 따라 목록이 겹쳐 보인다 */
     openSheet('librarySheet');
-    renderBookList();
   }
 
   function setFont(v, silent) {
@@ -4157,7 +4379,25 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
       pdfToggle: function () { return PDF.toggle(); },
       hasPdf: function () { return !!(state.book && state.book.pdfBlob); },
       pageLabel: function () { return $('progressLabel').textContent; },
-      bookTitleText: function () { return $('bookTitle').textContent; }
+      bookTitleText: function () { return $('bookTitle').textContent; },
+      /* ---- 최근 읽은 책 책장 ---- */
+      shelf: function () {
+        var box = $('recentShelf');
+        var out = [];
+        if (!box) return out;
+        Array.prototype.forEach.call(box.querySelectorAll('.shelf-card'), function (c) {
+          out.push({
+            id: c.getAttribute('data-id'),
+            title: ((c.querySelector('.sc-t') || {}).textContent || ''),
+            meta: ((c.querySelector('.sc-m') || {}).textContent || ''),
+            current: c.classList.contains('current')
+          });
+        });
+        return out;
+      },
+      shelfRows: function () { return $('recentShelf') ? $('recentShelf').children.length : 0; },
+      renderShelf: renderShelf,
+      openFromShelf: function (id) { return getBook(id).then(function (rec) { if (rec) openRecord(rec); return !!rec; }); }
     };
   }
 
