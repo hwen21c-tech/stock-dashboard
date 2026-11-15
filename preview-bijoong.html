@@ -704,17 +704,33 @@ function drawCandles(cv, candles, opts) {
 
   const big = !!o.big;
   const pl = big ? 10 : 5;
-  const pr = big ? 58 : 42;
+  let pr = big ? 58 : 42;
   const pt = big ? 14 : 9;
   const axisH = big ? 16 : 12;
   const volH = big ? 44 : 26;
   const vGap = big ? 8 : 4;
   const ph = Math.max(24, H - pt - axisH - volH - vGap);
-  const iw = Math.max(40, W - pl - pr);
   const volTop = pt + ph + vGap;
   const volBot = volTop + volH;
 
   const sp = o.split || null;
+  const exList = (o.extras || []).filter((x) => x && x.v != null && isFinite(x.v));
+  /* 우측 선 라벨은 '이름 + 가격'이라 길다 — 4분할·종가·전고점 라벨 중 가장 긴 폭에 맞춰
+     우측 여백을 잡는다. (여백이 모자라면 라벨이 캔버스 밖으로 잘린다) */
+  {
+    const txts = [];
+    if (sp) {
+      sp.lines.forEach((l) => txts.push(l.label + ' ' + fmtPx(l.v)));
+      txts.push('종가 ' + fmtPx(sp.stop));
+    }
+    if (exList.length && !sp) exList.forEach((x) => txts.push('↑' + x.label + ' ' + fmtPx(x.v)));
+    if (txts.length) {
+      ctx.font = (big ? '9.5px' : '8px') + ' ui-monospace, SFMono-Regular, Menlo, monospace';
+      const lw = txts.reduce((m, t) => Math.max(m, ctx.measureText(t).width), 0);
+      pr = Math.max(pr, Math.ceil(lw) + 12);
+    }
+  }
+  const iw = Math.max(40, W - pl - pr);
   /* Y축 범위 = 지금 보이는 봉. 4분할선·파파선·전고점선은 범위 안이면 포함하고,
      범위 밖이면 가장자리에 붙여(↑/↓) 표기해 확대/이동 시 자동 재스케일된다. */
   let hi = -Infinity, lo = Infinity;
@@ -729,6 +745,16 @@ function drawCandles(cv, candles, opts) {
       if (!isFinite(v)) return;
       if (v > hi && v - hi <= lim) hi = v;
       if (v < lo && lo - v <= lim) lo = v;
+    });
+  }
+  /* 전일 종가·120일 전고점처럼 기준선을 카드에 함께 그릴 때는 그 선도 화면 안에 들어오게 잡는다
+     (fitExtras = 기준선 라벨을 카드에서도 읽어야 하는 작은 차트용) */
+  if (exList.length && o.fitExtras) {
+    const rawSpan0 = (hi - lo) || Math.max(hi * 0.02, 1);
+    const lim0 = rawSpan0 * 0.25;
+    exList.forEach((x) => {
+      if (x.v > hi && x.v - hi <= lim0) hi = x.v;
+      if (x.v < lo && lo - x.v <= lim0) lo = x.v;
     });
   }
   const span = (hi - lo) || Math.max(hi * 0.02, 1);
@@ -826,7 +852,7 @@ function drawCandles(cv, candles, opts) {
 
   /* 전고점(60/120일) — 범위 밖이면 위/아래로 붙여 선만 그리고, 라벨은 나중에 왼쪽에 배치 */
   const extraLbls = [];
-  (o.extras || []).forEach((ex) => {
+  exList.forEach((ex) => {
     if (ex.v == null || !isFinite(ex.v)) return;
     let y = Y(ex.v);
     let above = false;
@@ -856,7 +882,7 @@ function drawCandles(cv, candles, opts) {
       ctx.lineWidth = q ? (big ? 1.4 : 1) : 1;
       ctx.beginPath(); ctx.moveTo(pl, y); ctx.lineTo(pl + iw, y); ctx.stroke();
       ctx.setLineDash([]);
-      axisLbls.push({ y: y, text: cl.off + l.label, color: q ? '#34d399' : '#c084fc', kind: 'q' });
+      axisLbls.push({ y: y, text: cl.off + l.label + ' ' + fmtPx(l.v), color: q ? '#34d399' : '#c084fc', kind: 'q', v: l.v });
     });
     const scl = clampV(sp.stop);
     const sy = scl.y;
@@ -865,7 +891,7 @@ function drawCandles(cv, candles, opts) {
     ctx.lineWidth = big ? 2 : 1.4;
     ctx.beginPath(); ctx.moveTo(pl, sy); ctx.lineTo(pl + iw, sy); ctx.stroke();
     ctx.fillStyle = '#fbbf24';
-    axisLbls.push({ y: sy, text: scl.off + '종가', color: '#fbbf24', kind: 'stop', v: sp.stop });
+    axisLbls.push({ y: sy, text: scl.off + '종가 ' + fmtPx(sp.stop), color: '#fbbf24', kind: 'stop', v: sp.stop });
   }
 
   /* 캔버스 테두리 */
@@ -891,10 +917,20 @@ function drawCandles(cv, candles, opts) {
     ctx.textBaseline = 'middle';
     const gap = big ? 11 : 8.5;
     const sorted = axisLbls.slice().sort((a, b) => a.y - b.y);
-    /* 1일차 고가 기준 4분할(ref=d1)은 4/4·3/4·2/4·1/4·종가를 모두 표기하고, 밀집하면 밀어내며 연결선을 긋는다.
-       기준봉 몸통 파파선(ref=body)은 폭이 몇 px 라 라벨이 서로 덮으므로 선만 긋고 손절선 라벨만 남긴다. */
-    const wantAll = big || (sp && sp.ref === 'd1');
-    const keep = wantAll ? sorted : sorted.filter((l) => l.kind === 'stop');
+    /* 1일차 고가 기준 4분할(ref=d1)과 팝업 큰 차트는 4/4·3/4·2/4·1/4·종가를 가격까지 모두 표기하고,
+       밀집하면 위아래로 밀어내며 연결선을 긋는다. 기준봉 몸통 파파선(ref=body)의 카드 차트는 선 간격이
+       1~3px라 라벨이 서로 덮으므로, 손절선(종가)은 항상, 파파선은 서로 겹치지 않는 것만 가격과 함께 남긴다. */
+    let keep;
+    if (big || (sp && sp.ref === 'd1')) {
+      keep = sorted;
+    } else {
+      keep = sorted.filter((l) => l.kind === 'stop');
+      sorted.filter((l) => l.kind !== 'stop').forEach((l) => {
+        if (keep.some((k) => Math.abs(k.y - l.y) < gap)) return;
+        keep.push(l);
+      });
+      keep.sort((a, b) => a.y - b.y);
+    }
     if (keep.length > 1) {
       let prev = -Infinity;
       keep.forEach((l) => { l.ly = Math.max(l.y, prev + gap); prev = l.ly; });
@@ -920,16 +956,18 @@ function drawCandles(cv, candles, opts) {
       chip(pl + iw + 4, Math.min(Math.max(l.y, pt + 5), pt + ph - 4), l.text, l.color, 'left');
     }
   }
-  if (extraLbls.length && big) {
-    setFont('9.5px');
+  /* 전고점·기준선 라벨 — 4분할 라벨과 자리가 겹치지 않게, 4분할이 있으면 왼쪽 / 없으면 오른쪽에 둔다 */
+  if (extraLbls.length && (big || !sp)) {
+    setFont(big ? '9.5px' : '8px');
     ctx.textBaseline = 'middle';
     let prev = -Infinity;
+    const gapE = big ? 12 : 9.5;
     const sortedEx = extraLbls.slice().sort((a, b) => a.y - b.y);
     sortedEx.forEach((l) => {
-      l.ly = Math.max(Math.min(Math.max(l.y, pt + 7), pt + ph - 6), prev + 12);
+      l.ly = Math.max(Math.min(Math.max(l.y, pt + 7), pt + ph - 6), prev + gapE);
       prev = l.ly;
     });
-    sortedEx.forEach((l) => chip(pl + 3, l.ly, l.text, l.color, 'left'));
+    sortedEx.forEach((l) => chip(sp ? pl + 3 : pl + iw + 4, l.ly, l.text, l.color, 'left'));
   }
   /* 가격 눈금 라벨 — 4분할 라벨과 엄킈면 생략 */
   if (big && gridLbls.length) {
