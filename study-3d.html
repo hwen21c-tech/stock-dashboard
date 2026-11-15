@@ -1750,7 +1750,12 @@ Avatar.prototype.update = function (dt) {
       this.path.shift();
       if (!this.path.length) {
         this.state = 'idle';
-        if (this.pendingSeat) { var s = this.pendingSeat; this.pendingSeat = null; this.sitOn(s); }
+        if (this.pendingSeat) {
+          var s = this.pendingSeat; this.pendingSeat = null; this.sitOn(s);
+          if (this.isMe) this.say('여기 앉을게요 🪑', 2000);
+        } else if (this.isMe) {
+          this.say(pick(['도착! 여기서 집중할까요?', '좋아요, 여기 좋네요 🙂', '이동 완료 ✨']), 1800);
+        }
       }
     } else {
       var step = Math.min(d, this.speed * dt);
