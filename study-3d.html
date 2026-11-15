@@ -2008,10 +2008,10 @@ function bindInput() {
     dragState.moved += Math.abs(dx) + Math.abs(dy);
     dragState.x = e.clientX; dragState.y = e.clientY;
     if (dragState.moved > 6) {
-      cam.tTheta = clamp(cam.tTheta - dx * 0.0062, -0.55, 1.15);
-      cam.tPhi = clamp(cam.tPhi - dy * 0.0052, 0.56, 1.30);
-      cam.theta = clamp(cam.theta - dx * 0.0062, -0.55, 1.15);
-      cam.phi = clamp(cam.phi - dy * 0.0052, 0.56, 1.30);
+      cam.tTheta = clamp(cam.tTheta - dx * 0.0040, -0.55, 1.15);
+      cam.tPhi = clamp(cam.tPhi - dy * 0.0036, 0.56, 1.30);
+      cam.theta = clamp(cam.theta - dx * 0.0040, -0.55, 1.15);
+      cam.phi = clamp(cam.phi - dy * 0.0036, 0.56, 1.30);
     }
   });
   function up(e) {
@@ -2952,6 +2952,7 @@ window.__s3d = {
     var v = new THREE.Vector3(x, y, z); v.project(camera);
     return { x: (v.x * 0.5 + 0.5) * W, y: (-v.y * 0.5 + 0.5) * H, z: v.z };
   },
+  cam: function () { return { theta: +cam.theta.toFixed(3), phi: +cam.phi.toFixed(3), r: +cam.r.toFixed(2) }; },
   setCam: function (t, p, r, tx, ty, tz) { cam.tTheta = t; cam.tPhi = p; cam.tR = r; cam.tTarget.set(tx, ty, tz); cam.theta=t; cam.phi=p; cam.r=r; cam.target.copy(cam.tTarget); },
   pick: function (x, y) {
     if (!raycaster) { raycaster = new THREE.Raycaster(); ndc = new THREE.Vector2(); }
