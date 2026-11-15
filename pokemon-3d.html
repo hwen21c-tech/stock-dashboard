@@ -331,22 +331,6 @@ function cloudTex() {
     });
   }));
 }
-function grassTex() {
-  return texFrom(canvasTex(256, 256, (g, w, h) => {
-    g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h);
-    for (let i = 0; i < 9000; i++) {
-      const x = Math.random() * w, y = Math.random() * h;
-      const v = Math.random();
-      g.fillStyle = v < 0.45 ? 'rgba(96,150,62,0.18)' : (v < 0.8 ? 'rgba(190,230,150,0.16)' : 'rgba(62,112,46,0.13)');
-      g.fillRect(x, y, 2, 2);
-    }
-    for (let i = 0; i < 700; i++) {
-      const x = Math.random() * w, y = Math.random() * h;
-      g.strokeStyle = 'rgba(74,124,52,0.20)'; g.lineWidth = 1;
-      g.beginPath(); g.moveTo(x, y); g.lineTo(x + 1.5, y - 4); g.stroke();
-    }
-  }));
-}
 function signTex() {
   return texFrom(canvasTex(512, 256, (g, w, h) => {
     g.fillStyle = '#c98a4b'; g.fillRect(0, 0, w, h);
@@ -546,7 +530,7 @@ function setTheme(name) {
 const world = new THREE.Group();
 scene.add(world);
 
-const groundGeo = new THREE.PlaneGeometry(54, 54, 104, 104);
+const groundGeo = new THREE.PlaneGeometry(54, 54, 150, 150);
 groundGeo.rotateX(-Math.PI / 2);
 {
   const pos = groundGeo.attributes.position;
@@ -561,26 +545,20 @@ groundGeo.rotateX(-Math.PI / 2);
     pos.setY(i, y);
     const n = (Math.sin(x * 1.7) * Math.cos(z * 1.4) * 0.5 + 0.5);
     const n2 = (Math.sin((x + z) * 0.42) * 0.5 + 0.5);
-    tmp.copy(cGrassA).lerp(cGrassB, n * 0.75).lerp(cGrassC, n2 * 0.35);
+    const n3 = (Math.sin(x * 7.3 + z * 5.1) * Math.cos(x * 4.7 - z * 8.2) * 0.5 + 0.5);
+    const n4 = (Math.sin(x * 13.7 - z * 11.3) * 0.5 + 0.5);
+    tmp.copy(cGrassA).lerp(cGrassB, n * 0.7).lerp(cGrassC, n2 * 0.3 + n3 * 0.16);
+    tmp.offsetHSL(0, 0, (n3 - 0.5) * 0.035 + (n4 - 0.5) * 0.022);
     if (y < -0.25) tmp.lerp(new THREE.Color('#4e8f6a'), 0.55); // 연못 둑
     colors[i * 3] = tmp.r; colors[i * 3 + 1] = tmp.g; colors[i * 3 + 2] = tmp.b;
   }
   groundGeo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
   groundGeo.computeVertexNormals();
 }
+/* 잔디는 텍스처 없이 정점 색으로만 칠한다 (업로드 실패 시 새까맣게 되는 위험 회피) */
 const groundMat = new THREE.MeshStandardMaterial({
   vertexColors: true, roughness: 0.95, metalness: 0.0,
 });
-{
-  const gt = grassTex();
-  gt.wrapS = THREE.RepeatWrapping;
-  gt.wrapT = THREE.RepeatWrapping;
-  gt.repeat.set(30, 30);
-  gt.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
-  groundMat.map = gt;
-  /* 첫 업로드가 유실되는 환경(소프트웨어 GL 등) 대비 한 번 더 올린다 */
-  setTimeout(() => { try { gt.needsUpdate = true; } catch (e) { /* */ } }, 700);
-}
 const ground = new THREE.Mesh(groundGeo, groundMat);
 ground.receiveShadow = true;
 world.add(ground);
