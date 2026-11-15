@@ -109,11 +109,25 @@ details.guide[open] > summary{border-bottom:1px solid var(--border-color);}
 .c-live{font-size:10.5px; color:var(--text-muted); margin-left:auto; text-align:right;}
 .c-live.live-on{color:#7dd3fc;}
 
-/* 카드 차트 (200일 일봉 캔들) */
-.chart-box{margin:9px 0 8px; background:#0b1120; border:1px solid #1f2937; border-radius:8px; padding:4px 4px 2px;}
-.chart-box canvas{display:block; width:100%; height:158px; border-radius:5px;}
-.ch-cap{font-size:9.5px; color:var(--text-muted); margin-top:3px; padding:0 3px 1px; display:flex; justify-content:space-between; gap:6px;}
-.ch-cap span:last-child{text-align:right;}
+/* 카드 차트 (200일 일봉 캔들) — 핀치·휠 줌 · 좌우 드래그 팬 */
+.chart-box{position:relative; margin:9px 0 8px; background:#0b1120; border:1px solid #1f2937; border-radius:8px; padding:4px 4px 2px;}
+.chart-box canvas{display:block; width:100%; height:158px; border-radius:5px; touch-action:pan-y; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none;}
+.ch-cap{font-size:9.5px; color:var(--text-muted); margin-top:3px; padding:0 3px 1px; display:flex; flex-wrap:wrap; align-items:center; gap:2px 6px;}
+.ch-cap .ch-txt{flex:1 1 auto; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.ch-cap .ch-r{flex:1 1 100%; text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.ch-cap .ch-zoom{flex:0 0 auto; display:flex; gap:2px;}
+.cz{width:25px; height:22px; display:inline-flex; align-items:center; justify-content:center; padding:0; border:1px solid #334155;
+  background:rgba(148,163,184,.10); color:#cbd5e1; border-radius:5px; font-size:12px; font-weight:900; line-height:1; cursor:pointer;}
+.cz:active{background:rgba(148,163,184,.26);}
+/* 크로스헤어 툴팁 */
+.ctip{position:absolute; left:6px; top:6px; z-index:3; display:none; max-width:calc(100% - 12px); pointer-events:none;
+  background:rgba(2,6,23,.95); border:1px solid #334155; border-radius:6px; padding:4px 6px; font-size:9.5px; line-height:1.55;
+  color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; box-shadow:0 4px 14px rgba(0,0,0,.5);}
+.ctip.on{display:block;}
+.ctip b{color:#fde68a; font-weight:900;}
+.ctip .cu{color:#f87171; font-weight:900;}
+.ctip .cd{color:#38bdf8; font-weight:900;}
+.ctip .cm{color:#94a3b8;}
 /* 1일차 배너 · 시뮬레이션 가정 */
 .d1-banner{margin-top:9px; font-size:11px; line-height:1.55; border-radius:8px; padding:8px 10px; border:1px dashed;}
 .d1-banner.wait{color:#fcd34d; border-color:rgba(251,191,36,.4); background:rgba(251,191,36,.07);}
@@ -228,8 +242,29 @@ details.guide[open] > summary{border-bottom:1px solid var(--border-color);}
 .modal-head h3{font-size:14px; font-weight:900; letter-spacing:-.2px;}
 .modal-head .x{margin-left:auto; border:1px solid var(--border-color); background:var(--bg-card); color:var(--text-main); border-radius:8px; padding:4px 10px; font-size:12px; font-weight:900; cursor:pointer;}
 .modal-body{margin-top:11px;}
-.chart-canvas-wrap{background:var(--bg-card-sub); border:1px solid #1f2937; border-radius:9px; padding:6px 6px 3px;}
-.chart-canvas-wrap canvas{display:block; width:100%; border-radius:6px;}
+.chart-canvas-wrap{position:relative; background:var(--bg-card-sub); border:1px solid #1f2937; border-radius:9px; padding:6px 6px 3px;}
+.chart-canvas-wrap canvas{display:block; width:100%; border-radius:6px; touch-action:pan-y; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; cursor:crosshair;}
+.chart-canvas-wrap.zoomable{background:linear-gradient(180deg,rgba(52,211,153,.06),transparent 60%),var(--bg-card-sub);}
+/* 모달 차트 확대·축소·기간 전환 바 */
+.m-zoom{margin-top:10px; display:flex; align-items:center; gap:6px; flex-wrap:wrap;}
+.m-zoom .pchips{display:flex; gap:4px; flex-wrap:wrap;}
+.pchip{font-size:11px; font-weight:900; color:#cbd5e1; background:rgba(148,163,184,.10); border:1px solid #334155;
+  border-radius:999px; padding:5px 10px; cursor:pointer; line-height:1;}
+.pchip.on{color:#0b1120; background:linear-gradient(180deg,#a7f3d0,#34d399); border-color:#34d399;}
+.pchip:active{transform:scale(.97);}
+.m-zoom .zbtns{margin-left:auto; display:flex; gap:3px;}
+.zbtn{min-width:32px; height:30px; display:inline-flex; align-items:center; justify-content:center; gap:3px; padding:0 8px;
+  border:1px solid #334155; background:rgba(148,163,184,.10); color:#e2e8f0; border-radius:7px;
+  font-size:13px; font-weight:900; line-height:1; cursor:pointer;}
+.zbtn:active{background:rgba(148,163,184,.26);}
+.zbtn.wide{font-size:11px; padding:0 9px;}
+.m-zoom .hint{flex:1 1 100%; font-size:9.5px; color:#64748b; line-height:1.5;}
+@media (max-width:430px){
+  .m-zoom{gap:5px;}
+  .pchip{padding:4px 8px; font-size:10.5px;}
+  .zbtn{min-width:29px; height:28px; padding:0 6px; font-size:12px;}
+  .zbtn.wide{padding:0 7px;}
+}
 .m-split{margin-top:8px; font-size:10.5px; color:var(--text-muted); line-height:1.7;}
 .sp-row{display:flex; flex-wrap:wrap; gap:4px; margin-top:4px;}
 .sp-chip{font-size:10px; font-weight:800; color:#a7f3d0; background:rgba(52,211,153,.10); border:1px solid rgba(52,211,153,.4); border-radius:5px; padding:1px 6px; white-space:nowrap;}
@@ -376,7 +411,22 @@ details.guide[open] > summary{border-bottom:1px solid var(--border-color);}
       <button class="x" id="cmClose">닫기 ✕</button>
     </div>
     <div class="modal-body">
-      <div class="chart-canvas-wrap"><canvas id="cmCanvas"></canvas></div>
+      <div class="m-zoom">
+        <span class="pchips" id="cmChips">
+          <button class="pchip on" data-period="15">15일</button>
+          <button class="pchip" data-period="30">30일</button>
+          <button class="pchip" data-period="60">60일</button>
+          <button class="pchip" data-period="120">120일</button>
+          <button class="pchip" data-period="200">200일</button>
+        </span>
+        <span class="zbtns">
+          <button class="zbtn" id="cmOut" aria-label="축소">－</button>
+          <button class="zbtn" id="cmIn" aria-label="확대">＋</button>
+          <button class="zbtn wide" id="cmReset">↺ 초기화</button>
+        </span>
+        <span class="hint" id="cmZoomHint">두 손가락 핀치 · 마우스 휠 = 확대/축소 · 한 손가락 좌우 드래그 = 이동 · 두 번 탭 = 초기화</span>
+      </div>
+      <div class="chart-canvas-wrap zoomable"><canvas id="cmCanvas"></canvas><div class="ctip" id="cmTip"></div></div>
       <div class="m-split" id="cmSplit">—</div>
       <div class="legend">
         <span><i style="background:#f43f5e"></i>양봉</span>
@@ -629,7 +679,17 @@ function splitOf(c, st) {
 function drawCandles(cv, candles, opts) {
   if (!cv) return;
   const o = opts || {};
-  const cs = (candles || []).filter((x) => x && isFinite(x.h) && isFinite(x.l) && isFinite(x.c));
+  const all = (candles || []).filter((x) => x && isFinite(x.h) && isFinite(x.l) && isFinite(x.c));
+  if (!all.length) return;
+  /* 표시 구간(확대·축소·드래그) — o.view = { start, count }. 없으면 전체 봉 */
+  let vs = 0, vc = all.length;
+  if (o.view) {
+    vc = Math.round(o.view.count || all.length);
+    vs = Math.round(o.view.start || 0);
+    vc = Math.min(Math.max(vc, 1), all.length);
+    vs = Math.min(Math.max(vs, 0), all.length - vc);
+  }
+  const cs = (vs === 0 && vc === all.length) ? all : all.slice(vs, vs + vc);
   if (!cs.length) return;
   const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2.5);
   const W = Math.max(120, Math.floor(cv.clientWidth || cv.parentElement.clientWidth || 300));
@@ -655,17 +715,32 @@ function drawCandles(cv, candles, opts) {
   const volBot = volTop + volH;
 
   const sp = o.split || null;
+  /* Y축 범위 = 지금 보이는 봉. 4분할선·파파선·전고점선은 범위 안이면 포함하고,
+     범위 밖이면 가장자리에 붙여(↑/↓) 표기해 확대/이동 시 자동 재스케일된다. */
   let hi = -Infinity, lo = Infinity;
   cs.forEach((c) => { hi = Math.max(hi, c.h); lo = Math.min(lo, c.l); });
-  if (sp) {
-    sp.lines.forEach((l) => { hi = Math.max(hi, l.v); lo = Math.min(lo, l.v); });
-    hi = Math.max(hi, sp.stop); lo = Math.min(lo, sp.stop);
-    if (sp.zone) { hi = Math.max(hi, sp.zone[1]); lo = Math.min(lo, sp.zone[0]); }
-  }
   if (!isFinite(hi) || !isFinite(lo)) return;
+  if (sp) {
+    const rawSpan = (hi - lo) || Math.max(hi * 0.02, 1);
+    const lim = rawSpan * 0.25;
+    const vals = sp.lines.map((l) => l.v).concat([sp.stop]);
+    if (sp.zone) vals.push(sp.zone[0], sp.zone[1]);
+    vals.forEach((v) => {
+      if (!isFinite(v)) return;
+      if (v > hi && v - hi <= lim) hi = v;
+      if (v < lo && lo - v <= lim) lo = v;
+    });
+  }
   const span = (hi - lo) || Math.max(hi * 0.02, 1);
   const padV = span * 0.08;
   hi += padV; lo -= padV;
+  /* 범위 밖 값은 위/아래 가장자리에 붙이고 방향 화살표를 붙인다 */
+  const clampV = (v) => {
+    if (!isFinite(v)) return { y: pt + ph / 2, off: '' };
+    if (v > hi) return { y: pt + 1, off: '↑' };
+    if (v < lo) return { y: pt + ph - 1, off: '↓' };
+    return { y: pt + ph - ((v - lo) / (hi - lo)) * ph, off: '' };
+  };
   const Y = (v) => pt + ph - ((v - lo) / (hi - lo)) * ph;
   const X = (i) => pl + (iw * (i + 0.5)) / cs.length;
   const bw = Math.max(big ? 3 : 1.2, Math.min(big ? 30 : 7, iw / cs.length - (big ? 3 : 0.6)));
@@ -690,7 +765,7 @@ function drawCandles(cv, candles, opts) {
 
   /* 4분할 매수존 음영 */
   if (sp && sp.zone && sp.zone[1] > sp.zone[0]) {
-    const y1 = Y(sp.zone[1]), y2 = Y(sp.zone[0]);
+    const y1 = clampV(sp.zone[1]).y, y2 = clampV(sp.zone[0]).y;
     ctx.fillStyle = 'rgba(52,211,153,.13)';
     ctx.fillRect(pl, y1, iw, Math.max(1, y2 - y1));
     if (big && y2 - y1 >= 13) {
@@ -738,7 +813,7 @@ function drawCandles(cv, candles, opts) {
     }
   });
 
-  /* 거래량 */
+  /* 거래량 — 높이도 지금 보이는 봉 기준으로 재스케일 */
   const vMax = Math.max.apply(null, cs.map((c) => c.v || 0)) || 1;
   cs.forEach((c, i) => {
     const x = X(i);
@@ -773,22 +848,24 @@ function drawCandles(cv, candles, opts) {
       ctx.fillRect(pl, Y(sp.zone[1]), iw, Math.max(1, Y(sp.zone[0]) - Y(sp.zone[1])));
     }
     sp.lines.forEach((l) => {
-      const y = Y(l.v);
+      const cl = clampV(l.v);
+      const y = cl.y;
       const q = l.kind === 'q';
       ctx.strokeStyle = q ? (sp.sim ? 'rgba(52,211,153,.55)' : '#34d399') : 'rgba(192,132,252,.85)';
       ctx.setLineDash(q ? [] : [4, 3]);
       ctx.lineWidth = q ? (big ? 1.4 : 1) : 1;
       ctx.beginPath(); ctx.moveTo(pl, y); ctx.lineTo(pl + iw, y); ctx.stroke();
       ctx.setLineDash([]);
-      axisLbls.push({ y: y, text: l.label, color: q ? '#34d399' : '#c084fc', kind: 'q' });
+      axisLbls.push({ y: y, text: cl.off + l.label, color: q ? '#34d399' : '#c084fc', kind: 'q' });
     });
-    const sy = Y(sp.stop);
+    const scl = clampV(sp.stop);
+    const sy = scl.y;
     ctx.strokeStyle = '#fbbf24';
     ctx.setLineDash([]);
     ctx.lineWidth = big ? 2 : 1.4;
     ctx.beginPath(); ctx.moveTo(pl, sy); ctx.lineTo(pl + iw, sy); ctx.stroke();
     ctx.fillStyle = '#fbbf24';
-    axisLbls.push({ y: sy, text: '종가', color: '#fbbf24', kind: 'stop', v: sp.stop });
+    axisLbls.push({ y: sy, text: scl.off + '종가', color: '#fbbf24', kind: 'stop', v: sp.stop });
   }
 
   /* 캔버스 테두리 */
@@ -894,6 +971,272 @@ function drawCandles(cv, candles, opts) {
     ctx.fillStyle = 'rgba(52,211,153,.95)';
     ctx.fillText(o.tag, pl + 4, pt + 2);
   }
+
+  /* ---- 크로스헤어: 호버/터치한 봉의 세로선 + 가격 가로선 ---- */
+  if (o.hover && o.hover.i != null && o.hover.i >= 0 && o.hover.i < cs.length) {
+    const hi2 = Math.min(cs.length - 1, Math.max(0, Math.round(o.hover.i)));
+    const hx = X(hi2);
+    const hc = cs[hi2];
+    ctx.save();
+    ctx.strokeStyle = 'rgba(226,232,240,.45)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(hx, pt); ctx.lineTo(hx, volBot); ctx.stroke();
+    if (o.hover.y != null) {
+      const hy = Math.min(Math.max(o.hover.y, pt), pt + ph);
+      ctx.beginPath(); ctx.moveTo(pl, hy); ctx.lineTo(pl + iw, hy); ctx.stroke();
+      const pv = lo + ((pt + ph - hy) / ph) * (hi - lo);
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(226,232,240,.92)';
+      ctx.fillRect(pl + iw + 1, hy - 6.5, Math.max(20, W - (pl + iw) - 2), 13);
+      ctx.fillStyle = '#0b1120';
+      ctx.font = (big ? '9.5px' : '8.5px') + ' ui-monospace, SFMono-Regular, Menlo, monospace';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(fmtPx(pv), W - 4, hy + 0.5);
+      ctx.setLineDash([3, 3]);
+    }
+    ctx.setLineDash([]);
+    ctx.strokeStyle = 'rgba(253,230,138,.95)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(hx - bw / 2 - 1.5, Y(hc.h) - 1.5, bw + 3, Math.max(1, Math.abs(Y(hc.l) - Y(hc.h))) + 3);
+    ctx.restore();
+  }
+
+  /* 입력 처리(줌·팬·호버)가 쓸 기하 정보 */
+  cv._geo = { pl: pl, iw: iw, pt: pt, ph: ph, volTop: volTop, volBot: volBot, count: cs.length, start: vs, W: W, H: H, bw: bw };
+}
+
+/* ============================================================
+   차트 확대·축소·이동(줌·팬) 엔진 — 모달·카드 공용
+   · 핀치(두 손가락) / 마우스 휠 / 좌우 드래그 / － ＋ ↺ 버튼
+   · 카드 차트는 세로 1손가락 스크롤을 통과시키고(touch-action:pan-y)
+     좌우 드래그·2손가락 핀치·버튼만 차트가 가로챈다.
+   ============================================================ */
+const ZMIN = 10, ZMAX = 200;      // 표시 봉 개수 최소 10 ~ 최대 200
+const ZS = Object.create(null);   // key -> { len, startF, count, hover }
+
+function zMaxCount(s) { return Math.min(ZMAX, Math.max(1, s.len)); }
+function zMinCount(s) { return Math.min(ZMIN, zMaxCount(s)); }
+
+function zClamp(s) {
+  s.len = Math.max(1, s.len || 1);
+  const maxC = zMaxCount(s), minC = zMinCount(s);
+  let c = (s.countF == null) ? (s.count || s.len) : s.countF;
+  c = Math.min(maxC, Math.max(minC, c));
+  s.countF = c;
+  s.count = Math.round(c);
+  s.startF = Math.min(Math.max(s.startF || 0, 0), Math.max(0, s.len - s.count));
+}
+
+function zState(key, len, def) {
+  let s = ZS[key];
+  if (!s) {
+    const c = Math.min(def || len, len);
+    s = ZS[key] = { len: len, startF: Math.max(0, len - c), count: c, countF: c, hover: null };
+    return s;
+  }
+  if (s.len !== len) {
+    const wasFull = s.count >= s.len;   // 전체 보기 중이었으면 새 봉이 와도 전체 유지
+    s.len = len;
+    if (wasFull) { s.count = len; s.countF = len; s.startF = 0; }
+    if (s.hover) s.hover = null;
+  }
+  zClamp(s);
+  return s;
+}
+
+function zView(s) { zClamp(s); return { start: Math.round(s.startF), count: s.count }; }
+
+/* anchor: 0(왼쪽)~1(오른쪽) 기준점을 고정하고 봉 개수를 바꾼다 */
+function zZoom(s, factor, anchor) {
+  const a = Math.min(1, Math.max(0, anchor == null ? 0.5 : anchor));
+  const idx = s.startF + a * s.count;
+  const cur = (s.countF == null ? s.count : s.countF);
+  let ncF = cur * factor;
+  ncF = Math.min(zMaxCount(s), Math.max(zMinCount(s), ncF));
+  s.countF = ncF;
+  s.count = Math.round(ncF);
+  s.startF = Math.min(Math.max(idx - a * s.count, 0), Math.max(0, s.len - s.count));
+  s.hover = null;
+}
+
+function zPanPx(s, dxPx, iw) {
+  const per = s.count / Math.max(1, iw);
+  s.startF = Math.min(Math.max(s.startF - dxPx * per, 0), Math.max(0, s.len - s.count));
+}
+
+function zReset(s, count) {
+  const c = Math.min(zMaxCount(s), Math.max(zMinCount(s), count || s.len));
+  s.count = c;
+  s.countF = c;
+  s.startF = Math.max(0, s.len - c);
+  s.hover = null;
+}
+
+/* ---------- 크로스헤어 툴팁 ---------- */
+function tipHTML(all, fi) {
+  const c = all[fi];
+  if (!c) return '';
+  const prev = fi > 0 ? all[fi - 1] : null;
+  const chg = prev && prev.c ? ((c.c - prev.c) / prev.c) * 100 : null;
+  const k = chg == null ? 'cm' : chg > 0 ? 'cu' : chg < 0 ? 'cd' : 'cm';
+  const vol = c.v == null ? '—' : Math.round(c.v).toLocaleString('ko-KR') + '주';
+  const amt = c.v == null ? '' : ' · 대금 ' + eok((c.v * c.c) / 100000000);
+  return '<b>' + ymd(c.d) + '</b>'
+    + ' <span class="cm">시</span> ' + fmtPx(c.o)
+    + ' <span class="cm">고</span> ' + fmtPx(c.h)
+    + ' <span class="cm">저</span> ' + fmtPx(c.l)
+    + ' <span class="cm">종</span> ' + fmtPx(c.c)
+    + (chg == null ? '' : ' <span class="' + k + '">' + pctTxt(chg) + '</span>')
+    + '<br><span class="cm">거래량</span> ' + vol + amt;
+}
+
+function updateTip(cv, key, tipEl) {
+  if (!tipEl) return;
+  const s = ZS[key];
+  const g = cv._geo;
+  const all = cv._series || [];
+  const hv = s && s.hover;
+  if (!hv || hv.i == null || !g || !g.count) { tipEl.classList.remove('on'); return; }
+  const vi = Math.min(g.count - 1, Math.max(0, Math.round(hv.i)));
+  const fi = g.start + vi;
+  if (!all[fi]) { tipEl.classList.remove('on'); return; }
+  tipEl.innerHTML = tipHTML(all, fi);
+  tipEl.classList.add('on');
+  const ratio = (vi + 0.5) / g.count;
+  if (ratio < 0.5) { tipEl.style.left = 'auto'; tipEl.style.right = '6px'; }
+  else { tipEl.style.right = 'auto'; tipEl.style.left = '6px'; }
+  tipEl.style.top = '6px';
+}
+
+/* 다른 차트에 남아 있는 크로스헤어/툴팁 정리 (터치로 다른 카드를 누를 때) */
+function clearOtherHovers(key) {
+  let dirty = false;
+  Object.keys(ZS).forEach((k) => {
+    if (k !== key && ZS[k] && ZS[k].hover) { ZS[k].hover = null; dirty = true; }
+  });
+  if (!dirty) return;
+  Array.prototype.forEach.call(document.querySelectorAll('canvas'), (cv) => {
+    if (cv._zb && cv._zb.key !== key && cv._zb.cfg && cv._zb.cfg.redraw) cv._zb.cfg.redraw();
+  });
+}
+
+/* ---------- 입력 바인딩 ---------- */
+function bindChart(cv, key, cfg) {
+  if (!cv || cv._zb) return;
+  cv._zb = { key: key, cfg: cfg || {} };
+  const P = new Map();
+  let drag = null, pinch = null;
+
+  const geom = () => cv._geo || { pl: 0, iw: Math.max(1, cv.clientWidth || 200), count: 1, start: 0 };
+  const ratioAt = (clientX) => {
+    const r = cv.getBoundingClientRect(); const g = geom();
+    return Math.min(1, Math.max(0, (clientX - r.left - g.pl) / Math.max(1, g.iw)));
+  };
+  const idxAt = (clientX) => {
+    const r = cv.getBoundingClientRect(); const g = geom();
+    return Math.floor(((clientX - r.left - g.pl) / Math.max(1, g.iw)) * g.count);
+  };
+  const redraw = () => { const f = cv._zb && cv._zb.cfg; if (f && f.redraw) f.redraw(); };
+  const setHover = (e) => {
+    const s = ZS[cv._zb.key]; const g = cv._geo; if (!s || !g) return;
+    const r = cv.getBoundingClientRect();
+    const i = idxAt(e.clientX);
+    s.hover = (i < 0 || i >= g.count) ? null : { i: i, y: e.clientY - r.top };
+  };
+  const distOf = () => { const a = Array.from(P.values()); return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); };
+  const midXOf = () => { const a = Array.from(P.values()); return (a[0].x + a[1].x) / 2; };
+
+  cv.addEventListener('dragstart', (e) => e.preventDefault());
+
+  cv.addEventListener('pointerdown', (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    clearOtherHovers(cv._zb.key);
+    P.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+    if (P.size === 1) { drag = { x: e.clientX, x0: e.clientX, moved: false, touch: e.pointerType !== 'mouse' }; pinch = null; }
+    else if (P.size === 2) { pinch = { d: distOf(), mx: midXOf() }; drag = null; }
+    setHover(e);
+    redraw();
+  });
+
+  cv.addEventListener('pointermove', (e) => {
+    const s = ZS[cv._zb.key]; if (!s) return;
+    if (!P.has(e.pointerId)) {
+      if (e.pointerType === 'mouse') { setHover(e); redraw(); }
+      return;
+    }
+    P.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const g = cv._geo;
+    if (P.size >= 2 && pinch) {
+      const d = distOf();
+      if (d > 6 && pinch.d > 6) {
+        const f = Math.min(2, Math.max(0.5, pinch.d / d));   // 한 단계에 2배 이상 튀지 않게
+        zZoom(s, f, ratioAt(midXOf()));
+      }
+      const mx = midXOf();
+      if (g && Math.abs(mx - pinch.mx) > 0.5) zPanPx(s, mx - pinch.mx, g.iw);
+      pinch.d = d; pinch.mx = mx;
+      redraw();
+      return;
+    }
+    if (drag) {
+      const dx = e.clientX - drag.x;
+      if (Math.abs(dx) > 0.5) {
+        if (Math.abs(e.clientX - drag.x0) > 3) drag.moved = true;
+        drag.x = e.clientX;
+        if (g) zPanPx(s, dx, g.iw);
+        setHover(e);
+        redraw();
+      }
+    }
+  });
+
+  const endP = (e) => {
+    const s = ZS[cv._zb.key];
+    P.delete(e.pointerId);
+    if (P.size < 2) pinch = null;
+    if (P.size === 0) {
+      const tap = !!(drag && drag.touch && !drag.moved);
+      drag = null;
+      if (s && !tap) s.hover = null;
+      redraw();
+    }
+  };
+  cv.addEventListener('pointerup', endP);
+  cv.addEventListener('pointercancel', endP);
+  cv.addEventListener('lostpointercapture', (e) => { if (P.has(e.pointerId)) endP(e); });
+
+  cv.addEventListener('pointerleave', (e) => {
+    if (e.pointerType !== 'mouse' || P.size) return;
+    const s = ZS[cv._zb.key]; if (!s || !s.hover) return;
+    s.hover = null; redraw();
+  });
+
+  cv.addEventListener('wheel', (e) => {
+    const s = ZS[cv._zb.key]; if (!s) return;
+    const cfgW = (cv._zb.cfg && cv._zb.cfg.wheelPlain) === true;
+    const horiz = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+    if (cfgW || e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      zZoom(s, e.deltaY > 0 ? 1.18 : 1 / 1.18, ratioAt(e.clientX));
+      redraw();
+    } else if (horiz) {
+      e.preventDefault();
+      const g = cv._geo;
+      zPanPx(s, e.deltaX * 2, g ? g.iw : 200);
+      redraw();
+    }
+  }, { passive: false });
+
+  cv.addEventListener('dblclick', (e) => {
+    e.preventDefault();
+    const s = ZS[cv._zb.key]; if (!s) return;
+    const f = cv._zb.cfg || {};
+    zReset(s, typeof f.def === 'function' ? f.def(s) : s.len);
+    redraw();
+  });
 }
 
 /* ---------- 카드 ---------- */
@@ -915,7 +1258,16 @@ function cardHTML(c, idx) {
     +   '<div class="warn-row">' + warnHTML(c) + '</div>'
     +   '<div class="chart-box">'
     +     '<canvas class="cand-canvas" data-cv="' + c.code + '"></canvas>'
-    +     '<div class="ch-cap"><span data-cap="l">' + capLeft(c) + '</span><span data-cap="r"></span></div>'
+    +     '<div class="ctip" data-tip="' + c.code + '"></div>'
+    +     '<div class="ch-cap">'
+    +       '<span class="ch-txt" data-cap="l">' + capLeft(c) + '</span>'
+    +       '<span class="ch-zoom">'
+    +         '<button class="cz" data-z="out" data-zc="' + c.code + '" aria-label="차트 축소">－</button>'
+    +         '<button class="cz" data-z="in" data-zc="' + c.code + '" aria-label="차트 확대">＋</button>'
+    +         '<button class="cz" data-z="reset" data-zc="' + c.code + '" aria-label="차트 초기화">↺</button>'
+    +       '</span>'
+    +       '<span class="ch-r" data-cap="r"></span>'
+    +     '</div>'
     +   '</div>'
     +   '<div class="checks">'
     +     Object.keys(CHK_LABEL).map((k) => '<span class="chk ' + (c.checks[k] ? 'ok' : 'no') + '">' + (c.checks[k] ? '✓ ' : '✕ ') + CHK_LABEL[k] + '</span>').join('')
@@ -1030,13 +1382,23 @@ function drawCard(code) {
     d1Date = st.real.d;
     if (!candles.some((x) => String(x.d) === String(st.real.d))) candles.push({ d: st.real.d, o: st.real.o, h: st.real.h, l: st.real.l, c: st.real.c, v: null });
   }
+  const s = zState('c:' + code, candles.length, candles.length);
+  cv._series = candles;
+  bindChart(cv, 'c:' + code, {
+    wheelPlain: false,                 // 카드에서는 세로 휠 = 페이지 스크롤(차트 안 휠 줌은 Ctrl/⌘+휠)
+    def: (x) => x.len,
+    redraw: () => drawCard(code),
+  });
   drawCandles(cv, candles, {
     H: 158,
     big: false,
     split: splitOf(c, st),
     d1Date,
     tag: d1Date ? '1일차 ' + md(d1Date) : '',
+    view: zView(s),
+    hover: s.hover,
   });
+  updateTip(cv, 'c:' + code, document.querySelector('.ctip[data-tip="' + code + '"]'));
 }
 
 function drawAllCards() {
@@ -1051,24 +1413,59 @@ function setD1(code, q, src) {
   return true;
 }
 
-/* ---------- 15일 봉차트 모달 ---------- */
+/* ---------- 봉차트 모달 (기간 전환 · 확대·축소 · 이동) ---------- */
 let currentCard = null;
+const MODAL_DEF = 15;
+const MODAL = { card: null, extra: [], data: [], meta: null };
 
-function modalCandles(card, c15) {
-  const arr = (c15 || []).slice();
+/* 페이지 내장 일봉 + API 일봉 + 1일차 실측봉을 날짜 기준으로 합친 시리즈 */
+function modalSeries(card, extra) {
+  const map = new Map();
+  (card.candles || []).forEach((c) => map.set(String(c.d), { d: String(c.d), o: c.o, h: c.h, l: c.l, c: c.c, v: c.v }));
+  (extra || []).forEach((c) => {
+    if (!c || !c.d) return;
+    map.set(String(c.d), { d: String(c.d), o: c.o, h: c.h, l: c.l, c: c.c, v: c.v });
+  });
   const st = activeState(card);
-  if (st.real && isAfterBase(st.real.d) && !arr.some((x) => String(x.d) === String(st.real.d))) {
-    arr.push({ d: st.real.d, o: st.real.o, h: st.real.h, l: st.real.l, c: st.real.c, v: null });
+  if (st.real && isAfterBase(st.real.d)) {
+    map.set(String(st.real.d), { d: st.real.d, o: st.real.o, h: st.real.h, l: st.real.l, c: st.real.c, v: null });
   }
-  return arr.slice(-15);
+  return Array.from(map.values()).sort((a, b) => (String(a.d) < String(b.d) ? -1 : String(a.d) > String(b.d) ? 1 : 0));
 }
 
-function paintModal(card, c15, meta) {
+/* extra: 임시로 더할 일봉(API 응답 등) · meta: 상태줄 문구 */
+function paintModal(card, extra, meta) {
+  MODAL.card = card;
+  if (extra) MODAL.extra = extra;
+  if (meta) MODAL.meta = meta;
+  MODAL.data = modalSeries(card, MODAL.extra);
+  renderModal();
+}
+
+function repaintModal() {
+  if (!MODAL.card) return;
+  MODAL.data = modalSeries(MODAL.card, MODAL.extra);
+  renderModal();
+}
+
+function renderModal() {
+  const card = MODAL.card;
+  if (!card) return;
+  const all = (MODAL.data && MODAL.data.length) ? MODAL.data : modalSeries(card, MODAL.extra);
+  MODAL.data = all;
   const st = activeState(card);
-  const candles = modalCandles(card, c15);
   const sp = splitOf(card, st);
   const pf = planFor(card, st);
-  drawCandles($('cmCanvas'), candles, {
+  const cv = $('cmCanvas');
+  const zs = zState('m', all.length, MODAL_DEF);
+  const view = zView(zs);
+  cv._series = all;
+  bindChart(cv, 'm', {
+    wheelPlain: true,                  // 모달은 차트 전용 뷰 — 휠 그대로 줌
+    def: () => MODAL_DEF,
+    redraw: renderModal,
+  });
+  drawCandles(cv, all, {
     H: window.innerWidth < 560 ? 250 : 320,
     big: true,
     split: sp,
@@ -1078,7 +1475,18 @@ function paintModal(card, c15, meta) {
     ],
     d1Date: st.real && isAfterBase(st.real.d) ? st.real.d : null,
     tag: st.real && isAfterBase(st.real.d) ? '1일차 ' + md(st.real.d) : '',
+    view: view,
+    hover: zs.hover,
   });
+  updateTip(cv, 'm', $('cmTip'));
+  /* 기간 칩 활성 표시 */
+  const chipBox = $('cmChips');
+  if (chipBox) {
+    Array.prototype.forEach.call(chipBox.querySelectorAll('.pchip'), (b) => {
+      const n = Number(b.getAttribute('data-period'));
+      b.classList.toggle('on', n === zs.count && n <= all.length);
+    });
+  }
   /* 4분할 값 칩 */
   const chips = sp.lines.map((l) => '<span class="sp-chip"><i>' + l.label + '</i>' + won(l.v) + '</span>');
   chips.push('<span class="sp-chip stop"><i>종가 손절</i>' + won(sp.stop) + '</span>');
@@ -1098,15 +1506,18 @@ function paintModal(card, c15, meta) {
     + '<div class="row">' + pf.wtH + '</div>'
     + '<div class="row bd-line">' + stateBadge(card, st) + '</div>';
   $('cmD1').style.display = '';
-  /* 상태줄 */
-  const srcTxt = meta && meta.src ? meta.src : '페이지 내장 일봉';
-  let s = '기준봉 2026.11.13 종가 실측 · 최근 ' + candles.length + '봉 · ' + srcTxt;
-  if (meta && meta.cur && meta.cur.price != null) {
-    s += ' · 현재가 ' + won(meta.cur.price) + '원 ' + pctTxt(meta.cur.changePct)
-      + (meta.cur.tradedAtKst ? ' (' + meta.cur.tradedAtKst + ')' : '');
+  /* 상태줄 — 지금 보이는 봉 구간까지 표기 */
+  const vis = all.slice(view.start, view.start + view.count);
+  const srcTxt = MODAL.meta && MODAL.meta.src ? MODAL.meta.src : '페이지 내장 일봉';
+  let stx = '기준봉 2026.11.13 종가 실측 · 표시 ' + vis.length + '/' + all.length + '봉';
+  if (vis.length) stx += ' (' + ymd(vis[0].d) + ' ~ ' + ymd(vis[vis.length - 1].d) + ')';
+  stx += ' · ' + srcTxt;
+  if (MODAL.meta && MODAL.meta.cur && MODAL.meta.cur.price != null) {
+    stx += ' · 현재가 ' + won(MODAL.meta.cur.price) + '원 ' + pctTxt(MODAL.meta.cur.changePct)
+      + (MODAL.meta.cur.tradedAtKst ? ' (' + MODAL.meta.cur.tradedAtKst + ')' : '');
   }
-  s += ' · ' + new Date().toLocaleTimeString('ko-KR', { hour12: false }) + ' KST';
-  $('cmStatus').textContent = s;
+  stx += ' · ' + new Date().toLocaleTimeString('ko-KR', { hour12: false }) + ' KST';
+  $('cmStatus').textContent = stx;
   $('cmStatus').className = 'm-status ok';
 }
 
@@ -1114,9 +1525,12 @@ function openChart(code) {
   const card = DATA.cards.find((c) => c.code === code);
   if (!card) return;
   currentCard = card;
-  $('cmTitle').textContent = '📈 ' + card.name + ' · ' + card.code + ' — 15일 봉차트';
+  delete ZS.m;                        // 열 때마다 15일 · 전체 보기로 초기화
+  MODAL.extra = [];
+  MODAL.meta = null;
+  $('cmTitle').textContent = '📈 ' + card.name + ' · ' + card.code + ' — 봉차트';
   $('chartModal').classList.add('on');
-  paintModal(card, (card.candles || []).slice(-15), { src: '페이지 내장 일봉' });
+  paintModal(card, [], { src: '페이지 내장 일봉' });
 
   if (!API_ON) {
     const m = $('cmStatus');
@@ -1138,7 +1552,7 @@ function openChart(code) {
       }
       if (changed) { refreshCard(code); refreshBanner(); }
       if (currentCard && currentCard.code === code && $('chartModal').classList.contains('on')) {
-        paintModal(card, all.slice(-15), { src: '/api/stock-chart 실측 ' + all.length + '봉', cur: d.current });
+        paintModal(card, all, { src: '/api/stock-chart 실측 ' + all.length + '봉', cur: d.current });
       }
     })
     .catch((e) => {
@@ -1399,6 +1813,18 @@ function boot() {
       return;
     }
     if (t.classList.contains('rej-btn')) { openReject(t.getAttribute('data-code')); return; }
+    if (t.classList.contains('cz')) {
+      const code = t.getAttribute('data-zc');
+      const z = t.getAttribute('data-z');
+      const s = ZS['c:' + code];
+      if (s) {
+        if (z === 'in') zZoom(s, 1 / 1.5, 1);
+        else if (z === 'out') zZoom(s, 1.5, 1);
+        else zReset(s, s.len);
+        drawCard(code);
+      }
+      return;
+    }
     if (t.classList.contains('pat')) {
       const row = t.closest('.pat-row');
       if (!row) return;
@@ -1407,9 +1833,7 @@ function boot() {
       if (SIM[code] === p) delete SIM[code]; else SIM[code] = p;
       refreshCard(code);
       refreshBanner();
-      if (currentCard && currentCard.code === code && $('chartModal').classList.contains('on')) {
-        paintModal(currentCard, (currentCard.candles || []).slice(-15), { src: '페이지 내장 일봉' });
-      }
+      repaintModal();
       return;
     }
     if (t.classList.contains('pat-reset')) {
@@ -1423,6 +1847,25 @@ function boot() {
   });
 
   $('cmClose').addEventListener('click', closeModals);
+  /* 봉차트 모달 — 기간 전환 칩 + －/＋/↺ 줌 버튼 */
+  const cmChips = $('cmChips');
+  if (cmChips) {
+    cmChips.addEventListener('click', (e) => {
+      const b = e.target.closest ? e.target.closest('.pchip') : null;
+      if (!b) return;
+      const n = Number(b.getAttribute('data-period'));
+      const s = ZS.m;
+      if (!s || !isFinite(n)) return;
+      s.count = Math.min(zMaxCount(s), Math.max(zMinCount(s), n));
+      s.countF = s.count;
+      s.startF = Math.max(0, s.len - s.count);
+      s.hover = null;
+      renderModal();
+    });
+  }
+  if ($('cmIn')) $('cmIn').addEventListener('click', () => { if (ZS.m) { zZoom(ZS.m, 1 / 1.5, 1); renderModal(); } });
+  if ($('cmOut')) $('cmOut').addEventListener('click', () => { if (ZS.m) { zZoom(ZS.m, 1.5, 1); renderModal(); } });
+  if ($('cmReset')) $('cmReset').addEventListener('click', () => { if (ZS.m) { zReset(ZS.m, MODAL_DEF); renderModal(); } });
   $('rjClose').addEventListener('click', closeModals);
   $('chartModal').addEventListener('click', (e) => { if (e.target.id === 'chartModal') closeModals(); });
   $('rejModal').addEventListener('click', (e) => { if (e.target.id === 'rejModal') closeModals(); });
@@ -1443,7 +1886,7 @@ function boot() {
       SIM_GAP = isFinite(v) ? Math.min(Math.max(v, 0), 20) : 3;
       gap.value = String(SIM_GAP);
       drawAllCards();
-      if (currentCard) paintModal(currentCard, (currentCard.candles || []).slice(-15), { src: '페이지 내장 일봉' });
+      repaintModal();
     });
   }
 
@@ -1451,9 +1894,7 @@ function boot() {
     clearTimeout(rzT);
     rzT = setTimeout(() => {
       drawAllCards();
-      if (currentCard && $('chartModal').classList.contains('on')) {
-        paintModal(currentCard, (currentCard.candles || []).slice(-15), { src: '페이지 내장 일봉' });
-      }
+      if ($('chartModal').classList.contains('on')) repaintModal();
       const wrap = $('rejWrap');
       const body = $('rejBody');
       if (wrap && body && wrap.classList.contains('open')) body.style.maxHeight = 'none';
