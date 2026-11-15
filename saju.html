@@ -539,6 +539,72 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
 [data-theme="day"] .tk4.ok{color:#f7f1e6}
 [data-theme="day"] .tk4.no{color:#fffdf7}
 .narr-note{font-size:10.5px;color:var(--faint);line-height:1.65;margin-top:14px;padding-top:11px;border-top:1px dashed var(--line);word-break:keep-all}
+/* ============ 17. 가족 프로필 칩 · 오늘 우리 가족 · 클라우드 ============ */
+.pchrow{display:flex;align-items:center;gap:6px;margin:10px 0 0}
+.pchips{flex:1 1 auto;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;padding:1px 1px 3px}
+.pchips::-webkit-scrollbar{display:none}
+.pchip{display:inline-flex;align-items:center;gap:4px;flex:0 0 auto;padding:6px 11px;border-radius:999px;
+  border:1px solid var(--line);background:var(--panel);color:var(--dim);font-size:12px;font-weight:600;
+  white-space:nowrap;line-height:1.2;
+  transition:background .18s ease,color .18s ease,border-color .18s ease,transform .12s ease}
+.pchip:active{transform:scale(.97)}
+.pchip.is-on{border-color:var(--line2);color:var(--gold2);
+  background:linear-gradient(180deg,rgba(217,180,92,.20),rgba(217,180,92,.06));
+  box-shadow:inset 0 0 0 1px rgba(217,180,92,.16)}
+.pchip .sc{font-size:10px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums;
+  padding-left:5px;margin-left:1px;border-left:1px solid var(--line);line-height:1.1}
+.pchip.add{border-style:dashed;color:var(--faint);font-weight:500}
+.pchip.cloud{flex:0 0 auto;border-color:var(--line2);color:var(--gold2);background:rgba(217,180,92,.08);gap:5px}
+.pchip.cloud .ci{font-size:12px;line-height:1}
+.pchip.cloud[data-s="syncing"]{color:var(--dim);border-color:var(--line)}
+.pchip.cloud[data-s="error"]{border-color:rgba(255,115,97,.5);color:var(--hwa);background:rgba(255,115,97,.08)}
+@media(max-width:400px){
+  .pchip{padding:5px 9px;font-size:11.5px}
+  .pchips{gap:5px}
+}
+/* --- 오늘 우리 가족 --- */
+.fam-grid{display:flex;flex-wrap:wrap;gap:7px}
+.fcell{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-width:0;
+  flex:1 1 45%;max-width:190px;
+  padding:9px 9px 10px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.025);
+  text-align:left;font:inherit;
+  transition:border-color .18s ease,background .18s ease,transform .12s ease}
+.fcell:active{transform:scale(.98)}
+.fcell.is-act{border-color:var(--line2);background:rgba(217,180,92,.10)}
+.fcell.is-top{border-color:rgba(217,180,92,.60);box-shadow:inset 0 0 0 1px rgba(217,180,92,.18)}
+.fcell .fn{font-size:11.5px;font-weight:600;color:var(--ink);max-width:100%;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fcell .fs{display:flex;align-items:baseline;gap:2px;margin-top:1px}
+.fcell .fs b{font-family:var(--serif);font-size:20px;line-height:1.15;color:var(--gold2);
+  font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.fcell .fs em{font-style:normal;font-size:9.5px;color:var(--faint)}
+.fcell .fk{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:-.01em}
+.fcell .fc{font-size:10px;color:var(--faint);line-height:1.45;word-break:keep-all;margin-top:1px}
+.fcell .fcrown{position:absolute;top:-8px;right:6px;font-size:9px;padding:1px 6px;border-radius:999px;
+  background:linear-gradient(180deg,#f2dfb4,#d9b45c);color:#2a1d05;font-weight:700;letter-spacing:.02em;
+  box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.fam-best{margin-top:10px;font-size:11.5px;line-height:1.65;color:var(--ink);word-break:keep-all;
+  border-left:2px solid var(--line2);padding-left:9px}
+.fam-best b{color:var(--gold2);font-weight:600}
+.fam-pair{margin-top:11px;padding-top:10px;border-top:1px dashed var(--line)}
+.fam-pair .psel{display:flex;align-items:center;gap:6px}
+.fam-pair select{flex:1 1 0;min-width:0;padding:6px 22px 6px 9px;border-radius:9px;border:1px solid var(--line);
+  background:var(--panel2);font-size:11.5px;color:var(--ink);appearance:none;-webkit-appearance:none;
+  text-overflow:ellipsis;outline:none}
+.fam-pair .vs{flex:0 0 auto;font-family:var(--serif);font-size:11px;color:var(--gold);letter-spacing:.06em}
+.fam-line{margin-top:8px;font-size:11px;line-height:1.7;color:var(--dim);word-break:keep-all}
+.fam-line b{color:var(--gold2);font-weight:600}
+/* --- 클라우드 카드 --- */
+.cloud-line{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0;
+  border-bottom:1px dashed var(--line);font-size:11.5px}
+.cloud-line:last-of-type{border-bottom:0}
+.cloud-line .ck{color:var(--faint);flex:1 1 auto;min-width:0}
+.cloud-line .cv{color:var(--ink);font-weight:600;text-align:right;overflow-wrap:anywhere}
+.cloud-line .cv.mono{font-family:var(--serif);letter-spacing:.02em;color:var(--gold2)}
+#cloudState[data-s="syncing"]{color:var(--gold)}
+#cloudState[data-s="ok"]{color:var(--mok)}
+#cloudState[data-s="error"]{color:var(--hwa)}
 </style>
 </head>
 <body>
@@ -567,6 +633,15 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
     <a href="deals.html" class="appnav-link deals"><span class="ico">✈️</span>특가 레이더</a>
     <a href="content-studio.html" class="appnav-link content"><span class="ico">✍️</span>콘텐츠 스튜디오</a>
   </nav>
+
+  <!-- 가족 프로필 칩 · ☁️ 동기화 -->
+  <div class="pchrow">
+    <div class="pchips" id="profileChips" role="group" aria-label="가족 프로필 빠른 전환"></div>
+    <button class="pchip add" id="chipAdd" type="button" aria-label="새 프로필 추가" title="새 프로필 추가">＋ 추가</button>
+    <button class="pchip cloud" id="cloudChip" type="button" data-s="idle" title="가족 프로필·복기 메모 클라우드 동기화">
+      <span class="ci">☁️</span><span id="cloudChipTx">동기화</span>
+    </button>
+  </div>
 
   <nav class="tabbar" id="tabbar" role="tablist" aria-label="메뉴">
     <button class="tab-btn is-on" role="tab" aria-selected="true" data-tab="chart"><b>사주팔자</b><i>四柱</i></button>
@@ -621,7 +696,7 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
       <div class="card">
         <div class="card-h">
           <div class="card-t"><span class="h">登錄</span><span id="pfTitle">사주 등록</span></div>
-          <div class="card-note">이 기기에만 저장</div>
+          <div class="card-note">이 기기 + ☁️ 백업</div>
         </div>
         <div class="form" id="pfForm">
           <div class="fld w2">
@@ -674,12 +749,27 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
             <label class="check" id="pfSolarTimeWrap"><input type="checkbox" id="pfSolarTime"><span>진태양시 −30분 (한국 경도 보정)</span></label>
             <label class="check" id="pfNightZiWrap"><input type="checkbox" id="pfNightZi"><span>야자시(23:00~23:59)를 다음 날 일진으로</span></label>
           </div>
+          <div class="fld full">
+            <label for="pfMemo">메모 (선택)</label>
+            <textarea id="pfMemo" maxlength="200" rows="2" placeholder="예) 아내 · 회사원 · 아침형 / 딸 · 초등 3학년 · 교정 중"></textarea>
+          </div>
           <div class="fld full" style="flex-direction:row;gap:8px;flex-wrap:wrap;align-items:center;margin-top:2px">
             <button class="btn" id="pfSave" type="button">저장하기</button>
             <button class="btn ghost" id="pfReset" type="button">새로 입력</button>
           </div>
         </div>
         <div class="fmsg" id="pfMsg" role="status"></div>
+      </div>
+      <div class="card" style="margin-top:12px" id="cloudCard">
+        <div class="card-h">
+          <div class="card-t"><span class="h">雲</span>클라우드 동기화</div>
+          <div class="card-note" id="cloudState" data-s="idle">대기</div>
+        </div>
+        <div class="cloud-line"><span class="ck">저장 위치</span><span class="cv mono" id="cloudCode">saju_0623</span></div>
+        <div class="cloud-line"><span class="ck">마지막 동기화</span><span class="cv" id="cloudLast">—</span></div>
+        <div class="cloud-line"><span class="ck">이 기기</span><span class="cv" id="cloudLocal">프로필 0명 · 메모 0건</span></div>
+        <button class="btn ghost" type="button" id="cloudSync" style="margin-top:11px;width:100%">☁️ 지금 동기화</button>
+        <div class="tiny" style="margin-top:9px">가족 프로필과 복기 메모를 내 Supabase(<b>family_sync</b> · <b>saju_0623</b>)에 백업하고, 다른 기기에서 열면 자동으로 받아 옵니다. 예시 프로필뿐인 빈 기기는 클라우드를 덮어쓰지 않습니다. 포켓몬(<b>0623</b>)·eBook(<b>ebook_0623</b>)과는 완전히 분리된 키입니다.</div>
       </div>
       <div class="card" style="margin-top:12px">
         <div class="card-h"><div class="card-t"><span class="h">家族</span>저장된 프로필</div><div class="card-note" id="pfCount"></div></div>
@@ -692,7 +782,7 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
     <b>계산 기준</b> · 양력↔음력·윤달·24절기 만세력 엔진(lunar-javascript v1.7.8, MIT) 내장. 월주는 절입 시각, 연주는 입춘 기준입니다.
     예) 2000-01-01(양력) → <b>己卯年 丙子月 戊午日</b>. 실제 만세력과 일치하는지 날짜를 바꿔 확인해 보세요. 자시(23~01시)는 기본적으로 당일 일진 기준이며, 프로필에서 <b>진태양시 −30분</b>과 <b>야자시 익일 기준</b>을 켜고 끌 수 있습니다. 서머타임 보정은 적용하지 않습니다.
     격국은 월지의 양인·건록과 지장간 투출로, 용신은 《궁통보감》 조후와 억부·통관을 점수로 합쳐 판정하고 근거를 그대로 보입니다. 12신살은 년지(겁살부터 순행), 공망은 일주가 든 순(旬) 기준, 삼재는 띠의 삼합에 따른 들·눌·날삼재입니다.
-    일주론은 60갑자 각각의 고유 데이터이고, 오늘의 운세·월운·세운 점수는 일진·십성·충합형파·용신 규칙으로 계산한 <b>규칙 기반 해석</b>이며 점수 근거를 화면에 공개합니다. 복기 메모는 이 기기(localStorage)에만 저장됩니다. 재미와 참고용으로 봐 주세요.
+    일주론은 60갑자 각각의 고유 데이터이고, 오늘의 운세·월운·세운 점수는 일진·십성·충합형파·용신 규칙으로 계산한 <b>규칙 기반 해석</b>이며 이 점수 근거를 화면에 공개합니다. 프로필·복기 메모는 이 기기에 저장되고 ☁️ 동기화를 켜 두면 내 Supabase(<b>saju_0623</b>)에 백업됩니다. 재미와 참고용으로 봐 주세요.
   </div>
 </div>
 
@@ -2698,7 +2788,8 @@ var state = {
   target: { mode:'offset', offset:0 },
   year: null,
   editingId: null,
-  matchA: null, matchB: null
+  matchA: null, matchB: null,
+  famA: null, famB: null
 };
 var cache = {};
 
@@ -2708,22 +2799,26 @@ function loadMemo(){
   try{ var o = JSON.parse(localStorage.getItem(LS_MEMO) || '{}'); memoStore = (o && typeof o === 'object') ? o : {}; }catch(e){ memoStore = {}; }
 }
 function memoId(pid, kind, key){ return pid + '|' + kind + '|' + key; }
-function memoGet(pid, kind, key){ return memoStore[memoId(pid, kind, key)] || null; }
+function memoGet(pid, kind, key){
+  var rec = memoStore[memoId(pid, kind, key)];
+  return (rec && String(rec.t||'').trim()) ? rec : null;
+}
 function memoSet(pid, kind, key, txt, score){
   var id = memoId(pid, kind, key);
   var t = String(txt || '').trim();
-  if (!t){ delete memoStore[id]; }
-  else {
-    var prev = memoStore[id] || {};
-    memoStore[id] = { t:t, score:(typeof score === 'number' ? score : null), at:prev.at || new Date().toISOString(), upd:new Date().toISOString() };
-  }
+  var prev = memoStore[id] || {};
+  var nowIso = new Date().toISOString();
+  /* 지운 메모도 빈 값 + 시각으로 남긴다 — 클라우드에서 옛 내용이 되살아나지 않게 */
+  memoStore[id] = { t:t, score:(t && typeof score === 'number' ? score : null), at:prev.at || nowIso, upd:nowIso };
   try{ localStorage.setItem(LS_MEMO, JSON.stringify(memoStore)); }catch(e){}
+  if (window.SajuCloud && window.SajuCloud.touch) window.SajuCloud.touch();
 }
 function memoList(pid, kind){
   var pre = pid + '|' + kind + '|', out = [];
   Object.keys(memoStore).forEach(function(k){
     if (k.indexOf(pre) !== 0) return;
     var rec = memoStore[k] || {};
+    if (!String(rec.t || '').trim()) return;          /* 지운 메모(빈 값 표식)는 목록에서 뺀다 */
     out.push({ key:k.slice(pre.length), t:rec.t || '', score:(typeof rec.score === 'number' ? rec.score : null), at:rec.at || '' });
   });
   out.sort(function(a, b){ return a.key < b.key ? 1 : (a.key > b.key ? -1 : 0); });
@@ -2754,6 +2849,8 @@ function load(){
 }
 function save(){
   try { localStorage.setItem(LS_P, JSON.stringify(state.profiles)); } catch(e){}
+  famCache = { key:'', rows:null };
+  if (window.SajuCloud && window.SajuCloud.touch) window.SajuCloud.touch();
 }
 function activeProfile(){
   return state.profiles.filter(function(p){ return p.id===state.activeId; })[0] || state.profiles[0] || null;
@@ -2770,6 +2867,156 @@ function targetDate(){
   var today = seoulToday();
   if (state.target.mode === 'offset') return addDays(today, state.target.offset);
   return state.target;
+}
+
+
+/* =========================================================
+   6-b. 가족 — 프로필 칩 · 오늘 우리 가족 운세
+   ---------------------------------------------------------
+   · 프로필이 2명 이상이면 [오늘의 운세] 맨 위에 가족 요약 카드를 놓는다.
+   · 점수는 각자의 사주에 같은 날 일진을 넣어 계산한 fortuneFor 결과 그대로다.
+   · 1위는 총운이 가장 높은 사람, 궁합 한 줄은 두 사람의 일간·일지 궁합과
+     오늘 각자의 우세 오행(일진의 기운)을 겹쳐 만든 문장이다. 난수 없음.
+   ========================================================= */
+var FAM_KW = {
+  '비견':'주관·자립', '겁재':'경쟁·지출', '식신':'표현·여유', '상관':'재능·날카로움',
+  '편재':'기회·활동', '정재':'성실·현실', '편관':'추진·압박', '정관':'질서·평가',
+  '편인':'직관·집중', '정인':'보호·학습'
+};
+var famCache = { key:'', rows:null };
+
+function familyStats(dt){
+  var day = dt || targetDate();
+  var key = isoDate(day) + '#' + state.profiles.map(function(p){
+    return [p.id, p.y, p.m, p.d, p.cal, p.leap?1:0, p.hour, p.minute, p.gender,
+      p.solarTime?1:0, p.nightZi?1:0, (p.name||'')].join(',');
+  }).join(';');
+  if (famCache.key === key && famCache.rows) return famCache.rows;
+
+  var rows = [];
+  state.profiles.forEach(function(p){
+    if (p && p.sample) return;          /* 예시 프로필은 가족으로 세지 않는다 */
+    try {
+      var c = chartOf(p);
+      var f = fortuneFor(c, day);
+      var low = 'wealth', lowV = 999, hi = 'wealth', hiV = -1;
+      ['wealth','work','social','health'].forEach(function(k){
+        if (f.dom[k] < lowV){ lowV = f.dom[k]; low = k; }
+        if (f.dom[k] > hiV){ hiV = f.dom[k]; hi = k; }
+      });
+      rows.push({
+        id:p.id, name:(p.name||'이름 없음'), sample:!!p.sample,
+        total:f.total, ss:f.ss, kw:(FAM_KW[f.ss]||f.ss),
+        dom:f.dom, low:low, lowV:lowV, lowT:DOM_TITLE[low], hi:hi, hiV:hiV, hiT:DOM_TITLE[hi],
+        topEl:f.topEl, badTime:(f.lucky && f.lucky.badTime) ? f.lucky.badTime : '',
+        chart:c, f:f
+      });
+    } catch(e){ /* 계산할 수 없는 프로필은 요약에서 뺀다 */ }
+  });
+  rows.sort(function(a, b){ return b.total - a.total; });
+  famCache = { key:key, rows:rows };
+  return rows;
+}
+
+/* 두 사람 — 궁합 점수 + '오늘'의 오행 조화 한 줄 */
+function famPairLine(idA, idB, rows){
+  var A = null, B = null;
+  (rows || []).forEach(function(r){ if (r.id === idA) A = r; if (r.id === idB) B = r; });
+  if (!A || !B) return '';
+  var r = compatOf(A.chart, B.chart);
+  var item = r.items.filter(function(x){ return x.t.indexOf('오행 보완') < 0; })[0];
+  var aEl = A.topEl, bEl = B.topEl, mood;
+  if (aEl === bEl){
+    mood = '오늘은 두 사람 모두 ' + aEl + '(' + EL_KO[aEl] + ') 기운이 강해 기세가 겹칩니다 — 결정은 한 사람이 맡는 편이 매끄럽습니다.';
+  } else if (GEN[aEl] === bEl){
+    mood = '오늘 ' + esc(A.name) + '의 ' + aEl + ' 기운이 ' + esc(B.name) + '의 ' + bEl + '를 살립니다 — 먼저 챙기는 쪽이 유리합니다.';
+  } else if (GEN[bEl] === aEl){
+    mood = '오늘 ' + esc(B.name) + '의 ' + bEl + ' 기운이 ' + esc(A.name) + '의 ' + aEl + '를 살립니다 — ' + esc(B.name) + '이 먼저 나서면 좋습니다.';
+  } else if (CTRL[aEl] === bEl){
+    mood = '오늘 ' + esc(A.name) + '의 ' + aEl + ' 기운이 ' + esc(B.name) + '의 ' + bEl + '를 누릅니다 — 부탁은 짧게, 지적은 내일로 미루세요.';
+  } else if (CTRL[bEl] === aEl){
+    mood = '오늘 ' + esc(B.name) + '의 ' + bEl + ' 기운이 ' + esc(A.name) + '의 ' + aEl + '를 누릅니다 — ' + esc(A.name) + '은 한발 물러선 게 편합니다.';
+  } else {
+    mood = '오늘 두 사람의 기운이 서로 비켜 있어 각자 페이스로 움직이면 편합니다.';
+  }
+  return '궁합 <b>' + r.score + '점</b>' + (item ? ' · ' + esc(item.t) : '') + ' — ' + mood;
+}
+
+/* [오늘의 운세] 맨 위 '오늘 우리 가족' 카드 */
+function familyTodayHtml(dt){
+  var rows = familyStats(dt);
+  if (rows.length < 2) return '';
+  var byId = {};
+  rows.forEach(function(r){ byId[r.id] = r; });
+  if (!byId[state.famA]) state.famA = byId[state.activeId] ? state.activeId : rows[0].id;
+  if (!byId[state.famB] || state.famB === state.famA){
+    state.famB = rows.filter(function(r){ return r.id !== state.famA; })[0].id;
+  }
+  var top = rows[0];
+  var cells = rows.map(function(r){
+    var on = r.id === state.activeId, best = r.id === top.id;
+    return '<button class="fcell' + (on ? ' is-act' : '') + (best ? ' is-top' : '') + '" type="button"'
+      + ' data-fam-pid="' + esc(r.id) + '" aria-pressed="' + (on ? 'true' : 'false') + '"'
+      + ' aria-label="' + esc(r.name) + ' 오늘 ' + r.total + '점 — 이 사람으로 보기">'
+      + '<div class="fn">' + esc(r.name) + '</div>'
+      + '<div class="fs"><b>' + r.total + '</b><em>점</em></div>'
+      + '<div class="fk">' + esc(r.kw) + '</div>'
+      + '<div class="fc">조심 · ' + esc(r.lowT) + ' ' + r.lowV + (r.badTime ? '<br>' + esc(r.badTime) + ' 충' : '') + '</div>'
+      + (best ? '<span class="fcrown">👑 1위</span>' : '')
+      + '</button>';
+  }).join('');
+  function optHtml(sel){
+    return rows.map(function(r){
+      return '<option value="' + esc(r.id) + '"' + (r.id === sel ? ' selected' : '') + '>' + esc(r.name) + '</option>';
+    }).join('');
+  }
+  var day = dt || targetDate();
+  var isToday = sameDate(day, seoulToday());
+  var when = isToday ? '오늘' : (pad2(day.m) + '/' + pad2(day.d));
+  var pair = famPairLine(state.famA, state.famB, rows);
+
+  return '<div class="card" style="margin-bottom:12px">'
+    + '<div class="card-h"><div class="card-t"><span class="h">家族</span>' + when + ' 우리 가족</div>'
+      + '<div class="card-note">' + rows.length + '명 · 점수 높은 순</div></div>'
+    + '<div class="fam-grid">' + cells + '</div>'
+    + '<div class="fam-best">👑 ' + when + ' 기운 1위 <b>' + esc(top.name) + '</b> ' + top.total + '점 — '
+      + esc(top.hiT) + ' ' + top.hiV + '점이 가장 높고, ' + esc(top.lowT) + ' ' + top.lowV + '점은 한발 조심.</div>'
+    + '<div class="fam-pair">'
+      + '<div class="psel"><select id="famA" aria-label="궁합 첫 번째 사람">' + optHtml(state.famA) + '</select>'
+        + '<span class="vs">合</span>'
+        + '<select id="famB" aria-label="궁합 두 번째 사람">' + optHtml(state.famB) + '</select></div>'
+      + '<div class="fam-line">' + pair + '</div>'
+    + '</div>'
+    + '<div class="tiny" style="margin-top:9px">점수는 각자의 사주에 같은 날 일진을 대입해 계산했습니다. 카드를 누르면 그 사람으로 전환되고, 아래 두 칸을 바꾸면 두 사람의 오늘 조화가 한 줄로 나옵니다.</div>'
+    + '</div>';
+}
+
+/* 상단 프로필 칩 */
+function renderChips(){
+  var box = document.getElementById('profileChips');
+  if (!box) return;
+  var sc = {};
+  try { familyStats(seoulToday()).forEach(function(r){ sc[r.id] = r.total; }); } catch(e){ /* */ }
+  box.innerHTML = state.profiles.map(function(p){
+    var on = p.id === state.activeId;
+    return '<button class="pchip' + (on ? ' is-on' : '') + '" type="button" data-chip="' + esc(p.id) + '"'
+      + ' aria-pressed="' + (on ? 'true' : 'false') + '">' + esc(p.name || '이름 없음')
+      + (sc[p.id] != null ? '<span class="sc">' + sc[p.id] + '</span>' : '')
+      + '</button>';
+  }).join('');
+}
+
+/* 프로필 전환 — 칩 · 셀렉트 · 궁합 카드가 모두 이 함수를 쓴다 */
+function selectProfile(id){
+  if (!state.profiles.some(function(p){ return p.id === id; })) return;
+  state.activeId = id;
+  try { localStorage.setItem(LS_A, id); } catch(e){ /* */ }
+  renderChips();
+  renderProfiles();
+  renderChart();
+  renderToday();
+  if (state.tab === 'yearly') renderYearly();
+  if (state.tab === 'match') renderMatch();
 }
 
 /* =========================================================
@@ -3125,7 +3372,7 @@ function renderToday(){
   var mlist = mAll.slice(0, 6);
   var memoCard =
     '<div class="card memo" style="margin-top:12px">'
-      + '<div class="card-h"><div class="card-t"><span class="h">復記</span>내 복기 메모</div><div class="card-note">이 기기에만 저장</div></div>'
+      + '<div class="card-h"><div class="card-t"><span class="h">復記</span>내 복기 메모</div><div class="card-note">이 기기 + ☁️ 백업</div></div>'
       + '<textarea id="memoDay" maxlength="300" placeholder="예) 매매 +1.8% 수익 · 컨디션 보통 · 충동 매수 줄이기">'+(rec ? esc(rec.t) : '')+'</textarea>'
       + '<div class="memo-row"><button class="btn" type="button" id="memoDaySave">'+dkey+' 저장</button>'
         + '<span class="memo-msg" id="memoDayMsg">'+(mstat.n ? ('기록 '+mstat.n+'일'+(mstat.scored ? ' · 저장한 날 평균 '+mstat.avg+'점' : '')) : '')+'</span></div>'
@@ -3135,11 +3382,12 @@ function renderToday(){
               + '<span class="ms">'+(x.score != null ? x.score+'점 ' : '')+'<button class="md" type="button" data-del="'+x.key+'" aria-label="삭제">✕</button></span></div>';
           }).join('') + '</div>'
         : '<div class="tiny" style="margin-top:9px">아직 기록이 없습니다. 오늘 점수와 함께 한 줄 남겨두면 나만의 기록이 쌓입니다.</div>')
-      + '<div class="tiny" style="margin-top:8px">메모는 이 기기 브라우저(localStorage)에만 저장되고 어디로도 전송되지 않습니다. 예시 프로필이 아닌 내 프로필에만 따로 쌓입니다.</div>'
+      + '<div class="tiny" style="margin-top:8px">메모는 이 기기에 저장되고, 가족 프로필이 있는 기기에서는 내 클라우드(<b>saju_0623</b>)로 자동 백업됩니다. 다른 기기에서 열면 자동으로 받아 옵니다. 예시 프로필이 아닌 내 프로필에만 따로 쌓입니다.</div>'
     + '</div>';
 
   box.innerHTML =
-    '<div class="card">'
+    familyTodayHtml(dt)
+    + '<div class="card">'
       + '<div class="card-h"><div class="card-t"><span class="h">今日</span>'+fmtDate(dt)+'</div>'
         + '<div class="card-note">'+(isToday?'오늘':(sameDate(dt, addDays(today,1))?'내일':'선택한 날'))+'</div></div>'
       + '<div class="scorecard">'
@@ -3327,7 +3575,7 @@ function renderYearly(){
   var ylist = yAll.slice(0, 6);
   var memoCard =
     '<div class="card memo" style="margin-top:12px">'
-      + '<div class="card-h"><div class="card-t"><span class="h">復記</span>내 복기 메모 — '+ykey+'년</div><div class="card-note">이 기기에만 저장</div></div>'
+      + '<div class="card-h"><div class="card-t"><span class="h">復記</span>내 복기 메모 — '+ykey+'년</div><div class="card-note">이 기기 + ☁️ 백업</div></div>'
       + '<textarea id="memoYear" maxlength="300" placeholder="예) 2026년 목표·결과, 크게 잃은 이유, 내년에 바꾸고 싶은 것">'+(yrec ? esc(yrec.t) : '')+'</textarea>'
       + '<div class="memo-row"><button class="btn" type="button" id="memoYearSave">'+ykey+'년 저장</button>'
         + '<span class="memo-msg" id="memoYearMsg">'+(ystat.n ? ('기록 '+ystat.n+'년'+(ystat.scored ? ' · 저장한 해 평균 '+ystat.avg+'점' : '')) : '')+'</span></div>'
@@ -3507,6 +3755,7 @@ function fillHourSelects(){
 }
 
 function renderProfiles(){
+  renderChips();
   document.getElementById('profileSelect').innerHTML = state.profiles.map(function(p){
     return '<option value="'+p.id+'">'+esc(p.name||'이름 없음')+'</option>';
   }).join('');
@@ -3518,7 +3767,8 @@ function renderProfiles(){
       + (p.leap?' (윤달)':'') + ' · ' + (p.gender==='F'?'여':'남')
       + ' · ' + (p.hour===null||p.hour===undefined ? '시각 모름' : pad2(p.hour)+':'+pad2(p.minute||0))
       + ((p.solarTime && p.hour!=null) ? ' · 진태양시 −30분' : '')
-      + ((p.nightZi && p.hour!=null) ? ' · 야자시 익일' : '');
+      + ((p.nightZi && p.hour!=null) ? ' · 야자시 익일' : '')
+      + (p.memo ? ' · ' + esc(p.memo) : '');
     return '<div class="pitem'+(p.id===state.activeId?' is-on':'')+'" data-id="'+p.id+'">'
       + '<div class="info"><div class="nm">'+esc(p.name||'이름 없음')
         + (p.sample?'<span class="tag-e">예시</span>':'')
@@ -3531,6 +3781,7 @@ function renderProfiles(){
       + '</div></div>';
   }).join('');
   document.getElementById('pfCount').textContent = state.profiles.length + '명';
+  updateCloudUI();
 }
 
 function readForm(){
@@ -3546,7 +3797,8 @@ function readForm(){
   var minute = noTime ? null : parseInt(document.getElementById('pfMinute').value,10);
   var solarTime = !noTime && document.getElementById('pfSolarTime').checked;
   var nightZi = !noTime && document.getElementById('pfNightZi').checked;
-  return { name:name, cal:cal, gender:gender, y:y, m:m, d:d, leap:leap, hour:hour, minute:minute, solarTime:solarTime, nightZi:nightZi };
+  var memo = String(document.getElementById('pfMemo').value || '').trim().slice(0, 200);
+  return { name:name, cal:cal, gender:gender, y:y, m:m, d:d, leap:leap, hour:hour, minute:minute, solarTime:solarTime, nightZi:nightZi, memo:memo };
 }
 
 function setForm(p){
@@ -3564,6 +3816,7 @@ function setForm(p){
   document.getElementById('pfMinute').value = (p && p.minute!=null) ? (Math.round(p.minute/5)*5)%60 : 0;
   document.getElementById('pfSolarTime').checked = !!(p && p.solarTime);
   document.getElementById('pfNightZi').checked = !!(p && p.nightZi);
+  document.getElementById('pfMemo').value = p ? (p.memo || '') : '';
   syncTimeUI();
   formMsg('');
 }
@@ -3601,6 +3854,7 @@ function saveProfile(){
   catch(e){ formMsg(e.message, 'err'); return; }
   formMsg('');
 
+  f.ut = Date.now();                       /* 클라우드 병합 기준 — 더 최근 수정이 이긴다 */
   if (state.editingId){
     var idx = state.profiles.findIndex(function(p){ return p.id===state.editingId; });
     if (idx>=0) state.profiles[idx] = Object.assign({}, state.profiles[idx], f, { sample:false });
@@ -3660,6 +3914,331 @@ function setTheme(t){
   if (state.tab==='match') renderMatch();
 }
 
+
+/* =========================================================
+   17-b. ☁️ 클라우드 동기화 — 가족 프로필 · 복기 메모 (Supabase)
+   ---------------------------------------------------------
+   · 포켓몬('0623')·eBook('ebook_0623')과 같은 테이블(family_sync)을 쓰되
+     행 코드는 'saju_0623' — 앞에 saju_ 가 붙어 서로 절대 섞이지 않는다.
+   · 프로필은 id 별로 '더 최근 수정(ut)', 복기 메모는 항목별 'upd' 를 비교해
+     합친다. 지운 프로필은 tomb(삭제 표식)로 남겨 다시 살아나지 않게 한다.
+   · 예시 프로필뿐이거나 아무 기록도 없는 기기는 자동으로 올리지 않는다
+     → 새로 연 폰이 다른 기기의 기록을 빈 값으로 덮어쓰지 않는다.
+   · 실패(오프라인·키 오류)해도 사주·운세 화면은 그대로 동작한다.
+   ========================================================= */
+var SajuCloud = (function(){
+  var DEF = {
+    url: 'https://hiruybkapzuhjrzjoyik.supabase.co',
+    key: 'sb_publishable_e5JJbvCPDhY91uXaUEVNVA_8Byv_gI8',
+    table: 'family_sync',
+    code: 'saju_0623'
+  };
+  var K_CODE = 'saju.cloud.code', K_META = 'saju.cloud.meta';
+  var ST = { state:'idle', msg:'대기', lastAt:null, code:DEF.code };
+  var BUSY = false, tPush = null, subs = [], appliedFn = null, booted = false;
+
+  function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function lsSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){ /* */ } }
+  function jp(raw, d){ if (raw == null) return d; try{ var v = JSON.parse(raw); return v == null ? d : v; }catch(e){ return d; } }
+
+  function cfg(){
+    var code = String(lsGet(K_CODE) || DEF.code).replace(/[^0-9A-Za-z_]/g, '') || DEF.code;
+    if (code.indexOf('saju_') !== 0) code = 'saju_' + code;   /* 포켓몬 0623 · ebook_0623 과 분리 */
+    return { url:DEF.url, key:DEF.key, table:DEF.table, code:code };
+  }
+  function meta(){
+    var c = cfg().code, m = jp(lsGet(K_META), null);
+    if (!m || typeof m !== 'object' || m.code !== c) m = { code:c, tomb:{} };
+    if (!m.tomb || typeof m.tomb !== 'object') m.tomb = {};
+    return m;
+  }
+  function metaSave(m){ lsSet(K_META, JSON.stringify(m)); }
+
+  function normProfiles(arr){
+    if (!Array.isArray(arr)) return [];
+    return arr.filter(function(p){ return p && p.id && p.y && p.m && p.d && !p.sample; }).map(function(p){
+      var o = Object.assign({}, p);
+      o.ut = Number(o.ut) || 0;
+      o.memo = String(o.memo || '').slice(0, 200);
+      return o;
+    });
+  }
+  function normMemo(o){ return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {}; }
+  function localDoc(){
+    return { profiles: normProfiles(jp(lsGet(LS_P), [])), memo: normMemo(jp(lsGet(LS_MEMO), {})) };
+  }
+  function remoteDoc(data){
+    var d = (data && typeof data === 'object') ? data : {};
+    return {
+      profiles: normProfiles(d.profiles),
+      memo: normMemo(d.memo),
+      tomb: (d.tomb && typeof d.tomb === 'object' && !Array.isArray(d.tomb)) ? d.tomb : {}
+    };
+  }
+  function meaningful(doc){
+    if ((doc.profiles || []).length) return true;
+    var ks = Object.keys(doc.memo || {});
+    for (var i = 0; i < ks.length; i++){
+      var v = doc.memo[ks[i]];
+      if (v && String(v.t || '').trim()) return true;
+    }
+    return false;
+  }
+  function sig(doc){
+    var ps = (doc.profiles || []).slice().sort(function(a, b){ return String(a.id) < String(b.id) ? -1 : 1; })
+      .map(function(p){
+        return [p.id, p.ut, p.name || '', p.y, p.m, p.d, p.cal || '', p.leap ? 1 : 0,
+          p.hour, p.minute, p.gender || '', p.solarTime ? 1 : 0, p.nightZi ? 1 : 0, p.memo || ''].join('/');
+      }).join('|');
+    var mk = Object.keys(doc.memo || {}).sort().map(function(k){
+      var v = doc.memo[k] || {};
+      return k + '=' + (v.upd || v.at || '') + '~' + (v.t || '');
+    }).join('|');
+    var tk = Object.keys(doc.tomb || {}).sort().map(function(k){ return k + '@' + doc.tomb[k]; }).join('|');
+    return ps + '##' + mk + '##' + tk;
+  }
+  function merge(local, remote){
+    var m = meta();
+    var tomb = {};
+    [remote.tomb || {}, m.tomb || {}].forEach(function(src){
+      Object.keys(src).forEach(function(k){
+        var v = Number(src[k]) || 0;
+        if (v > (Number(tomb[k]) || 0)) tomb[k] = v;
+      });
+    });
+    var byId = {}, order = [];
+    function put(p){
+      if (!p || !p.id) return;
+      if (!byId[p.id]){ byId[p.id] = p; order.push(p.id); return; }
+      if ((Number(p.ut) || 0) > (Number(byId[p.id].ut) || 0)) byId[p.id] = p;
+    }
+    (remote.profiles || []).forEach(put);
+    (local.profiles || []).forEach(put);
+    var profiles = [];
+    order.forEach(function(id){
+      var p = byId[id], t = Number(tomb[id]) || 0;
+      if (t && t >= (Number(p.ut) || 0)) return;      /* 지운 프로필은 되살리지 않는다 */
+      profiles.push(p);
+    });
+    profiles.sort(function(a, b){ return (Number(a.ut) || 0) - (Number(b.ut) || 0); });
+
+    var memo = {}, keys = {};
+    Object.keys(remote.memo || {}).forEach(function(k){ keys[k] = 1; });
+    Object.keys(local.memo || {}).forEach(function(k){ keys[k] = 1; });
+    Object.keys(keys).forEach(function(k){
+      var a = (local.memo || {})[k], b = (remote.memo || {})[k];
+      var ta = a ? (Date.parse(a.upd || a.at || '') || 0) : -1;
+      var tb = b ? (Date.parse(b.upd || b.at || '') || 0) : -1;
+      var pick = (tb > ta) ? b : a;
+      if (pick) memo[k] = pick;                        /* 빈 값 표식 = 지운 메모 */
+    });
+    return { profiles:profiles, memo:memo, tomb:tomb };
+  }
+  function writeLocal(doc){
+    var beforeP = lsGet(LS_P), beforeM = lsGet(LS_MEMO);
+    var keep = [];
+    var cur = jp(beforeP, []);
+    if (Array.isArray(cur)) cur.forEach(function(p){ if (p && p.sample) keep.push(p); });
+    var arr = (doc.profiles || []).concat(keep);
+    if (!arr.length) return 0;                          /* 빈 배열로 지우지 않는다 */
+    var nextP = JSON.stringify(arr), nextM = JSON.stringify(doc.memo || {});
+    var changed = 0;
+    if (nextP !== beforeP){ lsSet(LS_P, nextP); changed++; }
+    if (nextM !== beforeM){ lsSet(LS_MEMO, nextM); changed++; }
+    return changed;
+  }
+
+  /* ---------- 서버(REST) ---------- */
+  function headers(extra){
+    var c = cfg();
+    var h = { apikey:c.key, Authorization:'Bearer ' + c.key, 'Content-Type':'application/json' };
+    if (extra) Object.keys(extra).forEach(function(k){ h[k] = extra[k]; });
+    return h;
+  }
+  function api(path){ var c = cfg(); return c.url + '/rest/v1/' + c.table + path; }
+  function guard(p, ms){
+    return new Promise(function(res, rej){
+      var t = setTimeout(function(){ rej(new Error('timeout')); }, ms || 12000);
+      p.then(function(v){ clearTimeout(t); res(v); }, function(e){ clearTimeout(t); rej(e); });
+    });
+  }
+  function getRow(){
+    var code = cfg().code;
+    return guard(fetch(api('?code=eq.' + encodeURIComponent(code) + '&select=code,data,updated_at'), {
+      headers: headers(), cache: 'no-store'
+    }).then(function(res){
+      if (!res.ok) return res.text().then(function(t){ throw new Error('HTTP ' + res.status + ' ' + String(t).slice(0, 120)); });
+      return res.json().then(function(arr){
+        if (!Array.isArray(arr) || !arr.length) return null;
+        return { code:arr[0].code, data:arr[0].data || {}, updated_at:arr[0].updated_at || null };
+      });
+    }), 12000);
+  }
+  function putRow(payload){
+    return guard(fetch(api('?on_conflict=code'), {
+      method: 'POST',
+      headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
+      body: JSON.stringify([payload]),
+      cache: 'no-store'
+    }).then(function(res){
+      if (!res.ok) return res.text().then(function(t){ throw new Error('HTTP ' + res.status + ' ' + String(t).slice(0, 120)); });
+      return true;
+    }), 12000);
+  }
+  function errMsg(e){
+    var s = String((e && e.message) || e || '');
+    if (/HTTP 401|Invalid API key/i.test(s)) return '키 오류 (401)';
+    if (/HTTP 40[34]/.test(s)) return '권한 오류';
+    if (/Failed to fetch|NetworkError|load failed|ERR_/i.test(s)) return '인터넷 연결 없음';
+    if (/abort|timed? ?out|timeout/i.test(s)) return '인터넷 응답 없음';
+    return '동기화 실패';
+  }
+  function deviceTag(){
+    try {
+      var u = navigator.userAgent || '';
+      if (/iPad|Tablet/i.test(u)) return 'tablet';
+      if (/Mobile|Android|iPhone/i.test(u)) return 'phone';
+      return 'pc';
+    } catch(e){ return 'device'; }
+  }
+  function setState(st, msg){
+    ST.state = st; ST.msg = msg || ''; ST.code = cfg().code; ST.lastAt = Date.now();
+    for (var i = 0; i < subs.length; i++){ try{ subs[i](ST); }catch(e){ /* */ } }
+  }
+  function notifyApplied(){ if (appliedFn){ try{ appliedFn(); }catch(e){ /* */ } } }
+
+  /* ---------- 동기화(받기 + 합치기 + 올리기) ---------- */
+  function sync(opt){
+    opt = opt || {};
+    if (BUSY) return Promise.resolve('busy');
+    BUSY = true;
+    setState('syncing', '동기화 중…');
+    var nowIso = new Date().toISOString();
+    return getRow().then(function(row){
+      var local = localDoc();
+      var remote = row ? remoteDoc(row.data) : { profiles:[], memo:{}, tomb:{} };
+      var doc = merge(local, remote);
+      var wrote = writeLocal(doc);
+      var m = meta();
+      m.tomb = doc.tomb;
+      m.remoteAt = row ? (row.updated_at || null) : null;
+      metaSave(m);
+      if (wrote) notifyApplied();
+
+      if (!meaningful(doc) && !opt.force){
+        setState(row ? 'ok' : 'idle', row ? '이 기기는 아직 비어 있어요' : '아직 백업이 없어요');
+        return 'skip-empty';
+      }
+      if (row && sig(remote) === sig(doc)){
+        var m0 = meta(); m0.lastSyncAt = Date.now(); metaSave(m0);
+        setState('ok', '이미 같아요');
+        return 'same';
+      }
+      var payload = {
+        code: cfg().code,
+        data: { v:1, profiles:doc.profiles, memo:doc.memo, tomb:doc.tomb, pushedAt:nowIso, device:deviceTag() },
+        updated_at: nowIso
+      };
+      return putRow(payload).then(function(){
+        var m1 = meta();
+        m1.lastSyncAt = Date.now(); m1.lastPushAt = Date.now(); m1.remoteAt = nowIso;
+        metaSave(m1);
+        setState('ok', '올렸어요 · 프로필 ' + doc.profiles.length + '명');
+        return 'pushed';
+      });
+    }).catch(function(e){
+      setState('error', errMsg(e));
+      return 'error';
+    }).then(function(r){ BUSY = false; return r; });
+  }
+
+  function touch(){
+    if (tPush) clearTimeout(tPush);
+    tPush = setTimeout(function(){ tPush = null; sync(); }, 1400);
+  }
+  function tomb(id){
+    if (!id) return;
+    var m = meta();
+    m.tomb[id] = Date.now();
+    metaSave(m);
+  }
+  function status(){ return { state:ST.state, msg:ST.msg, lastAt:ST.lastAt, code:cfg().code }; }
+  function onChange(fn){ if (typeof fn === 'function') subs.push(fn); }
+  function onApplied(fn){ appliedFn = fn; }
+  function boot(){
+    if (booted) return;
+    booted = true;
+    setState('idle', '대기');
+    var to = new Promise(function(res){ setTimeout(res, 2500); });
+    Promise.race([ sync(), to ]).catch(function(){ /* */ });
+    document.addEventListener('visibilitychange', function(){
+      if (document.hidden) return;
+      if (Date.now() - (ST.lastAt || 0) < 60000) return;
+      sync();
+    });
+    window.addEventListener('online', function(){ sync(); });
+  }
+
+  return {
+    version: '1.0.0', boot: boot, sync: sync, touch: touch, tomb: tomb,
+    status: status, onChange: onChange, onApplied: onApplied,
+    code: function(){ return cfg().code; },
+    _merge: merge, _localDoc: localDoc, _writeLocal: writeLocal, _sig: sig,
+    _getRow: getRow, _delRow: function(code){
+      return fetch(api('?code=eq.' + encodeURIComponent(code)), { method:'DELETE', headers:headers({ Prefer:'return=minimal' }) });
+    }
+  };
+})();
+/* 스크립트 전체가 IIFE 안이라, 테스트·다른 화면에서도 잡히도록 window 에도 올린다 */
+window.SajuCloud = SajuCloud;
+
+/* 클라우드 상태 → 화면 */
+function fmtClock(ms){
+  var d = new Date(ms);
+  return pad2(d.getMonth() + 1) + '/' + pad2(d.getDate()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+}
+function updateCloudUI(){
+  var st = (window.SajuCloud && SajuCloud.status) ? SajuCloud.status() : { state:'idle', msg:'대기', code:'saju_0623' };
+  var chip = document.getElementById('cloudChip'), tx = document.getElementById('cloudChipTx');
+  var label = st.state === 'syncing' ? '동기화 중'
+    : (st.state === 'ok' ? '동기화됨'
+      : (st.state === 'error' ? '오류'
+        : (st.state === 'empty' ? '비어 있음' : '동기화')));
+  if (chip){ chip.setAttribute('data-s', st.state); chip.title = st.msg || '가족 프로필·복기 메모 클라우드 동기화'; }
+  if (tx) tx.textContent = label;
+  var se = document.getElementById('cloudState');
+  if (se){ se.setAttribute('data-s', st.state); se.textContent = st.msg || '대기'; }
+  var sc = document.getElementById('cloudCode');
+  if (sc) sc.textContent = st.code || 'saju_0623';
+  var sl = document.getElementById('cloudLast');
+  if (sl) sl.textContent = st.lastAt ? fmtClock(st.lastAt) : '—';
+  var lo = document.getElementById('cloudLocal');
+  if (lo){
+    var np = 0, nm = 0;
+    state.profiles.forEach(function(p){ if (!p.sample) np++; });
+    Object.keys(memoStore).forEach(function(k){ if (memoStore[k] && String(memoStore[k].t || '').trim()) nm++; });
+    lo.textContent = '프로필 ' + np + '명 · 메모 ' + nm + '건';
+  }
+}
+function manualSync(){
+  if (!window.SajuCloud) return;
+  var r = SajuCloud.sync();
+  if (r && r.then) r.then(function(){ updateCloudUI(); });
+}
+/* 클라우드가 이 기기 기록을 새로 썼을 때 — 화면 다시 그리기 */
+function reloadFromCloud(){
+  load();
+  cache = {};
+  famCache = { key:'', rows:null };
+  renderChips();
+  renderProfiles();
+  renderChart();
+  renderToday();
+  if (state.tab === 'yearly') renderYearly();
+  if (state.tab === 'match') renderMatch();
+  updateCloudUI();
+}
+
 function init(){
   load();
   fillHourSelects();
@@ -3678,11 +4257,7 @@ function init(){
     b.addEventListener('click', function(){ setTab(b.dataset.tab); });
   });
   document.getElementById('profileSelect').addEventListener('change', function(e){
-    state.activeId = e.target.value;
-    try { localStorage.setItem(LS_A, state.activeId); } catch(err){}
-    renderChart(); renderToday(); renderProfiles();
-    if (state.tab==='yearly') renderYearly();
-    if (state.tab==='match') renderMatch();
+    selectProfile(e.target.value);
   });
   document.getElementById('pfCal').addEventListener('click', function(e){
     var b = e.target.closest('button'); if (!b) return;
@@ -3701,7 +4276,7 @@ function init(){
     var id = b.dataset.id, act = b.dataset.act;
     var p = state.profiles.filter(function(x){ return x.id===id; })[0];
     if (!p) return;
-    if (act==='pick'){ state.activeId = id; try{ localStorage.setItem(LS_A,id); }catch(err){} renderProfiles(); renderChart(); renderToday(); if (state.tab==='yearly') renderYearly(); }
+    if (act==='pick'){ selectProfile(id); }
     if (act==='edit'){ state.editingId = id; setForm(p); document.getElementById('pfName').focus(); window.scrollTo({top:0,behavior:'smooth'}); }
     if (act==='del'){
       if (!confirm('"'+p.name+'" 프로필을 삭제할까요?')) return;
@@ -3711,6 +4286,7 @@ function init(){
         state.profiles = [Object.assign({}, SAMPLE, {id:'sample-'+Date.now()})];
         state.activeId = state.profiles[0].id;
       }
+      if (window.SajuCloud && window.SajuCloud.tomb) window.SajuCloud.tomb(id);
       save();
       try { localStorage.setItem(LS_A, state.activeId); } catch(err){}
       if (state.editingId===id){ state.editingId = null; setForm(null); }
@@ -3718,6 +4294,50 @@ function init(){
       if (state.tab==='yearly') renderYearly();
     }
   });
+  // 가족 프로필 칩
+  var chipBox = document.getElementById('profileChips');
+  if (chipBox) chipBox.addEventListener('click', function(e){
+    var b = e.target.closest('[data-chip]');
+    if (b) selectProfile(b.getAttribute('data-chip'));
+  });
+  var addChip = document.getElementById('chipAdd');
+  if (addChip) addChip.addEventListener('click', function(){
+    state.editingId = null;
+    setForm(null);
+    setTab('profiles');
+    var nm = document.getElementById('pfName');
+    if (nm) nm.focus({ preventScroll:true });
+    window.scrollTo({ top:0, behavior:'smooth' });
+  });
+
+  // 가족 카드에서 사람을 누르면 그 사람으로 전환
+  document.addEventListener('click', function(e){
+    var c = e.target.closest ? e.target.closest('[data-fam-pid]') : null;
+    if (!c) return;
+    selectProfile(c.getAttribute('data-fam-pid'));
+  });
+
+  // 가족 카드의 두 사람 선택 — 오늘 조화 한 줄만 다시 계산
+  document.addEventListener('change', function(e){
+    var id = e.target && e.target.id;
+    if (id !== 'famA' && id !== 'famB') return;
+    if (id === 'famA'){ state.famA = e.target.value; if (state.famA === state.famB) state.famB = null; }
+    else { state.famB = e.target.value; if (state.famB === state.famA) state.famA = null; }
+    renderToday();
+  });
+
+  // ☁️ 클라우드 동기화
+  if (window.SajuCloud){
+    SajuCloud.onChange(updateCloudUI);
+    SajuCloud.onApplied(reloadFromCloud);
+    var cbtn = document.getElementById('cloudChip');
+    if (cbtn) cbtn.addEventListener('click', manualSync);
+    var csync = document.getElementById('cloudSync');
+    if (csync) csync.addEventListener('click', manualSync);
+    updateCloudUI();
+    SajuCloud.boot();
+  }
+
   // 날짜 네비
   document.getElementById('dToday').addEventListener('click', function(){ state.target = {mode:'offset', offset:0}; renderToday(); });
   document.getElementById('dTomorrow').addEventListener('click', function(){ state.target = {mode:'offset', offset:1}; renderToday(); });
@@ -3788,6 +4408,9 @@ function init(){
     sal12Of: sal12Of, samjaeOf: samjaeOf, samjaeStage: samjaeStage, xunKongOf: xunKongOf,
     wolunOf: wolunOf, hoursOf: hoursOf, siZhiIndex: siZhiIndex, seoulNowHM: seoulNowHM,
     memoSet: memoSet, memoGet: memoGet, memoList: memoList, memoStats: memoStats,
+    familyStats: familyStats, familyTodayHtml: familyTodayHtml, famPairLine: famPairLine,
+    renderChips: renderChips, selectProfile: selectProfile, reloadFromCloud: reloadFromCloud,
+    updateCloudUI: updateCloudUI, SajuCloud: SajuCloud,
     ILJU_DB: ILJU_DB, JOHU: JOHU, GYEOK_INFO: GYEOK_INFO,
     state: state, setTab: setTab, setTheme: setTheme, readForm: readForm, saveProfile: saveProfile,
     narrChart: narrChart, dayNarr: dayNarr, yearNarr: yearNarr, monthNarr: monthNarr,
