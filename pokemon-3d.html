@@ -87,7 +87,7 @@
   /* ---------- 하단 안내 ---------- */
   .hint{
     position:absolute;left:50%;transform:translateX(-50%);
-    bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+    bottom:calc(env(safe-area-inset-bottom,0px) + 62px);
     max-width:calc(100% - 16px);
     background:rgba(255,255,255,.82);border:1.5px solid rgba(255,255,255,.95);
     border-radius:14px;padding:7px 12px;box-shadow:var(--shadow);
@@ -116,7 +116,7 @@
 
   /* ---------- 토스트 ---------- */
   #toast{
-    position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 58px);
+    position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 112px);
     transform:translate(-50%,10px);opacity:0;transition:opacity .3s,transform .3s;
     background:rgba(38,64,32,.92);color:#fff;border-radius:var(--r);
     padding:8px 14px;font-size:12px;font-weight:800;white-space:nowrap;
@@ -150,6 +150,79 @@
     font-size:13px;padding:9px 18px;cursor:pointer;box-shadow:0 4px 12px rgba(60,140,30,.35);
   }
 
+  /* ---------- 가족 전환 바 (하단) ---------- */
+  .whobar{
+    position:absolute;left:50%;transform:translateX(-50%);
+    bottom:calc(env(safe-area-inset-bottom,0px) + 9px);
+    display:flex;align-items:center;gap:3px;padding:4px 5px;
+    background:var(--panel);border:1.5px solid var(--panel-edge);border-radius:var(--r);
+    box-shadow:var(--shadow);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    pointer-events:auto;max-width:calc(100% - 12px);white-space:nowrap;
+  }
+  .who{
+    appearance:none;border:0;background:transparent;font:inherit;
+    font-weight:900;font-size:11.5px;color:#43603a;cursor:pointer;
+    display:inline-flex;align-items:center;gap:4px;padding:5px 8px;border-radius:var(--r);
+    transition:background .18s,color .18s,transform .12s;white-space:nowrap;
+  }
+  .who .dot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.92),0 1px 2px rgba(20,40,20,.2)}
+  .who.on{background:linear-gradient(180deg,#fff6c9,#ffdf7a);color:#6b4200;box-shadow:0 2px 6px rgba(180,120,0,.22)}
+  .who:active{transform:scale(.96)}
+  .whobar .sep{width:1px;height:17px;background:rgba(60,90,50,.16);margin:0 2px;flex:none}
+  .whobar button.pick{
+    appearance:none;border:0;background:transparent;font:inherit;font-weight:900;font-size:11.5px;
+    color:#7a4b04;cursor:pointer;display:inline-flex;align-items:center;gap:4px;
+    padding:5px 9px;border-radius:var(--r);white-space:nowrap;transition:transform .12s,background .18s;
+  }
+  .whobar button.pick:active{transform:scale(.96);background:#fffbe8}
+
+  /* ---------- 친구 고르기 모달 ---------- */
+  #dexModal{
+    position:fixed;inset:0;z-index:40;display:flex;align-items:center;justify-content:center;
+    padding:calc(env(safe-area-inset-top,0px) + 8px) 8px calc(env(safe-area-inset-bottom,0px) + 8px);
+    background:rgba(18,38,20,.46);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  }
+  #dexModal[hidden]{display:none}
+  .modalCard{
+    width:min(620px,100%);max-height:100%;display:flex;flex-direction:column;
+    background:#fffdf7;border:2px solid #fff;border-radius:20px;
+    box-shadow:0 22px 60px rgba(10,30,15,.34);overflow:hidden;
+  }
+  .mHead{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    padding:11px 14px 9px;background:linear-gradient(180deg,#fff6d8,#ffe9b0);
+    border-bottom:1.5px solid #f4dfa4;
+  }
+  .mHead b{font-size:14px;color:#6b4200;letter-spacing:-.2px}
+  .mHead .x{
+    appearance:none;border:0;background:rgba(255,255,255,.75);color:#7a5a20;
+    width:28px;height:28px;border-radius:50%;font:inherit;font-weight:900;font-size:14px;cursor:pointer;flex:none;
+  }
+  .mSub{padding:8px 14px 0;font-size:11px;font-weight:700;color:#6d7f62;line-height:1.45}
+  .slots{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:9px 12px 4px;overflow:auto;-webkit-overflow-scrolling:touch;min-height:0}
+  .slot{background:#f7fcf2;border:1.5px solid #e2eed7;border-radius:14px;padding:7px 7px 8px;min-height:0;display:flex;flex-direction:column}
+  .slot h4{margin:0 0;font-size:12px;color:#38531f;display:flex;align-items:center;gap:5px;font-weight:900}
+  .slot h4 .cnt{margin-left:auto;font-size:10.5px;color:#8a6a12;background:#fff3c9;border-radius:999px;padding:2px 7px;font-weight:900}
+  .slot h4 .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:96px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px;margin-top:6px;overflow:auto;min-height:44px;max-height:min(46vh,330px);align-content:start}
+  .tile{
+    appearance:none;border:2px solid #e6efe0;background:#fff;border-radius:12px;
+    padding:3px 1px 2px;display:flex;flex-direction:column;align-items:center;gap:0;
+    cursor:pointer;position:relative;font:inherit;overflow:hidden;
+  }
+  .tile img{width:40px;height:40px;object-fit:contain;display:block}
+  .tile .nm{font-size:9.5px;font-weight:800;color:#3b5730;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25}
+  .tile .ck{position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:#dfe9d7;color:#fff;font-size:9.5px;line-height:14px;text-align:center;font-weight:900}
+  .tile.on{border-color:#f3b008;background:linear-gradient(180deg,#fffdf0,#fff2c2);box-shadow:0 0 0 2px rgba(243,176,8,.22) inset}
+  .tile.on .ck{background:#5cba3c}
+  .tile:active{transform:scale(.97)}
+  .slot .empty{font-size:10.5px;font-weight:700;color:#8d9c83;line-height:1.5;padding:8px 2px 4px}
+  .mFoot{display:flex;align-items:center;gap:7px;justify-content:flex-end;padding:9px 12px calc(env(safe-area-inset-bottom,0px) + 10px);border-top:1.5px solid #f0ead8}
+  .mFoot button{appearance:none;border:0;font:inherit;font-weight:900;font-size:12.5px;border-radius:999px;padding:9px 16px;cursor:pointer}
+  .mFoot .ghost{background:#f1f5ec;color:#5b7050}
+  .mFoot .primary{background:linear-gradient(180deg,#6fd04a,#4da62c);color:#fff;box-shadow:0 4px 12px rgba(60,140,30,.32)}
+  .mFoot .primary:active{transform:scale(.97)}
+
   /* ---------- 좁은 화면(폴드 외부 400px) ---------- */
   @media (max-width:430px){
     .brand{font-size:12px;padding:5px 10px}
@@ -157,6 +230,11 @@
     .seg button{font-size:11.5px;padding:5px 7px}
     button.chip{font-size:11.5px;padding:6px 9px}
     .hint{font-size:10.5px;padding:6px 9px}
+    .who,.whobar button.pick{font-size:10.5px;padding:5px 6px;gap:3px}
+    .who .dot{width:8px;height:8px}
+    .slots{grid-template-columns:1fr;gap:7px}
+    .grid{max-height:min(30vh,220px)}
+    .mSub{font-size:10.5px}
   }
   @media (max-height:520px){
     .brand,.dexchip{font-size:11px}
@@ -185,10 +263,45 @@
     </div>
   </div>
 
+  <div class="whobar" id="whoBar" role="group" aria-label="조종할 가족 고르기">
+    <button class="who on" data-who="0" aria-pressed="true"><span class="dot" style="background:#ff8fb1"></span><span class="wname">아린</span></button>
+    <button class="who" data-who="1" aria-pressed="false"><span class="dot" style="background:#8fd0f5"></span><span class="wname">지안</span></button>
+    <button class="who" data-who="2" aria-pressed="false"><span class="dot" style="background:#ffb38a"></span><span class="wname">엄마</span></button>
+    <button class="who" data-who="3" aria-pressed="false"><span class="dot" style="background:#6fbf7c"></span><span class="wname">아빠</span></button>
+    <span class="sep"></span>
+    <button class="pick" id="btnDex">🐾 친구 고르기</button>
+  </div>
+
   <div id="bubbles"></div>
 
-  <div class="hint" id="hint">바닥을 탭하거나 방향키로 걸어보세요 · 포켓몬을 누르면 인사해요! 💖</div>
+  <div class="hint" id="hint">바닥 탭·방향키로 걷기 · 포켓몬을 누르면 타입별 인사! · 빨간 지붕 <b>포켓몬 센터</b>를 누르면 모두 회복 💖</div>
   <div id="toast"></div>
+</div>
+
+<div id="dexModal" hidden aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="dexTitle">
+    <div class="mHead">
+      <b id="dexTitle">🐾 친구 고르기</b>
+      <button class="x" id="dexClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="mSub">우리 도감에서 한 명당 최대 3마리씩 · 두 명 합쳐 최대 6마리까지 아지트로 불러요</div>
+    <div class="slots">
+      <section class="slot" data-slot="p1">
+        <h4><span style="width:9px;height:9px;border-radius:50%;background:#ff8fb1;display:inline-block"></span><span class="nm" data-name="p1">아린</span>의 도감<span class="cnt" data-cnt="p1">0 / 3</span></h4>
+        <div class="grid" data-grid="p1"></div>
+        <div class="empty" data-empty="p1" hidden>도감에 잡은 친구가 없어요.<br>게임에서 먼저 잡아 보세요!</div>
+      </section>
+      <section class="slot" data-slot="p2">
+        <h4><span style="width:9px;height:9px;border-radius:50%;background:#8fd0f5;display:inline-block"></span><span class="nm" data-name="p2">지안</span>의 도감<span class="cnt" data-cnt="p2">0 / 3</span></h4>
+        <div class="grid" data-grid="p2"></div>
+        <div class="empty" data-empty="p2" hidden>도감에 잡은 친구가 없어요.<br>게임에서 먼저 잡아 보세요!</div>
+      </section>
+    </div>
+    <div class="mFoot">
+      <button class="ghost" id="dexReset">선택 비우기</button>
+      <button class="primary" id="dexApply">아지트에 부르기</button>
+    </div>
+  </div>
 </div>
 
 <div id="loading">
@@ -395,6 +508,9 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 240);
 
 const POND = { x: -5.4, z: 4.2, r: 3.2 };
+/* 포켓몬 센터 자리 — 연못·몬스터볼·안내판과 겹치지 않는 뒤쪽 왼편 잔디밭 */
+const CENTER = { x: -6.0, z: -5.6, r: 3.25, rot: Math.atan2(6.0, 5.6), y: 0 };
+CENTER.y = 0;
 
 /* 지형 높이 함수 (지오메트리 변위와 동일식) */
 function terrainY(x, z) {
@@ -408,6 +524,8 @@ function terrainY(x, z) {
   y = y * (1 - dip) - 0.62 * dip;
   return y;
 }
+/* 센터가 앉을 땅 높이 */
+CENTER.y = terrainY(CENTER.x, CENTER.z);
 
 /* 하늘 돔 */
 const skyUniforms = {
@@ -519,6 +637,7 @@ const tgtC = {};
 function setTheme(name) {
   if (!THEMES[name]) return;
   themeName = name;
+  try { switchAmbience(name === 'night' ? 'amb_wind' : 'amb_forest'); } catch (e) { /* 오디오 준비 전 */ }
   const t = THEMES[name];
   Object.keys(t).forEach((k) => {
     if (k in tgtC) tgtC[k].set(t[k]);
@@ -613,12 +732,15 @@ for (let i = 0; i < 15; i++) {
   const rad = rndRange(9.4, 12.2);
   const x = Math.cos(a) * rad, z = Math.sin(a) * rad;
   if (Math.abs(x) < 2.2 && z > 7) continue; // 입구 길 비우기
+  if (Math.hypot(x - CENTER.x, z - CENTER.z) < 4.8) continue; // 센터 자리 비우기
   placeTree(x, z, rndRange(0.9, 1.2), i % 4 === 0);
 }
 for (let i = 0; i < 34; i++) {
   const a = rndRange(0, Math.PI * 2);
   const rad = rndRange(13, 23);
-  placeTree(Math.cos(a) * rad, Math.sin(a) * rad, rndRange(1.2, 1.9), rnd(0, 1) < 0.18, true);
+  const tx = Math.cos(a) * rad, tz = Math.sin(a) * rad;
+  if (Math.hypot(tx - CENTER.x, tz - CENTER.z) < 5.0) continue;
+  placeTree(tx, tz, rndRange(1.2, 1.9), rnd(0, 1) < 0.18, true);
 }
 
 /* 연못 */
@@ -832,6 +954,7 @@ for (let i = 0; i < 54; i++) {
   const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
   if (Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.6) continue;
   if (Math.abs(x - 2.4) < 0.8 && z > 0.8 && z < 8) continue;
+  if (Math.hypot(x - CENTER.x, z - CENTER.z) < 4.2) continue;
   const y = terrainY(x, z);
   for (let k = 0; k < 3; k++) {
     const bl = new THREE.Mesh(new THREE.ConeGeometry(rndRange(0.08, 0.14), rndRange(0.35, 0.58), 5), tuftMat);
@@ -869,6 +992,7 @@ for (let i = 0; i < 78; i++) {
   if (Math.abs(x - 0.6) < 0.9 && z > 2 && z < 9) continue;
   if (Math.hypot(x - monPos.x, z - monPos.z) < 1.5) continue;
   if (Math.hypot(x - benchPos.x, z - benchPos.z) < 1.3) continue;
+  if (Math.hypot(x - CENTER.x, z - CENTER.z) < 4.2) continue;
   const y = terrainY(x, z);
   const stem = new THREE.Mesh(
     new THREE.CylinderGeometry(0.02, 0.025, rndRange(0.2, 0.34), 5),
@@ -921,6 +1045,131 @@ const lamps = [];
   world.add(g);
   lamps.push({ glassMat, pl });
 });
+
+/* ---------- 8-b. 포켓몬 센터 ---------- */
+function centerSignTex() {
+  return texFrom(canvasTex(512, 128, (g, w, h) => {
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#f2f8ff'; g.fillRect(0, 0, w, h);
+    g.strokeStyle = '#e8484f'; g.lineWidth = 9; g.strokeRect(7, 7, w - 14, h - 14);
+    /* 하얀 몬스터볼 마크 */
+    const cx = 74, cy = h / 2, R = 42;
+    g.beginPath(); g.arc(cx, cy, R, Math.PI, 0); g.closePath();
+    g.fillStyle = '#e8484f'; g.fill();
+    g.beginPath(); g.arc(cx, cy, R, 0, Math.PI); g.closePath();
+    g.fillStyle = '#ffffff'; g.fill();
+    g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2);
+    g.strokeStyle = '#2b2b31'; g.lineWidth = 7; g.stroke();
+    g.beginPath(); g.moveTo(cx - R, cy); g.lineTo(cx + R, cy); g.stroke();
+    g.beginPath(); g.arc(cx, cy, 13, 0, Math.PI * 2); g.fillStyle = '#ffffff'; g.fill(); g.stroke();
+    g.textAlign = 'left'; g.textBaseline = 'middle';
+    g.fillStyle = '#274a68';
+    g.font = '900 52px "Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif';
+    g.fillText('포켓몬 센터', 134, h / 2 - 13);
+    g.fillStyle = '#e8484f';
+    g.font = '800 21px "Pretendard",sans-serif';
+    g.fillText('POKéMON CENTER', 138, h / 2 + 26);
+  }));
+}
+
+const centerPickables = [];
+const centerLights = [];
+const centerGroup = new THREE.Group();
+let centerRing = null;
+let healRingT = -1;
+{
+  const wallM = new THREE.MeshStandardMaterial({ color: 0xfff8ec, roughness: 0.86 });
+  const trimM = new THREE.MeshStandardMaterial({ color: 0xf2e5cc, roughness: 0.82 });
+  const redM = new THREE.MeshStandardMaterial({ color: 0xe8484f, roughness: 0.42, metalness: 0.1 });
+  const redD = new THREE.MeshStandardMaterial({ color: 0xd33a41, roughness: 0.5 });
+  const whiteM = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.55 });
+  const frameM = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, roughness: 0.6 });
+  const glassDoorM = new THREE.MeshStandardMaterial({ color: 0xffe0ae, roughness: 0.16, metalness: 0.2, emissive: 0xffb060, emissiveIntensity: 0.25 });
+  const glassWinM = new THREE.MeshStandardMaterial({ color: 0xffeccb, roughness: 0.14, metalness: 0.18, emissive: 0xffb968, emissiveIntensity: 0.28, transparent: true, opacity: 0.94 });
+  const stepM = new THREE.MeshStandardMaterial({ color: 0xd8d2c6, roughness: 0.9 });
+  const darkM = new THREE.MeshStandardMaterial({ color: 0x3b4550, roughness: 0.6, metalness: 0.25 });
+
+  /* 기단 */
+  const base = new THREE.Mesh(new THREE.CylinderGeometry(2.02, 2.14, 0.24, 28), trimM);
+  base.position.y = 0.12; base.castShadow = true; base.receiveShadow = true;
+  centerGroup.add(base);
+  /* 벽체 */
+  const body = new THREE.Mesh(new THREE.BoxGeometry(3.1, 1.9, 2.4), wallM);
+  body.position.y = 1.19; body.castShadow = true; body.receiveShadow = true;
+  centerGroup.add(body);
+  const plinth = new THREE.Mesh(new THREE.BoxGeometry(3.24, 0.34, 2.54), trimM);
+  plinth.position.y = 0.4; centerGroup.add(plinth);
+  /* 반구 지붕 */
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(1.86, 30, 18, 0, Math.PI * 2, 0, Math.PI / 2), redD);
+  dome.position.y = 2.14; dome.scale.set(1.02, 0.76, 0.87);
+  dome.castShadow = true; centerGroup.add(dome);
+  const roofBand = new THREE.Mesh(new THREE.CylinderGeometry(1.9, 1.9, 0.17, 30, 1, true), whiteM);
+  roofBand.position.y = 2.13; roofBand.scale.set(1.02, 1, 0.87);
+  centerGroup.add(roofBand);
+  const roofCap = new THREE.Mesh(new THREE.SphereGeometry(0.09, 12, 10), redM);
+  roofCap.position.y = 3.5; centerGroup.add(roofCap);
+  /* 아치형 입구 (문틀 + 유리문 + 아치) */
+  const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.94, 0.09), frameM);
+  doorFrame.position.set(0, 0.71, 1.19); centerGroup.add(doorFrame);
+  const door = new THREE.Mesh(new THREE.PlaneGeometry(0.84, 0.8), glassDoorM);
+  door.position.set(0, 0.64, 1.245); centerGroup.add(door);
+  const arch = new THREE.Mesh(new THREE.CircleGeometry(0.42, 18, 0, Math.PI), glassDoorM);
+  arch.position.set(0, 1.04, 1.245); arch.rotation.z = 0; centerGroup.add(arch);
+  const doorSplit = new THREE.Mesh(new THREE.BoxGeometry(0.035, 1.2, 0.02), frameM);
+  doorSplit.position.set(0, 0.84, 1.252); centerGroup.add(doorSplit);
+  const knob = new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 6), darkM);
+  knob.position.set(0.19, 0.66, 1.26); centerGroup.add(knob);
+  const step = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.13, 0.52), stepM);
+  step.position.set(0, 0.07, 1.42); centerGroup.add(step);
+  /* 간판 */
+  const signTex = centerSignTex();
+  const signBoard = new THREE.Mesh(new THREE.BoxGeometry(1.96, 0.52, 0.08), frameM);
+  signBoard.position.set(0, 1.87, 1.2); centerGroup.add(signBoard);
+  const signFace = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.9, 0.48),
+    new THREE.MeshStandardMaterial({ map: signTex, emissive: 0xffffff, emissiveMap: signTex, emissiveIntensity: 0, roughness: 0.62 })
+  );
+  signFace.position.set(0, 1.87, 1.243); centerGroup.add(signFace);
+  const signGlow = new THREE.PointLight(0xffcf8a, 0, 9, 2);
+  signGlow.position.set(0, 1.5, 2.6); centerGroup.add(signGlow);
+  /* 유리창 4개 */
+  const winSpec = [[-1.03, 1.19, 0], [1.03, 1.19, 0], [-1.56, -0.1, Math.PI / 2], [1.56, -0.1, -Math.PI / 2]];
+  winSpec.forEach(([x, z, ry]) => {
+    const grp = new THREE.Group();
+    const fr = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.66, 0.07), frameM);
+    const gl = new THREE.Mesh(new THREE.PlaneGeometry(0.48, 0.52), glassWinM);
+    gl.position.z = 0.042;
+    const mull = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.52, 0.02), frameM);
+    mull.position.z = 0.055;
+    grp.add(fr, gl, mull);
+    if (ry !== 0) { grp.position.set(x, 1.02, z); grp.rotation.y = ry; }
+    else grp.position.set(x, 1.02, z);
+    centerGroup.add(grp);
+  });
+  /* 작은 화분 둘 */
+  [[-0.86, 1.34], [0.86, 1.34]].forEach(([x, z]) => {
+    const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.12, 0.2, 12), new THREE.MeshStandardMaterial({ color: 0xcf8a5c, roughness: 0.9 }));
+    pot.position.set(x, 0.3, z); centerGroup.add(pot);
+    const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(0.17, 1), new THREE.MeshStandardMaterial({ color: 0x62b64a, roughness: 0.95, flatShading: true }));
+    leaf.position.set(x, 0.49, z); centerGroup.add(leaf);
+  });
+
+  /* 회복 연출용 바닥 링 */
+  centerRing = new THREE.Mesh(
+    new THREE.RingGeometry(0.55, 0.78, 52),
+    new THREE.MeshBasicMaterial({ color: 0xfff1a8, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })
+  );
+  centerRing.rotation.x = -Math.PI / 2;
+  centerRing.position.y = 0.3;
+  centerGroup.add(centerRing);
+
+  centerGroup.scale.setScalar(1.5);
+  centerGroup.position.set(CENTER.x, CENTER.y, CENTER.z);
+  centerGroup.rotation.y = CENTER.rot;
+  world.add(centerGroup);
+  centerGroup.traverse((o) => { if (o.isMesh) centerPickables.push(o); });
+  centerLights.push({ mat: glassWinM, on: 1.6, off: 0.22 }, { mat: glassDoorM, on: 1.3, off: 0.2 }, { mat: signFace.material, on: 0.9, off: 0 }, { pl: signGlow, on: 2.2, off: 0 });
+}
 
 /* 구름 */
 const clouds = [];
@@ -977,97 +1226,416 @@ for (let i = 0; i < 5; i++) {
   butterflies.push(sp);
 }
 
-/* ---------- 9. 트레이너 ---------- */
-const trainer = new THREE.Group();
-const trainerParts = {};
-{
-  const skin = new THREE.MeshStandardMaterial({ color: 0xffd7b4, roughness: 0.82 });
-  const shirt = new THREE.MeshStandardMaterial({ color: 0xf2604a, roughness: 0.75 });
-  const shirtDark = new THREE.MeshStandardMaterial({ color: 0xd94a36, roughness: 0.8 });
-  const pants = new THREE.MeshStandardMaterial({ color: 0x39569c, roughness: 0.85 });
-  const shoe = new THREE.MeshStandardMaterial({ color: 0x2b2f3a, roughness: 0.7 });
-  const capM = new THREE.MeshStandardMaterial({ color: 0xe8413f, roughness: 0.7 });
-  const hairM = new THREE.MeshStandardMaterial({ color: 0x41291a, roughness: 0.95 });
+/* ---------- 9. 가족 4인 (아린·지안·엄마·아빠) ---------- */
+const PROFILE_STORES = ['mpb.profiles.v1', 'hpb.profiles.v1', 'epb.profiles.v1'];
+const GENERIC_NAME = /^(첫째|둘째|게스트|아이1|아이2|p1|p2|player\s*1|player\s*2|guest)$/i;
+function profileList(key) {
+  try {
+    const o = JSON.parse(localStorage.getItem(key) || 'null');
+    return o && Array.isArray(o.list) ? o.list : [];
+  } catch (e) { return []; }
+}
+function nameFromProfiles(id, fallback) {
+  for (const key of PROFILE_STORES) {
+    const p = profileList(key).find((x) => x && x.id === id);
+    const nm = p && typeof p.name === 'string' ? p.name.trim() : '';
+    if (nm && !GENERIC_NAME.test(nm)) return nm.slice(0, 8);
+  }
+  return fallback;
+}
+
+/* 머리 위 이름 배지 */
+function nameBadgeTex(name, edge) {
+  return texFrom(canvasTex(256, 96, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    const r = 28, x0 = 7, y0 = 5, wid = w - 14, hei = h - 28;
+    g.beginPath();
+    g.moveTo(x0 + r, y0);
+    g.lineTo(x0 + wid - r, y0);
+    g.quadraticCurveTo(x0 + wid, y0, x0 + wid, y0 + r);
+    g.lineTo(x0 + wid, y0 + hei - r);
+    g.quadraticCurveTo(x0 + wid, y0 + hei, x0 + wid - r, y0 + hei);
+    g.lineTo(x0 + r, y0 + hei);
+    g.quadraticCurveTo(x0, y0 + hei, x0, y0 + hei - r);
+    g.lineTo(x0, y0 + r);
+    g.quadraticCurveTo(x0, y0, x0 + r, y0);
+    g.closePath();
+    g.fillStyle = 'rgba(255,255,255,.96)';
+    g.fill();
+    g.lineWidth = 10; g.strokeStyle = edge; g.stroke();
+    g.fillStyle = '#2c441f';
+    g.font = '900 40px "Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(name, w / 2, y0 + hei / 2 + 1);
+    g.beginPath();
+    g.moveTo(w / 2 - 12, h - 24); g.lineTo(w / 2, h - 5); g.lineTo(w / 2 + 12, h - 24);
+    g.closePath(); g.fillStyle = edge; g.fill();
+  }));
+}
+
+function makePerson(cfg, name) {
+  const g = new THREE.Group();
+  const parts = {};
+  const skin = new THREE.MeshStandardMaterial({ color: cfg.skin || 0xffd7b4, roughness: 0.82 });
+  const top = new THREE.MeshStandardMaterial({ color: cfg.shirt, roughness: 0.78 });
+  const topD = new THREE.MeshStandardMaterial({ color: cfg.shirtDark, roughness: 0.82 });
+  const bot = new THREE.MeshStandardMaterial({ color: cfg.pants, roughness: 0.86 });
+  const shoeM = new THREE.MeshStandardMaterial({ color: cfg.shoes, roughness: 0.7 });
+  const hairM = new THREE.MeshStandardMaterial({ color: cfg.hair, roughness: 0.95 });
   const eyeM = new THREE.MeshStandardMaterial({ color: 0x241a14, roughness: 0.4 });
   const cheekM = new THREE.MeshStandardMaterial({ color: 0xffa3a3, roughness: 0.9 });
 
   const hip = 0.66;
-  // 다리
   const legL = new THREE.Group(), legR = new THREE.Group();
   [legL, legR].forEach((leg, i) => {
     leg.position.set(i === 0 ? -0.14 : 0.14, hip, 0);
-    const thigh = new THREE.Mesh(new THREE.CapsuleGeometry(0.095, 0.34, 4, 10), pants);
+    const thigh = new THREE.Mesh(new THREE.CapsuleGeometry(0.095, 0.34, 4, 10), bot);
     thigh.position.y = -0.24; thigh.castShadow = true;
-    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.11, 0.28), shoe);
-    foot.position.set(0, -0.53, 0.04); foot.castShadow = true;
+    const foot = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.11, 0.28), shoeM);
+    foot.position.set(0, -0.53, 0.04);
     leg.add(thigh, foot);
-    trainer.add(leg);
+    g.add(leg);
   });
-  trainerParts.legL = legL; trainerParts.legR = legR;
+  parts.legL = legL; parts.legR = legR;
 
-  // 몸통
-  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.21, 0.34, 5, 12), shirt);
-  torso.position.y = 0.98; torso.castShadow = true;
-  trainer.add(torso);
-  const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.225, 0.225, 0.09, 14), shirtDark);
-  belt.position.y = 0.78; trainer.add(belt);
-  // 가방
-  const bag = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.36, 0.2), new THREE.MeshStandardMaterial({ color: 0x2f7d4a, roughness: 0.85 }));
-  bag.position.set(0, 1.0, -0.24); bag.castShadow = true; trainer.add(bag);
-  // 팔
+  const torso = new THREE.Mesh(new THREE.CapsuleGeometry(0.21, 0.34, 5, 12), top);
+  torso.position.y = 0.98; torso.castShadow = true; g.add(torso);
+  const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.228, 0.228, 0.09, 14), topD);
+  belt.position.y = 0.78; g.add(belt);
+  if (cfg.skirt) {
+    const skirt = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.34, 0.26, 16, 1, true), topD);
+    skirt.position.y = 0.73; g.add(skirt);
+  }
+  if (cfg.bag) {
+    const bagM = new THREE.MeshStandardMaterial({ color: cfg.bag, roughness: 0.85 });
+    const bag = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.33, 0.19), bagM);
+    bag.position.set(0, 1.0, -0.24); g.add(bag);
+    const flap = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.12, 0.045), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 }));
+    flap.position.set(0, 1.06, -0.33); g.add(flap);
+  }
   const armL = new THREE.Group(), armR = new THREE.Group();
   [armL, armR].forEach((arm, i) => {
     arm.position.set(i === 0 ? -0.27 : 0.27, 1.12, 0);
-    const upper = new THREE.Mesh(new THREE.CapsuleGeometry(0.072, 0.3, 4, 9), shirt);
+    const upper = new THREE.Mesh(new THREE.CapsuleGeometry(0.072, 0.3, 4, 9), top);
     upper.position.y = -0.2; upper.castShadow = true;
     const hand = new THREE.Mesh(new THREE.SphereGeometry(0.082, 10, 8), skin);
-    hand.position.y = -0.42; hand.castShadow = true;
+    hand.position.y = -0.42;
     arm.add(upper, hand);
-    trainer.add(arm);
+    g.add(arm);
   });
-  trainerParts.armL = armL; trainerParts.armR = armR;
-  // 목 + 머리
+  parts.armL = armL; parts.armR = armR;
+
   const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.1, 8), skin);
-  neck.position.y = 1.24; trainer.add(neck);
+  neck.position.y = 1.24; g.add(neck);
   const head = new THREE.Mesh(new THREE.SphereGeometry(0.285, 24, 18), skin);
   head.position.y = 1.5; head.scale.set(1, 1.02, 0.97); head.castShadow = true;
-  trainer.add(head);
-  trainerParts.head = head;
-  // 머리카락 (이마를 덮지 않게 위쪽만)
-  const hair = new THREE.Mesh(new THREE.SphereGeometry(0.296, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.34), hairM);
-  hair.position.y = 1.53; trainer.add(hair);
-  const backHair = new THREE.Mesh(new THREE.SphereGeometry(0.29, 18, 12, 0, Math.PI * 2, Math.PI * 0.28, Math.PI * 0.34), hairM);
-  backHair.position.set(0, 1.5, -0.06); backHair.scale.set(1, 1, 0.9); trainer.add(backHair);
-  // 모자
-  const cap = new THREE.Mesh(new THREE.SphereGeometry(0.305, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.46), capM);
-  cap.position.y = 1.6; cap.castShadow = true; trainer.add(cap);
-  const brim = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.055, 0.26), capM);
-  brim.position.set(0, 1.62, 0.27); brim.rotation.x = -0.14; brim.castShadow = true; trainer.add(brim);
-  const capBtn = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 }));
-  capBtn.position.y = 1.9; trainer.add(capBtn);
-  // 얼굴
+  g.add(head);
+  parts.head = head;
+
+  /* 머리카락 */
+  const hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.297, 22, 16, 0, Math.PI * 2, 0, Math.PI * 0.36), hairM);
+  hairCap.position.y = 1.53; g.add(hairCap);
+  if (cfg.style === 'long' || cfg.style === 'long2') {
+    const back = new THREE.Mesh(new THREE.SphereGeometry(0.3, 20, 16, 0, Math.PI * 2, 0, Math.PI * 0.8), hairM);
+    back.position.set(0, 1.43, -0.06); back.scale.set(1.03, 1.3, 0.94); g.add(back);
+    [-0.27, 0.27].forEach((x) => {
+      const side = new THREE.Mesh(new THREE.CapsuleGeometry(0.075, cfg.style === 'long' ? 0.5 : 0.34, 4, 8), hairM);
+      side.position.set(x, cfg.style === 'long' ? 1.24 : 1.32, 0.01);
+      g.add(side);
+    });
+    if (cfg.style === 'long') {
+      const clip = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.016, 6, 12), new THREE.MeshStandardMaterial({ color: 0xff9ecb, roughness: 0.5 }));
+      clip.position.set(0.24, 1.62, 0.14); clip.rotation.y = 0.5; g.add(clip);
+    }
+  } else if (cfg.style === 'pony') {
+    const tail = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.36, 4, 10), hairM);
+    tail.position.set(0, 1.34, -0.3); tail.rotation.x = 0.32; g.add(tail);
+    const tie = new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.025, 6, 12), new THREE.MeshStandardMaterial({ color: 0xffd166, roughness: 0.6 }));
+    tie.position.set(0, 1.5, -0.26); tie.rotation.x = Math.PI / 2 + 0.3; g.add(tie);
+  } else {
+    const back = new THREE.Mesh(new THREE.SphereGeometry(0.29, 18, 12, 0, Math.PI * 2, Math.PI * 0.28, Math.PI * 0.34), hairM);
+    back.position.set(0, 1.5, -0.05); back.scale.set(1, 1, 0.92); g.add(back);
+  }
+
+  /* 모자 */
+  if (cfg.capColor) {
+    const capM = new THREE.MeshStandardMaterial({ color: cfg.capColor, roughness: 0.7 });
+    const capTop = new THREE.Mesh(new THREE.SphereGeometry(0.307, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.46), capM);
+    capTop.position.y = 1.6; capTop.castShadow = true; g.add(capTop);
+    const brim = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.055, 0.26), capM);
+    brim.position.set(0, 1.62, 0.27); brim.rotation.x = -0.14; brim.castShadow = true; g.add(brim);
+    const capBtn = new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 8), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 }));
+    capBtn.position.y = 1.9; g.add(capBtn);
+  }
+
+  /* 얼굴 */
   [-0.1, 0.1].forEach((x) => {
     const eye = new THREE.Mesh(new THREE.SphereGeometry(0.03, 10, 8), eyeM);
-    eye.position.set(x, 1.49, 0.262); eye.scale.set(1, 1.3, 0.6); trainer.add(eye);
+    eye.position.set(x, 1.49, 0.262); eye.scale.set(1, 1.3, 0.6); g.add(eye);
   });
   [-0.17, 0.17].forEach((x) => {
     const cheek = new THREE.Mesh(new THREE.SphereGeometry(0.045, 8, 6), cheekM);
-    cheek.position.set(x, 1.44, 0.235); cheek.scale.set(1, 0.7, 0.4); trainer.add(cheek);
+    cheek.position.set(x, 1.44, 0.235); cheek.scale.set(1, 0.7, 0.4); g.add(cheek);
   });
   const smile = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.014, 6, 12, Math.PI), eyeM);
-  smile.position.set(0, 1.42, 0.262); smile.rotation.set(0, 0, Math.PI); smile.rotation.x = 0.2; trainer.add(smile);
+  smile.position.set(0, 1.42, 0.262); smile.rotation.set(0, 0, Math.PI); smile.rotation.x = 0.2; g.add(smile);
 
-  // 그림자
-  const sh = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 1.3), new THREE.MeshBasicMaterial({ map: shadowMap, transparent: true, depthWrite: false }));
-  sh.rotation.x = -Math.PI / 2; sh.position.y = 0.02;
-  trainer.add(sh);
+  /* 안경 */
+  if (cfg.glasses) {
+    const frameM = new THREE.MeshStandardMaterial({ color: 0x2b2f3a, roughness: 0.45, metalness: 0.35 });
+    [-0.105, 0.105].forEach((x) => {
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.062, 0.011, 6, 16), frameM);
+      rim.position.set(x, 1.5, 0.263); g.add(rim);
+    });
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.013, 0.014), frameM);
+    bridge.position.set(0, 1.5, 0.272); g.add(bridge);
+    [-0.165, 0.165].forEach((x) => {
+      const temple = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.012, 0.16), frameM);
+      temple.position.set(x, 1.5, 0.19); g.add(temple);
+    });
+  }
+  /* 수염(아빠) */
+  if (cfg.stubble) {
+    const stubM = new THREE.MeshStandardMaterial({ color: 0x5a4a3c, roughness: 0.95, transparent: true, opacity: 0.32 });
+    const stub = new THREE.Mesh(new THREE.SphereGeometry(0.275, 18, 12, 0, Math.PI * 2, Math.PI * 0.56, Math.PI * 0.2), stubM);
+    stub.position.y = 1.5; stub.scale.set(1, 1.02, 0.97); g.add(stub);
+  }
+
+  /* 머리 위 이름 배지 */
+  const badge = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: nameBadgeTex(name, cfg.badge || '#5cba3c'), transparent: true, depthWrite: false, depthTest: false,
+  }));
+  badge.scale.set(1.36, 0.52, 1);
+  badge.position.set(0, 0, 0);
+  badge.renderOrder = 6;
+  parts.badge = badge;
+
+  /* 그림자 + 선택 링 */
+  const sh = new THREE.Mesh(new THREE.PlaneGeometry(1.25, 1.25), new THREE.MeshBasicMaterial({ map: shadowMap, transparent: true, depthWrite: false }));
+  sh.rotation.x = -Math.PI / 2; sh.position.y = 0.02; sh.userData.noPick = true; g.add(sh);
+  const ring = new THREE.Mesh(
+    new THREE.RingGeometry(0.36, 0.47, 32),
+    new THREE.MeshBasicMaterial({ color: 0xffd84d, transparent: true, opacity: 0.8, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })
+  );
+  ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05; ring.visible = false; ring.userData.noPick = true;
+  g.add(ring);
+  parts.ring = ring;
+
+  g.scale.setScalar(cfg.h);
+  return { group: g, parts };
 }
-const T = {
-  x: 0, z: 3.4, target: null, speed: 0, face: 0.55, walkPhase: 0, wave: 0, moving: false,
-};
-trainer.position.set(T.x, terrainY(T.x, T.z), T.z);
-trainer.rotation.y = T.face;
-world.add(trainer);
+
+const FAMILY_DEFS = [
+  {
+    id: 'p1', role: '아린', emoji: '👧', h: 0.82,
+    shirt: 0xff8fb1, shirtDark: 0xe86f96, pants: 0x6f7fd4, shoes: 0xff9ec4,
+    hair: 0x3a2418, style: 'long', skirt: true, bag: 0xffd166, badge: '#f0609a',
+    start: { x: -1.5, z: 3.3 }, badgeX: -0.62, badgeLift: 0.34,
+  },
+  {
+    id: 'p2', role: '지안', emoji: '🧒', h: 0.68,
+    shirt: 0x8fd0f5, shirtDark: 0x63b3e0, pants: 0x3f5f9e, shoes: 0xffd166,
+    hair: 0x1f1a17, style: 'short', capColor: 0xffd166, bag: 0x5fa86b, badge: '#3f9ede',
+    start: { x: 1.7, z: 2.7 }, badgeX: 0.52, badgeLift: 0.3,
+  },
+  {
+    id: 'mom', role: '엄마', emoji: '👩', h: 1.0,
+    shirt: 0xffb38a, shirtDark: 0xe08f68, pants: 0x4b5f8f, shoes: 0xffffff,
+    hair: 0x4a2c1c, style: 'pony', badge: '#f08a4b',
+    start: { x: 0.9, z: 5.2 }, badgeX: -0.48, badgeLift: 0.4,
+  },
+  {
+    id: 'dad', role: '아빠', emoji: '👨', h: 1.06,
+    shirt: 0x5fa86b, shirtDark: 0x43804f, pants: 0x2f3b4d, shoes: 0x2b2f3a,
+    hair: 0x241a14, style: 'short', glasses: true, stubble: true, badge: '#3f8b4f',
+    start: { x: 2.6, z: 4.4 }, badgeX: 0.6, badgeLift: 0.44,
+  },
+];
+
+const peopleGroup = new THREE.Group();
+world.add(peopleGroup);
+/* 이름 배지는 카메라 기준 화면 좌우로 벌려 겹치지 않게 띄운다 */
+const badgeLayer = new THREE.Group();
+world.add(badgeLayer);
+const people = [];
+const personPickables = [];
+
+FAMILY_DEFS.forEach((def, i) => {
+  const name = (def.id === 'p1' || def.id === 'p2') ? nameFromProfiles(def.id, def.role) : def.role;
+  const built = makePerson(def, name);
+  const spot = clampRWalk(def.start.x, def.start.z);
+  const P = {
+    idx: i, id: def.id, emoji: def.emoji, name, role: def.role,
+    group: built.group, parts: built.parts, h: def.h,
+    x: spot.x, z: spot.z, target: null, face: rndRange(-3.1, 3.1), walkPhase: rndRange(0, 6),
+    wave: 0, speed: 0, moving: false, rest: rndRange(0.4, 2.2),
+  };
+  built.group.position.set(P.x, terrainY(P.x, P.z), P.z);
+  built.group.rotation.y = P.face;
+  built.group.traverse((o) => {
+    if (o.isMesh && !o.userData.noPick) { o.userData.personIdx = i; personPickables.push(o); }
+  });
+  built.parts.ring.visible = i === 0;
+  peopleGroup.add(built.group);
+  badgeLayer.add(built.parts.badge);
+  P.badgeX = def.badgeX || 0;
+  P.badgeLift = def.badgeLift || 0.38;
+  people.push(P);
+});
+
+/* 걸을 수 있는 자리로 밀어 넣기 (연못·센터·조형물·벤치·마을 경계) */
+function clampRWalk(x, z, pad) {
+  pad = pad == null ? 0.46 : pad;
+  const r = Math.hypot(x, z);
+  if (r > 9.2) { const k = 9.2 / Math.max(0.001, r); x *= k; z *= k; }
+  const dp = Math.hypot(x - POND.x, z - POND.z);
+  if (dp < POND.r + pad) {
+    const k = (POND.r + pad) / Math.max(0.001, dp);
+    x = POND.x + (x - POND.x) * k; z = POND.z + (z - POND.z) * k;
+  }
+  const dc = Math.hypot(x - CENTER.x, z - CENTER.z);
+  if (dc < CENTER.r + pad) {
+    const k = (CENTER.r + pad) / Math.max(0.001, dc);
+    x = CENTER.x + (x - CENTER.x) * k; z = CENTER.z + (z - CENTER.z) * k;
+  }
+  const dm = Math.hypot(x - monPos.x, z - monPos.z);
+  if (dm < 1.35) { const k = 1.35 / Math.max(0.001, dm); x = monPos.x + (x - monPos.x) * k; z = monPos.z + (z - monPos.z) * k; }
+  const db = Math.hypot(x - benchPos.x, z - benchPos.z);
+  if (db < 1.12) { const k = 1.12 / Math.max(0.001, db); x = benchPos.x + (x - benchPos.x) * k; z = benchPos.z + (z - benchPos.z) * k; }
+  return { x, z };
+}
+
+let activeIdx = 0;
+const activePerson = () => people[activeIdx] || people[0];
+function selectPerson(i) {
+  const P = people[i];
+  if (!P) return false;
+  activeIdx = i;
+  people.forEach((q, k) => { q.parts.ring.visible = k === i; if (k !== i) q.target = null; });
+  P.target = null; P.rest = 0;
+  if (P.wave < 0.2) P.wave = 0.9;
+  const bar = document.getElementById('whoBar');
+  if (bar) {
+    [...bar.querySelectorAll('.who')].forEach((b, k) => {
+      const on = Number(b.dataset.who) === i;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  toast(`${P.emoji} 이제 ${P.name} 조종으로 바꿨어요`);
+  hintFade();
+  return true;
+}
+
+/* 가족 산책 목적지 고르기 */
+const REST_SPOTS = [
+  { x: -1.0, z: 6.4 }, { x: 2.9, z: 5.8 }, { x: -3.2, z: -1.6 },
+  { x: 3.6, z: 0.2 }, { x: 0.2, z: -3.0 }, { x: 5.2, z: 1.4 }, { x: -4.2, z: 1.0 },
+];
+function pickPersonSpot(P) {
+  for (let i = 0; i < 12; i++) {
+    let cand;
+    if (rnd() < 0.42) {
+      const s = REST_SPOTS[Math.floor(rnd() * REST_SPOTS.length)];
+      cand = { x: s.x + rndRange(-0.5, 0.5), z: s.z + rndRange(-0.5, 0.5) };
+    } else {
+      const a = rndRange(0, Math.PI * 2), rr = rndRange(2.2, 7.6);
+      cand = { x: Math.cos(a) * rr, z: Math.sin(a) * rr };
+    }
+    const c = clampRWalk(cand.x, cand.z, 0.7);
+    if (Math.hypot(c.x - P.x, c.z - P.z) < 1.3) continue;
+    let crowded = false;
+    for (const q of people) {
+      if (q !== P && Math.hypot(c.x - q.x, c.z - q.z) < 0.85) { crowded = true; break; }
+    }
+    if (crowded) continue;
+    P.target = c;
+    return;
+  }
+  P.target = null;
+}
+
+function stepPerson(P, dt, controlled) {
+  let vx = 0, vz = 0;
+  const kv = controlled ? 3.0 : 1.22;
+  if (controlled) {
+    if (keys.size) {
+      if (keys.has('arrowleft') || keys.has('a')) vx -= 1;
+      if (keys.has('arrowright') || keys.has('d')) vx += 1;
+      if (keys.has('arrowup') || keys.has('w')) vz -= 1;
+      if (keys.has('arrowdown') || keys.has('s')) vz += 1;
+      if (vx || vz) P.target = null;
+    } else if (P.target) {
+      const dx = P.target.x - P.x, dz = P.target.z - P.z;
+      const d = Math.hypot(dx, dz);
+      if (d < 0.14) P.target = null;
+      else { vx = dx / d; vz = dz / d; }
+    }
+  } else {
+    if (P.rest > 0) {
+      P.rest -= dt;
+      if (P.rest <= 0) P.target = null;
+    }
+    if (P.rest <= 0 && !P.target) {
+      if (rnd() < 0.3) P.rest = rndRange(1.8, 5.2);
+      else pickPersonSpot(P);
+    }
+    if (P.rest <= 0 && P.target) {
+      const dx = P.target.x - P.x, dz = P.target.z - P.z;
+      const d = Math.hypot(dx, dz);
+      if (d < 0.2) { P.target = null; P.rest = rndRange(1.2, 4.2); }
+      else { vx = dx / d; vz = dz / d; }
+    }
+  }
+
+  if (vx || vz) {
+    const len = Math.hypot(vx, vz) || 1;
+    vx /= len; vz /= len;
+    if (controlled && keys.size) {
+      const s = Math.sin(view.theta), c = Math.cos(view.theta);
+      const wx = vx * c - vz * s;
+      const wz = vx * s + vz * c;
+      vx = wx; vz = wz;
+    }
+    const step = kv * dt;
+    const np = clampRWalk(P.x + vx * step, P.z + vz * step, 0.46);
+    P.x = np.x; P.z = np.z;
+    P.face = Math.atan2(vx, vz);
+    P.moving = true;
+    P.walkPhase += dt * (controlled ? 9.5 : 7.4);
+  } else {
+    P.moving = false;
+    P.walkPhase = lerp(P.walkPhase, Math.round(P.walkPhase / Math.PI) * Math.PI, Math.min(1, dt * 10));
+  }
+  P.speed = lerp(P.speed, P.moving ? 1 : 0, Math.min(1, dt * 12));
+  P.group.position.set(P.x, terrainY(P.x, P.z), P.z);
+  let curFace = P.group.rotation.y;
+  const diff = ((P.face - curFace + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+  P.group.rotation.y = curFace + diff * Math.min(1, dt * 12);
+  const sw = Math.sin(P.walkPhase) * 0.62 * P.speed;
+  P.parts.legL.rotation.x = sw;
+  P.parts.legR.rotation.x = -sw;
+  P.parts.armL.rotation.x = -sw * 0.75;
+  P.parts.armR.rotation.x = sw * 0.75;
+  P.group.position.y += Math.abs(Math.sin(P.walkPhase)) * 0.045 * P.speed;
+  if (P.wave > 0) {
+    P.wave = Math.max(0, P.wave - dt * 0.85);
+    const w = Math.sin(performance.now() * 0.012) * 0.9 * P.wave;
+    P.parts.armR.rotation.z = -1.9 * P.wave;
+    P.parts.armR.rotation.x = w;
+  } else {
+    P.parts.armR.rotation.z = lerp(P.parts.armR.rotation.z, 0, Math.min(1, dt * 8));
+    P.parts.armR.rotation.x = lerp(P.parts.armR.rotation.x, 0, Math.min(1, dt * 6));
+  }
+  const idle = !P.moving && P.rest > 0;
+  P.parts.head.rotation.z = Math.sin(performance.now() * 0.0016 + P.idx) * 0.03 + (idle ? Math.sin(performance.now() * 0.0008 + P.idx) * 0.05 : 0);
+  P.parts.head.rotation.y = idle ? Math.sin(performance.now() * 0.0006 + P.idx * 2) * 0.45 : lerp(P.parts.head.rotation.y, 0, Math.min(1, dt * 3));
+  if (P.parts.ring.visible) {
+    const k = 1 + Math.sin(performance.now() * 0.004) * 0.07;
+    P.parts.ring.scale.set(k, k, k);
+    P.parts.ring.material.opacity = 0.5 + Math.sin(performance.now() * 0.004) * 0.2;
+  }
+}
 
 /* ---------- 10. 포켓몬 ---------- */
 const POKE_SPRITE = (id) => `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
@@ -1078,7 +1646,38 @@ const CRY_URLS = [
 const PHRASES = ['안녕!', '같이 놀자!', '반가워!', '오늘 기분 좋아!', '따라와!', '냠냠!', '여기 좋다!', '한 바퀴 돌자!'];
 
 const caught = readCaughtIds();
-const shownIds = (caught.length ? caught.slice(0, MAX_FRIENDS) : DEFAULT_IDS.slice());
+const PICK_KEY = 'pkm.ajit.pick.v1';
+const MAX_PER_KID = 3;
+function readDexSlot(slot) {
+  try {
+    const o = JSON.parse(localStorage.getItem(SHARED_PREFIX + slot) || 'null');
+    if (o && Array.isArray(o.ids)) {
+      const ids = o.ids.filter((n) => Number.isFinite(n) && n > 0).map((n) => Math.round(n));
+      return { ids, counts: o.counts || {} };
+    }
+  } catch (e) { /* 저장소 없음 */ }
+  return { ids: [], counts: {} };
+}
+function readPick() {
+  const out = { p1: [], p2: [] };
+  try {
+    const o = JSON.parse(localStorage.getItem(PICK_KEY) || 'null');
+    ['p1', 'p2'].forEach((slot) => {
+      const arr = o && Array.isArray(o[slot]) ? o[slot] : [];
+      out[slot] = arr.filter((n) => Number.isFinite(n) && n > 0).map((n) => Math.round(n)).slice(0, MAX_PER_KID);
+    });
+  } catch (e) { /* */ }
+  return out;
+}
+function writePick(p) {
+  try {
+    localStorage.setItem(PICK_KEY, JSON.stringify({ p1: p.p1.slice(0, MAX_PER_KID), p2: p.p2.slice(0, MAX_PER_KID), v: 1 }));
+  } catch (e) { /* */ }
+}
+let pick = readPick();
+let shownIds = (pick.p1.length + pick.p2.length)
+  ? pick.p1.concat(pick.p2).slice(0, MAX_FRIENDS)
+  : (caught.length ? caught.slice(0, MAX_FRIENDS) : DEFAULT_IDS.slice());
 let soundOn = true;
 
 const texLoader = new THREE.TextureLoader();
@@ -1103,17 +1702,25 @@ function makeShadow(scale) {
   return m;
 }
 
-async function spawnPokemons() {
-  const count = shownIds.length;
+async function spawnPokemons(list) {
+  const ids = (list || shownIds).slice();
+  const count = ids.length;
+  if (!count) return;
   const baseAngle = rndRange(0, Math.PI * 2);
-  const texs = await Promise.all(shownIds.map((id) => loadTexture(POKE_SPRITE(id))));
+  const texs = await Promise.all(ids.map((id) => loadTexture(POKE_SPRITE(id))));
   for (let i = 0; i < count; i++) {
-    const id = shownIds[i];
+    const id = ids[i];
     const a = baseAngle + (i / count) * Math.PI * 2 + rndRange(-0.18, 0.18);
     const rad = rndRange(2.9, count > 8 ? 5.7 : 6.9);
     let x = Math.cos(a) * rad, z = Math.sin(a) * rad;
     if (Math.hypot(x - POND.x, z - POND.z) < POND.r + 0.9) {
       x += 3.2; z += 1.2;
+    }
+    const dc = Math.hypot(x - CENTER.x, z - CENTER.z);
+    if (dc < CENTER.r + 1.0) {
+      const k = (CENTER.r + 1.5) / Math.max(0.001, dc);
+      x = CENTER.x + (x - CENTER.x) * k;
+      z = CENTER.z + (z - CENTER.z) * k;
     }
     const tex = texs[i] || fallbackPokeTex(id);
     const aspect = tex.image ? (tex.image.width / tex.image.height) : 1;
@@ -1139,13 +1746,46 @@ async function spawnPokemons() {
       x, z, tx: x, tz: z,
       phase: rndRange(0, 6.28), hopSpeed: rndRange(2.0, 3.1), hopAmp: rndRange(0.16, 0.3),
       speed: rndRange(0.5, 0.95), wait: rndRange(0.5, 3.5), jump: 0, scale: h,
-      baseY: 0,
+      baseY: 0, shakeT: 0, levT: 0,
     };
     g.userData.pk = pk;
     pokemons.push(pk);
     pokePickables.push(spr);
   }
 }
+
+function clearPokemons() {
+  pokemons.forEach((pk) => {
+    world.remove(pk.group);
+    pk.group.traverse((o) => {
+      if (o.isMesh) {
+        if (o.geometry) o.geometry.dispose();
+        if (o.material) o.material.dispose();
+      }
+    });
+  });
+  pokemons.length = 0;
+  pokePickables.length = 0;
+}
+
+function updateDexChip() {
+  const chip = document.getElementById('dexChip');
+  if (!chip) return;
+  const picked = pick.p1.length + pick.p2.length;
+  if (picked) chip.innerHTML = `🐾 친구 <b>${pokemons.length}</b> · 고른 친구`;
+  else if (caught.length) chip.innerHTML = `🐾 도감 <b>${caught.length}</b> · 친구 <b>${pokemons.length}</b>`;
+  else chip.innerHTML = `🐾 기본 친구 <b>${pokemons.length}</b>`;
+}
+
+async function applyFriends(ids) {
+  const list = ((ids && ids.length) ? ids : (caught.length ? caught : DEFAULT_IDS)).slice(0, MAX_FRIENDS);
+  clearPokemons();
+  shownIds = list.slice();
+  await spawnPokemons(shownIds);
+  updateDexChip();
+  return shownIds.slice();
+}
+
 await spawnPokemons();
 
 /* ---------- 11. 하트 파티클 ---------- */
@@ -1172,6 +1812,473 @@ function burstHearts(pos, n = 4) {
     h.s.scale.set(sc, sc, 1);
     h.s.material.opacity = 1;
   }
+}
+
+/* ---------- 11-b. 회복 별가루 + 센터 회복 ---------- */
+const healStars = [];
+for (let i = 0; i < 40; i++) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sparkleMap, color: 0xffe98a, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 }));
+  s.visible = false;
+  world.add(s);
+  healStars.push({ s, life: 0, ttl: 1, vx: 0, vy: 0, vz: 0, grow: 0 });
+}
+let starCursor = 0;
+function burstStars(pos, n = 18, spread = 1.4, up = 1.8) {
+  for (let i = 0; i < n; i++) {
+    const st = healStars[starCursor % healStars.length];
+    starCursor++;
+    st.s.visible = true;
+    st.s.position.set(pos.x + rndRange(-spread, spread), pos.y + rndRange(-0.1, 0.5), pos.z + rndRange(-spread, spread));
+    st.life = 0;
+    st.ttl = rndRange(0.9, 1.7);
+    st.vy = rndRange(up * 0.4, up);
+    st.vx = rndRange(-0.5, 0.5);
+    st.vz = rndRange(-0.5, 0.5);
+    st.grow = rndRange(0.5, 0.95);
+    const sc = rndRange(0.2, 0.42);
+    st.s.scale.set(sc, sc, 1);
+    st.s.material.opacity = 1;
+    st.s.material.color.setHex(i % 3 === 0 ? 0xffd6f0 : i % 3 === 1 ? 0xfff3a8 : 0xd7f7ff);
+  }
+}
+
+/* Web Audio 회복 멜로디 (음소거 존중) */
+let audioCtx = null;
+function playHealMelody() {
+  if (!soundOn) return;
+  duckAudio(1500);
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!audioCtx) audioCtx = new AC();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t0 = audioCtx.currentTime + 0.03;
+    const notes = [523.25, 659.25, 783.99, 1046.50, 880.00, 1046.50];
+    notes.forEach((f, i) => {
+      const st = t0 + i * 0.125;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = i % 2 ? 'sine' : 'triangle';
+      osc.frequency.setValueAtTime(f, st);
+      gain.gain.setValueAtTime(0.0001, st);
+      gain.gain.linearRampToValueAtTime(0.12, st + 0.035);
+      gain.gain.exponentialRampToValueAtTime(0.0008, st + 0.52);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(st); osc.stop(st + 0.56);
+      /* 위쪽 반짝임 */
+      const o2 = audioCtx.createOscillator();
+      const g2 = audioCtx.createGain();
+      o2.type = 'sine';
+      o2.frequency.setValueAtTime(f * 2, st + 0.06);
+      g2.gain.setValueAtTime(0.0001, st + 0.06);
+      g2.gain.linearRampToValueAtTime(0.03, st + 0.1);
+      g2.gain.exponentialRampToValueAtTime(0.0004, st + 0.34);
+      o2.connect(g2); g2.connect(audioCtx.destination);
+      o2.start(st + 0.06); o2.stop(st + 0.4);
+    });
+  } catch (e) { /* 소리 실패는 조용히 무시 */ }
+}
+
+let healCooldown = 0;
+let healCount = 0;
+function healCenter() {
+  const now = performance.now();
+  if (now < healCooldown) return false;
+  healCooldown = now + 1500;
+  healCount++;
+  const top = new THREE.Vector3(CENTER.x, CENTER.y + 5.6, CENTER.z);
+  burstStars(top, 24, 2.0, 2.3);
+  burstStars(new THREE.Vector3(CENTER.x + 1.5, CENTER.y + 1.2, CENTER.z + 1.4), 14, 1.5, 1.9);
+  burstHearts(top.clone().add(new THREE.Vector3(0, -0.5, 0)), 8);
+  healRingT = 0;
+  pokemons.forEach((pk) => { pk.jump = 1; if (pk.wait > 0.6) pk.wait = 1.2; });
+  people.forEach((P) => { if (P.wave < 0.25) P.wave = 1; });
+  playHealMelody();
+  say(new THREE.Vector3(CENTER.x, CENTER.y + 6.7, CENTER.z), '포켓몬들이 모두 건강해졌어요! 💖', 2600);
+  toast('포켓몬들이 모두 건강해졌어요! 💖');
+  hintFade();
+  return true;
+}
+
+/* ---------- 10-b. 타입별 반응 이펙트 (포켓몬 타입은 내장 도감 타입표) ---------- */
+const TYPE_NAMES = '노말,불꽃,물,전기,풀,얼음,격투,독,땅,비행,에스퍼,벌레,바위,고스트,드래곤,악,강철,페어리'.split(',');
+const TYPE_LETTERS = 'NFWEGITPDYSBRHKAMX';
+const TYPE_TABLE = {
+    1:'GP',2:'GP',3:'GP',4:'F',5:'F',6:'FY',7:'W',8:'W',9:'W',10:'B',11:'B',12:'BY',
+  13:'BP',14:'BP',15:'BP',16:'NY',17:'NY',18:'NY',19:'N',20:'N',21:'NY',22:'NY',23:'P',24:'P',
+  25:'E',26:'E',27:'D',28:'D',29:'P',30:'P',31:'PD',32:'P',33:'P',34:'PD',35:'X',36:'X',
+  37:'F',38:'F',39:'NX',40:'NX',41:'PY',42:'PY',43:'GP',44:'GP',45:'GP',46:'BG',47:'BG',48:'BP',
+  49:'BP',50:'D',51:'D',52:'N',53:'N',54:'W',55:'W',56:'T',57:'T',58:'F',59:'F',60:'W',
+  61:'W',62:'WT',63:'S',64:'S',65:'S',66:'T',67:'T',68:'T',69:'GP',70:'GP',71:'GP',72:'WP',
+  73:'WP',74:'RD',75:'RD',76:'RD',77:'F',78:'F',79:'WS',80:'WS',81:'EM',82:'EM',83:'NY',84:'NY',
+  85:'NY',86:'W',87:'WI',88:'P',89:'P',90:'W',91:'WI',92:'HP',93:'HP',94:'HP',95:'RD',96:'S',
+  97:'S',98:'W',99:'W',100:'E',101:'E',102:'GS',103:'GS',104:'D',105:'D',106:'T',107:'T',108:'N',
+  109:'P',110:'P',111:'DR',112:'DR',113:'N',114:'G',115:'N',116:'W',117:'W',118:'W',119:'W',120:'W',
+  121:'WS',122:'SX',123:'BY',124:'IS',125:'E',126:'F',127:'B',128:'N',129:'W',130:'WY',131:'WI',132:'N',
+  133:'N',134:'W',135:'E',136:'F',137:'N',138:'RW',139:'RW',140:'RW',141:'RW',142:'RY',143:'N',144:'IY',
+  145:'EY',146:'FY',147:'K',148:'K',149:'KY',150:'S',151:'S',152:'G',153:'G',154:'G',155:'F',156:'F',
+  157:'F',158:'W',159:'W',160:'W',161:'N',162:'N',163:'NY',164:'NY',165:'BY',166:'BY',167:'BP',168:'BP',
+  169:'PY',170:'WE',171:'WE',172:'E',173:'X',174:'NX',175:'X',176:'XY',177:'SY',178:'SY',179:'E',180:'E',
+  181:'E',182:'G',183:'WX',184:'WX',185:'R',186:'W',187:'GY',188:'GY',189:'GY',190:'N',191:'G',192:'G',
+  193:'BY',194:'WD',195:'WD',196:'S',197:'A',198:'AY',199:'WS',200:'H',201:'S',202:'S',203:'NS',204:'B',
+  205:'BM',206:'N',207:'DY',208:'MD',209:'X',210:'X',211:'WP',212:'BM',213:'BR',214:'BT',215:'AI',216:'N',
+  217:'N',218:'F',219:'FR',220:'ID',221:'ID',222:'WR',223:'W',224:'W',225:'IY',226:'WY',227:'MY',228:'AF',
+  229:'AF',230:'WK',231:'D',232:'D',233:'N',234:'N',235:'N',236:'T',237:'T',238:'IS',239:'E',240:'F',
+  241:'N',242:'N',243:'E',244:'F',245:'W',246:'RD',247:'RD',248:'RA',249:'SY',250:'FY',251:'SG',252:'G',
+  253:'G',254:'G',255:'F',256:'FT',257:'FT',258:'W',259:'WD',260:'WD',261:'A',262:'A',263:'N',264:'N',
+  265:'B',266:'B',267:'BY',268:'B',269:'BP',270:'WG',271:'WG',272:'WG',273:'G',274:'GA',275:'GA',276:'NY',
+  277:'NY',278:'WY',279:'WY',280:'SX',281:'SX',282:'SX',283:'BW',284:'BY',285:'G',286:'GT',287:'N',288:'N',
+  289:'N',290:'BD',291:'BY',292:'BH',293:'N',294:'N',295:'N',296:'T',297:'T',298:'NX',299:'R',300:'N',
+  301:'N',302:'AH',303:'MX',304:'MR',305:'MR',306:'MR',307:'TS',308:'TS',309:'E',310:'E',311:'E',312:'E',
+  313:'B',314:'B',315:'GP',316:'P',317:'P',318:'WA',319:'WA',320:'W',321:'W',322:'FD',323:'FD',324:'F',
+  325:'S',326:'S',327:'N',328:'D',329:'DK',330:'DK',331:'G',332:'GA',333:'NY',334:'KY',335:'N',336:'P',
+  337:'RS',338:'RS',339:'WD',340:'WD',341:'W',342:'WA',343:'DS',344:'DS',345:'RG',346:'RG',347:'RB',348:'RB',
+  349:'W',350:'W',351:'N',352:'N',353:'H',354:'H',355:'H',356:'H',357:'GY',358:'S',359:'A',360:'S',
+  361:'I',362:'I',363:'IW',364:'IW',365:'IW',366:'W',367:'W',368:'W',369:'WR',370:'W',371:'K',372:'K',
+  373:'KY',374:'MS',375:'MS',376:'MS',377:'R',378:'I',379:'M',380:'KS',381:'KS',382:'W',383:'D',384:'KY',
+  385:'MS',386:'S',387:'G',388:'G',389:'GD',390:'F',391:'FT',392:'FT',393:'W',394:'W',395:'WM',396:'NY',
+  397:'NY',398:'NY',399:'N',400:'NW',401:'B',402:'B',403:'E',404:'E',405:'E',406:'GP',407:'GP',408:'R',
+  409:'R',410:'RM',411:'RM',412:'B',413:'BG',414:'BY',415:'BY',416:'BY',417:'E',418:'W',419:'W',420:'G',
+  421:'G',422:'W',423:'WD',424:'N',425:'HY',426:'HY',427:'N',428:'N',429:'H',430:'AY',431:'N',432:'N',
+  433:'S',434:'PA',435:'PA',436:'MS',437:'MS',438:'R',439:'SX',440:'N',441:'NY',442:'HA',443:'KD',444:'KD',
+  445:'KD',446:'N',447:'T',448:'TM',449:'D',450:'D',451:'PB',452:'PA',453:'PT',454:'PT',455:'G',456:'W',
+  457:'W',458:'WY',459:'GI',460:'GI',461:'AI',462:'EM',463:'N',464:'DR',465:'G',466:'E',467:'F',468:'XY',
+  469:'BY',470:'G',471:'I',472:'DY',473:'ID',474:'N',475:'ST',476:'RM',477:'H',478:'IH',479:'EH',480:'S',
+  481:'S',482:'S',483:'MK',484:'WK',485:'FM',486:'N',487:'HK',488:'S',489:'W',490:'W',491:'A',492:'G',
+  493:'N',494:'SF',495:'G',496:'G',497:'G',498:'F',499:'FT',500:'FT',501:'W',502:'W',503:'W',504:'N',
+  505:'N',506:'N',507:'N',508:'N',509:'A',510:'A',511:'G',512:'G',513:'F',514:'F',515:'W',516:'W',
+  517:'S',518:'S',519:'NY',520:'NY',521:'NY',522:'E',523:'E',524:'R',525:'R',526:'R',527:'SY',528:'SY',
+  529:'D',530:'DM',531:'N',532:'T',533:'T',534:'T',535:'W',536:'WD',537:'WD',538:'T',539:'T',540:'BG',
+  541:'BG',542:'BG',543:'BP',544:'BP',545:'BP',546:'GX',547:'GX',548:'G',549:'G',550:'W',551:'DA',552:'DA',
+  553:'DA',554:'F',555:'F',556:'G',557:'BR',558:'BR',559:'AT',560:'AT',561:'SY',562:'H',563:'H',564:'WR',
+  565:'WR',566:'RY',567:'RY',568:'P',569:'P',570:'A',571:'A',572:'N',573:'N',574:'S',575:'S',576:'S',
+  577:'S',578:'S',579:'S',580:'WY',581:'WY',582:'I',583:'I',584:'I',585:'NG',586:'NG',587:'EY',588:'B',
+  589:'BM',590:'GP',591:'GP',592:'WH',593:'WH',594:'W',595:'BE',596:'BE',597:'GM',598:'GM',599:'M',600:'M',
+  601:'M',602:'E',603:'E',604:'E',605:'S',606:'S',607:'HF',608:'HF',609:'HF',610:'K',611:'K',612:'K',
+  613:'I',614:'I',615:'I',616:'B',617:'B',618:'DE',619:'T',620:'T',621:'K',622:'DH',623:'DH',624:'AM',
+  625:'AM',626:'N',627:'NY',628:'NY',629:'AY',630:'AY',631:'F',632:'BM',633:'AK',634:'AK',635:'AK',636:'BF',
+  637:'BF',638:'MT',639:'RT',640:'GT',641:'Y',642:'EY',643:'KF',644:'KE',645:'DY',646:'KI',647:'WT',648:'NS',
+  649:'BM',650:'G',651:'G',652:'GT',653:'F',654:'F',655:'FS',656:'W',657:'W',658:'WA',659:'N',660:'ND',
+  661:'NY',662:'FY',663:'FY',664:'B',665:'B',666:'BY',667:'FN',668:'FN',669:'X',670:'X',671:'X',672:'G',
+  673:'G',674:'T',675:'TA',676:'N',677:'S',678:'S',679:'MH',680:'MH',681:'MH',682:'X',683:'X',684:'X',
+  685:'X',686:'AS',687:'AS',688:'RW',689:'RW',690:'PW',691:'PK',692:'W',693:'W',694:'EN',695:'EN',696:'RK',
+  697:'RK',698:'RI',699:'RI',700:'X',701:'TY',702:'EX',703:'RX',704:'K',705:'K',706:'K',707:'MX',708:'HG',
+  709:'HG',710:'HG',711:'HG',712:'I',713:'I',714:'YK',715:'YK',716:'X',717:'AY',718:'KD',719:'RX',720:'SH',
+  721:'FW',722:'GY',723:'GY',724:'GH',725:'F',726:'F',727:'FA',728:'W',729:'W',730:'WX',731:'NY',732:'NY',
+  733:'NY',734:'N',735:'N',736:'B',737:'BE',738:'BE',739:'T',740:'TI',741:'FY',742:'BX',743:'BX',744:'R',
+  745:'R',746:'W',747:'PW',748:'PW',749:'D',750:'D',751:'WB',752:'WB',753:'G',754:'G',755:'GX',756:'GX',
+  757:'PF',758:'PF',759:'NT',760:'NT',761:'G',762:'G',763:'G',764:'X',765:'NS',766:'T',767:'BW',768:'BW',
+  769:'HD',770:'HD',771:'W',772:'N',773:'N',774:'RY',775:'N',776:'FK',777:'EM',778:'HX',779:'WS',780:'NK',
+  781:'HG',782:'K',783:'KT',784:'KT',785:'EX',786:'SX',787:'GX',788:'WX',789:'S',790:'S',791:'SM',792:'SH',
+  793:'RP',794:'BT',795:'BT',796:'E',797:'MY',798:'GM',799:'AK',800:'S',801:'MX',802:'TH',803:'P',804:'PK',
+  805:'RM',806:'FH',807:'E',808:'M',809:'M',810:'G',811:'G',812:'G',813:'F',814:'F',815:'F',816:'W',
+  817:'W',818:'W',819:'N',820:'N',821:'Y',822:'Y',823:'YM',824:'B',825:'BS',826:'BS',827:'A',828:'A',
+  829:'G',830:'G',831:'N',832:'N',833:'W',834:'WR',835:'E',836:'E',837:'R',838:'RF',839:'RF',840:'GK',
+  841:'GK',842:'GK',843:'D',844:'D',845:'YW',846:'W',847:'W',848:'EP',849:'EP',850:'FB',851:'FB',852:'T',
+  853:'T',854:'H',855:'H',856:'S',857:'S',858:'SX',859:'AX',860:'AX',861:'AX',862:'AN',863:'M',864:'H',
+  865:'T',866:'IS',867:'DH',868:'X',869:'X',870:'T',871:'E',872:'IB',873:'IB',874:'R',875:'I',876:'SN',
+  877:'EA',878:'M',879:'M',880:'EK',881:'EI',882:'WK',883:'WI',884:'MK',885:'KH',886:'KH',887:'KH',888:'X',
+  889:'T',890:'PK',891:'T',892:'TA',893:'AG',894:'E',895:'K',896:'I',897:'H',898:'SG',899:'NS',900:'BR',
+  901:'DN',902:'WH',903:'TP',904:'AP',905:'XY',906:'G',907:'G',908:'GA',909:'F',910:'F',911:'FH',912:'W',
+  913:'W',914:'WT',915:'N',916:'N',917:'B',918:'B',919:'B',920:'BA',921:'E',922:'ET',923:'ET',924:'N',
+  925:'N',926:'X',927:'X',928:'GN',929:'GN',930:'GN',931:'NY',932:'R',933:'R',934:'R',935:'F',936:'FS',
+  937:'FH',938:'E',939:'E',940:'EY',941:'EY',942:'A',943:'A',944:'PN',945:'PN',946:'GH',947:'GH',948:'DG',
+  949:'DG',950:'R',951:'G',952:'GF',953:'B',954:'BS',955:'S',956:'S',957:'XM',958:'XM',959:'XM',960:'W',
+  961:'W',962:'YA',963:'W',964:'W',965:'MP',966:'MP',967:'KN',968:'M',969:'RP',970:'RP',971:'H',972:'H',
+  973:'YT',974:'I',975:'I',976:'WS',977:'W',978:'KW',979:'TH',980:'PD',981:'NS',982:'N',983:'AM',984:'DT',
+  985:'XS',986:'GA',987:'HX',988:'BT',989:'ED',990:'DM',991:'IW',992:'TE',993:'AY',994:'FP',995:'RE',996:'KI',
+  997:'KI',998:'KI',999:'H',1000:'MH',1001:'AG',1002:'AI',1003:'AD',1004:'AF',1005:'KA',1006:'XT',1007:'TK',1008:'EK',
+  1009:'WK',1010:'GS',1011:'GK',1012:'GH',1013:'GH',1014:'PT',1015:'PS',1016:'PX',1017:'G',1018:'MK',1019:'GK',1020:'FK',
+  1021:'EK',1022:'RS',1023:'MS',1024:'N',1025:'PH',10033:'GP',10034:'FK',10035:'FY',10036:'W',10037:'S',10038:'HP',10039:'N',
+  10040:'BY',10041:'WA',10042:'RY',10043:'ST',10044:'S',10045:'EK',10046:'BM',10047:'BT',10048:'AF',10049:'RA',10050:'FT',10051:'SX',
+  10052:'MX',10053:'M',10054:'TS',10055:'E',10056:'H',10057:'A',10058:'KD',10059:'TM',10060:'GI',10062:'KS',10063:'KS',10064:'WD',
+  10065:'GK',10066:'AH',10067:'KX',10068:'ST',10069:'NX',10070:'WA',10071:'WS',10072:'MD',10073:'NY',10074:'I',10075:'RX',10076:'MS',
+  10079:'KY',10087:'FD',10088:'NT',10089:'KY',10090:'BP',10091:'AN',10092:'AN',10099:'E',10100:'ES',10101:'IM',10102:'IM',10103:'I',
+  10104:'IX',10105:'DM',10106:'DM',10107:'A',10108:'A',10109:'RE',10110:'RE',10111:'RE',10112:'PA',10113:'PA',10114:'GK',10115:'FH',
+  10161:'M',10162:'S',10163:'SX',10164:'S',10165:'PS',10166:'T',10167:'PX',10168:'IS',10169:'SY',10170:'TY',10171:'AY',10172:'PS',
+  10173:'H',10174:'AN',10175:'AN',10176:'I',10177:'I',10178:'IF',10179:'DH',10180:'DM',10195:'GP',10196:'FY',10197:'W',10198:'BY',
+  10199:'E',10200:'N',10201:'T',10202:'HP',10203:'W',10204:'WI',10205:'N',10206:'N',10207:'P',10208:'M',10209:'G',10210:'F',
+  10211:'W',10212:'YM',10213:'BS',10214:'WR',10215:'RF',10216:'GK',10217:'GK',10218:'D',10219:'EP',10220:'FB',10221:'SX',10222:'AX',
+  10223:'X',10224:'M',10225:'MK',10226:'TA',10227:'TW',10228:'EP',10229:'FR',10230:'FR',10231:'EG',10232:'EG',10233:'FH',10234:'AP',
+  10235:'TP',10236:'WA',10237:'GT',10238:'NH',10239:'NH',10240:'SY',10241:'MK',10242:'MK',10243:'IR',10244:'GT',10250:'T',10251:'TF',
+  10252:'TW',10253:'PD',10278:'XY',10279:'GP',10280:'WS',10281:'KY',10282:'GX',10283:'WK',10284:'MY',10285:'IH',10286:'FT',10287:'DM',
+  10288:'BP',10289:'AT',10290:'E',10291:'HF',10292:'GT',10293:'FS',10294:'WA',10295:'FN',10296:'X',10297:'AS',10298:'RT',10299:'PK',
+  10300:'TY',10301:'KD',10302:'NK',10303:'T',10304:'E',10305:'E',10306:'SM',10307:'AH',10308:'TY',10309:'K',10310:'TM',10311:'FM',
+  10312:'A',10313:'DH',10314:'S',10315:'TI',10316:'BM',10317:'MX',10318:'MX',10319:'E',10320:'GF',10321:'RP',10322:'KW',10323:'KW',
+  10324:'KW',10325:'KI',10326:'S'
+};
+
+function typesOf(id) {
+  const code = TYPE_TABLE[id];
+  if (!code) return [];
+  const out = [];
+  for (let i = 0; i < code.length; i++) {
+    const k = TYPE_LETTERS.indexOf(code[i]);
+    if (k >= 0) out.push(TYPE_NAMES[k]);
+  }
+  return out;
+}
+const FX_BY_TYPE = {
+  '불꽃': 'fire', '물': 'water', '전기': 'electric',
+  '풀': 'grass', '벌레': 'grass', '얼음': 'ice',
+  '에스퍼': 'mystic', '고스트': 'mystic', '드래곤': 'mystic', '악': 'mystic',
+  '페어리': 'cute', '노말': 'cute',
+};
+/* 두 타입이면 앞 타입을 먼저 쓰되, 앞이 평범한 타입이면 뒤의 개성 타입을 살린다 */
+function fxGroupOf(id) {
+  const groups = typesOf(id).map((t) => FX_BY_TYPE[t]).filter(Boolean);
+  if (!groups.length) return 'cute';
+  if (groups[0] !== 'cute') return groups[0];
+  return groups.find((g) => g !== 'cute') || 'cute';
+}
+
+/* --- 이펙트 텍스처 --- */
+const fireTex = texFrom(canvasTex(96, 96, (g, w, h) => {
+  g.clearRect(0, 0, w, h);
+  const gr = g.createRadialGradient(w / 2, h * 0.66, 2, w / 2, h * 0.55, w * 0.46);
+  gr.addColorStop(0, 'rgba(255,255,236,1)');
+  gr.addColorStop(0.28, 'rgba(255,228,124,0.98)');
+  gr.addColorStop(0.62, 'rgba(255,138,52,0.74)');
+  gr.addColorStop(1, 'rgba(255,86,24,0)');
+  g.fillStyle = gr;
+  g.beginPath();
+  g.moveTo(w / 2, h * 0.03);
+  g.bezierCurveTo(w * 0.95, h * 0.52, w * 0.82, h * 0.95, w / 2, h * 0.98);
+  g.bezierCurveTo(w * 0.18, h * 0.95, w * 0.05, h * 0.52, w / 2, h * 0.03);
+  g.fill();
+}));
+const dropTex = texFrom(canvasTex(96, 96, (g, w, h) => {
+  g.clearRect(0, 0, w, h);
+  const gr = g.createRadialGradient(w * 0.38, h * 0.36, 2, w / 2, h / 2, w * 0.46);
+  gr.addColorStop(0, 'rgba(255,255,255,1)');
+  gr.addColorStop(0.38, 'rgba(152,231,255,0.95)');
+  gr.addColorStop(1, 'rgba(58,150,240,0)');
+  g.fillStyle = gr;
+  g.beginPath(); g.ellipse(w / 2, h * 0.58, w * 0.33, h * 0.38, 0, 0, Math.PI * 2); g.fill();
+  g.beginPath();
+  g.moveTo(w / 2, h * 0.05);
+  g.quadraticCurveTo(w * 0.87, h * 0.52, w / 2, h * 0.64);
+  g.quadraticCurveTo(w * 0.13, h * 0.52, w / 2, h * 0.05);
+  g.fill();
+}));
+const boltTex = texFrom(canvasTex(96, 128, (g, w, h) => {
+  g.clearRect(0, 0, w, h);
+  g.shadowColor = 'rgba(255,238,110,.95)';
+  g.shadowBlur = 16;
+  g.beginPath();
+  g.moveTo(w * 0.62, h * 0.03); g.lineTo(w * 0.29, h * 0.48); g.lineTo(w * 0.52, h * 0.48);
+  g.lineTo(w * 0.36, h * 0.97); g.lineTo(w * 0.79, h * 0.38); g.lineTo(w * 0.54, h * 0.38);
+  g.closePath();
+  g.fillStyle = '#fff8b0'; g.fill();
+  g.lineWidth = 3; g.strokeStyle = '#ffffff'; g.stroke();
+}));
+const leafTex = texFrom(canvasTex(96, 96, (g, w, h) => {
+  g.clearRect(0, 0, w, h);
+  g.beginPath();
+  g.moveTo(w * 0.5, h * 0.05);
+  g.quadraticCurveTo(w * 0.98, h * 0.34, w * 0.5, h * 0.95);
+  g.quadraticCurveTo(w * 0.02, h * 0.34, w * 0.5, h * 0.05);
+  g.closePath();
+  const gr = g.createLinearGradient(0, 0, w, h);
+  gr.addColorStop(0, '#d6fb93'); gr.addColorStop(1, '#3fa63a');
+  g.fillStyle = gr; g.fill();
+  g.strokeStyle = 'rgba(255,255,255,.8)'; g.lineWidth = 3;
+  g.beginPath(); g.moveTo(w * 0.5, h * 0.16); g.lineTo(w * 0.5, h * 0.86); g.stroke();
+}));
+const snowTex = texFrom(canvasTex(96, 96, (g, w, h) => {
+  g.clearRect(0, 0, w, h);
+  g.translate(w / 2, h / 2);
+  g.strokeStyle = 'rgba(255,255,255,.96)';
+  g.lineCap = 'round';
+  for (let i = 0; i < 3; i++) {
+    g.save();
+    g.rotate((i * Math.PI) / 3);
+    g.lineWidth = 5;
+    g.beginPath(); g.moveTo(0, -w * 0.4); g.lineTo(0, w * 0.4); g.stroke();
+    g.lineWidth = 3.4;
+    [-0.22, 0.22].forEach((t) => {
+      const y = w * 0.4 * t * 2;
+      g.beginPath(); g.moveTo(0, y); g.lineTo(w * 0.13, y + w * 0.1); g.stroke();
+      g.beginPath(); g.moveTo(0, y); g.lineTo(-w * 0.13, y + w * 0.1); g.stroke();
+    });
+    g.restore();
+  }
+  g.beginPath(); g.arc(0, 0, 6, 0, Math.PI * 2);
+  g.fillStyle = 'rgba(255,255,255,.98)'; g.fill();
+}));
+
+/* --- 파티클 풀 --- */
+const FX_POOL = [];
+for (let i = 0; i < 96; i++) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sparkleMap, transparent: true, depthWrite: false, opacity: 0 }));
+  s.visible = false;
+  world.add(s);
+  FX_POOL.push({ s, life: 0, ttl: 1, vx: 0, vy: 0, vz: 0, g: 0, spin: 0, base: 1, wob: 0, ph: 0 });
+}
+let fxCursor = 0;
+
+const fxRings = [];
+for (let i = 0; i < 6; i++) {
+  const m = new THREE.Mesh(
+    new THREE.RingGeometry(0.42, 0.6, 40),
+    new THREE.MeshBasicMaterial({ color: 0x9fe8ff, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })
+  );
+  m.rotation.x = -Math.PI / 2;
+  m.visible = false;
+  m.userData = { t: 0, dur: 1, grow: 2, rise: 0, y: 0 };
+  world.add(m);
+  fxRings.push(m);
+}
+let fxRingCursor = 0;
+function fxRingAt(x, y, z, color, dur, grow, rise) {
+  const m = fxRings[fxRingCursor % fxRings.length];
+  fxRingCursor++;
+  m.visible = true;
+  m.position.set(x, y, z);
+  m.scale.set(1, 1, 1);
+  m.material.color.setHex(color);
+  m.material.opacity = 0.85;
+  m.userData.t = 0; m.userData.dur = dur; m.userData.grow = grow; m.userData.rise = rise || 0; m.userData.y = y;
+}
+
+function fxPush(cx, top, cz, o) {
+  const p = FX_POOL[fxCursor % FX_POOL.length];
+  fxCursor++;
+  p.s.visible = true;
+  p.s.material.map = o.map || sparkleMap;
+  p.s.material.color.setHex(o.color == null ? 0xffffff : o.color);
+  p.s.material.blending = o.normalBlend ? THREE.NormalBlending : THREE.AdditiveBlending;
+  p.s.material.rotation = o.rot || 0;
+  p.s.position.set(cx + (o.x || 0), top + (o.y || 0), cz + (o.z || 0));
+  p.life = 0;
+  p.ttl = o.ttl;
+  p.vx = o.vx || 0; p.vy = o.vy || 0; p.vz = o.vz || 0;
+  p.g = o.g || 0;
+  p.spin = o.spin || 0;
+  p.base = o.size;
+  p.wob = o.wob || 0;
+  p.ph = rndRange(0, 6.28);
+  p.s.scale.set(o.size, o.size, 1);
+  p.s.material.opacity = 1;
+}
+
+function fxEmit(kind, pk) {
+  const cx = pk.group.position.x, cz = pk.group.position.z;
+  const gy = terrainY(cx, cz);
+  const top = gy + pk.scale * 0.52;
+  if (kind === 'fire') {
+    for (let i = 0; i < 20; i++) {
+      fxPush(cx, top, cz, {
+        map: fireTex, color: i % 4 === 0 ? 0xffb347 : (i % 4 === 1 ? 0xffe9a8 : 0xffffff),
+        ttl: rndRange(0.55, 1.05), x: rndRange(-0.45, 0.45), y: rndRange(-0.5, 0.35), z: rndRange(-0.45, 0.45),
+        vx: rndRange(-0.55, 0.55), vy: rndRange(1.2, 2.5), vz: rndRange(-0.55, 0.55),
+        g: -0.85, spin: rndRange(-2.4, 2.4), size: rndRange(0.3, 0.62), wob: 0.25,
+      });
+    }
+    fxRingAt(cx, gy + 0.06, cz, 0xffa447, 0.7, 1.6, 0);
+  } else if (kind === 'water') {
+    for (let i = 0; i < 22; i++) {
+      fxPush(cx, top, cz, {
+        map: dropTex, color: i % 3 === 0 ? 0xffffff : 0xbfeeff,
+        ttl: rndRange(0.7, 1.2), x: rndRange(-0.4, 0.4), y: rndRange(-0.35, 0.4), z: rndRange(-0.4, 0.4),
+        vx: rndRange(-1.1, 1.1), vy: rndRange(1.3, 2.9), vz: rndRange(-1.1, 1.1),
+        g: -5.4, spin: rndRange(-1.2, 1.2), size: rndRange(0.16, 0.34), normalBlend: true,
+      });
+    }
+    fxRingAt(cx, gy + 0.06, cz, 0x8fe4ff, 0.85, 2.6, 0);
+    fxRingAt(cx, gy + 0.09, cz, 0xffffff, 0.6, 1.6, 0);
+  } else if (kind === 'electric') {
+    for (let i = 0; i < 18; i++) {
+      const a = rndRange(0, Math.PI * 2), r = rndRange(0.15, 0.55);
+      fxPush(cx, top, cz, {
+        map: boltTex, color: i % 3 === 0 ? 0xffffff : 0xfff27a,
+        ttl: rndRange(0.26, 0.5), x: Math.cos(a) * r, y: rndRange(-0.4, 0.55), z: Math.sin(a) * r,
+        vx: Math.cos(a) * rndRange(1.2, 2.8), vy: rndRange(-0.5, 1.3), vz: Math.sin(a) * rndRange(1.2, 2.8),
+        g: -1.2, spin: rndRange(-8, 8), size: rndRange(0.22, 0.44),
+      });
+    }
+    fxRingAt(cx, gy + 0.06, cz, 0xfff27a, 0.45, 2.2, 0);
+  } else if (kind === 'grass') {
+    for (let i = 0; i < 20; i++) {
+      const a = (i / 20) * Math.PI * 2 + rndRange(-0.2, 0.2), r = rndRange(0.25, 0.8);
+      fxPush(cx, top, cz, {
+        map: leafTex, color: i % 4 === 0 ? 0xffd6ef : 0xffffff,
+        ttl: rndRange(1.0, 1.7), x: Math.cos(a) * r, y: rndRange(-0.45, 0.4), z: Math.sin(a) * r,
+        vx: Math.cos(a + 1.3) * rndRange(0.5, 1.1), vy: rndRange(0.8, 1.7), vz: Math.sin(a + 1.3) * rndRange(0.5, 1.1),
+        g: -0.45, spin: rndRange(2, 5), size: rndRange(0.2, 0.36), wob: 0.5,
+      });
+    }
+  } else if (kind === 'ice') {
+    for (let i = 0; i < 20; i++) {
+      fxPush(cx, top, cz, {
+        map: snowTex, color: i % 1 === 0 ? 0xd8f4ff : 0xffffff,
+        ttl: rndRange(1.2, 1.9), x: rndRange(-0.7, 0.7), y: rndRange(-0.3, 0.6), z: rndRange(-0.7, 0.7),
+        vx: rndRange(-0.35, 0.35), vy: rndRange(0.15, 0.7), vz: rndRange(-0.35, 0.35),
+        g: -0.35, spin: rndRange(-1.8, 1.8), size: rndRange(0.2, 0.38), wob: 0.45, normalBlend: true,
+      });
+    }
+    fxRingAt(cx, gy + 0.06, cz, 0xcdf2ff, 0.9, 2.0, 0);
+  } else if (kind === 'mystic') {
+    for (let i = 0; i < 22; i++) {
+      const a = (i / 22) * Math.PI * 2;
+      const rr = rndRange(0.55, 0.95);
+      fxPush(cx, top, cz, {
+        map: sparkleMap, color: i % 3 === 0 ? 0xff9ae0 : (i % 3 === 1 ? 0xc9a0ff : 0xffe0ff),
+        ttl: rndRange(1.1, 1.8), x: Math.cos(a) * rr, y: rndRange(-0.5, 0.5), z: Math.sin(a) * rr,
+        vx: Math.cos(a + 1.5) * 0.55, vy: rndRange(0.5, 1.2), vz: Math.sin(a + 1.5) * 0.55,
+        g: -0.2, spin: rndRange(-3, 3), size: rndRange(0.22, 0.42), wob: 0.3,
+      });
+    }
+    fxRingAt(cx, gy + 0.08, cz, 0xc9a0ff, 1.1, 2.2, 1.1);
+    fxRingAt(cx, gy + 0.5, cz, 0xff9ae0, 1.2, 1.7, 1.4);
+  } else {
+    /* cute — 하트 + 별 */
+    for (let i = 0; i < 9; i++) {
+      fxPush(cx, top, cz, {
+        map: heartMap, color: 0xffffff,
+        ttl: rndRange(0.95, 1.5), x: rndRange(-0.35, 0.35), y: rndRange(-0.2, 0.4), z: rndRange(-0.35, 0.35),
+        vx: rndRange(-0.35, 0.35), vy: rndRange(0.9, 1.5), vz: rndRange(-0.35, 0.35),
+        g: 0, spin: rndRange(-0.5, 0.5), size: rndRange(0.34, 0.52), normalBlend: true,
+      });
+    }
+    for (let i = 0; i < 9; i++) {
+      fxPush(cx, top, cz, {
+        map: sparkleMap, color: i % 2 ? 0xfff0b8 : 0xffffff,
+        ttl: rndRange(0.7, 1.2), x: rndRange(-0.5, 0.5), y: rndRange(-0.3, 0.5), z: rndRange(-0.5, 0.5),
+        vx: rndRange(-0.5, 0.5), vy: rndRange(0.6, 1.4), vz: rndRange(-0.5, 0.5),
+        g: -0.3, spin: rndRange(-3, 3), size: rndRange(0.18, 0.34),
+      });
+    }
+  }
+}
+
+function updateFxParticles(dt) {
+  const now = performance.now() * 0.006;
+  FX_POOL.forEach((p) => {
+    if (!p.s.visible) return;
+    p.life += dt;
+    const k = p.life / p.ttl;
+    if (k >= 1) { p.s.visible = false; p.s.material.opacity = 0; return; }
+    p.vy += p.g * dt;
+    p.s.position.x += (p.vx + (p.wob ? Math.sin(now + p.ph) * p.wob : 0)) * dt;
+    p.s.position.y += p.vy * dt;
+    p.s.position.z += p.vz * dt;
+    p.s.material.rotation += p.spin * dt;
+    p.s.material.opacity = k < 0.14 ? k / 0.14 : 1 - (k - 0.14) / 0.86;
+    const sc = p.base * (0.72 + k * 0.5);
+    p.s.scale.set(sc, sc, 1);
+  });
+  fxRings.forEach((m) => {
+    if (!m.visible) return;
+    const u = m.userData;
+    u.t += dt;
+    const k = u.t / u.dur;
+    if (k >= 1) { m.visible = false; m.material.opacity = 0; return; }
+    const s = 1 + k * u.grow;
+    m.scale.set(s, 1, s);
+    if (u.rise) m.position.y = u.y + k * u.rise;
+    m.material.opacity = (1 - k) * 0.8;
+  });
 }
 
 /* ---------- 12. 말풍선 ---------- */
@@ -1212,6 +2319,7 @@ function updateBubbles() {
 const cryCache = {};
 function playCry(id) {
   if (!soundOn) return;
+  duckAudio(1100);
   try {
     let a = cryCache[id];
     if (!a) {
@@ -1228,14 +2336,60 @@ function playCry(id) {
     if (p && p.catch) p.catch(() => {});
   } catch (e) { /* 소리 실패는 조용히 무시 */ }
 }
+/* 이름 뒤 조사(이/가) */
+function josaOf(name) {
+  const c = name.charCodeAt(name.length - 1);
+  if (!(c >= 0xac00 && c <= 0xd7a3)) return '가';
+  return (c - 0xac00) % 28 === 0 ? '가' : '이';
+}
+const FX_LINES = {
+  fire: [
+    (n) => `🔥 화르륵! ${n}${josaOf(n)} 불꽃을 뿜었어요!`,
+    (n) => `🔥 활활! ${n}의 몸에서 따뜻한 불꽃이 피어올라요!`,
+  ],
+  water: [
+    (n) => `💧 첨벙첨벙! ${n}${josaOf(n)} 물장구를 쳐요!`,
+    (n) => `💧 물방울이 통통! ${n}${josaOf(n)} 신나게 놀고 있어요!`,
+  ],
+  electric: [
+    (n) => `⚡ 찌릿찌릿! ${n} 몸에서 전기가 튀어요!`,
+    (n) => `⚡ 번쩍! ${n}의 볼에서 스파크가 튀었어요!`,
+  ],
+  grass: [
+    (n) => `🌿 살랑살랑! ${n}${josaOf(n)} 기분 좋게 뛰어요!`,
+    (n) => `🌿 잎사귀가 사르르! ${n}${josaOf(n)} 초록빛을 뿌려요!`,
+  ],
+  ice: [
+    (n) => `❄️ 반짝반짝! ${n} 주변이 시원해졌어요!`,
+    (n) => `❄️ 사르르 눈꽃! ${n}${josaOf(n)} 얼음 결정을 흩뿌려요!`,
+  ],
+  mystic: [
+    (n) => `🔮 뾰로롱! ${n}${josaOf(n)} 신비한 힘을 보여줘요!`,
+    (n) => `🔮 반짝반짝! ${n} 주위로 신비한 빛이 맴돌아요!`,
+  ],
+  cute: [
+    (n) => `💖 ${n}${josaOf(n)} 반갑게 인사해요!`,
+    (n) => `💖 ${n}${josaOf(n)} 꼬리를 살랑살랑 흔들어요!`,
+  ],
+};
+function fxPhrase(kind, name) {
+  const list = FX_LINES[kind] || FX_LINES.cute;
+  const line = list[Math.floor(Math.random() * list.length)](name);
+  return line.replace(name, `<span class="nm">${name}</span>`);
+}
 function greet(pk) {
+  const kind = fxGroupOf(pk.id);
   pk.jump = 1;
-  burstHearts(pk.group.position, 4);
-  const phrase = PHRASES[Math.floor(Math.random() * PHRASES.length)];
-  say(pk.group.position.clone().add(new THREE.Vector3(0, pk.scale + 0.55, 0)),
-    `<span class="nm">${pk.name}</span> 💖 ${phrase}`, 1900);
+  if (kind === 'electric') pk.shakeT = 0.7;
+  else if (kind === 'mystic') { pk.levT = 1.7; pk.jump = 0.3; }
+  else if (kind === 'water') pk.jump = 0.85;
+  else if (kind === 'ice') pk.jump = 0.6;
+  else if (kind === 'grass') pk.jump = 0.95;
+  fxEmit(kind, pk);
+  say(pk.group.position.clone().add(new THREE.Vector3(0, pk.scale + 0.62, 0)), fxPhrase(kind, pk.name), 2100);
   playCry(pk.id);
-  if (T.wave < 0.1) T.wave = 1; // 트레이너도 손 흔들기
+  const P = activePerson();
+  if (P && P.wave < 0.1) P.wave = 1; // 가족도 손 흔들기
   hintFade();
 }
 function greetAny() {
@@ -1319,22 +2473,29 @@ const ndc = new THREE.Vector2();
 function tapAt(cx, cy) {
   ndc.set((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1);
   raycaster.setFromCamera(ndc, camera);
+  if (dexModalOpen) return;
   const hitPoke = raycaster.intersectObjects(pokePickables, false);
   if (hitPoke.length) {
     const pk = pokemons[hitPoke[0].object.userData.pkIndex];
     if (pk) { greet(pk); return; }
   }
+  const hitCenter = raycaster.intersectObjects(centerPickables, false);
+  if (hitCenter.length) { healCenter(); return; }
+  const hitWho = raycaster.intersectObjects(personPickables, false);
+  if (hitWho.length) {
+    const pi = hitWho[0].object.userData.personIdx;
+    if (Number.isFinite(pi)) {
+      if (pi === activeIdx) { const P = people[pi]; if (P.wave < 0.2) P.wave = 1; }
+      else selectPerson(pi);
+      return;
+    }
+  }
   const hitGround = raycaster.intersectObject(ground, false);
   if (hitGround.length) {
     let { x, z } = hitGround[0].point;
-    const r = Math.hypot(x, z);
-    if (r > 9.6) { const k = 9.6 / r; x *= k; z *= k; }
-    const d = Math.hypot(x - POND.x, z - POND.z);
-    if (d < POND.r + 0.5) {
-      const k = (POND.r + 0.9) / Math.max(0.001, d);
-      x = POND.x + (x - POND.x) * k; z = POND.z + (z - POND.z) * k;
-    }
-    T.target = { x, z };
+    const c = clampRWalk(x, z, 0.5);
+    const P = activePerson();
+    P.target = c;
     hintFade();
   }
 }
@@ -1345,7 +2506,8 @@ window.addEventListener('keydown', (e) => {
   const k = e.key.toLowerCase();
   if (['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(k)) {
     keys.add(k);
-    T.target = null;
+    const P = activePerson();
+    if (P) P.target = null;
     e.preventDefault();
     hintFade();
   }
@@ -1353,13 +2515,158 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('keyup', (e) => keys.delete(e.key.toLowerCase()));
 
 /* ---------- 15. UI ---------- */
-const dexNum = document.getElementById('dexNum');
-const dexChip = document.getElementById('dexChip');
-if (caught.length) {
-  dexChip.innerHTML = `🐾 도감 <b>${caught.length}</b> · 친구 <b>${pokemons.length}</b>`;
-} else {
-  dexChip.innerHTML = `🐾 기본 친구 <b>${pokemons.length}</b>`;
+updateDexChip();
+
+/* 가족 전환 바 */
+const whoBar = document.getElementById('whoBar');
+[...whoBar.querySelectorAll('.who')].forEach((b) => {
+  const i = Number(b.dataset.who);
+  const P = people[i];
+  if (P) b.querySelector('.wname').textContent = P.name;
+  b.addEventListener('click', () => selectPerson(i));
+});
+document.getElementById('btnDex').addEventListener('click', openDexModal);
+
+/* ---------- 15-b. 🐾 친구 고르기 모달 ---------- */
+const dexModal = document.getElementById('dexModal');
+let dexModalOpen = false;
+let dexDraft = { p1: pick.p1.slice(), p2: pick.p2.slice() };
+const dexSlots = { p1: readDexSlot('p1'), p2: readDexSlot('p2') };
+const kidName = (slot) => (slot === 'p1' ? people[0].name : people[1].name);
+
+function buildDexModal() {
+  ['p1', 'p2'].forEach((slot) => {
+    const grid = dexModal.querySelector(`[data-grid="${slot}"]`);
+    const empty = dexModal.querySelector(`[data-empty="${slot}"]`);
+    const nameEl = dexModal.querySelector(`[data-name="${slot}"]`);
+    if (nameEl) nameEl.textContent = kidName(slot);
+    const ids = dexSlots[slot].ids;
+    grid.innerHTML = '';
+    if (!ids.length) {
+      grid.hidden = true;
+      empty.hidden = false;
+      return;
+    }
+    grid.hidden = false;
+    empty.hidden = true;
+    ids.forEach((id) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tile';
+      b.dataset.id = String(id);
+      b.dataset.slot = slot;
+      b.setAttribute('aria-pressed', 'false');
+      b.title = nameOf(id);
+      const img = document.createElement('img');
+      img.alt = '';
+      img.decoding = 'async';
+      img.loading = 'lazy';
+      img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+      img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
+      const nm = document.createElement('span');
+      nm.className = 'nm';
+      nm.textContent = nameOf(id);
+      const ck = document.createElement('span');
+      ck.className = 'ck';
+      ck.textContent = '+';
+      b.append(img, nm, ck);
+      grid.appendChild(b);
+    });
+  });
+  refreshDexSel();
 }
+
+function refreshDexSel() {
+  ['p1', 'p2'].forEach((slot) => {
+    const cnt = dexModal.querySelector(`[data-cnt="${slot}"]`);
+    if (cnt) cnt.textContent = `${dexDraft[slot].length} / ${MAX_PER_KID}`;
+    dexModal.querySelectorAll(`.tile[data-slot="${slot}"]`).forEach((t) => {
+      const on = dexDraft[slot].includes(Number(t.dataset.id));
+      t.classList.toggle('on', on);
+      t.setAttribute('aria-pressed', on ? 'true' : 'false');
+      const ck = t.querySelector('.ck');
+      if (ck) ck.textContent = on ? '✓' : '+';
+    });
+  });
+}
+
+function toggleDexTile(slot, id) {
+  if (!dexDraft[slot]) return;
+  const arr = dexDraft[slot];
+  const i = arr.indexOf(id);
+  if (i >= 0) { arr.splice(i, 1); refreshDexSel(); return; }
+  if (arr.length >= MAX_PER_KID) {
+    toast(`한 명당 ${MAX_PER_KID}마리까지 고를 수 있어요`);
+    const el = dexModal.querySelector(`.tile[data-slot="${slot}"][data-id="${id}"]`);
+    if (el) {
+      el.animate(
+        [{ transform: 'translateX(0)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(4px)' }, { transform: 'translateX(0)' }],
+        { duration: 220, iterations: 2 }
+      );
+    }
+    return;
+  }
+  arr.push(id);
+  refreshDexSel();
+}
+
+function openDexModal() {
+  dexSlots.p1 = readDexSlot('p1');
+  dexSlots.p2 = readDexSlot('p2');
+  dexDraft = { p1: pick.p1.slice(), p2: pick.p2.slice() };
+  buildDexModal();
+  dexModal.hidden = false;
+  dexModalOpen = true;
+  dexModal.setAttribute('aria-hidden', 'false');
+  if (!dexSlots.p1.ids.length && !dexSlots.p2.ids.length) {
+    toast('도감에 잡은 친구가 없어 기본 친구가 놀고 있어요');
+  }
+  hintFade();
+}
+function closeDexModal() {
+  dexModal.hidden = true;
+  dexModalOpen = false;
+  dexModal.setAttribute('aria-hidden', 'true');
+}
+
+dexModal.addEventListener('click', (e) => {
+  const tile = e.target.closest('.tile');
+  if (tile) { toggleDexTile(tile.dataset.slot, Number(tile.dataset.id)); return; }
+  if (e.target === dexModal) closeDexModal();
+});
+document.getElementById('dexClose').addEventListener('click', closeDexModal);
+document.getElementById('dexReset').addEventListener('click', () => {
+  dexDraft = { p1: [], p2: [] };
+  refreshDexSel();
+  toast('고른 친구를 모두 풀었어요');
+});
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && dexModalOpen) closeDexModal();
+});
+
+document.getElementById('dexApply').addEventListener('click', async () => {
+  const btn = document.getElementById('dexApply');
+  if (btn.disabled) return;
+  pick = { p1: dexDraft.p1.slice(0, MAX_PER_KID), p2: dexDraft.p2.slice(0, MAX_PER_KID) };
+  const ids = pick.p1.concat(pick.p2);
+  btn.disabled = true;
+  btn.textContent = '부르는 중…';
+  try {
+    writePick(pick);
+    if (ids.length) await applyFriends(ids);
+    else await applyFriends(paCaughtFallback());
+    closeDexModal();
+    toast(ids.length ? `🐾 친구 ${ids.length}마리를 아지트에 불렀어요!` : `🐾 기본 친구 ${pokemons.length}마리를 불렀어요`);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '아지트에 부르기';
+  }
+});
+function paCaughtFallback() {
+  return caught.length ? caught : DEFAULT_IDS;
+}
+
+buildDexModal();
 
 const themeSeg = document.getElementById('themeSeg');
 themeSeg.addEventListener('click', (e) => {
@@ -1385,7 +2692,12 @@ btnSound.addEventListener('click', () => {
   btnSound.textContent = soundOn ? '🔊' : '🔇';
   btnSound.classList.toggle('on', soundOn);
   btnSound.setAttribute('aria-label', soundOn ? '소리 켜짐' : '소리 꺼짐');
-  toast(soundOn ? '🔊 소리를 켰어요' : '🔇 소리를 껐어요');
+  if (soundOn) {
+    if (!audioStarted) startAudio();
+    else playBoth();
+    btnSound.setAttribute('data-bgm', 'on');
+  }
+  toast(soundOn ? '🔊 소리를 켰어요 (음악·울음소리)' : '🔇 모두 조용히 했어요');
 });
 
 const toastEl = document.getElementById('toast');
@@ -1446,12 +2758,107 @@ document.getElementById('btnPhoto').addEventListener('click', () => {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    burstHearts(trainer.position.clone().add(new THREE.Vector3(0, 1.7, 0)), 6);
+    burstHearts(activePerson().group.position.clone().add(new THREE.Vector3(0, 1.7, 0)), 6);
     toast('📷 기념사진을 저장했어요!');
   } catch (err) {
     toast('사진 저장에 실패했어요 😢');
   }
 });
+
+/* ---------- 16-b. 배경음악(BGM)·환경음 ---------- */
+/* sd_live/public/audio/*.mp3 (CC0 실음원) — 같은 폴더 기준 상대 경로 → Vercel → GitHub raw 순 폴백 */
+const AUDIO_BASES = ['./audio/', 'https://stock-dashboard-live-6frm.vercel.app/audio/', 'https://raw.githubusercontent.com/hwen21c-tech/stock-dashboard-live/main/public/audio/'];
+function audioUrls(name) { return AUDIO_BASES.map((b) => b + name + '.mp3'); }
+const BGM_VOL = 0.34;
+const AMB_VOL = 0.26;
+let audioStarted = false;
+let duckUntil = 0;
+let ambName = 'amb_forest';
+
+function makeLoop(name, onErr) {
+  const a = new Audio();
+  a.loop = true;
+  a.preload = 'none';
+  a.volume = 0;
+  a.dataset.track = name;
+  a.__k = 0;
+  a.src = audioUrls(name)[0];
+  a.addEventListener('error', () => {
+    const urls = audioUrls(a.dataset.track);
+    a.__k += 1;
+    if (a.__k < urls.length) {
+      a.src = urls[a.__k];
+      if (audioStarted && soundOn) { const p = a.play(); if (p && p.catch) p.catch(() => {}); }
+    } else if (onErr) onErr();
+  });
+  return a;
+}
+const bgm = makeLoop('music_village');
+const amb = makeLoop('amb_forest');
+
+function playBoth() {
+  [bgm, amb].forEach((a) => {
+    try {
+      a.preload = 'auto';
+      const p = a.play();
+      if (p && p.catch) p.catch(() => {});
+    } catch (e) { /* 자동재생 차단은 다음 터치에서 재시도 */ }
+  });
+}
+function startAudio() {
+  if (audioStarted) return;
+  audioStarted = true;
+  if (!soundOn) return;
+  playBoth();
+}
+/* 첫 터치·클릭·키 입력에서 부드럽게 시작 (모바일 자동재생 정책) */
+['pointerdown', 'touchstart', 'keydown'].forEach((ev) => {
+  window.addEventListener(ev, startAudio, { passive: true });
+});
+
+/* 울음소리·회복 멜로디가 나면 BGM을 살짝 낮춘다(덕킹) */
+function duckAudio(ms) {
+  duckUntil = Math.max(duckUntil, performance.now() + (ms || 1000));
+  if (!soundOn || !audioStarted) return;
+  /* 프레임이 느린 기기에서도 울음소리와 겹치지 않게 즉시 낮춘다 */
+  bgm.volume = Math.min(bgm.volume, BGM_VOL * 0.3);
+  amb.volume = Math.min(amb.volume, AMB_VOL * 0.45);
+}
+
+function switchAmbience(name) {
+  if (ambName === name) return;
+  ambName = name;
+  const urls = audioUrls(name);
+  amb.__k = 0;
+  const swap = () => {
+    amb.src = urls[0];
+    try { amb.load(); } catch (e) { /* */ }
+    if (audioStarted && soundOn) {
+      const p = amb.play();
+      if (p && p.catch) p.catch(() => {});
+    }
+  };
+  if (amb.volume > 0.02) {
+    amb.volume = 0;
+    setTimeout(swap, 80);
+  } else swap();
+}
+
+let audioPrevT = performance.now();
+function updateAudio() {
+  if (!audioStarted) return;
+  /* 프레임이 느려도(저사양·소프트웨어 렌더) 실제 시간 기준으로 볼륨을 맞춘다 */
+  const now = performance.now();
+  const adt = Math.min(0.4, Math.max(0.001, (now - audioPrevT) / 1000));
+  audioPrevT = now;
+  const ducking = now < duckUntil;
+  const tb = soundOn ? (ducking ? BGM_VOL * 0.3 : BGM_VOL) : 0;
+  const ta = soundOn ? (ducking ? AMB_VOL * 0.45 : AMB_VOL) : 0;
+  bgm.volume = clamp(lerp(bgm.volume, tb, Math.min(1, adt * (ducking ? 14 : 2.4))), 0, 1);
+  amb.volume = clamp(lerp(amb.volume, ta, Math.min(1, adt * (ducking ? 14 : 2.2))), 0, 1);
+  if (!soundOn && bgm.volume < 0.012 && !bgm.paused) bgm.pause();
+  if (!soundOn && amb.volume < 0.012 && !amb.paused) amb.pause();
+}
 
 /* ---------- 16. 크기 조절 ---------- */
 function resize() {
@@ -1476,6 +2883,7 @@ viewT.radius = baseRadius();
 const clock = new THREE.Clock();
 const tmpV = new THREE.Vector3();
 const tmpC = new THREE.Color();
+const badgeRight = new THREE.Vector3();
 
 /* 포켓몬 다음 목적지 */
 function pickPokeTarget(pk) {
@@ -1489,74 +2897,6 @@ function pickPokeTarget(pk) {
     return;
   }
   pk.tx = pk.x; pk.tz = pk.z;
-}
-
-/* 트레이너 이동 */
-function moveTrainer(dt) {
-  let vx = 0, vz = 0;
-  const kv = 3.1;
-  if (keys.size) {
-    if (keys.has('arrowleft') || keys.has('a')) vx -= 1;
-    if (keys.has('arrowright') || keys.has('d')) vx += 1;
-    if (keys.has('arrowup') || keys.has('w')) vz -= 1;
-    if (keys.has('arrowdown') || keys.has('s')) vz += 1;
-  } else if (T.target) {
-    const dx = T.target.x - T.x, dz = T.target.z - T.z;
-    const d = Math.hypot(dx, dz);
-    if (d < 0.12) { T.target = null; }
-    else { vx = dx / d; vz = dz / d; }
-  }
-  if (vx || vz) {
-    const len = Math.hypot(vx, vz) || 1;
-    vx /= len; vz /= len;
-    // 카메라 기준 이동(방향키가 화면과 맞도록)
-    if (keys.size) {
-      const s = Math.sin(view.theta), c = Math.cos(view.theta);
-      const wx = vx * c - vz * s;
-      const wz = vx * s + vz * c;
-      vx = wx; vz = wz;
-    }
-    const step = kv * dt;
-    let nx = T.x + vx * step, nz = T.z + vz * step;
-    const r = Math.hypot(nx, nz);
-    if (r > 9.4) { const k = 9.4 / r; nx *= k; nz *= k; }
-    const dPond = Math.hypot(nx - POND.x, nz - POND.z);
-    if (dPond < POND.r + 0.4) {
-      const k = (POND.r + 0.55) / Math.max(0.001, dPond);
-      nx = POND.x + (nx - POND.x) * k; nz = POND.z + (nz - POND.z) * k;
-    }
-    T.x = nx; T.z = nz;
-    T.face = Math.atan2(vx, vz);
-    T.moving = true;
-    T.walkPhase += dt * 9.5;
-  } else {
-    T.moving = false;
-    T.walkPhase = lerp(T.walkPhase, Math.round(T.walkPhase / Math.PI) * Math.PI, Math.min(1, dt * 10));
-  }
-  T.speed = lerp(T.speed, T.moving ? 1 : 0, Math.min(1, dt * 12));
-  const y = terrainY(T.x, T.z);
-  trainer.position.set(T.x, y, T.z);
-  // 부드러운 회전
-  let curFace = trainer.rotation.y;
-  let diff = ((T.face - curFace + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
-  trainer.rotation.y = curFace + diff * Math.min(1, dt * 12);
-  // 걷기 애니메이션
-  const sw = Math.sin(T.walkPhase) * 0.62 * T.speed;
-  trainerParts.legL.rotation.x = sw;
-  trainerParts.legR.rotation.x = -sw;
-  trainerParts.armL.rotation.x = -sw * 0.75;
-  trainerParts.armR.rotation.x = sw * 0.75;
-  trainer.position.y += Math.abs(Math.sin(T.walkPhase)) * 0.045 * T.speed;
-  // 손 흔들기
-  if (T.wave > 0) {
-    T.wave = Math.max(0, T.wave - dt * 0.85);
-    const w = Math.sin(performance.now() * 0.012) * 0.9 * T.wave;
-    trainerParts.armR.rotation.z = -1.9 * T.wave;
-    trainerParts.armR.rotation.x = w;
-  } else {
-    trainerParts.armR.rotation.z = lerp(trainerParts.armR.rotation.z, 0, Math.min(1, dt * 8));
-  }
-  trainerParts.head.rotation.z = Math.sin(performance.now() * 0.0016) * 0.03;
 }
 
 function animate() {
@@ -1606,6 +2946,12 @@ function animate() {
   lamps.forEach((l) => {
     l.pl.intensity = cur.lamp * 2.2;
     l.glassMat.emissiveIntensity = 0.18 + cur.lamp * 1.5;
+  });
+  /* 포켓몬 센터 — 밤에는 창문·간판에 따뜻한 불빛 */
+  centerLights.forEach((c) => {
+    const v = c.off + (c.on - c.off) * cur.lamp;
+    if (c.mat) c.mat.emissiveIntensity = v;
+    if (c.pl) c.pl.intensity = v;
   });
   clouds.forEach((c) => { c.material.opacity = cur.cloudOp * 0.9; c.material.color.copy(curC.cloudColor); });
 
@@ -1659,8 +3005,8 @@ function animate() {
     b.scale.set(s, s * 1.15, 1);
   });
 
-  /* 트레이너 */
-  moveTrainer(dt);
+  /* 가족 4인 */
+  people.forEach((P, i) => stepPerson(P, dt, i === activeIdx));
 
   /* 포켓몬 */
   pokemons.forEach((pk) => {
@@ -1690,8 +3036,56 @@ function animate() {
     // 통통 튈 때 살짝 늘어나고 줄어드는 느낌
     const sq = 1 + Math.sin(pk.phase * 2) * 0.03 * (0.4 + moving);
     pk.spr.scale.set(1 / sq, sq, 1);
+    // 전기 타입: 부르르 떨림
+    if (pk.shakeT > 0) {
+      pk.shakeT = Math.max(0, pk.shakeT - dt);
+      const kn = pk.shakeT / 0.7;
+      pk.spr.position.x = Math.sin(t * 62) * 0.11 * kn;
+      pk.spr.position.y = pk.scale / 2 + 0.06 + Math.cos(t * 78) * 0.05 * kn;
+      pk.spr.material.rotation = Math.sin(t * 45) * 0.06 * kn;
+    } else {
+      pk.spr.position.x = 0;
+      pk.spr.position.y = pk.scale / 2 + 0.06;
+    }
+    // 에스퍼·고스트·드래곤·악: 공중 부양 + 빙글
+    if (pk.levT > 0) {
+      pk.levT = Math.max(0, pk.levT - dt);
+      const lp = 1 - pk.levT / 1.7;
+      pk.group.position.y += Math.sin(Math.min(1, lp * 1.15) * Math.PI) * 0.55;
+      pk.spr.material.rotation = pk.levT > 0 ? lp * Math.PI * 1.7 : 0;
+    } else if (pk.shakeT <= 0) {
+      pk.spr.material.rotation = 0;
+    }
     // 그림자는 바닥에 고정
   });
+
+  /* 회복 별가루 */
+  healStars.forEach((st) => {
+    if (!st.s.visible) return;
+    st.life += dt;
+    const p = st.life / st.ttl;
+    if (p >= 1) { st.s.visible = false; st.s.material.opacity = 0; return; }
+    st.s.position.x += st.vx * dt;
+    st.s.position.y += st.vy * dt;
+    st.s.position.z += st.vz * dt;
+    st.vy -= dt * 0.55;
+    st.s.material.opacity = 1 - p;
+    const sc = st.grow * (0.55 + p * 0.75);
+    st.s.scale.set(sc, sc, 1);
+    st.s.material.rotation += dt * 1.6;
+  });
+
+  /* 센터 회복 링 */
+  if (healRingT >= 0 && centerRing) {
+    healRingT += dt;
+    const p = healRingT / 1.15;
+    if (p >= 1) { healRingT = -1; centerRing.material.opacity = 0; centerRing.scale.set(1, 1, 1); }
+    else {
+      const s2 = 0.9 + p * 2.6;
+      centerRing.scale.set(s2, s2, s2);
+      centerRing.material.opacity = (1 - p) * 0.85;
+    }
+  }
 
   /* 하트 파티클 */
   hearts.forEach((h) => {
@@ -1721,6 +3115,21 @@ function animate() {
   camera.lookAt(camSmooth);
   camSmooth.lerp(camTarget, Math.min(1, dt * 4));
 
+  /* 이름 배지 — 카메라 기준으로 좌우로 벌려 머리 위에 띄운다 */
+  camera.updateMatrixWorld();
+  badgeRight.setFromMatrixColumn(camera.matrixWorld, 0);
+  people.forEach((P) => {
+    const b = P.parts.badge;
+    const g = P.group.position;
+    b.position.set(
+      g.x + badgeRight.x * P.badgeX,
+      g.y + P.h * 1.98 + P.badgeLift,
+      g.z + badgeRight.z * P.badgeX
+    );
+  });
+
+  updateAudio();
+  updateFxParticles(dt);
   updateBubbles();
   renderer.render(scene, camera);
 }
@@ -1745,17 +3154,58 @@ window.__AJIT = {
   get pokemonCount() { return pokemons.length; },
   get ids() { return pokemons.map((p) => p.id); },
   get names() { return pokemons.map((p) => p.name); },
-  get trainer() { return { x: T.x, z: T.z }; },
+  get trainer() { const P = activePerson(); return { x: P.x, z: P.z }; },
+  get people() {
+    return people.map((P, i) => ({ idx: i, id: P.id, name: P.name, x: P.x, z: P.z, moving: P.moving, rest: P.rest, active: i === activeIdx }));
+  },
+  get activeIndex() { return activeIdx; },
+  get activeName() { return activePerson().name; },
+  get healCount() { return healCount; },
+  get stars() { return healStars.filter((s) => s.s.visible).length; },
+  get pick() { return { p1: pick.p1.slice(), p2: pick.p2.slice() }; },
+  get dexIds() { return { p1: dexSlots.p1.ids.slice(), p2: dexSlots.p2.ids.slice() }; },
+  get modalOpen() { return dexModalOpen; },
+  get audio() {
+    return {
+      started: audioStarted, soundOn,
+      bgm: { track: bgm.dataset.track, vol: +bgm.volume.toFixed(3), paused: bgm.paused, src: bgm.currentSrc || bgm.src, time: +bgm.currentTime.toFixed(2) },
+      amb: { track: ambName, vol: +amb.volume.toFixed(3), paused: amb.paused, time: +amb.currentTime.toFixed(2) },
+      ducking: performance.now() < duckUntil,
+    };
+  },
+  selectPerson(i) { return selectPerson(i); },
+  wakePeople() { people.forEach((P) => { P.rest = 0; }); return true; },
+  heal() { return healCenter(); },
+  centerScreen() {
+    const v = new THREE.Vector3(CENTER.x, CENTER.y + 1.6, CENTER.z).project(camera);
+    const out = { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight, z: v.z };
+    return out;
+  },
+  personScreen(i) {
+    const P = people[i]; if (!P) return null;
+    const v = new THREE.Vector3(P.x, P.group.position.y + 1.0, P.z).project(camera);
+    return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight, name: P.name };
+  },
+  openDex() { openDexModal(); return { p1: dexSlots.p1.ids.length, p2: dexSlots.p2.ids.length }; },
+  closeDex() { closeDexModal(); },
+  togglePick(slot, id) { toggleDexTile(slot, id); return { p1: dexDraft.p1.slice(), p2: dexDraft.p2.slice() }; },
+  async applyDex() { await new Promise((r) => setTimeout(r, 0)); document.getElementById('dexApply').click(); return true; },
+  setPick(p) { pick = { p1: (p.p1 || []).slice(0, MAX_PER_KID), p2: (p.p2 || []).slice(0, MAX_PER_KID) }; writePick(pick); return applyFriends(pick.p1.concat(pick.p2)); },
   get camera() { return { theta: view.theta, phi: view.phi, radius: view.radius }; },
   get hearts() { return hearts.filter((h) => h.s.visible).length; },
   get bubbles() { return bubbles.length; },
   greet(i = 0) { const pk = pokemons[i]; if (pk) greet(pk); return pk ? pk.name : null; },
+  typesOf(id) { return typesOf(id); },
+  pokeState(i) { const pk = pokemons[i]; if (!pk) return null; return { id: pk.id, shakeT: pk.shakeT, levT: pk.levT, jump: pk.jump }; },
+  fxOf(id) { return fxGroupOf(id); },
+  get fxParticles() { return FX_POOL.filter((p) => p.s.visible).length; },
+  get fxRings() { return fxRings.filter((m) => m.visible).length; },
   screenOf(i) {
     const pk = pokemons[i]; if (!pk) return null;
     const v = pk.group.position.clone(); v.y += pk.scale * 0.5; v.project(camera);
     return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight, name: pk.name, id: pk.id };
   },
-  tap(x, z) { T.target = { x, z }; return true; },
+  tap(x, z) { const P = activePerson(); P.target = { x, z }; return true; },
   setTheme,
   resetView,
   setView(v) {
@@ -1766,7 +3216,7 @@ window.__AJIT = {
     return { theta: viewT.theta, phi: viewT.phi, radius: viewT.radius, y: camTarget.y };
   },
   snapView() { view.theta = viewT.theta; view.phi = viewT.phi; view.radius = viewT.radius; },
-  moveBy(x, z) { T.x = x; T.z = z; return { x: T.x, z: T.z }; },
+  moveBy(x, z) { const P = activePerson(); P.x = x; P.z = z; return { x: P.x, z: P.z }; },
 };
 </script>
 </body>
