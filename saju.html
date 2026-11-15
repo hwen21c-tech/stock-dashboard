@@ -2093,6 +2093,8 @@ var TIP_DOM = {
 function josa(word, withB, noB){
   var w = String(word || '');
   var ch = w.slice(-1);
+  var ELB = {木:0, 火:0, 土:0, 金:1, 水:0};
+  if (ELB[ch] !== undefined) return ELB[ch] ? withB : noB;
   var i = ZHI.indexOf(ch);
   if (i >= 0) return [0,1,1,0,1,0,0,0,1,0,1,0][i] ? withB : noB;
   i = GAN.indexOf(ch);
@@ -2146,11 +2148,11 @@ function narrChart(c){
   var zEl = ZHI_EL[ZHI.indexOf(c.dayZhi)];
   var zRel = relation(zEl, c.dayEl);
   var ZREL = {
-    give:'일지 ' + c.dayZhi + '(' + zEl + ')가 일간을 생해 뒤에서 밀어 주는 자리라 결정적인 순간에 힘이 실립니다',
-    same:'일지 ' + c.dayZhi + '가 일간과 같은 ' + zEl + ' 기운이라 자기 색이 짙고 그 고집이 곧 힘입니다',
-    receive:'일간이 일지 ' + c.dayZhi + '(' + zEl + ')를 생해 주는 자리라 정을 먼저 쓰고 기운이 밖으로 나갑니다',
-    control:'일지 ' + c.dayZhi + '(' + zEl + ')가 일간을 극하는 자리라 겉으로는 조용해도 안에서 긴장이 이어집니다',
-    controlled:'일간이 일지 ' + c.dayZhi + '(' + zEl + ')를 다스리는 자리라 통제욕이 강하고 손에서 놓는 일을 어려워합니다'
+    give:'일지 ' + c.dayZhi + '(' + zEl + ')' + josa(c.dayZhi, '이', '가') + ' 일간을 생해 뒤에서 밀어 주는 자리라 결정적인 순간에 힘이 실립니다',
+    same:'일지 ' + c.dayZhi + josa(c.dayZhi, '이', '가') + ' 일간과 같은 ' + zEl + ' 기운이라 자기 색이 짙고 그 고집이 곧 힘입니다',
+    receive:'일간이 일지 ' + c.dayZhi + '(' + zEl + ')' + josa(c.dayZhi, '을', '를') + ' 생해 주는 자리라 정을 먼저 쓰고 기운이 밖으로 나갑니다',
+    control:'일지 ' + c.dayZhi + '(' + zEl + ')' + josa(c.dayZhi, '이', '가') + ' 일간을 극하는 자리라 겉으로는 조용해도 안에서 긴장이 이어집니다',
+    controlled:'일간이 일지 ' + c.dayZhi + '(' + zEl + ')' + josa(c.dayZhi, '을', '를') + ' 다스리는 자리라 통제욕이 강하고 손에서 놓는 일을 어려워합니다'
   }[zRel];
   var ijImg = (ij && ij.g) ? String(ij.g).split(' — ')[0] : '';
   var salGift = '';
@@ -2171,7 +2173,7 @@ function narrChart(c){
   var s3 = '격국은 <b>' + c.gyeok.name + '</b>(' + (c.gyeok.hanja || '') + ')입니다. ' + c.gyeok.why + ' ' + (GYEOK_ESS[c.gyeok.name] || '');
   var s4 = '월지 ' + c.pillars[1].zhi + '(' + c.pillars[1].zhiEl + ')의 계절 기운에 통근 ' + (s.roots || 0) + '개를 더한 강약 지수는 ' + s.score + '로 <b>' + s.label + '</b>입니다. ' + STR_NARR[String(s.strong)] + (s.strong > 0 && jae <= 1 ? ' 힘은 넘치는데 담길 그릇이 작으니, 벌리는 힘을 통로를 넓히는 데 쓰는 것이 관건입니다.' : '');
   var s5 = '오행은 ' + elDistTxt(c) + '자로 ' + (counts[maxEl] >= 4 ? maxEl + '(' + EL_KO[maxEl] + ')이 크게 두터워 ' + EL_RICH[maxEl] + '이 앞서고 그 반대편이 비어 있습니다.' : '고르게 퍼져 한쪽으로 심하게 쏠리지는 않았습니다.')
-    + (zero.length ? ' ' + zero.map(function(e){ return e + '(' + EL_KO[e] + ')'; }).join('·') + '이 아예 없어 ' + EL_LACK[zero[0]] + '을 다른 오행에서 빌려 씁니다.' : ' 다섯 오행이 모두 살아 있어 어느 쪽으로도 기울지 않습니다.')
+    + (zero.length ? ' ' + zero.map(function(e){ return e + '(' + EL_KO[e] + ')'; }).join('·') + josa(zero[zero.length-1], '이', '가') + ' 아예 없어 ' + EL_LACK[zero[0]] + '을 다른 오행에서 빌려 씁니다.' : ' 다섯 오행이 모두 살아 있어 어느 쪽으로도 기울지 않습니다.')
     + ' 그래서 이 사주의 무기는 <b>' + c.yong.el + '(' + EL_KO[c.yong.el] + ')</b> — ' + (c.yong.tag === '조후' ? '계절의 한난을 다스리는 조후용신' : (c.yong.tag === '통관' ? '맞부딪히는 두 오행을 잇는 통관용신' : '기운의 과부족을 덜어내는 억부용신')) + '으로 뽑혔습니다. ' + salGift;
 
   // ② 재물 구조
