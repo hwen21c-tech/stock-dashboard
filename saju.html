@@ -539,6 +539,11 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
 [data-theme="day"] .tk4.ok{color:#f7f1e6}
 [data-theme="day"] .tk4.no{color:#fffdf7}
 .narr-note{font-size:10.5px;color:var(--faint);line-height:1.65;margin-top:14px;padding-top:11px;border-top:1px dashed var(--line);word-break:keep-all}
+/* 스토리텔링 한 줄 요약 배너 */
+.narr-story{border:1px solid var(--line2);border-radius:13px;padding:11px 13px;background:linear-gradient(180deg,rgba(217,180,92,.14),rgba(217,180,92,.05));margin:0 0 14px}
+.narr-story .ns-t{font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--gold);margin-bottom:4px}
+.narr-story .ns-d{font-family:var(--serif);font-size:13px;font-weight:600;color:var(--gold2);line-height:1.7;word-break:keep-all}
+.narr-story .ns-d b{color:var(--gold)}
 /* ============ 17. 가족 프로필 칩 · 오늘 우리 가족 · 클라우드 ============ */
 .pchrow{display:flex;align-items:center;gap:6px;margin:10px 0 0}
 .pchips{flex:1 1 auto;min-width:0;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;
@@ -2253,6 +2258,418 @@ var TIP_DOM = {
   }
 };
 
+/* =========================================================
+   4-e-2. 심층 스토리텔링 엔진 (v2)
+   ---------------------------------------------------------
+   · 재료는 이미 계산된 값(일간·오행 분포·십성·지장간·충합·격국·
+     용신·12운성·대운·세운·월운)뿐입니다. 난수·외부 API 없음.
+   · 기존 해설 엔진과 팝업 UI는 그대로 두고, 그 아래에 심층 문단을 얹습니다.
+   ========================================================= */
+/* =========================================================
+   4-e-2. 심층 스토리텔링 엔진 (v2)
+   ---------------------------------------------------------
+   · 재료는 이미 계산된 값(일간·오행 분포·십성·지장간·충합·격국·
+     용신·12운성·대운·세운·월운)뿐입니다. 난수·외부 API 없음.
+   · 문장 순서: 구조 → 왜 그런지(비유·원리) → 일·돈·관계·건강
+     → 오늘 바로 할 수 있는 개운법(색·음식·운동·습관·태도)
+   ========================================================= */
+
+/* 일간 10종 — 비유·재능·일·연애·돈·몸·그늘·곁에 둘 사람 */
+var GAN_DEEP = {
+  甲:{ tag:'곧게 뻗는 큰 나무', metaphor:'땅을 뚫고 올라와 하늘로 곧게 뻗는 큰 나무입니다. 옆으로 굽는 법을 배우지 않고 위로만 자라서, 한 번 "이쪽"이라고 정하면 몸이 먼저 그쪽으로 움직입니다.',
+    gift:'남들이 계산으로 망설이는 동안 첫 삽을 뜨는 힘', work:'새 판을 여는 자리, 처음부터 만들어야 하는 일', love:'한 사람을 정하면 오래 곁에 두는 쪽 — 다만 표현이 서툴러 마음보다 행동이 늦게 도착합니다',
+    money:'길게 키우는 투자 — 성장이 확인된 곳에 오래 두는 방식', body:'간과 힘줄, 굳은 목덜미와 어깨', shadow:'옳다고 믿는 것을 굽히지 못해 관계를 뻣뻣하게 만드는 것', need:'나보다 말랑하게 휘어지는 사람 한 명' },
+  乙:{ tag:'휘어서 담장을 넘는 덩굴', metaphor:'담장을 타고 오르는 덩굴입니다. 곧게 서지 못해도 결국 담장 너머를 봅니다. 돌아가는 길을 부끄러워하지 않는 유연함이 이 사람의 진짜 힘입니다.',
+    gift:'어떤 자리에 심겨도 살아남아 꽃을 피우는 적응력', work:'사람과 사람 사이를 잇는 자리, 이미 있는 판을 키우는 일', love:'상대의 기분을 먼저 읽고 맞춰 주다가 정작 내 마음을 말하지 못합니다',
+    money:'작게 여러 번 확인되는 수익 — 손안에서 보이는 돈이 마음을 편하게 합니다', body:'간과 신경, 잠이 얕아지는 밤', shadow:'눈치를 보느라 내 뜻을 끝까지 말하지 못하는 것', need:'내 말을 끝까지 들어 주는 사람' },
+  丙:{ tag:'숨기지 않고 비추는 태양', metaphor:'하늘 한가운데로 올라가는 태양입니다. 숨기지 않고 비추기 때문에 방 안의 먼지까지 다 보입니다. 그래서 사람들이 모이고, 그만큼 시선도 함께 모입니다.',
+    gift:'사람을 끌어당겨 한 방향으로 모으는 기세', work:'앞에 서서 판을 키우는 자리, 말과 기세가 무기가 되는 일', love:'좋으면 좋다고 크게 말하는 쪽 — 다만 기세가 앞서 상대의 속도를 놓칩니다',
+    money:'들어오는 문도 나가는 문도 큰 구조 — 이익 실현 기준을 먼저 정해야 남습니다', body:'심장과 혈압, 얼굴의 열감과 잠', shadow:'기세가 앞서 말과 지출이 함께 커지는 것', need:'내 속도를 늦춰 줄 계산하는 사람' },
+  丁:{ tag:'가까운 곳을 밝히는 촛불', metaphor:'어두운 방 한쪽을 밝히는 촛불입니다. 넓게 비추지는 못하지만 가까이 있는 사람의 눈빛까지 읽습니다. 작지만 그 자리를 따뜻하게 만드는 빛입니다.',
+    gift:'한 점을 정확히 비추는 집중력과 사람의 마음을 읽는 눈', work:'깊이 파고드는 자리, 사람의 마음을 다루는 일', love:'정을 조용히 오래 쓰는 쪽 — 서운함도 조용히 오래 곱씹습니다',
+    money:'원금이 보이는 확실한 이자형 — 크게 걸기보다 남는 구조를 좋아합니다', body:'심장과 소장, 얕은 잠과 속쓰림', shadow:'서운함을 말하지 않고 오래 쌓아 두는 것', need:'먼저 다가와 물어봐 주는 사람' },
+  戊:{ tag:'움직이지 않는 산', metaphor:'자리에서 움직이지 않는 산입니다. 계절이 바뀌어도 산은 산이라, 사람들이 힘들 때 찾아와 기대는 자리입니다. 대신 산은 자기 높이를 좀처럼 낮추지 않습니다.',
+    gift:'쉽게 흔들리지 않는 신용과 사람을 품는 그릇', work:'규모를 다루는 자리, 책임과 기반이 중요한 일', love:'말보다 오래 곁에 있는 것으로 마음을 보이는 쪽', 
+    money:'땅과 시간이 편을 드는 자산 — 급한 단타보다 중장기', body:'위와 비장, 소화와 허리', shadow:'속을 말하지 않아 무뚝뚝하다는 말을 듣는 것', need:'내 침묵을 오해하지 않는 사람' },
+  己:{ tag:'무엇이든 기르는 밭', metaphor:'곡식을 기르는 기름진 밭입니다. 무엇을 심든 자라게 하는 손이지만, 남의 씨앗만 키우다 내 밭이 마르기도 합니다. 챙기는 힘과 챙김받는 일이 늘 어긋납니다.',
+    gift:'꼼꼼함으로 신뢰를 쌓고 실무를 매만지는 손', work:'사람을 챙기고 과정을 정리하는 자리, 운영과 관리', love:'부탁을 다 들어주는 쪽 — 그만큼 내 몫이 뒤로 밀립니다',
+    money:'새는 곳을 막아 남기는 쪽 — 현금흐름 정리가 곧 수익', body:'비장과 위, 소화와 피로', shadow:'부탁을 다 받아내다 정작 내 몫을 잃는 것', need:'가끔 내 일을 먼저 챙겨 주는 사람' },
+  庚:{ tag:'두드려 만든 쇠', metaphor:'불에 달궈 두드려 만든 쇠입니다. 옳고 그름을 가르는 날이 서 있어 낡은 것을 베어내고 새로 세우는 데 강합니다. 다만 그 날은 관계도 함께 벱니다.',
+    gift:'낡은 것을 정리하고 새로 세우는 결단과 실행', work:'기준이 분명한 자리, 성과와 품질이 숫자로 남는 일', love:'의리를 지키는 대신 융통성이 적어 말이 딱딱해집니다',
+    money:'성과에 값이 붙는 구조 — 근거가 분명한 수입이 맞습니다', body:'폐와 대장, 피부와 호흡', shadow:'옳다는 말이 칼날이 되어 사람을 베는 것', need:'내 말을 부드럽게 번역해 줄 사람' },
+  辛:{ tag:'갈고 다듬은 보석', metaphor:'여러 번 갈고 다듬은 보석입니다. 남들이 흘려보내는 미세한 차이를 알아보는 눈이 있고, 그 눈이 자연히 기준을 높입니다. 그래서 스스로에게도 엄격합니다.',
+    gift:'남들이 흘려보내는 차이를 집어내는 안목', work:'정확도가 생명인 자리, 품질과 격식이 값을 만드는 일', love:'예의와 선을 중시하고, 선을 넘는 사람은 조용히 멀리합니다',
+    money:'전문성과 품질이 값이 되는 쪽 — 서두르는 승부는 맞지 않습니다', body:'폐와 기관지, 피부와 예민한 신경', shadow:'결벽과 완벽주의가 일을 늦추는 것', need:'80%에서도 웃어 주는 사람' },
+  壬:{ tag:'막힘없이 흐르는 큰물', metaphor:'막힘없이 흐르는 큰물입니다. 작은 돌은 돌아가지만 큰 흐름은 결국 바다로 갑니다. 판을 읽는 눈이 있어 남들이 아직 말하지 않은 방향을 먼저 봅니다.',
+    gift:'흐름을 타고 크게 움직이는 스케일과 판세를 읽는 지혜', work:'사람과 돈과 정보가 도는 자리, 큰 흐름을 다루는 일', love:'재치로 사람을 웃기지만 속을 다 보이지 않아 계산적이라는 말을 듣습니다',
+    money:'돌리는 돈에서 나는 회전 수익 — 다만 한 곳에 몰지는 마세요', body:'신장과 방광, 허리와 수면', shadow:'계산이 앞서 정이 식는 것', need:'셈을 접게 해 주는 사람' },
+  癸:{ tag:'새벽에 내리는 이슬', metaphor:'새벽에 내려앉는 이슬입니다. 소리는 없지만 마른 땅을 적시고, 작은 신호를 먼저 알아챕니다. 눈에 띄지 않는 자리에서 판을 바꾸는 힘입니다.',
+    gift:'작은 신호를 먼저 읽는 관찰력과 직관', work:'조용히 깊어지는 자리, 정확도와 집중이 필요한 일', love:'말수가 적고 신중해 신뢰가 가지만, 의심이 앞서면 벽을 세웁니다',
+    money:'작게 여러 번 반복되는 현금흐름이 체질', body:'신장과 방광, 허리와 불면', shadow:'생각이 많아 결정이 늦는 것', need:'결정 시한을 정해 주는 사람' }
+};
+
+/* 오행 5종 — 과다·부족의 실제 모습과 채우는 법 */
+var EL_DEEP = {
+  木:{ tag:'뻗고 시작하는 나무', self:'뻗고 시작하는 기운', season:'봄',
+    over:'하고 싶은 일이 자꾸 늘어나 계획이 나무 가지처럼 옆으로 퍼집니다', overBad:'벌인 일이 많아 마무리가 밀리고, 시작은 많은데 남는 것이 적어집니다',
+    overScene:'일을 벌이는 쪽에 기운을 다 쓰고 마무리에서 힘이 빠지는 패턴이 반복됩니다',
+    under:'새로 시작하는 첫발이 무겁고, 남이 시키는 일은 잘해도 내 일을 벌이는 데 시간이 걸립니다',
+    underScene:'좋은 기회를 앞에 두고도 "먼저 나서는 것"이 부담스러워 한 박자 늦습니다',
+    fill:'하루 한 가지씩 새로 시작하는 연습 — 안 쓰는 물건 버리기, 새 길로 출근하기처럼 작은 개척을 스스로 만드세요',
+    color:'청록·연두·초록', food:'잎채소·샐러드·녹차 같은 푸른 채식', exer:'스트레칭·산책·계단 오르기 같은 몸을 위로 뻗는 동작',
+    space:'창가 화분, 나무 소재 가구, 햇빛 드는 자리', habit:'아침 10분 계획 적기, 새 일 하나 먼저 꺼내기',
+    atti:'먼저 인사하고 먼저 제안하기 — 기다리지 말고 시작하는 쪽으로', dir:'동쪽', num:'3·8', organ:'간·담·눈·힘줄' },
+  火:{ tag:'드러내고 태우는 불', self:'드러내고 태우는 기운', season:'여름',
+    over:'감정과 말이 빨리 올라오고, 좋고 싫음이 얼굴에 그대로 써집니다', overBad:'흥분한 상태에서 결정하고 지출해서 뒤에 청구서가 옵니다',
+    overScene:'말이 먼저 나가고 지출이 뒤따라, 관계와 통장에 같은 모양의 흠이 남습니다',
+    under:'기분을 잘 드러내지 않아 무심해 보이고, 좋은 일도 혼자 알고 넘깁니다',
+    underScene:'좋아하는 마음도 표현하지 않아 상대가 내 마음을 알 방법이 없습니다',
+    fill:'하루 한 번 웃음을 소리 내어 만들기 — 좋은 일을 누군가에게 말로 옮기는 것만으로 기운이 돌아옵니다',
+    color:'빨강·주황·분홍', food:'따뜻한 국물과 붉은 과일(석류·딸기·토마토), 생강차', exer:'줄넘기·인터벌·댄스 같은 심박이 한 번 올라가는 운동',
+    space:'밝은 조명, 햇빛 드는 자리, 향이 있는 공간', habit:'아침 햇빛 10분, 중요한 승부는 오후 3시 전에',
+    atti:'먼저 웃고 먼저 말 걸기 — 표현이 곧 이 사주의 개운', dir:'남쪽', num:'2·7', organ:'심장·소장·혈압·잠' },
+  土:{ tag:'가라앉히고 품는 흙', self:'가라앉히고 품는 기운', season:'환절기',
+    over:'걱정이 많아 같은 생각을 여러 번 하고, 사람과 일을 다 떠안습니다', overBad:'결정이 늦고 몸이 무거워지며, 정작 내 몫은 뒤로 밀립니다',
+    overScene:'남의 부탁을 다 받아내고 내 일은 밤에야 시작하는 하루가 반복됩니다',
+    under:'중심이 흔들려 남의 속도에 자주 휩쓸리고, 식사와 잠이 불규칙해집니다',
+    underScene:'밥 시간과 잠 시간이 흔들려 컨디션의 기복이 그대로 판단의 기복이 됩니다',
+    fill:'시간을 정해 두는 것 — 밥 시간, 잠 시간, 마감 시간을 종이에 적어 지키는 것이 가장 빠른 보충입니다',
+    color:'노랑·베이지·황토', food:'고구마·감자·단호박·죽·된장처럼 뿌리와 흙에서 온 음식', exer:'걷기·요가·플랭크 같은 버티는 운동',
+    space:'책상 정리, 러그, 흙 화분', habit:'식사 시간 고정, 하루 마감 10분 정리',
+    atti:'약속을 지키고 마무리를 남기기 — 끝까지 해 두는 것이 신용', dir:'중앙·서남쪽', num:'5·10', organ:'위·비장·소화' },
+  金:{ tag:'끊고 다듬는 쇠', self:'끊고 다듬는 기운', season:'가을',
+    over:'기준이 높아 남의 일도 내 일처럼 따지고, 말이 결론부터 나갑니다', overBad:'맞는 말로 사람을 지치게 하고, 끊어야 할 것을 끊지 못해 더 피곤해집니다',
+    overScene:'맞는 말로 이기고 관계를 잃는 장면이 되풀이됩니다',
+    under:'정리와 결단이 늦어 미뤄 둔 일이 쌓이고, 거절을 못 해 일정이 엉킵니다',
+    underScene:'끊어야 할 일과 사람을 붙들고 있어 새 일이 들어올 자리가 없습니다',
+    fill:'하루 10분 버리기 — 서랍 하나, 대화 하나, 약속 하나를 정리하면 끊는 힘이 돌아옵니다',
+    color:'흰색·은색·회색', food:'무·배·도라지·마늘·흰살 생선', exer:'근력 운동과 호흡 운동, 빠르게 걷기',
+    space:'환기 잘 되는 방, 옷장과 서랍 정리', habit:'결정에 마감 달기, 미루던 연락 하나 정리',
+    atti:'끊어낼 것은 짧게 끊기 — 거절을 미루지 않는 것이 개운', dir:'서쪽', num:'4·9', organ:'폐·대장·피부·호흡' },
+  水:{ tag:'흐르고 스며드는 물', self:'흐르고 스며드는 기운', season:'겨울',
+    over:'생각이 많아 밤이 길어지고, 정보를 모으느라 결정이 늦어집니다', overBad:'머릿속 계산이 앞서 사람을 놓치고, 잠이 얕아져 판단이 흐려집니다',
+    overScene:'결정을 미루다 가장 좋은 시점을 놓치고, 밤에 혼자 계산을 굴립니다',
+    under:'흐름을 읽는 감각이 둔해져 남의 속도에 끌려가고, 물을 적게 마셔 몸이 먼저 굳습니다',
+    underScene:'정보를 모으는 손이 느려 남이 이미 아는 것을 뒤늦게 알게 됩니다',
+    fill:'물을 자주 마시고, 하루 10분 아무것도 하지 않는 시간을 만드세요 — 비우는 것이 곧 채우는 일입니다',
+    color:'검정·남색·파랑', food:'검은콩·미역·생선·충분한 물', exer:'수영·맨발 걷기·느린 호흡',
+    space:'물소리, 어두운 조명, 조용한 구석', habit:'11시 전에 눕기, 하루 한 줄 기록',
+    atti:'끝까지 듣고 바로 답하지 않기 — 한 박자 두는 것이 힘', dir:'북쪽', num:'1·6', organ:'신장·방광·허리·수면' }
+};
+
+/* 십성 10종 — 원국에 앉았을 때의 결 (영역별) */
+var SS_DEEP = {
+  비견:{ core:'내 몸과 같은 기운', chart:'내 힘으로 서는 자리 — 남이 세워 준 것이 아니라 내가 세운 것이 오래갑니다',
+    money:'내 이름으로 버는 돈. 다만 동업·공동명의에서는 규약을 먼저 종이에 적어야 새지 않습니다',
+    work:'주도권이 내게 있는 자리, 혼자 책임지고 끝내는 일', love:'친구처럼 편한 사이를 원하지만 자존심이 앞서 먼저 손을 내밀지 못합니다',
+    shadow:'내 방식이 옳다는 확신이 강해 남의 조언이 잘 들어오지 않습니다' },
+  겁재:{ core:'나와 겨루는 기운', chart:'경쟁이 있는 자리에서 오히려 힘이 나는 구조 — 다만 사람에게 새는 돈을 조심해야 합니다',
+    money:'경쟁과 협상에서 돈이 오갑니다. 보증·동업·공동투자는 반드시 문서로 남기세요',
+    work:'영업·경쟁·판매처럼 실력이 바로 비교되는 자리', love:'끌림이 강하지만 셈이 엉키면 관계가 상합니다',
+    shadow:'사람에게 쓰는 돈과 감정이 함께 새는 것' },
+  식신:{ core:'만들어 내는 기운', chart:'만든 것이 남는 구조 — 결과물이 쌓여 평판이 되고 그 평판이 돈이 됩니다',
+    money:'기술·콘텐츠·요식처럼 만들어 내는 쪽에서 수입이 생깁니다', work:'결과물이 남는 일, 기획·생산·교육·요식',
+    love:'곁에 있으면 편안해지는 사람 — 다만 표현이 느려 상대가 먼저 지칠 수 있습니다',
+    shadow:'편안함에 기대어 속도를 늦추는 것' },
+  상관:{ core:'드러내는 기운', chart:'재능이 밖으로 나와 값이 되는 구조 — 말과 결과물이 곧 평판입니다',
+    money:'재능 판매와 기술료가 수입. 즉흥 매매와 충동 지출은 손실이 큽니다', work:'표현·강의·기술·영업처럼 드러내는 일',
+    love:'재미와 설렘이 앞서지만 말이 앞서면 상대가 상처를 받습니다', shadow:'말이 앞서 구설이 붙는 것' },
+  편재:{ core:'돌리는 재물의 기운', chart:'판이 넓고 사람이 도는 구조 — 크게 벌고 크게 쓰는 쪽으로 흐르기 쉽습니다',
+    money:'유통·중개·사업처럼 돌리는 돈에서 수익. 손익 실현 기준을 먼저 정해야 남습니다', work:'사람과 돈을 잇는 일, 영업·사업·무역',
+    love:'활동 반경이 넓어 인연도 넓습니다 — 다만 얕게 여러 곳으로 퍼지기 쉽습니다',
+    shadow:'바쁨이 재산을 지키는 일보다 앞서는 것' },
+  정재:{ core:'지키는 재물의 기운', chart:'현금흐름이 단단한 구조 — 크게 벌기보다 남기는 힘이 강합니다',
+    money:'배당·이자·임대처럼 남는 구조가 맞습니다. 급한 승부는 체질에 맞지 않습니다', work:'재무·관리·숫자를 다루는 일',
+    love:'약속을 지키는 신뢰가 무기 — 다만 무뚝뚝해 마음을 표현하지 않습니다',
+    shadow:'안전에 기대어 기회를 놓치는 것' },
+  편관:{ core:'압박을 뚫는 기운', chart:'압박이 걸린 자리에서 오히려 강해지는 구조 — 긴장이 곧 연료입니다',
+    money:'압박 속에서 큰 판을 뚫는 돈. 손절선과 비중 관리가 재산을 지킵니다', work:'영업·개발·법집행·스포츠처럼 부딪히며 뚫는 일',
+    love:'강한 사람과 부딪히며 끌립니다 — 다만 긴장이 관계의 일상이 되기 쉽습니다',
+    shadow:'긴장을 놓지 못해 몸이 먼저 상하는 것' },
+  정관:{ core:'질서를 세우는 기운', chart:'규칙과 절차가 나를 지켜 주는 구조 — 이름과 직위가 쌓입니다',
+    money:'성과와 직위가 수입으로 바뀝니다. 기준을 지키는 것이 곧 재산입니다', work:'조직·공직·전문직처럼 절차가 분명한 자리',
+    love:'예의와 선을 지키는 안정된 관계 — 다만 감정 표현이 형식에 갇히기 쉽습니다',
+    shadow:'규칙에 기대어 변화에 늦게 반응하는 것' },
+  편인:{ core:'파고드는 기운', chart:'남이 못 보는 것을 보는 구조 — 깊이 들어가 전문성이 서는 자리입니다',
+    money:'전문 기술과 정보가 수입. 크게 한 번보다 작게 여러 번이 맞습니다', work:'연구·기술·감정·특수 전문직',
+    love:'얕게 넓히기보다 깊게 좁힙니다 — 다만 속을 잘 열지 않아 상대가 기다립니다',
+    shadow:'생각이 많아 잠이 얕고 시작이 늦는 것' },
+  정인:{ core:'받쳐 주는 기운', chart:'배운 것과 사람의 도움이 자산이 되는 구조 — 문서와 자격이 곧 힘입니다',
+    money:'문서·자격·사람의 도움이 수입으로 이어집니다', work:'교육·연구·행정처럼 지식이 쓰이는 일',
+    love:'돌봄과 배움이 오가는 관계 — 다만 보호받는 쪽에 익숙해집니다',
+    shadow:'도움을 기다리다 내가 나설 때를 놓치는 것' }
+};
+
+/* 지지 12종 — 자리의 성질 */
+var ZHI_DEEP = {
+  子:{img:'한겨울 우물', tone:'밤이 길고 생각이 깊은 자리', body:'신장·방광, 수면'},
+  丑:{img:'언 땅', tone:'겉은 굳었지만 속에 씨앗을 품은 자리', body:'비장·위, 냉증'},
+  寅:{img:'이른 봄 흙을 밀고 나오는 새싹', tone:'시작하는 힘이 가장 왕성한 자리', body:'간·담, 근육'},
+  卯:{img:'들판의 풀', tone:'부드럽게 뻗어 나가는 자리', body:'간·눈, 힘줄'},
+  辰:{img:'안개 낀 젖은 흙', tone:'변화의 문턱에 선 자리 — 모았다가 터뜨립니다', body:'위·소화'},
+  巳:{img:'한낮으로 올라가는 불', tone:'속으로 달아오르는 열정의 자리', body:'심장·소장'},
+  午:{img:'정오의 해', tone:'가장 밝고 가장 뜨거운 자리', body:'심장·혈압'},
+  未:{img:'늦여름 마른 흙', tone:'무르익고 정리하는 자리', body:'비장·위'},
+  申:{img:'가을 초입의 쇠', tone:'자르고 정리하는 힘이 서는 자리', body:'폐·대장'},
+  酉:{img:'서리 내린 보석', tone:'정밀하고 맑은 자리 — 예민함이 함께 옵니다', body:'폐·피부'},
+  戌:{img:'늦가을 언덕', tone:'지키고 갈무리하는 자리', body:'위·근골'},
+  亥:{img:'겨울 큰물', tone:'품고 흐르는 자리 — 끝과 시작이 겹칩니다', body:'신장·허리'}
+};
+
+/* 사주 네 기둥의 자리(궁) */
+var PALACE_DEEP = [
+  {role:'조상·환경·초년(0~15세)', desc:'물려받은 것과 자라난 판'},
+  {role:'부모·형제·직장·청년(16~31세)', desc:'사회로 나가 쓰는 그릇'},
+  {role:'나와 배우자·중년(32~47세)', desc:'가장 안쪽의 나'},
+  {role:'자식·후배·노년(48세~)', desc:'남기고 물려주는 것'}
+];
+
+/* 용신 오행 → 실제 직업군 (구체 예시) */
+var JOBS = {
+  木:['교육·출판·기획','원예·목재·가구·인테리어','스타트업 초기 멤버·신사업 기획'],
+  火:['방송·콘텐츠·마케팅','요식·외식·식품','영업·강의·이벤트'],
+  土:['부동산·건설·관리','행정·총무·운영','농업·식품 유통·물류'],
+  金:['기술·엔지니어·품질','법·회계·금융·감정','의료기기·정밀 제조'],
+  水:['연구·데이터·정보','무역·유통·상담','금융·투자·심리']
+};
+
+/* 오행 → 방위·계절 문장 재료 */
+var EL_IMG = {
+  木:'나무가 뻗는', 火:'불이 타오르는', 土:'흙이 쌓이는', 金:'쇠가 다듬어지는', 水:'물이 흐르는'
+};
+
+/* 십성 → 한 줄 판정 (일의 결) */
+function workTypeOf(c){
+  var st = ssStat(c);
+  var gwan = st.편관 + st.정관, sik = st.식신 + st.상관, inn = st.편인 + st.정인, jae = st.편재 + st.정재, bi = st.비견 + st.겁재;
+  var rows = [
+    {k:'조직·규율형', v:gwan, t:'규칙과 절차가 있는 자리에서 오래 갑니다'},
+    {k:'표현·생산형', v:sik, t:'만들고 내놓는 일에서 값이 붙습니다'},
+    {k:'지식·연구형', v:inn, t:'배우고 가르치고 문서로 남기는 일이 무기입니다'},
+    {k:'실무·수익형', v:jae, t:'숫자와 거래를 다루는 자리에서 감각이 삽니다'},
+    {k:'자립·주도형', v:bi, t:'내 이름으로 세우는 자리에서 힘이 납니다'}
+  ].sort(function(a, b){ return b.v - a.v; });
+  return { top:rows[0], second:rows[1], st:st, gwan:gwan, sik:sik, inn:inn, jae:jae, bi:bi };
+}
+function elOrder(c){
+  return ELS.slice().sort(function(a, b){ return (c.counts[b] - c.counts[a]) || (ELS.indexOf(a) - ELS.indexOf(b)); });
+}
+function oraclePick(seed, arr){ return arr[Math.abs(seed) % arr.length]; }
+
+/* ============ 스토리텔링 심층 해설 (v2) ============ */
+
+/* ------- 0. 한 문장 요약 (일간×오행×강약×용신) ------- */
+function oneLineOf(c){
+  var order = elOrder(c), max = order[0], min = order[order.length-1];
+  var topN = c.counts[max], zero = ELS.filter(function(e){ return !c.counts[e]; });
+  var g = GAN_NATURE[c.dayGan] || GAN_NATURE['甲'];
+  var bits = [];
+  bits.push(GAN_DEEP[c.dayGan].tag);
+  if (topN >= 4) bits.push(EL_DEEP[max].self + '이 판을 차지한 사주');
+  else if (zero.length) bits.push(EL_DEEP[zero[0]].self + '이 비어 사주를 만든 사주');
+  else bits.push('다섯 오행이 고루 앉은 사주');
+  if (c.strength.strong > 0) bits.push('나를 세우는 힘이 넘치는 쪽');
+  else if (c.strength.strong < 0) bits.push('나를 세우는 힘이 모자라 도움이 무기인 쪽');
+  else bits.push('균형의 중심에 서는 쪽');
+  return '한 줄 요약 — ' + bits.join(', ') + '. 무기는 ' + c.yong.el + '(' + EL_KO[c.yong.el] + ')이고, 버릇은 "' + g.shade + '"입니다.';
+}
+
+/* ------- ① 기질 · 구조 (4문단) ------- */
+function deepS(c){
+  var g = GAN_DEEP[c.dayGan], gn = GAN_NATURE[c.dayGan] || GAN_NATURE['甲'];
+  var ij = c.iljuInfo || {};
+  var order = elOrder(c), max = order[0], min = order[order.length-1];
+  var zero = ELS.filter(function(e){ return !c.counts[e]; });
+  var st = workTypeOf(c);
+  var ijImg = (ij && ij.g) ? String(ij.g).split(' — ')[0] : '';
+
+  var p1 = '일간 ' + c.dayGan + '(' + c.dayGanKo + ') — ' + g.metaphor + ' 그래서 이 사람을 움직이는 핵심은 "' + gn.core + '"이고, 남보다 빠른 지점은 "' + gn.gift + '"입니다. 뒤집어 보면 "' + gn.shade + '"이 이 사주의 숙제입니다. 좋은 일과 그늘이 같은 뿌리에서 나온다는 것이 명리의 시작입니다.';
+  var p2 = '일주로 좁혀 보면 ' + c.ilju + '(' + c.iljuKo + ')' + (ijImg ? ' — ' + ijImg + '의 형국입니다.' : '입니다.') + ' 날의 지지는 ' + ZHI_DEEP[c.dayZhi].img + '처럼 ' + ZHI_DEEP[c.dayZhi].tone + '이라, 겉의 성격과 속의 성질이 섞입니다. 낮에 보이는 모습과 집에서의 모습이 다르다고 자책하지 않아도 됩니다. 애초에 두 결이 한 몸에 같이 앉아 있는 구조입니다.';
+  var p3 = '오행은 ' + elDistTxt(c) + '자로 앉아 있습니다. ' + (c.counts[max] >= 4
+    ? max + '(' + EL_KO[max] + ')이 크게 두터워 ' + EL_DEEP[max].self + '이 이 사주의 주인공입니다. 무기이자 원인입니다 — ' + EL_DEEP[max].over + ', 그래서 ' + EL_DEEP[max].overBad + '.'
+    : '한쪽으로 크게 쏠리지는 않았습니다.') + (zero.length
+    ? ' 반대로 ' + zero.map(function(e){ return e + '(' + EL_KO[e] + ')'; }).join('·') + josa(zero[zero.length-1], '이', '가') + ' 아예 없어 ' + EL_LACK[zero[0]] + '을(를) 다른 오행에서 빌려 씁니다. 빌려 쓰면 되긴 하는데, 피곤합니다 — ' + EL_DEEP[zero[0]].underScene
+    : ' 다섯 오행이 모두 살아 있어 비어 있는 구멍으로 발목 잡히는 일은 적습니다.');
+  var p4 = '이 구조가 뽑은 처방은 <b>' + c.yong.el + '(' + EL_KO[c.yong.el] + ')</b>입니다. ' + (c.yong.tag === '조후' ? '계절이 너무 춥거나 더워서 기운이 굳어 있으니, ' : (c.yong.tag === '통관' ? '강한 두 기운이 정면으로 부딪히고 있으니, ' : '내 몫의 힘이 과하거나 모자라니, ')) + EL_DEEP[c.yong.el].self + '을(를) 더해 판을 바로잡는 것이 이 사주가 평생 들고 다닐 약입니다. 약은 멀리 있지 않습니다 — 아래 개운법은 전부 ' + c.yong.el + ' 기운에서 옵니다.';
+  return [p1, p2, p3, p4];
+}
+
+/* ------- ② 오행 균형과 개운법 (4문단) ------- */
+function deepB(c){
+  var order = elOrder(c), max = order[0], min = order[order.length-1];
+  var zero = ELS.filter(function(e){ return !c.counts[e]; });
+  var strong = c.counts[max] >= 4 ? max : null;
+  var lack = zero.length ? zero[0] : (c.counts[min] === 1 ? min : null);
+  var y = c.yong.el, yd = EL_DEEP[y];
+  var p1 = '가장 두터운 기운은 ' + max + '(' + EL_KO[max] + ') ' + c.counts[max] + '자, 가장 얇은 기운은 ' + min + '(' + EL_KO[min] + ') ' + c.counts[min] + '자입니다. ' + (strong
+    ? EL_DEEP[max].self + '이 ' + maxN(c, max) + '넘치면 ' + EL_DEEP[max].over + '. ' + EL_DEEP[max].overBad + ' 그래서 이 사주의 훈련은 "더하기"가 아니라 "나누기"입니다.'
+    : '쏠림이 크지 않아 어느 계절이 와도 크게 흔들리지는 않습니다. 대신 스스로 자극을 만들지 않으면 움직임도 평평합니다.') + (lack
+    ? ' 특히 ' + lack + '(' + EL_KO[lack] + ')가 ' + (zero.length ? '아예 없어' : '한 자리뿐이라') + ' ' + EL_DEEP[lack].under + ' — ' + EL_DEEP[lack].underScene + '.'
+    : '');
+  var p2 = '비어 있는 기운은 채우는 게 아니라 "접촉량을 늘리는 것"이 명리의 처방입니다. ' + (lack
+    ? '이 사주의 처방은 ' + lack + '(' + EL_KO[lack] + ') — ' + EL_DEEP[lack].fill + '.'
+    : '큰 구멍은 없으니 ' + EL_DEEP[c.yong.el].fill) + ' ' + (zero.length === 0 ? '매일 할 필요는 없고, 막히는 주에 하루 이틀 집중하는 것으로 충분합니다.' : '작게라도 매일이 아니라 "주 2~3회" 접촉량을 만들면 한두 달 안에 체감이 옵니다.');
+  var p3 = '실제로 접촉하는 통로는 네 가지입니다. 색 — ' + yd.color + ' 계열을 옷·전화기 케이스·볼펜처럼 몸에 닿는 것부터. 음식 — ' + yd.food + '을(를) 컨디션 안 좋은 날 메뉴로. 몸 — ' + yd.exer + '이(가) ' + yd.organ + '을(를) 풀어 줍니다. 자리 — ' + yd.space + '을(를) 집과 책상에 하나씩 두는 것. 전부 ' + y + '(' + EL_KO[y] + ') 기운을 사주에 싣는 작은 배터리입니다.';
+  var p4 = '정리하면 — <b>가진 것은 ' + EL_RICH[max] + '</b>, <b>빠진 것은 ' + EL_LACK[(lack || min)] + '</b>입니다. 가진 것은 남에게 보여 주고, 빠진 것은 혼자 연습하는 것, 이 한 줄만 기억해도 이 사주는 절반은 해결됩니다. 색·음식·운동·방위(' + yd.dir + ')·숫자(' + yd.num + ')는 그 연습을 잊지 않게 붙여 두는 낙서입니다.';
+  return [p1, p2, p3, p4];
+}
+function maxN(c, el){ return c.counts[el] + '자나 '; }
+/* ------- ③ 일·직업 적성과 재물 흐름 (4문단) ------- */
+function deepW(c){
+  var g = GAN_DEEP[c.dayGan];
+  var wt = workTypeOf(c);
+  var ij = c.iljuInfo || {};
+  var y = c.yong.el;
+  var p1 = '일의 적성부터 말하면 — 이 사주는 ' + wt.top.k + '입니다. ' + wt.top.t + '. 십성 개수로 보면 ' + (['규율(관성) ' + wt.gwan, '표현(식상) ' + wt.sik, '지식(인성) ' + wt.inn, '실무(재성) ' + wt.jae, '자립(비겁) ' + wt.bi].join(' · ')) + '인데, 그중 ' + wt.top.k + '이 두드러집니다. 여기에 일간의 결을 얹으면 ' + g.work + '이 어울리고, 용신 ' + y + '(' + EL_KO[y] + ')이 움직이는 분야(' + FIELD[y] + ')가 실제 수익과 맞물리는 방향입니다.';
+  var p2 = '현실적으로 골라 보면 — ' + JOBS[y].slice(0, 3).join(', ') + ' 계열이 용신과 맞는 방향입니다. 여기에 ' + (ij && ij.w ? '일주론의 결도 붙습니다: ' + ij.w : '일간의 재능을 얹으면 됩니다: ' + g.work) + ' 이미 하던 일을 버리라는 뜻이 아니라, 지금 일 안에서 ' + y + ' 기운이 들어 있는 역할(기획·대외·기술·숫자)로 몸을 옮기는 것이 가장 빠른 확장입니다.';
+  var p3 = '돈의 흐름은 구조가 정합니다. ' + (wt.jae >= 2
+    ? '재성이 ' + wt.jae + '자리로 통로가 여럿입니다 — 벌이의 입구가 넓은 대신 관리가 느슨해지면 새어 나갑니다. 들어오는 돈마다 "남기는 통로"를 하나씩 붙여 주세요.'
+    : (wt.jae === 1
+      ? '재성이 한 자리 — 통로가 하나라 그 한 줄을 넓히는 데 힘을 모으는 쪽이 맞습니다. 여러 곳으로 손을 내밀면 오히려 얇아집니다.'
+      : '재성이 드러나지 않은 사주 — 벌이의 문이 좁아 보이지만, ' + (wt.inn ? '인성이 배운 것과 문서로 그 문을 열어 줍니다. 자격·전문성이 곧 단가입니다.' : '비겁의 힘으로 직접 뚫는 구조입니다. 남의 통로를 타기보다 내 이름으로 만드는 쪽이 맞습니다.')));
+  var p4 = '한 줄 규칙으로 굳히면 — ' + (c.gyeok.name === '양인격' || c.gyeok.name === '편관격'
+    ? '매수 전 손실 한도를 숫자로 적어 두고, 그 선을 넘으면 그날은 문을 닫습니다. 이 사주의 재산은 규칙 한 줄이 지킵니다.'
+    : (c.gyeok.name === '정재격' || c.gyeok.name === '건록격' || c.gyeok.name === '정관격'
+      ? '통로를 하나 골라 오래 두는 것 — 회전이 많아질수록 수수료와 실수도 같이 늘어납니다.'
+      : '이익 실현 기준과 투입 한도를 미리 정해 두고, 그 안에서만 움직이는 것.')) + ' 큰돈은 하루 묵혀 두고 결정하는 습관, 그리고 ' + EL_DEEP[y].atti + ' — 이것이 이 사주의 돈이 새는 구멍을 막는 실전 장치입니다.';
+  return [p1, p2, p3, p4];
+}
+
+/* ------- ④ 연애 · 가족 인연 (4문단) ------- */
+function deepL(c){
+  var g = GAN_DEEP[c.dayGan], gn = GAN_NATURE[c.dayGan] || GAN_NATURE['甲'];
+  var zRel = relation(ZHI_EL[ZHI.indexOf(c.dayZhi)], c.dayEl);
+  var zTxt = {
+    give:'배우자 자리가 나를 생해 주는 자리라, 곁의 사람이 내 연료입니다',
+    same:'배우자 자리에 나와 같은 기운이 앉아 닮은 사람이 편합니다',
+    receive:'내가 배우자 자리를 생해 주는 구조라 정을 먼저 쓰는 쪽입니다',
+    control:'배우자 자리가 나를 극하는 자리라 가까운 사이일수록 긴장이 오고, 그 긴장이 관계의 결을 정합니다',
+    controlled:'내가 배우자 자리를 다스리는 구조라 주도권을 쥐려는 마음이 먼저 나옵니다'
+  }[zRel];
+  var salSet = (c.sals || []).map(function(x){ return x.n; });
+  var pairBits = [];
+  if (c.salPairs && c.salPairs.won.length) pairBits.push('원진(' + c.salPairs.won.map(function(x){ return x.z1 + x.z2; }).join('·') + ')이 걸려 있어 가까운 사이일수록 사소한 서운함이 쌓입니다');
+  if (c.salPairs && c.salPairs.gui.length) pairBits.push('귀문이 겹쳐 예민해지는 날이 있어 말을 아끼는 연습이 필요합니다');
+  var gmHits = (c.pillars || []).filter(function(pl){ return pl && (c.gongmang || []).indexOf(pl.zhi) >= 0; }).map(function(pl){ return pl.short + '지 ' + pl.zhi; });
+  if (gmHits.length) pairBits.push('공망이 걸린 ' + gmHits.join('·') + ' 자리는 그 역할이 비어 보여 큰 기대를 얹기 어렵습니다');
+
+  var p1 = '연애와 인연의 핵심은 "나를 어떻게 보이는가"입니다. ' + c.dayGan + '(' + c.dayGanKo + ')인 이 사람은 ' + g.tag + '의 결로 사람을 대하는데, 사랑을 표현하는 방식도 그 결을 따릅니다 — ' + g.love + '. 상대가 내 마음을 모른다면, 말한 적이 없어서입니다.';
+  var p2 = '일지(배우자궁)를 보면 ' + c.dayZhi + '(' + ZHI_KO[ZHI.indexOf(c.dayZhi)] + ') — ' + ZHI_DEEP[c.dayZhi].img + '처럼 ' + ZHI_DEEP[c.dayZhi].tone + '. ' + zTxt + (zRel === 'control' ? ' 그래서 결혼 생활에서는 "누가 옳은가"보다 "누가 먼저 부드러워지는가"가 승부처입니다.' : '.') + ' 곁에 두면 편한 사람은 나와 기운이 상생으로 흐르는 사람이고, 반대로 나를 지치게 하는 것은 내 일간을 정면으로 극하는 기운입니다.';
+  var p3 = '가족 인연에서는 이 사주가 하는 실수가 반복됩니다 — ' + gn.shade + ' 가족에게는 더 쉽게 나타나, 밖에서는 웃고 집에서는 짧아지는 말투가 되기 쉽습니다.' + (pairBits.length ? ' ' + pairBits.join('. ') + '.' : ' 관계에서 크게 새는 구멍은 없어, 사람 문제로 오래 흔들리지는 않습니다.');
+  var p4 = '그래서 곁에 둘 사람의 조건은 이렇습니다. 첫째, 내 말을 끝까지 듣는 사람 — ' + GAN_DEEP[c.dayGan].need + ' — 이런 사람이 이 사주의 처방입니다. 둘째, 내가 쉬어야 할 때 먼저 알아채고 말해 주는 사람. 셋째, 용신 ' + c.yong.el + '(' + EL_KO[c.yong.el] + ') 기운을 함께 쓸 수 있는 사람 — ' + EL_DEEP[c.yong.el].space + '을 함께 만들거나, ' + EL_DEEP[c.yong.el].exer + '을 같이 하는 사이가 되면 관계 자체가 개운이 됩니다.';
+  return [p1, p2, p3, p4];
+}
+
+/* ------- ⑤ 쓴소리 (3~4문단) ------- */
+function deepT(c){
+  var g = GAN_DEEP[c.dayGan], gn = GAN_NATURE[c.dayGan] || GAN_NATURE['甲'];
+  var s = c.strength, zero = ELS.filter(function(e){ return !c.counts[e]; });
+  var ij = c.iljuInfo || {};
+  var p1 = '쓴소리부터 — 이 사주의 가장 큰 적은 외부가 아니라 "' + gn.shade + '"입니다. 이 결은 기운이 좋은 해에도 그대로 따라오기 때문에, 잘 풀릴 때일수록 사고가 크게 납니다. 좋은 판에서 반복되는 실수는 대부분 운이 아니라 이 버릇입니다.';
+  var p2 = (s.strong > 0
+    ? '기운이 넘치는 신강이라 밀어붙이는 데 강한 대신, 남을 끌고 가다 혼자 지치는 구조입니다. "내가 다 한다"가 습관이 되면 몸이 먼저 청구서를 냅니다.'
+    : (s.strong < 0
+      ? '기운이 모자라는 신약이라 도움을 받아야 오래갑니다. 그런데 이 사주는 도움을 부끄러워합니다. 혼자 버티는 것은 강함이 아니라 소모입니다.'
+      : '중화라 무난하지만, 그만큼 자극에 둔감합니다. 스스로 계기를 만들지 않으면 같은 자리에서 같은 해가 반복됩니다.'));
+  var p3 = (zero.length
+    ? '오행이 비어 있는 자리(' + zero.map(function(e){ return EL_KO[e]; }).join('·') + ')에서는 판단이 흐려지기 쉽습니다 — ' + EL_DEEP[zero[0]].underScene + ' 그 자리에서 중요한 결정을 내려야 하는 시기가 오면, 반드시 그 기운을 가진 사람을 옆에 앉히세요. 혼자 결정하지 않는 것이 이 사주의 안전벨트입니다.'
+    : '오행이 고르게 있어 치명적인 빈 곳은 없습니다. 대신 "골고루 있으니 뭐든 되겠지"라는 생각이 가장 큰 허점입니다 — 다 된 것은 없습니다.');
+  var p4 = ((ij && ij.c) ? '일주론도 같은 말을 합니다 — ' + ij.c + ' ' : '') + '마지막으로 한 줄: 이 사주는 "꾸준히 채우는 것"에서만 이깁니다. 크게 한 번 승부하는 사주가 아니라, ' + EL_DEEP[c.yong.el].self + '을(를) 매일 조금씩 더해 결국 앞서는 사주입니다. 짧게 버티지 말라는 뜻이 아니라, 길게 가도 된다는 뜻입니다.';
+  return [p1, p2, p3, p4];
+}
+
+/* ------- 월별 팝업 확장 ------- */
+function monthDeep(c, m){
+  var dEl = GAN_EL[GAN.indexOf(m.gan)], zEl = ZHI_EL[ZHI.indexOf(m.zhi)];
+  var zMain = (HIDDEN[m.zhi] || [m.zhi])[0];
+  var out = [];
+  var one = m.total >= 65 ? '이 달은 밀어붙이는 달입니다' : (m.total >= 50 ? '이 달은 평소 속도로 가는 달입니다' : '이 달은 지키고 정리하는 달입니다');
+  out.push('한 줄 요약 — ' + one + '. 월간 ' + m.gan + '의 십성은 ' + m.ssG + ', 월지 본기의 십성은 ' + m.ssZ + ' — 이 두 기운이 총운 ' + m.total + '점을 만듭니다.');
+  out.push('왜 그런가 — 이 달의 기운은 ' + dEl + '(' + EL_KO[dEl] + ')·' + zEl + '(' + EL_KO[zEl] + ')입니다. 내 일간 ' + c.dayGan + '에 월간 ' + m.gan + josa(m.gan, '은', '는') + ' <b>' + m.ssG + '(' + (SS_HANJA[m.ssG] || '') + ')</b>의 결로 앉아 ' + SS_DEEP[m.ssG].core + '을(를) 일상에 뿌립니다 — ' + (m.ssG === '편재' || m.ssG === '정재' ? '돈과 거래가 먼저 움직입니다' : (m.ssG === '편관' || m.ssG === '정관' ? '일과 책임이 먼저 움직입니다' : (m.ssG === '편인' || m.ssG === '정인' ? '배움과 문서가 먼저 움직입니다' : (m.ssG === '식신' || m.ssG === '상관' ? '말과 결과물이 먼저 움직입니다' : '사람과 경쟁이 먼저 움직입니다')))) + '.');
+  var rels = [];
+  (c.pillars || []).forEach(function(pl){
+    if (!pl) return;
+    branchRels(m.zhi, pl.zhi).forEach(function(r){
+      if (r.t === 'chung') rels.push(pl.short + '지 ' + pl.zhi + '와 충(沖) — ' + (pl.short === '일' ? '일지 충이라 생활 자체가 흔들립니다. 이사·이직·큰 계약은 이 달을 피하세요' : (pl.short === '월' ? '직장·가족 자리가 흔들려 일정이 갈라집니다' : '그 자리의 일이 갑자기 바뀝니다')));
+      else if (r.t === 'yukhap') rels.push(pl.short + '지 ' + pl.zhi + '와 육합 — 사람을 통한 일이 부드럽게 풀립니다. 미뤄 둔 연락과 협의를 이 달에 잡으세요');
+      else if (r.t === 'hyung') rels.push(pl.short + '지 ' + pl.zhi + '와 형(刑) — 서류와 절차에서 매듭이 늦어집니다. 구두 약속을 문서로 남기세요');
+      else if (r.t === 'pa') rels.push(pl.short + '지 ' + pl.zhi + '와 파(破) — 마무리 직전에 틀어지기 쉬우니 마지막 점검을 두 번 하세요');
+      else if (r.t === 'hae') rels.push(pl.short + '지 ' + pl.zhi + '와 해(害) — 가까운 사이에서 새는 일이 생기니 돈과 역할의 경계를 먼저 정하세요');
+    });
+  });
+  out.push(rels.length ? '원국과의 작용 — ' + rels.slice(0, 3).join('. ') + '.' : '원국과 크게 부딪히지 않아, 이 달의 점수는 월간·월지의 십성만으로 만들어진 무난한 값입니다.');
+  var eff = [];
+  eff.push('일 — ' + ((m.ssG === '편관' || m.ssG === '정관' || m.ssZ === '정관' || m.ssZ === '편관') ? '책임이 실리는 달이라 성과가 남는 대신 피로도 함께 옵니다. 결재·보고 같은 이름 남는 일을 이 달에 배치하세요.' : ((m.ssG === '식신' || m.ssG === '상관') ? '표현과 결과물이 값이 되는 달 — 발표·제안·업로드를 이 달에 몰아 두세요.' : '평소 속도대로 가되, 새 판을 여기기보다 기존 일을 깊게 하세요.')));
+  eff.push('돈 — ' + ((m.ssG === '편재' || m.ssG === '정재' || ['편재','정재'].indexOf(m.ssZ) >= 0) ? '수입의 문이 열리는 달입니다. 다만 ' + (m.total >= 60 ? '좋은 달일수록 지출도 같이 커지니, 들어온 만큼 "남기는 비율"을 먼저 정하세요.' : '들어오는 크기가 크지 않으니 새 투입보다 회수와 정리가 이득입니다.') : '돈의 흐름은 평탄합니다 — 새로 크게 벌이기보다 지출 구멍을 점검하는 쪽이 이 달의 수익입니다.'));
+  eff.push('관계 — ' + (m.total >= 60 ? '말이 부드러워지는 달이라 미뤄 둔 인사·연락이 잘 통합니다.' : (m.total >= 50 ? '무난하되, 약속을 겹쳐 잡으면 피로가 관계로 갑니다.' : '예민해지기 쉬운 달 — 가까운 사람일수록 말을 한 박자 늦게 하세요.')));
+  eff.push('건강 — ' + ZHI_DEEP[m.zhi].body + ' 쪽이 이 달의 약점입니다. ' + (m.zhi === '子' || m.zhi === '壬' || m.zhi === '亥' ? '수면과 허리를 먼저 지키세요' : (m.zhi === '午' || m.zhi === '巳' ? '심장 박동과 잠의 양을 지키세요' : '소화와 식사 시간을 먼저 지키세요')) + '.');
+  out.push(eff.join(' '));
+  var y = c.yong.el, tipC = EL_DEEP[y];
+  out.push('이 달 실전 팁 — 색은 <b>' + tipC.color + '</b>, 음식은 <b>' + tipC.food + '</b>, 운동은 <b>' + tipC.exer + '</b>. 방위는 ' + tipC.dir + ', 숫자는 ' + tipC.num + '. ' + tipC.habit + ' — 그리고 태도는 ' + tipC.atti + '.');
+  return out;
+}
+
+/* ------- ⑦ 심층 팝업 한덩어리 (원국) ------- */
+function deepChartStory(c){
+  return {
+    headline: oneLineOf(c),
+    s: deepS(c), b: deepB(c), w: deepW(c), l: deepL(c), t: deepT(c)
+  };
+}
+
+/* ------- 연도별(세운) 팝업 확장 ------- */
+function yearDeep(c, win){
+  var dEl = GAN_EL[GAN.indexOf(win.gan)], zEl = ZHI_EL[ZHI.indexOf(win.zhi)];
+  var du = win.daeun;
+  var out = [];
+  var band = bandOf(win.total);
+  var one = band === 'high' ? '벌어 넓히는 해입니다' : (band === 'mid' ? '다지고 준비하는 해입니다' : '지키고 회복하는 해입니다');
+  out.push('한 줄 요약 — ' + win.year + '년은 <b>' + one + '</b>. 세운 <b>' + win.gz + '</b>(' + win.ganKo + win.zhiKo + ')이 일간 ' + c.dayGan + '에 들어오는데, 천간의 십성은 ' + win.ssG + ', 지지 본기의 십성은 ' + win.ssZ + ' — 이 두 기운이 총운 ' + win.total + '점을 만듭니다.');
+  out.push('왜 그런가 — 이 해의 기운은 ' + dEl + '(' + EL_KO[dEl] + ')·' + zEl + '(' + EL_KO[zEl] + ')입니다. ' + (win.yongHit ? '이 중에 용신 <b>' + c.yong.el + '</b>이 들어와 10년 중에서도 힘이 실리는 해입니다 — 막혔던 문이 이 해에 열리는 이유입니다.' : ((dEl === c.gi.el || zEl === c.gi.el) ? '기신 <b>' + c.gi.el + '</b>이 들어와 기운이 눌립니다 — 체감이 무거운 이유는 팔자가 아니라 이 해의 기운입니다.' : '용신도 기신도 아니어서 크게 오르지도 눌리지도 않습니다 — 평소의 나로 얼마나 움직이느냐가 그 해의 성적입니다.')) + ' 천간의 십성 ' + win.ssG + '의 결로 ' + SS_DEEP[win.ssG].chart + ', 지지의 십성 ' + win.ssZ + '의 결로 ' + SS_DEEP[win.ssZ].work + '으로 작동합니다.');
+  var acts = [];
+  (c.pillars || []).forEach(function(pl){
+    if (!pl) return;
+    branchRels(win.zhi, pl.zhi).forEach(function(r){
+      if (r.t === 'chung') acts.push(pl.short + '지 ' + pl.zhi + '와 충(沖) — 그 자리의 생활 기반(' + PALACE_DEEP[['년','월','일','시'].indexOf(pl.short)].desc + ')이 한 번 바뀝니다. 이사·이직·구조변경은 이 해에 들어오기 쉽고, 계획된 변화라면 오히려 기회입니다');
+      else if (r.t === 'yukhap') acts.push(pl.short + '지 ' + pl.zhi + '와 육합 — 사람과 인연이 자리로 바뀌는 해입니다. 협업·계약·혼인 같은 "묶는 일"이 잘 풀립니다');
+      else if (r.t === 'hyung') acts.push(pl.short + '지 ' + pl.zhi + '와 형(刑) — 서류와 절차의 해가 깁니다. 중요한 문서는 변호사·전문가의 눈을 한 번 더 거치세요');
+      else if (r.t === 'pa') acts.push(pl.short + '지 ' + pl.zhi + '와 파(破) — 마무리가 아슬아슬하게 틀어지는 해, 마감 점검을 두 번 하세요');
+      else if (r.t === 'hae') acts.push(pl.short + '지 ' + pl.zhi + '와 해(害) — 가까운 사이에서 새는 일이 생깁니다. 돈과 역할의 경계를 종이에 적어 두세요');
+      else if (pl.zhi === win.zhi) acts.push(pl.short + '지 ' + pl.zhi + '와 복음(伏吟) — 같은 주제가 되풀이됩니다. 지난번에 안 된 방식을 그대로 쓰면 같은 결과가 옵니다');
+    });
+  });
+  if (acts.length) out.push('원국과의 작용 — ' + acts.slice(0, 3).join('. ') + '.');
+  var dom = win.dom;
+  out.push('이 해의 네 결 — 일: ' + (dom.work >= 60 ? '이름이 쌓이는 해로 승진·이직·창업의 문이 열립니다' : (dom.work >= 50 ? '평온하지만 스스로 밀지 않으면 제자리입니다' : '실수가 눈에 띄는 해라 큰 결정은 검증을 한 번 더')) + '. 돈: ' + (dom.wealth >= 65 ? '수입이 늘어나는 흐름 — 들어온 것을 남기는 규칙을 미리 세우세요' : (dom.wealth >= 50 ? '무난한 대신 큰 기회도 약합니다 — 분산과 적립이 이득' : '지출과 손실이 앞서는 해 — 새 투입을 줄이고 원금을 지키세요')) + '. 관계: ' + ((dom.family >= 60) ? '가족·인연이 힘이 되는 해 — 함께하는 일을 늘리세요' : (dom.family >= 50 ? '무난하나 바쁨이 관계를 갉아먹습니다' : '가족·건강에 손이 가야 하는 해 — 일정을 비우는 용기가 필요합니다')) + '. 건강은 ' + ZHI_DEEP[win.zhi].body + ' 쪽이 그 해의 약점입니다.');
+  var y = c.yong.el;
+  out.push('이 해 실전 팁 — ' + (band === 'high' ? '월운 상위 3개 달에 큰 결정을 모으고, 하반기에 실리는 이익은 재투자보다 확정하세요.' : (band === 'mid' ? '분기마다 손익을 복기하고, 확신이 서는 한 가지만 확장하세요.' : '현금·건강·관계 세 가지를 먼저 지키고, 새 계약과 보증은 다음 해로 미루세요.')) + ' 색은 <b>' + EL_DEEP[y].color + '</b>, 운동은 <b>' + EL_DEEP[y].exer + '</b> 중에서, 습관은 "' + EL_DEEP[y].habit + '"이고, 태도는 ' + EL_DEEP[y].atti + '.');
+  return out;
+}
+
+/* ------- 오늘의 운세 확장 ------- */
+function dayDeep(c, f, domKey){
+  var y = c.yong.el;
+  var g = GAN_DEEP[c.dayGan];
+  var out = [];
+  var domName = domKey ? DOM_TITLE[domKey] : '오늘 총운';
+  var v = domKey ? f.dom[domKey] : f.total;
+  var band = bandOf(v);
+  var ssD = SS_DEEP[f.ss] || SS_DEEP['비견'];
+  out.push('한 줄 요약 — 오늘 일진 <b>' + f.dayGZ + '</b>일이 내 일간 ' + c.dayGan + '에 <b>' + f.ss + '</b>로 들어와 ' + domName + '이(가) <b>' + v + '점</b>입니다. ' + (band === 'high' ? '평소 하던 일을 그대로 밀면 이기는 날' : (band === 'mid' ? '확신이 서는 한두 가지만 골라 움직이는 날' : '새로 벌이지 말고 정리와 회복으로 되찾는 날')) + '.');
+  out.push('왜 그런가 — 오늘의 천간 ' + f.dayGan + '(' + GAN_EL[GAN.indexOf(f.dayGan)] + ')은 내 사주에 ' + ssD.core + '을(를) 싣습니다 — ' + ssD.chart + '. 그래서 ' + (domKey === 'wealth' ? '돈의 결이 오늘의 천간에서 먼저 정해집니다' : (domKey === 'work' ? '일의 결이 오늘의 천간에서 먼저 정해집니다' : (domKey === 'social' ? '사람의 결이 오늘의 천간에서 먼저 정해집니다' : '몸의 결이 오늘의 천간에서 먼저 정해집니다'))) + '.');
+  var rel = [];
+  (f.sig && f.sig.rels ? f.sig.rels.slice(0, 2) : []).forEach(function(r){
+    var m = { chung:'부딪히는', yukhap:'잇는', hyung:'매듭이 늦어지는', pa:'아슬하게 틀어지는', hae:'새는' }[r.t] || '';
+    if (m) rel.push('내 ' + r.short + '지 ' + r.zhi + '와 오늘 지지 ' + f.dayZhi + '가 ' + m + ' 관계라, 그 자리의 일이 오늘 한 번 흔들립니다');
+  });
+  if ((f.sig && f.sig.samhap)) rel.push('내 지지 둘과 오늘 지지가 삼합을 이뤄 판이 한 번 크게 열립니다 — 오늘 가장 큰 기회의 근거입니다');
+  out.push(rel.length ? rel.join('. ') + '.' : '오늘 지지 ' + f.dayZhi + '(' + ZHI_KO[ZHI.indexOf(f.dayZhi)] + ')는 내 네 기둥과 크게 엮이지 않아, 흐름이 평소의 나를 따라갑니다.');
+  var tipC = EL_DEEP[y];
+  out.push('오늘 바로 할 것 — 색은 <b>' + tipC.color + '</b> 계열 하나를 몸에, 음식은 <b>' + tipC.food + '</b> 중 하나를 한 끼에, 운동은 <b>' + tipC.exer + '</b>을(를) 10분. ' + ((f.lucky && f.lucky.goodTime) ? ('좋은 시간은 <b>' + f.lucky.goodTime + '</b>') : '특별히 좋은 시간대는 없습니다') + ', ' + ((f.lucky && f.lucky.badTime) ? ('조심할 시간은 <b>' + f.lucky.badTime + '</b>입니다') : '조심할 시간대는 없습니다') + '. 태도는 — ' + tipC.atti + '. 오늘의 한 끼와 한 벌이 곧 오늘의 개운입니다.');
+  return out;
+}
+
+
 /* 받침에 맞춰 조사를 고른다 — 한자 간지·천간의 한글 읽기 기준 */
 function josa(word, withB, noB){
   var w = String(word || '');
@@ -2660,23 +3077,35 @@ function narrTip(t){
     + '<div class="tip-l"><span class="tk4 ok">챙길 것</span>' + t.do + '</div>'
     + '<div class="tip-l"><span class="tk4 no">피할 것</span>' + t.no + '</div></div>';
 }
+/* 스토리텔링 한 줄 요약 배너 */
+function narrStory(headline){
+  return '<div class="narr-story"><div class="ns-t">한 줄 요약</div><div class="ns-d">' + headline + '</div></div>';
+}
 function chartNarrHtml(c){
   var n = narrChart(c);
+  var st = deepChartStory(c);
   var facts = n.facts.map(function(f){ return '<span class="sal">' + f[0] + ' <b>' + esc(f[1]) + '</b></span>'; }).join('');
   return '<div class="narr-fact">' + facts + '</div>'
-    + narrSection('氣', '① 타고난 기질과 핵심 무기', [n.s1, n.s2, n.s3, n.s4, n.s5])
-    + narrSection('財', '② 재물·투자 스타일과 돈 모이는 구조', [n.m1, n.m2, n.m3, n.m4, n.m5])
-    + narrSection('業', '③ 일·커리어·대인관계 궁합', [n.w1, n.w2, n.w3, n.w4, n.w5])
-    + (n.d1 ? narrSection('運', '④ 지금의 대운과 앞으로의 큰 흐름', [n.d1, n.d2, n.d3, n.d4, n.d5].filter(Boolean)) : '')
+    + narrStory(st.headline)
+    + narrSection('氣', '① 타고난 기질과 핵심 무기 — 왜 이런 성향이 나오나', [n.s1, n.s2, n.s3, n.s4, n.s5].concat(st.s))
+    + narrSection('運', '② 오행 균형과 개운법 — 색·음식·운동·습관으로 채우기', st.b)
+    + narrSection('財', '③ 재물·투자 스타일과 돈 모이는 구조', [n.m1, n.m2, n.m3, n.m4, n.m5].concat(st.w))
+    + narrSection('業', '④ 일·직업 적성과 커리어 방향', st.w)
+    + narrSection('緣', '⑤ 연애·가족 인연과 곁에 둘 사람', st.l)
+    + (n.d1 ? narrSection('命', '⑥ 지금의 대운과 앞으로의 큰 흐름', [n.d1, n.d2, n.d3, n.d4, n.d5].filter(Boolean)) : '')
+    + narrSection('誠', '⑦ 쓴소리 한마디 · 주의 포인트', st.t)
     + '<div class="narr-note">' + NARR_NOTE + '</div>';
 }
 function dayNarrHtml(c, f, dom){
   var n = dayNarr(c, f);
+  var stDay = dayDeep(c, f, dom || null);
   if (!dom){
     return '<div class="narr-fact"><span class="sal">일진 <b>' + f.dayGZ + '</b></span><span class="sal">십성 <b>' + f.ss + '</b></span>'
       + '<span class="sal">총운 <b>' + f.total + '</b></span><span class="sal">세운 <b>' + f.yearGZ + '</b></span><span class="sal">월운 <b>' + f.monthGZ + '</b></span></div>'
-      + narrSection('運', '① 오늘 총운 — 왜 이 점수인가', n.total.paras.filter(Boolean))
-      + '<div class="narr-sec"><div class="narr-h">② 네 영역 한눈에</div>'
+      + narrStory(stDay[0])
+      + narrSection('運', '① 오늘 총운 — 왜 이 점수인가', stDay.slice(1, 4).concat(n.total.paras.filter(Boolean)))
+      + narrSection('悟', '② 오늘 바로 실천하는 개운법 — 색·음식·운동·시간', stDay.slice(3))
+      + '<div class="narr-sec"><div class="narr-h">③ 네 영역 한눈에</div>'
         + ['wealth','work','social','health'].map(function(k){
             return '<div class="narr-row"><div class="k">' + DOM_TITLE[k] + '</div><div><b>' + f.dom[k] + '점</b> — ' + stripTags(DOM_TEXT[k][f.cat]) + '</div></div>';
           }).join('')
@@ -2687,30 +3116,38 @@ function dayNarrHtml(c, f, dom){
   var d = n.dom[dom] || n.dom.wealth;
   return '<div class="narr-fact"><span class="sal">일진 <b>' + f.dayGZ + '</b></span><span class="sal">' + f.ss + ' <b>' + f.dom[dom] + '점</b></span>'
     + '<span class="sal">' + DOM_TITLE[dom] + '</span></div>'
-    + narrSection('解', DOM_TITLE[dom] + ' — 이 점수가 나온 이유', d.paras.filter(Boolean))
+    + narrStory(stDay[0])
+    + narrSection('解', DOM_TITLE[dom] + ' — 오늘 일진과 내 사주가 만나 만든 점수', stDay.slice(1, 4).concat(d.paras.filter(Boolean)))
+    + narrSection('悟', '오늘 바로 실천하는 개운법 — 색·음식·운동·시간', stDay.slice(3))
     + narrTip(d.tip)
     + '<div class="narr-note">' + NARR_NOTE + '</div>';
 }
 function yearNarrHtml(c, win){
   var n = yearNarr(c, win);
+  var stYear = yearDeep(c, win);
   return '<div class="narr-fact"><span class="sal">세운 <b>' + win.gz + '</b></span><span class="sal">총운 <b>' + win.total + '</b></span>'
     + '<span class="sal">' + win.ssG + '·' + win.ssZ + '</span><span class="sal">12운성 <b>' + win.ds.ko + '</b></span>'
     + (win.daeun ? '<span class="sal">대운 <b>' + win.daeun.gz + '</b></span>' : '') + '</div>'
-    + narrSection('歲', '① ' + win.year + '년 총평', n.head)
-    + narrSection('機', '② 기회 요인', n.opp)
+    + narrStory(stYear[0])
+    + narrSection('歲', '① ' + win.year + '년 — 세운 간지와 내 사주가 만나 만든 이야기', stYear.slice(1, 4).concat(n.head))
+    + narrSection('機', '② 기회 요인 — 이 해에 열리는 문', n.opp)
     + narrSection('險', '③ 리스크 · 주의 요인', n.risk)
     + narrSection('運', '④ 대운과의 상호작용', n.daeun)
+    + narrSection('悟', '⑤ 이 해 실전 행동 · 개운 팁', stYear.slice(4))
     + narrTip(n.tip)
     + '<div class="narr-note">' + NARR_NOTE + '</div>';
 }
 function monthNarrHtml(c, m, year){
   var n = monthNarr(c, m, year);
+  var stMonth = monthDeep(c, m);
   return '<div class="narr-fact"><span class="sal">월운 <b>' + m.gz + '</b></span><span class="sal">총운 <b>' + m.total + '</b></span>'
     + '<span class="sal">' + m.ssG + '·' + m.ssZ + '</span><span class="sal">12운성 <b>' + m.ds + '</b></span><span class="sal">' + m.range + '</span></div>'
-    + narrSection('月', '① ' + m.label + ' 총평', n.head)
+    + narrStory(stMonth[0])
+    + narrSection('月', '① ' + m.label + ' — 월운 간지와 내 사주가 만나 만든 이야기', stMonth.slice(1, 4).concat(n.head))
     + narrSection('機', '② 기회 요인', n.opp)
     + narrSection('險', '③ 리스크 · 주의 요인', n.risk)
     + narrSection('運', '④ 대운과의 상호작용', n.daeun)
+    + narrSection('悟', '⑤ 이 달 실전 행동 · 개운 팁', stMonth.slice(4))
     + narrTip(n.tip)
     + '<details class="why" style="margin-top:12px"><summary><span class="ar">▶</span>점수 근거 <span class="muted">— 가감 항목</span></summary>'
       + '<ul class="why-list">' + m.notes.map(function(x){ return '<li><span>' + x.t + '</span><span class="dv">' + x.w + '</span></li>'; }).join('') + '</ul></details>'
