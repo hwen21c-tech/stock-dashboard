@@ -605,6 +605,21 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
 #cloudState[data-s="syncing"]{color:var(--gold)}
 #cloudState[data-s="ok"]{color:var(--mok)}
 #cloudState[data-s="error"]{color:var(--hwa)}
+#cloudState[data-s="off"]{color:var(--faint)}
+.pchip.cloud[data-s="off"]{color:var(--faint);border-color:var(--line);background:transparent}
+.code-box{margin-top:11px;padding-top:11px;border-top:1px dashed var(--line)}
+.code-row{display:flex;gap:6px;min-width:0}
+.code-row .cin{flex:1 1 auto;min-width:0;padding:9px 10px;border-radius:10px;border:1px solid var(--line);
+  background:var(--panel);font-size:13px;outline:none;color:var(--ink);letter-spacing:.02em;
+  -webkit-appearance:none;appearance:none}
+.code-row .cin:focus{border-color:var(--line2)}
+.code-row .btn{flex:0 0 auto;padding:9px 14px}
+.code-msg{font-size:11px;color:var(--gold2);line-height:1.6;margin-top:6px}
+.code-msg:empty{display:none}
+.code-msg.err{color:var(--hwa)}
+.code-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.code-acts .btn{flex:1 1 40%;padding:8px 10px;font-size:11.5px}
+.code-acts .btn[disabled]{opacity:.45}
 </style>
 </head>
 <body>
@@ -638,8 +653,8 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
   <div class="pchrow">
     <div class="pchips" id="profileChips" role="group" aria-label="가족 프로필 빠른 전환"></div>
     <button class="pchip add" id="chipAdd" type="button" aria-label="새 프로필 추가" title="새 프로필 추가">＋ 추가</button>
-    <button class="pchip cloud" id="cloudChip" type="button" data-s="idle" title="가족 프로필·복기 메모 클라우드 동기화">
-      <span class="ci">☁️</span><span id="cloudChipTx">동기화</span>
+    <button class="pchip cloud" id="cloudChip" type="button" data-s="off" title="비밀코드를 넣으면 클라우드 동기화가 켜집니다">
+      <span class="ci" id="cloudChipIc">🔒</span><span id="cloudChipTx">동기화 꺼짐</span>
     </button>
   </div>
 
@@ -763,13 +778,25 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
       <div class="card" style="margin-top:12px" id="cloudCard">
         <div class="card-h">
           <div class="card-t"><span class="h">雲</span>클라우드 동기화</div>
-          <div class="card-note" id="cloudState" data-s="idle">대기</div>
+          <div class="card-note" id="cloudState" data-s="off">비밀코드 필요</div>
         </div>
-        <div class="cloud-line"><span class="ck">저장 위치</span><span class="cv mono" id="cloudCode">saju_0623</span></div>
+        <div class="cloud-line"><span class="ck">저장 위치</span><span class="cv mono" id="cloudCode">— 미연결</span></div>
         <div class="cloud-line"><span class="ck">마지막 동기화</span><span class="cv" id="cloudLast">—</span></div>
         <div class="cloud-line"><span class="ck">이 기기</span><span class="cv" id="cloudLocal">프로필 0명 · 메모 0건</span></div>
-        <button class="btn ghost" type="button" id="cloudSync" style="margin-top:11px;width:100%">☁️ 지금 동기화</button>
-        <div class="tiny" style="margin-top:9px">가족 프로필과 복기 메모를 내 Supabase(<b>family_sync</b> · <b>saju_0623</b>)에 백업하고, 다른 기기에서 열면 자동으로 받아 옵니다. 예시 프로필뿐인 빈 기기는 클라우드를 덮어쓰지 않습니다. 포켓몬(<b>0623</b>)·eBook(<b>ebook_0623</b>)과는 완전히 분리된 키입니다.</div>
+        <div class="code-box">
+          <label class="sr-only" for="cloudCodeInput">클라우드 비밀코드</label>
+          <div class="code-row">
+            <input class="cin" id="cloudCodeInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="40" placeholder="내 비밀코드 (6자 이상 권장)">
+            <button class="btn" type="button" id="cloudCodeSave">저장</button>
+          </div>
+          <div class="code-msg" id="cloudCodeMsg" role="status"></div>
+          <div class="code-acts">
+            <button class="btn ghost" type="button" id="cloudCodeView">코드 보기</button>
+            <button class="btn ghost" type="button" id="cloudCodeClear" disabled>이 기기 연결 해제</button>
+          </div>
+          <div class="tiny" style="margin-top:8px">본인만 아는 코드를 넣으면 <b>이 기기 브라우저에만</b> 저장되고, 그때부터 <b>saju_내코드</b> 자리에 가족 프로필·복기 메모가 백업됩니다. 코드를 넣기 전에는 클라우드에 아무 요청도 보내지 않습니다. 포켓몬(<b>0623</b>)·eBook(<b>ebook_0623</b>)과는 완전히 분리된 키입니다.</div>
+        </div>
+        <button class="btn ghost" type="button" id="cloudSync" style="margin-top:11px;width:100%">🔒 비밀코드 넣고 동기화</button>
       </div>
       <div class="card" style="margin-top:12px">
         <div class="card-h"><div class="card-t"><span class="h">家族</span>저장된 프로필</div><div class="card-note" id="pfCount"></div></div>
@@ -782,7 +809,32 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
     <b>계산 기준</b> · 양력↔음력·윤달·24절기 만세력 엔진(lunar-javascript v1.7.8, MIT) 내장. 월주는 절입 시각, 연주는 입춘 기준입니다.
     예) 2000-01-01(양력) → <b>己卯年 丙子月 戊午日</b>. 실제 만세력과 일치하는지 날짜를 바꿔 확인해 보세요. 자시(23~01시)는 기본적으로 당일 일진 기준이며, 프로필에서 <b>진태양시 −30분</b>과 <b>야자시 익일 기준</b>을 켜고 끌 수 있습니다. 서머타임 보정은 적용하지 않습니다.
     격국은 월지의 양인·건록과 지장간 투출로, 용신은 《궁통보감》 조후와 억부·통관을 점수로 합쳐 판정하고 근거를 그대로 보입니다. 12신살은 년지(겁살부터 순행), 공망은 일주가 든 순(旬) 기준, 삼재는 띠의 삼합에 따른 들·눌·날삼재입니다.
-    일주론은 60갑자 각각의 고유 데이터이고, 오늘의 운세·월운·세운 점수는 일진·십성·충합형파·용신 규칙으로 계산한 <b>규칙 기반 해석</b>이며 이 점수 근거를 화면에 공개합니다. 프로필·복기 메모는 이 기기에 저장되고 ☁️ 동기화를 켜 두면 내 Supabase(<b>saju_0623</b>)에 백업됩니다. 재미와 참고용으로 봐 주세요.
+    일주론은 60갑자 각각의 고유 데이터이고, 오늘의 운세·월운·세운 점수는 일진·십성·충합형파·용신 규칙으로 계산한 <b>규칙 기반 해석</b>이며 이 점수 근거를 화면에 공개합니다. 프로필·복기 메모는 이 기기에 저장되고, ☁️ 동기화에 <b>본인만 아는 비밀코드</b>를 넣은 기기에서만 내 Supabase(<b>saju_내코드</b>)에 백업됩니다(코드를 넣기 전에는 클라우드 요청 0건). 재미와 참고용으로 봐 주세요.
+  </div>
+</div>
+
+<div class="narr-modal" id="codeModal" hidden>
+  <div class="narr-back" data-code-close aria-hidden="true"></div>
+  <div class="narr-sheet" role="dialog" aria-modal="true" aria-labelledby="codeTitle">
+    <div class="narr-top">
+      <div class="narr-tt" id="codeTitle">🔒 클라우드 비밀코드</div>
+      <button class="narr-x" type="button" id="codeClose" aria-label="비밀코드 창 닫기">✕</button>
+    </div>
+    <div class="narr-body">
+      <p class="narr-p">이 기기에서만 쓸 <b>나만의 비밀코드</b>를 넣어 주세요. 코드를 넣기 전에는 클라우드에 아무것도 묻지 않고, 넣은 뒤부터 <b>saju_내코드</b> 자리에 가족 프로필·복기 메모가 백업됩니다. 다른 기기에서 같은 코드를 넣으면 그대로 이어집니다.</p>
+      <div class="code-box" style="border-top:0;padding-top:0;margin-top:0">
+        <label class="sr-only" for="codeModalInput">클라우드 비밀코드</label>
+        <div class="code-row">
+          <input class="cin" id="codeModalInput" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" maxlength="40" placeholder="비밀코드 (6자 이상 권장)">
+          <button class="btn" type="button" id="codeModalSave">저장</button>
+        </div>
+        <div class="code-msg" id="codeModalMsg" role="status"></div>
+        <div class="code-acts">
+          <button class="btn ghost" type="button" id="codeModalClear">이 기기 연결 해제</button>
+        </div>
+      </div>
+      <div class="narr-note" id="codeModalNow">아직 연결되지 않았습니다. 코드는 이 기기 브라우저에만 저장되고 서버로 보내지 않습니다.</div>
+    </div>
   </div>
 </div>
 
@@ -3382,7 +3434,7 @@ function renderToday(){
               + '<span class="ms">'+(x.score != null ? x.score+'점 ' : '')+'<button class="md" type="button" data-del="'+x.key+'" aria-label="삭제">✕</button></span></div>';
           }).join('') + '</div>'
         : '<div class="tiny" style="margin-top:9px">아직 기록이 없습니다. 오늘 점수와 함께 한 줄 남겨두면 나만의 기록이 쌓입니다.</div>')
-      + '<div class="tiny" style="margin-top:8px">메모는 이 기기에 저장되고, 가족 프로필이 있는 기기에서는 내 클라우드(<b>saju_0623</b>)로 자동 백업됩니다. 다른 기기에서 열면 자동으로 받아 옵니다. 예시 프로필이 아닌 내 프로필에만 따로 쌓입니다.</div>'
+      + '<div class="tiny" style="margin-top:8px">메모는 이 기기에 저장되고, ☁️ 동기화에 <b>비밀코드를 넣은 기기에서만</b> 내 클라우드(<b>saju_내코드</b>)로 백업됩니다. 다른 기기에서 같은 코드를 넣으면 그대로 이어집니다. 예시 프로필이 아닌 내 프로필에만 따로 쌓입니다.</div>'
     + '</div>';
 
   box.innerHTML =
@@ -3919,7 +3971,9 @@ function setTheme(t){
    17-b. ☁️ 클라우드 동기화 — 가족 프로필 · 복기 메모 (Supabase)
    ---------------------------------------------------------
    · 포켓몬('0623')·eBook('ebook_0623')과 같은 테이블(family_sync)을 쓰되
-     행 코드는 'saju_0623' — 앞에 saju_ 가 붙어 서로 절대 섞이지 않는다.
+     행 코드는 'saju_{내 비밀코드}' — 앞에 saju_ 가 붙어 서로 절대 섞이지 않는다.
+   · 비밀코드 기본값은 없다. 이 기기 localStorage 에 코드를 넣기 전까지는
+     클라우드로 요청을 한 번도 보내지 않는다(공개 URL 을 연 제3자도 데이터 0건).
    · 프로필은 id 별로 '더 최근 수정(ut)', 복기 메모는 항목별 'upd' 를 비교해
      합친다. 지운 프로필은 tomb(삭제 표식)로 남겨 다시 살아나지 않게 한다.
    · 예시 프로필뿐이거나 아무 기록도 없는 기기는 자동으로 올리지 않는다
@@ -3931,20 +3985,27 @@ var SajuCloud = (function(){
     url: 'https://hiruybkapzuhjrzjoyik.supabase.co',
     key: 'sb_publishable_e5JJbvCPDhY91uXaUEVNVA_8Byv_gI8',
     table: 'family_sync',
-    code: 'saju_0623'
+    code: ''                      /* 기본 코드 없음 — 비밀코드를 넣어야 동기화가 켜진다 */
   };
   var K_CODE = 'saju.cloud.code', K_META = 'saju.cloud.meta';
-  var ST = { state:'idle', msg:'대기', lastAt:null, code:DEF.code };
+  var ST = { state:'off', msg:'비밀코드가 필요해요', lastAt:null, code:'' };
   var BUSY = false, tPush = null, subs = [], appliedFn = null, booted = false;
 
   function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
   function lsSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){ /* */ } }
   function jp(raw, d){ if (raw == null) return d; try{ var v = JSON.parse(raw); return v == null ? d : v; }catch(e){ return d; } }
 
+  /* 사용자가 넣은 비밀코드만 쓴다. 비어 있으면 code:'' → 클라우드 요청 자체를 하지 않는다. */
+  function normCode(v){
+    var s0 = String(v == null ? '' : v).trim();
+    s0 = s0.replace(/^saju_/i, '');            /* 사용자가 saju_ 까지 쳐도 한 번만 붙는다 */
+    s0 = s0.replace(/[\u0000-\u0020\u007f]/g, '');   /* 공백·제어문자만 제거 — 영문·숫자·한글 모두 허용 */
+    return s0;
+  }
   function cfg(){
-    var code = String(lsGet(K_CODE) || DEF.code).replace(/[^0-9A-Za-z_]/g, '') || DEF.code;
-    if (code.indexOf('saju_') !== 0) code = 'saju_' + code;   /* 포켓몬 0623 · ebook_0623 과 분리 */
-    return { url:DEF.url, key:DEF.key, table:DEF.table, code:code };
+    var c = normCode(lsGet(K_CODE));
+    /* 포켓몬 0623 · ebook_0623 과 분리되는 saju_ 네임스페이스 */
+    return { url:DEF.url, key:DEF.key, table:DEF.table, code: c ? 'saju_' + c : '' };
   }
   function meta(){
     var c = cfg().code, m = jp(lsGet(K_META), null);
@@ -4064,6 +4125,7 @@ var SajuCloud = (function(){
   }
   function getRow(){
     var code = cfg().code;
+    if (!code) return Promise.reject(new Error('nocode'));   /* 비밀코드 없으면 서버를 건드리지 않는다 */
     return guard(fetch(api('?code=eq.' + encodeURIComponent(code) + '&select=code,data,updated_at'), {
       headers: headers(), cache: 'no-store'
     }).then(function(res){
@@ -4075,6 +4137,7 @@ var SajuCloud = (function(){
     }), 12000);
   }
   function putRow(payload){
+    if (!cfg().code) return Promise.reject(new Error('nocode'));
     return guard(fetch(api('?on_conflict=code'), {
       method: 'POST',
       headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
@@ -4110,6 +4173,7 @@ var SajuCloud = (function(){
   /* ---------- 동기화(받기 + 합치기 + 올리기) ---------- */
   function sync(opt){
     opt = opt || {};
+    if (!cfg().code){ setState('off', '비밀코드가 필요해요'); return Promise.resolve('nocode'); }
     if (BUSY) return Promise.resolve('busy');
     BUSY = true;
     setState('syncing', '동기화 중…');
@@ -4168,21 +4232,47 @@ var SajuCloud = (function(){
   function boot(){
     if (booted) return;
     booted = true;
-    setState('idle', '대기');
-    var to = new Promise(function(res){ setTimeout(res, 2500); });
-    Promise.race([ sync(), to ]).catch(function(){ /* */ });
+    if (!cfg().code){
+      /* 첫 접속 · 코드 없는 기기 — Supabase GET 0건 */
+      setState('off', '비밀코드를 넣으면 동기화가 켜집니다');
+    } else {
+      setState('idle', '대기');
+      var to = new Promise(function(res){ setTimeout(res, 2500); });
+      Promise.race([ sync(), to ]).catch(function(){ /* */ });
+    }
     document.addEventListener('visibilitychange', function(){
       if (document.hidden) return;
+      if (!cfg().code) return;
       if (Date.now() - (ST.lastAt || 0) < 60000) return;
       sync();
     });
-    window.addEventListener('online', function(){ sync(); });
+    window.addEventListener('online', function(){ if (cfg().code) sync(); });
+  }
+
+  /* 이 기기에만 비밀코드를 저장/삭제 — 성공하면 그때부터 saju_{코드} 로 동기화 */
+  function setCode(v){
+    var c = normCode(v);
+    if (!c) return { ok:false, reason:'empty' };
+    if (c.length < 4) return { ok:false, reason:'short' };
+    var prev = cfg().code, next = 'saju_' + c;
+    lsSet(K_CODE, c);
+    setState('idle', '비밀코드를 저장했어요');
+    return { ok:true, code:next, changed:next !== prev, prev:prev };
+  }
+  function clearCode(){
+    var had = cfg().code;
+    try{ localStorage.removeItem(K_CODE); }catch(e){ /* */ }
+    clearTimeout(tPush); tPush = null;
+    setState('off', '비밀코드가 필요해요');
+    return { ok:true, had:had, code:'' };
   }
 
   return {
-    version: '1.0.0', boot: boot, sync: sync, touch: touch, tomb: tomb,
+    version: '1.1.0', boot: boot, sync: sync, touch: touch, tomb: tomb,
     status: status, onChange: onChange, onApplied: onApplied,
     code: function(){ return cfg().code; },
+    hasCode: function(){ return !!cfg().code; },
+    setCode: setCode, clearCode: clearCode,
     _merge: merge, _localDoc: localDoc, _writeLocal: writeLocal, _sig: sig,
     _getRow: getRow, _delRow: function(code){
       return fetch(api('?code=eq.' + encodeURIComponent(code)), { method:'DELETE', headers:headers({ Prefer:'return=minimal' }) });
@@ -4197,21 +4287,50 @@ function fmtClock(ms){
   var d = new Date(ms);
   return pad2(d.getMonth() + 1) + '/' + pad2(d.getDate()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
 }
+var cloudReveal = false;
+function maskCode(c){
+  if (!c) return '';
+  var body = c.indexOf('saju_') === 0 ? c.slice(5) : c;
+  return 'saju_' + body.replace(/[\s\S]/g, '•');
+}
 function updateCloudUI(){
-  var st = (window.SajuCloud && SajuCloud.status) ? SajuCloud.status() : { state:'idle', msg:'대기', code:'saju_0623' };
-  var chip = document.getElementById('cloudChip'), tx = document.getElementById('cloudChipTx');
+  var st = (window.SajuCloud && SajuCloud.status) ? SajuCloud.status() : { state:'off', msg:'', code:'' };
+  var on = !!st.code;
+  var chip = document.getElementById('cloudChip'), tx = document.getElementById('cloudChipTx'), ic = document.getElementById('cloudChipIc');
   var label = st.state === 'syncing' ? '동기화 중'
     : (st.state === 'ok' ? '동기화됨'
       : (st.state === 'error' ? '오류'
         : (st.state === 'empty' ? '비어 있음' : '동기화')));
-  if (chip){ chip.setAttribute('data-s', st.state); chip.title = st.msg || '가족 프로필·복기 메모 클라우드 동기화'; }
-  if (tx) tx.textContent = label;
+  if (chip){
+    chip.setAttribute('data-s', on ? st.state : 'off');
+    chip.title = on ? (st.msg || '가족 프로필·복기 메모 클라우드 동기화') : '비밀코드를 넣으면 클라우드 동기화가 켜집니다';
+  }
+  if (ic) ic.textContent = on ? '☁️' : '🔒';
+  if (tx) tx.textContent = on ? label : '동기화 꺼짐';
   var se = document.getElementById('cloudState');
-  if (se){ se.setAttribute('data-s', st.state); se.textContent = st.msg || '대기'; }
+  if (se){ se.setAttribute('data-s', on ? st.state : 'off'); se.textContent = st.msg || (on ? '대기' : '비밀코드 필요'); }
   var sc = document.getElementById('cloudCode');
-  if (sc) sc.textContent = st.code || 'saju_0623';
+  if (sc) sc.textContent = on ? (cloudReveal ? st.code : maskCode(st.code)) : '— 미연결';
   var sl = document.getElementById('cloudLast');
-  if (sl) sl.textContent = st.lastAt ? fmtClock(st.lastAt) : '—';
+  if (sl) sl.textContent = (on && st.lastAt) ? fmtClock(st.lastAt) : '—';
+  var sv = document.getElementById('cloudCodeView');
+  if (sv) sv.textContent = cloudReveal ? '코드 숨기기' : '코드 보기';
+  var ci = document.getElementById('cloudCodeInput');
+  if (ci) ci.placeholder = on ? '새 비밀코드로 바꾸기' : '내 비밀코드 (6자 이상 권장)';
+  var cs = document.getElementById('cloudSync');
+  if (cs){
+    /* 잠긴 상태에서도 누를 수 있게 두고, 누르면 비밀코드 창을 연다 */
+    cs.textContent = on ? '☁️ 지금 동기화' : '🔒 비밀코드 넣고 동기화';
+    cs.setAttribute('aria-disabled', on ? 'false' : 'true');
+  }
+  var cc = document.getElementById('cloudCodeClear');
+  if (cc) cc.disabled = !on;
+  var mc = document.getElementById('codeModalClear');
+  if (mc) mc.disabled = !on;
+  var nm2 = document.getElementById('codeModalNow');
+  if (nm2) nm2.textContent = on
+    ? ('지금 이 기기는 ' + maskCode(st.code) + ' 로 연결되어 있습니다. 코드는 이 기기 브라우저에만 저장되고 서버로 보내지 않습니다.')
+    : '아직 연결되지 않았습니다. 코드는 이 기기 브라우저에만 저장되고 서버로 보내지 않습니다.';
   var lo = document.getElementById('cloudLocal');
   if (lo){
     var np = 0, nm = 0;
@@ -4220,8 +4339,62 @@ function updateCloudUI(){
     lo.textContent = '프로필 ' + np + '명 · 메모 ' + nm + '건';
   }
 }
+function cloudCodeMsg(el, text, isErr){
+  if (!el) return;
+  el.textContent = text || '';
+  el.classList.toggle('err', !!isErr);
+}
+function applyCloudCode(raw, msgEl){
+  if (!window.SajuCloud) return false;
+  var r = SajuCloud.setCode(raw);
+  if (!r.ok){
+    cloudCodeMsg(msgEl, r.reason === 'short' ? '4자 이상으로 넣어 주세요 (6자 이상 권장)' : '비밀코드를 넣어 주세요', true);
+    return false;
+  }
+  cloudCodeMsg(msgEl, r.changed ? ('저장했어요 · ' + r.code) : ('이미 ' + r.code + ' 로 연결되어 있어요'), false);
+  updateCloudUI();
+  if (r.changed){
+    var p = SajuCloud.sync();
+    if (p && p.then) p.then(function(){ updateCloudUI(); });
+  }
+  return true;
+}
+var clearArmedAt = 0;
+function clearCloudCode(msgEl){
+  if (!window.SajuCloud || !SajuCloud.hasCode()){ cloudCodeMsg(msgEl, '이미 연결이 꺼져 있어요', true); return; }
+  if (Date.now() - clearArmedAt > 4000){
+    clearArmedAt = Date.now();
+    cloudCodeMsg(msgEl, '한 번 더 누르면 이 기기의 비밀코드를 지웁니다 (기록은 그대로 남아요)', false);
+    return;
+  }
+  clearArmedAt = 0;
+  cloudReveal = false;
+  SajuCloud.clearCode();
+  ['cloudCodeInput', 'codeModalInput'].forEach(function(id){ var el = document.getElementById(id); if (el) el.value = ''; });
+  cloudCodeMsg(msgEl, '이 기기에서 연결을 끊었어요 · 기록은 그대로 있고 다시 코드를 넣으면 이어집니다', false);
+  updateCloudUI();
+}
+function openCodeModal(){
+  var m = document.getElementById('codeModal');
+  if (!m) return;
+  var inp = document.getElementById('codeModalInput');
+  if (inp) inp.value = '';
+  cloudCodeMsg(document.getElementById('codeModalMsg'), '');
+  updateCloudUI();
+  m.hidden = false;
+  document.documentElement.classList.add('narr-lock');
+  if (inp) setTimeout(function(){ try{ inp.focus(); }catch(e){ /* */ } }, 60);
+}
+function closeCodeModal(){
+  var m = document.getElementById('codeModal');
+  if (!m || m.hidden) return;
+  m.hidden = true;
+  var na = document.getElementById('narrModal');
+  if (!na || na.hidden) document.documentElement.classList.remove('narr-lock');
+}
 function manualSync(){
   if (!window.SajuCloud) return;
+  if (!SajuCloud.hasCode()){ openCodeModal(); return; }
   var r = SajuCloud.sync();
   if (r && r.then) r.then(function(){ updateCloudUI(); });
 }
@@ -4331,12 +4504,65 @@ function init(){
     SajuCloud.onChange(updateCloudUI);
     SajuCloud.onApplied(reloadFromCloud);
     var cbtn = document.getElementById('cloudChip');
-    if (cbtn) cbtn.addEventListener('click', manualSync);
+    if (cbtn) cbtn.addEventListener('click', function(){
+      /* 미연결 상태에서 칩을 누르면 비밀코드 입력 창 */
+      if (!SajuCloud.hasCode()){ openCodeModal(); return; }
+      manualSync();
+    });
     var csync = document.getElementById('cloudSync');
-    if (csync) csync.addEventListener('click', manualSync);
+    if (csync) csync.addEventListener('click', function(){
+      if (!SajuCloud.hasCode()){ openCodeModal(); return; }
+      manualSync();
+    });
+
+    /* 프로필 탭 카드 — 비밀코드 입력·보기·해제 */
+    var cSave = document.getElementById('cloudCodeSave');
+    if (cSave) cSave.addEventListener('click', function(){
+      var inp = document.getElementById('cloudCodeInput');
+      applyCloudCode(inp ? inp.value : '', document.getElementById('cloudCodeMsg'));
+    });
+    var cIn = document.getElementById('cloudCodeInput');
+    if (cIn) cIn.addEventListener('keydown', function(e){
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      applyCloudCode(cIn.value, document.getElementById('cloudCodeMsg'));
+    });
+    var cClear = document.getElementById('cloudCodeClear');
+    if (cClear) cClear.addEventListener('click', function(){ clearCloudCode(document.getElementById('cloudCodeMsg')); });
+    var cView = document.getElementById('cloudCodeView');
+    if (cView) cView.addEventListener('click', function(){
+      if (!SajuCloud.hasCode()){ cloudCodeMsg(document.getElementById('cloudCodeMsg'), '먼저 비밀코드를 넣어 주세요', true); return; }
+      cloudReveal = !cloudReveal;
+      updateCloudUI();
+    });
+
+    /* 상단 칩 → 비밀코드 모달 */
+    var mSave = document.getElementById('codeModalSave');
+    if (mSave) mSave.addEventListener('click', function(){
+      var inp = document.getElementById('codeModalInput');
+      if (applyCloudCode(inp ? inp.value : '', document.getElementById('codeModalMsg'))) setTimeout(closeCodeModal, 900);
+    });
+    var mIn = document.getElementById('codeModalInput');
+    if (mIn) mIn.addEventListener('keydown', function(e){
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      if (applyCloudCode(mIn.value, document.getElementById('codeModalMsg'))) setTimeout(closeCodeModal, 700);
+    });
+    var mClear2 = document.getElementById('codeModalClear');
+    if (mClear2) mClear2.addEventListener('click', function(){ clearCloudCode(document.getElementById('codeModalMsg')); });
+    var mX = document.getElementById('codeClose');
+    if (mX) mX.addEventListener('click', closeCodeModal);
+    var mB = document.querySelector('#codeModal .narr-back');
+    if (mB) mB.addEventListener('click', closeCodeModal);
+
     updateCloudUI();
     SajuCloud.boot();
   }
+  document.addEventListener('keydown', function(e){
+    if (e.key !== 'Escape') return;
+    var m = document.getElementById('codeModal');
+    if (m && !m.hidden) closeCodeModal();
+  });
 
   // 날짜 네비
   document.getElementById('dToday').addEventListener('click', function(){ state.target = {mode:'offset', offset:0}; renderToday(); });
