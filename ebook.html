@@ -2353,11 +2353,10 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
   var memBooks = {};   // IDB 불가 시 폴백
   var memReads = {};   // IDB 불가 시 폴백(책별 마지막 읽은 시각)
 
-  /* 책장에 세우는 최근 책 권수와 '작은 책' 기준.
-     작은 책(≈1.5MB 이하)은 본문까지 저장해 두어 다음에 파일을 다시 고르지 않고 이어 읽는다.
-     큰 책도 종전처럼 본문을 저장하고, 저장 공간이 모자랄 때만 본문 없이 기록만 남긴다. */
+  /* 책장에 세우는 최근 책 권수.
+     작은 책(≈수백 KB)은 물론 큰 책도 본문까지 저장해 두어 다음에 파일을 다시 고르지 않고 이어 읽는다.
+     (저장 공간이 모자랄 때만 본문 없이 기록만 남기고, 책장에서 '본문 없음'으로 알려 준다) */
   var SHELF_MAX = 8;
-  var SMALL_BOOK = 1.5 * 1024 * 1024;
 
   /* 책을 펼 때마다 '마지막으로 읽은 시각'을 남긴다 — 책장 정렬 기준 */
   function markRead(id, at) {
@@ -2379,7 +2378,6 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
       addedAt: book.addedAt || Date.now(),
       file: book.file || '', bytes: book.bytes || 0,
       lastReadAt: book.lastReadAt || Date.now(),
-      big: (book.bytes || 0) > SMALL_BOOK ? 1 : 0,
       pdf: hasPdf ? 1 : 0, pdfPages: book.pdfPages || 0, scan: book.scan ? 1 : 0
     };
     var putBook = DB.put(rec).catch(function () {
@@ -2941,7 +2939,8 @@ body.mode-cover-landscape .nav-btn { height: 54px; }
       top.forEach(function (b) {
         var pct = (b.shelfPos && typeof b.shelfPos.ratio === 'number') ? Math.round(b.shelfPos.ratio * 100) : 0;
         pct = Math.max(0, Math.min(100, pct));
-        var prog = b.shelfPos ? (pct + '%') : '새 책';
+        var noBody = !b.text && !b.pdf;        /* 저장 공간이 모자라 본문을 놓친 책 */
+        var prog = noBody ? '본문 없음' : (b.shelfPos ? (pct + '%') : '새 책');
         var when = b.shelfAt ? relTime(b.shelfAt) : '';
         var sizeTxt = fmtSize(b.bytes);
         var meta = [prog, when].filter(Boolean).join(' · ') + (sizeTxt ? ' · ' + sizeTxt : '');
