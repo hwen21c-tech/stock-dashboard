@@ -505,6 +505,8 @@
   .chk.zero{background:#fff0f3;border-color:#ffd3de}
   .chk.zero .hleft{color:#d02a4b}
   .chk .hfaint{background:#e9eef7;color:#4a5b78;border-radius:999px;padding:1px 6px;font-size:10px}
+  .chk .hgift{background:#ffe6f1;color:#c2306a;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:900}
+  .chk .hgift[hidden]{display:none!important}
   .chk.hasfaint{box-shadow:0 0 0 2px rgba(120,160,255,.32),0 4px 14px rgba(18,42,60,.22)}
 
   /* ---------- 회복 패널 · 도감 요약 · 퀴즈 ---------- */
@@ -523,6 +525,7 @@
   .hRow .top .left{margin-left:auto;font-size:11.5px;color:#7a4b04;background:#fff3c9;border-radius:999px;padding:2px 8px;white-space:nowrap}
   .hRow .meta{margin-top:5px;font-size:10.5px;font-weight:700;color:#6d7f62;line-height:1.45}
   .hRow .meta b{color:#3f6fa8}
+  .hRow .meta .giftline{display:inline-block;margin-top:3px;background:#ffe6f1;color:#b5275f;border-radius:999px;padding:1px 8px;font-size:10.5px;font-weight:900;white-space:nowrap}
   .hRow .acts{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
   .hRow .acts button{appearance:none;border:0;font:inherit;font-weight:900;font-size:11.5px;border-radius:999px;padding:8px 13px;cursor:pointer;white-space:nowrap}
   .hBtn{background:linear-gradient(180deg,#ff9ec4,#e8608f);color:#fff;box-shadow:0 4px 12px rgba(200,80,130,.28)}
@@ -831,8 +834,8 @@
 </div>
 
 <div id="centerHud" hidden>
-  <button class="chk p1" data-chk="p1" type="button"><span class="dot"></span><span class="hnm">아린</span><span class="hleft">3 / 3</span><span class="hfaint" hidden>💤 0</span></button>
-  <button class="chk p2" data-chk="p2" type="button"><span class="dot"></span><span class="hnm">지안</span><span class="hleft">3 / 3</span><span class="hfaint" hidden>💤 0</span></button>
+  <button class="chk p1" data-chk="p1" type="button"><span class="dot"></span><span class="hnm">아린</span><span class="hleft">3 / 3</span><span class="hgift" hidden>🎁 0</span><span class="hfaint" hidden>💤 0</span></button>
+  <button class="chk p2" data-chk="p2" type="button"><span class="dot"></span><span class="hnm">지안</span><span class="hleft">3 / 3</span><span class="hgift" hidden>🎁 0</span><span class="hfaint" hidden>💤 0</span></button>
 </div>
 
 <div id="healModal" hidden aria-hidden="true">
@@ -901,6 +904,9 @@
     <div class="sub" id="loadSub">잔디 언덕과 연못을 준비하고 있어요</div>
   </div>
 </div>
+
+<!-- ☁️ 가족 클라우드 동기화는 이 페이지 안에서 직접 한다(아래 10-b-5) —
+     다른 앱(pokemon-sync.js)이 없는 곳(github.io 단독 서빙)에서도 도감·아빠 선물 회복권이 맞춰진다. -->
 
 <script type="module">
 /* =====================================================================
@@ -3401,6 +3407,310 @@ function pkmKidName(slot) {
 }
 function healLeftOf(slot) { pkmEnsureToday(); return Math.max(0, centerState.left[slot] || 0); }
 function healMaxOf(slot) { pkmEnsureToday(); return HEAL_FREE + (centerState.bonus[slot] || 0); }
+
+/* ---------- 10-b-3-b. 🎁 아빠 선물 — 3D 아지트 회복 3회권 ----------
+   아빠가 마을의 「🎁 아빠 선물」에서 보낸 회복 3회권은 슬롯별 장수로 저장되고
+   (pkm.agit.healBonus.v1 — pokemon-sync.js 가 클라우드로 함께 옮긴다),
+   센터에서는 무료 3회를 먼저 쓰고 다 쓰면 이 선물권을 1회씩 차감해 추가 회복한다. */
+const GIFT_KEY = 'pkm.agit.healBonus.v1';
+const GIFT_SLOTS = ['p1', 'p2'];
+function giftState() {
+  const o = pkmReadJson(GIFT_KEY);
+  const st = { v: 1, p1: 0, p2: 0, guest: 0, at: {}, seen: {} };
+  if (!o || typeof o !== 'object') return st;
+  ['p1', 'p2', 'guest'].forEach((s) => {
+    const n = Number(o[s]);
+    st[s] = Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
+  });
+  ['at', 'seen'].forEach((f) => {
+    const src = o[f];
+    if (!src || typeof src !== 'object') return;
+    Object.keys(src).forEach((k) => {
+      const t = Number(src[k]);
+      if (Number.isFinite(t) && t > 0) st[f][k] = t;
+    });
+  });
+  return st;
+}
+function saveGiftState(st) { pkmWriteJson(GIFT_KEY, st); }
+function giftLeftOf(slot) {
+  const s = slot === 'p2' ? 'p2' : 'p1';
+  return giftState()[s] || 0;
+}
+/* 선물권 1회 사용 — 장수 1 차감 + 바뀐 시각(at) 기록(클라우드가 낡은 값에 지지 않게) */
+function giftUse(slot) {
+  const s = slot === 'p2' ? 'p2' : 'p1';
+  const st = giftState();
+  if ((st[s] || 0) <= 0) return 0;
+  st[s] -= 1;
+  st.at[s] = Date.now();
+  saveGiftState(st);
+  cloudSyncSoon(600);
+  return st[s];
+}
+/* 아지트에 들어왔을 때 새로 받은 선물권이 있으면 토스트 (같은 선물은 한 번만 알린다) */
+function giftNotice() {
+  const st = giftState();
+  const names = [];
+  let total = 0;
+  GIFT_SLOTS.forEach((s) => {
+    const at = Number(st.at[s] || 0), seen = Number(st.seen[s] || 0);
+    if (at > seen && (st[s] || 0) > 0) { total += st[s]; names.push(pkmKidName(s)); }
+  });
+  if (!total) return false;
+  GIFT_SLOTS.forEach((s) => {
+    const at = Number(st.at[s] || 0);
+    if (at > 0) st.seen[s] = at;
+  });
+  saveGiftState(st);
+  toast(`🎁 아빠가 보낸 3D 회복 3회권이 도착했어요! (${names.join(' · ')} 💖 ${total}회)`);
+  try { say(new THREE.Vector3(CENTER.x, CENTER.y + 6.4, CENTER.z), '🎁 아빠 선물 회복권 도착!', 2600); } catch (e) { /* */ }
+  updateCenterHud();
+  if (healPanelOpen()) renderHealPanel();
+  return true;
+}
+
+/* ---------- 10-b-4. ☁️ 가족 클라우드 경량 동기화 (Supabase family_sync 직접 조회) ----------
+   이 페이지는 pokemon-sync.js 없이 단독으로 열리는 곳(github.io 등)도 있어서,
+   도감(pkm.shared.dex.v1.*)과 아빠 선물 회복권(pkm.agit.healBonus.v1)만 직접 맞춘다.
+   · 지운 방어: removed(지운 시각)·caughtAt(다시 잡은 시각)·resetAt(도감 비움) 기록을 그대로 존중해
+     아빠 PIN 으로 지운 포켓몬이 다른 기기 기록 때문에 되살아나지 않는다(pokemon-sync.js 와 같은 규칙).
+   · 받기: 합친 결과를 localStorage 에 반영하고, 이 기기에만 있던 내용·선물권 차감은
+     클라우드 행의 다른 키를 지우지 않도록 '행 전체'를 합쳐서 올린다(UPSERT).
+   · 실패(오프라인·권한)해도 게임은 그대로 돌아간다. */
+const CLOUD_DEF = {
+  url: 'https://hiruybkapzuhjrzjoyik.supabase.co',
+  key: 'sb_publishable_e5JJbvCPDhY91uXaUEVNVA_8Byv_gI8',
+  table: 'family_sync',
+  code: '0623'
+};
+const CLOUD_META = 'pkm.cloud.meta';
+const CLOUD_DEX_RE = /^pkm\.shared\.dex\.v1\./;
+function cloudLs(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+function cloudSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* */ } }
+function cloudCfg() {
+  const pick = (k, d) => { const v = cloudLs(k); return v == null || v === '' ? d : v; };
+  return {
+    url: String(pick('pkm.cloud.url', CLOUD_DEF.url)).replace(/\/+$/, ''),
+    key: pick('pkm.cloud.key', CLOUD_DEF.key),
+    code: pick('pkm.cloud.code', CLOUD_DEF.code),
+    table: CLOUD_DEF.table
+  };
+}
+function cloudJp(raw, d) { if (raw == null) return d; try { const v = JSON.parse(raw); return v == null ? d : v; } catch (e) { return d; } }
+function cloudStampMap(o) {
+  const out = {};
+  if (o && typeof o === 'object') {
+    Object.keys(o).forEach((k) => {
+      const t = Number(o[k]);
+      if (k && isFinite(t) && t > 0) out[String(k)] = t;
+    });
+  }
+  return out;
+}
+function cloudSeenMap() {
+  const m = cloudJp(cloudLs(CLOUD_META), null);
+  return (m && m.seen && typeof m.seen === 'object') ? m.seen : {};
+}
+/* 본 목록을 기억해 둔다 — 다음에 '이 기기에서 일부러 뺀 것'과 '아직 못 받은 것'을 가릴 수 있게 */
+function cloudSeenSave(keys) {
+  const raw = cloudLs(CLOUD_META);
+  let m = cloudJp(raw, null);
+  if (!m || typeof m !== 'object') m = { code: cloudCfg().code, remoteAt: null, hash: null, seen: {} };
+  if (!m.code) m.code = cloudCfg().code;
+  if (!m.seen || typeof m.seen !== 'object') m.seen = {};
+  Object.keys(keys).forEach((k) => {
+    if (!CLOUD_DEX_RE.test(k)) return;
+    const v = cloudJp(keys[k], null);
+    m.seen[k] = (v && Array.isArray(v.ids)) ? v.ids.map(Number) : [];
+  });
+  cloudSet(CLOUD_META, JSON.stringify(m));
+}
+/* pokemon-sync.js 의 mergeDex 와 같은 규칙 — removed·caughtAt·resetAt·counts 를 그대로 살린다 */
+function cloudMergeDex(remoteRaw, localRaw, prevIds) {
+  const r = cloudJp(remoteRaw, {}) || {}, l = cloudJp(localRaw, {}) || {};
+  const rIds = Array.isArray(r.ids) ? r.ids : [];
+  const lIds = Array.isArray(l.ids) ? l.ids : [];
+  const prev = (prevIds || []).map(String);
+  const prevSet = {}, localSet = {};
+  prev.forEach((id) => { prevSet[id] = 1; });
+  lIds.forEach((id) => { localSet[String(id)] = 1; });
+  /* '이 기기가 마지막으로 본 목록의 일부만 빠진 때'만 뺀 것으로 본다 */
+  const subset = lIds.every((id) => prevSet[String(id)]);
+  const guessed = subset ? prev.filter((id) => !localSet[id]) : [];
+  const rem = Object.assign(cloudStampMap(r.removed), cloudStampMap(l.removed));
+  const cau = Object.assign(cloudStampMap(r.caughtAt), cloudStampMap(l.caughtAt));
+  const rReset = Number(r.resetAt) || 0, lReset = Number(l.resetAt) || 0;
+  const resetAt = Math.max(rReset, lReset);
+  function dead(id) {
+    const s = String(id), t = rem[s] || 0;
+    if (!t) return false;
+    return (cau[s] || 0) <= t;
+  }
+  const seenK = {}, out = [];
+  function add(id, fromResetSide, fresh) {
+    const s = String(id);
+    if (!s || seenK[s]) return;
+    if (dead(id)) return;                                   /* 지운 포켓몬은 되살리지 않는다 */
+    if (guessed.indexOf(s) >= 0) return;
+    if (resetAt && !fromResetSide && (cau[s] || 0) <= resetAt && !fresh) return;
+    seenK[s] = 1; out.push(id);
+  }
+  const rTrust = resetAt > 0 && rReset === resetAt;
+  const lTrust = resetAt > 0 && lReset === resetAt;
+  rIds.forEach((id) => { add(id, rTrust, false); });
+  lIds.forEach((id) => { add(id, lTrust, !prevSet[String(id)]); });
+  const counts = {};
+  [r.counts, l.counts].forEach((c) => {
+    if (!c || typeof c !== 'object') return;
+    Object.keys(c).forEach((k) => { counts[k] = Math.max(Number(counts[k] || 0), Number(c[k]) || 0); });
+  });
+  const dates = {}, subjects = {};
+  [r, l].forEach((side) => {
+    const d = side.dates, s = side.subjects;
+    if (d && typeof d === 'object') Object.keys(d).forEach((dk) => { if (d[dk] && (!dates[dk] || d[dk] < dates[dk])) dates[dk] = d[dk]; });
+    if (s && typeof s === 'object') Object.keys(s).forEach((sk) => {
+      if (!Array.isArray(s[sk])) return;
+      const cur = subjects[sk] || [];
+      s[sk].forEach((v) => { if (cur.indexOf(v) < 0) cur.push(v); });
+      subjects[sk] = cur;
+    });
+  });
+  Object.keys(counts).forEach((ck) => { if (!seenK[ck]) delete counts[ck]; });
+  Object.keys(dates).forEach((dk) => { if (!seenK[dk]) delete dates[dk]; });
+  Object.keys(subjects).forEach((sk) => { if (!seenK[sk]) delete subjects[sk]; });
+  const merged = { ids: out, counts: counts, v: (l && l.v) || (r && r.v) || 2 };
+  if (Object.keys(dates).length) merged.dates = dates;
+  if (Object.keys(subjects).length) merged.subjects = subjects;
+  if (resetAt) merged.resetAt = resetAt;
+  const remOut = {}, cauOut = {};
+  Object.keys(rem).forEach((rk) => { if (resetAt && rem[rk] <= resetAt) return; remOut[rk] = rem[rk]; });
+  Object.keys(cau).forEach((ak) => { if (!remOut[ak]) return; cauOut[ak] = cau[ak]; });
+  if (Object.keys(remOut).length) merged.removed = remOut;
+  if (Object.keys(cauOut).length) merged.caughtAt = cauOut;
+  return JSON.stringify(merged);
+}
+/* 선물 회복권 — 슬롯별로 '마지막으로 바뀐 시각(at)'이 더 최근인 쪽 (선물 +3 · 사용 -1) */
+function cloudMergeGift(remoteRaw, localRaw) {
+  const r = cloudJp(remoteRaw, null) || {}, l = cloudJp(localRaw, null) || {};
+  const ra = (r.at && typeof r.at === 'object') ? r.at : {};
+  const la = (l.at && typeof l.at === 'object') ? l.at : {};
+  const rs = (r.seen && typeof r.seen === 'object') ? r.seen : {};
+  const ls = (l.seen && typeof l.seen === 'object') ? l.seen : {};
+  const num = (v) => { const n = Number(v); return isFinite(n) && n > 0 ? Math.round(n) : 0; };
+  const out = { v: 1, p1: 0, p2: 0, guest: 0, at: {}, seen: {} };
+  ['p1', 'p2', 'guest'].forEach((s) => {
+    const rv = num(r[s]), lv = num(l[s]), rt = num(ra[s]), lt = num(la[s]);
+    const useLocal = lt > rt || (lt === rt && lv >= rv);
+    out[s] = useLocal ? lv : rv;
+    const at = Math.max(rt, lt);
+    if (at > 0) out.at[s] = at;
+    const seen = Math.max(num(rs[s]), num(ls[s]));
+    if (seen > 0) out.seen[s] = Math.min(seen, at || seen);
+  });
+  let any = out.p1 || out.p2 || out.guest;
+  if (!any && Object.keys(out.at).length) any = 1;
+  return any ? JSON.stringify(out) : '';
+}
+async function cloudPush(c, keys) {
+  const nowIso = new Date().toISOString();
+  const res = await fetch(`${c.url}/rest/v1/${c.table}?on_conflict=code`, {
+    method: 'POST',
+    headers: {
+      apikey: c.key,
+      Authorization: 'Bearer ' + c.key,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates,return=minimal'
+    },
+    body: JSON.stringify([{ code: c.code, data: { v: 1, keys: keys, pushedAt: nowIso, device: '3d' }, updated_at: nowIso }]),
+    cache: 'no-store'
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return nowIso;
+}
+let cloudBusy = false;
+let cloudLastAt = 0;
+async function cloudSync(opts) {
+  opts = opts || {};
+  const c = cloudCfg();
+  if (!c.code || !c.url) return 'nocode';
+  if (cloudBusy) return 'busy';
+  cloudBusy = true;
+  try {
+    const res = await fetch(`${c.url}/rest/v1/${c.table}?code=eq.${encodeURIComponent(c.code)}&select=code,data,updated_at`, {
+      headers: { apikey: c.key, Authorization: 'Bearer ' + c.key },
+      cache: 'no-store'
+    });
+    if (!res.ok) return 'error';
+    const arr = await res.json();
+    const row = (Array.isArray(arr) && arr.length) ? arr[0] : null;
+    const remoteKeys = (row && row.data && row.data.keys) || {};
+    const local = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (!k || (!CLOUD_DEX_RE.test(k) && k !== GIFT_KEY)) continue;
+        const v = localStorage.getItem(k);
+        if (v != null) local[k] = v;
+      }
+    } catch (e) { /* */ }
+    const seen = cloudSeenMap();
+    const keys = Object.assign({}, remoteKeys);
+    /* 1) 도감 — 양쪽에 있는 슬롯만 합친다(한쪽에 없는 키는 그대로 둔다) */
+    const slots = {};
+    Object.keys(local).forEach((k) => { if (CLOUD_DEX_RE.test(k)) slots[k] = 1; });
+    Object.keys(remoteKeys).forEach((k) => { if (CLOUD_DEX_RE.test(k)) slots[k] = 1; });
+    let dexDiff = 0;
+    Object.keys(slots).forEach((k) => {
+      const rv = remoteKeys[k], lv = local[k];
+      /* 이 기기에 없는 슬롯도 클라우드 값을 받아 둔다(다른 아이 태블릿에서 잡은 친구까지 보이게) */
+      if (lv == null) {
+        if (rv != null) { cloudSet(k, rv); dexDiff++; }
+        return;
+      }
+      /* 빈 도감은 '지웠다'가 아니라 '아직 모른다' — 클라우드 도감을 빈 값으로 덮지 않는다
+         (진짜 지움은 resetAt·removed 기록이 남아 있어 아래 합치기에서 존중된다) */
+      const lvj = cloudJp(lv, null) || {};
+      const localBlank = (!Array.isArray(lvj.ids) || !lvj.ids.length)
+        && !Number(lvj.resetAt)
+        && !(lvj.removed && typeof lvj.removed === 'object' && Object.keys(lvj.removed).length);
+      if (localBlank && rv != null) {
+        if (rv !== lv) { cloudSet(k, rv); dexDiff++; }
+        return;
+      }
+      const merged = rv == null ? lv : cloudMergeDex(rv, lv, seen[k]);
+      keys[k] = merged;
+      if (merged !== lv) { cloudSet(k, merged); dexDiff++; }
+    });
+    /* 2) 아빠 선물 회복권 */
+    const rg = remoteKeys[GIFT_KEY], lg = local[GIFT_KEY];
+    const mergedGift = (lg == null && rg == null) ? '' : cloudMergeGift(rg, lg);
+    if (mergedGift && mergedGift !== lg) cloudSet(GIFT_KEY, mergedGift);
+    if (mergedGift) keys[GIFT_KEY] = mergedGift;
+    else if (rg) keys[GIFT_KEY] = rg;
+    cloudSeenSave(keys);
+    /* 3) 화면(센터 HUD·회복 패널)도 받은 값으로 바로 맞춘다 */
+    try { updateCenterHud(); } catch (e) { /* */ }
+    try { if (healPanelOpen()) renderHealPanel(); } catch (e) { /* */ }
+    /* 4) 클라우드에 없는 이 기기 내용·선물권 차감은 행 전체를 합쳐 올린다 */
+    let diff = 0;
+    Object.keys(keys).forEach((k) => { if (keys[k] !== remoteKeys[k]) diff++; });
+    let pushed = false;
+    if (diff > 0) { try { await cloudPush(c, keys); pushed = true; } catch (e) { /* 오프라인이면 다음에 */ } }
+    cloudLastAt = Date.now();
+    if (dexDiff) { try { dexSlots.p1 = readDexSlot('p1'); dexSlots.p2 = readDexSlot('p2'); } catch (e) { /* */ } }
+    return pushed ? 'pushed' : (dexDiff ? 'applied' : 'same');
+  } catch (e) {
+    return 'error';
+  } finally {
+    cloudBusy = false;
+  }
+}
+/* 선물권을 쓰면(차감) 바로 클라우드에도 알려 아빠 폰과 장수가 맞게 한다 */
+function cloudSyncSoon(ms) {
+  clearTimeout(cloudSyncSoon.t);
+  cloudSyncSoon.t = setTimeout(() => { cloudSync().then(() => { try { giftNotice(); } catch (e) { /* */ } }); }, ms || 400);
+}
 function faintedIdsOf(slot) { pkmEnsureToday(); return (faintState[slot] || []).slice(); }
 function isFaintedPoke(slot, id) { return faintedIdsOf(slot).includes(Number(id)); }
 function markFainted(slot, id) {
@@ -3436,13 +3746,16 @@ function updateCenterHud() {
     if (!b) return;
     const nm = pkmKidName(slot);
     const left = healLeftOf(slot), max = healMaxOf(slot), f = faintedIdsOf(slot).length;
+    const gift = giftLeftOf(slot);
     const nmEl = b.querySelector('.hnm'); if (nmEl) nmEl.textContent = nm;
     const lEl = b.querySelector('.hleft'); if (lEl) lEl.textContent = `${left} / ${max}`;
-    b.classList.toggle('zero', left <= 0);
+    b.classList.toggle('zero', left <= 0 && gift <= 0);
     b.classList.toggle('hasfaint', f > 0);
+    const gEl = b.querySelector('.hgift');
+    if (gEl) { gEl.hidden = gift <= 0; gEl.textContent = `🎁 ${gift}`; }
     const fEl = b.querySelector('.hfaint');
     if (fEl) { fEl.hidden = f <= 0; fEl.textContent = `💤 ${f}`; }
-    b.setAttribute('aria-label', `${nm} 남은 회복 ${left}회 · 기절 ${f}마리`);
+    b.setAttribute('aria-label', `${nm} 남은 회복 ${left}회${gift > 0 ? ` · 아빠 선물 회복권 ${gift}회` : ''} · 기절 ${f}마리`);
   });
 }
 /* 체육관 엔트리 모달 — 기절 안내 */
@@ -3475,20 +3788,29 @@ function renderHealPanel() {
     row.className = 'hRow' + (slot === healPanelSlot ? ' sel' : '');
     const nm = pkmKidName(slot);
     const left = healLeftOf(slot), max = healMaxOf(slot), f = faintedIdsOf(slot);
+    const gift = giftLeftOf(slot);
     const top = document.createElement('div');
     top.className = 'top';
     top.innerHTML = `<span class="dot" style="background:${slot === 'p1' ? '#ff8fb1' : '#8fd0f5'}"></span><b>${nm}</b><span class="left">남은 회복 ${left} / ${max}</span>`;
     const meta = document.createElement('div');
     meta.className = 'meta';
-    meta.innerHTML = f.length
+    const faintTxt = f.length
       ? `💤 기절한 친구 ${f.length}마리 — <b>${f.map((id) => nameOf(id)).join(' · ')}</b>`
       : '✨ 지금은 기절한 친구가 없어요';
+    meta.innerHTML = faintTxt
+      + (gift > 0
+        ? `<br><span class="giftline">🎁 아빠 선물 회복권 ${gift}회 남음!</span>`
+        : '');
     const acts = document.createElement('div');
     acts.className = 'acts';
     const hb = document.createElement('button');
     hb.type = 'button'; hb.className = 'hBtn'; hb.dataset.heal = slot;
-    hb.textContent = left <= 0 ? '💖 오늘 회복 소진' : (f.length ? `💖 회복하기 (${left}회 남음)` : '💖 회복하기');
-    hb.disabled = left <= 0 || !f.length;
+    hb.disabled = (left <= 0 && gift <= 0) || !f.length;
+    hb.textContent = left > 0
+      ? (f.length ? `💖 회복하기 (${left}회 남음)` : '💖 회복하기')
+      : gift > 0
+        ? (f.length ? `💖 아빠 선물권으로 회복 (🎁 ${gift}회)` : '💖 회복하기')
+        : '💖 오늘 회복 소진';
     const qb = document.createElement('button');
     qb.type = 'button'; qb.className = 'qBtn'; qb.dataset.quiz = slot;
     qb.textContent = left <= 0 ? '🧠 퀴즈로 회복 +1' : '🧠 퀴즈로 +1 충전';
@@ -3500,7 +3822,11 @@ function renderHealPanel() {
     body.appendChild(row);
   });
   const sub = document.getElementById('healSub');
-  if (sub) sub.textContent = `오늘 남은 무료 회복은 각자 ${HEAL_FREE}회 · 기절한 친구를 모두 부활시켜요`;
+  if (sub) {
+    const g = giftLeftOf('p1') + giftLeftOf('p2');
+    sub.textContent = `오늘 남은 무료 회복은 각자 ${HEAL_FREE}회 · 기절한 친구를 모두 부활시켜요`
+      + (g > 0 ? ` · 🎁 아빠 선물 회복권 ${g}회 남음!` : '');
+  }
 }
 function openHealPanel(slot) {
   pkmEnsureToday();
@@ -3526,14 +3852,20 @@ function doCenterHeal(slot) {
     toast('✨ 지금은 기절한 친구가 없어요 · 체육관에서 지면 회복할 수 있어요');
     return false;
   }
-  if (healLeftOf(slot) <= 0) {
+  if (healLeftOf(slot) <= 0 && giftLeftOf(slot) <= 0) {
     toast(`${nm}의 무료 회복을 다 썼어요! 3문제를 맞히면 1회 충전!`);
     openQuiz(slot);
     return false;
   }
-  centerState.left[slot] = Math.max(0, (centerState.left[slot] || 0) - 1);
-  centerState.used[slot] = (centerState.used[slot] || 0) + 1;
-  saveCenterState();
+  /* 무료 3회를 먼저 쓰고, 다 썼으면 아빠 선물 회복권을 1회 차감한다 */
+  const useGift = healLeftOf(slot) <= 0;
+  if (useGift) {
+    giftUse(slot);
+  } else {
+    centerState.left[slot] = Math.max(0, (centerState.left[slot] || 0) - 1);
+    centerState.used[slot] = (centerState.used[slot] || 0) + 1;
+    saveCenterState();
+  }
   const n = reviveFainted(slot);
   walkIndoorKidToHeal(slot, true);
   let inCenter = false;
@@ -3551,6 +3883,7 @@ function doCenterHeal(slot) {
       const dm = document.getElementById('dexModal'), gm = document.getElementById('gymModal');
       if ((dm && !dm.hidden) || (gm && !gm.hidden)) return;
       if (healLeftOf(slot) > 0 && faintedIdsOf(slot).length) openHealPanel(slot);
+      else if (giftLeftOf(slot) > 0 && faintedIdsOf(slot).length) openHealPanel(slot);
     }, 2400);
   } else {
     burstStars(new THREE.Vector3(CENTER.x, CENTER.y + 5.2, CENTER.z), 22, 1.9, 2.2);
@@ -3559,7 +3892,9 @@ function doCenterHeal(slot) {
     say(new THREE.Vector3(CENTER.x, CENTER.y + 6.4, CENTER.z), `✨ ${nm}의 친구 ${n}마리 회복 완료!`, 2600);
   }
   playCry(113);
-  toast(`✨ ${nm}의 친구 ${n}마리 부활! 남은 회복 ${healLeftOf(slot)}회`);
+  toast(useGift
+    ? `✨ ${nm}의 친구 ${n}마리 부활! 🎁 아빠 선물권 ${giftLeftOf(slot)}회 남음`
+    : `✨ ${nm}의 친구 ${n}마리 부활! 남은 회복 ${healLeftOf(slot)}회`);
   updateCenterHud();
   hintFade();
   return true;
@@ -8456,6 +8791,22 @@ world.traverse((o) => {
     if (r * sc < 0.5) o.castShadow = false;
   } catch (e) { /* */ }
 });
+/* 🎁☁️ 아지트에 들어오면 도감·아빠 선물 회복권을 클라우드와 맞추고, 새로 받은 선물권은 토스트로 알린다 */
+setTimeout(() => {
+  cloudSync().then(() => { try { giftNotice(); } catch (e) { /* */ } });
+}, 1400);
+/* 클라우드가 느리거나 오프라인일 때도 이 기기에 이미 있는 선물은 알려 준다 */
+setTimeout(() => { try { giftNotice(); } catch (e) { /* */ } }, 3200);
+setInterval(() => {
+  if (document.hidden) return;
+  cloudSync().then(() => { try { giftNotice(); } catch (e) { /* */ } });
+}, 120000);
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) return;
+  if (Date.now() - cloudLastAt < 15000) return;
+  cloudSync().then(() => { try { giftNotice(); } catch (e) { /* */ } });
+});
+
 /* 디버그/검증용 상태 노출 (읽기 전용) */
 window.__AJIT = {
   get ready() { return true; },
@@ -8583,6 +8934,7 @@ window.__AJIT = {
       used: { p1: centerState.used.p1 || 0, p2: centerState.used.p2 || 0 },
       faint: { p1: faintedIdsOf('p1'), p2: faintedIdsOf('p2') },
       faintNames: { p1: faintedIdsOf('p1').map((id) => nameOf(id)), p2: faintedIdsOf('p2').map((id) => nameOf(id)) },
+      gift: { p1: giftLeftOf('p1'), p2: giftLeftOf('p2'), stored: pkmReadJson(GIFT_KEY) },
       hud: !document.getElementById('centerHud').hidden,
       hudText: [...document.querySelectorAll('#centerHud .chk')].map((b) => b.textContent.replace(/\s+/g, ' ').trim()),
       panel: !document.getElementById('healModal').hidden,
@@ -8590,6 +8942,18 @@ window.__AJIT = {
     };
   },
   healKid(slot) { return doCenterHeal(slot === 'p2' ? 'p2' : 'p1'); },
+  giftGive(slot, n) {
+    const s = slot === 'p2' ? 'p2' : 'p1';
+    const st = giftState();
+    st[s] = Math.max(0, (st[s] || 0) + (Number(n) || 0));
+    st.at[s] = Date.now();
+    saveGiftState(st);
+    updateCenterHud();
+    if (healPanelOpen()) renderHealPanel();
+    return st[s];
+  },
+  giftNotice() { return giftNotice(); },
+  cloud: { sync: () => cloudSync(), cfg: () => cloudCfg(), seen: () => cloudSeenMap(), mergeDex: (r, l, p) => cloudMergeDex(r, l, p), mergeGift: (r, l) => cloudMergeGift(r, l) },
   openHealPanel(slot) { return openHealPanel(slot); },
   closeHealPanel,
   markFaint(slot, id) { return markFainted(slot === 'p2' ? 'p2' : 'p1', Number(id)); },
