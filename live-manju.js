@@ -161,11 +161,68 @@
       + row('최근 20일', '<b style="color:' + colOf(s.chg20) + ';">' + pct(s.chg20) + '</b>')
       + row('과열 판정', over ? '<b style="color:#fbbf24;">🔥 과열 (5일 +40%↑ 또는 20일 +100%↑)</b>' : '정상 범위');
 
+    /* ⑥ 종목 성격 3분류 — 시장분위기·테마 확산도·최근 대금/추이 */
+    var pf = s.profile || null;
+    var h6;
+    if (pf) {
+      var pfCol = pf.type === 'leader' ? '#fda4af' : (pf.type === 'early' ? '#fde047' : '#cbd5e1');
+      h6 = row('판정', '<b style="color:' + pfCol + ';font-size:12px;">' + esc((pf.emoji || '') + ' ' + (pf.label || '')) + '</b>')
+        + row('의미', esc(pf.desc || '—'))
+        + row('판정 근거', esc(pf.reason || '—'))
+        + row('비중 가이드', '<b style="color:#a5b4fc;">' + esc(pf.size || '—') + '</b>')
+        + (s.exception ? '<div style="margin-top:6px;padding:5px 7px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.5);border-radius:6px;font-size:10.5px;color:#e9d5ff;">💎 <b>수급·재료 예외</b> — 오늘 마이너스지만 수급·재료가 살아 있어 예외 허용: ' + esc(s.exception.text || '') + '</div>' : '');
+    } else {
+      h6 = '<span style="color:#94a3b8;">성격 판정 데이터가 아직 없습니다(다음 갱신 시 채워집니다).</span>';
+    }
+
+    /* ⑦ NXT 프리·애프터마켓 — 미지원 종목은 만쥬 후보에서 제외된다 */
+    var nx = s.nxt || null;
+    var h7;
+    if (nx && nx.supported === true) {
+      h7 = '<div style="margin-bottom:5px;"><span style="background:rgba(99,102,241,0.2);color:#c7d2fe;border:1px solid rgba(99,102,241,0.55);border-radius:4px;padding:1px 7px;font-size:10.5px;font-weight:900;">🌙 NXT 가능 (프리·애프터 거래 지원)</span></div>'
+        + row('세션', esc(nx.session === 'PRE_MARKET' ? '프리마켓' : (nx.session === 'AFTER_MARKET' ? '애프터마켓' : (nx.session || '—'))) + (nx.status ? ' · ' + esc(nx.status) : ''))
+        + row('NXT 체결량', nx.vol != null ? nf(nx.vol) + '주' : '—')
+        + row('NXT 체결대금', nx.val ? esc(String(nx.val)) : '—')
+        + '<div style="font-size:9.5px;color:#64748b;margin-top:4px;">NXT 프리 08:00~08:50 · 애프터 15:30~20:00 (네이버 대체거래소 세션 실측)</div>';
+    } else if (nx && nx.supported === false) {
+      h7 = '<span style="color:#fbbf24;">정규장 전용 — NXT 미지원 종목이라 만쥬 후보에서 제외됩니다.</span>';
+    } else {
+      h7 = '<span style="color:#94a3b8;">NXT 지원 여부 미확인 (시세 응답에 대체거래소 세션 정보 없음)</span>';
+    }
+
+    /* ⑧ 위쪽 RN선 돌파 · 신고가 가점 (RN존 탭의 눌림 매매와 다른 개념) */
+    var rn8 = s.rn || null;
+    var hb8 = s.highBreak || null;
+    var h8 = '';
+    if (rn8 && rn8.upper != null) {
+      h8 += row('위쪽 공식 RN선', '<b>' + nf(rn8.upper) + '원</b> (' + esc(rn8.kind || '') + ' ' + esc(rn8.color || '') + ')')
+        + row('현재가 → RN선', '<b style="color:' + (rn8.dUp != null && rn8.dUp >= -5 ? '#6ee7b7' : '#cbd5e1') + ';">' + (rn8.dUp != null ? (rn8.dUp >= 0 ? '+' : '') + Number(rn8.dUp).toFixed(2) + '%' : '—') + '</b>'
+          + (rn8.bonus ? ' <span style="color:#7dd3fc;font-weight:900;">🚀 ' + esc(rn8.label || 'RN 돌파권') + ' +' + rn8.bonus + '</span>' : ''));
+    } else if (rn8) {
+      h8 += row('위쪽 공식 RN선', esc(rn8.label || '없음(최상단)'));
+    } else {
+      h8 += row('위쪽 공식 RN선', '미확인');
+    }
+    if (hb8) {
+      h8 += row('52주 고가', hb8.hi52 != null ? nf(hb8.hi52) + '원' + (hb8.pct52 != null ? ' (오늘 고가 ' + (hb8.pct52 >= 0 ? '+' : '') + Number(hb8.pct52).toFixed(2) + '%)' : '') : '—')
+        + row('120일 고가', hb8.hi120 != null ? nf(hb8.hi120) + '원' + (hb8.pct120 != null ? ' (오늘 고가 ' + (hb8.pct120 >= 0 ? '+' : '') + Number(hb8.pct120).toFixed(2) + '%)' : '') : '—')
+        + row('오늘 고가', nf(hb8.todayHigh) + '원')
+        + row('신고가 판정', hb8.bonus ? '<b style="color:#6ee7b7;">📈 ' + esc(hb8.label || '') + ' +' + hb8.bonus + '</b>' : '신고가 근접 아님');
+    }
+    if (s.bonus != null) {
+      h8 += row('가점 합계', '<b style="color:#a5b4fc;">+' + s.bonus + '점</b>' + (s.baseScore != null ? ' <span style="color:#94a3b8;">(기본 ' + s.baseScore + '점)</span>' : ''));
+    }
+    h8 += '<div style="font-size:9.5px;color:#64748b;margin-top:4px;">※ RN존 탭은 상단 RN에서 하단 RN으로 내려올 때 사는 눌림 매매이고, '
+      + '여기 4번 가점은 <b>위쪽 21개 RN선을 뚫으러 가는 돌파 직전·돌파 중</b> 종목과 일봉 신고가에 주는 가점입니다(서로 다른 개념).</div>';
+
     bodyEl.innerHTML = sec('①', '오늘 상승 이유 (재료·뉴스)', h1)
       + sec('②', '캔들 상태 (시/고/저/종 · 윗꼬리)', h2)
       + sec('③', '외인 / 기관 수급 (양매수 여부)', h3)
       + sec('④', '재료 크기 · 시장분위기', h4)
       + sec('⑤', '최근 5일 / 20일 상승률 (과열 여부)', h5)
+      + sec('⑥', '종목 성격 3분류 (주도주 / 시세초입 / 개별주)', h6)
+      + sec('⑦', 'NXT 프리·애프터마켓 거래 (🌙)', h7)
+      + sec('⑧', '위쪽 RN선 돌파 · 일봉 신고가 가점 (🚀 / 📈)', h8)
       + '<div style="font-size:9.5px;color:#64748b;line-height:1.5;">데이터: 네이버 증권 일봉·종목 뉴스·투자자별 매매동향(확정) · '
       + '지수/선물 실측. 값이 없는 항목은 미확인으로 표시합니다(추정 금지).</div>';
 
