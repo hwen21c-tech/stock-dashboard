@@ -5,8 +5,8 @@
    · 캐시 이름에 pkm-world- 접두사를 붙여, 관제탑 워커의 캐시 정리와 섞이지 않게 한다.
    ============================================================ */
 const PREFIX = 'pkm-world-';
-const VERSION = PREFIX + 'v16';  /* 2026-11-16 v16: 홈 6번째 메뉴 「🏡 3D 포켓몬 아지트」(/pokemon-3d.html) 연결
-                                    (v15: 🛡️ 아빠 PIN 도감 삭제 영구 방어 — removed·caughtAt 기록) */
+const VERSION = PREFIX + 'v17';  /* 2026-11-17 v17: 🏃 「도망간다」= 야생 포켓몬·HP·진행 유지, 문제(보기)만 교체 — 이전 문제 상태·타이머·음성 잔존 차단
+                                    (v16: 홈 6번째 메뉴 「🏡 3D 포켓몬 아지트」 연결 / v15: 🛡️ 아빠 PIN 도감 삭제 영구 방어 — removed·caughtAt 기록) */
 const SHELL = [
   '/pokemon/manifest.json',
   '/pokemon-battle.html',

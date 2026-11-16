@@ -1189,7 +1189,7 @@
         </ul>
         <h3>🎒 왼쪽 메뉴</h3>
         <ul>
-          <li><b>🏃 도망간다</b>: 다른 야생 몬스터 만나기 — 한 판에 <b>3번</b>까지. 0이 되면 잡을 때까지 도망갈 수 없어요.</li>
+          <li><b>🏃 도망간다</b>: 지금 야생 몬스터는 그대로 두고 <b>문제만 새로</b> 바꾸기 — 한 판에 <b>3번</b>까지. 0이 되면 잡을 때까지 바꿀 수 없어요.</li>
           <li><b>📕 도감</b>: 지금까지 잡은 몬스터 보기</li>
         </ul>
         <h3>👧 친구마다 따로</h3>
@@ -3147,10 +3147,18 @@ function speakCurrent() {
   if (q.listen) setTimeout(() => { if (!TTS.started && S.q === q && S.screen === 'battle') revealHint(true); }, 1500);
 }
 
-function newQuestion() {
+/* 문제 서명(지문+정답) — 교체했을 때 같은 문제가 또 나오지 않게 비교한다 */
+function qSig(q) {
+  if (!q) return '';
+  return String((q.text || q.qhtml || '') + '§' + (q.answer || ''));
+}
+
+function newQuestion(avoidSig) {
   if (!S.wild) return;
   TTS.stop();
   S.q = makeQuestion();
+  let qGuard = 0;
+  while (avoidSig && qSig(S.q) === avoidSig && qGuard < 4) { S.q = makeQuestion(); qGuard += 1; }
   S.hintUsed = false;
   const hbq = $('#hintBox'); if (hbq) hbq.hidden = true;
   S.screen = 'battle';
@@ -3340,7 +3348,7 @@ function onTimeout() {
   }, 1000);
 }
 
-/* ---------- 도망 ---------- */
+/* ---------- 도망 — 야생 몬스터와 진행 상황은 그대로, 문제(와 보기)만 새로 ---------- */
 async function fleeWild() {
   if (S.screen === 'capturing' || S.screen === 'caught' || S.screen === 'fainted') return;
   if (S.flee <= 0) {
@@ -3349,24 +3357,25 @@ async function fleeWild() {
     toast('더 이상 도망갈 수 없어요!', 'bad', 1200);
     return;
   }
-  if (S.screen === 'battle') S.screen = 'resolving';
-  const prevSig = S.q ? (S.q.text || S.q.answer || '') : '';
+  /* 이전 문제의 정답·오답·시간초과 콜백이 늦게 도착해 새 문제를 덮지 않게 무효화한다 */
+  S.gen += 1;
+  const gen = S.gen;
+  const prevSig = qSig(S.q);
   S.flee -= 1;
-  renderAll();
-  cancelAnimationFrame(S.raf);
+  S.screen = 'resolving';
   S.locked = true;
-  TTS.stop();
-  Sound.flee();
+  cancelAnimationFrame(S.raf);
+  TTS.stop();               /* 이전 문제 음성 즉시 끊기 */
+  Sound.tone(620, 0.07, 'triangle', 0.045);
   const w = $('#wildWrap');
   w.getAnimations().forEach((a) => a.cancel());
-  w.classList.add('leave');
-  $('#wildShadow').style.opacity = '0';
-  await delay(430);
-  toast(`도망쳤어요! 남은 도망 ${S.flee}번`, 'info', 1000);
-  await newEncounter({ keepFlee: true });
-  /* 도망가면 몬스터·문제·타이머가 모두 새로 시작된다 */
-  let guard = 0;
-  while (S.q && (S.q.text || S.q.answer || '') === prevSig && guard < 3) { newQuestion(); guard += 1; }
+  w.classList.remove('hit', 'enter', 'leave');
+  $('#wildShadow').style.opacity = '';
+  renderAll();
+  await delay(180);
+  if (gen !== S.gen) return;   /* 그 사이 새 조우·전투불능이 있었으면 양보 */
+  toast(`문제를 바꿨어요! 남은 도망 ${S.flee}번`, 'info', 1000);
+  newQuestion(prevSig);        /* 포켓몬·HP·진행 상황 그대로, 문제만 교체 */
 }
 
 /* ---------- 전투불능 ---------- */
