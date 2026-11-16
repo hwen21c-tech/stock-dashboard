@@ -297,9 +297,37 @@
   #gymBar{
     position:absolute;left:50%;transform:translateX(-50%);
     bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
-    display:flex;gap:6px;z-index:7;pointer-events:auto;max-width:calc(100% - 12px);
+    display:flex;flex-wrap:wrap;justify-content:center;gap:6px;z-index:7;pointer-events:auto;max-width:calc(100% - 12px);
   }
   #gymBar[hidden]{display:none}
+
+  /* ---------- 라운드별 미니게임 선택 ---------- */
+  .miniPick{margin:2px 12px 4px;background:#f4f9ff;border:1.5px solid #dce9fb;border-radius:14px;padding:7px 8px 8px;flex:none}
+  .mpHead{display:flex;align-items:center;gap:6px;font-size:11.5px;font-weight:900;color:#28405c;margin-bottom:5px}
+  .mpHead .mpSum{margin-left:auto;font-size:10px;font-weight:800;color:#3f6fd8;background:#e6efff;border-radius:999px;padding:2px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62%}
+  .mpRow{display:grid;grid-template-columns:26px 1fr 1fr 1fr;gap:4px;align-items:center;margin-top:3px}
+  .mpRow .mpR{font-size:10.5px;font-weight:900;color:#6b7f98;text-align:center}
+  .mpBtn{
+    appearance:none;border:1.5px solid #dbe6f5;background:#fff;border-radius:10px;font:inherit;
+    font-weight:800;font-size:10px;color:#4a5f7c;padding:6px 2px;cursor:pointer;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:background .15s,border-color .15s,transform .1s;
+  }
+  .mpBtn.on{background:linear-gradient(180deg,#fff7d6,#ffe58a);border-color:#f3b008;color:#7a4b04;box-shadow:0 2px 6px rgba(200,150,0,.2)}
+  .mpBtn:active{transform:scale(.96)}
+  .mpFoot{margin-top:5px;font-size:9.5px;font-weight:800;color:#8aa0ba;text-align:center;line-height:1.4}
+  #miniSheet{
+    position:fixed;left:50%;transform:translateX(-50%);
+    bottom:calc(env(safe-area-inset-bottom,0px) + 58px);z-index:39;
+    width:min(420px,calc(100% - 16px));
+  }
+  #miniSheet[hidden]{display:none}
+  #miniSheet .mpFoot{margin-top:6px}
+  #miniSheet .mpCloseWrap{display:flex;justify-content:flex-end;margin-top:7px}
+  #miniSheet .mpCloseWrap button{
+    appearance:none;border:0;font:inherit;font-weight:900;font-size:11.5px;border-radius:999px;
+    padding:7px 15px;background:#eef3f8;color:#5b7050;cursor:pointer;
+  }
+  #miniSheet .mpCloseWrap button:active{transform:scale(.97)}
 
   /* ---------- 타이밍 미니게임 ---------- */
   #timingPad{
@@ -559,10 +587,24 @@
         <div class="empty" data-gempty="1" hidden>도감이 비어 있어 기본 친구로 채워요</div>
       </section>
     </div>
+    <div class="miniPick" id="gymMini">
+      <div class="mpHead">🎮 라운드별 미니게임 <span class="mpSum">1R 🎯 가운데 · 2R ⚡ 연타 · 3R 🫧 속성</span></div>
+      <div class="mpRows"></div>
+      <div class="mpFoot">라운드마다 원하는 게임을 골라요 · 같은 게임을 여러 번 골라도 돼요</div>
+    </div>
     <div class="mFoot">
       <button class="ghost" id="gymBack" hidden>← 이전</button>
       <button class="primary" id="gymConfirm">아린 엔트리 확정 ✓</button>
     </div>
+  </div>
+</div>
+
+<div id="miniSheet" hidden>
+  <div class="sheetCard">
+    <div class="mpHead">🎮 라운드별 미니게임 <span class="mpSum">1R 🎯 가운데 · 2R ⚡ 연타 · 3R 🫧 속성</span></div>
+    <div class="mpRows"></div>
+    <div class="mpFoot">예: <b>가운데 · 가운데 · 연타</b>처럼 중복 선택도 가능해요</div>
+    <div class="mpCloseWrap"><button type="button" id="btnMiniClose">닫기</button></div>
   </div>
 </div>
 
@@ -615,6 +657,7 @@
 </div>
 
 <div id="gymBar" hidden>
+  <button class="chip" id="btnMiniSet">🎮 미니게임</button>
   <button class="chip" id="btnGymRematch">🔁 다시 배틀</button>
   <button class="chip" id="btnGymExit">🚪 체육관 나가기</button>
 </div>
@@ -3259,6 +3302,125 @@ const MOTION_BY_FX = {
   fire: 'leap', electric: 'zigzag', water: 'wave', grass: 'spinleap',
   ice: 'glide', mystic: 'levitate', cute: 'bounce',
 };
+/* ---------- 10-e. 배틀존 입체 연출 — 속성 색·타격 이펙트·카메라 ---------- */
+const battleShadowTex = radialGlowTex('rgba(10,16,28,0.78)', 'rgba(10,16,28,0)', 128);
+const TYPE_COLOR = {
+  '노말': 0xd9d3c0, '불꽃': 0xff8a3c, '물': 0x4fa8ff, '전기': 0xffdf4d, '풀': 0x6fdc5a,
+  '얼음': 0x8fe8ff, '격투': 0xff6b5c, '독': 0xc06cf0, '땅': 0xd9a45c, '비행': 0xa8c8ff,
+  '에스퍼': 0xff7fd0, '벌레': 0xb6d94a, '바위': 0xc2a878, '고스트': 0x9b7ff0, '드래곤': 0x7f8cff,
+  '악': 0x8a7cff, '강철': 0xc8d4e0, '페어리': 0xffa8d8,
+};
+function auraColorOf(id) {
+  const ts = typesOf(id);
+  for (let i = 0; i < ts.length; i++) {
+    if (TYPE_COLOR[ts[i]] != null) return TYPE_COLOR[ts[i]];
+  }
+  return 0xcfe4ff;
+}
+
+/* 착지 충격파 3D 링 풀 (gymWorld 전용) */
+const gymShockRings = [];
+for (let i = 0; i < 12; i++) {
+  const m = new THREE.Mesh(
+    new THREE.RingGeometry(0.5, 0.74, 48),
+    new THREE.MeshBasicMaterial({ color: 0xffd166, transparent: true, opacity: 0, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending })
+  );
+  m.rotation.x = -Math.PI / 2;
+  m.visible = false;
+  m.userData = { t: 0, dur: 1, grow: 2.6, y: 0, rise: 0, base: 0 };
+  gymWorld.add(m);
+  gymShockRings.push(m);
+}
+let gymShockCursor = 0;
+function gymShockAt(x, y, z, color, dur, grow, tilt, rise, size) {
+  const m = gymShockRings[gymShockCursor % gymShockRings.length];
+  gymShockCursor++;
+  if (!m) return null;
+  m.visible = true;
+  m.position.set(x, y, z);
+  m.scale.set(size || 1, size || 1, 1);
+  m.rotation.set(-Math.PI / 2 + (tilt || 0), 0, 0);
+  m.material.color.setHex(color == null ? 0xffd166 : color);
+  m.material.opacity = 0.9;
+  m.userData.t = 0; m.userData.dur = dur || 0.66; m.userData.grow = grow == null ? 2.6 : grow;
+  m.userData.y = y; m.userData.rise = rise || 0; m.userData.base = size || 1;
+  return m;
+}
+function updateGymShock(dt) {
+  gymShockRings.forEach((m) => {
+    if (!m.visible) return;
+    const u = m.userData;
+    u.t += dt;
+    const k = u.t / u.dur;
+    if (k >= 1) { m.visible = false; m.material.opacity = 0; return; }
+    const s = u.base * (1 + k * u.grow);
+    m.scale.set(s, s, 1);
+    m.position.y = u.y + (u.rise || 0) * k;
+    m.material.opacity = (1 - k) * (1 - k) * 0.95;
+  });
+}
+
+/* 타격 먼지·불꽃 파편 (gymWorld 전용 스프라이트 풀) */
+const gymDust = [];
+for (let i = 0; i < 34; i++) {
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 }));
+  s.visible = false;
+  gymWorld.add(s);
+  gymDust.push({ s, life: 0, ttl: 1, vx: 0, vy: 0, vz: 0, size: 0.3, max: 0.6 });
+}
+let gymDustCursor = 0;
+function gymDustBurst(x, y, z, color, n, power) {
+  const pw = power == null ? 1 : power;
+  for (let i = 0; i < n; i++) {
+    const d = gymDust[gymDustCursor % gymDust.length];
+    gymDustCursor++;
+    if (!d) continue;
+    const a = rndRange(0, Math.PI * 2);
+    const sp = rndRange(1.4, 4.6) * pw;
+    d.s.visible = true;
+    d.s.material.color.setHex(color == null ? 0xfff0c0 : color);
+    d.s.material.opacity = 0.95;
+    d.s.position.set(x + Math.cos(a) * 0.32, y + rndRange(0.05, 0.55), z + Math.sin(a) * 0.32);
+    d.life = 0;
+    d.ttl = rndRange(0.38, 0.82);
+    d.vx = Math.cos(a) * sp;
+    d.vz = Math.sin(a) * sp * 0.8;
+    d.vy = rndRange(0.7, 2.4) * pw;
+    d.size = rndRange(0.2, 0.46);
+    d.max = d.size * 2.2;
+  }
+}
+function updateGymDust(dt) {
+  gymDust.forEach((d) => {
+    if (!d.s.visible) return;
+    d.life += dt;
+    const k = d.life / d.ttl;
+    if (k >= 1) { d.s.visible = false; d.s.material.opacity = 0; return; }
+    d.vy -= dt * 5.4;
+    d.s.position.x += d.vx * dt;
+    d.s.position.y += d.vy * dt;
+    d.s.position.z += d.vz * dt;
+    d.vx *= Math.max(0, 1 - dt * 2.6);
+    d.vz *= Math.max(0, 1 - dt * 2.6);
+    d.s.material.opacity = (1 - k) * 0.92;
+    const sc = d.size + (d.max - d.size) * k;
+    d.s.scale.set(sc, sc, 1);
+  });
+}
+
+/* 공격 순간 카메라 연출 (줌인 + 옆/아래 앵글 + 타격 흔들림) */
+const gymAim = { k: 0, tk: 0, tx: 0, ty: 1.85, tz: 0.8, px: 0, py: 1.85, pz: 0.8, theta: 0.15, phi: -0.075, zoom: 0.2, shake: 0 };
+function gymAimSet(k, A, D) {
+  gymAim.tk = k;
+  if (!A || !D) return;
+  const ax = A.group.position.x, dx2 = D.baseX;
+  gymAim.tx = lerp(ax, dx2, 0.62);
+  gymAim.ty = 1.85;
+  gymAim.tz = 0.9;
+}
+function gymAimShake(v) { gymAim.shake = Math.max(gymAim.shake, v); }
+function gymAimReset() { gymAim.tk = 0; gymAim.shake = 0; }
+
 const GYM_ROUNDS = 3, GYM_ENTRY_N = 3;
 const gym = {
   stage: 'idle', t: 0,
@@ -3323,9 +3485,47 @@ function makeBattler(id, side) {
     );
     spr.position.y = h / 2 + 0.08;
     g.add(spr);
-    const sh = new THREE.Mesh(new THREE.PlaneGeometry(w * 0.98, w * 0.98), new THREE.MeshBasicMaterial({ map: shadowMap, transparent: true, depthWrite: false, opacity: 0.65 }));
-    sh.rotation.x = -Math.PI / 2; sh.position.y = 0.03;
-    g.add(sh);
+    /* ① 바닥 원형 그림자 — 뛰어오르면 작아지고 흐려지고, 착지하면 다시 진해진다 */
+    const shW = w * 0.66;
+    const shadow = new THREE.Mesh(
+      new THREE.PlaneGeometry(shW, shW),
+      new THREE.MeshBasicMaterial({ map: battleShadowTex, transparent: true, depthWrite: false, opacity: 0.62 })
+    );
+    shadow.rotation.x = -Math.PI / 2;
+    shadow.position.y = 0.125;
+    g.add(shadow);
+
+    /* ② 속성 발광 오라 — 발밑 3D 링(토러스 2겹) + 바닥 글로우 */
+    const ac = auraColorOf(id);
+    const aura = new THREE.Group();
+    aura.position.y = 0.14;
+    const ringA = new THREE.Mesh(
+      new THREE.TorusGeometry(w * 0.36, w * 0.026, 8, 48),
+      new THREE.MeshBasicMaterial({ color: ac, transparent: true, opacity: 0.72, depthWrite: false })
+    );
+    ringA.rotation.x = -Math.PI / 2;
+    aura.add(ringA);
+    const ringB = new THREE.Mesh(
+      new THREE.TorusGeometry(w * 0.47, w * 0.016, 6, 48),
+      new THREE.MeshBasicMaterial({ color: ac, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending })
+    );
+    ringB.rotation.x = -Math.PI / 2 + 0.2;
+    ringB.position.y = 0.06;
+    aura.add(ringB);
+    const auraDisc = new THREE.Mesh(
+      new THREE.PlaneGeometry(w * 0.9, w * 0.9),
+      new THREE.MeshBasicMaterial({ map: glowTex, color: ac, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.16 })
+    );
+    auraDisc.rotation.x = -Math.PI / 2;
+    auraDisc.position.y = 0.018;
+    aura.add(auraDisc);
+    g.add(aura);
+    /* 속성 후광 — 스프라이트 뒤에서 비쳐 실루엣에 색이 번진다 */
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: ac, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.22 }));
+    halo.scale.set(w * 1.55, h * 1.25, 1);
+    halo.position.set(0, h * 0.52 + 0.08, -0.34);
+    g.add(halo);
+
     const baseX = side === 0 ? -3.2 : 3.2;
     g.position.set(baseX, 0.48, 0);
     g.visible = false;
@@ -3334,9 +3534,53 @@ function makeBattler(id, side) {
       id, side, group: g, spr, tex, baseX, baseZ: 0, h, w,
       name: nameOf(id), fx: fxGroupOf(id), motion: MOTION_BY_FX[fxGroupOf(id)] || 'bounce',
       pop: 0, hit: 0,
+      shadow, aura, auraRingA: ringA, auraRingB: ringB, auraDisc, halo, auraColor: ac,
+      land: 0, phase: rndRange(0, 6.28), shot: 0,
     });
   });
 }
+/* 높이·착지 펄스에 맞춰 그림자와 오라를 실시간으로 맞춘다 */
+function updateBattlerRig(f, dt, tNow) {
+  if (!f) return;
+  const g = f.group;
+  const dy = Math.max(0, g.position.y - 0.48);
+  const hn = clamp(dy / 2.6, 0, 1);
+  if (f.land > 0) f.land = Math.max(0, f.land - dt * 2.6);
+  if (f.shot > 0) f.shot = Math.max(0, f.shot - dt * 2.2);
+  if (f.shadow) {
+    f.shadow.position.y = 0.125 - dy;                     /* 항상 바닥에 붙어 있게 */
+    const sc = (1 - 0.40 * hn) * (1 + f.land * 0.30);
+    f.shadow.scale.set(sc, sc, 1);
+    f.shadow.material.opacity = clamp(0.70 * (1 - 0.60 * hn) + f.land * 0.22, 0, 0.96);
+    f.shadow.visible = g.visible;
+  }
+  if (f.aura) {
+    f.aura.visible = g.visible;
+    f.aura.position.y = 0.14 - dy * 0.88;                 /* 거의 바닥에 머무는 마법진 */
+    const pulse = 0.5 + 0.5 * Math.sin(tNow * 2.2 + (f.phase || 0));
+    const s = (1 - 0.14 * hn) * (0.96 + 0.06 * pulse) * (1 + f.shot * 0.18);
+    if (f.auraRingA) {
+      f.auraRingA.scale.set(s, s, 1);
+      f.auraRingA.material.opacity = 0.72 + 0.20 * pulse + f.shot * 0.2;
+    }
+    if (f.auraRingB) {
+      f.auraRingB.scale.set(s * 1.03, s * 1.03, 1);
+      f.auraRingB.rotation.set(-Math.PI / 2 + 0.2 + Math.sin(tNow * 1.3 + (f.phase || 0)) * 0.14, Math.sin(tNow * 0.7 + (f.phase || 0)) * 0.22, 0);
+      f.auraRingB.material.opacity = 0.30 + 0.20 * (1 - pulse) + f.shot * 0.2;
+    }
+    if (f.auraDisc) {
+      f.auraDisc.scale.set(s, s, 1);
+      f.auraDisc.material.opacity = 0.06 + 0.07 * pulse + f.shot * 0.14;
+    }
+    if (f.halo) {
+      f.halo.visible = g.visible;
+      f.halo.material.opacity = 0.16 + 0.10 * pulse + f.shot * 0.22;
+      const hs = 1 + 0.03 * pulse + f.shot * 0.08;
+      f.halo.scale.set(f.w * 1.55 * hs, f.h * 1.25 * hs, 1);
+    }
+  }
+}
+
 function clearBattlers() {
   gym.fighters.forEach((f) => {
     if (!f) return;
@@ -3377,6 +3621,7 @@ function closeGymPicker() {
 }
 function buildGymPicker() {
   const st = gym.selStep;
+  renderMiniPick();
   const title = document.getElementById('gymTitle');
   const sub = document.getElementById('gymSub');
   const nm = (st === 0 ? (people[0] ? people[0].name : '아린') : (people[1] ? people[1].name : '지안'));
@@ -3496,6 +3741,7 @@ async function startMatch() {
   if (bar) bar.hidden = false;
   switchBgm('music_battle');
   battleLogLine(`🏟️ 체육관 배틀 시작! 비밀 엔트리 3마리씩 · <b>3판 승부</b>`);
+  battleLogLine(`🎮 라운드 미니게임 — <b>${miniPlanText()}</b>`);
   toast('🏟️ 3판 승부 시작!');
   nextRound();
 }
@@ -3507,6 +3753,8 @@ async function nextRound() {
   clearBattlers(); clearBalls();
   gym.stage = 'throw'; gym.t = 0;
   gym.timing = null; gym.tap = null; gym.icons = null;
+  gym.lastPower = null;
+  gymAimReset();
   setMiniPad(null);
   const ids = [gym.entries[0][gym.round], gym.entries[1][gym.round]];
   if (!ids[0] || !ids[1]) { gym.busy = false; finishMatch(); return; }
@@ -3600,6 +3848,64 @@ function setMiniPad(name) {
 function setTimingPad(on) { setMiniPad(on ? 'timing' : null); }
 const MINI_GAMES = ['timing', 'tap', 'icons'];
 const MINI_LABEL = { timing: '🎯 가운데 맞추기', tap: '⚡ 3초 파워 연타', icons: '🫧 속성 아이콘 톡톡' };
+/* ---------- 라운드별 미니게임 계획 (사용자가 직접 고르고 localStorage에 기억) ---------- */
+const MINI_KEY = 'pkm.gym.mini.v1';
+const MINI_SHORT = { timing: '🎯 가운데', tap: '⚡ 연타', icons: '🫧 속성' };
+function loadMiniPlan() {
+  try {
+    const raw = localStorage.getItem(MINI_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        const out = [];
+        for (let i = 0; i < GYM_ROUNDS; i++) out.push(MINI_GAMES.includes(arr[i]) ? arr[i] : MINI_GAMES[i]);
+        return out;
+      }
+    }
+  } catch (e) { /* 저장소 접근 불가 → 기본값 */ }
+  return MINI_GAMES.slice(0, GYM_ROUNDS);
+}
+function saveMiniPlan() {
+  try { localStorage.setItem(MINI_KEY, JSON.stringify(gym.mini)); } catch (e) { /* */ }
+}
+function miniPlanText() {
+  return gym.mini.map((g, i) => `${i + 1}R ${MINI_SHORT[g] || MINI_LABEL[g] || g}`).join(' · ');
+}
+function gymHintText() {
+  return `몬스터볼이 열리면 라운드별 미니게임! · 이번 판 <b>${miniPlanText()}</b>`;
+}
+function renderMiniPick() {
+  const hosts = document.querySelectorAll('.mpRows');
+  hosts.forEach((host) => {
+    if (!host) return;
+    let html = '';
+    for (let r = 0; r < GYM_ROUNDS; r++) {
+      html += `<div class="mpRow"><b class="mpR">${r + 1}R</b>`;
+      MINI_GAMES.forEach((g) => {
+        const on = gym.mini[r] === g;
+        html += `<button type="button" class="mpBtn${on ? ' on' : ''}" data-mround="${r}" data-mgame="${g}" aria-pressed="${on ? 'true' : 'false'}">${MINI_SHORT[g]}</button>`;
+      });
+      html += '</div>';
+    }
+    host.innerHTML = html;
+  });
+  document.querySelectorAll('.mpSum').forEach((el) => { el.textContent = miniPlanText(); });
+}
+function setMiniGame(round, game) {
+  const r = Number(round);
+  if (!(r >= 0 && r < GYM_ROUNDS) || !MINI_GAMES.includes(game)) return false;
+  if (gym.mini[r] === game) { renderMiniPick(); return true; }
+  gym.mini[r] = game;
+  saveMiniPlan();
+  renderMiniPick();
+  if (mode === 'gym' && gym.stage === 'idle') {
+    const hint = document.getElementById('hint');
+    if (hint) { hint.innerHTML = gymHintText(); hint.classList.remove('gone'); setTimeout(() => hint.classList.add('gone'), 5200); }
+  }
+  return true;
+}
+gym.mini = loadMiniPlan();
+renderMiniPick();
 const TYPE_EMOJI = {
   '노말': '⭐', '불꽃': '🔥', '물': '💧', '전기': '⚡', '풀': '🌿', '얼음': '❄️',
   '격투': '🥊', '독': '☠️', '땅': '⛰️', '비행': '🪽', '에스퍼': '🔮', '벌레': '🐛',
@@ -3617,7 +3923,8 @@ function sideAdv(i) {
   return eff > 1 ? 1 : eff < 1 ? -1 : 0;
 }
 function miniGameOfRound(r) {
-  return MINI_GAMES[r % MINI_GAMES.length];
+  if (r < 0 || r >= GYM_ROUNDS) return null;
+  return (gym.mini && gym.mini[r]) || MINI_GAMES[r % MINI_GAMES.length];
 }
 function startMiniGame() {
   const g = miniGameOfRound(gym.round);
@@ -3627,6 +3934,12 @@ function startMiniGame() {
   else beginIcons();
 }
 function finishMiniGame(w) {
+  const gNow = miniGameOfRound(gym.round);
+  let pw = 60;
+  if (gNow === 'timing' && gym.timing) pw = gym.timing.acc[w];
+  else if (gNow === 'tap' && gym.tap) pw = clamp((gym.tap.count[w] / 40) * 100, 12, 100);
+  else if (gNow === 'icons' && gym.icons) pw = clamp((gym.icons.score[w] / 12) * 100, 12, 100);
+  gym.lastPower = Math.round(pw);
   gym.roundWinner = w;
   setMiniPad(null);
   gym.stage = 'attack'; gym.t = 0; gym.hitDone = false;
@@ -3894,19 +4207,25 @@ function resolveTiming() {
   battleLogLine(`🎯 정확도 <b>${T.acc[0]}%</b> vs <b>${T.acc[1]}%</b> → <span class="a${w}">${fw.name}</span> 공격 성공!`);
   finishMiniGame(w);
 }
+const DASH_REACH = 4.35;
 function applyMotion(f, kind, k) {
   const p = f.group.position;
   const dir = f.side === 0 ? 1 : -1;
-  let y = 0.48, lean = 0, spin = 0, dx = 0;
-  if (kind === 'leap') { y = 0.48 + Math.sin(Math.min(1, k) * Math.PI) * 1.6; dx = dir * k * 2.2; spin = k * 0.5; }
-  else if (kind === 'zigzag') { y = 0.48 + Math.abs(Math.sin(k * Math.PI * 3)) * 0.4; dx = dir * k * 2.2; lean = Math.sin(k * Math.PI * 8) * 0.32; }
-  else if (kind === 'wave') { y = 0.48 + Math.sin(k * Math.PI) * 0.7; dx = dir * k * 2.0; lean = Math.sin(k * Math.PI * 3) * 0.28; }
-  else if (kind === 'spinleap') { y = 0.48 + Math.sin(k * Math.PI) * 1.15; dx = dir * k * 2.2; spin = k * Math.PI * 2; }
-  else if (kind === 'glide') { y = 0.48 + Math.sin(k * Math.PI) * 0.5; dx = dir * k * 2.0; spin = k * 0.9; }
-  else if (kind === 'levitate') { y = 0.48 + Math.sin(Math.min(1, k) * Math.PI) * 1.0 + 0.25; dx = dir * k * 2.1; spin = k * Math.PI * 1.5; }
-  else { y = 0.48 + Math.abs(Math.sin(k * Math.PI * 2)) * 0.55; dx = dir * k * 1.9; }
+  const kk = clamp(k, 0, 1);
+  const front = Math.sin(kk * Math.PI);        /* 화면 앞쪽(+Z)으로 나갔다 돌아오는 원근 */
+  let y = 0.48, lean = 0, spin = 0, dx = 0, dz = 0;
+  if (kind === 'leap') { y = 0.48 + Math.sin(kk * Math.PI) * 1.55; dx = dir * kk * DASH_REACH; dz = front * 2.7; spin = kk * 0.5; }
+  else if (kind === 'zigzag') { y = 0.48 + Math.abs(Math.sin(kk * Math.PI * 3)) * 0.42; dx = dir * kk * DASH_REACH; dz = front * 1.5; lean = Math.sin(kk * Math.PI * 8) * 0.32; }
+  else if (kind === 'wave') { y = 0.48 + Math.sin(kk * Math.PI) * 0.7; dx = dir * kk * DASH_REACH; dz = front * 2.0; lean = Math.sin(kk * Math.PI * 3) * 0.28; }
+  else if (kind === 'spinleap') { y = 0.48 + Math.sin(kk * Math.PI) * 1.15; dx = dir * kk * DASH_REACH; dz = front * 2.9; spin = kk * Math.PI * 2; }
+  else if (kind === 'glide') { y = 0.48 + Math.sin(kk * Math.PI) * 0.5; dx = dir * kk * DASH_REACH; dz = front * 1.3; spin = kk * 0.9; }
+  else if (kind === 'levitate') { y = 0.48 + Math.sin(kk * Math.PI) * 1.0 + 0.25; dx = dir * kk * DASH_REACH; dz = front * 1.8; spin = kk * Math.PI * 1.5; }
+  else { y = 0.48 + Math.abs(Math.sin(kk * Math.PI * 2)) * 0.55; dx = dir * kk * DASH_REACH; dz = front * 1.6; }
   p.x = f.baseX + dx;
   p.y = y;
+  p.z = f.baseZ + dz;
+  const persp = 1 + 0.10 * front;               /* 가까이 올수록 살짝 커진다 */
+  f.spr.scale.set(persp, persp, 1);
   f.spr.rotation.z = lean;
   f.spr.material.rotation = spin * 0.35;
 }
@@ -3914,38 +4233,69 @@ function updateAttack(dt) {
   const w = gym.roundWinner;
   const A = gym.fighters[w], D = gym.fighters[1 - w];
   if (!A || !D) return;
-  gym.fighters.forEach((f) => { if (f !== A) { f.group.position.x = f.baseX; f.group.position.y = 0.48; f.spr.rotation.z = 0; f.spr.material.rotation = 0; } });
+  gym.fighters.forEach((f) => {
+    if (f !== A) {
+      f.group.position.x = f.baseX; f.group.position.y = 0.48; f.group.position.z = f.baseZ;
+      f.spr.rotation.z = 0; f.spr.material.rotation = 0; f.spr.scale.set(1, 1, 1);
+    }
+  });
   const t = gym.t;
+  const dirD = D.side === 0 ? -1 : 1;
   if (t < 0.5) {
-    A.group.position.x = A.baseX - (A.side === 0 ? 0.4 : -0.4) * (t / 0.5);
-  } else if (t < 0.9) {
-    applyMotion(A, A.motion, (t - 0.5) / 0.4);
-  } else if (t < 1.7) {
+    /* 웅크리기 — 카메라가 슬슬 당겨진다 */
+    A.group.position.x = A.baseX - (A.side === 0 ? 0.42 : -0.42) * (t / 0.5);
+    A.group.position.z = A.baseZ;
+    gymAimSet(0.55, A, D);
+  } else if (t < 0.92) {
+    applyMotion(A, A.motion, (t - 0.5) / 0.42);
+    gymAimSet(0.88, A, D);
+  } else if (t < 1.72) {
     if (!gym.hitDone) {
       gym.hitDone = true;
-      const acc = gym.timing ? gym.timing.acc[w] : 60;
-      const dmg = Math.round(22 + acc * 0.3);
+      const pw = gym.lastPower != null ? gym.lastPower : 60;
+      const dmg = Math.round(22 + pw * 0.3);
       gym.hp[1 - w] = Math.max(0, gym.hp[1 - w] - dmg);
       updateHpBars();
-      fxEmit(D.fx, null, { x: D.group.position.x, z: D.group.position.z, y: 0.5, h: D.h });
+      const hx = D.baseX + dirD * 1.6, hz = D.baseZ + 0.55;
+      const dColor = auraColorOf(D.id);
+      /* 착지 충격파 — 바닥 링 + 기울어진 3D 링이 함께 퍼진다 */
+      gymShockAt(hx, 0.5, hz, dColor, 0.62, 2.9, 0, 0, 1);
+      gymShockAt(hx, 0.56, hz, 0xffffff, 0.4, 1.8, 0, 0.18, 0.62);
+      gymShockAt(hx, 0.62, hz, dColor, 0.82, 1.5, 1.15, 0.85, 0.8);
+      gymDustBurst(hx, 0.55, hz, dColor, 16, 1);
+      gymDustBurst(A.group.position.x, A.group.position.y + 0.4, A.group.position.z, auraColorOf(A.id), 8, 0.7);
       playCry(A.id);
-      burstStars(D.group.position.clone().add(new THREE.Vector3(0, 1.5, 0)), 16, 1.1, 1.7);
       say(D.group.position.clone().add(new THREE.Vector3(0, 2.8, 0)), `<b>-${dmg}</b> 데미지!`, 1300);
       say(A.group.position.clone().add(new THREE.Vector3(0, 2.9, 0)), `${A.name}의 <b>${MOVE_BY_FX[A.fx] || '돌진'}</b>!`, 1500);
       battleLogLine(`💥 <span class="a${D.side}">${D.name}</span> <b>-${dmg}</b> (HP ${Math.round(gym.hp[1 - w])})`);
       hintFade();
+      D.land = 1; A.land = 0.5; D.shot = 1; A.shot = 0.8;
+      gymAimShake(0.14);
     }
     applyMotion(A, A.motion, 1);
-    D.spr.rotation.z = Math.sin(gym.t * 46) * 0.2;
-    D.spr.position.x = Math.sin(gym.t * 60) * 0.1;
-  } else if (t < 2.2) {
-    const k = (t - 1.7) / 0.5;
-    A.group.position.x = lerp(A.group.position.x, A.baseX, Math.min(1, k * 1.7));
-    A.group.position.y = lerp(A.group.position.y, 0.48, Math.min(1, k * 1.7));
+    /* 피격자 — 뒤로 밀려나며 부르르 떨림 */
+    const kb = clamp((t - 0.92) / 0.24, 0, 1);
+    const es = 1 - Math.pow(1 - kb, 3);
+    D.group.position.x = D.baseX + dirD * 0.62 * es;
+    D.group.position.z = D.baseZ + 0.26 * es;
+    D.spr.rotation.z = Math.sin(t * 46) * 0.2;
+    D.spr.position.x = Math.sin(t * 60) * 0.1;
+    gymAimSet(1, A, D);
+  } else if (t < 2.25) {
+    const k = clamp((t - 1.72) / 0.53, 0, 1);
+    const e = 1 - Math.pow(1 - k, 2.2);
+    A.group.position.x = lerp(A.baseX + (A.side === 0 ? DASH_REACH : -DASH_REACH), A.baseX, e);
+    A.group.position.y = lerp(A.group.position.y, 0.48, e);
+    A.group.position.z = lerp(A.group.position.z, A.baseZ, e);
+    A.spr.scale.set(1, 1, 1);
     A.spr.rotation.z = 0; A.spr.material.rotation = 0;
+    D.group.position.x = lerp(D.baseX + dirD * 0.62, D.baseX, e);
+    D.group.position.z = lerp(D.baseZ + 0.26, D.baseZ, e);
     D.spr.rotation.z = 0; D.spr.position.x = 0;
+    gymAimSet(1 - k, A, D);
   } else {
     gym.stage = 'rounddone'; gym.t = 0;
+    gymAimReset();
     gym.wins[gym.roundWinner]++;
     const nm = people[gym.roundWinner] ? people[gym.roundWinner].name : '아린';
     battleLogLine(`✅ <b>${gym.round + 1}라운드</b> — <span class="a${gym.roundWinner}">${nm}</span> 승리 (${gym.wins[0]} : ${gym.wins[1]})`);
@@ -3975,28 +4325,37 @@ function finishMatch() {
   toast(`🏆 ${nm} 우승! ${gym.wins[0]} : ${gym.wins[1]}`);
   if (battleHpEls) { battleHpEls.titles = [`${people[0] ? people[0].name : '아린'} · 우승 ${gym.wins[0]}`, `${people[1] ? people[1].name : '지안'} · ${gym.wins[1]}`]; updateHpBars(); }
 }
-function updateGym(dt) {
-  if (gym.stage === 'idle') return;
-  gym.t += dt;
-  if (gym.stage === 'throw') updateThrow(dt);
+function updateGym(dt, tNow) {
+  const T = tNow || 0;
+  if (gym.stage !== 'idle') {
+    gym.t += dt;
+    if (gym.stage === 'throw') updateThrow(dt);
   else if (gym.stage === 'timing') updateTiming(dt);
   else if (gym.stage === 'tap') updateTap(dt);
   else if (gym.stage === 'icons') updateIcons(dt);
   else if (gym.stage === 'attack') updateAttack(dt);
-  else if (gym.stage === 'rounddone') { if (gym.t > 1.8) nextRound(); }
-  else if (gym.stage === 'final') {
-    if (!gym.jingle) { gym.jingle = true; }
-    const ch = gym.champion;
-    if (ch) {
-      ch.group.position.y = 0.48 + Math.abs(Math.sin(gym.t * 4.2)) * 0.55;
-      ch.spr.material.rotation = Math.sin(gym.t * 2.2) * 0.1;
+    else if (gym.stage === 'rounddone') { if (gym.t > 1.8) nextRound(); }
+    else if (gym.stage === 'final') {
+      if (!gym.jingle) { gym.jingle = true; }
+      const ch = gym.champion;
+      if (ch) {
+        ch.group.position.y = 0.48 + Math.abs(Math.sin(gym.t * 4.2)) * 0.55;
+        ch.spr.material.rotation = Math.sin(gym.t * 2.2) * 0.1;
+      }
+      if (gym.t > 1.0 && gym.t < 1.1) burstHearts(new THREE.Vector3(0, 3.0, 0), 8);
+      if (gym.t > 2.2 && gym.t < 2.3) burstStars(new THREE.Vector3(0, 2.4, 0), 14, 2.2, 1.8);
     }
-    if (gym.t > 1.0 && gym.t < 1.1) burstHearts(new THREE.Vector3(0, 3.0, 0), 8);
-    if (gym.t > 2.2 && gym.t < 2.3) burstStars(new THREE.Vector3(0, 2.4, 0), 14, 2.2, 1.8);
   }
+  /* 그림자·오라·이펙트는 배틀이 끝난 뒤에도 마저 정리한다 */
+  gym.fighters.forEach((f) => updateBattlerRig(f, dt, T));
+  updateGymShock(dt);
+  updateGymDust(dt);
+  if (gym.stage !== 'attack') gymAim.tk = 0;
 }
 function stopMatch() {
   gym.stage = 'idle'; gym.t = 0;
+  gymAimReset();
+  gymAim.k = 0; gymAim.shake = 0;
   clearBattlers(); clearBalls();
   setTimingPad(false);
   setBattleHud(false);
@@ -4945,7 +5304,7 @@ function syncHud() {
     hint.innerHTML = mode === 'indoor'
       ? '회복 머신·간호순·오박사님·도감 PC를 눌러 보세요 · <b>🚪 밖으로 나가기</b>로 아지트 복귀'
       : mode === 'gym'
-        ? '몬스터볼이 열리면 <b>스톱!</b> 타이밍 대결 · 상성이 유리하면 존이 넓어져요'
+        ? gymHintText()
         : '바닥 탭·방향키로 걷기 · 포켓몬을 누르면 타입별 인사! · 빨간 지붕 <b>센터</b>는 회복, 파란 돔 <b>체육관</b>은 배틀!';
     setTimeout(() => hint.classList.add('gone'), 7000);
   }
@@ -5046,6 +5405,30 @@ document.getElementById('gymClose').addEventListener('click', () => {
 });
 document.getElementById('gymConfirm').addEventListener('click', confirmGymStep);
 document.getElementById('gymBack').addEventListener('click', () => openGymPicker(0));
+/* 라운드별 미니게임 선택 */
+document.addEventListener('click', (e) => {
+  const b = e.target.closest && e.target.closest('.mpBtn');
+  if (!b) return;
+  e.preventDefault();
+  e.stopPropagation();
+  setMiniGame(b.dataset.mround, b.dataset.mgame);
+});
+function toggleMiniSheet(on) {
+  const s = document.getElementById('miniSheet');
+  if (!s) return false;
+  const show = on == null ? s.hidden : !!on;
+  s.hidden = !show;
+  if (show) renderMiniPick();
+  return show;
+}
+document.getElementById('btnMiniSet').addEventListener('click', (e) => {
+  e.stopPropagation();
+  toggleMiniSheet();
+});
+document.getElementById('btnMiniClose').addEventListener('click', (e) => {
+  e.stopPropagation();
+  toggleMiniSheet(false);
+});
 document.getElementById('gymBar').addEventListener('click', (e) => {
   if (e.target.id === 'btnGymRematch') {
     if (gym.entries[0].length && gym.entries[1].length) startMatch();
@@ -5328,6 +5711,7 @@ syncHud();
 const clock = new THREE.Clock();
 const tmpV = new THREE.Vector3();
 const tmpC = new THREE.Color();
+const tmpAim = new THREE.Vector3();
 const badgeRight = new THREE.Vector3();
 const badgeProj = new THREE.Vector3();
 const badgeWorld = new THREE.Vector3();
@@ -5472,7 +5856,7 @@ function animate() {
     });
     if (gymLive.ring) gymLive.ring.material.opacity = 0.3 + Math.abs(Math.sin(t * 1.5)) * (gym.stage === 'timing' ? 0.55 : 0.25);
     gymLive.spotCones.forEach((c) => { c.material.opacity = 0.08 + Math.abs(Math.sin(t * 0.8 + c.position.x)) * 0.06; });
-    updateGym(dt);
+    updateGym(dt, t);
   }
   if (mode === 'indoor' && indoorWorld.userData.pillar) {
     const bands = indoorWorld.userData.pillar.children.filter((o) => o.userData && o.userData.spin);
@@ -5580,14 +5964,34 @@ function animate() {
   view.theta = lerp(view.theta, viewT.theta, Math.min(1, dt * 9));
   view.phi = lerp(view.phi, viewT.phi, Math.min(1, dt * 9));
   view.radius = lerp(view.radius, viewT.radius, Math.min(1, dt * 6));
-  const sp = Math.sin(view.phi), cp = Math.cos(view.phi);
+  /* 공격 연출 — 카메라가 공격자/피격자 쪽으로 당겨지고 옆·아래 앵글로 살짝 기운다 */
+  const aimTo = mode === 'gym' ? gymAim.tk : 0;
+  gymAim.k = lerp(gymAim.k, aimTo, Math.min(1, dt * (aimTo > gymAim.k ? 3.6 : 2.6)));
+  if (gymAim.k < 0.003) gymAim.k = 0;
+  gymAim.px = lerp(gymAim.px, gymAim.tx, Math.min(1, dt * 3.4));
+  gymAim.py = lerp(gymAim.py, gymAim.ty, Math.min(1, dt * 3.4));
+  gymAim.pz = lerp(gymAim.pz, gymAim.tz, Math.min(1, dt * 3.4));
+  const ak = gymAim.k;
+  const camT = tmpV.copy(camSmooth);
+  if (ak > 0.002) camT.lerp(tmpAim.set(gymAim.px, gymAim.py, gymAim.pz), ak * 0.55);
+  const vTheta = view.theta + gymAim.theta * ak;
+  const vPhi = clamp(view.phi + gymAim.phi * ak, 0.26, 1.45);
+  const vRad = view.radius * (1 - gymAim.zoom * ak);
+  const sp = Math.sin(vPhi), cp = Math.cos(vPhi);
   camera.position.set(
-    camSmooth.x + view.radius * sp * Math.sin(view.theta),
-    camSmooth.y + view.radius * cp + 0.4,
-    camSmooth.z + view.radius * sp * Math.cos(view.theta)
+    camT.x + vRad * sp * Math.sin(vTheta),
+    camT.y + vRad * cp + 0.4,
+    camT.z + vRad * sp * Math.cos(vTheta)
   );
   if (camera.position.y < 0.9) camera.position.y = 0.9;
-  camera.lookAt(camSmooth);
+  if (gymAim.shake > 0.002) {
+    gymAim.shake = Math.max(0, gymAim.shake - dt * 0.62);
+    const j = gymAim.shake;
+    camera.position.x += Math.sin(t * 96) * j;
+    camera.position.y += Math.cos(t * 121) * j * 0.7;
+    camera.position.z += Math.sin(t * 83 + 1.2) * j * 0.5;
+  }
+  camera.lookAt(camT);
   camSmooth.lerp(camTarget, Math.min(1, dt * 4));
 
   /* 이름 배지 — 카메라 기준으로 좌우로 벌리고, 화면에서 겹치면 위로 밀어 올린다 */
@@ -5751,6 +6155,11 @@ window.__AJIT = {
       stage: gym.stage, round: gym.round, wins: gym.wins.slice(), hp: gym.hp.slice(),
       entries: gym.entries.map((a) => a.slice()), sel: gym.sel.map((a) => a.slice()), selStep: gym.selStep,
       modal: !document.getElementById('gymModal').hidden,
+      mini: gym.mini.slice(),
+      roundMini: miniGameOfRound(gym.round),
+      roundMiniLabel: MINI_LABEL[miniGameOfRound(gym.round)] || null,
+      planText: miniPlanText(),
+      lastPower: gym.lastPower,
       tapPhase: gym.tap ? gym.tap.phase : null,
       timing: gym.timing ? { run: gym.timing.run, pos: gym.timing.pos.slice(), acc: gym.timing.acc.slice(), done: gym.timing.done.slice(), zone: gym.timing.zone.slice(), speed: gym.timing.speed.slice(), tag: gym.timing.tag.slice() } : null,
       result: gym.result ? { winner: gym.result.winner, wins: gym.result.wins.slice() } : null,
@@ -5809,6 +6218,64 @@ window.__AJIT = {
       pad: !document.getElementById('timingPad').hidden,
       bar: !document.getElementById('gymBar').hidden,
       exitVisible: !document.getElementById('btnExitPlace').hidden,
+    };
+  },
+  /* ---- 라운드별 미니게임 ---- */
+  get miniPlan() {
+    let stored = null;
+    try { stored = localStorage.getItem(MINI_KEY); } catch (e) { stored = null; }
+    return { plan: gym.mini.slice(), text: miniPlanText(), stored, label: gym.mini.map((g) => MINI_LABEL[g]) };
+  },
+  setMini(r, g) { const ok = setMiniGame(r, g); return { ok, plan: gym.mini.slice(), text: miniPlanText() }; },
+  setPlan(arr) {
+    if (!Array.isArray(arr) || arr.length < GYM_ROUNDS) return null;
+    for (let i = 0; i < GYM_ROUNDS; i++) if (MINI_GAMES.includes(arr[i])) gym.mini[i] = arr[i];
+    saveMiniPlan(); renderMiniPick();
+    return gym.mini.slice();
+  },
+  toggleMiniSheet(on) { return toggleMiniSheet(on); },
+  poseBattler(side, kind, k) {
+    const f = gym.fighters[Number(side)];
+    if (!f) return null;
+    applyMotion(f, kind || f.motion, k == null ? 0.5 : Number(k));
+    updateBattlerRig(f, 0.016, performance.now() * 0.001);
+    return {
+      pos: f.group.position.toArray().map((v) => +v.toFixed(2)),
+      shadow: f.shadow ? { y: +f.shadow.position.y.toFixed(3), op: +f.shadow.material.opacity.toFixed(3), s: +f.shadow.scale.x.toFixed(3) } : null,
+      aura: f.aura ? { y: +f.aura.position.y.toFixed(3), op: +f.auraRingA.material.opacity.toFixed(3) } : null,
+    };
+  },
+  lookAtBattler(side, radius) {
+    const f = gym.fighters[Number(side)];
+    if (!f) return null;
+    const bx = f.baseX, by = 1.1, bz = f.baseZ;
+    setSceneView(bx, by, bz, 0.06, 1.2, radius || 12);
+    view.theta = viewT.theta; view.phi = viewT.phi; view.radius = viewT.radius;
+    camSmooth.set(bx, by, bz);
+    return { bx, radius };
+  },
+  miniButtons() {
+    return [...document.querySelectorAll('#gymMini .mpBtn, #miniSheet .mpBtn')].map((b) => {
+      const r = b.getBoundingClientRect();
+      return { round: Number(b.dataset.mround), game: b.dataset.mgame, on: b.classList.contains('on'), text: b.textContent, x: Math.round(r.left + r.width / 2), y: Math.round(r.top + r.height / 2), w: Math.round(r.width) };
+    });
+  },
+  /* ---- 배틀존 3D 연출 ---- */
+  get gymVfx() {
+    const f = gym.fighters.filter(Boolean).map((x) => ({
+      side: x.side, id: x.id, name: x.name,
+      pos: x.group.position.toArray().map((v) => +v.toFixed(2)),
+      shadow: x.shadow ? { y: +x.shadow.position.y.toFixed(3), op: +x.shadow.material.opacity.toFixed(3), sx: +x.shadow.scale.x.toFixed(3) } : null,
+      aura: x.aura ? { vis: x.aura.visible, y: +x.aura.position.y.toFixed(3), op: +x.auraRingA.material.opacity.toFixed(3), color: '#' + x.auraRingA.material.color.getHexString() } : null,
+      land: +(x.land || 0).toFixed(2),
+    }));
+    return {
+      aim: { k: +gymAim.k.toFixed(3), tk: gymAim.tk, shake: +gymAim.shake.toFixed(3) },
+      cam: camera.position.toArray().map((v) => +v.toFixed(2)),
+      camTarget: [camSmooth.x, camSmooth.y, camSmooth.z].map((v) => +v.toFixed(2)),
+      rings: gymShockRings.filter((m) => m.visible).length,
+      dust: gymDust.filter((d) => d.s.visible).length,
+      fighters: f,
     };
   },
   screenOfWorld(x, y, z) {
