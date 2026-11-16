@@ -552,6 +552,14 @@
       gap: 5px;
       text-align: center;
     }
+    /* 400px 폰: 배지 nowrap 때문에 7칸이 화면을 넘던 문제 → 칸을 0 기준으로 줄이고 배지는 말줄임 */
+    @media (max-width: 560px) {
+      .cal-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+      .cal-wrapper { padding: 8px 6px; }
+      .cal-cell { min-width: 0; padding: 3px 1px; overflow: hidden; }
+      .cal-badge { max-width: 100%; overflow: hidden; text-overflow: ellipsis; font-size: 8px; padding: 1px 2px; }
+      .cal-day-head { font-size: 9.5px; }
+    }
     .cal-day-head {
       font-size: 10.5px;
       font-weight: 800;
