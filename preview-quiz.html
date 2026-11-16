@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>포켓몬 배틀 문제 카드 확대 프리뷰</title>
+<style>
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%;font-family:'Noto Sans KR',system-ui,sans-serif;background:#eaf6c9;color:#2f4a16}
+  .app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;background:linear-gradient(180deg,#f7ffdd,#eaf6c9)}
+  .topbar{display:flex;gap:6px;padding:10px 12px;background:#3a6a1e;color:#fff;align-items:center;justify-content:space-between}
+  .topbar b{font-size:13px}
+  .tabs{display:flex;gap:6px}
+  .tabs button{border:0;border-radius:999px;padding:5px 11px;font-weight:900;font-size:12px;cursor:pointer;background:rgba(255,255,255,.2);color:#fff}
+  .tabs button.on{background:#ffd166;color:#2f4a16}
+  .arena{flex:1 1 auto;min-height:220px;margin:10px 10px 4px;border-radius:18px;background:linear-gradient(180deg,#9ee3ff 0%,#d7f5c4 65%,#93d46d 100%);border:2.5px solid #9dd977;padding:12px;display:flex;flex-direction:column;justify-content:space-between;position:relative}
+  .hpbox{background:rgba(255,255,255,.93);border-radius:12px;padding:7px 11px;width:54%;max-width:210px;box-shadow:0 3px 0 rgba(0,0,0,.08)}
+  .hpbox.foe{align-self:flex-end}
+  .hpbox .nm{font-size:13px;font-weight:900;display:flex;justify-content:space-between}
+  .bar{height:8px;background:#e2e8f0;border-radius:99px;margin-top:5px;overflow:hidden}
+  .bar i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);transition:width .25s}
+  .sprites{text-align:center;font-size:clamp(38px,10vw,54px);line-height:1.1;user-select:none}
+  .controls{padding:8px 10px calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px}
+  .qmeta{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 2px}
+  .tag{font-size:clamp(10px,2.7vw,12px);font-weight:900;color:#4b7a2a;background:#dbefb4;border-radius:8px;padding:3px 9px}
+  .qcount{font-size:clamp(10px,2.7vw,12px);font-weight:900;color:#8a6a20;background:#fff3c4;border:1.5px solid #ffd166;border-radius:8px;padding:3px 9px}
+  .qcard{background:#fff;border:3px solid #9dd977;border-radius:18px;padding:clamp(12px,3vw,18px) 14px;box-shadow:0 4px 0 rgba(70,120,30,.18);text-align:center}
+  .qtext{font-weight:900;font-size:clamp(28px,7.8vw,44px);line-height:1.2;color:#233d0e;word-break:keep-all}
+  .qtext.lang{font-size:clamp(24px,6.5vw,34px)}
+  .qsub{margin-top:5px;font-size:clamp(12px,3.2vw,14px);font-weight:800;color:#5c7d34}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:clamp(6px,1.4vh,10px)}
+  .choice{min-height:clamp(46px,8.4vh,68px);border-radius:14px;font-weight:900;font-size:clamp(20px,5.6vw,32px);color:#2b4318;background:linear-gradient(180deg,#ffffff,#f2ffe0);border:3px solid #cfe79a;box-shadow:0 4px 0 rgba(70,120,30,.35),inset 0 1px 0 #fff;cursor:pointer;padding:2px 6px}
+  .choice:active{transform:translateY(2px)}
+  .choice.ok{background:#bbf7d0;border-color:#22c55e}
+  .choice.no{background:#fecaca;border-color:#ef4444}
+  .msg{text-align:center;font-size:12px;font-weight:900;color:#4b7a2a;min-height:18px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <b>📝 문제 카드 확대 프리뷰</b>
+    <div class="tabs">
+      <button class="on" onclick="setMode('math',this)">산수</button>
+      <button onclick="setMode('hangul',this)">한글</button>
+      <button onclick="setMode('english',this)">영어</button>
+    </div>
+  </div>
+  <div class="arena">
+    <div class="hpbox foe"><div class="nm"><span>🔥 파이리</span><span>Lv.5</span></div><div class="bar"><i id="foeHp" style="width:100%"></i></div></div>
+    <div class="sprites">⚡ &nbsp;⚔️&nbsp; 🔥</div>
+    <div class="hpbox"><div class="nm"><span>⚡ 피카츄</span><span>Lv.5</span></div><div class="bar"><i id="meHp" style="width:100%"></i></div></div>
+  </div>
+  <div class="controls">
+    <div class="qmeta"><span class="tag" id="tag"></span><span class="qcount" id="qcnt"></span></div>
+    <div class="qcard">
+      <div class="qtext" id="qtext"></div>
+      <div class="qsub" id="qsub"></div>
+    </div>
+    <div class="choices" id="choices"></div>
+    <div class="msg" id="msg">버튼 크기는 그대로, 문제 카드만 키운 프리뷰예요!</div>
+  </div>
+</div>
+<script>
+const DATA = {
+  math:[
+    {tag:'쉬움 · 덧셈',q:'14 + 27 = ?',sub:'',ans:'41',opts:['39','41','43','31']},
+    {tag:'보통 · 곱셈',q:'7 × 8 = ?',sub:'',ans:'56',opts:['54','56','48','63']}
+  ],
+  hangul:[
+    {tag:'한글 · 낱말',q:'🍎 사 [ ? ]',sub:'그림을 보고 빈칸에 들어갈 글자는?',ans:'과',opts:['과','자','탕','랑']},
+    {tag:'한글 · 동물',q:'🐶 강 [ ? ] 지',sub:'빈칸에 들어갈 글자를 고르세요',ans:'아',opts:['아','어','오','우']}
+  ],
+  english:[
+    {tag:'영어 · 단어',q:'🍎 Apple',sub:'뜻에 맞는 우리말을 고르세요',ans:'사과',opts:['사과','바나나','포도','딸기']},
+    {tag:'영어 · 빈칸',q:'I [ ? ] a cat.',sub:'문장에 알맞은 단어는?',ans:'have',opts:['have','is','are','do']}
+  ]
+};
+let mode='math', idx=0, foe=100;
+function setMode(m,btn){
+  mode=m; idx=0;
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render();
+}
+function render(){
+  const item = DATA[mode][idx % DATA[mode].length];
+  document.getElementById('tag').textContent = item.tag;
+  document.getElementById('qcnt').textContent = (idx%DATA[mode].length+1)+' / '+DATA[mode].length;
+  const qt = document.getElementById('qtext');
+  qt.textContent = item.q;
+  qt.className = 'qtext' + (mode==='math'?'':' lang');
+  const qs = document.getElementById('qsub');
+  qs.textContent = item.sub; qs.style.display = item.sub?'block':'none';
+  const box = document.getElementById('choices');
+  box.innerHTML='';
+  item.opts.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='choice'; b.textContent=o;
+    b.onclick=()=>{
+      if(o===item.ans){ b.classList.add('ok'); foe=Math.max(20,foe-25); document.getElementById('foeHp').style.width=foe+'%'; document.getElementById('msg').textContent='정답! 10만볼트 공격! ⚡'; setTimeout(()=>{idx++;render();},650); }
+      else { b.classList.add('no'); document.getElementById('msg').textContent='아깝다! 다시 골라 보세요!'; }
+    };
+    box.appendChild(b);
+  });
+}
+render();
+</script>
+</body>
+</html>
