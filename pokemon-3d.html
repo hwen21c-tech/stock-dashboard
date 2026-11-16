@@ -3269,6 +3269,15 @@ const gym = {
   autoPressT: 0, result: null, jingle: false,
 };
 let battleHpEls = null;
+function initHudEls() {
+  battleHpEls = {
+    bars: [document.querySelector('#hpWrap .hp.p1 i'), document.querySelector('#hpWrap .hp.p2 i')],
+    names: [document.querySelector('#hpWrap .who1'), document.querySelector('#hpWrap .who2')],
+    nums: [document.querySelector('#hpWrap .num1'), document.querySelector('#hpWrap .num2')],
+    titles: ['아린', '지안'],
+  };
+  updateHpBars();
+}
 
 function battleLogLine(html) {
   const el = document.getElementById('battleLog');
@@ -3478,6 +3487,7 @@ function setHudTitles() {
   updateHpBars();
 }
 async function startMatch() {
+  initHudEls();
   gym.wins = [0, 0]; gym.hp = [100, 100]; gym.round = -1; gym.result = null; gym.busy = false;
   const logEl = document.getElementById('battleLog');
   if (logEl) logEl.innerHTML = '';
@@ -5785,6 +5795,7 @@ window.__AJIT = {
     gym.wins = [0, 0]; gym.hp = [100, 100]; gym.result = null; gym.busy = false;
     gym.round = (round == null ? 1 : round) - 2;
     setBattleHud(true);
+    initHudEls();
     const bar = document.getElementById('gymBar');
     if (bar) bar.hidden = false;
     switchBgm('music_battle');
