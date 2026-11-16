@@ -597,11 +597,122 @@
     font-size:7px;font-weight:900;line-height:1.15;padding:1px 4px;border-radius:6px;white-space:nowrap;
   }
 
+  /* ---------- 상단 도감 칩 (버튼 · 어디서나 도감 열기) ---------- */
+  button.dexchip{appearance:none;font-family:inherit;cursor:pointer;transition:transform .12s,box-shadow .18s}
+  button.dexchip:active{transform:scale(.96)}
+  button.dexchip .p1b{color:#c2306a}
+  button.dexchip .p2b{color:#1c6fae}
+
+  /* ---------- 🐾 우리 도감 (아린·지안 탭) ---------- */
+  #dexViewModal{
+    position:fixed;inset:0;z-index:44;display:flex;align-items:center;justify-content:center;
+    padding:calc(env(safe-area-inset-top,0px) + 8px) 8px calc(env(safe-area-inset-bottom,0px) + 8px);
+    background:rgba(18,38,20,.46);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  }
+  #dexViewModal[hidden]{display:none!important}
+  .dvTabs{display:flex;gap:6px;padding:9px 12px 0}
+  .dvTab{
+    flex:1;appearance:none;border:1.5px solid #e2eed7;background:#f7fcf2;border-radius:12px;
+    font-family:inherit;font-weight:900;font-size:12px;color:#4a6540;padding:8px 6px;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;gap:5px;white-space:nowrap;
+    transition:background .15s,border-color .15s,transform .1s;
+  }
+  .dvTab:active{transform:scale(.97)}
+  .dvTab .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .dvTab .dot.p1{background:#ff8fb1}
+  .dvTab .dot.p2{background:#8fd0f5}
+  .dvTab b{font-size:12.5px;color:#b3560a}
+  .dvTab.on{background:linear-gradient(180deg,#fff7d6,#ffe58a);border-color:#f3b008;color:#6b4200;box-shadow:0 2px 8px rgba(200,150,0,.2)}
+  .dvGrid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;
+    padding:9px 12px 4px;overflow:auto;min-height:66px;max-height:min(46vh,340px);align-content:start;
+  }
+  .dvCell{
+    position:relative;background:#fff;border:2px solid #e6efe0;border-radius:12px;padding:4px 2px 3px;
+    display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;
+  }
+  .dvCell img{width:46px;height:46px;object-fit:contain;display:block}
+  .dvCell .nm{font-size:9.5px;font-weight:900;color:#3b5730;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.25}
+  .dvCell .n{font-size:8.5px;font-weight:800;color:#a08a4a;line-height:1.1}
+  .dvCell .st{position:absolute;top:2px;left:2px;background:rgba(40,56,84,.94);color:#fff;font-size:7.5px;font-weight:900;border-radius:6px;padding:1px 4px;white-space:nowrap}
+  .dvCell .pk{position:absolute;top:1px;right:3px;font-size:10px;line-height:1;color:#e8a72c;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+  .dvCell.inpick{border-color:#f3b008;background:linear-gradient(180deg,#fffdf0,#fff2c2)}
+  .dvEmpty{padding:12px 14px 6px;font-size:11px;font-weight:800;color:#8d9c83;line-height:1.6;text-align:center}
+  .dvFoot{flex-wrap:wrap}
+  .mFoot button.dad{background:#eef1ff;color:#3f4f8a;border:1.5px solid #dfe5ff}
+
+  /* ---------- 🔒 아빠 잠금 (PIN) ---------- */
+  #dadPinModal{
+    position:fixed;inset:0;z-index:46;display:flex;align-items:center;justify-content:center;
+    padding:calc(env(safe-area-inset-top,0px) + 8px) 8px calc(env(safe-area-inset-bottom,0px) + 8px);
+    background:rgba(12,20,40,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  }
+  #dadPinModal[hidden]{display:none!important}
+  .pinCard{width:min(340px,100%)}
+  .pinDots{display:flex;justify-content:center;gap:12px;padding:14px 0 6px}
+  .pinDots i{width:15px;height:15px;border-radius:50%;background:#eef3e6;border:2px solid #dbe6cf;transition:background .15s,transform .15s}
+  .pinDots i.on{background:linear-gradient(180deg,#8ef06a,#3fc22a);border-color:#2ea11c;transform:scale(1.1)}
+  .pinDots.bad i{background:#f7c9cf;border-color:#e2454f}
+  .pinPad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:4px 14px 6px}
+  .pinPad button{
+    appearance:none;border:2px solid #e2eed7;background:linear-gradient(180deg,#fff,#f3f9ea);border-radius:14px;
+    font-family:inherit;font-weight:900;font-size:19px;color:#33501f;padding:12px 0;cursor:pointer;
+  }
+  .pinPad button:active{transform:scale(.96)}
+  .pinPad button.wide{font-size:14px;color:#6b7f5e}
+  .pinMsg{text-align:center;font-size:10.5px;font-weight:900;color:#8d9c83;min-height:15px;padding:0 14px;line-height:1.4}
+  .pinMsg.bad{color:#c0392b}
+
+  /* ---------- 체육관 모드 선택 · 혼자 연습 ---------- */
+  #gymModeModal,#practiceModal{
+    position:fixed;inset:0;z-index:42;display:flex;align-items:center;justify-content:center;
+    padding:calc(env(safe-area-inset-top,0px) + 8px) 8px calc(env(safe-area-inset-bottom,0px) + 8px);
+    background:rgba(10,20,36,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  }
+  #gymModeModal[hidden],#practiceModal[hidden]{display:none!important}
+  .modeRow{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:12px}
+  .modeCard{
+    appearance:none;border:2px solid #dbe6f5;background:#fff;border-radius:16px;font-family:inherit;color:#26405e;
+    padding:16px 8px 13px;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:transform .1s;
+  }
+  .modeCard .mcEmo{font-size:26px;line-height:1}
+  .modeCard b{font-size:13.5px;font-weight:900}
+  .modeCard .mcSub{font-size:9.5px;font-weight:800;color:#7f93ad;line-height:1.35;text-align:center}
+  .modeCard:active{transform:scale(.97)}
+  .modeCard.solo{border-color:#ffe0a3;background:linear-gradient(180deg,#fffdf3,#fff4d8);color:#7a4b04}
+  .modeCard.solo .mcSub{color:#a08753}
+  .prLabel{padding:10px 14px 0;font-size:11.5px;font-weight:900;color:#28405c;display:flex;align-items:center;gap:6px}
+  .prLabel span{color:#b3560a;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prWild{display:flex;align-items:center;gap:8px;margin:6px 12px 0;padding:7px 9px;background:#f4f9ff;border:1.5px solid #dce9fb;border-radius:12px}
+  .prWild img{width:44px;height:44px;object-fit:contain;flex:none}
+  .prWild b{font-size:12px;font-weight:900;color:#26405e;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prWild button{
+    appearance:none;border:0;font-family:inherit;font-weight:900;font-size:11px;border-radius:999px;
+    padding:8px 12px;background:#e6efff;color:#3f6fd8;cursor:pointer;white-space:nowrap;
+  }
+  .prGames{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px 12px 4px}
+  .prGames button{
+    appearance:none;border:2px solid #dbe6f5;background:#fff;border-radius:12px;font-family:inherit;
+    font-weight:900;font-size:10.5px;color:#4a5f7c;padding:9px 2px;cursor:pointer;line-height:1.3;
+  }
+  .prGames button.on{background:linear-gradient(180deg,#fff7d6,#ffe58a);border-color:#f3b008;color:#7a4b04}
+  .prEmpty{padding:10px 14px 4px;font-size:10.5px;font-weight:800;color:#8d9c83;text-align:center;line-height:1.5}
+
   /* ---------- 좁은 화면(폴드 외부 400px) ---------- */
   @media (max-width:430px){
     .brand{font-size:12px;padding:5px 10px}
     a.chip.home{font-size:11px;padding:6px 8px}
     .dexchip{font-size:11px;padding:5px 9px}
+    button.dexchip b{font-size:12px}
+    .dvGrid{grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:5px;max-height:min(42vh,300px)}
+    .dvCell img{width:40px;height:40px}
+    .dvTab{font-size:11px;padding:7px 4px}
+    .modeRow{gap:7px;padding:10px}
+    .modeCard{padding:13px 6px 11px}
+    .modeCard .mcEmo{font-size:22px}
+    .modeCard b{font-size:12px}
+    .prGames button{font-size:9.5px;padding:8px 1px}
+    #dexViewModal,#gymModeModal,#practiceModal,#dadPinModal{padding-left:6px;padding-right:6px}
     .seg button{font-size:11.5px;padding:5px 7px}
     button.chip{font-size:11.5px;padding:6px 9px}
     .hint{font-size:10.5px;padding:6px 9px}
@@ -658,7 +769,7 @@
     <div class="row row1">
       <a class="chip home" id="btnHome" href="pokemon-battle.html" aria-label="포켓몬 홈으로">← 홈</a>
       <div class="brand"><span class="em">🏡</span><span>3D 포켓몬 아지트</span></div>
-      <div class="dexchip" id="dexChip">🐾 친구 <b id="dexNum">6</b></div>
+      <button class="dexchip" id="dexChip" type="button" aria-label="아린·지안 도감 열기" title="도감 열기">🐾 아린 <b class="p1b" data-dexcnt="p1">0</b> · 지안 <b class="p2b" data-dexcnt="p2">0</b></button>
     </div>
     <div class="row row2">
       <div class="seg" id="themeSeg" role="group" aria-label="테마 전환">
@@ -735,6 +846,45 @@
   </div>
 </div>
 
+<div id="dexViewModal" hidden aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="dvTitle">
+    <div class="mHead">
+      <b id="dvTitle">🐾 우리 도감</b>
+      <button class="x" id="dvClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="dvTabs" role="tablist">
+      <button type="button" class="dvTab on" data-dvtab="p1" role="tab" aria-selected="true"><span class="dot p1"></span><span class="dnm" data-dvname="p1">아린</span> <b data-dvcnt="p1">0</b></button>
+      <button type="button" class="dvTab" data-dvtab="p2" role="tab" aria-selected="false"><span class="dot p2"></span><span class="dnm" data-dvname="p2">지안</span> <b data-dvcnt="p2">0</b></button>
+    </div>
+    <div class="mSub" id="dvSub">잡은 친구를 한눈에 볼 수 있어요</div>
+    <div class="dvGrid" id="dvGrid"></div>
+    <div class="dvEmpty" id="dvEmpty" hidden>아직 잡은 친구가 없어요.<br>배틀에서 먼저 포켓몬을 잡아 보세요!</div>
+    <div class="mFoot dvFoot">
+      <button class="ghost dad" id="dvDadReset">💤 휴식 초기화 (아빠)</button>
+      <button class="ghost" id="dvPick">🐾 부를 친구 고르기</button>
+      <button class="primary" id="dvClose2">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div id="dadPinModal" hidden aria-hidden="true">
+  <div class="modalCard pinCard" role="dialog" aria-modal="true" aria-labelledby="pinTitle">
+    <div class="mHead">
+      <b id="pinTitle">🔒 아빠 잠금</b>
+      <button class="x" id="pinClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="mSub">아빠만 쓸 수 있는 기능이에요 · 4자리 숫자를 눌러 주세요</div>
+    <div class="pinDots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+    <div class="pinPad" id="pinPad">
+      <button type="button" data-pin="1">1</button><button type="button" data-pin="2">2</button><button type="button" data-pin="3">3</button>
+      <button type="button" data-pin="4">4</button><button type="button" data-pin="5">5</button><button type="button" data-pin="6">6</button>
+      <button type="button" data-pin="7">7</button><button type="button" data-pin="8">8</button><button type="button" data-pin="9">9</button>
+      <button type="button" class="wide" data-pin="back">⌫</button><button type="button" data-pin="0">0</button><button type="button" class="wide" data-pin="close">닫기</button>
+    </div>
+    <div class="pinMsg" id="pinMsg">4자리 숫자를 눌러 주세요</div>
+  </div>
+</div>
+
 <div id="gymModal" hidden aria-hidden="true">
   <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="gymTitle">
     <div class="mHead">
@@ -766,6 +916,53 @@
     <div class="mFoot">
       <button class="ghost" id="gymBack" hidden>← 이전</button>
       <button class="primary" id="gymConfirm">아린 엔트리 확정 ✓</button>
+    </div>
+  </div>
+</div>
+
+<div id="gymModeModal" hidden aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="gmTitle">
+    <div class="mHead">
+      <b id="gmTitle">🏟️ 체육관 — 어떻게 할까요?</b>
+      <button class="x" id="gmClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="mSub">둘이서 겨루거나, 혼자서 미니게임을 마음껏 연습할 수 있어요</div>
+    <div class="modeRow">
+      <button type="button" class="modeCard" id="gymModeVs"><span class="mcEmo">👥</span><b>2인 대전</b><span class="mcSub">아린 vs 지안<br>비밀 엔트리 3판 승부</span></button>
+      <button type="button" class="modeCard solo" id="gymModeSolo"><span class="mcEmo">🎯</span><b>혼자 연습 모드</b><span class="mcSub">야생과 미니게임 3종<br>기절 없이 몇 번이든</span></button>
+    </div>
+  </div>
+</div>
+
+<div id="practiceModal" hidden aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="prTitle">
+    <div class="mHead">
+      <b id="prTitle">🎯 혼자 연습 모드</b>
+      <button class="x" id="prClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="mSub">내 친구 한 마리로 야생 포켓몬과 미니게임을 마음껏 연습해요 · 기절 없음</div>
+    <div class="dvTabs" id="prTabs" role="tablist">
+      <button type="button" class="dvTab on" data-prslot="p1" role="tab" aria-selected="true"><span class="dot p1"></span><span class="dnm">아린</span> <b data-prcnt="p1">0</b></button>
+      <button type="button" class="dvTab" data-prslot="p2" role="tab" aria-selected="false"><span class="dot p2"></span><span class="dnm">지안</span> <b data-prcnt="p2">0</b></button>
+    </div>
+    <div class="prLabel">① 내 친구 <span id="prMyName">—</span></div>
+    <div class="dvGrid" id="prGrid"></div>
+    <div class="prEmpty" id="prEmpty" hidden>이 도감에 잡은 친구가 없어요 · 배틀에서 먼저 잡아 보세요</div>
+    <div class="prLabel">② 상대 야생 포켓몬</div>
+    <div class="prWild" id="prWild">
+      <img id="prWildImg" alt="">
+      <b id="prWildName">—</b>
+      <button type="button" id="prWildReroll">🎲 다른 야생</button>
+    </div>
+    <div class="prLabel">③ 연습할 미니게임</div>
+    <div class="prGames" id="prGames">
+      <button type="button" data-prgame="timing">🎯 바 타이밍</button>
+      <button type="button" data-prgame="tap">⚡ 움직이는 원</button>
+      <button type="button" data-prgame="mole">🕳️ 두더지+폭탄</button>
+    </div>
+    <div class="mFoot">
+      <button class="ghost" id="prClose2">취소</button>
+      <button class="primary" id="prStart">연습 시작! ▶</button>
     </div>
   </div>
 </div>
@@ -828,6 +1025,7 @@
 </div>
 
 <div id="gymBar" hidden>
+  <button class="chip" id="btnGymMode">🎯 모드</button>
   <button class="chip" id="btnMiniSet">🎮 미니게임</button>
   <button class="chip" id="btnGymRematch">🔁 다시 배틀</button>
   <button class="chip" id="btnGymExit">🚪 체육관 나가기</button>
@@ -848,6 +1046,7 @@
     <div class="healBody" id="healBody"></div>
     <div class="hNote">💤 기절은 매일 자정에 자동으로 풀려요 · 무료 회복을 다 쓰면 3문제 퀴즈로 1회 충전!</div>
     <div class="mFoot">
+      <button class="ghost dad" id="healDadReset">💤 휴식 초기화 (아빠)</button>
       <button class="ghost" id="healNurse">👟 간호순에게 인사</button>
       <button class="primary" id="healClose2">닫기</button>
     </div>
@@ -2833,13 +3032,18 @@ function clearPokemons() {
   pokePickables.length = 0;
 }
 
+/* 상단 칩 — 아린·지안이 각자 보유한 포켓몬 수만 보여준다 (도감/친구 중복 표기 없음) */
+function dexCountOf(slot) {
+  try { return readDexSlot(slot).ids.length; } catch (e) { return 0; }
+}
 function updateDexChip() {
   const chip = document.getElementById('dexChip');
   if (!chip) return;
-  const picked = pick.p1.length + pick.p2.length;
-  if (picked) chip.innerHTML = `🐾 친구 <b>${pokemons.length}</b> · 고른 친구`;
-  else if (caught.length) chip.innerHTML = `🐾 도감 <b>${caught.length}</b> · 친구 <b>${pokemons.length}</b>`;
-  else chip.innerHTML = '🐾 도감 <b>0</b> · 아직 잡은 친구 없음';
+  const n1 = dexCountOf('p1'), n2 = dexCountOf('p2');
+  chip.innerHTML = `🐾 <span class="p1n">아린</span> <b class="p1b" data-dexcnt="p1">${n1}</b>`
+    + ` · <span class="p2n">지안</span> <b class="p2b" data-dexcnt="p2">${n2}</b>`;
+  chip.setAttribute('aria-label', `아린 ${n1}마리 · 지안 ${n2}마리 — 도감 열기`);
+  try { if (window.__dexViewRefresh) window.__dexViewRefresh(); } catch (e) { /* */ }
   updateEmptyNote();
 }
 /* 도감이 비었을 때 안내 (기본 포켓몬 대신 문구만) */
@@ -3698,7 +3902,10 @@ async function cloudSync(opts) {
     let pushed = false;
     if (diff > 0) { try { await cloudPush(c, keys); pushed = true; } catch (e) { /* 오프라인이면 다음에 */ } }
     cloudLastAt = Date.now();
-    if (dexDiff) { try { dexSlots.p1 = readDexSlot('p1'); dexSlots.p2 = readDexSlot('p2'); } catch (e) { /* */ } }
+    if (dexDiff) {
+      try { dexSlots.p1 = readDexSlot('p1'); dexSlots.p2 = readDexSlot('p2'); } catch (e) { /* */ }
+      try { updateDexChip(); } catch (e) { /* */ }
+    }
     return pushed ? 'pushed' : (dexDiff ? 'applied' : 'same');
   } catch (e) {
     return 'error';
@@ -3723,6 +3930,7 @@ function markFainted(slot, id) {
   updateCenterHud();
   refreshFaintNote();
   if (healPanelOpen()) renderHealPanel();
+  try { if (window.__dexViewRefresh) window.__dexViewRefresh(); } catch (e) { /* */ }
   return true;
 }
 function reviveFainted(slot) {
@@ -3733,6 +3941,7 @@ function reviveFainted(slot) {
   updateCenterHud();
   refreshFaintNote();
   if (healPanelOpen()) renderHealPanel();
+  try { if (window.__dexViewRefresh) window.__dexViewRefresh(); } catch (e) { /* */ }
   return n;
 }
 function updateCenterHud() {
@@ -5286,8 +5495,8 @@ function drawScoreboard(st) {
   if (!c) return null;
   const g = c.getContext('2d');
   const W = c.width, H = c.height;
-  const n1 = (st && st.n1) || (people[0] ? people[0].name : '아린');
-  const n2 = (st && st.n2) || (people[1] ? people[1].name : '지안');
+  const n1 = (st && st.n1) || sideNm(0);
+  const n2 = (st && st.n2) || sideNm(1);
   const a = st && Number.isFinite(st.a) ? st.a : 0;
   const b = st && Number.isFinite(st.b) ? st.b : 0;
   const round = st && Number.isFinite(st.round) ? st.round : 0;
@@ -5354,8 +5563,8 @@ function drawScoreboard(st) {
 function updateScoreboard() {
   if (!gymShow.scoreCanvas) return null;
   return drawScoreboard({
-    n1: people[0] ? people[0].name : '아린',
-    n2: people[1] ? people[1].name : '지안',
+    n1: sideNm(0),
+    n2: sideNm(1),
     a: gym.wins[0], b: gym.wins[1],
     round: Math.min(GYM_ROUNDS, Math.max(1, gym.round + 1)),
     stage: gym.stage,
@@ -6016,10 +6225,8 @@ function confirmGymStep() {
 
 /* ---------- 매치 진행 ---------- */
 function battleTitles() {
-  const n1 = people[0] ? people[0].name : '아린';
-  const n2 = people[1] ? people[1].name : '지안';
   const f0 = gym.fighters[0], f1 = gym.fighters[1];
-  return [`${n1} · ${f0 ? f0.name : '—'}`, `${n2} · ${f1 ? f1.name : '—'}`];
+  return [`${sideNm(0)} · ${f0 ? f0.name : '—'}`, `${sideNm(1)} · ${f1 ? f1.name : '—'}`];
 }
 function setHudTitles() {
   if (!battleHpEls) return;
@@ -6037,15 +6244,37 @@ async function startMatch() {
   const bar = document.getElementById('gymBar');
   if (bar) bar.hidden = false;
   switchBgm('music_battle');
-  battleLogLine(`🏟️ 체육관 배틀 시작! 비밀 엔트리 3마리씩 · <b>3판 승부</b>`);
-  battleLogLine(`🎮 라운드 미니게임 — <b>${miniPlanText()}</b>`);
-  toast('🏟️ 3판 승부 시작!');
+  refreshMiniNames();
+  if (gymIsPractice()) {
+    const p = gym.practice;
+    p.n = 0;
+    battleLogLine(`🎯 <b>혼자 연습</b> — ${p.kidName}의 <b>${nameOf(gym.entries[0][0])}</b> vs ${p.wildName}`);
+    battleLogLine(`🎮 연습 게임 — <b>${MINI_LABEL[p.game]}</b> · 기절 없이 몇 번이든 연습!`);
+    toast(`🎯 혼자 연습 시작! (${MINI_SHORT[p.game] || MINI_LABEL[p.game]})`);
+    const hint = document.getElementById('hint');
+    if (hint) {
+      hint.innerHTML = gymHintText();
+      hint.classList.remove('gone');
+      setTimeout(() => hint.classList.add('gone'), 6000);
+    }
+  } else {
+    battleLogLine(`🏟️ 체육관 배틀 시작! 비밀 엔트리 3마리씩 · <b>3판 승부</b>`);
+    battleLogLine(`🎮 라운드 미니게임 — <b>${miniPlanText()}</b>`);
+    toast('🏟️ 3판 승부 시작!');
+  }
   nextRound();
 }
 async function nextRound() {
   if (gym.busy) return;
   gym.busy = true;
   gym.round++;
+  /* 혼자 연습은 라운드를 계속 1판씩 돌린다(3판 제한·최종 결과 없음) */
+  if (gymIsPractice()) {
+    gym.round = 0;
+    gym.wins = [0, 0]; gym.hp = [100, 100]; gym.roundWinner = -1;
+    gym.practice.n = (gym.practice.n || 0) + 1;
+    updateScoreboard();
+  }
   if (gym.round >= GYM_ROUNDS) { gym.busy = false; finishMatch(); return; }
   /* 먼저 지난 시상대·폭죽을 내리고 전광판을 이번 판으로 바꾼다 */
   resetPodium();
@@ -6070,7 +6299,9 @@ async function nextRound() {
     gym.balls.push({ obj: ball, side, to: { x: side * 3.4, y: 0.55, z: 0 }, opened: false });
   });
   gym.t = 0;
-  battleLogLine(`— <b>${gym.round + 1}라운드</b> (${MINI_LABEL[miniGameOfRound(gym.round)]}) — 몬스터볼 투척!`);
+  battleLogLine(gymIsPractice()
+    ? `— <b>연습 ${gym.practice.n}판</b> (${MINI_LABEL[miniGameOfRound(gym.round)]}) — 몬스터볼 투척!`
+    : `— <b>${gym.round + 1}라운드</b> (${MINI_LABEL[miniGameOfRound(gym.round)]}) — 몬스터볼 투척!`);
   burstStars(new THREE.Vector3(0, 1.6, 0), 10, 2.0, 1.4);
   gym.busy = false;
 }
@@ -6127,6 +6358,8 @@ function startTiming() {
     }
   });
   gym.stage = 'timing'; gym.t = 0; gym.autoPressT = 0;
+  /* 혼자 연습 — 야생은 1.0~3.4초 사이에 스스로 멈춘다 */
+  if (gymIsPractice()) gym.practice.botStopAt = 1.0 + Math.random() * 2.4;
   setTimingPad(true);
   [0, 1].forEach((i) => {
     T.pos[i] = 50 + 46 * Math.sin(T.phase[i]);
@@ -6146,7 +6379,7 @@ function startTiming() {
     const mon = document.querySelector(`[data-tgmon="${i}"]`);
     if (mon) mon.textContent = `${gym.fighters[i].name} (${T.tag[i]}${T.eff[i] !== 1 ? ' ×' + T.eff[i] : ''})`;
     const btn = document.getElementById('tgBtn' + i);
-    if (btn) { btn.disabled = false; btn.classList.remove('done'); btn.textContent = `${i === 0 ? (people[0] ? people[0].name : '아린') : (people[1] ? people[1].name : '지안')} 스톱!`; }
+    if (btn) { btn.disabled = false; btn.classList.remove('done'); btn.textContent = `${sideNm(i)} 스톱!`; }
     const acc = document.querySelector(`[data-tgacc="${i}"]`);
     if (acc) acc.textContent = '';
     moveCursorEl(i, T.pos[i]);
@@ -6163,6 +6396,18 @@ function setMiniPad(name) {
   if (p) p.hidden = name !== 'tap';
   if (c) c.hidden = name !== 'mole';
   if (name !== 'mole') resetMoleField();
+}
+/* 미니게임 판의 이름표 — 혼자 연습이면 0=내 아이, 1=야생으로 바뀢다 */
+function refreshMiniNames() {
+  [0, 1].forEach((i) => {
+    const head = document.querySelector(`#timingPad [data-trow="${i}"] .tgHead b`);
+    if (head) head.textContent = sideNm(i);
+  });
+  document.querySelectorAll('#molePad .mlFoot span').forEach((el, i) => {
+    if (el.firstChild && el.firstChild.nodeType === 3) el.firstChild.nodeValue = `${sideNm(i)} `;
+    const b = el.querySelector('b');
+    if (b) b.textContent = String((gym.mole && gym.mole.score[i]) || 0);
+  });
 }
 function setTimingPad(on) { setMiniPad(on ? 'timing' : null); }
 const MINI_GAMES = ['timing', 'tap', 'mole'];
@@ -6191,6 +6436,7 @@ function miniPlanText() {
   return gym.mini.map((g, i) => `${i + 1}R ${MINI_SHORT[g] || MINI_LABEL[g] || g}`).join(' · ');
 }
 function gymHintText() {
+  if (gymIsPractice()) return `🎯 혼자 연습 중 — ${MINI_LABEL[gym.practice.game]} · 기절 없이 몇 번이든 연습!`;
   return `몬스터볼이 열리면 라운드별 미니게임! · 이번 판 <b>${miniPlanText()}</b>`;
 }
 function renderMiniPick() {
@@ -6242,6 +6488,7 @@ function sideAdv(i) {
   return eff > 1 ? 1 : eff < 1 ? -1 : 0;
 }
 function miniGameOfRound(r) {
+  if (gymIsPractice()) return gym.practice.game;
   if (r < 0 || r >= GYM_ROUNDS) return null;
   return (gym.mini && gym.mini[r]) || MINI_GAMES[r % MINI_GAMES.length];
 }
@@ -6262,16 +6509,14 @@ function finishMiniGame(w) {
   gym.roundWinner = w;
   setMiniPad(null);
   gym.stage = 'attack'; gym.t = 0; gym.hitDone = false;
-  const nm = people[w] ? people[w].name : '아린';
+  const nm = sideNm(w);
   battleLogLine(`🏅 <span class="a${w}">${nm}</span> 미니게임 승리! 공격 찬스!`);
   if (gym.fighters[w]) burstStars(gym.fighters[w].group.position.clone().add(new THREE.Vector3(0, 2.2, 0)), 10, 0.8, 1.4);
 }
 
 /* ----- 게임 2: 3초 파워 연타 (한 명씩 차례 · 계속 움직이는 동그라미) ----- */
 const TAP_READY = 1.4, TAP_RUN = 3.0, TAP_SWITCH = 1.4;
-function tapName(i) {
-  return people[i] ? people[i].name : (i === 0 ? '아린' : '지안');
-}
+function tapName(i) { return sideNm(i); }
 function tapButtonSize(i) {
   const adv = gym.tap ? gym.tap.adv[i] : 0;
   return adv > 0 ? 110 : adv < 0 ? 62 : 86;
@@ -6391,6 +6636,17 @@ function updateTap(dt) {
       const btn = document.getElementById('tpBig');
       if (btn) { btn.classList.add('idle'); btn.textContent = '끝!'; }
       battleLogLine(`⚡ ${tapName(T.who)} <b>${T.count[T.who]}타</b> 기록!`);
+      if (gymIsPractice() && T.who === 0) {
+        /* 혼자 연습 — 야생 기록은 바로 채워 넣는다 */
+        const bot = practiceBotTaps();
+        T.count[1] = bot;
+        T.run = false;
+        const nmP = sideNm(0), nmW = sideNm(1);
+        battleLogLine(`⚡ ${nmP} <b>${T.count[0]}타</b> vs ${nmW} ${bot}타`);
+        if (btn) { btn.classList.add('idle'); btn.textContent = '끝!'; }
+        finishMiniGame(T.count[0] >= bot ? 0 : 1);
+        return;
+      }
       if (T.who === 0) {
         T.phase = 'switch'; T.t = 0;
         if (btn) { btn.classList.add('idle'); btn.textContent = `${tapName(1)} 차례!`; }
@@ -6562,6 +6818,7 @@ function beginMole() {
   buildMoleGrid();
   resetMoleField();
   updateMoleScore();
+  refreshMiniNames();
   setMoleHead(`${tapName(0)} 차례 준비!`, MOLE_TIME);
   battleLogLine(`🕳️ 뿅뿅 두더지 잡기 — ${tapName(0)} 15초 먼저!`);
 }
@@ -6581,6 +6838,16 @@ function endMoleTurn() {
   hideMoleBanner();
   const who = M.turn;
   if (who === 0) {
+    if (gymIsPractice()) {
+      /* 혼자 연습 — 야생 점수는 바로 채워 넣고 끝낸다 */
+      const bot = practiceBotMoles();
+      M.score[1] = bot;
+      M.run = false; M.phase = 'done';
+      updateMoleScore();
+      battleLogLine(`🕳️ ${sideNm(0)} <b>${M.score[0]}</b> vs ${sideNm(1)} ${bot}`);
+      finishMiniGame(M.score[0] >= bot ? 0 : 1);
+      return;
+    }
     M.turn = 1; M.phase = 'switch'; M.t = 0;
     setMoleHead(`${tapName(1)} 준비!`, MOLE_TIME);
     battleLogLine(`🕳️ ${tapName(0)} <b>${M.score[0]}</b>마리! 이제 ${tapName(1)} 차례 — 화면을 넘겨주세요!`);
@@ -6739,13 +7006,15 @@ function updateTiming(dt) {
     T.pos[i] = 50 + 46 * Math.sin(T.t * w + T.phase[i]);
     moveCursorEl(i, T.pos[i]);
   }
+  /* 혼자 연습 — 야생 쪽은 정해진 순간에 스스로 멈춘다 */
+  if (gymIsPractice() && !T.done[1] && T.t >= (gym.practice.botStopAt || 2.2)) stopTiming(1, true, true);
   /* 한쪽만 누르고 있으면 10초 뒤 자동 입력 */
   gym.autoPressT += dt;
   if (gym.autoPressT > 10) {
     [0, 1].forEach((i) => { if (!T.done[i]) stopTiming(i, true); });
   }
 }
-function stopTiming(i, auto) {
+function stopTiming(i, auto, bot) {
   const T = gym.timing;
   if (!T || !T.run || T.done[i]) return false;
   T.done[i] = true;
@@ -6755,7 +7024,7 @@ function stopTiming(i, auto) {
   const btn = document.getElementById('tgBtn' + i);
   if (btn) { btn.classList.add('done'); btn.disabled = true; btn.textContent = '✓ 멈춤'; }
   const accEl = document.querySelector(`[data-tgacc="${i}"]`);
-  if (accEl) accEl.textContent = `겹침 ${acc.toFixed(1)}%` + (auto ? ' (자동)' : '');
+  if (accEl) accEl.textContent = `겹침 ${acc.toFixed(1)}%` + (bot ? ' (야생)' : auto ? ' (자동)' : '');
   const f = gym.fighters[i];
   if (f) burstStars(f.group.position.clone().add(new THREE.Vector3(0, 2.0, 0)), 5, 0.5, 0.9);
   if (T.done[0] && T.done[1]) setTimeout(resolveTiming, 420);
@@ -6867,19 +7136,27 @@ function updateAttack(dt) {
     gym.stage = 'rounddone'; gym.t = 0;
     gymAimReset();
     gym.wins[gym.roundWinner]++;
-    const nm = people[gym.roundWinner] ? people[gym.roundWinner].name : '아린';
-    battleLogLine(`✅ <b>${gym.round + 1}라운드</b> — <span class="a${gym.roundWinner}">${nm}</span> 승리 (${gym.wins[0]} : ${gym.wins[1]})`);
-    toast(`${gym.round + 1}라운드 ${nm} 승리! (${gym.wins[0]} : ${gym.wins[1]})`);
+    const nm = sideNm(gym.roundWinner);
+    if (gymIsPractice()) {
+      battleLogLine(`✅ <b>연습 ${gym.practice.n}판</b> — <span class="a${gym.roundWinner}">${nm}</span> 승리! (기절 없음)`);
+      toast(`🎯 연습 ${gym.practice.n}판 — ${nm} 승리!`);
+    } else {
+      battleLogLine(`✅ <b>${gym.round + 1}라운드</b> — <span class="a${gym.roundWinner}">${nm}</span> 승리 (${gym.wins[0]} : ${gym.wins[1]})`);
+      toast(`${gym.round + 1}라운드 ${nm} 승리! (${gym.wins[0]} : ${gym.wins[1]})`);
+    }
     burstStars(new THREE.Vector3(0, 2.0, 0), 16, 2.0, 1.8);
     gymCheer(0.9);
     updateScoreboard();
-    /* 진 라운드의 포켓몬은 오늘 기절(💤) — 센터에서 회복해야 다시 고를 수 있다 */
-    const loseSide = 1 - gym.roundWinner;
-    const loseId = (gym.entries[loseSide] || [])[gym.round];
-    if (loseId) {
-      const loseSlot = pkmSlotOf(loseSide);
-      markFainted(loseSlot, loseId);
-      battleLogLine(`💤 <span class="a${loseSide}">${nameOf(loseId)}</span> 기절! 센터에서 회복하면 다시 싸울 수 있어요`);
+    /* 진 라운드의 포켓몬은 오늘 기절(💤) — 센터에서 회복해야 다시 고를 수 있다
+       (혼자 연습은 연습이므로 기절을 남기지 않는다) */
+    if (!gymIsPractice()) {
+      const loseSide = 1 - gym.roundWinner;
+      const loseId = (gym.entries[loseSide] || [])[gym.round];
+      if (loseId) {
+        const loseSlot = pkmSlotOf(loseSide);
+        markFainted(loseSlot, loseId);
+        battleLogLine(`💤 <span class="a${loseSide}">${nameOf(loseId)}</span> 기절! 센터에서 회복하면 다시 싸울 수 있어요`);
+      }
     }
   }
 }
@@ -6959,7 +7236,172 @@ function stopMatch() {
   gym.timing = null; gym.tap = null; gym.mole = null;
   gymShow.cheer = 0;
   resetPodium();
-  drawScoreboard({ n1: people[0] ? people[0].name : '아린', n2: people[1] ? people[1].name : '지안', a: 0, b: 0, round: 0, stage: 'idle' });
+  drawScoreboard({ n1: sideNm(0), n2: sideNm(1), a: 0, b: 0, round: 0, stage: 'idle' });
+}
+
+/* ---------- 10-e-3. 🎯 혼자 연습 모드 (내 친구 한 마리 vs 야생 · 기절 없음) ---------- */
+gym.practice = null;
+const prDraft = { slot: 'p1', id: 0, wildId: 0, game: 'timing' };
+const PR_GAME_LABEL = { timing: '🎯 바 타이밍', tap: '⚡ 움직이는 원', mole: '🕳️ 두더지+폭탄' };
+function gymIsPractice() { return !!(gym.practice && gym.practice.on); }
+/* 이름표 — 연습이면 0=내 아이, 1=야생, 아니면 아린/지안 */
+function sideNm(i) {
+  if (gymIsPractice()) return Number(i) === 1 ? gym.practice.wildName : gym.practice.kidName;
+  return (people[i] && people[i].name) || (Number(i) === 1 ? '지안' : '아린');
+}
+/* 야생 기록 — 연타·두더지는 상대 차례를 기다리지 않고 바로 채운다 */
+function practiceBotTaps() {
+  const adv = sideAdv(1);
+  const base = 16 + Math.round(Math.random() * 20);
+  return clamp(base + (adv > 0 ? 7 : adv < 0 ? -7 : 0), 6, 48);
+}
+function practiceBotMoles() {
+  const adv = sideAdv(1);
+  const base = 3 + Math.round(Math.random() * 9);
+  return clamp(base + (adv > 0 ? 3 : adv < 0 ? -2 : 0), 1, 14);
+}
+function prWildRandom() {
+  let id = 0, guard = 0;
+  do { id = 1 + Math.floor(Math.random() * 151); guard++; }
+  while (guard < 60 && (id === prDraft.id || id === prDraft.wildId));
+  return id;
+}
+function prDexIds(slot) { try { return readDexSlot(slot).ids.slice(); } catch (e) { return []; } }
+
+/* 체육관 입장 모드 선택 */
+function openGymMode() {
+  const m = document.getElementById('gymModeModal');
+  if (!m) return false;
+  m.hidden = false;
+  m.setAttribute('aria-hidden', 'false');
+  hintFade();
+  return true;
+}
+function closeGymMode() {
+  const m = document.getElementById('gymModeModal');
+  if (m) { m.hidden = true; m.setAttribute('aria-hidden', 'true'); }
+}
+
+function openPracticeModal() {
+  if (!prDraft.wildId) prDraft.wildId = prWildRandom();
+  if (prDraft.slot !== 'p1' && prDraft.slot !== 'p2') prDraft.slot = 'p1';
+  if (!prDraft.id) prDraft.slot = (activeIdx === 1 ? 'p2' : 'p1');
+  if (!PR_GAME_LABEL[prDraft.game]) prDraft.game = 'timing';
+  buildPracticeModal();
+  const m = document.getElementById('practiceModal');
+  if (m) { m.hidden = false; m.setAttribute('aria-hidden', 'false'); }
+  hintFade();
+  return true;
+}
+function closePracticeModal() {
+  const m = document.getElementById('practiceModal');
+  if (m) { m.hidden = true; m.setAttribute('aria-hidden', 'true'); }
+}
+function buildPracticeModal() {
+  const m = document.getElementById('practiceModal');
+  if (!m) return;
+  ['p1', 'p2'].forEach((s) => {
+    const tab = m.querySelector(`[data-prslot="${s}"]`);
+    if (!tab) return;
+    tab.classList.toggle('on', s === prDraft.slot);
+    tab.setAttribute('aria-selected', s === prDraft.slot ? 'true' : 'false');
+    const cnt = tab.querySelector('[data-prcnt]');
+    if (cnt) cnt.textContent = String(prDexIds(s).length);
+    const nmEl = tab.querySelector('.dnm');
+    if (nmEl) nmEl.textContent = kidName(s);
+  });
+  const ids = prDexIds(prDraft.slot);
+  if (ids.indexOf(prDraft.id) < 0) prDraft.id = ids[0] || 0;
+  const grid = document.getElementById('prGrid');
+  const empty = document.getElementById('prEmpty');
+  if (grid) {
+    grid.replaceChildren();
+    if (!ids.length) {
+      grid.hidden = true;
+      if (empty) empty.hidden = false;
+    } else {
+      grid.hidden = false;
+      if (empty) empty.hidden = true;
+      const faint = faintedIdsOf(prDraft.slot);
+      ids.forEach((id) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'tile' + (id === prDraft.id ? ' on' : '');
+        b.dataset.prid = String(id);
+        b.setAttribute('aria-pressed', id === prDraft.id ? 'true' : 'false');
+        b.title = nameOf(id) + (faint.indexOf(id) >= 0 ? ' · 💤 휴식중이지만 연습은 괜찮아요' : '');
+        const img = document.createElement('img');
+        img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+        img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+        img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
+        const nmEl = document.createElement('span');
+        nmEl.className = 'nm'; nmEl.textContent = nameOf(id);
+        const ck = document.createElement('span');
+        ck.className = 'ck'; ck.textContent = id === prDraft.id ? '✓' : '';
+        b.append(img, nmEl, ck);
+        if (faint.indexOf(id) >= 0) {
+          const tag = document.createElement('span');
+          tag.className = 'faintTag'; tag.textContent = '💤 휴식중';
+          b.appendChild(tag);
+        }
+        grid.appendChild(b);
+      });
+    }
+  }
+  const my = document.getElementById('prMyName');
+  if (my) my.textContent = prDraft.id ? `— ${nameOf(prDraft.id)}` : '— 아직 없음';
+  const wi = document.getElementById('prWildImg');
+  if (wi && prDraft.wildId) {
+    wi.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${prDraft.wildId}.png`;
+    wi.alt = nameOf(prDraft.wildId);
+    wi.style.visibility = '';
+  }
+  const wn = document.getElementById('prWildName');
+  if (wn) wn.textContent = prDraft.wildId ? `야생 ${nameOf(prDraft.wildId)}` : '—';
+  m.querySelectorAll('#prGames button').forEach((b) => {
+    const on = b.dataset.prgame === prDraft.game;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  const st = document.getElementById('prStart');
+  if (st) {
+    st.disabled = !prDraft.id;
+    st.textContent = prDraft.id ? `연습 시작! ▶ ${PR_GAME_LABEL[prDraft.game]}` : '내 친구를 먼저 골라 주세요';
+  }
+}
+function setPracticeBar(on) {
+  const a = document.getElementById('btnMiniSet'), b = document.getElementById('btnGymRematch'), c = document.getElementById('btnGymExit');
+  if (a) a.textContent = on ? '🎮 게임·친구 바꾸기' : '🎮 미니게임';
+  if (b) b.textContent = on ? '🔁 다시 연습' : '🔁 다시 배틀';
+  if (c) c.textContent = on ? '🚪 연습 그만두기' : '🚪 체육관 나가기';
+}
+function endPractice() {
+  if (!gymIsPractice()) return false;
+  gym.practice = null;
+  setPracticeBar(false);
+  return true;
+}
+function startPractice() {
+  if (!prDraft.id) { toast('연습할 내 친구를 먼저 골라 주세요'); return false; }
+  if (!prDraft.wildId) prDraft.wildId = prWildRandom();
+  closePracticeModal();
+  closeGymMode();
+  try { closeGymPicker(); } catch (e) { /* */ }
+  /* 연습 중에 게임을 바꾸면 돌아가던 판을 먼저 깔끔하게 정리한다 */
+  if (gym.stage !== 'idle') stopMatch();
+  const kidSlot = prDraft.slot === 'p2' ? 'p2' : 'p1';
+  gym.practice = {
+    on: true, kidSlot,
+    kidName: kidName(kidSlot),
+    wildId: prDraft.wildId,
+    wildName: `야생 ${nameOf(prDraft.wildId)}`,
+    game: prDraft.game, n: 0, botStopAt: 0,
+  };
+  gym.entries = [[prDraft.id, prDraft.id, prDraft.id], [prDraft.wildId, prDraft.wildId, prDraft.wildId]];
+  gym.sel = [[prDraft.id], [prDraft.wildId]];
+  setPracticeBar(true);
+  startMatch();
+  return true;
 }
 
 /* ---------- 11. 하트 파티클 (야외·실내 공통 — scene 에 매단다) ---------- */
@@ -7885,6 +8327,197 @@ function paCaughtFallback() {
 
 buildDexModal();
 
+/* ---------- 15-b-2. 🐾 우리 도감 (아린·지안 탭) · 🔒 아빠 휴식 초기화 ----------
+   상단 칩(🐾 아린 N · 지안 M)을 아지트·센터·체육관 어디서든 누르면 이 모달이 열린다.
+   모달 안의 '아빠 휴식 초기화'는 PIN 확인 뒤 무료 회복 횟수를 쓰지 않고
+   휴식중(기절)인 친구를 전부 깨운다. */
+const dvModal = document.getElementById('dexViewModal');
+let dvOpen = false;
+let dvSlot = 'p1';
+const DAD_PIN_KEY = 'pkm.family.pin.v1';
+const DAD_PIN_DEFAULT = '0623';
+let pinBuf = '', pinFails = 0;
+
+function dvIds(slot) { try { return readDexSlot(slot).ids.slice(); } catch (e) { return []; } }
+
+function buildDexView() {
+  if (!dvModal) return;
+  const ids = dvIds(dvSlot);
+  const fainted = faintedIdsOf(dvSlot);
+  const pickedIds = (pick[dvSlot] || []);
+  ['p1', 'p2'].forEach((s) => {
+    const n = dvIds(s).length;
+    dvModal.querySelectorAll(`[data-dvcnt="${s}"]`).forEach((el) => { el.textContent = String(n); });
+    dvModal.querySelectorAll(`[data-dvname="${s}"]`).forEach((el) => { el.textContent = kidName(s); });
+    const tab = dvModal.querySelector(`[data-dvtab="${s}"]`);
+    if (tab) {
+      tab.classList.toggle('on', s === dvSlot);
+      tab.setAttribute('aria-selected', s === dvSlot ? 'true' : 'false');
+    }
+  });
+  const grid = document.getElementById('dvGrid');
+  const empty = document.getElementById('dvEmpty');
+  if (grid) {
+    grid.replaceChildren();
+    if (!ids.length) {
+      grid.hidden = true;
+      if (empty) empty.hidden = false;
+    } else {
+      grid.hidden = false;
+      if (empty) empty.hidden = true;
+      ids.forEach((id) => {
+        const cell = document.createElement('div');
+        cell.className = 'dvCell' + (pickedIds.indexOf(id) >= 0 ? ' inpick' : '');
+        cell.dataset.dvid = String(id);
+        cell.title = `${nameOf(id)} (No.${id})` + (fainted.indexOf(id) >= 0 ? ' · 💤 휴식중' : '');
+        const img = document.createElement('img');
+        img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
+        img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
+        img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
+        const nmEl = document.createElement('span');
+        nmEl.className = 'nm'; nmEl.textContent = nameOf(id);
+        const noEl = document.createElement('span');
+        noEl.className = 'n'; noEl.textContent = `No.${id}`;
+        cell.append(img, nmEl, noEl);
+        if (pickedIds.indexOf(id) >= 0) {
+          const pk = document.createElement('span'); pk.className = 'pk'; pk.textContent = '★';
+          cell.appendChild(pk);
+        }
+        if (fainted.indexOf(id) >= 0) {
+          const st = document.createElement('span'); st.className = 'st'; st.textContent = '💤';
+          cell.appendChild(st);
+        }
+        grid.appendChild(cell);
+      });
+    }
+  }
+  const sub = document.getElementById('dvSub');
+  if (sub) {
+    sub.innerHTML = `<b>${kidName(dvSlot)}</b>의 도감 <b>${ids.length}마리</b>`
+      + (fainted.length ? ` · 💤 휴식중 <b>${fainted.length}</b>마리` : ' · 지금은 모두 기운이 나요');
+  }
+}
+function openDexView(slot) {
+  let s = slot;
+  if (s !== 'p1' && s !== 'p2') s = (activeIdx === 1 ? 'p2' : 'p1');
+  dvSlot = s;
+  buildDexView();
+  if (dvModal) { dvModal.hidden = false; dvModal.setAttribute('aria-hidden', 'false'); }
+  dvOpen = true;
+  hintFade();
+  return true;
+}
+function closeDexView() {
+  if (dvModal) { dvModal.hidden = true; dvModal.setAttribute('aria-hidden', 'true'); }
+  dvOpen = false;
+}
+window.__dexViewRefresh = () => { if (dvOpen) buildDexView(); };
+
+function dadPinValue() {
+  try {
+    const v = localStorage.getItem(DAD_PIN_KEY);
+    if (v && /^\d{4}$/.test(v)) return v;
+  } catch (e) { /* 저장소 없음 */ }
+  return DAD_PIN_DEFAULT;
+}
+function pinPaint(msg, bad) {
+  document.querySelectorAll('#pinDots i').forEach((d, i) => d.classList.toggle('on', i < pinBuf.length));
+  const box = document.getElementById('pinDots');
+  if (box) box.classList.toggle('bad', !!bad);
+  const m = document.getElementById('pinMsg');
+  if (m) { m.textContent = msg || '4자리 숫자를 눌러 주세요'; m.classList.toggle('bad', !!bad); }
+}
+function openDadPin() {
+  pinBuf = ''; pinFails = 0;
+  pinPaint('4자리 숫자를 눌러 주세요', false);
+  const m = document.getElementById('dadPinModal');
+  if (m) { m.hidden = false; m.setAttribute('aria-hidden', 'false'); }
+  return true;
+}
+function closeDadPin() {
+  pinBuf = '';
+  const m = document.getElementById('dadPinModal');
+  if (m) { m.hidden = true; m.setAttribute('aria-hidden', 'true'); }
+}
+function pinPush(k) {
+  if (k === 'close') { closeDadPin(); return false; }
+  if (k === 'back') { pinBuf = pinBuf.slice(0, -1); pinPaint('4자리 숫자를 눌러 주세요', false); return false; }
+  if (!/^\d$/.test(String(k)) || pinBuf.length >= 4) return false;
+  pinBuf += String(k);
+  pinPaint('4자리 숫자를 눌러 주세요', false);
+  if (pinBuf.length === 4) setTimeout(pinCheck, 90);
+  return true;
+}
+function pinCheck() {
+  if (pinBuf === dadPinValue()) {
+    closeDadPin();
+    dadReviveAll();
+    return true;
+  }
+  pinFails++;
+  pinBuf = '';
+  pinPaint(pinFails >= 3 ? 'PIN이 달라요 · 천천히 다시 눌러 주세요' : 'PIN이 맞지 않아요', true);
+  const card = document.querySelector('#dadPinModal .pinCard');
+  if (card && card.animate) {
+    card.animate([
+      { transform: 'translateX(0)' }, { transform: 'translateX(-6px)' },
+      { transform: 'translateX(6px)' }, { transform: 'translateX(0)' },
+    ], { duration: 220, iterations: 2 });
+  }
+  return false;
+}
+/* 아빠 권한 — 휴식중(기절) 전체 초기화. 무료 회복 횟수는 건드리지 않는다 */
+function dadReviveAll() {
+  pkmEnsureToday();
+  const f1 = faintedIdsOf('p1').length, f2 = faintedIdsOf('p2').length;
+  const n = f1 + f2;
+  if (!n) {
+    toast('💤 지금은 휴식중인 친구가 없어요');
+    if (dvOpen) buildDexView();
+    return 0;
+  }
+  reviveFainted('p1');
+  reviveFainted('p2');
+  try { burstStars(new THREE.Vector3(CENTER.x, CENTER.y + 5.2, CENTER.z), 20, 1.8, 2.0); } catch (e) { /* */ }
+  try { playHealMelody(); } catch (e) { /* */ }
+  toast(`💤 휴식 초기화 완료 — ${n}마리가 다시 일어났어요 (무료 회복은 그대로)`);
+  if (dvOpen) buildDexView();
+  const gm = document.getElementById('gymModal');
+  if (gm && !gm.hidden) buildGymPicker();
+  return n;
+}
+
+const dexChipEl = document.getElementById('dexChip');
+if (dexChipEl) dexChipEl.addEventListener('click', (e) => { e.stopPropagation(); openDexView(); });
+if (dvModal) {
+  dvModal.addEventListener('click', (e) => {
+    const tab = e.target.closest('[data-dvtab]');
+    if (tab) { dvSlot = tab.dataset.dvtab === 'p2' ? 'p2' : 'p1'; buildDexView(); return; }
+    if (e.target === dvModal) closeDexView();
+  });
+}
+if (document.getElementById('dvClose')) document.getElementById('dvClose').addEventListener('click', closeDexView);
+if (document.getElementById('dvClose2')) document.getElementById('dvClose2').addEventListener('click', closeDexView);
+if (document.getElementById('dvPick')) {
+  document.getElementById('dvPick').addEventListener('click', () => { closeDexView(); openDexModal(); });
+}
+if (document.getElementById('dvDadReset')) document.getElementById('dvDadReset').addEventListener('click', openDadPin);
+if (document.getElementById('healDadReset')) document.getElementById('healDadReset').addEventListener('click', openDadPin);
+const pinPadEl = document.getElementById('pinPad');
+if (pinPadEl) {
+  pinPadEl.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-pin]');
+    if (b) pinPush(b.dataset.pin);
+  });
+}
+if (document.getElementById('pinClose')) document.getElementById('pinClose').addEventListener('click', closeDadPin);
+window.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  const pm = document.getElementById('dadPinModal');
+  if (pm && !pm.hidden) { closeDadPin(); return; }
+  if (dvOpen) closeDexView();
+});
+
 /* ---------- 15-c. 장면 전환 (야외 / 센터 실내 / 체육관) ---------- */
 let mode = 'outdoor';
 let outdoorSaved = null;
@@ -7939,6 +8572,8 @@ function syncHud() {
     ex.hidden = (mode === 'outdoor');
     ex.textContent = mode === 'gym' ? '🚪 체육관 나가기' : '🚪 밖으로 나가기';
   }
+  const gb = document.getElementById('gymBar');
+  if (gb) gb.hidden = mode !== 'gym';
   const hint = document.getElementById('hint');
   if (hint) {
     hint.classList.remove('gone');
@@ -7997,7 +8632,7 @@ function exitCenter() {
   return true;
 }
 function enterGym() {
-  if (mode === 'gym') { openGymPicker(0); return true; }
+  if (mode === 'gym') { openGymMode(); return true; }
   saveOutdoorView();
   mode = 'gym';
   world.visible = false;
@@ -8006,16 +8641,19 @@ function enterGym() {
   sun.castShadow = false;
   setSceneView(0, 2.6, 0, 0.02, 1.15, modeRadius());
   syncHud();
-  drawScoreboard({ n1: people[0] ? people[0].name : '아린', n2: people[1] ? people[1].name : '지안', a: 0, b: 0, round: 1, stage: 'idle' });
+  drawScoreboard({ n1: sideNm(0), n2: sideNm(1), a: 0, b: 0, round: 1, stage: 'idle' });
   layoutHud();
   toast('🏟️ 포켓몬 체육관에 들어왔어요!');
-  openGymPicker(0);
+  openGymMode();
   return true;
 }
 function exitGym() {
   if (mode !== 'gym') return false;
+  endPractice();
   stopMatch();
   closeGymPicker();
+  closeGymMode();
+  closePracticeModal();
   switchBgm('music_village');
   mode = 'outdoor';
   world.visible = true;
@@ -8096,6 +8734,36 @@ document.getElementById('btnGoCenter').addEventListener('click', () => {
   setTimeout(() => { openHealPanel(slot); walkIndoorKidToHeal(slot, true); }, 320);
 });
 document.getElementById('btnGym').addEventListener('click', enterGym);
+
+/* ---------- 체육관 모드 선택 · 혼자 연습 모드 ---------- */
+const gmCloseEl = document.getElementById('gmClose');
+if (gmCloseEl) gmCloseEl.addEventListener('click', closeGymMode);
+const gmVsEl = document.getElementById('gymModeVs');
+if (gmVsEl) gmVsEl.addEventListener('click', () => { closeGymMode(); openGymPicker(0); });
+const gmSoloEl = document.getElementById('gymModeSolo');
+if (gmSoloEl) gmSoloEl.addEventListener('click', () => { closeGymMode(); openPracticeModal(); });
+const gmModeBtn = document.getElementById('btnGymMode');
+if (gmModeBtn) gmModeBtn.addEventListener('click', (e) => { e.stopPropagation(); openGymMode(); });
+const prModalEl = document.getElementById('practiceModal');
+if (prModalEl) {
+  prModalEl.addEventListener('click', (e) => {
+    if (e.target === prModalEl) { closePracticeModal(); return; }
+    const tab = e.target.closest('[data-prslot]');
+    if (tab) { prDraft.slot = tab.dataset.prslot === 'p2' ? 'p2' : 'p1'; buildPracticeModal(); return; }
+    const tile = e.target.closest('.tile[data-prid]');
+    if (tile) { prDraft.id = Number(tile.dataset.prid) || 0; buildPracticeModal(); return; }
+    const g = e.target.closest('[data-prgame]');
+    if (g) { prDraft.game = g.dataset.prgame; buildPracticeModal(); return; }
+  });
+}
+const prCloseA = document.getElementById('prClose');
+if (prCloseA) prCloseA.addEventListener('click', closePracticeModal);
+const prCloseB = document.getElementById('prClose2');
+if (prCloseB) prCloseB.addEventListener('click', closePracticeModal);
+const prReroll = document.getElementById('prWildReroll');
+if (prReroll) prReroll.addEventListener('click', () => { prDraft.wildId = prWildRandom(); buildPracticeModal(); });
+const prStartEl = document.getElementById('prStart');
+if (prStartEl) prStartEl.addEventListener('click', startPractice);
 document.getElementById('btnExitPlace').addEventListener('click', () => {
   if (mode === 'indoor') exitCenter();
   else if (mode === 'gym') exitGym();
@@ -8130,6 +8798,7 @@ function toggleMiniSheet(on) {
 }
 document.getElementById('btnMiniSet').addEventListener('click', (e) => {
   e.stopPropagation();
+  if (gymIsPractice()) { openPracticeModal(); return; }
   toggleMiniSheet();
 });
 document.getElementById('btnMiniClose').addEventListener('click', (e) => {
@@ -8137,9 +8806,12 @@ document.getElementById('btnMiniClose').addEventListener('click', (e) => {
   toggleMiniSheet(false);
 });
 document.getElementById('gymBar').addEventListener('click', (e) => {
-  if (e.target.id === 'btnGymRematch') {
+  if (e.target.id === 'btnGymMode') {
+    openGymMode();
+  } else if (e.target.id === 'btnGymRematch') {
+    if (gymIsPractice()) { startPractice(); return; }
     if (gym.entries[0].length && gym.entries[1].length) startMatch();
-    else openGymPicker(0);
+    else openGymMode();
   } else if (e.target.id === 'btnGymExit') exitGym();
 });
 document.getElementById('tgBtn0').addEventListener('click', () => stopTiming(0));
@@ -8808,8 +9480,12 @@ document.addEventListener('visibilitychange', () => {
 });
 
 /* 디버그/검증용 상태 노출 (읽기 전용) */
+const ajitErrors = [];
+window.addEventListener('error', (e) => { ajitErrors.push(String((e && e.message) || 'error')); });
+window.addEventListener('unhandledrejection', (e) => { ajitErrors.push('rejection: ' + String((e && e.reason && e.reason.message) || (e && e.reason) || '')); });
 window.__AJIT = {
   get ready() { return true; },
+  get errors() { return ajitErrors.slice(); },
   get cam3() { return { x: +camera.position.x.toFixed(2), y: +camera.position.y.toFixed(2), z: +camera.position.z.toFixed(2) }; },
   get theme() { return themeName; },
   get pokemonCount() { return pokemons.length; },
@@ -9258,6 +9934,84 @@ window.__AJIT = {
   layoutHud() { return layoutHud(); },
   gymCenterScreen() { return this.screenOfWorld(0, 1.5, 0); },
   arenaScreen() { return this.screenOfWorld(0, 0.5, 0); },
+  /* ---- 🐾 도감 칩·모달 · 🔒 아빠 휴식 초기화 ---- */
+  get dexChip() {
+    const el = document.getElementById('dexChip');
+    return { text: el ? el.textContent.replace(/\s+/g, ' ').trim() : null, tag: el ? el.tagName : null };
+  },
+  get dexView() {
+    return {
+      open: !!(dvModal && !dvModal.hidden), slot: dvSlot,
+      counts: { p1: dvIds('p1').length, p2: dvIds('p2').length },
+      cells: document.querySelectorAll('#dvGrid .dvCell').length,
+      names: [...document.querySelectorAll('#dvGrid .dvCell .nm')].map((e) => e.textContent),
+      sub: (document.getElementById('dvSub') || {}).textContent || '',
+      tabs: [...document.querySelectorAll('#dexViewModal [data-dvtab]')].map((t) => ({
+        slot: t.dataset.dvtab, on: t.classList.contains('on'),
+        cnt: (t.querySelector('[data-dvcnt]') || {}).textContent,
+      })),
+    };
+  },
+  openDexView(slot) { return openDexView(slot); },
+  closeDexView() { closeDexView(); return true; },
+  tapDexTab(slot) { dvSlot = slot === 'p2' ? 'p2' : 'p1'; buildDexView(); return this.dexView; },
+  openDadPin() { return openDadPin(); },
+  typePin(code) { String(code).split('').forEach((d) => pinPush(d)); return { buf: pinBuf.length }; },
+  get pinState() {
+    const m = document.getElementById('dadPinModal');
+    const dots = document.getElementById('pinDots');
+    return {
+      open: !!(m && !m.hidden),
+      msg: (document.getElementById('pinMsg') || {}).textContent || '',
+      bad: !!(dots && dots.classList.contains('bad')),
+      on: dots ? [...dots.querySelectorAll('i')].filter((d) => d.classList.contains('on')).length : 0,
+    };
+  },
+  closeDadPin() { closeDadPin(); return true; },
+  dadReset() { return dadReviveAll(); },
+  /* ---- 🎯 혼자 연습 모드 ---- */
+  openGymMode() { return openGymMode(); },
+  get gymModeOpen() {
+    const m = document.getElementById('gymModeModal');
+    return !!(m && !m.hidden);
+  },
+  openPractice() { return openPracticeModal(); },
+  get practiceModal() {
+    const m = document.getElementById('practiceModal');
+    return {
+      open: !!(m && !m.hidden), slot: prDraft.slot, id: prDraft.id, wildId: prDraft.wildId, game: prDraft.game,
+      tiles: [...document.querySelectorAll('#prGrid .tile')].map((t) => ({ id: Number(t.dataset.prid), on: t.classList.contains('on') })),
+      games: [...document.querySelectorAll('#prGames button')].map((b) => ({ game: b.dataset.prgame, on: b.classList.contains('on') })),
+      startDisabled: !!(document.getElementById('prStart') || {}).disabled,
+      startText: (document.getElementById('prStart') || {}).textContent || '',
+    };
+  },
+  pickPractice(slot, id, game, wild) {
+    if (slot === 'p1' || slot === 'p2') prDraft.slot = slot;
+    if (Number.isFinite(Number(id)) && Number(id) > 0) prDraft.id = Number(id);
+    if (game && PR_GAME_LABEL[game]) prDraft.game = game;
+    if (Number.isFinite(Number(wild)) && Number(wild) > 0) prDraft.wildId = Number(wild);
+    buildPracticeModal();
+    return this.practiceModal;
+  },
+  startPractice() { return startPractice(); },
+  endPractice() { const was = gymIsPractice(); endPractice(); return was; },
+  get practice() {
+    return {
+      on: gymIsPractice(),
+      info: gym.practice ? {
+        kidSlot: gym.practice.kidSlot, kidName: gym.practice.kidName,
+        wildId: gym.practice.wildId, wildName: gym.practice.wildName,
+        game: gym.practice.game, n: gym.practice.n,
+      } : null,
+      stage: gym.stage, round: gym.round,
+      names: { s0: sideNm(0), s1: sideNm(1) },
+      hpTitles: [(document.querySelector('#hpWrap .who1') || {}).textContent, (document.querySelector('#hpWrap .who2') || {}).textContent],
+      faint: { p1: faintedIdsOf('p1'), p2: faintedIdsOf('p2') },
+      barText: [...document.querySelectorAll('#gymBar .chip')].map((b) => b.textContent),
+      hint: (document.getElementById('hint') || {}).textContent || '',
+    };
+  },
 };
 </script>
 </body>

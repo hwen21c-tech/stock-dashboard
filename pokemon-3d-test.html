@@ -3930,6 +3930,7 @@ function markFainted(slot, id) {
   updateCenterHud();
   refreshFaintNote();
   if (healPanelOpen()) renderHealPanel();
+  try { if (window.__dexViewRefresh) window.__dexViewRefresh(); } catch (e) { /* */ }
   return true;
 }
 function reviveFainted(slot) {
@@ -3940,6 +3941,7 @@ function reviveFainted(slot) {
   updateCenterHud();
   refreshFaintNote();
   if (healPanelOpen()) renderHealPanel();
+  try { if (window.__dexViewRefresh) window.__dexViewRefresh(); } catch (e) { /* */ }
   return n;
 }
 function updateCenterHud() {
@@ -6242,12 +6244,19 @@ async function startMatch() {
   const bar = document.getElementById('gymBar');
   if (bar) bar.hidden = false;
   switchBgm('music_battle');
+  refreshMiniNames();
   if (gymIsPractice()) {
     const p = gym.practice;
     p.n = 0;
     battleLogLine(`🎯 <b>혼자 연습</b> — ${p.kidName}의 <b>${nameOf(gym.entries[0][0])}</b> vs ${p.wildName}`);
     battleLogLine(`🎮 연습 게임 — <b>${MINI_LABEL[p.game]}</b> · 기절 없이 몇 번이든 연습!`);
     toast(`🎯 혼자 연습 시작! (${MINI_SHORT[p.game] || MINI_LABEL[p.game]})`);
+    const hint = document.getElementById('hint');
+    if (hint) {
+      hint.innerHTML = gymHintText();
+      hint.classList.remove('gone');
+      setTimeout(() => hint.classList.add('gone'), 6000);
+    }
   } else {
     battleLogLine(`🏟️ 체육관 배틀 시작! 비밀 엔트리 3마리씩 · <b>3판 승부</b>`);
     battleLogLine(`🎮 라운드 미니게임 — <b>${miniPlanText()}</b>`);
@@ -6387,6 +6396,18 @@ function setMiniPad(name) {
   if (p) p.hidden = name !== 'tap';
   if (c) c.hidden = name !== 'mole';
   if (name !== 'mole') resetMoleField();
+}
+/* 미니게임 판의 이름표 — 혼자 연습이면 0=내 아이, 1=야생으로 바뀢다 */
+function refreshMiniNames() {
+  [0, 1].forEach((i) => {
+    const head = document.querySelector(`#timingPad [data-trow="${i}"] .tgHead b`);
+    if (head) head.textContent = sideNm(i);
+  });
+  document.querySelectorAll('#molePad .mlFoot span').forEach((el, i) => {
+    if (el.firstChild && el.firstChild.nodeType === 3) el.firstChild.nodeValue = `${sideNm(i)} `;
+    const b = el.querySelector('b');
+    if (b) b.textContent = String((gym.mole && gym.mole.score[i]) || 0);
+  });
 }
 function setTimingPad(on) { setMiniPad(on ? 'timing' : null); }
 const MINI_GAMES = ['timing', 'tap', 'mole'];
@@ -6797,6 +6818,7 @@ function beginMole() {
   buildMoleGrid();
   resetMoleField();
   updateMoleScore();
+  refreshMiniNames();
   setMoleHead(`${tapName(0)} 차례 준비!`, MOLE_TIME);
   battleLogLine(`🕳️ 뿅뿅 두더지 잡기 — ${tapName(0)} 15초 먼저!`);
 }
@@ -7365,6 +7387,8 @@ function startPractice() {
   closePracticeModal();
   closeGymMode();
   try { closeGymPicker(); } catch (e) { /* */ }
+  /* 연습 중에 게임을 바꾸면 돌아가던 판을 먼저 깔끔하게 정리한다 */
+  if (gym.stage !== 'idle') stopMatch();
   const kidSlot = prDraft.slot === 'p2' ? 'p2' : 'p1';
   gym.practice = {
     on: true, kidSlot,
@@ -9456,8 +9480,12 @@ document.addEventListener('visibilitychange', () => {
 });
 
 /* 디버그/검증용 상태 노출 (읽기 전용) */
+const ajitErrors = [];
+window.addEventListener('error', (e) => { ajitErrors.push(String((e && e.message) || 'error')); });
+window.addEventListener('unhandledrejection', (e) => { ajitErrors.push('rejection: ' + String((e && e.reason && e.reason.message) || (e && e.reason) || '')); });
 window.__AJIT = {
   get ready() { return true; },
+  get errors() { return ajitErrors.slice(); },
   get cam3() { return { x: +camera.position.x.toFixed(2), y: +camera.position.y.toFixed(2), z: +camera.position.z.toFixed(2) }; },
   get theme() { return themeName; },
   get pokemonCount() { return pokemons.length; },
