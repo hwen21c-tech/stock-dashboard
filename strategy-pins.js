@@ -474,6 +474,14 @@
         if (px) px.textContent = it.price ? nf(it.price) + '원' : '—';
       }
       paintXcard(el, it);
+      /* 카드가 생기자마자 일봉을 받아 차트를 그린다(60초 주기를 기다리지 않게) */
+      if (!S.charts[it.code]) {
+        fetchChart(it.code).then(function (arr) {
+          if (!arr) return;
+          var cv = el.querySelector('canvas');
+          if (cv) drawChart(cv, arr);
+        });
+      }
     });
   }
 
