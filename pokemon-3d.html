@@ -6306,11 +6306,14 @@ function openEnterSheet() {
   const el = document.getElementById('enterSheet');
   if (!el) return;
   el.hidden = false;
+  const en = document.getElementById('emptyNote');
+  if (en) en.hidden = true;
   hintFade();
 }
 function closeEnterSheet() {
   const el = document.getElementById('enterSheet');
   if (el) el.hidden = true;
+  updateEmptyNote();
 }
 document.getElementById('btnEnterCenter').addEventListener('click', enterCenter);
 document.getElementById('btnHealNow').addEventListener('click', () => {
