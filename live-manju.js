@@ -268,6 +268,29 @@
     curCode = null;
   }
 
+  /* 만쥬 최종 후보 카드(한진칼/삼성SDI/나무가 등)는 22:00 결산 브리핑이 HTML을 다시 쓰면서
+     data-manju-code 속성을 잃을 수 있다. 카드 제목으로 다시 찾아 붙여, 클릭이 항상 동작하게 한다. */
+  var FINAL_BY_NAME = { '한진칼': '180640', '삼성SDI': '006400', '나무가': '190510' };
+  function tagFinalCards() {
+    try {
+      var items = document.querySelectorAll('#tabManju .manju-item');
+      Array.prototype.forEach.call(items, function (el) {
+        if (el.getAttribute('data-manju-code')) return;
+        var t = String(el.textContent || '');
+        if (t.indexOf('최종') === -1 && t.indexOf('보유 대응') === -1) return;
+        Object.keys(FINAL_BY_NAME).forEach(function (nm) {
+          if (t.indexOf(nm) !== -1 && !el.getAttribute('data-manju-code')) {
+            el.setAttribute('data-manju-code', FINAL_BY_NAME[nm]);
+          }
+        });
+      });
+    } catch (e) { /* noop */ }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', tagFinalCards);
+  else tagFinalCards();
+  window.addEventListener('load', tagFinalCards);
+  setInterval(tagFinalCards, 8000);
+
   /* 카드(채점 스크리너 · 최종 후보) 클릭 → 상세 팝업.
      캡처 단계에서 먼저 잡아 기존 openDetail(...) 핸들러를 대체한다.
      단, 상세 데이터가 없는 종목은 건드리지 않고 기존 팝업을 그대로 둔다. */
