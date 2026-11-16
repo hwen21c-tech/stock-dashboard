@@ -10019,5 +10019,22 @@ window.__AJIT = {
   },
 };
 </script>
+<script>
+/* 정적 GitHub Pages 사본(/stock-dashboard/pokemon-3d.html)에는 형제 페이지인 포켓몬 홈
+   (pokemon-battle.html)이 없어 '← 홈'·'배틀하러 가기' 링크가 404가 된다.
+   github.io 호스트에서만 라이브 앱(포켓몬 배틀 월드)으로 보내고, Vercel 라이브에서는 그대로 둔다. */
+(function () {
+  try {
+    if (!/(^|\.)github\.io$/i.test(location.hostname)) return;
+    var LIVE = 'https://pokemon-battle-world.vercel.app/pokemon/';
+    var fix = function () {
+      var list = document.querySelectorAll('a[href="pokemon-battle.html"]');
+      for (var i = 0; i < list.length; i++) list[i].setAttribute('href', LIVE);
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fix);
+    else fix();
+  } catch (e) { /* 링크 보정 실패해도 화면은 그대로 동작한다 */ }
+})();
+</script>
 </body>
 </html>
