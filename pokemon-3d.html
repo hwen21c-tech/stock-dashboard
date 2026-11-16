@@ -448,6 +448,108 @@
     100%{transform:translate(-6px,6px)}
   }
 
+  /* ---------- 센터 회복 HUD (실내 전용) ---------- */
+  #centerHud{
+    position:absolute;top:calc(env(safe-area-inset-top,0px) + 92px);
+    right:max(7px,env(safe-area-inset-right,0px));
+    display:flex;flex-direction:column;gap:5px;align-items:flex-end;pointer-events:auto;z-index:7;
+  }
+  #centerHud[hidden]{display:none!important}
+  .chk{
+    appearance:none;font:inherit;font-weight:900;font-size:11px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:5px;white-space:nowrap;
+    background:rgba(255,255,255,.94);color:#33507a;border:1.5px solid #fff;border-radius:999px;
+    padding:6px 10px;box-shadow:0 4px 14px rgba(18,42,60,.22);
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:transform .12s,background .18s;
+  }
+  .chk:active{transform:scale(.96)}
+  .chk .dot{width:9px;height:9px;border-radius:50%;flex:none;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.9)}
+  .chk.p1 .dot{background:#ff8fb1}
+  .chk.p2 .dot{background:#8fd0f5}
+  .chk .hleft{color:#c9560b;font-size:11.5px}
+  .chk.zero{background:#fff0f3;border-color:#ffd3de}
+  .chk.zero .hleft{color:#d02a4b}
+  .chk .hfaint{background:#e9eef7;color:#4a5b78;border-radius:999px;padding:1px 6px;font-size:10px}
+  .chk.hasfaint{box-shadow:0 0 0 2px rgba(120,160,255,.32),0 4px 14px rgba(18,42,60,.22)}
+
+  /* ---------- 회복 패널 · 도감 요약 · 퀴즈 ---------- */
+  #healModal,#dexSumModal,#quizModal{
+    position:fixed;inset:0;z-index:43;display:flex;align-items:center;justify-content:center;
+    padding:calc(env(safe-area-inset-top,0px) + 8px) 8px calc(env(safe-area-inset-bottom,0px) + 8px);
+    background:rgba(12,28,44,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
+  }
+  #quizModal{z-index:45}
+  #healModal[hidden],#dexSumModal[hidden],#quizModal[hidden]{display:none!important}
+  .healBody{display:flex;flex-direction:column;gap:8px;padding:10px 12px 2px;overflow:auto;min-height:0}
+  .hRow{background:#f7fbf1;border:1.5px solid #e2eed7;border-radius:14px;padding:9px 10px}
+  .hRow.sel{border-color:#f3b008;background:linear-gradient(180deg,#fffdf0,#fff5cf);box-shadow:0 0 0 2px rgba(243,176,8,.18) inset}
+  .hRow .top{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:900;color:#33501f}
+  .hRow .top .dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .hRow .top .left{margin-left:auto;font-size:11.5px;color:#7a4b04;background:#fff3c9;border-radius:999px;padding:2px 8px;white-space:nowrap}
+  .hRow .meta{margin-top:5px;font-size:10.5px;font-weight:700;color:#6d7f62;line-height:1.45}
+  .hRow .meta b{color:#3f6fa8}
+  .hRow .acts{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+  .hRow .acts button{appearance:none;border:0;font:inherit;font-weight:900;font-size:11.5px;border-radius:999px;padding:8px 13px;cursor:pointer;white-space:nowrap}
+  .hBtn{background:linear-gradient(180deg,#ff9ec4,#e8608f);color:#fff;box-shadow:0 4px 12px rgba(200,80,130,.28)}
+  .hBtn[disabled]{background:#e6e9ee;color:#98a3b3;box-shadow:none;cursor:default}
+  .qBtn{background:linear-gradient(180deg,#8fd0f5,#4f9fe0);color:#fff;box-shadow:0 4px 12px rgba(50,120,190,.26)}
+  .nBtn{background:#eef3f8;color:#5b7050}
+  .hNote{font-size:10px;font-weight:700;color:#8d9c83;padding:7px 14px 0;line-height:1.5}
+  .sumGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:10px 12px 4px;overflow:auto;min-height:0}
+  .sumCell{background:#f7fbf1;border:1.5px solid #e2eed7;border-radius:14px;padding:9px 10px;min-width:0}
+  .sumCell .k{font-size:10.5px;font-weight:800;color:#6d7f62}
+  .sumCell .v{font-size:14px;font-weight:900;color:#33501f;margin-top:3px;line-height:1.3;word-break:keep-all}
+  .qProg{display:flex;gap:5px;padding:9px 14px 0}
+  .qProg i{flex:1;height:6px;border-radius:99px;background:#e6ecdf}
+  .qProg i.on{background:#63b83f}
+  .qProg i.bad{background:#e2454f}
+  .qText{padding:11px 14px 0;font-size:14px;font-weight:900;color:#2f4a22;line-height:1.5;word-break:keep-all}
+  .qText b{color:#c9560b}
+  .qKind{display:inline-block;background:#fff3c9;color:#7a4b04;border-radius:99px;padding:2px 9px;font-size:10.5px;font-weight:900;margin-bottom:7px}
+  .qOpts{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:11px 12px 2px}
+  .qOpts button{
+    appearance:none;border:2px solid #e6efe0;background:#fff;border-radius:14px;padding:14px 8px;
+    font:inherit;font-weight:900;font-size:15px;color:#2f4a22;cursor:pointer;transition:transform .12s,background .18s,border-color .18s;
+  }
+  .qOpts button:active{transform:scale(.97)}
+  .qOpts button.ok{border-color:#5cba3c;background:#eafbe0}
+  .qOpts button.no{border-color:#e2454f;background:#fdecee}
+  .qFoot{padding:9px 14px calc(env(safe-area-inset-bottom,0px) + 10px);font-size:10.5px;font-weight:700;color:#8d9c83;line-height:1.55}
+  .faintNote{
+    margin:8px 12px 0;padding:7px 10px;border-radius:12px;background:#eef3fb;border:1.5px solid #dbe6f6;
+    font-size:10.5px;font-weight:800;color:#3f5b86;line-height:1.45;display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+  }
+  .faintNote[hidden]{display:none!important}
+  /* ---------- 도감 비었을 때 안내 ---------- */
+  #emptyNote{
+    position:absolute;left:50%;transform:translateX(-50%);
+    bottom:calc(env(safe-area-inset-bottom,0px) + 104px);
+    width:min(340px,calc(100% - 20px));
+    display:flex;flex-direction:column;gap:3px;align-items:center;text-align:center;
+    background:rgba(255,255,255,.96);border:2px solid #fff;border-radius:16px;
+    padding:11px 14px 12px;box-shadow:0 12px 30px rgba(10,30,20,.24);
+    pointer-events:auto;z-index:8;
+  }
+  #emptyNote[hidden]{display:none!important}
+  #emptyNote b{font-size:12.5px;color:#b3480c}
+  #emptyNote span{font-size:11px;font-weight:700;color:#5b7350;line-height:1.45}
+  #emptyNote a{
+    margin-top:5px;text-decoration:none;font-size:11.5px;font-weight:900;color:#fff;
+    background:linear-gradient(180deg,#7fb2ff,#4f7fe0);border-radius:999px;padding:7px 14px;
+    box-shadow:0 4px 12px rgba(50,90,180,.28);
+  }
+  .faintNote button{
+    appearance:none;border:0;font:inherit;font-weight:900;font-size:10.5px;border-radius:999px;
+    padding:6px 10px;cursor:pointer;background:linear-gradient(180deg,#ff9ec4,#e8608f);color:#fff;
+    box-shadow:0 3px 9px rgba(200,80,130,.26);white-space:nowrap;margin-left:auto;
+  }
+  .tile.faint{opacity:.52;filter:saturate(.35)}
+  .tile.faint .ck{background:#9aa8bd}
+  .tile .faintTag{
+    position:absolute;left:1px;top:1px;right:auto;background:rgba(40,56,84,.94);color:#fff;
+    font-size:7px;font-weight:900;line-height:1.15;padding:1px 4px;border-radius:6px;white-space:nowrap;
+  }
+
   /* ---------- 좁은 화면(폴드 외부 400px) ---------- */
   @media (max-width:430px){
     .brand{font-size:12px;padding:5px 10px}
@@ -481,6 +583,15 @@
     .icHead{font-size:10.5px;top:calc(env(safe-area-inset-top,0px) + 172px)}
     .icScore{bottom:calc(env(safe-area-inset-bottom,0px) + 116px)}
     .icScore span{font-size:10px;padding:4px 9px}
+    #centerHud{top:calc(env(safe-area-inset-top,0px) + 96px);gap:4px}
+    .chk{font-size:10.5px;padding:5px 8px;gap:4px}
+    .chk .hleft{font-size:10.5px}
+    .hRow .top{font-size:11.5px}
+    .hRow .top .left{font-size:10.5px;padding:2px 6px}
+    .hRow .acts button{font-size:11px;padding:7px 10px}
+    .qText{font-size:13px}
+    .qOpts button{font-size:14px;padding:12px 6px}
+    .sumCell .v{font-size:13px}
   }
   @media (max-height:520px){
     .brand,.dexchip{font-size:11px}
@@ -539,6 +650,11 @@
   <div id="bubbles"></div>
 
   <div class="hint" id="hint">바닥 탭·방향키로 걷기 · 포켓몬을 누르면 타입별 인사! · 빨간 지붕 <b>포켓몬 센터</b>를 누르면 모두 회복 💖</div>
+  <div id="emptyNote" hidden>
+    <b>아직 잡은 포켓몬이 없어요</b>
+    <span>배틀에서 먼저 포켓몬을 잡아 보세요!</span>
+    <a href="pokemon-battle.html">⚔️ 배틀하러 가기</a>
+  </div>
   <div id="toast"></div>
 </div>
 
@@ -553,12 +669,12 @@
       <section class="slot" data-slot="p1">
         <h4><span style="width:9px;height:9px;border-radius:50%;background:#ff8fb1;display:inline-block"></span><span class="nm" data-name="p1">아린</span>의 도감<span class="cnt" data-cnt="p1">0 / 3</span></h4>
         <div class="grid" data-grid="p1"></div>
-        <div class="empty" data-empty="p1" hidden>도감에 잡은 친구가 없어요.<br>게임에서 먼저 잡아 보세요!</div>
+        <div class="empty" data-empty="p1" hidden>아직 잡은 친구가 없어요.<br>배틀에서 먼저 포켓몬을 잡아 보세요!</div>
       </section>
       <section class="slot" data-slot="p2">
         <h4><span style="width:9px;height:9px;border-radius:50%;background:#8fd0f5;display:inline-block"></span><span class="nm" data-name="p2">지안</span>의 도감<span class="cnt" data-cnt="p2">0 / 3</span></h4>
         <div class="grid" data-grid="p2"></div>
-        <div class="empty" data-empty="p2" hidden>도감에 잡은 친구가 없어요.<br>게임에서 먼저 잡아 보세요!</div>
+        <div class="empty" data-empty="p2" hidden>아직 잡은 친구가 없어요.<br>배틀에서 먼저 포켓몬을 잡아 보세요!</div>
       </section>
     </div>
     <div class="mFoot">
@@ -579,13 +695,17 @@
       <section class="slot" data-gslot="0">
         <h4><span style="width:9px;height:9px;border-radius:50%;background:#ff8fb1;display:inline-block"></span><span class="nm" data-gname="0">아린</span>의 비밀 엔트리<span class="cnt" data-gcnt="0">0 / 3</span></h4>
         <div class="grid" data-ggrid="0"></div>
-        <div class="empty" data-gempty="0" hidden>도감이 비어 있어 기본 친구로 채워요</div>
+        <div class="empty" data-gempty="0" hidden>아직 잡은 포켓몬이 없어요.<br>배틀에서 먼저 포켓몬을 잡아 보세요!</div>
       </section>
       <section class="slot" data-gslot="1" hidden>
         <h4><span style="width:9px;height:9px;border-radius:50%;background:#8fd0f5;display:inline-block"></span><span class="nm" data-gname="1">지안</span>의 비밀 엔트리<span class="cnt" data-gcnt="1">0 / 3</span></h4>
         <div class="grid" data-ggrid="1"></div>
-        <div class="empty" data-gempty="1" hidden>도감이 비어 있어 기본 친구로 채워요</div>
+        <div class="empty" data-gempty="1" hidden>아직 잡은 포켓몬이 없어요.<br>배틀에서 먼저 포켓몬을 잡아 보세요!</div>
       </section>
+    </div>
+    <div class="faintNote" id="gymFaintNote" hidden>
+      <span id="gymFaintTxt">💤 휴식중인 친구는 고를 수 없어요</span>
+      <button type="button" id="btnGoCenter">🏥 센터로 가기</button>
     </div>
     <div class="miniPick" id="gymMini">
       <div class="mpHead">🎮 라운드별 미니게임 <span class="mpSum">1R 🎯 가운데 · 2R ⚡ 연타 · 3R 🫧 속성</span></div>
@@ -662,6 +782,55 @@
   <button class="chip" id="btnGymExit">🚪 체육관 나가기</button>
 </div>
 
+<div id="centerHud" hidden>
+  <button class="chk p1" data-chk="p1" type="button"><span class="dot"></span><span class="hnm">아린</span><span class="hleft">3 / 3</span><span class="hfaint" hidden>💤 0</span></button>
+  <button class="chk p2" data-chk="p2" type="button"><span class="dot"></span><span class="hnm">지안</span><span class="hleft">3 / 3</span><span class="hfaint" hidden>💤 0</span></button>
+</div>
+
+<div id="healModal" hidden aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="healTitle">
+    <div class="mHead">
+      <b id="healTitle">🏥 회복 머신</b>
+      <button class="x" id="healClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="mSub" id="healSub">오늘 남은 무료 회복은 각자 3회 · 기절한 친구를 모두 부활시켜요</div>
+    <div class="healBody" id="healBody"></div>
+    <div class="hNote">💤 기절은 매일 자정에 자동으로 풀려요 · 무료 회복을 다 쓰면 3문제 퀴즈로 1회 충전!</div>
+    <div class="mFoot">
+      <button class="ghost" id="healNurse">👟 간호순에게 인사</button>
+      <button class="primary" id="healClose2">닫기</button>
+    </div>
+  </div>
+</div>
+
+<div id="dexSumModal" hidden aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="sumTitle">
+    <div class="mHead">
+      <b id="sumTitle">📺 내 도감 요약</b>
+      <button class="x" id="sumClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="mSub" id="sumSub">우리 도감과 오늘의 회복 기록</div>
+    <div class="sumGrid" id="sumGrid"></div>
+    <div class="mFoot">
+      <button class="ghost" id="sumClose2">닫기</button>
+      <button class="primary" id="sumDex">🐾 친구 고르기</button>
+    </div>
+  </div>
+</div>
+
+<div id="quizModal" hidden aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="quizTitle">
+    <div class="mHead">
+      <b id="quizTitle">🧠 회복 1회 충전 퀴즈</b>
+      <button class="x" id="quizClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="qProg" id="qProg"><i></i><i></i><i></i></div>
+    <div class="qText" id="qText"></div>
+    <div class="qOpts" id="qOpts"></div>
+    <div class="qFoot" id="qFoot">산수·영어·한글 3문제를 모두 맞히면 회복 1회가 충전돼요!</div>
+  </div>
+</div>
+
 <div id="loading">
   <div class="loadcard" id="loadCard">
     <div class="spin"></div>
@@ -701,8 +870,8 @@ const KO151 = ('이상해씨,이상해풀,이상해꽃,파이리,리자드,리�
   '팬텀,롱스톤,슬리프,슬리퍼,크랩,킹크랩,찌리리공,붐볼,아라리,나시,탕구리,텅구리,시라소몬,홍수몬,내루미,또가스,또도가스,뿔카노,코뿌리,럭키,' +
   '덩쿠리,캥카,쏘드라,시드라,콘치,왕콘치,별가사리,스타미,마임맨,스라크,루주라,에레브,마그마,쁘사이저,켄타로스,잉어킹,갸라도스,라프라스,메타몽,' +
   '이브이,샤미드,쥬피썬더,부스터,폴리곤,암나이트,암스타,투구,투구푸스,프테라,잠만보,프리져,썬더,파이어,미뇽,신뇽,망나뇽,뮤츠,뮤').split(',');
-const DEFAULT_IDS = [25, 133, 4, 7, 1, 39]; // 피카츄·이브이·파이리·꼬부기·이상해씨·푸린
 const MAX_FRIENDS = 12;
+/* 도감에 실제로 잡힌 친구만 쓴다 — 기본/폴백 포켓몬은 없다 */
 const nameOf = (id) => (id >= 1 && id <= 151) ? KO151[id - 1] : ('포켓몬 #' + id);
 
 /* ---------- 2. 잡은 포켓몬(localStorage 통합 도감) 읽기 ---------- */
@@ -2459,7 +2628,7 @@ function writePick(p) {
 let pick = readPick();
 let shownIds = (pick.p1.length + pick.p2.length)
   ? pick.p1.concat(pick.p2).slice(0, MAX_FRIENDS)
-  : (caught.length ? caught.slice(0, MAX_FRIENDS) : DEFAULT_IDS.slice());
+  : caught.slice(0, MAX_FRIENDS);
 let soundOn = true;
 
 const texLoader = new THREE.TextureLoader();
@@ -2556,11 +2725,25 @@ function updateDexChip() {
   const picked = pick.p1.length + pick.p2.length;
   if (picked) chip.innerHTML = `🐾 친구 <b>${pokemons.length}</b> · 고른 친구`;
   else if (caught.length) chip.innerHTML = `🐾 도감 <b>${caught.length}</b> · 친구 <b>${pokemons.length}</b>`;
-  else chip.innerHTML = `🐾 기본 친구 <b>${pokemons.length}</b>`;
+  else chip.innerHTML = '🐾 도감 <b>0</b> · 아직 잡은 친구 없음';
+  updateEmptyNote();
+}
+/* 도감이 비었을 때 안내 (기본 포켓몬 대신 문구만) */
+function updateEmptyNote() {
+  const el = document.getElementById('emptyNote');
+  if (!el) return;
+  let show = false;
+  try { show = caught.length === 0 && pokemons.length === 0; } catch (e) { show = false; }
+  let outdoor = true;
+  try { outdoor = mode === 'outdoor'; } catch (e) { outdoor = true; }
+  const on = show && outdoor;
+  el.hidden = !on;
+  const hint = document.getElementById('hint');
+  if (hint && on) hint.classList.add('gone');
 }
 
 async function applyFriends(ids) {
-  const list = ((ids && ids.length) ? ids : (caught.length ? caught : DEFAULT_IDS)).slice(0, MAX_FRIENDS);
+  const list = ((ids && ids.length) ? ids : caught).slice(0, MAX_FRIENDS);
   clearPokemons();
   shownIds = list.slice();
   await spawnPokemons(shownIds);
@@ -2569,6 +2752,410 @@ async function applyFriends(ids) {
 }
 
 await spawnPokemons();
+
+/* ---------- 10-b-3. 🏥 센터 회복·기절 상태 (localStorage 일자별) ---------- */
+const HEAL_KEY = 'pkm.center.heal.v1';
+const FAINT_KEY = 'pkm.gym.fainted.v1';
+const HEAL_FREE = 3;
+const HEAL_SLOTS = ['p1', 'p2'];
+
+function pkmDayKey(d) {
+  const t = d || new Date();
+  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`;
+}
+function pkmReadJson(key) {
+  try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+}
+function pkmWriteJson(key, o) {
+  try { localStorage.setItem(key, JSON.stringify(o)); } catch (e) { /* 저장소 없음 */ }
+}
+function pkmBlankHeal() {
+  return { v: 1, date: pkmDayKey(), left: { p1: HEAL_FREE, p2: HEAL_FREE }, bonus: { p1: 0, p2: 0 }, used: { p1: 0, p2: 0 } };
+}
+const centerState = (() => {
+  const t = pkmDayKey();
+  const o = pkmReadJson(HEAL_KEY);
+  const st = pkmBlankHeal();
+  if (o && o.date === t) {
+    HEAL_SLOTS.forEach((s) => {
+      st.left[s] = Number.isFinite(o.left && o.left[s]) ? Math.max(0, Math.round(o.left[s])) : HEAL_FREE;
+      st.bonus[s] = Number.isFinite(o.bonus && o.bonus[s]) ? Math.max(0, Math.round(o.bonus[s])) : 0;
+      st.used[s] = Number.isFinite(o.used && o.used[s]) ? Math.max(0, Math.round(o.used[s])) : 0;
+    });
+  }
+  return st;
+})();
+const faintState = (() => {
+  const t = pkmDayKey();
+  const o = pkmReadJson(FAINT_KEY);
+  const clean = (a) => (Array.isArray(a) ? a.filter((n) => Number.isFinite(n)).map((n) => Math.round(n)) : []);
+  if (o && o.date === t) return { v: 1, date: t, p1: clean(o.p1), p2: clean(o.p2) };
+  return { v: 1, date: t, p1: [], p2: [] };
+})();
+function saveCenterState() { centerState.date = pkmDayKey(); pkmWriteJson(HEAL_KEY, centerState); }
+function saveFaintState() { faintState.date = pkmDayKey(); pkmWriteJson(FAINT_KEY, faintState); }
+/* 날짜가 바뀌면 자동 해제 (탭을 켜둔 채 자정을 넘겨도) */
+function pkmEnsureToday() {
+  const t = pkmDayKey();
+  let changed = false;
+  if (centerState.date !== t) {
+    centerState.date = t;
+    centerState.left = { p1: HEAL_FREE, p2: HEAL_FREE };
+    centerState.bonus = { p1: 0, p2: 0 };
+    centerState.used = { p1: 0, p2: 0 };
+    saveCenterState();
+    changed = true;
+  }
+  if (faintState.date !== t) {
+    faintState.date = t; faintState.p1 = []; faintState.p2 = [];
+    saveFaintState();
+    changed = true;
+  }
+  return changed;
+}
+const pkmSlotOf = (i) => (Number(i) === 1 ? 'p2' : 'p1');
+function pkmKidName(slot) {
+  const i = slot === 'p2' ? 1 : 0;
+  return (people[i] && people[i].name) || (i ? '지안' : '아린');
+}
+function healLeftOf(slot) { pkmEnsureToday(); return Math.max(0, centerState.left[slot] || 0); }
+function healMaxOf(slot) { pkmEnsureToday(); return HEAL_FREE + (centerState.bonus[slot] || 0); }
+function faintedIdsOf(slot) { pkmEnsureToday(); return (faintState[slot] || []).slice(); }
+function isFaintedPoke(slot, id) { return faintedIdsOf(slot).includes(Number(id)); }
+function markFainted(slot, id) {
+  pkmEnsureToday();
+  const n = Number(id);
+  if (!Number.isFinite(n) || n <= 0) return false;
+  const arr = faintState[slot] || (faintState[slot] = []);
+  if (!arr.includes(n)) arr.push(n);
+  saveFaintState();
+  updateCenterHud();
+  refreshFaintNote();
+  if (healPanelOpen()) renderHealPanel();
+  return true;
+}
+function reviveFainted(slot) {
+  pkmEnsureToday();
+  const n = (faintState[slot] || []).length;
+  faintState[slot] = [];
+  saveFaintState();
+  updateCenterHud();
+  refreshFaintNote();
+  if (healPanelOpen()) renderHealPanel();
+  return n;
+}
+function updateCenterHud() {
+  const hud = document.getElementById('centerHud');
+  if (!hud) return;
+  let show = false;
+  try { show = mode === 'indoor'; } catch (e) { show = false; }
+  hud.hidden = !show;
+  HEAL_SLOTS.forEach((slot) => {
+    const b = hud.querySelector(`[data-chk="${slot}"]`);
+    if (!b) return;
+    const nm = pkmKidName(slot);
+    const left = healLeftOf(slot), max = healMaxOf(slot), f = faintedIdsOf(slot).length;
+    const nmEl = b.querySelector('.hnm'); if (nmEl) nmEl.textContent = nm;
+    const lEl = b.querySelector('.hleft'); if (lEl) lEl.textContent = `${left} / ${max}`;
+    b.classList.toggle('zero', left <= 0);
+    b.classList.toggle('hasfaint', f > 0);
+    const fEl = b.querySelector('.hfaint');
+    if (fEl) { fEl.hidden = f <= 0; fEl.textContent = `💤 ${f}`; }
+    b.setAttribute('aria-label', `${nm} 남은 회복 ${left}회 · 기절 ${f}마리`);
+  });
+}
+/* 체육관 엔트리 모달 — 기절 안내 */
+function refreshFaintNote() {
+  const note = document.getElementById('gymFaintNote');
+  if (!note) return;
+  const st = gym.selStep === 1 ? 1 : 0;
+  const slot = st === 1 ? 'p2' : 'p1';
+  const f = faintedIdsOf(slot);
+  const show = f.length > 0;
+  note.hidden = !show;
+  const txt = document.getElementById('gymFaintTxt');
+  if (txt && show) {
+    txt.innerHTML = `💤 <b>${pkmKidName(slot)}</b>의 친구 ${f.length}마리가 휴식중 — 센터에서 회복하면 다시 고를 수 있어요`;
+  }
+}
+
+/* ---------- 회복 패널 ---------- */
+let healPanelSlot = 'p1';
+function healPanelOpen() {
+  const m = document.getElementById('healModal');
+  return !!m && !m.hidden;
+}
+function renderHealPanel() {
+  const body = document.getElementById('healBody');
+  if (!body) return;
+  body.innerHTML = '';
+  HEAL_SLOTS.forEach((slot) => {
+    const row = document.createElement('div');
+    row.className = 'hRow' + (slot === healPanelSlot ? ' sel' : '');
+    const nm = pkmKidName(slot);
+    const left = healLeftOf(slot), max = healMaxOf(slot), f = faintedIdsOf(slot);
+    const top = document.createElement('div');
+    top.className = 'top';
+    top.innerHTML = `<span class="dot" style="background:${slot === 'p1' ? '#ff8fb1' : '#8fd0f5'}"></span><b>${nm}</b><span class="left">남은 회복 ${left} / ${max}</span>`;
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.innerHTML = f.length
+      ? `💤 기절한 친구 ${f.length}마리 — <b>${f.map((id) => nameOf(id)).join(' · ')}</b>`
+      : '✨ 지금은 기절한 친구가 없어요';
+    const acts = document.createElement('div');
+    acts.className = 'acts';
+    const hb = document.createElement('button');
+    hb.type = 'button'; hb.className = 'hBtn'; hb.dataset.heal = slot;
+    hb.textContent = left <= 0 ? '💖 오늘 회복 소진' : (f.length ? `💖 회복하기 (${left}회 남음)` : '💖 회복하기');
+    hb.disabled = left <= 0 || !f.length;
+    const qb = document.createElement('button');
+    qb.type = 'button'; qb.className = 'qBtn'; qb.dataset.quiz = slot;
+    qb.textContent = left <= 0 ? '🧠 퀴즈로 회복 +1' : '🧠 퀴즈로 +1 충전';
+    const gb = document.createElement('button');
+    gb.type = 'button'; gb.className = 'nBtn'; gb.dataset.tonurse = slot;
+    gb.textContent = '👟 간호순 앞으로';
+    acts.append(hb, qb, gb);
+    row.append(top, meta, acts);
+    body.appendChild(row);
+  });
+  const sub = document.getElementById('healSub');
+  if (sub) sub.textContent = `오늘 남은 무료 회복은 각자 ${HEAL_FREE}회 · 기절한 친구를 모두 부활시켜요`;
+}
+function openHealPanel(slot) {
+  pkmEnsureToday();
+  healPanelSlot = slot === 'p2' ? 'p2' : (slot === 'p1' ? 'p1' : pkmSlotOf(indoorActiveIdx()));
+  renderHealPanel();
+  const m = document.getElementById('healModal');
+  if (m) { m.hidden = false; m.setAttribute('aria-hidden', 'false'); }
+  hintFade();
+  return true;
+}
+function closeHealPanel() {
+  const m = document.getElementById('healModal');
+  if (m) { m.hidden = true; m.setAttribute('aria-hidden', 'true'); }
+}
+/* 회복 실행 — 무료 횟수 1회 차감 + 그 아이의 기절 포켓몬 전부 부활 */
+function doCenterHeal(slot) {
+  pkmEnsureToday();
+  slot = slot === 'p2' ? 'p2' : 'p1';
+  healPanelSlot = slot;
+  const f = faintedIdsOf(slot);
+  const nm = pkmKidName(slot);
+  if (!f.length) {
+    toast('✨ 지금은 기절한 친구가 없어요 · 체육관에서 지면 회복할 수 있어요');
+    return false;
+  }
+  if (healLeftOf(slot) <= 0) {
+    toast(`${nm}의 무료 회복을 다 썼어요! 3문제를 맞히면 1회 충전!`);
+    openQuiz(slot);
+    return false;
+  }
+  centerState.left[slot] = Math.max(0, (centerState.left[slot] || 0) - 1);
+  centerState.used[slot] = (centerState.used[slot] || 0) + 1;
+  saveCenterState();
+  const n = reviveFainted(slot);
+  walkIndoorKidToHeal(slot, true);
+  let inCenter = false;
+  try { inCenter = mode === 'indoor'; } catch (e) { inCenter = false; }
+  if (inCenter) {
+    /* 회복 연출이 보이도록 패널을 잠시 내렸다가, 남은 횟수·기절이 있으면 다시 올린다 */
+    closeHealPanel();
+    indoorHeal(`✨ ${nm}의 친구 ${n}마리 회복 완료!`);
+    clearTimeout(doCenterHeal.reopen);
+    doCenterHeal.reopen = setTimeout(() => {
+      let indoorNow = false;
+      try { indoorNow = mode === 'indoor'; } catch (e) { indoorNow = false; }
+      if (!indoorNow) return;
+      if (quizState) return;
+      const dm = document.getElementById('dexModal'), gm = document.getElementById('gymModal');
+      if ((dm && !dm.hidden) || (gm && !gm.hidden)) return;
+      if (healLeftOf(slot) > 0 && faintedIdsOf(slot).length) openHealPanel(slot);
+    }, 2400);
+  } else {
+    burstStars(new THREE.Vector3(CENTER.x, CENTER.y + 5.2, CENTER.z), 22, 1.9, 2.2);
+    burstHearts(new THREE.Vector3(CENTER.x, CENTER.y + 4.6, CENTER.z), 7);
+    playHealMelody();
+    say(new THREE.Vector3(CENTER.x, CENTER.y + 6.4, CENTER.z), `✨ ${nm}의 친구 ${n}마리 회복 완료!`, 2600);
+  }
+  playCry(113);
+  toast(`✨ ${nm}의 친구 ${n}마리 부활! 남은 회복 ${healLeftOf(slot)}회`);
+  updateCenterHud();
+  hintFade();
+  return true;
+}
+
+/* ---------- 퀴즈 (산수·영어·한글 3문제 → 회복 1회 충전) ---------- */
+const QUIZ_TOTAL = 3;
+let quizState = null;
+const pkmRand = (n) => Math.floor(Math.random() * n);
+function pkmShuffle(a) {
+  const s = a.slice();
+  for (let i = s.length - 1; i > 0; i--) { const j = pkmRand(i + 1); [s[i], s[j]] = [s[j], s[i]]; }
+  return s;
+}
+function quizMath() {
+  const a = 2 + pkmRand(11), b = 2 + pkmRand(11);
+  const ans = a + b;
+  const set = new Set([ans]);
+  const ds = [-9, -7, -5, -3, -2, -1, 1, 2, 3, 4, 6, 8];
+  let guard = 0;
+  while (set.size < 4 && guard++ < 60) {
+    const v = ans + ds[pkmRand(ds.length)];
+    if (v > 1 && v !== ans) set.add(v);
+  }
+  let pad = 1;
+  while (set.size < 4) set.add(ans + (pad++));
+  const opts = pkmShuffle([...set].map((v) => String(v)));
+  return { kind: '산수', q: `${a} + ${b} = ?`, opts, answer: String(ans) };
+}
+const ENG_WORDS = [
+  ['apple', '사과'], ['banana', '바나나'], ['water', '물'], ['book', '책'], ['friend', '친구'],
+  ['school', '학교'], ['flower', '꽃'], ['moon', '달'], ['cat', '고양이'], ['dog', '강아지'],
+  ['milk', '우유'], ['bread', '빵'], ['train', '기차'], ['star', '별'], ['tree', '나무'],
+];
+function quizEng() {
+  const i = pkmRand(ENG_WORDS.length);
+  const w = ENG_WORDS[i][0], k = ENG_WORDS[i][1];
+  const others = pkmShuffle(ENG_WORDS.filter((_, j) => j !== i)).slice(0, 3).map((x) => x[1]);
+  return { kind: '영어', q: `영어 단어 <b>${w}</b>의 뜻은?`, opts: pkmShuffle([k, ...others]), answer: k };
+}
+const KOR_WORDS = [
+  ['사과', 'ㅅ'], ['학교', 'ㅎ'], ['바다', 'ㅂ'], ['나무', 'ㄴ'], ['가방', 'ㄱ'], ['다리', 'ㄷ'],
+  ['모자', 'ㅁ'], ['자동차', 'ㅈ'], ['포켓몬', 'ㅍ'], ['토끼', 'ㅌ'], ['컵', 'ㅋ'], ['하마', 'ㅎ'],
+];
+const CHOSUNG = ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+function quizKor() {
+  const i = pkmRand(KOR_WORDS.length);
+  const w = KOR_WORDS[i][0], c = KOR_WORDS[i][1];
+  const others = pkmShuffle(CHOSUNG.filter((x) => x !== c)).slice(0, 3);
+  return { kind: '한글', q: `낱말 <b>${w}</b>의 첫 글자 <b>${w[0]}</b>의 첫소리(초성)는?`, opts: pkmShuffle([c, ...others]), answer: c };
+}
+function pkmNewQuizSet() { return [quizMath(), quizEng(), quizKor()]; }
+function openQuiz(slot) {
+  pkmEnsureToday();
+  slot = slot === 'p2' ? 'p2' : 'p1';
+  quizState = { slot, i: 0, marks: [], qs: pkmNewQuizSet(), busy: false };
+  renderQuiz();
+  const m = document.getElementById('quizModal');
+  if (m) { m.hidden = false; m.setAttribute('aria-hidden', 'false'); }
+  return true;
+}
+function closeQuiz() {
+  quizState = null;
+  const m = document.getElementById('quizModal');
+  if (m) { m.hidden = true; m.setAttribute('aria-hidden', 'true'); }
+}
+function renderQuiz() {
+  const st = quizState;
+  if (!st) return;
+  const q = st.qs[st.i];
+  const qText = document.getElementById('qText');
+  if (qText) qText.innerHTML = q ? `<span class="qKind">${q.kind}</span><br>${q.q}` : '';
+  const opts = document.getElementById('qOpts');
+  if (opts) {
+    opts.innerHTML = '';
+    (q ? q.opts : []).forEach((o) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.dataset.opt = o; b.textContent = o;
+      opts.appendChild(b);
+    });
+  }
+  document.querySelectorAll('#qProg i').forEach((el, k) => {
+    el.className = st.marks[k] === 1 ? 'on' : st.marks[k] === 0 ? 'bad' : '';
+  });
+  const title = document.getElementById('quizTitle');
+  if (title) title.textContent = `🧠 회복 1회 충전 퀴즈 · ${pkmKidName(st.slot)}`;
+  const foot = document.getElementById('qFoot');
+  if (foot) foot.textContent = `${st.i + 1} / ${QUIZ_TOTAL} 문제 · 산수·영어·한글을 모두 맞히면 회복 1회 충전!`;
+}
+function answerQuiz(opt) {
+  const st = quizState;
+  if (!st || st.busy) return false;
+  const q = st.qs[st.i];
+  if (!q) return false;
+  const ok = String(opt) === String(q.answer);
+  st.marks[st.i] = ok ? 1 : 0;
+  const btn = [...document.querySelectorAll('#qOpts button')].find((b) => b.dataset.opt === String(opt));
+  if (btn) btn.classList.add(ok ? 'ok' : 'no');
+  st.busy = true;
+  document.querySelectorAll('#qProg i').forEach((el, k) => {
+    el.className = st.marks[k] === 1 ? 'on' : st.marks[k] === 0 ? 'bad' : '';
+  });
+  if (!ok) {
+    const foot = document.getElementById('qFoot');
+    if (foot) foot.textContent = '아쉬워요! 처음부터 3문제를 다시 풀어요 🎯';
+    toast('앗, 아쉬워요! 3문제를 처음부터 다시!');
+    setTimeout(() => {
+      if (!quizState || quizState !== st) return;
+      quizState = { slot: st.slot, i: 0, marks: [], qs: pkmNewQuizSet(), busy: false };
+      renderQuiz();
+    }, 1100);
+    return false;
+  }
+  toast(`정답! ${st.i + 1} / ${QUIZ_TOTAL}`);
+  if (st.i < QUIZ_TOTAL - 1) {
+    setTimeout(() => {
+      if (!quizState || quizState !== st) return;
+      st.i += 1; st.busy = false;
+      renderQuiz();
+    }, 520);
+    return true;
+  }
+  setTimeout(() => { if (quizState === st) finishQuiz(); }, 560);
+  return true;
+}
+function finishQuiz() {
+  const st = quizState;
+  if (!st) return false;
+  const slot = st.slot;
+  centerState.bonus[slot] = (centerState.bonus[slot] || 0) + 1;
+  centerState.left[slot] = (centerState.left[slot] || 0) + 1;
+  saveCenterState();
+  closeQuiz();
+  updateCenterHud();
+  if (healPanelOpen()) renderHealPanel();
+  const nm = pkmKidName(slot);
+  try { playVictoryJingle(); } catch (e) { /* */ }
+  toast(`🎉 3문제 정답! ${nm}의 회복 1회 충전 (남은 ${healLeftOf(slot)}회)`);
+  say(new THREE.Vector3(0, 3.2, 1.0), `🎉 ${nm} 회복 1회 충전 완료!`, 2600);
+  burstStars(new THREE.Vector3(0, 2.2, 0.6), 20, 1.8, 2.0);
+  burstHearts(new THREE.Vector3(0, 2.0, 0.6), 6);
+  return true;
+}
+
+/* ---------- 도감 요약 미니 팝업 (모니터·책장) ---------- */
+function openDexSummary() {
+  try { dexSlots.p1 = readDexSlot('p1'); dexSlots.p2 = readDexSlot('p2'); } catch (e) { /* */ }
+  const all = [...new Set(dexSlots.p1.ids.concat(dexSlots.p2.ids))];
+  const typeCount = {};
+  all.forEach((id) => typesOf(id).forEach((t) => { typeCount[t] = (typeCount[t] || 0) + 1; }));
+  const top = Object.entries(typeCount).sort((a, b) => b[1] - a[1])[0];
+  const grid = document.getElementById('sumGrid');
+  if (grid) {
+    grid.innerHTML = '';
+    const cells = [
+      ['🐾 보유 친구', `${all.length}마리`, `아린 ${dexSlots.p1.ids.length} · 지안 ${dexSlots.p2.ids.length}`],
+      ['🏅 최다 타입', top ? `${top[0]}` : '아직 없음', top ? `${top[1]}마리` : '게임에서 친구를 잡아 보세요'],
+      ['💖 오늘 회복', `${(centerState.used.p1 || 0) + (centerState.used.p2 || 0)}회 사용`, `남은 ${healLeftOf('p1')} + ${healLeftOf('p2')}회`],
+      ['💤 기절', `${faintedIdsOf('p1').length + faintedIdsOf('p2').length}마리`, `아린 ${faintedIdsOf('p1').length} · 지안 ${faintedIdsOf('p2').length}`],
+    ];
+    cells.forEach(([k, v, sub]) => {
+      const c = document.createElement('div');
+      c.className = 'sumCell';
+      c.innerHTML = `<div class="k">${k}</div><div class="v">${v}</div><div class="k" style="margin-top:3px">${sub}</div>`;
+      grid.appendChild(c);
+    });
+  }
+  const m = document.getElementById('dexSumModal');
+  if (m) { m.hidden = false; m.setAttribute('aria-hidden', 'false'); }
+  const prof = indoorLive.prof;
+  if (prof) say(prof.group.position.clone().add(new THREE.Vector3(0, 2.3, 0)), '도감 기록을 크게 띄워 줄게! 📺', 2200);
+  return true;
+}
+function closeDexSummary() {
+  const m = document.getElementById('dexSumModal');
+  if (m) { m.hidden = true; m.setAttribute('aria-hidden', 'true'); }
+}
 
 /* ---------- 10-c. 🏥 포켓몬 센터 실내 (indoorWorld) ---------- */
 const indoorWorld = new THREE.Group();
@@ -2999,7 +3586,13 @@ function makeNurse() {
     b.group.position.set(sp.x, 0, sp.z);
     b.group.rotation.y = sp.ry;
     indoorWorld.add(b.group);
-    indoorLive.family.push(b);
+    indoorLive.family.push({
+      idx: indoorLive.family.length, id: sp.def.id, name: nm, role: sp.def.role,
+      group: b.group, parts: b.parts, h: sp.def.h,
+      x: sp.x, z: sp.z, home: { x: sp.x, z: sp.z }, face: sp.ry, target: null,
+      walkPhase: rndRange(0, 6), moving: false, speed: 0, rest: rndRange(1.2, 3.4),
+      sit: 0, stand: 0, sitX: 0, sitY: 0, sitZ: 0, sitFace: 0, wave: 0,
+    });
   });
 
   /* 상호작용 등록 */
@@ -3007,6 +3600,9 @@ function makeNurse() {
   indoorBalls.forEach((b) => { b.traverse((o) => { if (o.isMesh) { o.userData.act = 'heal'; indoorPickables.push(o); } }); });
   pillar.traverse((o) => { if (o.isMesh) { o.userData.act = 'heal'; indoorPickables.push(o); } });
   nurse.group.traverse((o) => { if (o.isMesh) { o.userData.act = 'nurse'; indoorPickables.push(o); } });
+  sofa.traverse((o) => { if (o.isMesh) { o.userData.act = 'sofa'; indoorPickables.push(o); } });
+  shelf.traverse((o) => { if (o.isMesh) { o.userData.act = 'pc'; indoorPickables.push(o); } });
+  indoorWorld.userData.floor = floor;
 
   /* 실내 회복 연출 링 */
   const iRing = new THREE.Mesh(
@@ -3018,15 +3614,291 @@ function makeNurse() {
   indoorWorld.userData.ring = iRing;
 }
 
-/* 실내 회복 — 몬스터볼 6개가 차례로 반짝 */
+/* ---------- 10-c-2. 🚶 센터 실내 걷기 · 아기자기 상호작용 ---------- */
+const IND_BOUNDS = { x0: -8.2, x1: 8.2, z0: -5.9, z1: 9.9 };
+/* 밟으면 안 되는 가구·사람 (원·사각) */
+const IND_CIRCLES = [
+  { x: 0, z: -1.6, r: 3.15 },      /* 회복 카운터 + 홀로그램 기둥 */
+  { x: -4.6, z: 1.9, r: 1.05 },    /* 도감 키오스크 */
+  { x: -3.6, z: 3.4, r: 1.05 },    /* 라운지 테이블 */
+  { x: -7.5, z: -2.2, r: 1.05 },   /* 대형 모니터 */
+  { x: 5.6, z: 0.6, r: 1.35 },     /* 빨간 테이블 */
+  { x: 4.5, z: 3.1, r: 0.46 },     /* 오박사 */
+  { x: -3.55, z: -1.4, r: 0.4 },   /* 간호순 */
+  { x: -7.9, z: 5.4, r: 0.55 }, { x: 8.0, z: 4.6, r: 0.55 }, /* 화분 */
+  { x: 4.2, z: -0.6, r: 0.46 }, { x: 4.2, z: 1.7, r: 0.46 },
+  { x: 7.0, z: 1.7, r: 0.46 }, { x: 7.0, z: -0.6, r: 0.46 }, { x: 4.2, z: 0.55, r: 0.46 },
+];
+const IND_RECTS = [
+  { x0: -8.4, x1: -3.9, z0: 1.8, z1: 4.3 },  /* 곡선 소파 */
+  { x0: 7.7, x1: 8.5, z0: -4.0, z1: 0.8 },   /* 책장 */
+];
+const IND_HEAL_SPOT = { x: 0, z: 2.05 };
+const IND_NURSE_SPOT = { x: -2.9, z: 0.35 };
+const IND_SOFA_FRONT = { x: -6.2, z: 5.0 };
+const IND_SOFA_SEAT = { x: -6.2, z: 3.2, y: 0.58, face: 0 };
+
+function clampIWalk(x, z, pad) {
+  pad = pad == null ? 0.34 : pad;
+  x = clamp(x, IND_BOUNDS.x0 + pad, IND_BOUNDS.x1 - pad);
+  z = clamp(z, IND_BOUNDS.z0 + pad, IND_BOUNDS.z1 - pad);
+  IND_RECTS.forEach((r) => {
+    const x0 = r.x0 - pad, x1 = r.x1 + pad, z0 = r.z0 - pad, z1 = r.z1 + pad;
+    if (x > x0 && x < x1 && z > z0 && z < z1) {
+      const dl = x - x0, dr = x1 - x, dn = z - z0, df = z1 - z;
+      const m = Math.min(dl, dr, dn, df);
+      if (m === dl) x = x0; else if (m === dr) x = x1; else if (m === dn) z = z0; else z = z1;
+    }
+  });
+  IND_CIRCLES.forEach((c) => {
+    const d = Math.hypot(x - c.x, z - c.z), R = c.r + pad;
+    if (d < R) { const k = R / Math.max(0.001, d); x = c.x + (x - c.x) * k; z = c.z + (z - c.z) * k; }
+  });
+  return { x: clamp(x, IND_BOUNDS.x0 + pad, IND_BOUNDS.x1 - pad), z: clamp(z, IND_BOUNDS.z0 + pad, IND_BOUNDS.z1 - pad) };
+}
+let indoorActiveV = -1;
+function indoorActiveIdx() { return indoorActiveV >= 0 ? indoorActiveV : (activeIdx === 1 ? 1 : 0); }
+function setIndoorActive(i) {
+  indoorActiveV = i === 1 ? 1 : 0;
+  const P = indoorLive.family[indoorActiveV];
+  if (P) { P.rest = 0; P.target = null; }
+  indoorLive.family.forEach((q, k) => { if (q.parts.ring) q.parts.ring.visible = k === indoorActiveV && q.sit <= 0; });
+  return indoorActiveV;
+}
+function indoorKidSlot() { return indoorActiveIdx() === 1 ? 'p2' : 'p1'; }
+/* 바닥 탭 → 걸어가기 */
+function moveIndoorKidTo(x, z) {
+  const i = indoorActiveIdx();
+  const P = indoorLive.family[i];
+  if (!P) return null;
+  const c = clampIWalk(x, z, 0.34);
+  P.sit = 0; P.stand = 0;
+  P.target = c;
+  hintFade();
+  return c;
+}
+/* 간호순·회복 머신 앞으로 */
+function walkIndoorKidToHeal(slot, silent) {
+  const i = slot === 'p2' ? 1 : 0;
+  const P = indoorLive.family[i];
+  if (!P) return false;
+  setIndoorActive(i);
+  P.sit = 0; P.stand = 0; P.afterSit = null;
+  P.target = { x: IND_HEAL_SPOT.x + (i === 1 ? 0.45 : -0.45), z: IND_HEAL_SPOT.z + 0.1 };
+  if (!silent) hintFade();
+  return true;
+}
+function walkIndoorKidToNurse(slot) {
+  const i = slot === 'p2' ? 1 : 0;
+  const P = indoorLive.family[i];
+  if (!P) return false;
+  setIndoorActive(i);
+  P.sit = 0; P.stand = 0; P.afterSit = null;
+  P.target = { x: IND_NURSE_SPOT.x + (i === 1 ? 0.6 : 0.0), z: IND_NURSE_SPOT.z + 1.2 };
+  hintFade();
+  return true;
+}
+/* 소파로 걸어가 앉기 */
+function sitOnSofa() {
+  const i = indoorActiveIdx();
+  const P = indoorLive.family[i];
+  if (!P) return false;
+  P.sit = 0; P.stand = 0;
+  P.target = { x: IND_SOFA_FRONT.x + (i === 1 ? 0.55 : -0.55), z: IND_SOFA_FRONT.z };
+  P.afterSit = { x: IND_SOFA_SEAT.x + (i === 1 ? 0.55 : -0.55), z: IND_SOFA_SEAT.z };
+  return true;
+}
+function startSitting(P, spot) {
+  P.sit = 3.4;
+  P.stand = 0;
+  P.sitX = spot.x; P.sitY = IND_SOFA_SEAT.y; P.sitZ = spot.z; P.sitFace = IND_SOFA_SEAT.face;
+  P.target = null; P.moving = false;
+  const pos = new THREE.Vector3(spot.x, 1.35, spot.z);
+  burstHearts(pos, 6);
+  say(pos.clone().add(new THREE.Vector3(0, 0.6, 0)), '아~ 폭신하고 편안해 💗', 2200);
+  hintFade();
+}
+function pickIndoorSpot(P) {
+  for (let n = 0; n < 10; n++) {
+    const a = rndRange(0, Math.PI * 2), rr = rndRange(0.8, 2.4);
+    const c = clampIWalk(P.home.x + Math.cos(a) * rr, P.home.z + Math.sin(a) * rr, 0.4);
+    if (Math.hypot(c.x - P.x, c.z - P.z) < 0.7) continue;
+    let crowded = false;
+    for (const q of indoorLive.family) {
+      if (q !== P && q.sit <= 0 && Math.hypot(c.x - q.x, c.z - q.z) < 0.8) { crowded = true; break; }
+    }
+    if (crowded) continue;
+    P.target = c;
+    return;
+  }
+  P.target = null;
+}
+function stepIndoorWalk(P, dt, controlled) {
+  const now = performance.now();
+  /* 소파에 앉아 쉬는 중 */
+  if (P.sit > 0) {
+    P.sit -= dt;
+    P.moving = false;
+    P.x = P.sitX; P.z = P.sitZ;
+    P.group.position.set(P.sitX, P.sitY, P.sitZ);
+    P.group.rotation.y = P.sitFace;
+    P.parts.legL.rotation.x = -1.32; P.parts.legR.rotation.x = -1.32;
+    P.parts.armL.rotation.x = 0.6; P.parts.armR.rotation.x = 0.6;
+    if (P.parts.ring) P.parts.ring.visible = false;
+    if (P.sit <= 0) { P.stand = 0.0001; P.sitX0 = P.x; P.sitY0 = P.sitY; P.sitZ0 = P.z; }
+    return;
+  }
+  /* 일어나서 소파 앞까지 */
+  if (P.stand > 0) {
+    P.stand += dt;
+    const k = clamp(P.stand / 0.5, 0, 1);
+    P.x = lerp(P.sitX0 || P.x, IND_SOFA_FRONT.x + (P.idx === 1 ? 0.55 : -0.55), k);
+    P.z = lerp(P.sitZ0 || P.z, IND_SOFA_FRONT.z, k);
+    P.group.position.set(P.x, lerp(P.sitY0 || P.sitY, 0, k), P.z);
+    P.parts.legL.rotation.x = -1.32 * (1 - k);
+    P.parts.legR.rotation.x = -1.32 * (1 - k);
+    P.parts.armL.rotation.x = 0.6 * (1 - k);
+    P.parts.armR.rotation.x = 0.6 * (1 - k);
+    if (P.parts.ring) P.parts.ring.visible = controlled;
+    if (k >= 1) { P.stand = 0; P.rest = rndRange(0.8, 1.8); }
+    return;
+  }
+
+  let vx = 0, vz = 0;
+  const kv = controlled ? 3.3 : 1.0;
+  if (controlled) {
+    if (keys.size) {
+      if (keys.has('arrowleft') || keys.has('a')) vx -= 1;
+      if (keys.has('arrowright') || keys.has('d')) vx += 1;
+      if (keys.has('arrowup') || keys.has('w')) vz -= 1;
+      if (keys.has('arrowdown') || keys.has('s')) vz += 1;
+      if (vx || vz) P.target = null;
+    } else if (P.target) {
+      const dx = P.target.x - P.x, dz = P.target.z - P.z, d = Math.hypot(dx, dz);
+      if (d < 0.16) { P.target = null; if (P.afterSit) { startSitting(P, P.afterSit); P.afterSit = null; } }
+      else { vx = dx / d; vz = dz / d; }
+    }
+  } else {
+    if (P.rest > 0) { P.rest -= dt; if (P.rest <= 0) P.target = null; }
+    if (P.rest <= 0 && !P.target) {
+      if (rnd() < 0.34) P.rest = rndRange(2.0, 5.0);
+      else pickIndoorSpot(P);
+    }
+    if (P.rest <= 0 && P.target) {
+      const dx = P.target.x - P.x, dz = P.target.z - P.z, d = Math.hypot(dx, dz);
+      if (d < 0.2) { P.target = null; P.rest = rndRange(1.6, 4.4); }
+      else { vx = dx / d; vz = dz / d; }
+    }
+  }
+
+  if (vx || vz) {
+    const len = Math.hypot(vx, vz) || 1;
+    vx /= len; vz /= len;
+    if (controlled && keys.size) {
+      const s = Math.sin(view.theta), c = Math.cos(view.theta);
+      const wx = vx * c - vz * s, wz = vx * s + vz * c;
+      vx = wx; vz = wz;
+    }
+    const step = kv * dt;
+    const np = clampIWalk(P.x + vx * step, P.z + vz * step, 0.34);
+    P.x = np.x; P.z = np.z;
+    P.face = Math.atan2(vx, vz);
+    P.moving = true;
+    P.walkPhase += dt * (controlled ? 9.5 : 7.2);
+  } else {
+    P.moving = false;
+    P.walkPhase = lerp(P.walkPhase, Math.round(P.walkPhase / Math.PI) * Math.PI, Math.min(1, dt * 10));
+  }
+  P.speed = lerp(P.speed, P.moving ? 1 : 0, Math.min(1, dt * 12));
+  P.group.position.set(P.x, Math.abs(Math.sin(P.walkPhase)) * 0.045 * P.speed, P.z);
+  const curFace = P.group.rotation.y;
+  const diff = ((P.face - curFace + Math.PI * 3) % (Math.PI * 2)) - Math.PI;
+  P.group.rotation.y = curFace + diff * Math.min(1, dt * 12);
+  const sw = Math.sin(P.walkPhase) * 0.62 * P.speed;
+  P.parts.legL.rotation.x = sw;
+  P.parts.legR.rotation.x = -sw;
+  P.parts.armL.rotation.x = -sw * 0.75;
+  P.parts.armR.rotation.x = sw * 0.75;
+  P.parts.armR.rotation.z = lerp(P.parts.armR.rotation.z, 0, Math.min(1, dt * 8));
+  const idle = !P.moving;
+  P.parts.head.rotation.z = Math.sin(now * 0.0016 + P.idx) * 0.03 + (idle ? Math.sin(now * 0.0008 + P.idx) * 0.04 : 0);
+  P.parts.head.rotation.y = idle ? Math.sin(now * 0.0006 + P.idx * 2) * 0.35 : lerp(P.parts.head.rotation.y, 0, Math.min(1, dt * 3));
+  if (P.parts.ring) {
+    P.parts.ring.visible = controlled;
+    if (controlled) {
+      const k = 1 + Math.sin(now * 0.004) * 0.07;
+      P.parts.ring.scale.set(k, k, k);
+      P.parts.ring.material.opacity = 0.5 + Math.sin(now * 0.004) * 0.2;
+    }
+  }
+}
+/* 센터에 들어올 때 아이들을 바닥에 다시 세운다 */
+function resetIndoorFamily() {
+  indoorLive.family.forEach((P, i) => {
+    P.x = P.home.x; P.z = P.home.z;
+    P.target = null; P.sit = 0; P.stand = 0; P.afterSit = null;
+    P.face = (i % 2) ? Math.PI + 0.12 : Math.PI - 0.18;
+    P.group.position.set(P.x, 0, P.z);
+    P.group.rotation.y = P.face;
+    P.parts.legL.rotation.x = 0; P.parts.legR.rotation.x = 0;
+    P.parts.armL.rotation.x = 0; P.parts.armR.rotation.x = 0;
+    P.parts.armR.rotation.z = 0;
+    P.moving = false; P.speed = 0;
+  });
+  setIndoorActive(activeIdx === 1 ? 1 : 0);
+}
+/* 오박사님 — 오늘의 랜덤 상성 팁 / 응원 한 줄 */
+const PROF_TIPS = [
+  '불꽃은 <b>풀</b>에게 강해! 파이리의 불꽃은 무섭다구 🔥',
+  '물은 <b>불꽃</b>을 끄지! 꼬부기랑 물놀이하면 최고야 💧',
+  '풀은 <b>물</b>을 마셔서 강해져! 이상해씨의 비밀 🌿',
+  '전기는 <b>물</b>에 강해! 피카츄가 물을 찌릿찌릿 ⚡',
+  '얼음은 <b>풀</b>을 얼려 버려! 눈싸움엔 얼음 타입 ❄️',
+  '격투는 <b>노말</b>에게 강해! 알통몬의 주먹은 무거워 👊',
+  '독은 <b>풀</b>을 시들게 해! 독침붕을 조심해 ☠️',
+  '땅은 <b>전기</b>를 흘려보내! 피카츄도 땅에서는 힘들어 🌍',
+  '비행은 <b>풀</b>에게 유리해! 피죤투의 날개는 빠르지 🕊️',
+  '에스퍼는 <b>격투</b>를 이겨! 캐이시의 눈을 보면 안 돼 🔮',
+  '벌레는 <b>에스퍼</b>에게 강해! 버터플의 가루 조심 🦋',
+  '바위는 <b>불꽃</b>에 끄떡없어! 단단한 롱스톤 🪨',
+  '고스트는 <b>노말</b> 공격이 통하지 않아! 깜깜한 밤 👻',
+  '드래곤은 <b>드래곤</b>끼리만 아파! 리자몽도 드래곤이야 🐉',
+  '강철은 <b>얼음</b>을 부숴! 단단한 갑옷 ⚙️',
+  '페어리는 <b>드래곤</b>을 이겨! 푸린의 노래가 특효 🎀',
+  '타입 상성은 <b>기술</b>의 타입으로 정해져! 몸의 타입이 아니라구 📖',
+  '두 타입 포켓몬은 약점이 두 배가 될 수 있어! 조심조심 🧠',
+  '오늘도 최선을 다한 너희가 자랑스러워! 🌟',
+  '센터에서 회복하면 지친 친구도 다시 힘이 나! 💖',
+];
+let profTipIdx = -1;
+function professorTip() {
+  const prof = indoorLive.prof;
+  if (!prof) return null;
+  let i = Math.floor(Math.random() * PROF_TIPS.length);
+  if (PROF_TIPS.length > 1 && i === profTipIdx) i = (i + 1) % PROF_TIPS.length;
+  profTipIdx = i;
+  const line = PROF_TIPS[i];
+  say(prof.group.position.clone().add(new THREE.Vector3(0, 2.35, 0)), line, 4200);
+  prof.parts.armL.rotation.x = -1.15;
+  setTimeout(() => { if (prof && prof.parts) prof.parts.armL.rotation.x = 0; }, 950);
+  burstStars(prof.group.position.clone().add(new THREE.Vector3(0, 1.9, 0.3)), 12, 0.9, 1.5);
+  playCry(64);
+  hintFade();
+  return line;
+}
+
+
+/* 실내 회복 — 몬스터볼 6개가 빛나며 돌아가고 차례로 반짝 */
 let indoorHealT = -1;
 let indoorHealCount = 0;
-function indoorHeal() {
+let indoorSpinT = -1;
+function indoorHeal(label, force) {
   const now = performance.now();
-  if (now < (indoorHeal.cool || 0)) return false;
-  indoorHeal.cool = now + 1800;
+  if (!force && now < (indoorHeal.cool || 0)) return false;
+  indoorHeal.cool = now + 1200;
   indoorHealCount++;
   indoorHealT = 0;
+  indoorSpinT = 0;
   indoorBalls.forEach((b, i) => {
     setTimeout(() => {
       if (!b.visible) return;
@@ -3042,8 +3914,9 @@ function indoorHeal() {
   burstStars(new THREE.Vector3(0, 1.9, 0.6), 26, 1.9, 2.3);
   burstHearts(new THREE.Vector3(0, 2.2, 0.6), 8);
   setTimeout(() => burstStars(new THREE.Vector3(0, 2.6, 1.2), 18, 2.2, 2.0), 500);
-  say(new THREE.Vector3(0, 3.4, 1.6), '포켓몬들이 모두 건강해졌어요! 💖', 2800);
-  toast('포켓몬들이 모두 건강해졌어요! 💖');
+  const msg = label || '포켓몬들이 모두 건강해졌어요! 💖';
+  say(new THREE.Vector3(0, 3.4, 1.6), msg, 2800);
+  toast(msg);
   return true;
 }
 function professorTalk() {
@@ -3637,7 +4510,8 @@ function buildGymPicker() {
   const grid = document.querySelector(`[data-ggrid="${st}"]`);
   const empty = document.querySelector(`[data-gempty="${st}"]`);
   const ids = gymEntriesFor(st);
-  const pool = ids.length ? ids.slice() : DEFAULT_IDS.slice();
+  const pool = ids.slice();
+  const pkSlot = st === 1 ? 'p2' : 'p1';
   if (grid) {
     grid.innerHTML = '';
     pool.forEach((id) => {
@@ -3657,11 +4531,21 @@ function buildGymPicker() {
       const ck = document.createElement('span');
       ck.className = 'ck'; ck.textContent = '+';
       b.append(img, nmEl, ck);
+      if (isFaintedPoke(pkSlot, id)) {
+        b.classList.add('faint');
+        b.setAttribute('aria-disabled', 'true');
+        b.title = `${nameOf(id)} · 💤 휴식중 (센터에서 회복)`;
+        const tag = document.createElement('span');
+        tag.className = 'faintTag';
+        tag.textContent = '💤 휴식중';
+        b.appendChild(tag);
+      }
       grid.appendChild(b);
     });
     grid.hidden = false;
   }
   if (empty) empty.hidden = ids.length > 0 || pool.length > 0;
+  refreshFaintNote();
   const back = document.getElementById('gymBack');
   if (back) back.hidden = st === 0;
   const cbtn = document.getElementById('gymConfirm');
@@ -3682,6 +4566,12 @@ function refreshGymSel() {
 }
 function toggleGymTile(side, id) {
   if (side !== gym.selStep) return;
+  const pkSlot = side === 1 ? 'p2' : 'p1';
+  if (isFaintedPoke(pkSlot, id)) {
+    toast(`💤 ${nameOf(Number(id))}는 휴식중이에요 · 센터에서 회복하면 다시 고를 수 있어요`);
+    refreshFaintNote();
+    return;
+  }
   const arr = gym.sel[side];
   const i = arr.indexOf(id);
   if (i >= 0) { arr.splice(i, 1); refreshGymSel(); return; }
@@ -3689,32 +4579,37 @@ function toggleGymTile(side, id) {
   arr.push(id);
   refreshGymSel();
 }
-function fillGymEntry(side) {
-  const arr = gym.sel[side];
-  const pool = gymEntriesFor(side);
-  const fallback = pool.length ? pool : DEFAULT_IDS.slice();
-  let guard = 0;
-  while (arr.length < GYM_ENTRY_N && guard++ < 60) {
-    const cand = fallback[Math.floor(rnd() * fallback.length)];
-    if (!arr.includes(cand)) arr.push(cand);
-    else if (fallback.every((x) => arr.includes(x))) break;
-  }
-  let gi = 0;
-  while (arr.length < GYM_ENTRY_N) { arr.push(DEFAULT_IDS[gi++ % DEFAULT_IDS.length]); }
-  return arr.slice(0, GYM_ENTRY_N);
+/* 엔트리 3자리는 고른 친구를 돌려가며 채운다 (도감에 1~2마리만 있어도 3판 가능, 기본 포켓몬 없음) */
+function buildGymEntryLine(side) {
+  const arr = gym.sel[side].filter((id) => !isFaintedPoke(side === 1 ? 'p2' : 'p1', id));
+  if (!arr.length) return [];
+  return Array.from({ length: GYM_ENTRY_N }, (_, r) => arr[r % arr.length]);
 }
 function confirmGymStep() {
   const side = gym.selStep;
-  if (gym.sel[side].length < GYM_ENTRY_N) {
-    fillGymEntry(side);
-    refreshGymSel();
-    toast(`비밀 엔트리 3마리를 자동으로 채웠어요`);
+  const pkSlot = side === 1 ? 'p2' : 'p1';
+  gym.sel[side] = gym.sel[side].filter((id) => !isFaintedPoke(pkSlot, id));
+  if (!gym.sel[side].length) {
+    const hasDex = gymEntriesFor(side).length > 0;
+    toast(hasDex
+      ? `${pkmKidName(pkSlot)}의 친구가 모두 💤 휴식중이에요 · 센터에서 회복해 주세요!`
+      : `아직 잡은 포켓몬이 없어요 · 배틀에서 먼저 포켓몬을 잡아 보세요!`);
+    refreshFaintNote();
+    return;
   }
   if (side === 0) {
     openGymPicker(1);
     return;
   }
-  gym.entries = [gym.sel[0].slice(0, GYM_ENTRY_N), gym.sel[1].slice(0, GYM_ENTRY_N)];
+  const e0 = buildGymEntryLine(0), e1 = buildGymEntryLine(1);
+  if (!e0.length || !e1.length) {
+    toast('두 사람 모두 최소 1마리는 골라야 해요!');
+    return;
+  }
+  gym.entries = [e0, e1];
+  if (gym.sel[0].length < GYM_ENTRY_N || gym.sel[1].length < GYM_ENTRY_N) {
+    toast(`고른 친구 ${Math.max(gym.sel[0].length, gym.sel[1].length)}마리로 3판을 돌려가며 싸워요!`);
+  }
   closeGymPicker();
   startMatch();
 }
@@ -4301,11 +5196,21 @@ function updateAttack(dt) {
     battleLogLine(`✅ <b>${gym.round + 1}라운드</b> — <span class="a${gym.roundWinner}">${nm}</span> 승리 (${gym.wins[0]} : ${gym.wins[1]})`);
     toast(`${gym.round + 1}라운드 ${nm} 승리! (${gym.wins[0]} : ${gym.wins[1]})`);
     burstStars(new THREE.Vector3(0, 2.0, 0), 16, 2.0, 1.8);
+    /* 진 라운드의 포켓몬은 오늘 기절(💤) — 센터에서 회복해야 다시 고를 수 있다 */
+    const loseSide = 1 - gym.roundWinner;
+    const loseId = (gym.entries[loseSide] || [])[gym.round];
+    if (loseId) {
+      const loseSlot = pkmSlotOf(loseSide);
+      markFainted(loseSlot, loseId);
+      battleLogLine(`💤 <span class="a${loseSide}">${nameOf(loseId)}</span> 기절! 센터에서 회복하면 다시 싸울 수 있어요`);
+    }
   }
 }
 function finishMatch() {
   gym.stage = 'final'; gym.t = 0;
   clearBalls();
+  const winIdx = gym.wins[0] === gym.wins[1] ? (gym.hp[0] >= gym.hp[1] ? 0 : 1) : (gym.wins[0] > gym.wins[1] ? 0 : 1);
+  gym.winner = winIdx;
   gym.champion = gym.fighters[gym.winner] || null;
   if (gym.champion) {
     gym.champion.group.position.set(gym.champion.baseX, 0.48, 0);
@@ -4364,12 +5269,12 @@ function stopMatch() {
   gym.timing = null;
 }
 
-/* ---------- 11. 하트 파티클 ---------- */
+/* ---------- 11. 하트 파티클 (야외·실내 공통 — scene 에 매단다) ---------- */
 const hearts = [];
 for (let i = 0; i < 26; i++) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: heartMap, transparent: true, depthWrite: false, opacity: 0 }));
   s.visible = false;
-  world.add(s);
+  scene.add(s);
   hearts.push({ s, life: 0, ttl: 1, vy: 0, vx: 0, vz: 0 });
 }
 let heartCursor = 0;
@@ -4395,7 +5300,7 @@ const healStars = [];
 for (let i = 0; i < 40; i++) {
   const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sparkleMap, color: 0xffe98a, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0 }));
   s.visible = false;
-  world.add(s);
+  scene.add(s);
   healStars.push({ s, life: 0, ttl: 1, vx: 0, vy: 0, vz: 0, grow: 0 });
 }
 let starCursor = 0;
@@ -5058,11 +5963,21 @@ function tapAt(cx, cy) {
     const hitIn = raycaster.intersectObjects(indoorPickables, false);
     if (hitIn.length) {
       const act = hitIn[0].object.userData.act;
-      if (act === 'heal') indoorHeal();
-      else if (act === 'prof') professorTalk();
-      else if (act === 'nurse') nurseTalk();
-      else if (act === 'pc') openDexModal();
+      if (act === 'heal') { const slot = indoorKidSlot(); openHealPanel(slot); walkIndoorKidToHeal(slot, true); }
+      else if (act === 'prof') professorTip();
+      else if (act === 'nurse') { nurseTalk(); walkIndoorKidToNurse(indoorKidSlot()); }
+      else if (act === 'pc') openDexSummary();
+      else if (act === 'sofa') sitOnSofa();
       return;
+    }
+    const floorMesh = indoorWorld.userData.floor;
+    if (floorMesh) {
+      const hitF = raycaster.intersectObject(floorMesh, false);
+      if (hitF.length) {
+        const fp = hitF[0].point;
+        moveIndoorKidTo(fp.x, fp.z);
+        return;
+      }
     }
     return;
   }
@@ -5107,6 +6022,8 @@ window.addEventListener('keydown', (e) => {
     keys.add(k);
     const P = activePerson();
     if (P) P.target = null;
+    const PI = indoorLive.family[indoorActiveIdx()];
+    if (PI) PI.target = null;
     e.preventDefault();
     hintFade();
   }
@@ -5255,14 +6172,16 @@ document.getElementById('dexApply').addEventListener('click', async () => {
     if (ids.length) await applyFriends(ids);
     else await applyFriends(paCaughtFallback());
     closeDexModal();
-    toast(ids.length ? `🐾 친구 ${ids.length}마리를 아지트에 불렀어요!` : `🐾 기본 친구 ${pokemons.length}마리를 불렀어요`);
+    if (ids.length) toast(`🐾 친구 ${ids.length}마리를 아지트에 불렀어요!`);
+    else if (pokemons.length) toast(`🐾 도감에 잡힌 친구 ${pokemons.length}마리를 불렀어요`);
+    else toast('아직 잡은 포켓몬이 없어요 · 배틀에서 먼저 잡아 보세요!');
   } finally {
     btn.disabled = false;
     btn.textContent = '아지트에 부르기';
   }
 });
 function paCaughtFallback() {
-  return caught.length ? caught : DEFAULT_IDS;
+  return caught;
 }
 
 buildDexModal();
@@ -5302,12 +6221,14 @@ function syncHud() {
   if (hint) {
     hint.classList.remove('gone');
     hint.innerHTML = mode === 'indoor'
-      ? '회복 머신·간호순·오박사님·도감 PC를 눌러 보세요 · <b>🚪 밖으로 나가기</b>로 아지트 복귀'
+      ? '바닥을 탭하면 걸어가요 · 소파🛋️ · 오박사👨‍🔬 · 모니터📺 · 회복머신💖을 눌러 보세요'
       : mode === 'gym'
         ? gymHintText()
         : '바닥 탭·방향키로 걷기 · 포켓몬을 누르면 타입별 인사! · 빨간 지붕 <b>센터</b>는 회복, 파란 돔 <b>체육관</b>은 배틀!';
     setTimeout(() => hint.classList.add('gone'), 7000);
   }
+  updateEmptyNote();
+  updateCenterHud();
 }
 function saveOutdoorView() {
   outdoorSaved = { theta: viewT.theta, phi: viewT.phi, radius: viewT.radius, y: camTarget.y };
@@ -5328,6 +6249,8 @@ function enterCenter() {
   const m = aspectMode();
   setSceneView(0, m === 'narrow' ? 2.0 : 1.7, 0.6, 0, m === 'narrow' ? 1.24 : 1.3, modeRadius());
   syncHud();
+  resetIndoorFamily();
+  updateCenterHud();
   toast('🏥 포켓몬 센터에 들어왔어요');
   hintFade();
   try { switchAmbience('amb_wind'); } catch (e) { /* */ }
@@ -5335,6 +6258,9 @@ function enterCenter() {
 }
 function exitCenter() {
   if (mode !== 'indoor') return false;
+  closeHealPanel();
+  closeDexSummary();
+  if (quizState) closeQuiz();
   mode = 'outdoor';
   world.visible = true;
   indoorWorld.visible = false;
@@ -5342,6 +6268,7 @@ function exitCenter() {
   sun.castShadow = true;
   restoreOutdoorView();
   syncHud();
+  updateCenterHud();
   toast('🌳 아지트로 돌아왔어요');
   try { switchAmbience(themeName === 'night' ? 'amb_wind' : 'amb_forest'); } catch (e) { /* */ }
   return true;
@@ -5386,8 +6313,60 @@ function closeEnterSheet() {
   if (el) el.hidden = true;
 }
 document.getElementById('btnEnterCenter').addEventListener('click', enterCenter);
-document.getElementById('btnHealNow').addEventListener('click', () => { closeEnterSheet(); healCenter(); });
+document.getElementById('btnHealNow').addEventListener('click', () => {
+  closeEnterSheet();
+  doCenterHeal(activeIdx === 1 ? 'p2' : 'p1');
+});
 document.getElementById('btnSheetCancel').addEventListener('click', closeEnterSheet);
+
+/* ---------- 15-a-2. 센터 HUD · 회복 패널 · 퀴즈 · 도감 요약 ---------- */
+const centerHudEl = document.getElementById('centerHud');
+if (centerHudEl) {
+  centerHudEl.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-chk]');
+    if (!b) return;
+    const slot = b.dataset.chk === 'p2' ? 'p2' : 'p1';
+    setIndoorActive(slot === 'p2' ? 1 : 0);
+    openHealPanel(slot);
+    walkIndoorKidToHeal(slot, true);
+  });
+}
+const healBodyEl = document.getElementById('healBody');
+if (healBodyEl) {
+  healBodyEl.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    if (b.dataset.heal) { healPanelSlot = b.dataset.heal; doCenterHeal(b.dataset.heal); }
+    else if (b.dataset.quiz) { healPanelSlot = b.dataset.quiz; openQuiz(b.dataset.quiz); }
+    else if (b.dataset.tonurse) { walkIndoorKidToNurse(b.dataset.tonurse); }
+  });
+}
+document.getElementById('healClose').addEventListener('click', closeHealPanel);
+document.getElementById('healClose2').addEventListener('click', closeHealPanel);
+document.getElementById('healNurse').addEventListener('click', () => {
+  closeHealPanel();
+  nurseTalk();
+  walkIndoorKidToNurse(healPanelSlot);
+});
+document.getElementById('sumClose').addEventListener('click', closeDexSummary);
+document.getElementById('sumClose2').addEventListener('click', closeDexSummary);
+document.getElementById('sumDex').addEventListener('click', () => { closeDexSummary(); openDexModal(); });
+document.getElementById('quizClose').addEventListener('click', closeQuiz);
+const qOptsEl = document.getElementById('qOpts');
+if (qOptsEl) {
+  qOptsEl.addEventListener('click', (e) => {
+    const b = e.target.closest('button');
+    if (!b || !b.dataset.opt) return;
+    answerQuiz(b.dataset.opt);
+  });
+}
+document.getElementById('btnGoCenter').addEventListener('click', () => {
+  const slot = gym.selStep === 1 ? 'p2' : 'p1';
+  closeGymPicker();
+  if (mode === 'gym') exitGym();
+  enterCenter();
+  setTimeout(() => { openHealPanel(slot); walkIndoorKidToHeal(slot, true); }, 320);
+});
 document.getElementById('btnGym').addEventListener('click', enterGym);
 document.getElementById('btnExitPlace').addEventListener('click', () => {
   if (mode === 'indoor') exitCenter();
@@ -5858,6 +6837,25 @@ function animate() {
     gymLive.spotCones.forEach((c) => { c.material.opacity = 0.08 + Math.abs(Math.sin(t * 0.8 + c.position.x)) * 0.06; });
     updateGym(dt, t);
   }
+  if (mode === 'indoor') {
+    const act = indoorActiveIdx();
+    indoorLive.family.forEach((P, i) => stepIndoorWalk(P, dt, i === act));
+    /* 회복 연출 — 몬스터볼 6개가 빙글 돌며 커졌다 작아진다 */
+    if (indoorSpinT >= 0) {
+      indoorSpinT += dt;
+      const k = indoorSpinT;
+      const spin = Math.max(0, 1 - k / 1.7);
+      indoorBalls.forEach((b, i) => {
+        b.rotation.y += dt * 9.5 * spin;
+        b.position.y = 1.28 + Math.sin(k * 7 + i * 0.9) * 0.07 * spin;
+        b.scale.setScalar(1 + 0.24 * Math.sin(Math.min(1, k / 1.3) * Math.PI));
+      });
+      if (indoorSpinT > 2.1) {
+        indoorSpinT = -1;
+        indoorBalls.forEach((b) => { b.rotation.y = 0; b.position.y = 1.28; b.scale.setScalar(1); });
+      }
+    }
+  }
   if (mode === 'indoor' && indoorWorld.userData.pillar) {
     const bands = indoorWorld.userData.pillar.children.filter((o) => o.userData && o.userData.spin);
     bands.forEach((b, i) => { b.rotation.z = t * (0.5 + i * 0.2); });
@@ -6045,6 +7043,7 @@ setTimeout(() => loadingEl.remove(), 700);
 animate();
 
 /* 첫 인사 */
+updateCenterHud();
 setTimeout(() => {
   if (!pokemons.length) return;
   const pk = pokemons[0];
@@ -6177,6 +7176,87 @@ window.__AJIT = {
     };
   },
   indoorHeal, professorTalk, nurseTalk,
+  /* ---- 센터 회복·기절·실내 걷기 (검증용) ---- */
+  get center() {
+    return {
+      date: pkmDayKey(),
+      left: { p1: healLeftOf('p1'), p2: healLeftOf('p2') },
+      max: { p1: healMaxOf('p1'), p2: healMaxOf('p2') },
+      bonus: { p1: centerState.bonus.p1 || 0, p2: centerState.bonus.p2 || 0 },
+      used: { p1: centerState.used.p1 || 0, p2: centerState.used.p2 || 0 },
+      faint: { p1: faintedIdsOf('p1'), p2: faintedIdsOf('p2') },
+      faintNames: { p1: faintedIdsOf('p1').map((id) => nameOf(id)), p2: faintedIdsOf('p2').map((id) => nameOf(id)) },
+      hud: !document.getElementById('centerHud').hidden,
+      hudText: [...document.querySelectorAll('#centerHud .chk')].map((b) => b.textContent.replace(/\s+/g, ' ').trim()),
+      panel: !document.getElementById('healModal').hidden,
+      stored: pkmReadJson(HEAL_KEY), storedFaint: pkmReadJson(FAINT_KEY),
+    };
+  },
+  healKid(slot) { return doCenterHeal(slot === 'p2' ? 'p2' : 'p1'); },
+  openHealPanel(slot) { return openHealPanel(slot); },
+  closeHealPanel,
+  markFaint(slot, id) { return markFainted(slot === 'p2' ? 'p2' : 'p1', Number(id)); },
+  reviveFaint(slot) { return reviveFainted(slot === 'p2' ? 'p2' : 'p1'); },
+  get quiz() {
+    if (!quizState) return null;
+    return {
+      slot: quizState.slot, i: quizState.i, marks: quizState.marks.slice(),
+      open: !document.getElementById('quizModal').hidden,
+      q: quizState.qs[quizState.i] ? { kind: quizState.qs[quizState.i].kind, q: quizState.qs[quizState.i].q, opts: quizState.qs[quizState.i].opts.slice(), answer: quizState.qs[quizState.i].answer } : null,
+      optsOnScreen: [...document.querySelectorAll('#qOpts button')].map((b) => b.textContent),
+    };
+  },
+  openQuiz(slot) { return openQuiz(slot); },
+  answerQuiz(o) { return answerQuiz(o); },
+  answerCorrect() {
+    if (!quizState) return false;
+    const q = quizState.qs[quizState.i];
+    if (!q) return false;
+    return answerQuiz(q.answer);
+  },
+  answerWrong() {
+    if (!quizState) return false;
+    const q = quizState.qs[quizState.i];
+    if (!q) return false;
+    const wrong = q.opts.find((o) => String(o) !== String(q.answer));
+    return answerQuiz(wrong);
+  },
+  closeQuiz,
+  get indoorFamily() {
+    return indoorLive.family.map((P, i) => ({
+      idx: i, id: P.id, name: P.name, x: +P.x.toFixed(2), z: +P.z.toFixed(2),
+      target: P.target ? { x: +P.target.x.toFixed(2), z: +P.target.z.toFixed(2) } : null,
+      moving: P.moving, sit: +P.sit.toFixed(2), active: i === indoorActiveIdx(),
+      y: +P.group.position.y.toFixed(2),
+    }));
+  },
+  indoorTap(x, z) { return moveIndoorKidTo(Number(x), Number(z)); },
+  hitTest(x, y) {
+    if (mode !== 'indoor') return null;
+    ndc.set((Number(x) / window.innerWidth) * 2 - 1, -(Number(y) / window.innerHeight) * 2 + 1);
+    raycaster.setFromCamera(ndc, camera);
+    const hit = raycaster.intersectObjects(indoorPickables, false);
+    if (!hit.length) {
+      const fm = indoorWorld.userData.floor;
+      const hf = fm ? raycaster.intersectObject(fm, false) : [];
+      return hf.length ? { act: 'floor', point: { x: +hf[0].point.x.toFixed(2), z: +hf[0].point.z.toFixed(2) } } : null;
+    }
+    return { act: hit[0].object.userData.act || null, dist: +hit[0].distance.toFixed(2) };
+  },
+  indoorSit() { return sitOnSofa(); },
+  indoorHealSpot() { return walkIndoorKidToHeal(indoorKidSlot(), true); },
+  setIndoorActive(i) { return setIndoorActive(Number(i)); },
+  profTip() { return professorTip(); },
+  dexSummary() { return openDexSummary(); },
+  get dexSummaryOpen() { return !document.getElementById('dexSumModal').hidden; },
+  indoorAct(act) {
+    if (act === 'sofa') return sitOnSofa();
+    if (act === 'prof') return professorTip();
+    if (act === 'heal') { const s = indoorKidSlot(); openHealPanel(s); return walkIndoorKidToHeal(s, true); }
+    if (act === 'pc') return openDexSummary();
+    if (act === 'nurse') return walkIndoorKidToNurse(indoorKidSlot());
+    return false;
+  },
   tapPower(i) { return tapPower(Number(i)); },
   get mini() {
     return {
@@ -6200,7 +7280,9 @@ window.__AJIT = {
   spawnIcon(i) { spawnIcon(Number(i)); return true; },
   async startGymTest(a, b2, round) {
     closeGymPicker();
-    gym.entries = [(a || [25, 133, 6]).slice(0, 3), (b2 || [4, 9, 3]).slice(0, 3)];
+    const lineA = (a && a.length) ? a.slice(0, 3) : (gym.sel[0].length ? buildGymEntryLine(0) : readDexSlot('p1').ids.slice(0, 3));
+    const lineB = (b2 && b2.length) ? b2.slice(0, 3) : (gym.sel[1].length ? buildGymEntryLine(1) : readDexSlot('p2').ids.slice(0, 3));
+    gym.entries = [lineA, lineB];
     gym.wins = [0, 0]; gym.hp = [100, 100]; gym.result = null; gym.busy = false;
     gym.round = (round == null ? 1 : round) - 2;
     setBattleHud(true);
