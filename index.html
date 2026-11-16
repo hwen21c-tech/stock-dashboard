@@ -2023,6 +2023,29 @@
       transform: scale(0.95);
     }
 </style>
+<style id="hfit-css">
+  /* ============================================================
+     📐 가로 밀림(가로 스크롤) 정리 — 폴드8 접힌 세로(400) 대응
+     · 디자인·색감·글자 크기·배치는 그대로 두고, '칸을 밀어내는 최소폭'만 잠근다.
+     · 400px에서 RN존 차트/종목 2단 그리드가 545px까지 벌어지던 문제(2026-11-17 점검) 수정.
+     ============================================================ */
+  html, body { max-width: 100%; }
+
+  /* 1) RN존 탭 — 좌(차트)·우(종목리스트) 2단 그리드는 580px 이상에서만, 칸 최소폭은 0으로 */
+  #tabRnzone .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 580px) { #tabRnzone .dashboard-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); } }
+  #tabRnzone .chart-section, #tabRnzone .stocks-section,
+  #tabRnzone .chart-header, #tabRnzone .chart-toolbar,
+  #tabRnzone .rn-status-bar, #tabRnzone .stock-info-main { min-width: 0; }
+  #tabRnzone .chart-header { flex-wrap: wrap; }
+  #tabRnzone .stock-price-box { min-width: 0; }
+
+  /* 2) 증시 일정 달력 — 7칸 그리드가 날짜 칸 최소폭 때문에 벌어지지 않게 */
+  .cal-grid { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .cal-cell, .cal-day-head, .cal-date-num { min-width: 0; }
+  .cal-cell { overflow: hidden; }
+  .cal-date-num { max-width: 100%; }
+</style>
 </head>
 <body>
 
