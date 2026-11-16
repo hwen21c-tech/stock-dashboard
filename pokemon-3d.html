@@ -473,7 +473,7 @@
   .chk.hasfaint{box-shadow:0 0 0 2px rgba(120,160,255,.32),0 4px 14px rgba(18,42,60,.22)}
 
   /* ---------- 회복 패널 · 도감 요약 · 퀴즈 ---------- */
-  #healModal,#dexSumModal,#quizModal{
+  #healModal,#dexSumModal,#quizModal,#hallModal{
     position:fixed;inset:0;z-index:43;display:flex;align-items:center;justify-content:center;
     padding:calc(env(safe-area-inset-top,0px) + 8px) 8px calc(env(safe-area-inset-bottom,0px) + 8px);
     background:rgba(12,28,44,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);
@@ -499,6 +499,15 @@
   .sumCell{background:#f7fbf1;border:1.5px solid #e2eed7;border-radius:14px;padding:9px 10px;min-width:0}
   .sumCell .k{font-size:10.5px;font-weight:800;color:#6d7f62}
   .sumCell .v{font-size:14px;font-weight:900;color:#33501f;margin-top:3px;line-height:1.3;word-break:keep-all}
+  /* ---------- 🏆 명예의 전당 ---------- */
+  .hallList{display:flex;flex-direction:column;gap:5px;padding:9px 12px 2px;max-height:30vh;overflow:auto;min-height:0}
+  .hallList .hallEmpty{font-size:11px;font-weight:800;color:#8a9a7c;background:#f6f4ea;border:1.5px dashed #e3dcc4;border-radius:12px;padding:10px;text-align:center}
+  .hallRow{display:flex;align-items:center;gap:7px;background:#fbf7ea;border:1.5px solid #efe3c6;border-radius:12px;padding:6px 9px;min-width:0}
+  .hallRow .rk{flex:none;width:20px;text-align:center;font-size:11.5px;font-weight:900;color:#b58a20}
+  .hallRow .hBody{min-width:0;line-height:1.3}
+  .hallRow .hTop{font-size:11.5px;font-weight:900;color:#5c4a29;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hallRow .hSub{font-size:9.5px;font-weight:700;color:#9a8a6a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .hallRow .hWin{flex:none;margin-left:auto;font-size:10px;font-weight:900;color:#fff;background:linear-gradient(180deg,#ffd166,#e8a72c);border-radius:999px;padding:3px 7px;white-space:nowrap}
   .qProg{display:flex;gap:5px;padding:9px 14px 0}
   .qProg i{flex:1;height:6px;border-radius:99px;background:#e6ecdf}
   .qProg i.on{background:#63b83f}
@@ -814,6 +823,21 @@
     <div class="mFoot">
       <button class="ghost" id="sumClose2">닫기</button>
       <button class="primary" id="sumDex">🐾 친구 고르기</button>
+    </div>
+  </div>
+</div>
+
+<div id="hallModal" hidden aria-hidden="true">
+  <div class="modalCard" role="dialog" aria-modal="true" aria-labelledby="hallTitle">
+    <div class="mHead">
+      <b id="hallTitle">🏆 명예의 전당</b>
+      <button class="x" id="hallClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="mSub" id="hallSub">체육관 누적 승리 기록과 최근 파트너</div>
+    <div class="sumGrid" id="hallGrid"></div>
+    <div class="hallList" id="hallList"></div>
+    <div class="mFoot">
+      <button class="ghost" id="hallClose2">닫기</button>
     </div>
   </div>
 </div>
@@ -1458,6 +1482,8 @@ function makeSign() {
 }
 const sign = makeSign();
 const SIGN_POS = { x: 3.0, z: 13.6 };
+/* 🏆 명예의 전당 게시판 자리 (입구에서 마을로 들어오는 길 옆) */
+const HALL_POS = { x: 4.0, z: 6.0 };
 sign.position.set(SIGN_POS.x, terrainY(SIGN_POS.x, SIGN_POS.z), SIGN_POS.z);
 sign.rotation.y = 0.42;
 sign.scale.setScalar(0.85);
@@ -2452,6 +2478,9 @@ function clampRWalk(x, z, pad) {
   /* 센터 보도블록·화단도 통과 금지 */
   const dsg = Math.hypot(x - SIGN_POS.x, z - SIGN_POS.z);
   if (dsg < 1.0) { const k = 1.0 / Math.max(0.001, dsg); x = SIGN_POS.x + (x - SIGN_POS.x) * k; z = SIGN_POS.z + (z - SIGN_POS.z) * k; }
+  /* 🏆 명예의 전당 게시판 앞은 비켜 간다 */
+  const dh = Math.hypot(x - HALL_POS.x, z - HALL_POS.z);
+  if (dh < 1.45) { const k = 1.45 / Math.max(0.001, dh); x = HALL_POS.x + (x - HALL_POS.x) * k; z = HALL_POS.z + (z - HALL_POS.z) * k; }
   return { x, z };
 }
 
@@ -2473,6 +2502,46 @@ function selectPerson(i) {
     });
   }
   toast(`${P.emoji} 이제 ${P.name} 조종으로 바꿨어요`);
+  hintFade();
+  return true;
+}
+
+/* ---------- 9-b. 💬 엄마·아빠 응원 (탭하면 따뜻한 말풍선 + 하이파이브) ---------- */
+const PARENT_LINES = [
+  '오늘도 멋진 승부!',
+  '아린·지안 파이팅!',
+  '우리 가족이 제일 강해 💪',
+  '언제나 응원할게!',
+  '와~ 폼나는데? 👏',
+  '한 판 더 가자!',
+  '형제의 배틀이 최고야 ✨',
+  '이긴 날도 진 날도 멋져!',
+  '물 마시고 힘내자 💧',
+  '끝까지 최선을 다해!',
+];
+let parentLineIdx = 0;
+function cheerFromParent(i) {
+  const P = people[i];
+  if (!P) return false;
+  if (mode !== 'outdoor') return false;
+  const kid = people[activeIdx];
+  const near = kid && kid !== P ? Math.hypot(kid.x - P.x, kid.z - P.z) : 99;
+  const line = PARENT_LINES[parentLineIdx++ % PARENT_LINES.length];
+  const head = P.group.position.clone().add(new THREE.Vector3(0, 1.75, 0));
+  if (P.wave < 0.9) P.wave = 1;
+  P.rest = 0;
+  P.target = null;
+  if (near < 3.2 && kid) {
+    say(head, `<span class="nm">${P.name}</span> ${line} ✋`, 2600);
+    burstHearts(P.group.position.clone().add(new THREE.Vector3(0, 1.5, 0)), 6);
+    burstHearts(kid.group.position.clone().add(new THREE.Vector3(0, 1.4, 0)), 4);
+    kid.wave = 1;
+    kid.face = Math.atan2(P.x - kid.x, P.z - kid.z);
+    toast(`👏 ${P.name}와 ${kid.name}, 하이파이브!`);
+  } else {
+    say(head, `<span class="nm">${P.name}</span> ${line}`, 2400);
+    burstHearts(P.group.position.clone().add(new THREE.Vector3(0, 1.5, 0)), 4);
+  }
   hintFade();
   return true;
 }
@@ -2752,6 +2821,479 @@ async function applyFriends(ids) {
 }
 
 await spawnPokemons();
+
+/* ---------- 10-c-2. 🍎 야외 숨은 황금 열매 (하루 1회) ---------- */
+const BERRY_KEY = 'pkm.agit.berry.v1';
+const berryLive = {
+  group: null, cluster: null, glow: null, ring: null, sparks: [], stump: null,
+  pickables: [], x: 0, z: 0, day: '', found: false, chase: -1, heartT: 0, state: null,
+};
+const BERRY_SPOTS = [
+  [-13.2, -1.2], [-12.6, 4.6], [-5.4, -1.8], [3.4, -12.4], [-13.8, -3.4],
+  [12.6, 2.6], [7.0, -1.6], [12.2, 6.6], [-1.8, 15.4], [8.4, 13.2],
+  [-6.4, 15.6], [2.4, -4.6], [14.0, -4.8], [-14.4, 1.4],
+];
+function berryHash(str) {
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return h >>> 0;
+}
+function berrySpotOk(x, z) {
+  if (Math.hypot(x, z) > WALK_R - 0.8) return false;
+  if (Math.hypot(x - POND.x, z - POND.z) < POND.r + 1.0) return false;
+  if (Math.hypot(x - CENTER.x, z - CENTER.z) < CENTER.r + 1.0) return false;
+  if (Math.hypot(x - BATTLE.x, z - BATTLE.z) < BATTLE.r + 1.0) return false;
+  if (Math.hypot(x - monPos.x, z - monPos.z) < 2.2) return false;
+  if (Math.hypot(x - benchPos.x, z - benchPos.z) < 1.9) return false;
+  if (Math.hypot(x - SIGN_POS.x, z - SIGN_POS.z) < 1.7) return false;
+  if (Math.hypot(x - HALL_POS.x, z - HALL_POS.z) < 2.2) return false;
+  return true;
+}
+function chooseBerrySpot(day) {
+  const ok = BERRY_SPOTS.filter(([x, z]) => berrySpotOk(x, z));
+  const list = ok.length ? ok : [[-13.2, -1.2], [12.6, 2.6], [-5.4, -1.8]];
+  const h = berryHash('berry:' + day);
+  const base = list[h % list.length];
+  const jx = (((h >>> 7) % 21) / 20 - 0.5) * 1.1;
+  const jz = (((h >>> 15) % 21) / 20 - 0.5) * 1.1;
+  let x = base[0] + jx, z = base[1] + jz;
+  if (!berrySpotOk(x, z)) { x = base[0]; z = base[1]; }
+  return { x, z };
+}
+function buildBerryGroup() {
+  const g = new THREE.Group();
+  g.visible = false;
+  const grassM = new THREE.MeshStandardMaterial({ color: 0x3f8f43, roughness: 0.95, flatShading: true });
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 + 0.3;
+    const blade = new THREE.Mesh(new THREE.ConeGeometry(0.11, rndRange(0.34, 0.58), 5), grassM);
+    blade.position.set(Math.cos(a) * rndRange(0.3, 0.46), 0.2, Math.sin(a) * rndRange(0.3, 0.46));
+    blade.rotation.z = rndRange(-0.3, 0.3);
+    blade.castShadow = true;
+    blade.userData.act = 'berry';
+    g.add(blade);
+  }
+  const soil = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.72, 0.12, 16), new THREE.MeshStandardMaterial({ color: 0x6b4e2e, roughness: 1 }));
+  soil.position.y = 0.05;
+  soil.userData.act = 'berry';
+  g.add(soil);
+  /* 황금 열매 */
+  const cluster = new THREE.Group();
+  const goldM = new THREE.MeshStandardMaterial({ color: 0xffcf3d, emissive: 0x8a5a00, emissiveIntensity: 0.75, roughness: 0.22, metalness: 0.4 });
+  [[0, 0.74, 0, 0.2], [0.18, 0.62, 0.07, 0.15], [-0.16, 0.64, -0.06, 0.145]].forEach(([x, y, z, r]) => {
+    const b = new THREE.Mesh(new THREE.SphereGeometry(r, 14, 10), goldM);
+    b.position.set(x, y, z);
+    b.userData.act = 'berry';
+    cluster.add(b);
+  });
+  const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.045, 0.34, 8), new THREE.MeshStandardMaterial({ color: 0x5a7a34, roughness: 0.9 }));
+  stem.position.y = 0.5;
+  stem.userData.act = 'berry';
+  cluster.add(stem);
+  const leaf = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 8), new THREE.MeshStandardMaterial({ color: 0x6fbf5c, roughness: 0.85, flatShading: true }));
+  leaf.position.set(0.16, 0.82, 0.02);
+  leaf.scale.set(1.6, 0.55, 1);
+  leaf.rotation.z = -0.4;
+  leaf.userData.act = 'berry';
+  cluster.add(leaf);
+  g.add(cluster);
+  berryLive.cluster = cluster;
+  /* 빛무리 · 바닥 링 · 반짝이 */
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffe08a, transparent: true, opacity: 0.62, depthWrite: false, blending: THREE.AdditiveBlending }));
+  glow.scale.set(2.0, 2.0, 1);
+  glow.position.set(0, 0.78, 0);
+  g.add(glow);
+  berryLive.glow = glow;
+  const ring = new THREE.Mesh(new THREE.RingGeometry(0.5, 0.62, 28), new THREE.MeshBasicMaterial({ color: 0xffd166, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+  ring.rotation.x = -Math.PI / 2;
+  ring.position.y = 0.11;
+  g.add(ring);
+  berryLive.ring = ring;
+  for (let i = 0; i < 3; i++) {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: sparkleMap, color: 0xfff2b8, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.9 }));
+    s.scale.set(0.34, 0.34, 1);
+    g.add(s);
+    berryLive.sparks.push(s);
+  }
+  /* 오늘 몫을 이미 찾은 자리 표시 */
+  const stump = new THREE.Group();
+  const pile = new THREE.Mesh(new THREE.SphereGeometry(0.26, 10, 8), new THREE.MeshStandardMaterial({ color: 0x8a7a4a, roughness: 1, flatShading: true }));
+  pile.scale.set(1.5, 0.45, 1.2);
+  pile.position.y = 0.12;
+  pile.userData.act = 'berry';
+  stump.add(pile);
+  [[0.2, -0.1], [-0.18, 0.14]].forEach(([x, z]) => {
+    const lf = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 6), new THREE.MeshStandardMaterial({ color: 0x8fae63, roughness: 0.9 }));
+    lf.scale.set(1.4, 0.35, 1);
+    lf.position.set(x, 0.19, z);
+    lf.rotation.y = rndRange(0, 3);
+    lf.userData.act = 'berry';
+    stump.add(lf);
+  });
+  const dimRing = new THREE.Mesh(new THREE.RingGeometry(0.34, 0.4, 22), new THREE.MeshBasicMaterial({ color: 0xbfae82, transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false }));
+  dimRing.rotation.x = -Math.PI / 2;
+  dimRing.position.y = 0.06;
+  stump.add(dimRing);
+  stump.visible = false;
+  g.add(stump);
+  berryLive.stump = stump;
+  /* 넉넉한 탭 영역 */
+  const hit = new THREE.Mesh(new THREE.SphereGeometry(0.95, 8, 6), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+  hit.position.y = 0.55;
+  hit.userData.act = 'berry';
+  g.add(hit);
+  g.traverse((o) => {
+    if (o.isMesh) {
+      o.userData.act = 'berry';
+      berryLive.pickables.push(o);
+    }
+  });
+  world.add(g);
+  berryLive.group = g;
+  return g;
+}
+function applyBerryLook() {
+  const g = berryLive.group;
+  if (!g) return;
+  g.visible = true;
+  g.position.set(berryLive.x, terrainY(berryLive.x, berryLive.z), berryLive.z);
+  const on = !berryLive.found;
+  berryLive.cluster.visible = on;
+  berryLive.glow.visible = on;
+  berryLive.ring.visible = on;
+  berryLive.sparks.forEach((s) => { s.visible = on; });
+  berryLive.stump.visible = !on;
+}
+function placeBerry() {
+  const today = pkmDayKey();
+  let st = pkmReadJson(BERRY_KEY);
+  if (!st || st.date !== today || !Number.isFinite(st.x) || !Number.isFinite(st.z)) {
+    const spot = chooseBerrySpot(today);
+    st = { v: 1, date: today, found: false, x: +spot.x.toFixed(2), z: +spot.z.toFixed(2), ids: [], at: Date.now() };
+    pkmWriteJson(BERRY_KEY, st);
+  }
+  berryLive.state = st;
+  berryLive.day = today;
+  berryLive.found = !!st.found;
+  berryLive.x = st.x;
+  berryLive.z = st.z;
+  if (!berryLive.group) buildBerryGroup();
+  applyBerryLook();
+  return st;
+}
+function playBerryChime() {
+  if (!soundOn) return;
+  duckAudio(1300);
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!audioCtx) audioCtx = new AC();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t0 = audioCtx.currentTime + 0.02;
+    [783.99, 987.77, 1318.51, 1567.98].forEach((f, i) => {
+      const o = audioCtx.createOscillator();
+      const gn = audioCtx.createGain();
+      o.type = i % 2 ? 'sine' : 'triangle';
+      o.frequency.setValueAtTime(f, t0 + i * 0.085);
+      gn.gain.setValueAtTime(0.0001, t0 + i * 0.085);
+      gn.gain.linearRampToValueAtTime(0.1, t0 + i * 0.085 + 0.02);
+      gn.gain.exponentialRampToValueAtTime(0.0005, t0 + i * 0.085 + 0.42);
+      o.connect(gn); gn.connect(audioCtx.destination);
+      o.start(t0 + i * 0.085); o.stop(t0 + i * 0.085 + 0.45);
+    });
+  } catch (e) { /* 소리 실패는 조용히 무시 */ }
+}
+function collectBerry() {
+  if (!berryLive.group) return false;
+  const pos = new THREE.Vector3(berryLive.x, 0.85, berryLive.z);
+  if (berryLive.found) {
+    toast('🍎 오늘 몫은 이미 찾았어요 · 내일 또 숨겨둘게요!');
+    say(pos.clone().add(new THREE.Vector3(0, 1.0, 0)), '오늘 열매는 다 먹었어! 내일 또 만나 🍎', 2400);
+    burstStars(pos, 6, 0.8, 1.2);
+    return false;
+  }
+  berryLive.found = true;
+  berryLive.state = berryLive.state || {};
+  berryLive.state.found = true;
+  berryLive.state.date = pkmDayKey();
+  berryLive.state.ids = pokemons.map((p) => p.id);
+  pkmWriteJson(BERRY_KEY, berryLive.state);
+  berryLive.day = berryLive.state.date;
+  applyBerryLook();
+  burstHearts(pos, 10);
+  burstStars(pos, 28, 1.7, 2.4);
+  playBerryChime();
+  const n = pokemons.length;
+  pokemons.forEach((pk, i) => {
+    const a = (i / Math.max(1, n)) * Math.PI * 2 + 0.6;
+    pk.tx = berryLive.x + Math.cos(a) * 0.8;
+    pk.tz = berryLive.z + Math.sin(a) * 0.8;
+    pk.jump = 1;
+    pk.wait = 7;
+  });
+  berryLive.chase = 4.4;
+  berryLive.heartT = 0;
+  if (n) {
+    toast(`🍎 황금 열매 발견! 포켓몬 ${n}마리가 달려왔어요`);
+    say(pos.clone().add(new THREE.Vector3(0, 1.15, 0)), '🍎 황금 열매다! 냠냠~', 2600);
+  } else {
+    toast('🍎 황금 열매를 찾았어요! 내일 또 숨겨둘게요');
+    say(pos.clone().add(new THREE.Vector3(0, 1.15, 0)), '🍎 황금 열매 발견!', 2400);
+  }
+  hintFade();
+  return true;
+}
+let berryDayT = 0;
+function updateBerry(dt, t) {
+  if (!berryLive.group) return;
+  berryDayT += dt;
+  if (berryDayT > 4) {
+    berryDayT = 0;
+    if (pkmDayKey() !== berryLive.day) placeBerry();
+  }
+  const g = berryLive.group;
+  g.position.y = terrainY(berryLive.x, berryLive.z);
+  if (!berryLive.found) {
+    berryLive.cluster.position.y = 0.08 + Math.sin(t * 1.9) * 0.06;
+    berryLive.cluster.rotation.y = t * 0.7;
+    berryLive.glow.scale.setScalar(1.9 + Math.sin(t * 2.6) * 0.28);
+    berryLive.glow.material.opacity = 0.45 + Math.abs(Math.sin(t * 2.2)) * 0.3;
+    berryLive.ring.material.opacity = 0.3 + Math.abs(Math.sin(t * 2.4)) * 0.4;
+    berryLive.sparks.forEach((s, i) => {
+      const a = t * (1.1 + i * 0.3) + i * 2.1;
+      s.position.set(Math.cos(a) * 0.55, 0.6 + Math.sin(t * 2.2 + i) * 0.28, Math.sin(a) * 0.55);
+      s.material.opacity = 0.45 + Math.abs(Math.sin(t * 3 + i)) * 0.5;
+    });
+  }
+  if (berryLive.chase > 0) {
+    berryLive.chase = Math.max(0, berryLive.chase - dt);
+    berryLive.heartT += dt;
+    if (berryLive.heartT > 0.55) {
+      berryLive.heartT = 0;
+      burstHearts(new THREE.Vector3(berryLive.x, 0.9, berryLive.z), 3);
+    }
+  }
+}
+
+/* ---------- 10-c-3. 🏆 명예의 전당 게시판 (체육관 누적 기록) ---------- */
+const HALL_KEY = 'pkm.gym.stats.v1';
+const hallLive = { group: null, canvas: null, tex: null, face: null, pickables: [] };
+function blankGymStats() {
+  return { v: 1, p1: { wins: 0, played: 0, last: 0, lastAt: 0 }, p2: { wins: 0, played: 0, last: 0, lastAt: 0 }, history: [] };
+}
+function readGymStats() {
+  const o = pkmReadJson(HALL_KEY);
+  const st = blankGymStats();
+  if (o && typeof o === 'object') {
+    ['p1', 'p2'].forEach((s) => {
+      const src = o[s] || {};
+      st[s].wins = Number.isFinite(src.wins) ? Math.max(0, Math.round(src.wins)) : 0;
+      st[s].played = Number.isFinite(src.played) ? Math.max(0, Math.round(src.played)) : 0;
+      st[s].last = Number.isFinite(src.last) ? Math.round(src.last) : 0;
+      st[s].lastAt = Number.isFinite(src.lastAt) ? src.lastAt : 0;
+    });
+    st.history = Array.isArray(o.history) ? o.history.filter((h) => h && Array.isArray(h.r)).slice(0, 12).map((h) => ({
+      d: typeof h.d === 'string' ? h.d : '',
+      w: Number.isFinite(h.w) ? h.w : -1,
+      r: [Math.round(Number(h.r[0]) || 0), Math.round(Number(h.r[1]) || 0)],
+      n: [Math.round(Number(h.n && h.n[0]) || 0), Math.round(Number(h.n && h.n[1]) || 0)],
+    })) : [];
+  }
+  return st;
+}
+function recordGymResult(win, draw, wins, ids) {
+  const st = readGymStats();
+  ['p1', 'p2'].forEach((s, i) => {
+    st[s].played += 1;
+    if (draw || i === win) st[s].wins += 1;
+    const pid = ids && ids[i] ? Math.round(ids[i]) : 0;
+    if (pid) { st[s].last = pid; st[s].lastAt = Date.now(); }
+  });
+  st.history.unshift({ d: pkmDayKey(), w: draw ? -1 : win, r: [wins[0], wins[1]], n: [(ids && ids[0]) || 0, (ids && ids[1]) || 0] });
+  st.history = st.history.slice(0, 12);
+  pkmWriteJson(HALL_KEY, st);
+  drawHallBoard();
+  return st;
+}
+function hallKidName(i) {
+  if (people[i] && people[i].name) return people[i].name;
+  return i === 0 ? '아린' : '지안';
+}
+function drawHallBoard() {
+  const c = hallLive.canvas;
+  if (!c) return;
+  const g = c.getContext('2d');
+  const W = c.width, H = c.height;
+  const st = readGymStats();
+  const FONT = '"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif';
+  const grd = g.createLinearGradient(0, 0, 0, H);
+  grd.addColorStop(0, '#fffaf0'); grd.addColorStop(1, '#f3e6c8');
+  g.fillStyle = grd; g.fillRect(0, 0, W, H);
+  g.strokeStyle = '#b58a20'; g.lineWidth = 10; g.strokeRect(8, 8, W - 16, H - 16);
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  drawBallMark(g, W / 2 - 150, 62, 20);
+  drawBallMark(g, W / 2 + 150, 62, 20);
+  g.fillStyle = '#7a4b04';
+  g.font = `900 44px ${FONT}`;
+  g.fillText('명예의 전당', W / 2, 62);
+  g.fillStyle = '#a08a5a';
+  g.font = `800 22px ${FONT}`;
+  g.fillText('HALL OF FAME', W / 2, 104);
+  const rowY = 168;
+  [[0, hallKidName(0), '#e2454f', -132], [1, hallKidName(1), '#3f6fd8', 132]].forEach(([i, nm, col, dx]) => {
+    g.fillStyle = col;
+    g.font = `900 30px ${FONT}`;
+    g.fillText(nm, W / 2 + dx, rowY);
+    g.fillStyle = '#33501f';
+    g.font = `900 62px ${FONT}`;
+    g.fillText(`${st['p' + (i + 1)].wins}`, W / 2 + dx, rowY + 74);
+    g.fillStyle = '#9a8a6a';
+    g.font = `800 22px ${FONT}`;
+    g.fillText(`${st['p' + (i + 1)].played}경기`, W / 2 + dx, rowY + 118);
+  });
+  g.fillStyle = '#c9b184';
+  g.font = `900 34px ${FONT}`;
+  g.fillText('VS', W / 2, rowY + 62);
+  const last = st.history[0];
+  g.fillStyle = '#8a7648';
+  g.font = `800 24px ${FONT}`;
+  const line = last
+    ? `최근 ${last.d.slice(5)} · ${last.w === -1 ? '무승부' : hallKidName(last.w) + ' 우승'} ${last.r[0]}:${last.r[1]}`
+    : '아직 체육관 기록이 없어요 · 첫 대결을 해 볼까요?';
+  g.fillText(line, W / 2, H - 46);
+  if (hallLive.tex) hallLive.tex.needsUpdate = true;
+}
+function buildHallBoard() {
+  const g = new THREE.Group();
+  const woodM = new THREE.MeshStandardMaterial({ color: 0x9a6a34, roughness: 0.88 });
+  const woodD = new THREE.MeshStandardMaterial({ color: 0x6d4722, roughness: 0.92 });
+  [-1.02, 1.02].forEach((x) => {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.0, 0.16), woodD);
+    post.position.set(x, 1.0, 0);
+    post.castShadow = true;
+    g.add(post);
+  });
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(2.52, 1.62, 0.14), woodM);
+  panel.position.set(0, 1.62, 0);
+  panel.castShadow = true;
+  g.add(panel);
+  hallLive.canvas = canvasTex(512, 320, () => {});
+  hallLive.tex = texFrom(hallLive.canvas);
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(2.36, 1.47), new THREE.MeshStandardMaterial({ map: hallLive.tex, roughness: 0.85 }));
+  face.position.set(0, 1.62, 0.075);
+  g.add(face);
+  hallLive.face = face;
+  /* 지붕 */
+  const roof = new THREE.Mesh(new THREE.BoxGeometry(2.86, 0.12, 0.46), woodD);
+  roof.position.set(0, 2.52, 0);
+  roof.rotation.x = -0.08;
+  roof.castShadow = true;
+  g.add(roof);
+  [-1.34, 1.34].forEach((x) => {
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 6), new THREE.MeshStandardMaterial({ color: 0xf0c24e, roughness: 0.35, metalness: 0.5 }));
+    tip.position.set(x, 2.56, 0);
+    g.add(tip);
+  });
+  /* 작은 트로피 토퍼 */
+  const cupM = new THREE.MeshStandardMaterial({ color: 0xffd15c, roughness: 0.25, metalness: 0.8, emissive: 0x6b4a00, emissiveIntensity: 0.3 });
+  const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.08, 0.2, 14, 1, true), cupM);
+  cup.position.set(0, 2.72, 0);
+  const cupBase = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.06, 12), cupM);
+  cupBase.position.set(0, 2.6, 0);
+  g.add(cup, cupBase);
+  const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffe08a, transparent: true, opacity: 0.4, depthWrite: false, blending: THREE.AdditiveBlending }));
+  glow.scale.set(1.5, 1.5, 1);
+  glow.position.set(0, 2.74, 0.1);
+  g.add(glow);
+  g.traverse((o) => {
+    if (o.isMesh) {
+      o.userData.act = 'hall';
+      hallLive.pickables.push(o);
+    }
+  });
+  g.position.set(HALL_POS.x, terrainY(HALL_POS.x, HALL_POS.z), HALL_POS.z);
+  g.rotation.y = 0.3;
+  g.scale.setScalar(1.12);
+  world.add(g);
+  hallLive.group = g;
+  drawHallBoard();
+  return g;
+}
+function openHallModal() {
+  const m = document.getElementById('hallModal');
+  if (!m) return false;
+  renderHallModal();
+  m.hidden = false;
+  m.setAttribute('aria-hidden', 'false');
+  hintFade();
+  return true;
+}
+function closeHallModal() {
+  const m = document.getElementById('hallModal');
+  if (m) { m.hidden = true; m.setAttribute('aria-hidden', 'true'); }
+}
+function renderHallModal() {
+  const st = readGymStats();
+  const grid = document.getElementById('hallGrid');
+  const list = document.getElementById('hallList');
+  if (!grid || !list) return null;
+  grid.innerHTML = '';
+  const cell = (k, v) => {
+    const d = document.createElement('div');
+    d.className = 'sumCell';
+    const kk = document.createElement('div'); kk.className = 'k'; kk.textContent = k;
+    const vv = document.createElement('div'); vv.className = 'v'; vv.textContent = v;
+    d.append(kk, vv);
+    grid.appendChild(d);
+  };
+  const n0 = hallKidName(0), n1 = hallKidName(1);
+  cell(`${n0} 누적 우승`, `${st.p1.wins}승 · ${st.p1.played}경기`);
+  cell(`${n1} 누적 우승`, `${st.p2.wins}승 · ${st.p2.played}경기`);
+  cell(`${n0} 최근 파트너`, st.p1.last ? nameOf(st.p1.last) : '—');
+  cell(`${n1} 최근 파트너`, st.p2.last ? nameOf(st.p2.last) : '—');
+  list.innerHTML = '';
+  if (!st.history.length) {
+    const e = document.createElement('div');
+    e.className = 'hallEmpty';
+    e.textContent = '아직 체육관 기록이 없어요 · 첫 대결을 해 볼까요?';
+    list.appendChild(e);
+  } else {
+    st.history.slice(0, 8).forEach((h, i) => {
+      const row = document.createElement('div');
+      row.className = 'hallRow';
+      const rk = document.createElement('span');
+      rk.className = 'rk';
+      rk.textContent = h.w === -1 ? '🤝' : i === 0 ? '🥇' : i === 1 ? '🥈' : '🏅';
+      const body = document.createElement('span');
+      body.className = 'hBody';
+      const top = document.createElement('span');
+      top.className = 'hTop';
+      const dlabel = h.d ? h.d.slice(5).replace('-', '/') : '';
+      top.textContent = h.w === -1 ? `${dlabel} · 무승부 ${h.r[0]}:${h.r[1]}` : `${dlabel} · ${hallKidName(h.w)} 우승 ${h.r[0]}:${h.r[1]}`;
+      const sub = document.createElement('span');
+      sub.className = 'hSub';
+      const pi = h.w === -1 ? (h.r[0] >= h.r[1] ? 0 : 1) : h.w;
+      sub.textContent = `마지막 파트너 ${h.n[pi] ? nameOf(h.n[pi]) : '—'}`;
+      body.append(top, sub);
+      const win = document.createElement('span');
+      win.className = 'hWin';
+      win.textContent = h.w === -1 ? '무승부' : `${hallKidName(h.w)} 승`;
+      row.append(rk, body, win);
+      list.appendChild(row);
+    });
+  }
+  return st;
+}
+const hallEls = {
+  close: document.getElementById('hallClose'),
+  close2: document.getElementById('hallClose2'),
+  modal: document.getElementById('hallModal'),
+};
+if (hallEls.close) hallEls.close.addEventListener('click', closeHallModal);
+if (hallEls.close2) hallEls.close2.addEventListener('click', closeHallModal);
+if (hallEls.modal) hallEls.modal.addEventListener('click', (e) => { if (e.target === hallEls.modal) closeHallModal(); });
+placeBerry();
+buildHallBoard();
 
 /* ---------- 10-b-3. 🏥 센터 회복·기절 상태 (localStorage 일자별) ---------- */
 const HEAL_KEY = 'pkm.center.heal.v1';
@@ -3956,6 +4498,14 @@ const gymLive = {
   arenaPickables: [], lights: [], battlers: [], audience: [],
   introT: -1, ring: null, spotCones: [],
 };
+/* 🏟️ 스타디움 연출 상태 (서치라이트·전광판·관중·폭죽·시상대) */
+const gymShow = {
+  beams: [], spots: [], neon: [], parents: [], fans: [], lamps: [],
+  scoreCanvas: null, scoreTex: null, scoreMat: null, scoreMesh: null,
+  scoreMeta: { n1: '', n2: '', a: 0, b: 0, round: 0, stage: 'idle', label: 'READY' },
+  confetti: [], cheer: 0,
+  pod: null, podRise: 0, podUp: false, kids: [], trophy: null,
+};
 function stadiumFloorTex() {
   return texFrom(canvasTex(512, 512, (g, w, h) => {
     const cx = w / 2, cy = h / 2;
@@ -4090,11 +4640,12 @@ function gymBannerTex() {
   const wall = new THREE.Mesh(new THREE.CylinderGeometry(11.4, 11.4, 7.6, 56, 1, true), new THREE.MeshStandardMaterial({ color: 0x1b2740, roughness: 0.85, side: THREE.BackSide }));
   wall.position.y = 3.8;
   gymWorld.add(wall);
+  /* 배너는 전광판 좌우로 비켜 세운다 (가운데는 실시간 전광판 몫) */
   const banner = new THREE.Mesh(new THREE.PlaneGeometry(7.4, 3.7), new THREE.MeshStandardMaterial({ map: gymBannerTex(), roughness: 0.6, emissive: 0x22304e, emissiveIntensity: 0.35 }));
-  banner.position.set(0, 5.6, -10.4); banner.rotation.y = 0;
+  banner.position.set(-8.55, 5.35, -5.5); banner.rotation.y = 0.62;
   gymWorld.add(banner);
   const bannerB = banner.clone();
-  bannerB.position.set(-10.2, 5.6, 2.6); bannerB.rotation.y = -Math.PI / 2;
+  bannerB.position.set(8.55, 5.35, -5.5); bannerB.rotation.y = -0.62;
   gymWorld.add(bannerB);
   const ceil = new THREE.Mesh(new THREE.SphereGeometry(11.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x141d31, roughness: 0.9, side: THREE.BackSide }));
   ceil.position.y = 7.4; ceil.scale.set(1, 0.5, 1);
@@ -4105,8 +4656,8 @@ function gymBannerTex() {
     gymWorld.add(truss);
   }
   const glowRing = new THREE.Mesh(
-    new THREE.TorusGeometry(4.2, 0.09, 6, 48),
-    new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: 0.6, depthWrite: false, blending: THREE.AdditiveBlending })
+    new THREE.TorusGeometry(2.2, 0.07, 6, 48),
+    new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: 0.4, depthWrite: false, blending: THREE.AdditiveBlending })
   );
   glowRing.rotation.x = -Math.PI / 2; glowRing.position.y = 7.6;
   gymWorld.add(glowRing);
@@ -4123,8 +4674,488 @@ function gymBannerTex() {
   const keyL = new THREE.PointLight(0xfff4dc, 1.7, 30, 2); keyL.position.set(0, 6.4, 3.0); gymWorld.add(keyL);
   const fillL = new THREE.PointLight(0xcfe4ff, 1.3, 30, 2); fillL.position.set(0, 5.0, -6.0); gymWorld.add(fillL);
 
+  /* ── 🏟️ 천장 서치라이트 빔 (좌우에서 내려오는 반투명 빛줄기) ── */
+  [[-5.0, 0.9, 0xfff2c8, 0], [5.0, 0.9, 0xcfe8ff, 1]].forEach(([bx, bz, col, idx]) => {
+    const lampBody = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.46, 0.5, 12), darkM);
+    lampBody.position.set(bx, 7.05, bz);
+    gymWorld.add(lampBody);
+    const lampLens = new THREE.Mesh(new THREE.CircleGeometry(0.33, 14), new THREE.MeshStandardMaterial({ color: 0xfffdf0, emissive: col, emissiveIntensity: 2.0, roughness: 0.25 }));
+    lampLens.rotation.x = Math.PI / 2;
+    lampLens.position.set(bx, 6.78, bz);
+    gymWorld.add(lampLens);
+    const beamMat = new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
+    const beam = new THREE.Mesh(new THREE.ConeGeometry(2.1, 7.4, 26, 1, true), beamMat);
+    beam.position.set(bx, 3.05, bz - 0.9);
+    beam.rotation.z = idx ? 0.11 : -0.11;
+    beam.rotation.x = 0.1;
+    gymWorld.add(beam);
+    gymShow.beams.push({ mesh: beam, ph: idx * 2.1 + 0.4 });
+    /* 실제 SpotLight은 모바일 GPU의 셰이더 부담이 커서 "보이는 빔"만 쓴다 */
+    gymShow.spots.push(lampLens);
+    const pool = new THREE.Mesh(
+      new THREE.PlaneGeometry(4.4, 4.4),
+      new THREE.MeshBasicMaterial({ map: glowTex, color: col, transparent: true, opacity: 0.17, depthWrite: false, blending: THREE.AdditiveBlending })
+    );
+    pool.rotation.x = -Math.PI / 2;
+    pool.position.set(bx * 0.82, 0.48, bz - 1.4);
+    gymWorld.add(pool);
+    gymShow.pools = (gymShow.pools || []);
+    gymShow.pools.push(pool);
+  });
+
+  /* ── 🏟️ 네온 경기장 라인 강화 ── */
+  const neonCyan = () => new THREE.MeshBasicMaterial({ color: 0x7bf2ff, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending });
+  const addNeon = (mesh, base) => {
+    mesh.userData.base = base;
+    gymWorld.add(mesh);
+    gymShow.neon.push(mesh);
+    return mesh;
+  };
+  const ringC = new THREE.Mesh(new THREE.RingGeometry(4.86, 5.0, 96), neonCyan());
+  ringC.rotation.x = -Math.PI / 2; ringC.position.y = 0.47;
+  addNeon(ringC, 0.5);
+  const ringG = new THREE.Mesh(new THREE.RingGeometry(5.08, 5.18, 96), new THREE.MeshBasicMaterial({ color: 0xffe9a8, transparent: true, opacity: 0.42, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+  ringG.rotation.x = -Math.PI / 2; ringG.position.y = 0.468;
+  addNeon(ringG, 0.36);
+  const midLine = new THREE.Mesh(new THREE.PlaneGeometry(9.7, 0.12), neonCyan());
+  midLine.rotation.x = -Math.PI / 2; midLine.position.y = 0.465;
+  addNeon(midLine, 0.4);
+  [-3.6, 3.6].forEach((x, i) => {
+    const padRing = new THREE.Mesh(new THREE.RingGeometry(1.34, 1.42, 40), new THREE.MeshBasicMaterial({ color: i ? 0x7fb2ff : 0xff8fa8, transparent: true, opacity: 0.6, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }));
+    padRing.rotation.x = -Math.PI / 2; padRing.position.set(x, 0.6, 0);
+    addNeon(padRing, 0.5);
+  });
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const tick = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.09), neonCyan());
+    tick.rotation.x = -Math.PI / 2; tick.rotation.z = -a;
+    tick.position.set(Math.cos(a) * 4.72, 0.466, Math.sin(a) * 4.72);
+    addNeon(tick, 0.35);
+  }
+  gymLive.neonRing = ringC;
+
+  /* ── 🏟️ 실시간 대형 전광판 (CanvasTexture) ── */
+  gymShow.scoreCanvas = canvasTex(1024, 512, () => {});
+  gymShow.scoreTex = texFrom(gymShow.scoreCanvas);
+  try { gymShow.scoreTex.anisotropy = 4; } catch (e) { /* */ }
+  const scoreFrameM = new THREE.MeshStandardMaterial({ color: 0x101a2c, roughness: 0.55, metalness: 0.4 });
+  const scoreFrame = new THREE.Mesh(new THREE.BoxGeometry(9.9, 5.32, 0.36), scoreFrameM);
+  scoreFrame.position.set(0, 4.35, -8.92);
+  scoreFrame.rotation.x = -0.2;
+  gymWorld.add(scoreFrame);
+  gymShow.scoreMat = new THREE.MeshBasicMaterial({ map: gymShow.scoreTex, toneMapped: false });
+  const scoreMesh = new THREE.Mesh(new THREE.PlaneGeometry(9.4, 4.82), gymShow.scoreMat);
+  scoreMesh.position.set(0, 4.35, -8.7);
+  scoreMesh.rotation.x = -0.2;
+  gymWorld.add(scoreMesh);
+  gymShow.scoreMesh = scoreMesh;
+  const scoreRim = new THREE.MeshBasicMaterial({ color: 0x7bf2ff, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false });
+  [[0, 2.44], [0, -2.44]].forEach(([x, y]) => {
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(9.5, 0.08, 0.1), scoreRim);
+    bar.position.set(x, y, 0.04);
+    scoreMesh.add(bar);
+  });
+  [[-4.7, 0], [4.7, 0]].forEach(([x, y]) => {
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.08, 4.88, 0.1), scoreRim);
+    bar.position.set(x, y, 0.04);
+    scoreMesh.add(bar);
+  });
+  const scoreGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0x4aa8ff, transparent: true, opacity: 0.32, depthWrite: false, blending: THREE.AdditiveBlending }));
+  scoreGlow.scale.set(15, 9, 1);
+  scoreGlow.position.set(0, 4.3, -9.5);
+  gymWorld.add(scoreGlow);
+  gymShow.scoreGlow = scoreGlow;
+  [[-4.3, 1.9], [4.3, 1.9]].forEach(([x, y]) => {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.0, 0.22), darkM);
+    post.position.set(x, y, -8.95);
+    gymWorld.add(post);
+  });
+
+  /* ── 🏟️ 관중석 응원 — 엄마·아빠가 1열에 앉는다 ── */
+  [[2, Math.PI * 0.72, 0xffb38a], [3, Math.PI * 0.28, 0x6fbf7c]].forEach(([pi, a, col]) => {
+    const built = makePerson(FAMILY_DEFS[pi], people[pi] ? people[pi].name : (pi === 2 ? '엄마' : '아빠'));
+    const x = Math.cos(a) * 7.95, z = Math.sin(a) * 7.95;
+    const baseY = 1.17;
+    built.group.position.set(x, baseY, z);
+    built.group.rotation.y = Math.atan2(-x, -z);
+    built.parts.ring.visible = false;
+    const sh = built.group.children.find((o) => o.isMesh && o.material && o.material.map === shadowMap);
+    if (sh) sh.position.y = 0.02;
+    gymWorld.add(built.group);
+    /* 응원용 깃발 */
+    const flag = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.32), new THREE.MeshBasicMaterial({ color: col, side: THREE.DoubleSide, transparent: true, opacity: 0.95 }));
+    flag.position.set(0.34, 1.62, 0.06);
+    built.group.add(flag);
+    gymShow.parents.push({ group: built.group, armL: built.parts.armL, armR: built.parts.armR, flag, baseY, ph: pi * 1.7, name: people[pi] ? people[pi].name : '' });
+  });
+
+  /* ── 🏟️ 응원 포켓몬 관중 (도감 친구들, 비동기 로드) ── */
+  (async () => {
+    try {
+      const ids = [];
+      ['p1', 'p2'].forEach((slot) => { (readDexSlot(slot).ids || []).slice(0, 2).forEach((id) => { if (!ids.includes(id)) ids.push(id); }); });
+      const seats = [[0.28, 9.0, 1.79], [-0.28, 9.0, 1.79], [0.62, 8.7, 1.79], [-0.62, 8.7, 1.79]];
+      for (let i = 0; i < Math.min(4, ids.length); i++) {
+        const id = ids[i];
+        const tex = (await loadTexture(POKE_SPRITE(id))) || fallbackPokeTex(id);
+        const spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, toneMapped: false }));
+        const [a, rr, baseY] = seats[i];
+        const h = 1.05;
+        spr.scale.set(h, h, 1);
+        spr.position.set(Math.cos(a * Math.PI) * rr, baseY + h / 2, Math.sin(a * Math.PI) * rr);
+        gymWorld.add(spr);
+        gymShow.fans.push({ spr, baseY: baseY + h / 2, ph: i * 1.3, id });
+      }
+    } catch (e) { /* 관중 포켓몬은 없어도 괜찮다 */ }
+  })();
+
+  /* ── 🎉 색종이·폭죽 파티클 풀 ── */
+  {
+    const cCanvas = canvasTex(32, 32, (g, w, h) => {
+      g.clearRect(0, 0, w, h);
+      g.fillStyle = '#ffffff';
+      g.beginPath();
+      g.moveTo(7, 2); g.lineTo(25, 5); g.lineTo(21, 30); g.lineTo(4, 26);
+      g.closePath(); g.fill();
+    });
+    const cTex = texFrom(cCanvas);
+    for (let i = 0; i < 72; i++) {
+      const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cTex, transparent: true, depthWrite: false, opacity: 0 }));
+      s.visible = false;
+      s.scale.set(0.34, 0.22, 1);
+      gymWorld.add(s);
+      gymShow.confetti.push({ s, vx: 0, vy: 0, vz: 0, life: 0, ttl: 1, spin: 0, rot: 0 });
+    }
+  }
+
+  /* ── 🏆 우승 시상대 + 황금 트로피 (숨겨 두고 결승 뒤에 올라온다) ── */
+  {
+    const pod = new THREE.Group();
+    pod.position.set(0, 0.42, -0.8);
+    pod.visible = false;
+    gymWorld.add(pod);
+    gymShow.pod = pod;
+    const stepM = new THREE.MeshStandardMaterial({ color: 0x2a3a5c, roughness: 0.55, metalness: 0.3 });
+    const stepTopM = new THREE.MeshStandardMaterial({ color: 0xf0c24e, roughness: 0.35, metalness: 0.55 });
+    const mkStep = (w, h, d, x) => {
+      const body = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), stepM);
+      body.position.set(x, h / 2, 0);
+      body.castShadow = true; body.receiveShadow = true;
+      pod.add(body);
+      const top = new THREE.Mesh(new THREE.BoxGeometry(w + 0.06, 0.06, d + 0.06), stepTopM);
+      top.position.set(x, h, 0);
+      pod.add(top);
+      return h;
+    };
+    const h1 = mkStep(2.3, 1.12, 1.6, 0);
+    mkStep(1.6, 0.68, 1.35, -2.0);
+    mkStep(1.6, 0.42, 1.35, 2.0);
+    /* 트로피 */
+    const trophy = new THREE.Group();
+    const gold = new THREE.MeshStandardMaterial({ color: 0xffd15c, roughness: 0.22, metalness: 0.85, emissive: 0x6b4a00, emissiveIntensity: 0.35 });
+    const cup = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.19, 0.44, 20, 1, true), gold);
+    cup.position.y = 0.62;
+    const cupBot = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 12, 0, Math.PI * 2, Math.PI * 0.5, Math.PI * 0.5), gold);
+    cupBot.position.y = 0.4;
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.028, 8, 24), gold);
+    rim.rotation.x = Math.PI / 2; rim.position.y = 0.84;
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.1, 0.26, 12), gold);
+    stem.position.y = 0.26;
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.1, 16), gold);
+    base.position.y = 0.06;
+    const handleL = new THREE.Mesh(new THREE.TorusGeometry(0.12, 0.026, 8, 16, Math.PI * 1.2), gold);
+    handleL.position.set(-0.32, 0.58, 0); handleL.rotation.z = 0.4;
+    const handleR = handleL.clone(); handleR.position.x = 0.32; handleR.rotation.z = -0.4;
+    trophy.add(cup, cupBot, rim, stem, base, handleL, handleR);
+    trophy.position.set(0.66, 1.14, 0.1);
+    trophy.scale.setScalar(1.05);
+    const tGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xffe08a, transparent: true, opacity: 0.55, depthWrite: false, blending: THREE.AdditiveBlending }));
+    tGlow.scale.set(2.2, 2.2, 1);
+    tGlow.position.set(0, 0.55, 0);
+    trophy.add(tGlow);
+    pod.add(trophy);
+    gymShow.trophy = trophy;
+    gymShow.podTop = h1;
+    /* 우승 아이들 (아린·지안) */
+    [0, 1].forEach((ci) => {
+      const built = makePerson(FAMILY_DEFS[ci], people[ci] ? people[ci].name : (ci === 0 ? '아린' : '지안'));
+      built.group.scale.setScalar(FAMILY_DEFS[ci].h * 0.95);
+      built.group.position.set(0, h1, 0.02);
+      built.group.visible = false;
+      built.parts.ring.visible = false;
+      pod.add(built.group);
+      gymShow.kids.push({ group: built.group, parts: built.parts, name: built && people[ci] ? people[ci].name : '', side: ci });
+    });
+  }
+
   /* 배틀장 탭 영역 */
   [stage, field].forEach((m) => { m.userData.act = 'gym'; gymLive.arenaPickables.push(m); });
+}
+
+/* ---------- 10-d-2. 🏟️ 스타디움 전광판·관중 응원·폭죽·시상대 연출 ---------- */
+function drawBallMark(g, cx, cy, R) {
+  g.save();
+  g.beginPath(); g.arc(cx, cy, R, Math.PI, 0); g.closePath(); g.fillStyle = '#e2454f'; g.fill();
+  g.beginPath(); g.arc(cx, cy, R, 0, Math.PI); g.closePath(); g.fillStyle = '#ffffff'; g.fill();
+  g.lineWidth = Math.max(2, R * 0.16); g.strokeStyle = '#1b2740';
+  g.beginPath(); g.arc(cx, cy, R, 0, Math.PI * 2); g.stroke();
+  g.beginPath(); g.moveTo(cx - R, cy); g.lineTo(cx + R, cy); g.stroke();
+  g.beginPath(); g.arc(cx, cy, R * 0.38, 0, Math.PI * 2); g.fillStyle = '#ffffff'; g.fill(); g.stroke();
+  g.restore();
+}
+function roundRect(g, x, y, w, h, r) {
+  g.beginPath();
+  g.moveTo(x + r, y);
+  g.lineTo(x + w - r, y); g.quadraticCurveTo(x + w, y, x + w, y + r);
+  g.lineTo(x + w, y + h - r); g.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  g.lineTo(x + r, y + h); g.quadraticCurveTo(x, y + h, x, y + h - r);
+  g.lineTo(x, y + r); g.quadraticCurveTo(x, y, x + r, y);
+  g.closePath();
+}
+/* 전광판 텍스처를 다시 그린다 (상태를 인자로 받아 TDZ 없이 초기에도 호출 가능) */
+function drawScoreboard(st) {
+  const c = gymShow.scoreCanvas;
+  if (!c) return null;
+  const g = c.getContext('2d');
+  const W = c.width, H = c.height;
+  const n1 = (st && st.n1) || (people[0] ? people[0].name : '아린');
+  const n2 = (st && st.n2) || (people[1] ? people[1].name : '지안');
+  const a = st && Number.isFinite(st.a) ? st.a : 0;
+  const b = st && Number.isFinite(st.b) ? st.b : 0;
+  const round = st && Number.isFinite(st.round) ? st.round : 0;
+  const stage = (st && st.stage) || 'idle';
+  const over = stage === 'final';
+  const draw = over && !!(st && st.draw);
+  const FONT = '"Pretendard","Apple SD Gothic Neo","Noto Sans KR",sans-serif';
+
+  const grd = g.createLinearGradient(0, 0, 0, H);
+  grd.addColorStop(0, '#0b1424'); grd.addColorStop(0.55, '#17274a'); grd.addColorStop(1, '#0a1120');
+  g.fillStyle = grd; g.fillRect(0, 0, W, H);
+  g.globalAlpha = 0.07; g.fillStyle = '#7bf2ff';
+  for (let y = 0; y < H; y += 7) g.fillRect(0, y, W, 2);
+  g.globalAlpha = 1;
+  /* 네온 프레임 */
+  g.strokeStyle = '#f0c24e'; g.lineWidth = 12; g.strokeRect(10, 10, W - 20, H - 20);
+  g.strokeStyle = over ? '#ffe9a8' : '#7bf2ff'; g.lineWidth = 4; g.strokeRect(32, 32, W - 64, H - 64);
+
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  drawBallMark(g, W / 2 - 292, 78, 24);
+  drawBallMark(g, W / 2 + 292, 78, 24);
+  g.fillStyle = '#ffe9a8';
+  g.font = `900 40px ${FONT}`;
+  g.fillText('FAMILY GYM STADIUM', W / 2, 80);
+
+  const nameFont = (txt) => {
+    let size = 74;
+    g.font = `900 ${size}px ${FONT}`;
+    while (g.measureText(txt).width > 300 && size > 26) { size -= 4; g.font = `900 ${size}px ${FONT}`; }
+    return size;
+  };
+  g.fillStyle = '#ff9db1'; nameFont(n1); g.fillText(n1, 228, 200);
+  g.fillStyle = '#9fc4ff'; nameFont(n2); g.fillText(n2, W - 228, 200);
+  g.fillStyle = '#a9bcd8'; g.font = `900 34px ${FONT}`; g.fillText('VS', W / 2, 200);
+
+  /* 스코어 */
+  g.save();
+  g.shadowColor = over ? '#f0c24e' : '#7bf2ff';
+  g.shadowBlur = 26;
+  g.fillStyle = '#ffffff';
+  g.font = `900 148px ${FONT}`;
+  g.fillText(`${a} : ${b}`, W / 2, 308);
+  g.restore();
+
+  /* 라운드 / 우승 배지 */
+  const label = over ? (draw ? '무승부 · DRAW' : 'WINNER!') : round > 0 ? `ROUND ${round}` : 'READY';
+  const bw = over ? (draw ? 470 : 420) : 340, bh = 74, bx = W / 2 - bw / 2, by = 392;
+  roundRect(g, bx, by, bw, bh, bh / 2);
+  g.fillStyle = over ? '#f0c24e' : '#16233c';
+  g.fill();
+  g.lineWidth = 4; g.strokeStyle = over ? '#fff3c4' : '#7bf2ff'; g.stroke();
+  g.fillStyle = over ? '#2a1c02' : '#ffe9a8';
+  g.font = `900 ${over ? (draw ? 38 : 46) : 42}px ${FONT}`;
+  g.fillText(label, W / 2, by + bh / 2 + 2);
+  g.fillStyle = '#8fa4c4';
+  g.font = `800 26px ${FONT}`;
+  g.fillText('3 ROUND BATTLE', W / 2, 122);
+
+  gymShow.scoreMeta = { n1, n2, a, b, round, stage, label, draw };
+  if (gymShow.scoreTex) gymShow.scoreTex.needsUpdate = true;
+  return gymShow.scoreMeta;
+}
+/* 배틀 상태에서 전광판을 갱신 */
+function updateScoreboard() {
+  if (!gymShow.scoreCanvas) return null;
+  return drawScoreboard({
+    n1: people[0] ? people[0].name : '아린',
+    n2: people[1] ? people[1].name : '지안',
+    a: gym.wins[0], b: gym.wins[1],
+    round: Math.min(GYM_ROUNDS, Math.max(1, gym.round + 1)),
+    stage: gym.stage,
+    draw: gym.wins[0] === gym.wins[1],
+  });
+}
+
+/* 🎉 색종이 폭죽 */
+const CONFETTI_COLORS = [0xffd166, 0xff8fb1, 0x7bf2ff, 0x8ce99a, 0xffa94d, 0xd0bfff, 0xffffff];
+function burstConfetti(pos, n = 24, spread = 3.4, up = 3.2) {
+  const pool = gymShow.confetti;
+  if (!pool.length) return;
+  for (let i = 0; i < n; i++) {
+    burstConfetti.cursor = ((burstConfetti.cursor || 0) + 1) % pool.length;
+    const c = pool[burstConfetti.cursor];
+    c.s.visible = true;
+    c.s.position.set(pos.x + rndRange(-spread, spread) * 0.55, pos.y + rndRange(-0.2, 0.9), pos.z + rndRange(-spread, spread) * 0.4);
+    c.s.material.color.setHex(CONFETTI_COLORS[i % CONFETTI_COLORS.length]);
+    c.s.material.opacity = 1;
+    c.vx = rndRange(-1.7, 1.7); c.vz = rndRange(-1.2, 2.0);
+    c.vy = rndRange(up * 0.55, up);
+    c.life = 0; c.ttl = rndRange(1.5, 2.6);
+    c.spin = rndRange(-9, 9); c.rot = rndRange(0, 6.28);
+    const sc = rndRange(0.26, 0.44);
+    c.s.scale.set(sc, sc * 0.62, 1);
+  }
+}
+function updateConfetti(dt) {
+  gymShow.confetti.forEach((c) => {
+    if (!c.s.visible) return;
+    c.life += dt;
+    if (c.life > c.ttl) { c.s.visible = false; c.s.material.opacity = 0; return; }
+    c.vy -= dt * 4.6;
+    c.vx *= 1 - dt * 0.6;
+    c.vz *= 1 - dt * 0.6;
+    c.s.position.x += c.vx * dt;
+    c.s.position.y += c.vy * dt;
+    c.s.position.z += c.vz * dt;
+    if (c.s.position.y < 0.52) { c.s.position.y = 0.52; c.vy = 0; c.vx *= 0.6; c.vz *= 0.6; }
+    c.rot += c.spin * dt;
+    c.s.material.rotation = c.rot;
+    const k = c.life / c.ttl;
+    c.s.material.opacity = k < 0.72 ? 1 : Math.max(0, 1 - (k - 0.72) / 0.28);
+  });
+}
+
+/* 📣 짧은 환호 효과음 (Web Audio, 음소거 존중) */
+function playCheerSound(power = 1) {
+  if (!soundOn) return;
+  duckAudio(1300);
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    if (!audioCtx) audioCtx = new AC();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const t0 = audioCtx.currentTime + 0.02;
+    /* 1) 관중 함성 — 밴드패스 노이즈 스웰 */
+    const dur = 1.15;
+    const len = Math.max(1, Math.floor(audioCtx.sampleRate * dur));
+    const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+    const dd = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) dd[i] = (Math.random() * 2 - 1) * 0.55;
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.setValueAtTime(900, t0); bp.frequency.linearRampToValueAtTime(1750, t0 + 0.3); bp.Q.value = 0.85;
+    const gn = audioCtx.createGain();
+    gn.gain.setValueAtTime(0.0001, t0);
+    gn.gain.linearRampToValueAtTime(0.085 * Math.min(1.4, power), t0 + 0.14);
+    gn.gain.exponentialRampToValueAtTime(0.0006, t0 + dur);
+    src.connect(bp); bp.connect(gn); gn.connect(audioCtx.destination);
+    src.start(t0); src.stop(t0 + dur);
+    /* 2) 기쁨의 3화음 */
+    [659.25, 880.0, 1108.73].forEach((f, i) => {
+      const o = audioCtx.createOscillator();
+      const g2 = audioCtx.createGain();
+      o.type = 'triangle';
+      o.frequency.setValueAtTime(f, t0 + i * 0.07);
+      g2.gain.setValueAtTime(0.0001, t0 + i * 0.07);
+      g2.gain.linearRampToValueAtTime(0.07, t0 + i * 0.07 + 0.03);
+      g2.gain.exponentialRampToValueAtTime(0.0005, t0 + i * 0.07 + 0.5);
+      o.connect(g2); g2.connect(audioCtx.destination);
+      o.start(t0 + i * 0.07); o.stop(t0 + i * 0.07 + 0.52);
+    });
+  } catch (e) { /* 소리 실패는 조용히 무시 */ }
+}
+
+/* 관중 함성 + 색종이 (power 0.7 이상이면 폭죽·함성) */
+function gymCheer(power = 1) {
+  gymShow.cheer = Math.max(gymShow.cheer, 0.85 + 0.75 * power);
+  if (power >= 0.7) {
+    burstConfetti(new THREE.Vector3(0, 1.7, 0.4), Math.round(18 + 18 * power), 4.4, 3.6);
+    playCheerSound(power);
+    burstStars(new THREE.Vector3(0, 3.4, -0.6), 12, 3.2, 1.8);
+  }
+}
+
+/* 🏆 시상대 올리기 / 내리기 */
+function raisePodium(win, draw) {
+  if (!gymShow.pod) return;
+  gymShow.podUp = true;
+  const top = gymShow.podTop || 1.12;
+  gymShow.kids.forEach((k, i) => {
+    const on = draw ? true : i === win;
+    k.group.visible = on;
+    k.group.position.set(draw ? (i === 0 ? -0.62 : 0.62) : 0, top, 0.02);
+    k.group.rotation.y = 0;
+    if (on) k.group.scale.setScalar((FAMILY_DEFS[i].h || 0.8) * 0.95);
+  });
+  if (gymShow.trophy) {
+    gymShow.trophy.visible = true;
+    gymShow.trophy.position.set(draw ? 0 : 0.72, 1.14, draw ? -0.6 : 0.1);
+  }
+  burstConfetti(new THREE.Vector3(0, 3.0, -0.8), 40, 3.6, 4.2);
+}
+function resetPodium() {
+  gymShow.podUp = false;
+  gymShow.podRise = 0;
+  if (gymShow.pod) {
+    gymShow.pod.visible = false;
+    gymShow.pod.position.y = 0.42;
+  }
+  gymShow.kids.forEach((k) => { k.group.visible = false; });
+  gymShow.confetti.forEach((c) => { c.s.visible = false; c.s.material.opacity = 0; });
+}
+
+/* 매 프레임: 빔·네온·관중·색종이·시상대 */
+function updateGymShow(dt, t) {
+  const lively = gymShow.cheer > 0 ? 1 : 0;
+  if (gymShow.cheer > 0) gymShow.cheer = Math.max(0, gymShow.cheer - dt);
+  gymShow.beams.forEach((b, i) => {
+    const base = 0.12 + 0.035 * Math.sin(t * 1.7 + b.ph) + lively * 0.06;
+    b.mesh.material.opacity = base;
+    b.mesh.rotation.z = (i % 2 ? 0.11 : -0.11) + Math.sin(t * 0.8 + b.ph) * 0.022;
+  });
+  gymShow.neon.forEach((n, i) => {
+    const base = n.userData.base || 0.4;
+    n.material.opacity = base + Math.abs(Math.sin(t * 1.9 + i * 0.6)) * 0.28 + lively * 0.12;
+  });
+  if (gymShow.scoreGlow) gymShow.scoreGlow.material.opacity = 0.24 + Math.abs(Math.sin(t * 1.3)) * 0.12 + lively * 0.1;
+  gymShow.parents.forEach((p, i) => {
+    const hop = lively ? Math.abs(Math.sin(t * 7.2 + p.ph)) * 0.14 : Math.abs(Math.sin(t * 1.5 + p.ph)) * 0.03;
+    p.group.position.y = p.baseY + hop;
+    const swing = lively ? 1.45 + Math.sin(t * 9.5 + p.ph) * 0.35 : 0.12 + Math.sin(t * 1.6 + p.ph) * 0.08;
+    p.armL.rotation.z = swing;
+    p.armR.rotation.z = -swing;
+    if (p.flag) p.flag.rotation.z = lively ? Math.sin(t * 12 + p.ph) * 0.5 : Math.sin(t * 2 + p.ph) * 0.12;
+  });
+  gymShow.fans.forEach((f, i) => {
+    const hop = lively ? Math.abs(Math.sin(t * 6.4 + f.ph)) * 0.3 : Math.abs(Math.sin(t * 1.7 + f.ph)) * 0.08;
+    f.spr.position.y = f.baseY + hop;
+  });
+  updateConfetti(dt);
+  if (gymShow.pod) {
+    const dir = gymShow.podUp ? 1 : -1;
+    gymShow.podRise = clamp(gymShow.podRise + dir * dt * 1.5, 0, 1);
+    const e = 1 - Math.pow(1 - gymShow.podRise, 3);
+    gymShow.pod.position.y = 0.42 - 2.1 * (1 - e);
+    gymShow.pod.visible = gymShow.podRise > 0.02;
+    if (gymShow.trophy && gymShow.trophy.visible) gymShow.trophy.rotation.y = t * 1.4;
+    gymShow.kids.forEach((k, i) => {
+      if (!k.group.visible) return;
+      const top = gymShow.podTop || 1.12;
+      k.group.position.y = top + Math.abs(Math.sin(t * 3.2 + i * 1.4)) * 0.12;
+      k.parts.armR.rotation.z = -1.25 + Math.sin(t * 8 + i) * 0.25;
+      k.parts.armL.rotation.z = 1.25 - Math.sin(t * 8 + i) * 0.25;
+    });
+  }
 }
 
 /* ---------- 10-e. ⚔️ 체육관 배틀 (비밀 3마리 엔트리 · 3라운드 타이밍 대결) ---------- */
@@ -4629,6 +5660,8 @@ function setHudTitles() {
 async function startMatch() {
   initHudEls();
   gym.wins = [0, 0]; gym.hp = [100, 100]; gym.round = -1; gym.result = null; gym.busy = false;
+  resetPodium();
+  updateScoreboard();
   const logEl = document.getElementById('battleLog');
   if (logEl) logEl.innerHTML = '';
   setBattleHud(true);
@@ -4645,6 +5678,9 @@ async function nextRound() {
   gym.busy = true;
   gym.round++;
   if (gym.round >= GYM_ROUNDS) { gym.busy = false; finishMatch(); return; }
+  /* 먼저 지난 시상대·폭죽을 내리고 전광판을 이번 판으로 바꾼다 */
+  resetPodium();
+  updateScoreboard();
   clearBattlers(); clearBalls();
   gym.stage = 'throw'; gym.t = 0;
   gym.timing = null; gym.tap = null; gym.icons = null;
@@ -5196,6 +6232,8 @@ function updateAttack(dt) {
     battleLogLine(`✅ <b>${gym.round + 1}라운드</b> — <span class="a${gym.roundWinner}">${nm}</span> 승리 (${gym.wins[0]} : ${gym.wins[1]})`);
     toast(`${gym.round + 1}라운드 ${nm} 승리! (${gym.wins[0]} : ${gym.wins[1]})`);
     burstStars(new THREE.Vector3(0, 2.0, 0), 16, 2.0, 1.8);
+    gymCheer(0.9);
+    updateScoreboard();
     /* 진 라운드의 포켓몬은 오늘 기절(💤) — 센터에서 회복해야 다시 고를 수 있다 */
     const loseSide = 1 - gym.roundWinner;
     const loseId = (gym.entries[loseSide] || [])[gym.round];
@@ -5222,6 +6260,18 @@ function finishMatch() {
   const win = gym.wins[0] === gym.wins[1] ? (gym.hp[0] >= gym.hp[1] ? 0 : 1) : (gym.wins[0] > gym.wins[1] ? 0 : 1);
   gym.result = { winner: win, wins: gym.wins.slice() };
   const nm = people[win] ? people[win].name : '아린';
+  const draw = gym.wins[0] === gym.wins[1];
+  /* 무승부면 둘 다, 아니면 우승자만 경기장 중앙으로 */
+  gym.fighters.forEach((f, i) => {
+    if (!f) return;
+    if (draw) { f.group.position.set(i === 0 ? -1.9 : 1.9, 0.48, 1.75); f.group.scale.setScalar(0.85); }
+    else if (i === win) { f.group.position.set(1.9, 0.48, 1.75); f.group.scale.setScalar(0.85); }
+  });
+  gymShow.championIds = gym.fighters.map((f) => (f ? f.id : 0));
+  updateScoreboard();
+  raisePodium(win, draw);
+  gymCheer(1.4);
+  recordGymResult(win, draw, gym.wins, gymShow.championIds);
   battleLogLine(`🏆 최종 결과 <b>${gym.wins[0]} : ${gym.wins[1]}</b> — <span class="a${win}">${nm}</span> 우승!`);
   say(new THREE.Vector3(0, 3.4, 0), `🏆 ${nm} 우승! ${gym.wins[0]} : ${gym.wins[1]}`, 3600);
   burstStars(new THREE.Vector3(0, 2.2, 0), 34, 3.0, 2.8);
@@ -5247,6 +6297,7 @@ function updateGym(dt, tNow) {
         ch.group.position.y = 0.48 + Math.abs(Math.sin(gym.t * 4.2)) * 0.55;
         ch.spr.material.rotation = Math.sin(gym.t * 2.2) * 0.1;
       }
+      if (gym.t > 0.6 && gym.t < 0.7) { burstConfetti(new THREE.Vector3(0, 3.4, 0), 26, 3.8, 3.8); }
       if (gym.t > 1.0 && gym.t < 1.1) burstHearts(new THREE.Vector3(0, 3.0, 0), 8);
       if (gym.t > 2.2 && gym.t < 2.3) burstStars(new THREE.Vector3(0, 2.4, 0), 14, 2.2, 1.8);
     }
@@ -5267,6 +6318,9 @@ function stopMatch() {
   const bar = document.getElementById('gymBar');
   if (bar) bar.hidden = true;
   gym.timing = null;
+  gymShow.cheer = 0;
+  resetPodium();
+  drawScoreboard({ n1: people[0] ? people[0].name : '아린', n2: people[1] ? people[1].name : '지안', a: 0, b: 0, round: 0, stage: 'idle' });
 }
 
 /* ---------- 11. 하트 파티클 (야외·실내 공통 — scene 에 매단다) ---------- */
@@ -5986,8 +7040,13 @@ function tapAt(cx, cy) {
     if (hitA.length) { openGymPicker(0); return; }
     return;
   }
+  if (!document.getElementById('hallModal').hidden) return;
   const hitGym = raycaster.intersectObjects(gymPickables, false);
   if (hitGym.length) { enterGym(); return; }
+  const hitHall = hallLive.pickables.length ? raycaster.intersectObjects(hallLive.pickables, false) : [];
+  if (hitHall.length) { openHallModal(); return; }
+  const hitBerry = berryLive.pickables.length ? raycaster.intersectObjects(berryLive.pickables, false) : [];
+  if (hitBerry.length) { collectBerry(); return; }
   const hitPoke = raycaster.intersectObjects(pokePickables, false);
   if (hitPoke.length) {
     const pk = pokemons[hitPoke[0].object.userData.pkIndex];
@@ -5999,6 +7058,7 @@ function tapAt(cx, cy) {
   if (hitWho.length) {
     const pi = hitWho[0].object.userData.personIdx;
     if (Number.isFinite(pi)) {
+      if (pi >= 2) { cheerFromParent(pi); return; }
       if (pi === activeIdx) { const P = people[pi]; if (P.wave < 0.2) P.wave = 1; }
       else selectPerson(pi);
       return;
@@ -6205,6 +7265,29 @@ function setSceneView(tx, ty, tz, theta, phi, radius) {
   viewT.theta = theta; viewT.phi = phi; viewT.radius = radius;
   view.theta = theta; view.phi = phi; view.radius = radius;
 }
+/* ---------- HUD 겹침 방지 (좁은 화면에서 상단바가 두 줄이 돼도 센터 칩과 겹치지 않게) ---------- */
+let hudLayoutRaf = 0;
+function layoutHud() {
+  const bar = document.querySelector('.topbar');
+  const hud = document.getElementById('centerHud');
+  if (!bar || !hud) return 0;
+  const bottom = Math.round(bar.getBoundingClientRect().bottom);
+  const top = Math.max(96, bottom + 8);
+  hud.style.top = top + 'px';
+  return top;
+}
+function scheduleLayoutHud() {
+  if (hudLayoutRaf) return;
+  hudLayoutRaf = requestAnimationFrame(() => { hudLayoutRaf = 0; layoutHud(); });
+}
+if (window.ResizeObserver) {
+  try {
+    const barEl = document.querySelector('.topbar');
+    if (barEl) new window.ResizeObserver(() => scheduleLayoutHud()).observe(barEl);
+    const hudEl = document.getElementById('centerHud');
+    if (hudEl) new window.ResizeObserver(() => scheduleLayoutHud()).observe(hudEl);
+  } catch (e) { /* */ }
+}
 function syncHud() {
   const bar = document.getElementById('whoBar');
   if (bar) bar.style.display = mode === 'outdoor' ? '' : 'none';
@@ -6224,11 +7307,12 @@ function syncHud() {
       ? '바닥을 탭하면 걸어가요 · 소파🛋️ · 오박사👨‍🔬 · 모니터📺 · 회복머신💖을 눌러 보세요'
       : mode === 'gym'
         ? gymHintText()
-        : '바닥 탭·방향키로 걷기 · 포켓몬을 누르면 타입별 인사! · 빨간 지붕 <b>센터</b>는 회복, 파란 돔 <b>체육관</b>은 배틀!';
+        : '바닥 탭·방향키로 걷기 · 포켓몬을 누르면 타입별 인사! · 빨간 지붕 <b>센터</b>는 회복, 파란 돔 <b>체육관</b>은 배틀! · 🍎 숨은 간식과 🏆 명예의 전당을 찾아보세요';
     setTimeout(() => hint.classList.add('gone'), 7000);
   }
   updateEmptyNote();
   updateCenterHud();
+  scheduleLayoutHud();
 }
 function saveOutdoorView() {
   outdoorSaved = { theta: viewT.theta, phi: viewT.phi, radius: viewT.radius, y: camTarget.y };
@@ -6283,6 +7367,8 @@ function enterGym() {
   sun.castShadow = false;
   setSceneView(0, 2.6, 0, 0.02, 1.15, modeRadius());
   syncHud();
+  drawScoreboard({ n1: people[0] ? people[0].name : '아린', n2: people[1] ? people[1].name : '지안', a: 0, b: 0, round: 1, stage: 'idle' });
+  layoutHud();
   toast('🏟️ 포켓몬 체육관에 들어왔어요!');
   openGymPicker(0);
   return true;
@@ -6679,6 +7765,7 @@ function resize() {
   camera.updateProjectionMatrix();
   if (!userZoomed) viewT.radius = modeRadius();
   view.radius = clamp(view.radius, 11, 58);
+  scheduleLayoutHud();
 }
 let userZoomed = false;
 canvas.addEventListener('wheel', () => { userZoomed = true; });
@@ -6825,6 +7912,7 @@ function animate() {
 
   /* 가족 4인 (야외에서만 산책) */
   if (mode === 'outdoor') people.forEach((P, i) => stepPerson(P, dt, i === activeIdx));
+  if (mode === 'outdoor') updateBerry(dt, t);
 
   /* 체육관 조명·관중·배틀 진행 */
   gymLights.forEach((c) => {
@@ -6838,6 +7926,7 @@ function animate() {
     });
     if (gymLive.ring) gymLive.ring.material.opacity = 0.3 + Math.abs(Math.sin(t * 1.5)) * (gym.stage === 'timing' ? 0.55 : 0.25);
     gymLive.spotCones.forEach((c) => { c.material.opacity = 0.08 + Math.abs(Math.sin(t * 0.8 + c.position.x)) * 0.06; });
+    updateGymShow(dt, t);
     updateGym(dt, t);
   }
   if (mode === 'indoor') {
@@ -7066,6 +8155,7 @@ world.traverse((o) => {
 /* 디버그/검증용 상태 노출 (읽기 전용) */
 window.__AJIT = {
   get ready() { return true; },
+  get cam3() { return { x: +camera.position.x.toFixed(2), y: +camera.position.y.toFixed(2), z: +camera.position.z.toFixed(2) }; },
   get theme() { return themeName; },
   get pokemonCount() { return pokemons.length; },
   get ids() { return pokemons.map((p) => p.id); },
@@ -7296,6 +8386,12 @@ window.__AJIT = {
     await nextRound();
     return { entries: gym.entries.map((x) => x.slice()), round: gym.round };
   },
+  forceFinal(a, b2) {
+    gym.wins = [Math.max(0, Number(a) || 0), Math.max(0, Number(b2) || 0)];
+    if (gym.round < 0) gym.round = GYM_ROUNDS - 1;
+    finishMatch();
+    return { stage: gym.stage, result: gym.result ? { winner: gym.result.winner, wins: gym.result.wins.slice() } : null, podiumUp: gymShow.podUp, kids: gymShow.kids.map((k) => ({ name: k.name, visible: k.group.visible })) };
+  },
   get battleUi() {
     return {
       hp: !document.getElementById('hpWrap').hidden,
@@ -7348,7 +8444,7 @@ window.__AJIT = {
   /* ---- 배틀존 3D 연출 ---- */
   get gymVfx() {
     const f = gym.fighters.filter(Boolean).map((x) => ({
-      side: x.side, id: x.id, name: x.name,
+      side: x.side, id: x.id, name: x.name, vis: x.group.visible, op: +x.spr.material.opacity.toFixed(2),
       pos: x.group.position.toArray().map((v) => +v.toFixed(2)),
       shadow: x.shadow ? { y: +x.shadow.position.y.toFixed(3), op: +x.shadow.material.opacity.toFixed(3), sx: +x.shadow.scale.x.toFixed(3) } : null,
       aura: x.aura ? { vis: x.aura.visible, y: +x.aura.position.y.toFixed(3), op: +x.auraRingA.material.opacity.toFixed(3), color: '#' + x.auraRingA.material.color.getHexString() } : null,
@@ -7367,6 +8463,94 @@ window.__AJIT = {
     const v = new THREE.Vector3(x, y, z).project(camera);
     return { x: (v.x * 0.5 + 0.5) * window.innerWidth, y: (-v.y * 0.5 + 0.5) * window.innerHeight };
   },
+  /* ---- 🏟️ 스타디움 연출 / 🍎 보물찾기 / 🏆 명예의 전당 / HUD 겹침 ---- */
+  get stadium() {
+    return {
+      score: gymShow.scoreMeta,
+      beams: gymShow.beams.length,
+      spots: gymShow.spots.length,
+      neon: gymShow.neon.length,
+      parents: gymShow.parents.map((p) => p.name),
+      fans: gymShow.fans.length,
+      confettiLive: gymShow.confetti.filter((c) => c.s.visible).length,
+      cheer: +gymShow.cheer.toFixed(2),
+      podium: {
+        up: gymShow.podUp,
+        rise: +gymShow.podRise.toFixed(2),
+        visible: !!(gymShow.pod && gymShow.pod.visible),
+        trophy: !!(gymShow.trophy && gymShow.trophy.visible),
+        kids: gymShow.kids.map((k) => ({ name: k.name, visible: k.group.visible, y: +k.group.position.y.toFixed(2) })),
+        pos: gymShow.pod ? gymShow.pod.position.toArray().map((v) => +v.toFixed(2)) : null,
+      },
+      scoreScreen: this.screenOfWorld(0, 4.35, -8.7),
+      beam0Screen: this.screenOfWorld(-5.0, 3.2, 0),
+    };
+  },
+  cheer(p) { gymCheer(p == null ? 1 : Number(p)); return +gymShow.cheer.toFixed(2); },
+  get berry() {
+    return {
+      key: BERRY_KEY,
+      day: berryLive.day,
+      today: pkmDayKey(),
+      found: berryLive.found,
+      x: +berryLive.x.toFixed(2),
+      z: +berryLive.z.toFixed(2),
+      visible: !!(berryLive.group && berryLive.group.visible),
+      clusterVisible: !!(berryLive.cluster && berryLive.cluster.visible),
+      stumpVisible: !!(berryLive.stump && berryLive.stump.visible),
+      chase: +Math.max(0, berryLive.chase).toFixed(2),
+      pickables: berryLive.pickables.length,
+      stored: pkmReadJson(BERRY_KEY),
+      screen: this.screenOfWorld(berryLive.x, 0.8, berryLive.z),
+    };
+  },
+  collectBerry() { return collectBerry(); },
+  resetBerry() {
+    try { localStorage.removeItem(BERRY_KEY); } catch (e) { /* */ }
+    berryLive.chase = -1;
+    placeBerry();
+    return { found: berryLive.found, x: +berryLive.x.toFixed(2), z: +berryLive.z.toFixed(2) };
+  },
+  get hall() {
+    return {
+      key: HALL_KEY,
+      open: !document.getElementById('hallModal').hidden,
+      stats: readGymStats(),
+      rows: document.querySelectorAll('#hallList .hallRow').length,
+      cells: [...document.querySelectorAll('#hallGrid .sumCell')].map((c) => c.textContent.replace(/\s+/g, ' ').trim()),
+      pickables: hallLive.pickables.length,
+      screen: this.screenOfWorld(HALL_POS.x, 1.6, HALL_POS.z),
+    };
+  },
+  openHall() { return openHallModal(); },
+  closeHall() { closeHallModal(); return true; },
+  clearHallStats() {
+    try { localStorage.removeItem(HALL_KEY); } catch (e) { /* */ }
+    drawHallBoard();
+    renderHallModal();
+    return readGymStats();
+  },
+  recordGym(win, wins, ids) {
+    const w = Number(win) === 0 || Number(win) === 1 ? Number(win) : 0;
+    return recordGymResult(w, false, wins || [0, 0], ids || [25, 4]);
+  },
+  parentCheer(i) { return cheerFromParent(Number(i)); },
+  get hudLayout() {
+    const rect = (el) => {
+      if (!el) return null;
+      const b = el.getBoundingClientRect();
+      return { x: Math.round(b.left), y: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height), bottom: Math.round(b.bottom), right: Math.round(b.right) };
+    };
+    const exit = rect(document.getElementById('btnExitPlace'));
+    const chks = [...document.querySelectorAll('#centerHud .chk')].map(rect);
+    const overlaps = chks.map((c) => {
+      const w = Math.min(exit.right, c.right) - Math.max(exit.x, c.x);
+      const h = Math.min(exit.bottom, c.bottom) - Math.max(exit.y, c.y);
+      return { w: w > 0 ? w : 0, h: h > 0 ? h : 0, area: w > 0 && h > 0 ? w * h : 0 };
+    });
+    return { topbar: rect(document.querySelector('.topbar')), exit, chks, overlaps, hudTop: getComputedStyle(document.getElementById('centerHud')).top, vw: window.innerWidth };
+  },
+  layoutHud() { return layoutHud(); },
   gymCenterScreen() { return this.screenOfWorld(0, 1.5, 0); },
   arenaScreen() { return this.screenOfWorld(0, 0.5, 0); },
 };
