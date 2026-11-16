@@ -2049,7 +2049,7 @@ const SHARED_PREFIX = 'pkm.shared.dex.v1.';
 const SUBJECT_LABEL = { math: '⚡ 산수', hangul: '📖 한글', english: '🔤 영어' };
 const PROFILE_KEYS = { math: 'mpb.profiles.v1', hangul: 'hpb.profiles.v1', english: 'epb.profiles.v1' };
 /* 게임마다 프로필 목록 순서가 달라(한글은 p1이 둘째) 기본 자리표를 따로 둔다 */
-const SLOT_BY_DEFAULT = { math: { p1: 'p1', p2: 'p2', p3: 'guest' }, hangul: { p1: 'p2', p2: 'p1', p3: 'guest' }, english: { p1: 'p1', p2: 'p2', p3: 'guest' } };
+const SLOT_BY_DEFAULT = { math: { p1: 'p1', p2: 'p2', p3: 'guest' }, hangul: { p1: 'p1', p2: 'p2', p3: 'guest' }, english: { p1: 'p1', p2: 'p2', p3: 'guest' } };
 const LEGACY_DEX_KEYS = [
   { key: 'mpb.dex.v2.p1', game: 'math', id: 'p1' },
   { key: 'mpb.dex.v2.p2', game: 'math', id: 'p2' },
@@ -2068,7 +2068,7 @@ function slotFromName(name) {
   const n = String(name || '');
   if (/게스트|guest|테스트/i.test(n)) return 'guest';
   if (/첫째|아린/.test(n)) return 'p1';
-  if (/둘째/.test(n)) return 'p2';
+  if (/둘째|지안/.test(n)) return 'p2';
   return '';
 }
 function slotFor(game, profId) {

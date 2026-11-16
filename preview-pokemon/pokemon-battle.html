@@ -417,6 +417,38 @@
 </style>
 <script src="./pokemon-lock.js"></script>
 <script src="./pokemon-sync.js" data-ui="badge"></script>
+<script>
+/* 슬롯(p1 아린 · p2 지안 · guest) ↔ 각 게임의 프로필 id — 이름으로 맞춘다 */
+(function () {
+  'use strict';
+  if (window.PkmSlots && window.PkmSlots.version) return;
+  var KEYS = { math: 'mpb.profiles.v1', hangul: 'hpb.profiles.v1', english: 'epb.profiles.v1' };
+  function fromName(name) {
+    var n = String(name || '');
+    if (/게스트|guest|테스트/i.test(n)) return 'guest';
+    if (/첫째|아린/.test(n)) return 'p1';
+    if (/둘째|지안/.test(n)) return 'p2';
+    return '';
+  }
+  function listOf(game) {
+    try {
+      var o = JSON.parse(localStorage.getItem(KEYS[game]) || 'null');
+      return o && Array.isArray(o.list) ? o.list : [];
+    } catch (e) { return []; }
+  }
+  function idOf(game, slot) {
+    var want = slot === 'guest' ? 'p3' : (slot === 'p2' ? 'p2' : 'p1');
+    var list = listOf(game);
+    for (var i = 0; i < list.length; i += 1) {
+      var p = list[i];
+      if (!p || !p.id) continue;
+      if (fromName(p.name) === slot) return p.id;
+    }
+    return want;
+  }
+  window.PkmSlots = { version: '1.0', fromName: fromName, idOf: idOf, listOf: listOf };
+})();
+</script>
 </head>
 <body>
 <div class="sky">
@@ -739,7 +771,7 @@
   const SHARED_PREFIX = 'pkm.shared.dex.v1.';
   const MIGRATED_KEY = 'pkm.shared.dex.v1.migrated';
   const PROFILE_KEYS = { math: 'mpb.profiles.v1', hangul: 'hpb.profiles.v1', english: 'epb.profiles.v1' };
-  const SLOT_BY_DEFAULT = { math: { p1: 'p1', p2: 'p2', p3: 'guest' }, hangul: { p1: 'p2', p2: 'p1', p3: 'guest' }, english: { p1: 'p1', p2: 'p2', p3: 'guest' } };
+  const SLOT_BY_DEFAULT = { math: { p1: 'p1', p2: 'p2', p3: 'guest' }, hangul: { p1: 'p1', p2: 'p2', p3: 'guest' }, english: { p1: 'p1', p2: 'p2', p3: 'guest' } };
   const LEGACY = [
     { key: 'mpb.dex.v2.p1', game: 'math', id: 'p1' },
     { key: 'mpb.dex.v2.p2', game: 'math', id: 'p2' },
@@ -756,7 +788,7 @@
     const n = String(name || '');
     if (/게스트|guest|테스트/i.test(n)) return 'guest';
     if (/첫째|아린/.test(n)) return 'p1';
-    if (/둘째/.test(n)) return 'p2';
+    if (/둘째|지안/.test(n)) return 'p2';
     return '';
   }
   function profileOf(game, id) {
@@ -818,7 +850,7 @@
 
   function setName(slot, fallback, emoji) {
     const mathP = profileOf('math', slot === 'p1' ? 'p1' : slot === 'p2' ? 'p2' : 'p3');
-    const hgP = profileOf('hangul', slot === 'p1' ? 'p2' : slot === 'p2' ? 'p1' : 'p3');
+    const hgP = profileOf('hangul', PkmSlots.idOf('hangul', slot));
     const enP = profileOf('english', slot === 'p1' ? 'p1' : slot === 'p2' ? 'p2' : 'p3');
     const pickP = mathP || enP || hgP || null;
     return { name: (pickP && pickP.name) || fallback, emoji: (pickP && pickP.emoji) || emoji };
@@ -955,14 +987,14 @@
     const n = String(name || '');
     if (/게스트|guest|테스트/i.test(n)) return 'guest';
     if (/첫째|아린/.test(n)) return 'p1';
-    if (/둘째/.test(n)) return 'p2';
+    if (/둘째|지안/.test(n)) return 'p2';
     return '';
   }
   function screenSlot(slot) {
-    const order = [['math', slot === 'p1' ? 'p1' : 'p2'], ['english', slot === 'p1' ? 'p1' : 'p2'], ['hangul', slot === 'p1' ? 'p2' : 'p1']];
-    for (const pair of order) {
-      const o = j(PROF_KEYS[pair[0]], null);
-      const p = (o && Array.isArray(o.list) ? o.list : []).find((x) => x && x.id === pair[1]);
+    /* 게임마다 프로필 id 순서가 달라도 이름으로 맞춘다(한글은 예전에 p1=둘째였다) */
+    for (const g of ['math', 'english', 'hangul']) {
+      const o = j(PROF_KEYS[g], null);
+      const p = (o && Array.isArray(o.list) ? o.list : []).find((x) => x && x.id === PkmSlots.idOf(g, slot));
       if (p && p.name) return slotFromName(p.name) || slot;
     }
     return slot;
@@ -1052,7 +1084,7 @@
     var order = ['math', 'english', 'hangul'];
     for (var i = 0; i < order.length; i += 1) {
       var o = j(PROF_KEYS[order[i]], null);
-      var pid = order[i] === 'hangul' ? (slot === 'p1' ? 'p2' : 'p1') : id;
+      var pid = (window.PkmSlots && PkmSlots.idOf(order[i], slot)) || id;
       var p = (o && Array.isArray(o.list) ? o.list : []).filter(function (x) { return x && x.id === pid; })[0];
       if (p && p.name) return p.name;
     }
@@ -1314,13 +1346,17 @@
   /* ---------- ✏️ 이름(닉네임) — 산수·한글·영어·마을·2인 대결이 함께 쓰는 프로필 이름 ----------
      각 게임의 프로필 저장소(mpb/hpb/epb.profiles.v1)에 같은 이름을 써 주면,
      그 저장소를 읽는 모든 화면(홈·산수·한글·영어·마을·대결)이 새 이름을 그대로 보여준다.
-     ※ 한글 프로필만 p1·p2가 서로 바뀌어 있어 slot→id 표를 따로 둔다. */
+     ※ 게임마다 프로필 id 순서가 달랐다(한글은 기본이 p1=둘째) — 그래서 이름으로 먼저 맞춘다. */
   var PROF_STORE = { math: 'mpb.profiles.v1', hangul: 'hpb.profiles.v1', english: 'epb.profiles.v1' };
-  var PROF_ID = {
-    p1: { math: 'p1', hangul: 'p2', english: 'p1' },
-    p2: { math: 'p2', hangul: 'p1', english: 'p2' },
+  var PROF_ID_FALLBACK = {
+    p1: { math: 'p1', hangul: 'p1', english: 'p1' },
+    p2: { math: 'p2', hangul: 'p2', english: 'p2' },
     guest: { math: 'p3', hangul: 'p3', english: 'p3' }
   };
+  function profIdFor(game, slot) {
+    try { if (window.PkmSlots) return PkmSlots.idOf(game, slot); } catch (e) { /* */ }
+    return (PROF_ID_FALLBACK[slot] || {})[game];
+  }
   var FB_NAME = { p1: '첫째', p2: '둘째', guest: '게스트' };
   var FB_EMOJI = { p1: '👧', p2: '🧒', guest: '🧪' };
   var NameUI = { slot: 'p1' };
@@ -1332,7 +1368,7 @@
   function profOf(game, slot) {
     var o = profilesOf(game);
     if (!o) return null;
-    var id = (PROF_ID[slot] || {})[game];
+    var id = profIdFor(game, slot);
     return o.list.filter(function (p) { return p && p.id === id; })[0] || null;
   }
   function emojiOf(slot) {
@@ -1345,10 +1381,10 @@
       /* 아직 게임을 안 해 프로필이 없는 기기라면 기본 프로필을 만들어 두고 이름을 넣는다 */
       o = { active: 'p1', list: [] };
       ['p1', 'p2', 'guest'].forEach(function (k) {
-        o.list.push({ id: PROF_ID[k][game], name: FB_NAME[k], emoji: FB_EMOJI[k] });
+        o.list.push({ id: profIdFor(game, k), name: FB_NAME[k], emoji: FB_EMOJI[k] });
       });
     }
-    var id = PROF_ID[slot][game];
+    var id = profIdFor(game, slot);
     var hit = null;
     o.list.forEach(function (p) { if (p && p.id === id) hit = p; });
     if (!hit) { hit = { id: id, emoji: FB_EMOJI[slot] }; o.list.push(hit); }
