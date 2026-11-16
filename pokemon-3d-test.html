@@ -7329,13 +7329,13 @@ function buildPracticeModal() {
         b.className = 'tile' + (id === prDraft.id ? ' on' : '');
         b.dataset.prid = String(id);
         b.setAttribute('aria-pressed', id === prDraft.id ? 'true' : 'false');
-        b.title = nameOf(id) + (faint.indexOf(id) >= 0 ? ' · 💤 휴식중이지만 연습은 괜찮아요' : '');
+        b.title = dexLabel(id) + (faint.indexOf(id) >= 0 ? ' · 💤 휴식중이지만 연습은 괜찮아요' : '');
         const img = document.createElement('img');
         img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
         img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
         img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
         const nmEl = document.createElement('span');
-        nmEl.className = 'nm'; nmEl.textContent = nameOf(id);
+        nmEl.className = 'nm'; nmEl.textContent = dexLabel(id);
         const ck = document.createElement('span');
         ck.className = 'ck'; ck.textContent = id === prDraft.id ? '✓' : '';
         b.append(img, nmEl, ck);
@@ -7349,7 +7349,7 @@ function buildPracticeModal() {
     }
   }
   const my = document.getElementById('prMyName');
-  if (my) my.textContent = prDraft.id ? `— ${nameOf(prDraft.id)}` : '— 아직 없음';
+  if (my) my.textContent = prDraft.id ? `— ${dexLabel(prDraft.id)}` : '— 아직 없음';
   const wi = document.getElementById('prWildImg');
   if (wi && prDraft.wildId) {
     wi.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${prDraft.wildId}.png`;
@@ -7357,7 +7357,7 @@ function buildPracticeModal() {
     wi.style.visibility = '';
   }
   const wn = document.getElementById('prWildName');
-  if (wn) wn.textContent = prDraft.wildId ? `야생 ${nameOf(prDraft.wildId)}` : '—';
+  if (wn) wn.textContent = prDraft.wildId ? `야생 ${dexLabel(prDraft.wildId)}` : '—';
   m.querySelectorAll('#prGames button').forEach((b) => {
     const on = b.dataset.prgame === prDraft.game;
     b.classList.toggle('on', on);
@@ -8339,6 +8339,11 @@ const DAD_PIN_DEFAULT = '0623';
 let pinBuf = '', pinFails = 0;
 
 function dvIds(slot) { try { return readDexSlot(slot).ids.slice(); } catch (e) { return []; } }
+/* 도감 표기 — 151번 이후는 KO151 이름이 없어 '포켓몬 #id'로 나오니, 그때는 'No.id'로 깔끔하게 */
+function dexLabel(id) {
+  const nm = nameOf(id);
+  return nm.indexOf('포켓몬 #') === 0 ? `No.${id}` : nm;
+}
 
 function buildDexView() {
   if (!dvModal) return;
@@ -8369,15 +8374,15 @@ function buildDexView() {
         const cell = document.createElement('div');
         cell.className = 'dvCell' + (pickedIds.indexOf(id) >= 0 ? ' inpick' : '');
         cell.dataset.dvid = String(id);
-        cell.title = `${nameOf(id)} (No.${id})` + (fainted.indexOf(id) >= 0 ? ' · 💤 휴식중' : '');
+        cell.title = `${dexLabel(id)} (No.${id})` + (fainted.indexOf(id) >= 0 ? ' · 💤 휴식중' : '');
         const img = document.createElement('img');
         img.alt = ''; img.loading = 'lazy'; img.decoding = 'async';
         img.src = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`;
         img.addEventListener('error', () => { img.style.visibility = 'hidden'; });
         const nmEl = document.createElement('span');
-        nmEl.className = 'nm'; nmEl.textContent = nameOf(id);
+        nmEl.className = 'nm'; nmEl.textContent = dexLabel(id);
         const noEl = document.createElement('span');
-        noEl.className = 'n'; noEl.textContent = `No.${id}`;
+        noEl.className = 'n'; noEl.textContent = dexLabel(id) === `No.${id}` ? '' : `No.${id}`;
         cell.append(img, nmEl, noEl);
         if (pickedIds.indexOf(id) >= 0) {
           const pk = document.createElement('span'); pk.className = 'pk'; pk.textContent = '★';
