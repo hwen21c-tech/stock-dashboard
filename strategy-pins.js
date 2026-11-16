@@ -839,6 +839,12 @@
         if (tries > 20) clearInterval(iv);
       }, 500);
     }
+    /* 기준 시각 배지는 정적 미러처럼 API 가 없어도 계속 최신으로 다시 그린다 */
+    setInterval(function () { TAB_KEYS.forEach(function (t) { try { basisBadge(t); } catch (e) { /* */ } }); }, 15000);
+    window.addEventListener('load', function () {
+      setTimeout(function () { annotateAll(); }, 600);
+      setTimeout(function () { annotateAll(); }, 2500);
+    });
     /* 화면에 보이는 동안 20초마다 실시간 시세, 60초마다 차트 */
     setInterval(function () {
       if (document.visibilityState !== 'visible') return;
