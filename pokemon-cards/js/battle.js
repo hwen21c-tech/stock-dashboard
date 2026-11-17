@@ -259,11 +259,14 @@
         if (b.pick1 == null) {
           phaseHtml = '<div class="card-panel" style="margin-top:10px"><b>' + esc(meName) + ' 차례</b>' +
             '<p class="muted" style="margin:6px 0 10px">상대가 보지 않게 카드를 골라 주세요. 고르면 화면이 가려져요.</p></div>';
-        } else {
+        } else if (!ui.p2Ready) {
           phaseHtml = '<div class="card-panel" style="margin-top:10px;text-align:center">' +
             '<div style="font-size:30px">🙈</div><b>' + esc(b.foe.name) + ' 차례</b>' +
-            '<p class="muted" style="margin:6px 0 0">기기를 ' + esc(b.foe.name) + '에게 넘기고 카드를 골라 주세요.</p>' +
+            '<p class="muted" style="margin:6px 0 0">기기를 ' + esc(b.foe.name) + '에게 넘기고<br>준비되면 아래 버튼을 눌러 주세요.</p>' +
             '<button class="btn primary wide" id="p2Next" style="margin-top:10px">준비됐어요 · 카드 고르기</button></div>';
+        } else {
+          phaseHtml = '<div class="card-panel" style="margin-top:10px"><b>' + esc(b.foe.name) + ' 차례</b>' +
+            '<p class="muted" style="margin:6px 0 0">낼 카드를 하나 골라 주세요.</p></div>';
         }
       } else {
         phaseHtml = '<div class="card-panel" style="margin-top:10px"><b>' + (b.round + 1) + '라운드</b>' +
@@ -288,6 +291,8 @@
           (r.win === 0 ? esc(meName) + ' 승리!' : r.win === 1 ? esc(b.foe.name) + ' 승리!' : '무승부') + '</div>' +
         '<div class="btn-row" style="justify-content:center;margin-top:10px"><button class="btn primary" id="nextRound">' +
           (b.round >= 4 || b.score[0] >= 3 || b.score[1] >= 3 ? '결과 보기' : '다음 라운드') + '</button></div>';
+    } else if (b.phase === 'pick' && b.mode === 'p2' && b.pick1 != null && !ui.p2Ready) {
+      stageHtml = '';
     } else if (b.phase === 'pick' && (b.mode !== 'p2' || b.pick1 != null)) {
       const isP2Turn = b.mode === 'p2' && b.pick1 != null;
       const handOwner = isP2Turn ? b.foe : b.me;
