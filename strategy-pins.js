@@ -231,6 +231,8 @@
       '.sp-xcard .spx-row{display:flex;flex-wrap:wrap;gap:8px;font-size:10.5px;color:#94a3b8}',
       '.sp-xcard .spx-row b{color:#cbd5e1}',
       '.sp-xcard canvas{width:100%;height:64px;display:block;margin-top:2px}',
+      /* 핀 카드에서 종목을 골랐을 때 잠깐 강조 — 눌렀는데 반응이 없어 보이던 문제 방지 */
+      '.sp-flash{outline:2px solid #38bdf8 !important;outline-offset:2px;box-shadow:0 0 0 3px rgba(56,189,248,0.22) !important}',
       '.up{color:#ef4444}.down{color:#38bdf8}.flat{color:#94a3b8}',
       '.sp-note{font-size:10px;color:#94a3b8}',
       '.sp-mini{width:100%;height:56px;display:block;margin-top:4px;border-radius:5px;background:rgba(2,6,23,0.35)}',
@@ -443,7 +445,7 @@
       saveLocal(true);
       annotate(tab);
     });
-    el.addEventListener('click', function () { openChart(item.code, item.name); });
+    el.addEventListener('click', function () { openChart(tab, item.code, item.name); });
     return el;
   }
 
@@ -780,21 +782,111 @@
              : '<span class="sp-b-scan">📋 장마감 종가 스캔</span>');
   }
 
-  function openChart(code, name) {
-    var nm = (name || code) + ' [📌 고정핀]';
+  /* 탭 키 → switchView() 의 화면 id */
+  var TAB_VIEW = { bij: 'bijoong', hong: 'honginki', manju: 'manju', jongbe: 'jongbe', rn: 'rnzone', kk: 'kkangto', sup: 'supply' };
+
+  function rootOfTab(tab) {
+    var cfg = TABS[tab];
+    return cfg ? document.querySelector(cfg.root) : null;
+  }
+
+  function cardInTab(tab, code) {
+    var root = rootOfTab(tab);
+    if (!root || !code) return null;
+    var cards = findCards(tab, root);
+    for (var i = 0; i < cards.length; i++) {
+      if (codeOf(cards[i]) === code) return cards[i];
+    }
+    return root.querySelector('.sp-xcard[data-sp-code="' + code + '"]');
+  }
+
+  function flashCard(el) {
+    if (!el || !el.classList) return;
+    el.classList.add('sp-flash');
+    setTimeout(function () { try { el.classList.remove('sp-flash'); } catch (e) { /* */ } }, 1800);
+  }
+
+  /* 그 탭의 차트(캔버스)로 스크롤 — '눌렀는데 차트가 안 보인다'를 없앤다 */
+  function scrollToChart(root) {
+    var host = root || document;
+    var el = host.querySelector('#chartWrapper, #canvasContainer, #hiChartBox, #candleChart, canvas');
+    if (!el) return;
+    try { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    catch (e) { try { el.scrollIntoView(); } catch (e2) { /* */ } }
+  }
+
+  function guessTab(code) {
+    for (var i = 0; i < TAB_KEYS.length; i++) {
+      if (has(TAB_KEYS[i], code)) return TAB_KEYS[i];
+    }
+    return 'rn';
+  }
+
+  /* 핀 고정 카드 클릭 — 일반 종목 팝업을 띄우지 않고, 그 핀이 살아 있는 탭으로 이동해
+     그 종목의 차트를 실제로 선택·표시한다. (RN존 핀은 RN 차트에서 바로 보인다) */
+  function openChart(tab, code, name) {
+    /* 구 시그니처 openChart(code, name) 호출도 받아 준다 */
+    if (!TABS[tab]) { name = code; code = tab; tab = guessTab(code); }
+    if (!code) return false;
+    var view = TAB_VIEW[tab];
+    var switched = false;
     try {
-      if (typeof window.openDetail === 'function') {
-        window.openDetail(nm, '📌 오늘 자동선정 목록 밖', '실시간 일봉 기준 차트', '📌 핀 고정으로 이 탭에 유지 중인 종목입니다. 차트는 /api/stock-chart 실시간 일봉(당일 봉 포함)입니다.');
+      if (view && typeof window.switchView === 'function') { window.switchView(view, null); switched = true; }
+    } catch (e) { /* switchView 없으면 아래 카드 클릭만 */ }
+
+    var first = cardInTab(tab, code);
+    var inTodayList = !!(first && !first.classList.contains('sp-xcard'));
+
+    if (inTodayList) {
+      /* 오늘 목록에 있는 종목 — 카드 자체 클릭이 곧 그 탭의 차트 선택이다 */
+      try { first.click(); } catch (e) { /* */ }
+      setTimeout(function () {
+        var card = cardInTab(tab, code);
+        flashCard(card);
+        scrollToChart(rootOfTab(tab));
+      }, 90);
+      return true;
+    }
+
+    /* 오늘 자동선정 목록 밖(핀으로 유지 중) — RN존은 실시간 조회로 차트에 올린다 */
+    if (tab === 'rn') {
+      var stocks = (window.RnZone && typeof window.RnZone.getStocks === 'function') ? window.RnZone.getStocks() : null;
+      var hit = null;
+      if (stocks) {
+        for (var i = 0; i < stocks.length; i++) { if (stocks[i] && stocks[i].code === code) { hit = stocks[i]; break; } }
+      }
+      if (hit) {
+        try { window.RnZone.selectStockByCode(code); } catch (e) { /* */ }
+        setTimeout(function () { scrollToChart(rootOfTab('rn')); }, 90);
         return true;
       }
-    } catch (e) { /* 아래 대체 경로 */ }
-    try {
-      if (window.LiveAPI && typeof window.LiveAPI.searchStock === 'function' && window.RnZone && typeof window.switchView === 'function') {
-        window.switchView('rnzone', null);
-        var inp = document.getElementById('liveSearchInput') || document.getElementById('rnSearchInput');
-        if (inp) { inp.value = name || code; setTimeout(function () { window.LiveAPI.searchStock(); }, 120); return true; }
+      var q = document.getElementById('liveStockQuery');
+      if (q && window.LiveAPI && typeof window.LiveAPI.searchStock === 'function') {
+        q.value = code;
+        try { q.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) { /* */ }
+        try { window.LiveAPI.searchStock(); } catch (e) { /* */ }
+        setTimeout(function () { scrollToChart(rootOfTab('rn')); }, 400);
+        return true;
       }
-    } catch (e2) { /* */ }
+    }
+
+    /* 그 밖의 탭 — 탭 이동 + 핀 카드로 스크롤·강조 (팝업으로 문맥을 끊지 않는다) */
+    var card = cardInTab(tab, code);
+    if (card) {
+      flashCard(card);
+      try { card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      catch (e) { try { card.scrollIntoView(); } catch (e2) { /* */ } }
+      return true;
+    }
+
+    /* 카드가 아예 없을 때만 기존 상세 팝업 */
+    if (switched) { scrollToChart(rootOfTab(tab)); return true; }
+    try {
+      if (typeof window.openDetail === 'function') {
+        window.openDetail((name || code) + ' [📌 고정핀]', '📌 오늘 자동선정 목록 밖', '실시간 일봉 기준 차트', '📌 핀 고정으로 이 탭에 유지 중인 종목입니다.');
+        return true;
+      }
+    } catch (e) { /* */ }
     return false;
   }
 

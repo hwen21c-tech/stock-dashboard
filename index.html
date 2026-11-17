@@ -9942,7 +9942,7 @@
                 <button class="cat-tab-btn" onclick="RnZone.filterCategory('touch_lower', this)">🟢 하단 터치 (0)</button>
                 <button class="cat-tab-btn" onclick="RnZone.filterCategory('near_lower', this)">🟡 하단 근접 (5)</button>
                 <button class="cat-tab-btn" onclick="RnZone.filterCategory('upper', this)">🔥 상단 근접 (7)</button>
-                <button class="cat-tab-btn" onclick="RnZone.filterCategory('touch_upper', this)">🚀 상단 돌파 (0)</button>
+                <button class="cat-tab-btn" onclick="RnZone.filterCategory('touch_upper', this)">🚀 상단 터치 (0)</button>
             </div>
 
             <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 8px;">
@@ -12256,7 +12256,7 @@ function openDetail(title, v1, v2, desc) {
                     badgeText = '🟡 하단 RN 근접';
                 } else if (s.category === 'touch_upper') {
                     badgeClass = 'badge-touch-upper';
-                    badgeText = '🚀 상단 RN 돌파';
+                    badgeText = '🚀 상단 RN 터치';
                 } else if (s.category === 'upper') {
                     badgeClass = 'badge-touch-upper';
                     badgeText = '🔥 상단 RN 근접';
@@ -12319,7 +12319,7 @@ function openDetail(title, v1, v2, desc) {
                 badgeText = '🟡 하단 RN선 근접 (진입 대기)';
             } else if (s.category === 'touch_upper') {
                 badgeClass = 'badge-touch-upper';
-                badgeText = '🚀 상단 RN선 돌파 (추격 금지)';
+                badgeText = '🚀 상단 RN선 터치 (돌파 임박 · 추격 금지)';
             } else if (s.category === 'upper') {
                 badgeClass = 'badge-touch-upper';
                 badgeText = '🔥 상단 RN선 근접';
@@ -12364,8 +12364,31 @@ function openDetail(title, v1, v2, desc) {
             const plotW = (w - padLeft - padRight) * zoomLevel;
             const plotH = h - 80;
 
-            let minP = Math.min(s.buy2 * 0.96, ...candles.map(c => c.low));
-            let maxP = Math.max(s.upperRN * 1.04, ...candles.map(c => c.high));
+            /* ── y축 = 실제 캔들 고저 (2026-11-17 수리) ──────────────────────────────
+               예전에는 minP = s.buy2 * 0.96 으로 '2차 분할(-20%)'까지 축에 넣었다.
+               그래서 상단 RN 근접 종목(예: 삼성전기 745,000원 · 하단 RN 500,000원)처럼
+               타점이 현재가에서 30~45% 떨어진 종목은 캔들이 위쪽에 찌그러지고
+               RN·타점 선 5개가 차트 바닥에 몰려 10px 라벨이 겹쳐 뭉개졌다.
+               → 캔들 고저를 기본 축으로 잡고, RN선은 '가까이 있을 때만' 축에 포함한다. */
+            let cLow = Infinity, cHigh = -Infinity;
+            candles.forEach(function (c) {
+                if (typeof c.low === 'number' && c.low < cLow) cLow = c.low;
+                if (typeof c.high === 'number' && c.high > cHigh) cHigh = c.high;
+            });
+            if (!isFinite(cLow) || !isFinite(cHigh) || cHigh <= cLow) {
+                cLow = (s.price || 1) * 0.9; cHigh = (s.price || 1) * 1.1;
+            }
+            let loP = cLow, hiP = cHigh;
+            [s.lowerRN, s.upperRN].forEach(function (v) {
+                v = Number(v) || 0;
+                if (v > 0 && v >= cLow * 0.9 && v <= cHigh * 1.1) {
+                    if (v < loP) loP = v;
+                    if (v > hiP) hiP = v;
+                }
+            });
+            const edgePad = (hiP - loP) * 0.05 || hiP * 0.01 || 1;
+            let minP = loP - edgePad;
+            let maxP = hiP + edgePad;
             let pRange = maxP - minP;
             if (pRange <= 0) pRange = 1000;
 
@@ -12373,72 +12396,194 @@ function openDetail(title, v1, v2, desc) {
                 return 30 + plotH - ((val - minP) / pRange) * plotH + panOffsetY;
             }
 
+            function clampY(val) {
+                return Math.min(30 + plotH, Math.max(30, val));
+            }
+
             function getX(i) {
                 return padLeft + (i / (candles.length - 1)) * plotW;
             }
 
-            // Draw Background Grid Lines
-            ctx.strokeStyle = '#131b2b';
-            ctx.lineWidth = 1;
-            for (let i = 0; i <= 5; i++) {
-                const y = 30 + (i / 5) * plotH + panOffsetY;
-                ctx.beginPath();
-                ctx.moveTo(padLeft, y);
-                ctx.lineTo(w - padRight, y);
-                ctx.stroke();
+            /* 사람이 읽는 눈금 간격(1·2·2.5·5 × 10^n) — 1,746,850 같은 값은 축 눈금이 아니다 */
+            function niceTick(range, target) {
+                const raw = Math.abs(range) / Math.max(1, target);
+                const mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10));
+                const n = raw / mag;
+                const mult = n <= 1 ? 1 : (n <= 2 ? 2 : (n <= 2.5 ? 2.5 : (n <= 5 ? 5 : 10)));
+                return mult * mag;
             }
-
-            // Draw RN Highlight Zones
-            const yLower = getY(s.lowerRN);
-            const yBuy1 = getY(s.buy1);
-            ctx.fillStyle = 'rgba(34, 197, 94, 0.08)';
-            ctx.fillRect(padLeft, Math.min(yLower, yBuy1), w - padRight - padLeft, Math.abs(yLower - yBuy1));
-
-            const yTargetMin = getY(s.targetMin);
-            const yTargetMax = getY(s.targetMax);
-            ctx.fillStyle = 'rgba(168, 85, 247, 0.06)';
-            ctx.fillRect(padLeft, Math.min(yTargetMin, yTargetMax), w - padRight - padLeft, Math.abs(yTargetMin - yTargetMax));
 
             // Horizontal RN & Target Lines with User-Requested Left Labels
             /* 차트박사 공식 21개 RN선 — 붉은색(핵심)·파란색(중간)·옥색(보조) 색상 그대로 */
             const lines = [
-                { p: s.upperRN, leftLabel: '상단 RN ' + (s.upperColorKo || '') + '(' + (s.upperKind || '') + ')', color: (s.upperColorHex || '#ef4444'), dash: [4, 4] },
-                { p: s.lowerRN, leftLabel: '하단 RN ' + (s.lowerColorKo || '') + '(' + (s.lowerKind || '') + ')', color: (s.lowerColorHex || '#14b8a6'), dash: [4, 4] },
-                { p: s.buy1, leftLabel: '1차 매수가(+4%)', color: '#22c55e', dash: [2, 2] },
-                { p: s.buy2, leftLabel: '2차 분할(-20%)', color: '#ef4444', dash: [2, 2] },
-                { p: s.targetMin, leftLabel: '목표가(+7~20%)', color: '#a855f7', dash: [2, 2] }
+                { p: s.upperRN, leftLabel: '상단 RN ' + (s.upperColorKo || '') + '(' + (s.upperKind || '') + ')', short: '상단RN', color: (s.upperColorHex || '#ef4444'), dash: [4, 4] },
+                { p: s.lowerRN, leftLabel: '하단 RN ' + (s.lowerColorKo || '') + '(' + (s.lowerKind || '') + ')', short: '하단RN', color: (s.lowerColorHex || '#14b8a6'), dash: [4, 4] },
+                { p: s.buy1, leftLabel: '1차 매수가(+4%)', short: '1차', color: '#22c55e', dash: [2, 2] },
+                { p: s.buy2, leftLabel: '2차 분할(-20%)', short: '2차', color: '#ef4444', dash: [2, 2] },
+                { p: s.targetMin, leftLabel: '목표가(+7~20%)', short: '목표', color: '#a855f7', dash: [2, 2] }
             ];
 
-            lines.forEach(l => {
-                const y = getY(l.p);
-                if (y >= 10 && y <= h - 20) {
-                    // Dotted line from padLeft to w - padRight
-                    ctx.setLineDash(l.dash);
-                    ctx.strokeStyle = l.color;
-                    ctx.lineWidth = 1.2;
-                    ctx.beginPath();
-                    ctx.moveTo(padLeft, y);
-                    ctx.lineTo(w - padRight, y);
-                    ctx.stroke();
+            const inLines = [], outLines = [];
+            lines.forEach(function (l) {
+                const pv = Number(l.p) || 0;
+                if (pv <= 0) return;
+                if (pv >= minP && pv <= maxP) inLines.push(l); else outLines.push(l);
+            });
+            inLines.sort(function (a, b) { return b.p - a.p; });
 
-                    // Left Label in line's color (User requested)
-                    ctx.setLineDash([]);
-                    ctx.fillStyle = l.color;
-                    ctx.font = 'bold 10px Pretendard, sans-serif';
-                    ctx.textAlign = 'right';
-                    ctx.fillText(l.leftLabel, padLeft - 8, y + 3);
+            /* 10px 라벨은 12px 안에 붙으면 서로 겹친다 — 위에서부터 최소 간격을 보장하고
+               밀어낸 라벨은 제 선 위치까지 얇은 연결선으로 이어 준다. */
+            const labelY = [];
+            for (let li = 0; li < inLines.length; li++) {
+                let ty = getY(inLines[li].p);
+                if (li > 0 && ty - labelY[li - 1] < 12) ty = labelY[li - 1] + 12;
+                labelY.push(ty);
+            }
 
-                    // Right Price Label
-                    ctx.textAlign = 'left';
-                    ctx.font = 'bold 10px monospace';
-                    ctx.fillText(l.p.toLocaleString(), w - padRight + 5, y + 3);
+            /* 축 밖 선(현재가에서 20~45% 떨어진 타점 등)은 가짜 위치에 긋지 않는다.
+               오른쪽 가장자리에 ↑/↓ + 가격만 쌓아 '차트 범위 밖'임을 정직하게 알리고,
+               정확한 값은 위 상태바(상단 RN·하단 RN·1차·2차·목표가)가 그대로 보여 준다. */
+            const chipAbove = [], chipBelow = [];
+            outLines.filter(function (l) { return l.p > maxP; })
+                .sort(function (a, b) { return b.p - a.p; })
+                .forEach(function (l, ci) { chipAbove.push({ l: l, y: 16 + ci * 11 }); });
+            outLines.filter(function (l) { return l.p < minP; })
+                .sort(function (a, b) { return a.p - b.p; })
+                .forEach(function (l, ci) { chipBelow.push({ l: l, y: 30 + plotH - 4 - ci * 11 }); });
+            const chipYs = chipAbove.map(function (c) { return c.y; }).concat(chipBelow.map(function (c) { return c.y; }));
+
+            function nearChip(y) {
+                for (let ci = 0; ci < chipYs.length; ci++) {
+                    if (Math.abs(chipYs[ci] - y) < 13) return true;
                 }
+                return false;
+            }
+
+            // Draw Background Grid Lines (라운드 넘버 눈금 + 오른쪽 가격 표기)
+            const tickStep = niceTick(pRange, 5);
+            const gridRows = [];
+            for (let tv = Math.ceil(minP / tickStep) * tickStep; tv <= maxP; tv += tickStep) {
+                gridRows.push({ y: 30 + plotH - ((tv - minP) / pRange) * plotH + panOffsetY, p: tv });
+            }
+            ctx.strokeStyle = '#131b2b';
+            ctx.lineWidth = 1;
+            gridRows.forEach(function (g) {
+                ctx.beginPath();
+                ctx.moveTo(padLeft, g.y);
+                ctx.lineTo(w - padRight, g.y);
+                ctx.stroke();
+            });
+
+            // Draw RN Highlight Zones (축 밖으로 나가면 가장자리에서 잘라 그린다)
+            const yLower = getY(s.lowerRN);
+            const yBuy1 = getY(s.buy1);
+            const zBuyTop = clampY(Math.min(yLower, yBuy1));
+            const zBuyBot = clampY(Math.max(yLower, yBuy1));
+            if (zBuyBot - zBuyTop > 0.5) {
+                ctx.fillStyle = 'rgba(34, 197, 94, 0.08)';
+                ctx.fillRect(padLeft, zBuyTop, w - padRight - padLeft, zBuyBot - zBuyTop);
+            }
+
+            const yTargetMin = getY(s.targetMin);
+            const yTargetMax = getY(s.targetMax);
+            const zTgtTop = clampY(Math.min(yTargetMin, yTargetMax));
+            const zTgtBot = clampY(Math.max(yTargetMin, yTargetMax));
+            if (zTgtBot - zTgtTop > 0.5) {
+                ctx.fillStyle = 'rgba(168, 85, 247, 0.06)';
+                ctx.fillRect(padLeft, zTgtTop, w - padRight - padLeft, zTgtBot - zTgtTop);
+            }
+
+            const reservedY = [];
+            inLines.forEach(function (l, li) {
+                const y = getY(l.p);
+                const ty = labelY[li];
+                ctx.setLineDash(l.dash);
+                ctx.strokeStyle = l.color;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(padLeft, y);
+                ctx.lineTo(w - padRight, y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                if (Math.abs(ty - y) > 0.8) {
+                    ctx.strokeStyle = l.color;
+                    ctx.globalAlpha = 0.5;
+                    ctx.lineWidth = 0.8;
+                    ctx.beginPath();
+                    ctx.moveTo(padLeft - 3, y);
+                    ctx.lineTo(padLeft - 3, ty);
+                    ctx.stroke();
+                    ctx.globalAlpha = 1;
+                }
+
+                ctx.fillStyle = l.color;
+                ctx.font = 'bold 10px Pretendard, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText(l.leftLabel, padLeft - 8, ty + 3);
+
+                ctx.textAlign = 'right';
+                ctx.font = 'bold 10px monospace';
+                /* 오른쪽 가격 라벨이 '축 밖 타점 칩'과 겹치면 생략 —
+                   같은 가격이 눈금(라운드 넘버)에도 있으면 회색 눈금이 숫자를 대신한다 */
+                if (nearChip(y)) { reservedY.push(ty); }
+                else { ctx.fillText(l.p.toLocaleString(), w - 4, y + 3); reservedY.push(y, ty); }
             });
 
             ctx.setLineDash([]);
 
+            /* 현재가(마지막 봉 종가) 위치 — 선과 캔들이 어디쯤인지 바로 보이게 */
+            const lastC = candles[candles.length - 1];
+            if (lastC && typeof lastC.close === 'number' && lastC.close > 0) {
+                const py = getY(lastC.close);
+                if (py >= 30 && py <= 30 + plotH) {
+                    ctx.strokeStyle = 'rgba(226, 232, 240, 0.5)';
+                    ctx.setLineDash([6, 3]);
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(padLeft, py);
+                    ctx.lineTo(w - padRight, py);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+            }
+
+            if (chipAbove.length || chipBelow.length) {
+                ctx.font = 'bold 9.5px monospace';
+                ctx.textAlign = 'right';
+                /* 캔들과 겹쳐도 읽히도록 어두운 바탕을 깔고 오른쪽 끝에 붙여 그린다 */
+                function paintChip(txt, cx, cy, color) {
+                    const tw = ctx.measureText(txt).width;
+                    ctx.fillStyle = 'rgba(7, 12, 22, 0.86)';
+                    ctx.fillRect(cx - tw - 2, cy - 9, tw + 4, 12);
+                    ctx.fillStyle = color;
+                    ctx.fillText(txt, cx, cy);
+                    reservedY.push(cy);
+                }
+                chipAbove.forEach(function (c) {
+                    paintChip('↑' + c.l.p.toLocaleString(), w - 4, c.y, c.l.color);
+                });
+                chipBelow.forEach(function (c) {
+                    paintChip(c.l.p.toLocaleString() + '↓', w - 4, c.y, c.l.color);
+                });
+            }
+
+            /* 오른쪽 가격 눈금 — RN·타점 라벨과 겹치는 눈금은 생략 */
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'left';
+            gridRows.forEach(function (g) {
+                if (g.y < 18 || g.y > 30 + plotH - 2) return;
+                for (let ri = 0; ri < reservedY.length; ri++) {
+                    if (Math.abs(reservedY[ri] - g.y) < 8) return;
+                }
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.45)';
+                ctx.fillText(Math.round(g.p).toLocaleString(), w - padRight + 6, g.y + 3);
+            });
+
             // Draw Candlesticks & Volumes
-            const candleW = Math.max(3, (plotW / candles.length) * 0.65);
+            /* 봉 폭 — 400px 폭에서는 봉 간격이 2.6px인데 최소 3px라 이웃 봉과 겹쳐 뭉쳤다.
+               간격의 68%로 잡고 최소 1px까지만 보장한다. */
+            const candleW = Math.max(1, Math.min(9, (plotW / candles.length) * 0.68));
             const maxVol = Math.max(...candles.map(c => c.vol)) || 1;
 
             candles.forEach((c, idx) => {
