@@ -423,7 +423,7 @@ footer b{color:var(--muted)}
       <div><b>③ 무엇을 보는가</b>판정 지표와 규격값</div>
       <div><b>④ 실무 해석</b>구체적 수치·그래프 사례</div>
     </div>
-    <p class="note">검색창에 <b>DC-IR · NCMA · H3 · 잔류리튬 · SiC · Stage · 3전극 · EIS · GITT · LLI · LAM · 만충 · XPS · ICP · ARC</b> 등을 넣으면 해당 항목만 남고 검색어가 강조됩니다. 카드 제목을 누르면 접히고, 파트 칩으로 구간을 좁힐 수 있습니다.</p>
+    <p class="note">검색창에 <b>DC-IR · NCMA · H3 · 잔류리튬 · SiC · Stage · 3전극 · EIS · GITT · LLI · LAM · 만충 · XPS · ICP · ARC</b> 등을 넣으면 해당 항목만 남고, 맞는 카드가 자동으로 펼쳐지며 검색어가 강조됩니다. 카드 제목을 누르면 펼치고 접을 수 있고, 파트 칩으로 구간을 좁힐 수 있습니다.</p>
   </section>
 
   <details id="tocPanel">
@@ -1287,11 +1287,12 @@ PARTS.forEach(function(part){
 
     g.cards.forEach(function(c){
       c.part=part;c.group=g;
+      var first=(part.groups[0].cards[0]===c);
       var art=document.createElement('article');
-      art.className='card open'+(c.fig?' wide':'');
+      art.className='card'+(first?' open':'')+(c.fig?' wide':'');
       art.dataset.id=c.id;
       var hd=document.createElement('button');
-      hd.type='button';hd.className='card-h';hd.setAttribute('aria-expanded','true');
+      hd.type='button';hd.className='card-h';hd.setAttribute('aria-expanded',first?'true':'false');
       hd.innerHTML='<span class="dot"></span><span class="ttl">'+esc(c.t)+
         (c.tag?'<span class="tag">'+esc(c.tag)+'</span>':'')+'</span>'+
         '<svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
@@ -1634,20 +1635,20 @@ function figArc(host){
 
 
 var FIGS={half:figHalf, anode:figAnode, dcir:figDcir, eis:figEis, gitt:figGitt, lli:figLli, arc:figArc};
-var pending=[];
 function ensureFig(c){
   if(!c.fig||c._figDone)return;
   var fn=FIGS[c.fig];if(!fn)return;
-  var wrap=document.createElement('div');wrap.className='card-fig';
-  c.el.appendChild(wrap);
-  if(!wrap.clientWidth){pending.push(function(){buildFig(c,wrap,fn);});return;}
-  buildFig(c,wrap,fn);
+  if(!c._wrap){
+    c._wrap=document.createElement('div');c._wrap.className='card-fig';
+    c.el.appendChild(c._wrap);
+  }
+  if(!c._wrap.clientWidth)return;   /* 접힌 상태 → 열릴 때 다시 호출 */
+  buildFig(c,c._wrap,fn);
 }
 function buildFig(c,wrap,fn){
   wrap.innerHTML='';
   fn(wrap,c);
   c._figDone=true;
-  c._wrap=wrap;
 }
 
 /* ---------------- 검색 / 필터 ---------------- */
@@ -1668,7 +1669,7 @@ function applyFilter(){
         var ok=partAllowed && (!q || qTokens.every(function(t){return c.idx.indexOf(t)>=0;}));
         c.el.classList.toggle('hide',!ok);
         if(ok){gHits++;partHits++;}
-        if(ok&&q) c.el.classList.add('open');
+        if(ok&&q){ c.el.classList.add('open'); var hh=c.el.querySelector('.card-h'); if(hh)hh.setAttribute('aria-expanded','true'); ensureFig(c); }
       });
       g.el.classList.toggle('hide',gHits===0);
       g.el.style.display=gHits?'':'none';
