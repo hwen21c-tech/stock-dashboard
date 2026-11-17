@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>프리뷰 · 스탁이지 장전 테마 스냅샷 (11/17 08:40 실측)</title>
+<title>프리뷰 · 프리마켓 접기 + 시간별 수급 이동 (11/17 08:50 실측)</title>
 <style>
   :root{
     --bg:#070b14; --panel:#0f172a; --panel2:#131d2e; --border:#1e293b;
@@ -64,6 +64,49 @@
   .se-foot{font-size:9.5px; color:#94a3b8; margin-top:8px; line-height:1.5;}
   .se-snap.collapsed .se-grid,.se-snap.collapsed .se-note,.se-snap.collapsed .se-foot{display:none;}
   .se-snap.collapsed{padding-bottom:8px;}
+  /* ── NEW: 프리마켓 레이더 접기/펼치기 (09:00 정규장 이후 기본 접힘) ── */
+  .pm-toggle{font-size:10px; font-weight:900; padding:2px 8px; border-radius:4px; cursor:pointer;
+    background:rgba(99,102,241,0.18); color:#c7d2fe; border:1px solid rgba(99,102,241,0.6); font-family:inherit;}
+  .pm-toggle:active{transform:scale(0.97);}
+  .pm-head-sub{font-size:10.5px; font-weight:800; color:#a5b4fc;}
+  .premarket-radar-box.pm-collapsed .pm-note,
+  .premarket-radar-box.pm-collapsed .pm-grid,
+  .premarket-radar-box.pm-collapsed .pm-foot{display:none !important;}
+  .pm-collapsed-line{display:none; font-size:10px; color:#c7d2fe; line-height:1.5; margin:2px 0 0;}
+  .premarket-radar-box.pm-collapsed .pm-head-sub{display:none;}
+  .pm-collapsed-line b{color:#a5f3fc; font-weight:800;}
+  .premarket-radar-box.pm-collapsed .pm-collapsed-line{display:block;}
+  /* ── NEW: 시간별 수급 이동 타임라인 ───────────────────────────── */
+  .tl-box{margin:12px 0 8px; border:1px solid #0e7490; border-radius:10px; padding:9px 10px;
+    background:linear-gradient(135deg,rgba(8,47,73,0.6) 0%,rgba(15,23,42,0.96) 60%,rgba(15,23,42,0.98) 100%);}
+  .tl-head{display:flex; justify-content:space-between; align-items:baseline; gap:6px; flex-wrap:wrap;}
+  .tl-title{font-size:12.5px; font-weight:900; color:#a5f3fc; line-height:1.35;}
+  .tl-title .tl-sub{font-size:10px; font-weight:800; color:#67e8f9; margin-left:2px;}
+  .tl-legend{display:flex; gap:4px; flex-wrap:wrap;}
+  .tl-legend span{font-size:8.5px; font-weight:800; border-radius:3px; padding:1px 4px; border:1px solid #334155; color:#cbd5e1; background:rgba(2,6,23,0.6);}
+  .tl-scroll{display:flex; align-items:stretch; gap:6px; overflow-x:auto; padding:7px 1px 4px;
+    -webkit-overflow-scrolling:touch; scrollbar-width:thin;}
+  .tl-scroll::-webkit-scrollbar{height:4px;}
+  .tl-scroll::-webkit-scrollbar-thumb{background:#334155; border-radius:2px;}
+  .tl-chip{flex:0 0 auto; width:128px; display:flex; flex-direction:column; text-align:left; font-family:inherit;
+    border-radius:7px; padding:5px 7px 6px; background:rgba(2,6,23,0.7); border:1px solid #1e293b; color:#e2e8f0;}
+  .tl-chip.done{cursor:pointer;}
+  .tl-chip.done:hover{border-color:#0891b2; background:rgba(8,47,73,0.75);}
+  .tl-chip.wait{opacity:0.6;}
+  .tl-chip.current{border-color:#22d3ee; box-shadow:0 0 0 1px rgba(34,211,238,0.45) inset;}
+  .tl-time{display:flex; align-items:baseline; gap:4px; font-size:11px; font-weight:900; color:#e0f2fe; font-feature-settings:'tnum';}
+  .tl-time em{font-style:normal; font-size:8.5px; font-weight:800; color:#67e8f9;}
+  .tl-badge{display:inline-block; font-size:8.5px; font-weight:900; border-radius:3px; padding:0 4px; margin:3px 0 3px; align-self:flex-start;}
+  .tl-badge.b-keep{background:rgba(16,185,129,0.18); color:#6ee7b7; border:1px solid #10b981;}
+  .tl-badge.b-new{background:rgba(244,63,94,0.18); color:#fda4af; border:1px solid #f43f5e;}
+  .tl-badge.b-move{background:rgba(245,158,11,0.18); color:#fcd34d; border:1px solid #f59e0b;}
+  .tl-badge.b-wait{background:rgba(100,116,139,0.2); color:#cbd5e1; border:1px solid #475569;}
+  .tl-theme{display:block; font-size:9.5px; line-height:1.4; color:#cbd5e1;}
+  .tl-theme b{color:#fff; font-weight:800;}
+  .tl-theme.mut{color:#64748b;}
+  .tl-foot{font-size:9px; color:#94a3b8; margin-top:4px; line-height:1.55;}
+  .tl-foot b{color:#a5f3fc;}
+  .tl-detail-row{display:block; padding:7px 0; border-bottom:1px dashed #1e293b;}
   /* ── 8대 테마맵 (관제탑 원본 블록) ─────────────────────────────── */
   .theme-grid-8{display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:9px;}
   .theme-block{background:linear-gradient(180deg,#0f172a 0%,#0b1220 100%); border:1px solid var(--border);
@@ -116,25 +159,29 @@
   <span class="pv-tag">🎨 독립 프리뷰</span>
   <span><b>본 관제탑(index.html)은 한 줄도 수정하지 않았습니다.</b> 이 파일만 따로 배포한 미리보기입니다.</span>
   <div style="flex-basis:100%; height:0;"></div>
-  <span>① 신규 <b>📊 스탁이지 장전 테마 스냅샷</b> 추가 &nbsp;·&nbsp; ② 테마맵 부제 <b>‘스탁이지 · 주맵 실시간 체결 검증’ → ‘고정 8대 테마 · 네이버 실시간 체결’</b> 수정</span>
+  <span>① <b>프리마켓 레이더 · 스탁이지 스냅샷 접기/펼치기</b>(09:00 정규장 이후 기본 접힘) &nbsp;·&nbsp; ② 신규 <b>🧭 시간별 수급 이동</b> 타임라인 &nbsp;·&nbsp; ③ 08:50 슬롯 실측 채움 · 미도래 슬롯은 <b>대기</b></span>
   <a href="./" target="_blank" rel="noopener">← 실제 관제탑</a>
 </div>
 
 <div id="tabOverview">
 <!-- 🌅 08:00~09:00 장전 프리마켓 실측 레이더 (NXT 체결 & 08:30 동시호가) -->
     <div class="premarket-radar-box" id="premarketRadarBox" style="margin-bottom: 12px; background: linear-gradient(135deg, rgba(30,27,75,0.85) 0%, rgba(15,23,42,0.95) 100%); border: 1px solid #4338ca; border-radius: 10px; padding: 11px 13px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-        <div style="display: flex; align-items: center; gap: 6px;">
+      <div class="pm-head" style="display: flex; justify-content: space-between; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 6px;">
+        <div style="display: flex; align-items: center; gap: 6px; min-width: 0;">
           <span style="font-size: 15px;">🌅</span>
-          <span style="font-size: 12.5px; font-weight: 800; color: #c7d2fe;">🌅 08:00 ~ 08:50 장전 프리마켓 실측 레이더 (NXT 체결 & 08:30 동시호가)</span>
+          <span style="font-size: 12.5px; font-weight: 800; color: #c7d2fe;">08:00 ~ 08:50 장전 프리마켓 실측 레이더 <span class="pm-head-sub">(NXT 체결 & 08:30 동시호가)</span></span>
         </div>
-        <span id="pmSessionBadge" style="font-size: 10px; background: #064e3b; color: #6ee7b7; padding: 2px 6px; border-radius: 4px; border: 1px solid #10b981; font-weight: 800;">🟢 NXT 프리마켓 체결 중 (08:00~08:50)</span>
+        <div style="display: flex; align-items: center; gap: 5px; flex-wrap: wrap;">
+          <span id="pmSessionBadge" style="font-size: 10px; background: #064e3b; color: #6ee7b7; padding: 2px 6px; border-radius: 4px; border: 1px solid #10b981; font-weight: 800;">🟢 NXT 프리마켓 체결 중 (08:00~08:50)</span>
+          <button class="pm-toggle" id="pmToggleBtn" onclick="togglePremarketRadar()" aria-expanded="true">접기</button>
+        </div>
       </div>
-      <div style="font-size: 10px; color: #94a3b8; margin-bottom: 8px;">
+      <div class="pm-collapsed-line" id="pmCollapsedLine">08:50 마감 스냅샷 · 코스피 장전 <b>-2.39%</b> · 코스닥 <b>-3.76%</b> · 가온칩스 <b>+10.10%</b> · 삼진제약 <b>+6.70%</b> — 펼치면 3트랙 전체가 열립니다</div>
+      <div class="pm-note" style="font-size: 10px; color: #94a3b8; margin-bottom: 8px;">
         ※ 테마 순위는 <strong>09:00 본장 개장 후 실제 체결대금 기반</strong>으로 가동되며, 장전은 <strong>NXT 프리마켓 실제 체결 시세</strong> 및 <strong>08:30 동시호가 팩트</strong>를 표출합니다.
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; margin-bottom: 8px;">
+      <div class="pm-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; margin-bottom: 8px;">
         <!-- 트랙 1: 주도 테마 (네이버 실시간 랭킹 · 자동교체) -->
         <div style="background: rgba(15,23,42,0.7); border: 1px solid rgba(16,185,129,0.3); border-radius: 6px; padding: 8px 10px; cursor: pointer;" onclick="openPremarketDetail('nxt')">
           <!-- PM_CARD_NXT_START -->
@@ -188,7 +235,7 @@
       </div>
 
       <!-- 동시호가 실전 체크 포인트 바 -->
-      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:6px; font-size:10px; color:#e2e8f0; flex-wrap:wrap; gap:4px;">
+      <div class="pm-foot" style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.3); padding:6px 10px; border-radius:6px; font-size:10px; color:#e2e8f0; flex-wrap:wrap; gap:4px;">
         <span>🎯 <strong>장전 세션 진행 (08:30~09:00):</strong> 장전 시간외 종가 접수 ➔ <strong>08:50 시초가 타점 브리핑</strong> 연동 ➔ 09:00 본장 개장 체결</span>
         <span id="pmSyncFoot" style="color:#4ade80; font-weight:800; white-space:nowrap;">🟢 11/17 08:27 실측 동기화 · 네이버 테마/시세 기준</span>
       </div>
@@ -312,6 +359,21 @@
       </div>
     </div>
     <div class="se-foot">👆 테마 카드를 누르면 테마 상세, 종목을 누르면 실측 일봉 차트 팝업이 열립니다. · 출처: 스탁이지(주식회사 인텔리오) 장전 테마, 08:40 실측</div>
+  </div>
+
+  <!-- 🧭 NEW: 시간별 수급 이동 타임라인 (장중 상시 펼침 · 컴팩트 가로 칩) -->
+  <div class="tl-box" id="tlBox">
+    <div class="tl-head">
+      <div class="tl-title">🧭 시간별 수급 이동 <span class="tl-sub">(08:50 → 16:00 · 실측만 · 좌우 스크롤)</span></div>
+      <div class="tl-legend">
+        <span style="border-color:#10b981; color:#6ee7b7;">🟢 유지</span>
+        <span style="border-color:#f43f5e; color:#fda4af;">🔴 신규 유입</span>
+        <span style="border-color:#f59e0b; color:#fcd34d;">🔀 수급 이동</span>
+        <span>⏳ 대기</span>
+      </div>
+    </div>
+    <div class="tl-scroll" id="tlScroll"><!-- JS 렌더 --></div>
+    <div class="tl-foot" id="tlFoot"></div>
   </div>
 
   <div class="sec-head">
@@ -574,10 +636,32 @@ function kstNow(){
 }
 function minutesNow(){ var d = kstNow(); return d.getHours()*60 + d.getMinutes(); }
 function isRegularSession(){ var m = minutesNow(); return m >= 540 || m < 480; } /* 09:00~08:00 */
+function isAfterOpen(){ return minutesNow() >= 540; } /* 09:00 정규장 이후 */
 
-/* 프리뷰에서는 내용을 보라고 만든 화면이므로 기본은 펼침.
-   실제 관제탑에서는 정규장(09:00) 진입 시 자동으로 접히도록 연결한다. */
-var seCollapsed = false;
+/* ── 프리마켓 레이더 접기/펼치기 (09:00 이후 기본 접힘) ────────── */
+var pmCollapsed = true, pmTouched = false;
+function renderPmState(){
+  var box = document.getElementById('premarketRadarBox');
+  var btn = document.getElementById('pmToggleBtn');
+  if(!box || !btn) return;
+  box.classList.toggle('pm-collapsed', !!pmCollapsed);
+  btn.textContent = pmCollapsed ? '펼치기' : '접기';
+  btn.setAttribute('aria-expanded', pmCollapsed ? 'false' : 'true');
+  var badge = document.getElementById('pmSessionBadge');
+  if(badge){
+    if(isAfterOpen()){
+      badge.textContent = pmCollapsed ? '🌙 정규장 진행 중 · 장전 레이더 접힘' : '🌙 정규장 진행 중 · 08:50 마감 장전 스냅샷';
+      badge.style.background = '#1e293b'; badge.style.color = '#cbd5e1'; badge.style.borderColor = '#475569';
+    }else{
+      badge.textContent = '🟢 NXT 프리마켓 체결 중 (08:00~08:50)';
+      badge.style.background = '#064e3b'; badge.style.color = '#6ee7b7'; badge.style.borderColor = '#10b981';
+    }
+  }
+}
+function togglePremarketRadar(){ pmTouched = true; pmCollapsed = !pmCollapsed; renderPmState(); }
+
+/* 스탁이지 스냅샷: 09:00 이후 기본 접힘 (사용자가 눌렀으면 그 선택을 존중) */
+var seCollapsed = true, seTouched = false;
 function renderSnapState(){
   var box = document.getElementById('stockeasySnap');
   var badge = document.getElementById('seSnapBadge');
@@ -586,16 +670,16 @@ function renderSnapState(){
   box.classList.toggle('collapsed', seCollapsed);
   if(seCollapsed){
     badge.className = 'se-badge closed';
-    badge.textContent = '🌙 ' + SE_STAMP + ' 스냅샷 접힘 · 정규장(09:00) 시작 시 자동 접힘 (펼치면 실측값 그대로)';
+    badge.textContent = '🌙 ' + SE_STAMP + ' 스냅샷 접힘';
     btn.textContent = '펼치기';
   }else{
     badge.className = 'se-badge';
-    badge.textContent = '⏱ ' + SE_STAMP + ' 스냅샷 · 정규장(09:00) 시작 시 자동 접힘' +
-      (isRegularSession() ? ' · 지금은 정규장 시간대(자동 접힘 대상)' : '');
-    btn.textContent = '접어보기';
+    badge.textContent = '⏱ ' + SE_STAMP + ' 스냅샷 · 09:00 자동 접힘' +
+      (isRegularSession() ? ' (지금은 장중)' : '');
+    btn.textContent = '접기';
   }
 }
-function toggleStockeasySnap(){ seCollapsed = !seCollapsed; renderSnapState(); }
+function toggleStockeasySnap(){ seTouched = true; seCollapsed = !seCollapsed; renderSnapState(); }
 
 /* ── 모달 ───────────────────────────────────────────────────── */
 function openModal(title, html){
@@ -707,7 +791,122 @@ function openDetail(name, chg, sub, desc){
     '<div class="mdl-note">※ 8대 테마맵 카드는 11/16 종가 기준 정적 기본값입니다. 09:00 개장 후 관제탑은 네이버 실시간 체결값으로 교체하며, 실제 화면에서는 이 팝업이 <code>/api/stock-chart</code> 60일봉 실차트 모달로 열립니다.</div>');
 }
 
+/* ── 시간별 수급 이동 타임라인 (08:50 실측 + 미도래 슬롯 대기) ───── */
+var TL_SLOTS = [
+  { t:'08:50', tag:'프리마켓', state:'done', status:'new', statusLabel:'🔴 신규 유입',
+    leadName:'가온칩스', leadChg:'+10.10%', leadSub:'디자인하우스 · 제약 신규',
+    ctx:'코스피 장전 4,978.50 (-2.39%) · 코스닥 640.63 (-3.76%) · 나스닥100 선물 -2.98% — 지수는 약세, 수급은 디자인하우스·AI IP·제약 개별주로 협소',
+    themes:[
+      { name:'시스템반도체·디자인하우스', status:'keep', statusLabel:'🟢 유지',
+        leader:'가온칩스', code:'399720', chg:10.10, price:'38,150원', value:'445억',
+        note:'전일(11/16) 나무가 상한가·대금 594억으로 테마 온도 유지. 프리마켓 저 33,350 → 38,150, 14% 되돌림으로 매수세 실체 확인(상승률·실질 대금 대장).',
+        extra:'오픈엣지테크놀로지(394280) 7,800원 +7.73% · 85억 (후발 2등주) / 에이디테크놀로지(200710) 16,370원 -4.66% · 28억 (동반 약세)' },
+      { name:'제약·바이오(개별 재료)', status:'new', statusLabel:'🔴 신규 유입',
+        leader:'삼진제약', code:'005500', chg:6.70, price:'21,500원', value:'233억',
+        note:'오늘 새로 만들어진 축. 프리마켓 고 24,100(+19.6%) / 저 18,880 — 장중 변동폭 27%대로 극단적.',
+        extra:'뷰노(338220) 5,360원 +5.10% · 23억 · SK케미칼(285130) 40,500원 +3.32% · 29억' },
+      { name:'AI 음성·온디바이스 AI', status:'new', statusLabel:'🔴 신규 유입',
+        leader:'셀바스AI', code:'108860', chg:4.92, price:'7,470원', value:'82억',
+        note:'AI 음성인식. 프리마켓 고 7,920 / 저 6,920 (상승률·대금 대장).',
+        extra:'네패스(033640) 19,160원 +1.22% · 7억 (후발 2·3등주)' },
+      { name:'2차전지', status:'keep', statusLabel:'🟢 유지',
+        leader:'삼성SDI', code:'006400', chg:0.43, price:'464,500원', value:'520억',
+        note:'지수 -2.4% 국면에서 KOSPI 대형주 중 프리마켓 플러스는 사실상 이 종목뿐. LG화학 -1.54%·포스코퓨처엠 -1.17%보다 확연히 강함.',
+        extra:'나무가(190510) 19,220원 +1.96% · 539억(프리마켓 대금 1위) · 고 20,500(+8.8%)' }
+    ] },
+  { t:'09:30', tag:'', state:'wait', waitLabel:'자동동기화 대기' },
+  { t:'10:00', state:'wait', waitLabel:'브리핑 대기' },
+  { t:'11:00', state:'wait', waitLabel:'브리핑 대기' },
+  { t:'12:00', state:'wait', waitLabel:'브리핑 대기' },
+  { t:'13:00', state:'wait', waitLabel:'브리핑 대기' },
+  { t:'14:00', state:'wait', waitLabel:'브리핑 대기' },
+  { t:'15:00', state:'wait', waitLabel:'브리핑 대기' },
+  { t:'16:00', state:'wait', waitLabel:'브리핑 대기' }
+];
+
+function parseHm(t){ var a = String(t).split(':'); return (+a[0])*60 + (+a[1]); }
+function hhmmNow(){ var d = kstNow(); return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
+function tlBadgeCls(s){ return s === 'keep' ? 'b-keep' : s === 'new' ? 'b-new' : s === 'move' ? 'b-move' : 'b-wait'; }
+
+function renderTimeline(){
+  var wrap = document.getElementById('tlScroll');
+  if(!wrap) return;
+  var now = minutesNow();
+  var next = -1;
+  for(var i = 0; i < TL_SLOTS.length; i++){
+    if(TL_SLOTS[i].state !== 'done' && parseHm(TL_SLOTS[i].t) > now){ next = i; break; }
+  }
+  var html = '';
+  TL_SLOTS.forEach(function(s, i){
+    var done = s.state === 'done';
+    var cls = 'tl-chip ' + (done ? 'done' : 'wait') + (i === next ? ' current' : '');
+    if(done){
+      html += '<button class="' + cls + '" onclick="openTimelineSlot(\'' + s.t + '\')" title="' + s.t + ' 슬롯 상세 보기">' +
+        '<span class="tl-time">' + s.t + ' <em>' + (s.tag || '') + '</em></span>' +
+        '<span class="tl-badge ' + tlBadgeCls(s.status) + '">' + s.statusLabel + '</span>' +
+        '<span class="tl-theme"><b>' + s.leadName + '</b> ' + s.leadChg + '</span>' +
+        '<span class="tl-theme mut">' + (s.leadSub || '') + '</span>' +
+        '</button>';
+    }else{
+      html += '<div class="' + cls + '" title="' + (s.waitLabel || '') + ' — 브리핑 전까지 추측값을 넣지 않습니다">' +
+        '<span class="tl-time">' + s.t + ' <em>' + (s.tag || '') + '</em></span>' +
+        '<span class="tl-badge b-wait">⏳ 대기</span>' +
+        '<span class="tl-theme">' + (s.waitLabel || '') + '</span>' +
+        '<span class="tl-theme mut">추측값 없음</span>' +
+        '</div>';
+    }
+  });
+  wrap.innerHTML = html;
+  var foot = document.getElementById('tlFoot');
+  if(foot){
+    var doneCnt = TL_SLOTS.filter(function(s){ return s.state === 'done'; }).length;
+    var nextLab = next >= 0 ? (TL_SLOTS[next].t + ' ' + (TL_SLOTS[next].waitLabel || '')) : '오늘 슬롯 종료';
+    foot.innerHTML = '지금 <b>' + hhmmNow() + '</b> · 완료 슬롯 <b>' + doneCnt + '/' + TL_SLOTS.length + '</b> · 다음 갱신 <b>' + nextLab + '</b><br>' +
+      '※ 완료된 슬롯을 누르면 해당 시간대 주도 테마·대장주 상세가 열립니다. 아직 도래하지 않은 슬롯은 브리핑 전까지 <b>가짜·추측 수치 없이</b> 대기로 둡니다.';
+  }
+}
+
+function openTimelineSlot(t){
+  var s = TL_SLOTS.filter(function(x){ return x.t === t && x.state === 'done'; })[0];
+  if(!s) return;
+  var rows = s.themes.map(function(th){
+    return '<div class="tl-detail-row">' +
+      '<div style="display:flex; justify-content:space-between; gap:8px; align-items:baseline; flex-wrap:wrap;">' +
+        '<span style="font-weight:900; color:#fff; font-size:11.5px;">' + th.name + '</span>' +
+        '<span class="tl-badge ' + tlBadgeCls(th.status) + '" style="margin:0;">' + th.statusLabel + '</span>' +
+      '</div>' +
+      '<div style="font-size:10.5px; color:#cbd5e1; margin-top:3px; line-height:1.6;">' +
+        '대장 <b style="color:#fff;">' + th.leader + '</b>' + (th.code ? ' (' + th.code + ')' : '') + ' · ' +
+        '<span class="' + clsOf(th.chg) + '" style="font-weight:900;">' + fmtPct(th.chg) + '</span>' +
+        (th.price ? ' · ' + th.price : '') + (th.value ? ' · 대금 ' + th.value : '') +
+        '<br>' + th.note +
+        (th.extra ? '<br><span style="color:#94a3b8;">' + th.extra + '</span>' : '') +
+      '</div></div>';
+  }).join('');
+  openModal('🧭 ' + s.t + ' 수급 이동 상세',
+    '<div class="mdl-sub" style="margin-bottom:7px;">' + s.t + ' ' + (s.tag || '') + ' 마감 실측 · 전일(11/16) 종가 대비</div>' +
+    '<div style="font-size:10.5px; color:#a5f3fc; background:rgba(8,47,73,0.5); border:1px solid #0e7490; border-radius:6px; padding:7px 9px; line-height:1.6; margin-bottom:8px;">' + (s.ctx || '') + '</div>' +
+    rows +
+    '<div class="mdl-note">※ 수치는 08:50 프리마켓 브리핑(네이버 NXT 체결 08:50 마감 실측) 그대로입니다. 아직 도래하지 않은 슬롯(09:30~16:00)은 추측값을 넣지 않고 대기로 표시하며, 브리핑이 완료되는 시점에 같은 칩에 채웁니다.</div>' +
+    '<div class="mdl-links"><a href="https://finance.naver.com/item/main.naver?code=' + s.themes[0].code + '" target="_blank" rel="noopener">네이버 증권 ' + s.themes[0].leader + '</a>' +
+    '<a class="alt" href="https://stockeasy.intellio.kr/" target="_blank" rel="noopener">스탁이지 장전 테마</a></div>');
+}
+
+/* ── 초기 상태: 09:00 정규장 이후면 프리마켓·스탁이지 기본 접힘 ── */
+pmCollapsed = isAfterOpen();
+seCollapsed = isAfterOpen();
+renderPmState();
 renderSnapState();
+renderTimeline();
+
+/* 60초마다: 장중 진입 시 자동 접힘(직접 누른 선택은 존중) + 타임라인 현재 위치 갱신 */
+setInterval(function(){
+  if(isAfterOpen()){
+    if(!pmTouched && !pmCollapsed){ pmCollapsed = true; renderPmState(); }
+    if(!seTouched && !seCollapsed){ seCollapsed = true; renderSnapState(); }
+  }
+  renderTimeline();
+}, 60000);
 </script>
 </body>
 </html>
