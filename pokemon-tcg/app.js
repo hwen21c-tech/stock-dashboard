@@ -1109,6 +1109,14 @@ function renderBattle() {
       </div>
       <button class="btn ghost sm" data-act="quit">배틀 포기</button>
     </div>
+    <div class="handwrap">
+      <div class="handrow">
+        ${me.hand.map(h => {
+          const c = BY[h.id];
+          return `<div data-act="handCard" data-uid="${h.uid}" style="position:relative">${cardEl(c, { size: 'hand', holo: true, cls: h.isNew ? 'newdeal' : '' })}</div>`;
+        }).join('') || '<div style="color:#5e5289;font-size:12px;padding:14px">패가 비었어요</div>'}
+      </div>
+    </div>
     <div class="controls">
       <div class="energybar">${energyBtns}</div>
       <div class="hintline" id="hint">${hint}</div>
@@ -1118,17 +1126,6 @@ function renderBattle() {
         <button class="btn ghost sm" data-act="retreat" ${(myTurn && curU && !me.cantRetreat) ? '' : 'disabled'}>🔄 후퇴</button>
         <button class="btn sm" data-act="endTurn" ${myTurn && !B.busy ? '' : 'disabled'}>턴 넘기기 ▶</button>
       </div>
-    </div>
-    <div style="display:none">
-      ${hideHand ? '' : ''}
-    </div>
-  </div>
-  <div class="handwrap" style="position:sticky;bottom:0;background:linear-gradient(180deg,transparent,rgba(13,11,22,.95) 30%);z-index:12;margin-top:-2px">
-    <div class="handrow">
-      ${me.hand.map(h => {
-        const c = BY[h.id];
-        return `<div data-act="handCard" data-uid="${h.uid}" style="position:relative">${cardEl(c, { size: 'hand', holo: true, cls: h.isNew ? 'newdeal' : '' })}</div>`;
-      }).join('') || '<div style="color:#5e5289;font-size:12px;padding:14px">패가 비었어요</div>'}
     </div>
   </div>`;
   const sp = document.getElementById('sidepanel');

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><title>TCG fit check</title>
+<style>
+ body{margin:0;background:#06060a;color:#dcd;font:12px/1.5 sans-serif;display:flex;gap:14px;padding:10px;align-items:flex-start}
+ .col{display:flex;flex-direction:column;gap:6px}
+ .frame{border:1px solid #444;border-radius:8px;overflow:hidden;background:#000}
+ iframe{border:0;display:block}
+ pre{max-width:520px;white-space:pre-wrap;color:#9fe;font-size:11px}
+</style></head><body>
+<div class="col"><b>400×860</b><div class="frame"><iframe id="f400" src="./index.html" width="400" height="860"></iframe></div></div>
+<div class="col"><b>884×960</b><div class="frame"><iframe id="f884" src="./index.html" width="884" height="960"></iframe></div></div>
+<pre id="out">running…</pre>
+<script>
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function clickIf(doc, sel) { const el = doc.querySelector(sel); if (el) { el.click(); return true; } return false; }
+async function run(id, label) {
+  const f = document.getElementById(id), w = f.contentWindow, d = f.contentDocument;
+  const rep = { label, steps: [] };
+  await sleep(1600);
+  if (d.querySelector('.pinpad')) {
+    for (const v of '0623') { d.querySelector(`[data-act="pin"][data-v="${v}"]`).click(); await sleep(120); }
+    await sleep(500);
+  }
+  rep.steps.push('home:' + !!d.querySelector('.modes'));
+  const m0 = () => ({
+    vw: w.innerWidth, vh: w.innerHeight,
+    scrollW: d.documentElement.scrollWidth, scrollH: d.documentElement.scrollHeight,
+    bodyH: d.body.scrollHeight,
+    overflowX: d.documentElement.scrollWidth - w.innerWidth,
+    imgs: [...d.images].length,
+    badImgs: [...d.images].filter(i => i.complete && i.naturalWidth === 0).length,
+    pendingImgs: [...d.images].filter(i => !i.complete).length,
+    appH: (d.getElementById('app') || {}).scrollHeight
+  });
+  rep.home = m0();
+  await clickIf(d, '[data-act="toDecks"][data-mode="ai"]'); await sleep(500);
+  rep.decks = m0();
+  await clickIf(d, '[data-act="startBattle"]'); await sleep(2800);
+  rep.battleStart = m0();
+  rep.battle = {
+    active: (() => { const c = d.querySelectorAll('.activerow .nm'); return c.length ? c[0].textContent.trim() : null; })(),
+    bench: d.querySelectorAll('.side.me .card.bench').length,
+    hand: d.querySelectorAll('.handrow .card').length,
+    attackBtns: d.querySelectorAll('[data-act="attack"]').length,
+    attackEnabled: d.querySelectorAll('[data-act="attack"]:not([disabled])').length,
+    abilityEnabled: !!d.querySelector('[data-act="ability"]:not([disabled])'),
+    energyBtns: d.querySelectorAll('.enbtn').length,
+    cardRect: (() => { const c = d.querySelector('.card.active'); if (!c) return null; const r = c.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })()
+  };
+  // 에너지 붙이기
+  await clickIf(d, '.enbtn'); await sleep(250);
+  const myActive = d.querySelector('.side.me .card.active');
+  if (myActive) { myActive.click(); await sleep(600); }
+  rep.afterEnergy = { energyUsed: !!d.querySelector('.enbtn'), attached: d.querySelectorAll('.side.me .card.active .enrow .en-dot').length };
+  // 특성
+  const abBtn = d.querySelector('[data-act="ability"]:not([disabled])');
+  if (abBtn) { abBtn.click(); await sleep(1200); rep.abilityFired = true; } else rep.abilityFired = false;
+  // 공격
+  const atk = d.querySelector('[data-act="attack"]:not([disabled])');
+  if (atk) {
+    atk.click();
+    await sleep(700);
+    rep.coinOverlay = !!d.querySelector('#coinEl');
+    await sleep(3200);
+  } else {
+    // 에너지 2개 필요한 기술: 턴 넘기고 다음 턴에 재시도
+    await clickIf(d, '[data-act="endTurn"]'); await sleep(300);
+    for (let i = 0; i < 40 && d.querySelector('[data-act="attack"]:not([disabled])') === null; i++) await sleep(250);
+    await clickIf(d, '.enbtn'); await sleep(200);
+    const a2 = d.querySelector('.side.me .card.active'); if (a2) { a2.click(); await sleep(500); }
+    const atk2 = d.querySelector('[data-act="attack"]:not([disabled])');
+    if (atk2) { atk2.click(); await sleep(700); rep.coinOverlay = !!d.querySelector('#coinEl'); await sleep(3200); }
+  }
+  rep.afterAttack = m0();
+  rep.logTail = [...d.querySelectorAll('#sidepanel div, .logline')].slice(-6).map(x => x.textContent).join(' | ').slice(0, 300);
+  return rep;
+}
+async function packTest(id, label) {
+  const f = document.getElementById(id), w = f.contentWindow, d = f.contentDocument;
+  const rep = { label };
+  // 배틀 중이면 홈으로
+  const back = d.querySelector('[data-act="home"]'); if (back) back.click();
+  await sleep(200);
+  const cover = d.querySelector('[data-act="confirmYes"]'); if (cover) cover.click();
+  await sleep(500);
+  await clickIf(d, '[data-act="goPack"]'); await sleep(700);
+  await clickIf(d, '#packEl'); await sleep(3400);
+  rep.revealed = d.querySelectorAll('#packResult .reveal:not(.facedown)').length;
+  rep.total = d.querySelectorAll('#packResult .reveal').length;
+  rep.dexAfter = (d.querySelector('.chip') || {}).textContent;
+  rep.scroll = { overflowX: d.documentElement.scrollWidth - w.innerWidth, scrollH: d.documentElement.scrollHeight, vh: w.innerHeight };
+  rep.badImgs = [...d.images].filter(i => i.complete && i.naturalWidth === 0).length;
+  rep.pendingImgs = [...d.images].filter(i => !i.complete).length;
+  return rep;
+}
+(async () => {
+  const out = document.getElementById('out');
+  const r = {};
+  try {
+    r.a = await run('f400', '400x860');
+    out.textContent = JSON.stringify(r, null, 1);
+  } catch (e) { r.errA = String(e); }
+  try {
+    r.b = await run('f884', '884x960');
+  } catch (e) { r.errB = String(e); }
+  window.__report = r;
+  out.textContent = JSON.stringify(r, null, 1);
+  // 화면 정지 상태(배틀)에서 스크린샷을 찍을 수 있게 유지
+  window.__ready = true;
+})();
+</script>
+</body></html>
