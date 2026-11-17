@@ -829,7 +829,7 @@ async function endGame(winIdx, reason) {
   B.over = true; B.busy = true;
   const iWon = winIdx === 0;
   S.plays++;
-  const reward = iWon ? 40 : 12;
+  const reward = iWon ? 40 : 20;
   S.coins += reward; if (iWon) S.wins++;
   save();
   play(iWon ? 'win' : 'lose');
@@ -1206,12 +1206,12 @@ function cardDetailHtml(c) {
 
 /* ------------------------------------------------------------ 팩 */
 function renderPack() {
-  const cost = 40;
+  const cost = 30;
   $app.innerHTML = `${topbar('카드팩 뽑기')}
   <div class="packwrap">
     <div class="chap" style="text-align:center">
       <div class="chip coins" style="font-size:14px;padding:7px 14px">🪙 ${S.coins} 코인</div>
-      <p style="color:var(--dim);font-size:12px;margin:10px 0 0">팩 1개 = ${cost} 코인 · 카드 5장<br>배틀에서 이기면 40코인!</p>
+      <p style="color:var(--dim);font-size:12px;margin:10px 0 0">팩 1개 = ${cost} 코인 · 카드 5장<br>배틀에서 이기면 40코인!${S.coins < cost ? '<br><b style="color:#ffb4b4">코인이 부족해요 — 배틀에서 모아 보세요</b>' : ''}</p>
     </div>
     <div class="pack" id="packEl" data-act="openPack">
       <div class="foil"></div><div class="pball"></div><div class="plabel">POKÉMON TCG</div>
@@ -1236,8 +1236,8 @@ function pickPackCards() {
 }
 
 async function openPack() {
-  const cost = 40;
-  if (S.coins < cost) { toast('코인이 부족해요! 배틀에서 이겨 보세요.'); play('lose'); return; }
+  const cost = 30;
+  if (S.coins < cost) { toast('코인이 부족해요! 배틀에서 코인을 모아 보세요.'); play('lose'); return; }
   S.coins -= cost; save();
   play('packRip');
   const pack = document.getElementById('packEl');
@@ -1270,7 +1270,7 @@ async function openPack() {
   const tbl = document.getElementById('packResult');
   if (tbl) tbl.insertAdjacentHTML('afterend', `<div class="row" style="margin-top:6px">
       <button class="btn ghost sm" data-act="goDex">📖 도감 보기</button>
-      <button class="btn primary sm" data-act="openPackAgain">🎁 한 팩 더 (40🪙)</button>
+      <button class="btn primary sm" data-act="openPackAgain">🎁 한 팩 더 (30🪙)</button>
     </div>`);
 }
 
