@@ -98,20 +98,20 @@ async function run(id, label) {
   }
 
   // 3) 약점 ×2 (앤티골 불꽃 → 야나프 풀 약점 불꽃)
-  const atkU = D.unitOf('SV5K-009'); D.addEnergy(atkU, ['Fire', 'Fire', 'Colorless']); atkU.enteredTurn = 0;
+  const atkU = D.unitOf('SV5K-018'); D.addEnergy(atkU, ['Water', 'Water', 'Water']); atkU.enteredTurn = 0;
   B.players[0].active = atkU;
-  const foeU = D.unitOf('SV4K-001');
+  const foeU = D.unitOf('SV5K-012'); // 꿰뚫는화염 ex (불꽃, 물 약점 ×2, HP230)
   B.players[1].active = foeU;
   B.players[0].energyUsed = true; B.players[0].cantAttack = false; B.busy = false; B.cur = 0;
   D.render(); await sleep(600);
   rep.attackBtns = [...dqa('[data-act="attack"]')].map(b => ({ t: b.textContent.trim().slice(0, 20), dis: b.disabled }));
-  const bigBtn = [...dqa('[data-act="attack"]:not([disabled])')].pop();
+  const bigBtn = [...dqa('[data-act="attack"]:not([disabled])')].find(b => b.textContent.includes('아쿠아')) || [...dqa('[data-act="attack"]:not([disabled])')].pop();
   const foeBefore = B.players[1].active.dmg;
   if (bigBtn) { bigBtn.click(); await sleep(600); }
   rep.critPopup = !!d.querySelector('.dmg-pop.crit');
   await sleep(3200);
   rep.weakness = { name: B.players[1].active ? B.players[1].active.card.name : null,
-                   before: foeBefore, dmgAfter: B.players[1].active ? B.players[1].active.dmg : null, expected: 260 };
+                   before: foeBefore, dmgAfter: B.players[1].active ? B.players[1].active.dmg : null, expected: 220 };
 
   // 4) 코인토스 (비조도 삼단찌르기: 동전 3번 × 20)
   const B2 = w.__B;
