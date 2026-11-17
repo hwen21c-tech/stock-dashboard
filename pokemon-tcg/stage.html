@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko"><head><meta charset="utf-8"><title>TCG stage</title>
+<style>body{margin:0;background:#000;color:#ccc;font:12px sans-serif;display:flex;gap:14px;padding:10px;align-items:flex-start}
+.col{display:flex;flex-direction:column;gap:6px}.frame{border:1px solid #333;border-radius:8px;overflow:hidden}
+iframe{border:0;display:block}</style></head><body>
+<div class="col"><b>400</b><div class="frame"><iframe id="a" src="./index.html?v=20" width="400" height="860"></iframe></div></div>
+<div class="col"><b>884</b><div class="frame"><iframe id="b" src="./index.html?v=20" width="884" height="960"></iframe></div></div>
+<script>
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+async function until(fn, ms = 9000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { if (fn()) return true; await sleep(120); } return false; }
+function click(d, sel) { const el = d.querySelector(sel); if (el && !el.disabled) { el.click(); return true; } return false; }
+async function stage(id, attType) {
+  const f = document.getElementById(id);
+  await until(() => { const d = f.contentDocument; return d && (d.querySelector('.pinpad') || d.querySelector('.modes')); },15000);
+  let d = f.contentDocument;
+  if (d.querySelector('.pinpad')) { for (const v of '0623') { d.querySelector(`[data-act="pin"][data-v="${v}"]`).click(); await sleep(150); } await until(() => f.contentDocument.querySelector('.modes'), 5000); }
+  d = f.contentDocument;
+  click(d, '[data-act="toDecks"]'); await until(() => f.contentDocument.querySelector('[data-act="startBattle"]'), 5000);
+  await sleep(400); d = f.contentDocument;
+  click(d, '[data-act="startBattle"]');
+  await until(() => f.contentDocument.querySelector('.battle') && f.contentDocument.querySelector('[data-act="endTurn"]'), 8000);
+  await sleep(1500); d = f.contentDocument;
+  // 에너지 붙이기
+  const en = d.querySelector('.enbtn'); if (en) { en.click(); await sleep(200); const c = f.contentDocument.querySelector('.side.me .card.active'); if (c) { c.click(); await sleep(800); } }
+  d = f.contentDocument;
+  const atk = [...d.querySelectorAll('[data-act="attack"]:not([disabled])')].pop();
+  if (atk) { atk.click(); await sleep(600); if (f.contentDocument.querySelector('#coinEl')) await sleep(2400); }
+  await sleep(2600);
+  d = f.contentDocument;
+  // 한 턴 더
+  const end = d.querySelector('[data-act="endTurn"]:not([disabled])'); if (end) { end.click(); await sleep(1000); }
+  for (let i = 0; i < 20; i++) { await sleep(500); const d2 = f.contentDocument; if (d2.querySelector('#coinEl')) { await sleep(1800); continue; } if (d2.querySelector('[data-act="attack"]:not([disabled])')) break; }
+  d = f.contentDocument;
+  const atk2 = [...d.querySelectorAll('[data-act="attack"]:not([disabled])')].pop();
+  if (atk2) { atk2.click(); await sleep(500); if (f.contentDocument.querySelector('#coinEl')) await sleep(2400); }
+  await sleep(2500);
+  window.__staged = true;
+}
+(async () => { await stage('a'); await stage('b'); })();
+</script></body></html>
