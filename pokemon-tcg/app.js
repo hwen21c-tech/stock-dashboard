@@ -1217,6 +1217,7 @@ function renderPack() {
       <div class="foil"></div><div class="pball"></div><div class="plabel">POKÉMON TCG</div>
     </div>
     <div style="font-size:11.5px;color:var(--dim)">👆 팩을 눌러서 뜯어요</div>
+    ${S.coins < cost ? '<button class="btn ghost sm" data-act="toDecks" data-mode="ai">⚔️ 배틀해서 코인 모으기</button>' : ''}
     <div id="packResult" class="packcards" style="margin-top:8px"></div>
   </div>`;
 }
