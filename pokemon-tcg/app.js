@@ -21,7 +21,7 @@ const S = {
   wins: saved.wins || 0, plays: saved.plays || 0, packs: saved.packs || 0,
   settings: Object.assign({ pin: true, guest: false, sfx: 0.8, bgm: 0.28, bgmOn: true,
                             difficulty: 'normal', prizes: 3, autoAttack: false }, saved.settings || {}),
-  screen: 'home', deckId: null, dexFilter: 'all', detail: null, pinBuf: '', pinErr: '',
+  screen: 'home', deckId: null, deckId2: null, dexFilter: 'all', detail: null, pinBuf: '', pinErr: '',
   unlocked: !!saved.unlocked
 };
 function save() {
@@ -213,6 +213,9 @@ function renderDecks() {
         <button class="btn sm ${S.settings.prizes === 3 ? 'primary' : 'ghost'}" data-act="setPrizes" data-v="3">빠른 판 3장</button>
         <button class="btn sm ${S.settings.prizes === 6 ? 'primary' : 'ghost'}" data-act="setPrizes" data-v="6">정식 6장</button>
       </div>
+      ${mode === 'pvp' ? `<div class="row" style="flex-wrap:wrap"><span class="chip">플레이어 2 덱</span>
+        ${DECKS.map(d => `<button class="btn sm ${((S.deckId2 || (DECKS.find(x => x.id !== S.deckId) || DECKS[0]).id) === d.id) ? 'primary' : 'ghost'}" data-act="pickDeck2" data-deck="${d.id}">${d.emoji} ${d.name}</button>`).join('')}
+      </div>` : ''}
       ${mode === 'ai' ? `<div class="row"><span class="chip">AI 난이도</span>
         <button class="btn sm ${S.settings.difficulty === 'easy' ? 'primary' : 'ghost'}" data-act="setDiff" data-v="easy">쉬움</button>
         <button class="btn sm ${S.settings.difficulty === 'normal' ? 'primary' : 'ghost'}" data-act="setDiff" data-v="normal">보통</button>
@@ -242,7 +245,8 @@ function startBattle(mode, deckId) {
   if (!deckId) { S.pendingMode = mode; go('decks'); return; }
   const foeDeck = ENEMY_DECKS.filter(x => x !== deckId)[rnd(3)];
   const p0 = newPlayer(0, deckId, mode === 'pvp' ? '플레이어 1' : (S.settings.guest ? '나' : '나'), false);
-  const p1 = newPlayer(1, mode === 'pvp' ? deckId : foeDeck, mode === 'pvp' ? '플레이어 2' : 'AI', mode === 'ai');
+  const deck2 = S.deckId2 || (DECKS.find(x => x.id !== deckId) || DECKS[0]).id;
+  const p1 = newPlayer(1, mode === 'pvp' ? deck2 : foeDeck, mode === 'pvp' ? '플레이어 2' : 'AI', mode === 'ai');
   const B = window.__B = { mode, players: [p0, p1], cur: 0, turn: 0, busy: false, over: false,
                             log: [], coinBusy: false, awaiting: null };
   // draw + setup
@@ -1386,6 +1390,7 @@ document.addEventListener('click', async e => {
     case 'goSettings': play('tap'); go('settings'); break;
     case 'toDecks': play('tap'); S.pendingMode = t.dataset.mode; if (!S.deckId) S.deckId = 'fire'; go('decks'); break;
     case 'pickDeck': S.deckId = t.dataset.deck; play('tap'); renderDecks(); break;
+    case 'pickDeck2': S.deckId2 = t.dataset.deck; play('tap'); renderDecks(); break;
     case 'setPrizes': S.settings.prizes = parseInt(t.dataset.v, 10); save(); play('tap'); renderDecks(); break;
     case 'setDiff': S.settings.difficulty = t.dataset.v; save(); play('tap'); renderDecks(); break;
     case 'startBattle': play('tap'); startBattle(S.pendingMode || 'ai', S.deckId || 'fire'); break;
