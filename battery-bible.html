@@ -3,10 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#080c11">
+<meta name="theme-color" content="#070c14">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="이차전지 대백과">
+<meta name="application-name" content="이차전지 대백과">
 <meta name="description" content="이차전지 실무 대백과 — 소재·슬러리·극판 물성, NCMA 양극, 흑연·SiC 음극, DC-IR·EIS·GITT, LLI/LAM 열화 정량화, 안전성 평가까지 4단 구조로 정리한 실무 레퍼런스">
 <title>이차전지 실무 대백과 · Secondary Battery Practical Bible</title>
+<link rel="manifest" href="battery-bible.webmanifest">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='9' width='20' height='16' rx='3' fill='%233ddad0'/%3E%3Crect x='12' y='5' width='8' height='4' rx='1' fill='%233ddad0'/%3E%3Cpath d='M15 13v8M11 17h8' stroke='%23080c11' stroke-width='2.2'/%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/battery-bible-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/battery-bible-512.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/battery-bible-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icons/battery-bible-512.png">
 <style>
 /* ============================================================
    이차전지 실무 대백과 — 단일 파일(외부 의존 없음)
@@ -341,7 +351,8 @@ footer b{color:var(--muted)}
   .hd{padding:9px 12px 4px; gap:9px}
   .logo{width:34px; height:34px; font-size:18px}
   .brand h1{font-size:15.5px; white-space:normal}
-  .brand .sub{font-size:10px; max-width:210px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .brand>div{min-width:0}
+  .brand .sub{font-size:10px; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
   .tools{padding:2px 12px 7px; gap:6px}
   .search{flex:1 1 100%}
   #q{font-size:15px; padding:11px 38px 11px 34px}
@@ -382,6 +393,52 @@ footer b{color:var(--muted)}
   .cards{grid-template-columns:repeat(2,minmax(0,1fr))}
   .card.wide{grid-column:1 / -1}
 }
+/* ---------- 앱 설치(PWA) ---------- */
+.install-btn{
+  flex:0 0 auto; display:none; align-items:center; justify-content:center; gap:5px; height:36px; padding:0 11px;
+  border-radius:10px; cursor:pointer; font-size:12px; font-weight:800; letter-spacing:-.01em;
+  color:var(--accent); border:1px solid color-mix(in srgb,var(--accent) 42%,var(--line2));
+  background:var(--accent-soft); white-space:nowrap;
+}
+.install-btn.on{display:inline-flex}
+.install-btn:active{transform:scale(.96)}
+.install-btn .ib-i{font-size:14px; line-height:1}
+@media(max-width:479px){ .install-btn{padding:0; width:36px} .install-btn .ib-t{display:none} }
+
+.sheet{position:fixed; inset:0; z-index:300; display:none}
+.sheet.on{display:block}
+.sheet-bd{position:absolute; inset:0; background:rgba(3,7,12,.62); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px)}
+.sheet-c{
+  position:absolute; left:0; right:0; bottom:0; margin:0 auto; max-width:520px;
+  background:var(--panel); border:1px solid var(--line2); border-bottom:0;
+  border-radius:18px 18px 0 0; padding:16px 16px calc(16px + env(safe-area-inset-bottom));
+  box-shadow:0 -14px 40px rgba(0,0,0,.5); animation:sheetUp .22s ease;
+}
+@keyframes sheetUp{from{transform:translateY(14px); opacity:.6} to{transform:none; opacity:1}}
+.sheet-c h3{margin:0 0 6px; font-size:15px; font-weight:800; letter-spacing:-.02em}
+.sheet-c p{margin:0 0 10px; font-size:12.5px; color:var(--muted); line-height:1.6}
+.sheet-c ol{margin:0 0 14px; padding-left:18px; font-size:12.5px; color:var(--fg2); line-height:1.65}
+.sheet-c ol li{margin:3px 0}
+.sheet-c ol b{color:var(--fg)}
+.sheet-c .acts{display:flex; gap:8px}
+.sheet-c .acts button{
+  flex:1; padding:11px; border-radius:11px; border:1px solid var(--line2);
+  background:var(--chip); font-size:13px; font-weight:800; cursor:pointer;
+}
+.sheet-c .acts .go{background:var(--accent); border-color:var(--accent); color:#04120f}
+html[data-theme="light"] .sheet-c .acts .go{color:#fff}
+.sheet-c .acts button[hidden]{display:none}
+
+.toast{
+  position:fixed; left:50%; bottom:74px; transform:translate(-50%,10px); z-index:320;
+  background:rgba(8,14,20,.96); color:#eaf4ff; border:1px solid #2a3d50; border-radius:11px;
+  padding:9px 13px; font-size:12px; font-weight:650; line-height:1.5; text-align:center;
+  max-width:min(92vw,420px); box-shadow:0 12px 30px rgba(0,0,0,.5); opacity:0; pointer-events:none;
+  transition:opacity .18s, transform .18s;
+}
+.toast.on{opacity:1; transform:translate(-50%,0)}
+html[data-theme="light"] .toast{background:#12202c; border-color:#12202c; color:#f2f7fb}
+
 @media(prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *{animation-duration:.001ms !important; transition-duration:.001ms !important}
@@ -399,6 +456,9 @@ footer b{color:var(--muted)}
         <p class="sub">Secondary Battery Practical Bible · 소재 → 극판 → 셀 평가 → 열화 → 안전</p>
       </div>
     </div>
+    <button id="installBtn" class="install-btn" type="button" aria-label="이 앱을 홈 화면에 설치">
+      <span class="ib-i" aria-hidden="true">📲</span><span class="ib-t">앱 설치</span>
+    </button>
     <button id="themeBtn" class="icon-btn" aria-label="테마 전환" title="라이트/다크">◐</button>
   </div>
 
@@ -452,6 +512,23 @@ footer b{color:var(--muted)}
 
 <button id="toTop" aria-label="맨 위로">↑</button>
 <div id="tip" role="tooltip"></div>
+
+<div id="installSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="iTitle" aria-hidden="true">
+  <div class="sheet-bd" data-close="1"></div>
+  <div class="sheet-c">
+    <h3 id="iTitle">📲 앱처럼 설치하기</h3>
+    <p id="iMsg">홈 화면에 추가하면 주소창 없이 전체 화면으로 열립니다.</p>
+    <ol>
+      <li><b>삼성 인터넷</b> — 하단 <b>≡</b> 메뉴 → <b>홈 화면에 추가</b></li>
+      <li><b>크롬</b> — 우측 상단 <b>⋮</b> → <b>앱 설치</b>(또는 홈 화면에 추가)</li>
+    </ol>
+    <div class="acts">
+      <button id="iGo" class="go" type="button" hidden>지금 설치</button>
+      <button id="iClose" type="button">닫기</button>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* ==== DATA ==== */
@@ -2349,6 +2426,121 @@ document.addEventListener('pointerout',function(e){
 applyFilter();
 })();
 
+</script>
+
+<script>
+/* ============================================================
+   PWA — 단독 앱 설치(홈 화면 추가)
+   · Android Chrome: beforeinstallprompt → 네이티브 설치 팝업
+   · 삼성 인터넷/iOS 등: 2줄 안내 시트
+   · 이미 standalone으로 열렸으면 버튼 미노출
+   ============================================================ */
+(function () {
+  var btn = document.getElementById('installBtn');
+  var sheet = document.getElementById('installSheet');
+  var msg = document.getElementById('iMsg');
+  var go = document.getElementById('iGo');
+  var closeBtn = document.getElementById('iClose');
+  var toastEl = document.getElementById('toast');
+  var deferred = null, installed = false, toastTimer = 0, lastFocus = null;
+
+  if (!btn || !sheet) return;
+
+  function isStandalone() {
+    var mm = window.matchMedia;
+    return (mm && (mm('(display-mode: standalone)').matches || mm('(display-mode: fullscreen)').matches)) ||
+      navigator.standalone === true ||
+      (document.referrer || '').indexOf('android-app://') === 0;
+  }
+
+  function toast(text, ms) {
+    if (!toastEl) return;
+    toastEl.textContent = text;
+    toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('on'); }, ms || 3200);
+  }
+
+  function showBtn() {
+    if (installed || isStandalone()) { btn.classList.remove('on'); return; }
+    btn.classList.add('on');
+  }
+  function hideBtn() { btn.classList.remove('on'); }
+
+  function openSheet(text, canPrompt) {
+    msg.textContent = text || '홈 화면에 추가하면 주소창 없이 전체 화면으로 열립니다.';
+    go.hidden = !canPrompt;
+    lastFocus = document.activeElement;
+    sheet.classList.add('on');
+    sheet.setAttribute('aria-hidden', 'false');
+    (canPrompt ? go : closeBtn).focus({ preventScroll: true });
+  }
+  function closeSheet() {
+    sheet.classList.remove('on');
+    sheet.setAttribute('aria-hidden', 'true');
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) {} }
+  }
+
+  function runPrompt() {
+    if (!deferred) return;
+    var p = deferred;
+    deferred = null;
+    go.hidden = true;
+    try { p.prompt(); } catch (e) { openSheet(null, false); return; }
+    p.userChoice.then(function (r) {
+      if (r && r.outcome === 'accepted') {
+        installed = true; hideBtn(); closeSheet();
+        toast('홈 화면에 추가되었습니다 · 📲 아이콘으로 바로 열 수 있어요');
+      } else {
+        hideBtn(); closeSheet();
+        toast('설치를 취소했습니다 · 📲 버튼으로 언제든 다시 할 수 있어요', 4000);
+      }
+    }).catch(function () {});
+  }
+
+  btn.addEventListener('click', function () {
+    if (deferred) { runPrompt(); return; }
+    openSheet('이 브라우저에서는 아래 두 줄 방법으로 홈 화면에 추가할 수 있습니다.', false);
+  });
+
+  go.addEventListener('click', runPrompt);
+  closeBtn.addEventListener('click', closeSheet);
+  sheet.addEventListener('click', function (e) {
+    if (e.target === sheet || e.target.getAttribute('data-close')) closeSheet();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && sheet.classList.contains('on')) closeSheet();
+  });
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferred = e;
+    if (!installed) showBtn();
+  });
+  window.addEventListener('appinstalled', function () {
+    installed = true; deferred = null; hideBtn(); closeSheet();
+    toast('앱으로 설치되었습니다');
+  });
+
+  // standalone으로 전환/해제되면 버튼 상태를 따라감
+  try {
+    var mq = window.matchMedia('(display-mode: standalone)');
+    var onChange = function () { isStandalone() ? hideBtn() : showBtn(); };
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+    else if (mq.addListener) mq.addListener(onChange);
+  } catch (e) {}
+
+  // 버튼은 지연 노출(설치 가능 판정 전 깜박임 방지), standalone이면 끝까지 숨김
+  if (!isStandalone()) setTimeout(showBtn, 900);
+
+  // 단독 앱용 서비스 워커(관제탑 sw.js와 범위 분리: 이 문서 한 페이지만 제어)
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('battery-bible-sw.js', { scope: './battery-bible.html' })
+        .catch(function () {});
+    });
+  }
+})();
 </script>
 </body>
 </html>
