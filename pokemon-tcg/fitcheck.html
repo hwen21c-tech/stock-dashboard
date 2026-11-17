@@ -36,9 +36,14 @@ async function unlock(d) {
 }
 
 async function run(id, label) {
-  const f = document.getElementById(id), w = f.contentWindow, d = f.contentDocument;
+  const f = document.getElementById(id);
+  const R = () => ({ w: f.contentWindow, d: f.contentDocument });
+  let w, d;
   const rep = { label };
-  await until(() => d.querySelector('.pinpad') || d.querySelector('.modes'), 15000);
+  await until(() => { const x = R(); return x.d && (x.d.querySelector('.pinpad') || x.d.querySelector('.modes')); }, 15000);
+  ({ w, d } = R());
+  const dq = (sel) => { const x = R(); return x.d ? x.d.querySelector(sel) : null; };
+  const dqa = (sel) => { const x = R(); return x.d ? [...x.d.querySelectorAll(sel)] : []; };
   rep.unlocked = await unlock(d);
   await sleep(300);
   rep.home = await measure(w, d);
@@ -54,24 +59,25 @@ async function run(id, label) {
   click(d, '[data-act="startBattle"]');
   await until(() => d.querySelector('.battle') && d.querySelector('[data-act="endTurn"]'), 8000);
   await sleep(1200);
+  ({ w, d } = R());
   const B = w.__B, D = w.__DEBUG;
   rep.engineOk = !!B && !!D;
   if (!B || !D) { return rep; }
   rep.battle = await measure(w, d);
   rep.mine = B.players[0].active ? B.players[0].active.card.name : null;
   rep.foe = B.players[1].active ? B.players[1].active.card.name : null;
-  rep.handCount = d.querySelectorAll('.handrow .card').length;
+  rep.handCount = dqa('.handrow .card').length;
   rep.cardRect = (() => { const c = d.querySelector('.card.active'); if (!c) return null; const r = c.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })();
 
   // 1) 에너지 붙이기 (실제 클릭)
   const enBtn = d.querySelector('.enbtn');
-  const before = d.querySelectorAll('.side.me .card.active .enrow .en-dot').length;
+  const before = dqa('.side.me .card.active .enrow .en-dot').length;
   if (enBtn) {
     enBtn.click(); await sleep(250);
     const mine = d.querySelector('.side.me .card.active');
     if (mine) { mine.click(); await sleep(800); }
   }
-  rep.energy = { before, after: d.querySelectorAll('.side.me .card.active .enrow .en-dot').length, usedChip: !!d.querySelector('.energybar .chip') };
+  rep.energy = { before, after: dqa('.side.me .card.active .enrow .en-dot').length, usedChip: !!d.querySelector('.energybar .chip') };
 
   // 2) 특성 발동 (콜로솔트: 에너지 암염 — 트래쉬 에너지 장착 + 30 회복)
   const abU = D.unitOf('SV4K-040');
@@ -87,7 +93,7 @@ async function run(id, label) {
     rep.ability = {
       energies: B.players[0].active.energies.length,
       dmgAfterHeal: B.players[0].active.dmg,
-      log: [...d.querySelectorAll('#sidepanel div')].map(x => x.textContent).filter(t => t.includes('특성') || t.includes('회복')).slice(-2).join(' / ')
+      log: [...dqa('#sidepanel div')].map(x => x.textContent).filter(t => t.includes('특성') || t.includes('회복')).slice(-2).join(' / ')
     };
   }
 
@@ -98,8 +104,8 @@ async function run(id, label) {
   B.players[1].active = foeU;
   B.players[0].energyUsed = true; B.players[0].cantAttack = false; B.busy = false; B.cur = 0;
   D.render(); await sleep(600);
-  rep.attackBtns = [...d.querySelectorAll('[data-act="attack"]')].map(b => ({ t: b.textContent.trim().slice(0, 20), dis: b.disabled }));
-  const bigBtn = [...d.querySelectorAll('[data-act="attack"]:not([disabled])')].pop();
+  rep.attackBtns = [...dqa('[data-act="attack"]')].map(b => ({ t: b.textContent.trim().slice(0, 20), dis: b.disabled }));
+  const bigBtn = [...dqa('[data-act="attack"]:not([disabled])')].pop();
   const foeBefore = B.players[1].active.dmg;
   if (bigBtn) { bigBtn.click(); await sleep(600); }
   rep.critPopup = !!d.querySelector('.dmg-pop.crit');
@@ -114,7 +120,7 @@ async function run(id, label) {
     B2.players[B2.cur].active = coinU;
     B2.players[B2.cur].cantAttack = false; B2.players[B2.cur].energyUsed = true; B2.busy = false;
     D.render(); await sleep(600);
-    const cb = [...d.querySelectorAll('[data-act="attack"]:not([disabled])')].find(b => b.textContent.includes('삼단'));
+    const cb = [...dqa('[data-act="attack"]:not([disabled])')].find(b => b.textContent.includes('삼단'));
     rep.coinBtn = !!cb;
     if (cb) cb.click();
     await sleep(700);
@@ -134,12 +140,23 @@ async function run(id, label) {
   click(d, '#packEl');
   await sleep(4500);
   rep.pack = {
-    revealed: d.querySelectorAll('#packResult .reveal:not(.facedown)').length,
-    total: d.querySelectorAll('#packResult .reveal').length,
+    revealed: dqa('#packResult .reveal:not(.facedown)').length,
+    total: dqa('#packResult .reveal').length,
     badImgs: [...d.images].filter(i => i.complete && i.naturalWidth === 0).length
   };
   rep.packAfter = await measure(w, d);
   rep.coins = w.__DEBUG.S.coins;
+
+  // 400 화면은 배틀 장면으로 되돌려 스크린샷용으로 남긴다
+  if (label.indexOf('400') === 0) {
+    click(d, '[data-act="home"]'); await sleep(400);
+    click(d, '[data-act="toDecks"]'); await sleep(500);
+    click(d, '[data-act="startBattle"]');
+    await until(() => d.querySelector('.battle'), 8000);
+    await sleep(2200);
+    const D2 = w.__DEBUG, B3 = w.__B;
+    if (D2 && B3) { D2.attachEnergy(B3.players[0], B3.players[0].active, 'Fire'); await sleep(700); }
+  }
   return rep;
 }
 

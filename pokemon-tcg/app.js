@@ -380,11 +380,14 @@ function hasTrio(p) {
   const names = [p.active, ...p.bench].filter(Boolean).map(u => u.card.name);
   return ['바오키', '야나키', '앗차키'].every(n => names.includes(n));
 }
-function abilityOf(u) { return u && u.card.ability ? u.card.ability : null; }
+function abilityOf(u) { return (u && u.card && u.card.ability) ? u.card.ability : null; }
 function unitHasArmor(u) { return abilityOf(u) && abilityOf(u).ops.some(o => o.t === 'armor') && u.dmg === 0; }
 function thawRoomBlocked(p, targetU) {
   // 상대 활성 포켓몬의 '극한 룸': 남은 HP 40 이하인 포켓몬은 기술 사용 불가
-  const foe = window.__B.players[1 - p.idx];
+  const B0 = window.__B;
+  if (!B0 || !p || p.idx == null) return false;
+  const foe = B0.players[1 - p.idx];
+  if (!foe || !foe.active) return false;
   const fAb = abilityOf(foe.active);
   if (fAb && fAb.ops.some(o => o.t === 'thawRoom')) {
     const lim = fAb.ops.find(o => o.t === 'thawRoom').hp;
@@ -410,6 +413,8 @@ function canPay(p, u, cost) {
   return pool.length >= (typed.Colorless || 0);
 }
 function attackPreview(atkU, defU, atk) {
+  if (!atkU || !atkU.card) return { coin: false, min: 0, max: 0 };
+  defU = (defU && defU.card) ? defU : null;
   let base = atk.dmg.base, coin = false, per = null;
   for (const op of atk.ops) {
     switch (op.t) {
