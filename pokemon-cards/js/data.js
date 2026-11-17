@@ -98,8 +98,8 @@
   /* 뽑기: 5장. 슬롯별 가중치 (tier1,2,4,5) */
   function pickTier(rng, boosted, slot) {
     let w;
-    if (slot === 4) w = boosted ? [46, 30, 19, 5] : [55, 28, 14, 3];
-    else w = boosted ? [58, 24, 15, 3] : [72, 18, 8, 2];
+    if (slot === 4) w = boosted ? [40, 32, 22, 6] : [48, 32, 17, 3];
+    else w = boosted ? [54, 28, 15, 3] : [64, 24, 10, 2];
     const sum = w.reduce((a, b) => a + b, 0);
     let r = rng() * sum;
     const tiers = [1, 2, 4, 5];

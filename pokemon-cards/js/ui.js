@@ -139,6 +139,7 @@
           '<div class="stat"><b>' + packsDone + '</b><span>완주 팩</span></div>' +
         '</div>' +
       '</div>' +
+      '<div class="home-duo"><div class="hd-left">' +
       (today ? '<div class="h2">🔥 오늘의 추천 팩</div>' +
         '<button class="today-card" id="homeToday"><span class="shine"></span>' +
           '<div style="width:84px;flex:0 0 84px">' + packArt(today.pack, {tiny:true}) + '</div>' +
@@ -147,8 +148,10 @@
           '<div class="muted" style="margin-top:3px"><s>' + today.pack.price + '코인</s> → <b style="color:#ffe9a8">' + today.price + '코인</b></div></div>' +
           '<div class="btn gold sm">뜯기</div>' +
         '</button>' : '') +
+      '</div><div class="hd-right">' +
       '<div class="h2">⭐ 최애 카드</div>' +
       '<div class="fav-wrap">' + favHtml + '</div>' +
+      '</div></div>' +
       '<div class="h2">바로 가기</div>' +
       '<div class="quick-grid">' +
         '<button class="quick" data-go="shop"><span class="ico">🛍️</span><b>카드팩 뜯기</b><span>' + D.allPacks().length + '개 팩</span></button>' +
