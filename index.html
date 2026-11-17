@@ -13568,6 +13568,27 @@ window.DAILY_500_CANDLES = {"451760": [["20251105", 8460.0, 8500.0, 8200.0, 8280
   }
 
   /* ── 초기화 ─────────────────────────────────────────────────── */
+
+  /* 접힌 상태에서 카드(20초 폴링)가 갱신되면 1줄 요약도 즉시 따라간다.
+     관찰 대상은 카드 그리드뿐 — 요약 노드는 그리드 밖이라 자기변경 루프가 생기지 않는다. */
+  function watchCards(){
+    try{
+      var box=document.getElementById('premarketRadarBox'); if(!box) return;
+      var grid=box.querySelector('div[style*="repeat(auto-fit"]'); if(!grid) return;
+      if(!window.MutationObserver) return;
+      var t=null;
+      new MutationObserver(function(){
+        if(!pmCollapsed || t) return;
+        t=setTimeout(function(){
+          t=null;
+          var line=document.getElementById('pmCollapsedLine');
+          var sum=pmCardSummary();
+          if(line && sum) line.innerHTML='<b>접힘 요약</b> · '+esc(sum);
+        }, 400);
+      }).observe(grid, {childList:true, subtree:true, characterData:true});
+    }catch(e){}
+  }
+
   function boot(){
     var btn=document.getElementById('pmToggleBtn');
     if(btn) btn.addEventListener('click', window.pmToggleRadar);
@@ -13576,7 +13597,7 @@ window.DAILY_500_CANDLES = {"451760": [["20251105", 8460.0, 8500.0, 8200.0, 8280
     ensureModal();
     if(!pmTouched) pmCollapsed = afterOpen();
     if(!seTouched) seCollapsed = afterOpen();
-    renderPmState(); renderSeSnap(); renderSeState(); renderTimeline(); flowFetchLatest();
+    renderPmState(); renderSeSnap(); renderSeState(); renderTimeline(); flowFetchLatest(); watchCards();
   }
 
   /* 동적 본체(Vercel)는 /data/flow_timeline_today.json 을 읽어 슬롯을 즉시 따라간다.
