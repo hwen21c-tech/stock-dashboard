@@ -1,5 +1,5 @@
 /* 포켓몬 카드 배틀 TCG — 오프라인 셸 + 카드 이미지 캐시 */
-const SHELL = 'tcg-shell-v1';
+const SHELL = 'tcg-shell-v2';
 const IMG = 'tcg-img-v1';
 const ASSETS = [
   './', './index.html', './style.css', './app.js', './data.js', './sfx.js', './vfx.js',
