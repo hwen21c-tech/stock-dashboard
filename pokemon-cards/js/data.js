@@ -3,11 +3,26 @@
   'use strict';
   const IMG_BASE = 'https://cards.image.pokemonkorea.co.kr/data/';
   const SYM_BASE = IMG_BASE + 'images/symbol/';
+  const BACK = 'assets/card-back.jpg';
   const P = window.PKC;
 
   const db = { index: null, packs: {}, loading: {} };
 
   function img(path) { return IMG_BASE + path; }
+
+  /* ---------- 클래식 시리즈 내부 시대(에라) ---------- */
+  const ERAS = [
+    { key: 'all', name: '전체', emoji: '🟡' },
+    { key: 'sm', name: '썬&문', emoji: '🌗' },
+    { key: 'xy', name: 'XY', emoji: '🧬' },
+    { key: 'bw', name: 'BW', emoji: '⚫' }
+  ];
+  const ERA_MARK = { sm: 'SM', xy: 'XY', bw: 'BW', sv: 'SV', swsh: 'SWSH', high: 'HIGH' };
+  function eraOf(p) { return p.era || (p.cat === 'classic' ? 'sm' : p.cat); }
+  function eraName(k) {
+    const e = ERAS.find(x => x.key === k);
+    return e ? e.name : k;
+  }
   function sym(meta) { return meta && meta.sym ? SYM_BASE + meta.sym + '.png' : null; }
 
   async function loadIndex() {
@@ -32,7 +47,16 @@
   }
 
   function seriesList() { return db.index ? db.index.series : []; }
-  function packsOf(cat) { return db.index ? db.index.packs.filter(p => p.cat === cat) : []; }
+  function packsOf(cat, era) {
+    if (!db.index) return [];
+    return db.index.packs.filter(p => p.cat === cat && (!era || era === 'all' || eraOf(p) === era));
+  }
+  function erasOf(cat) {
+    if (!db.index) return [];
+    const set = {};
+    db.index.packs.forEach(p => { if (p.cat === cat) set[eraOf(p)] = (set[eraOf(p)] || 0) + 1; });
+    return ERAS.filter(e => e.key === 'all' || set[e.key]).map(e => ({ ...e, n: e.key === 'all' ? db.index.packs.filter(p => p.cat === cat).length : set[e.key] }));
+  }
   function allPacks() { return db.index ? db.index.packs : []; }
 
   /* 오늘의 추천 팩: 날짜 시드 */
@@ -60,7 +84,7 @@
     return ({ 1: '일반', 2: '레어', 4: '더블 레어', 5: '울트라 레어' })[t] || '일반';
   }
   const RARITY_KO = {
-    'common': '일반', 'uncommon': '일반', 'none': '기본', 'rare': '레어', 'rare holo': '레어',
+    'common': '노멀', 'uncommon': '언커먼', 'none': '노멀', 'rare': '레어', 'rare holo': '레어',
     'holo rare': '레어', 'double rare': '더블레어', 'triple rare': '트리플레어',
     'illustration rare': '일러스트레어', 'special illustration rare': '스페셜일러스트',
     'character rare': '캐릭터레어', 'character super rare': '캐릭터슈퍼레어',
@@ -151,7 +175,8 @@
   }
 
   window.PKData = {
-    img, sym, loadIndex, loadPack, packMeta, seriesList, packsOf, allPacks,
+    BACK, ERAS, ERA_MARK,
+    img, sym, loadIndex, loadPack, packMeta, seriesList, packsOf, erasOf, eraOf, eraName, allPacks,
     todayPack, stars, tierName, rarityKo, tierFromRarity, typeColor, typeEmoji, TYPES,
     pull, ownedInPack, daySeed
   };

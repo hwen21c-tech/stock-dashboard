@@ -1,10 +1,10 @@
-/* dex.js — 도감 · 카드 확대 팝업 · 별가루 · 선물 · 교환 */
+/* dex.js — 도감 · 카드 극적 리빌 팝업 · 별가루 · 선물 · 교환 */
 (function () {
   'use strict';
   const P = window.PKC, D = window.PKData, U = window.PKUI, A = window.PKCAudio;
   const $ = P.$, esc = P.esc;
 
-  const filt = { pack: null, type: 'all', owned: 'all', q: '' };
+  const filt = { series: 'all', pack: null, type: 'all', owned: 'all', q: '' };
   const cardMap = {};          // id -> card (로드된 팩)
   let allCards = null;         // 전체 카드 배열 (한 번만 구성)
   let loadingAll = false;
@@ -56,6 +56,11 @@
     return out;
   }
 
+  function packOfCard(id) {
+    const set = id.split('-')[0];
+    return D.allPacks().find(p => p.set === set) || null;
+  }
+
   /* ---------------- 화면 ---------------- */
   async function render() {
     const root = $('#screen-dex');
@@ -63,7 +68,6 @@
     const packs = D.allPacks();
     if (!packs.length) return;
     if (!filt.pack) {
-      // 가장 많이 모은 팩 → 없으면 최근 뜯은 팩 → 첫 팩
       let best = null, bestN = 0;
       packs.forEach(p => { const n = U.ownedOfPack(pr, p); if (n > bestN) { bestN = n; best = p.id; } });
       if (!best) {
@@ -72,9 +76,16 @@
       }
       filt.pack = best;
     }
-    const packChips = '<button class="chip small' + (filt.pack === 'all' ? ' active' : '') + '" data-fpack="all">🌏 전체</button>' +
-      packs.map(p => '<button class="chip small' + (filt.pack === p.id ? ' active' : '') + '" data-fpack="' + p.id + '">' +
-        esc(p.name.length > 12 ? p.name.slice(0, 12) + '…' : p.name) + '</button>').join('');
+
+    const seriesChips = '<button class="chip small' + (filt.series === 'all' ? ' active' : '') + '" data-fseries="all">🌏 전체</button>' +
+      D.seriesList().map(s => '<button class="chip small' + (filt.series === s.key ? ' active' : '') + '" data-fseries="' + s.key + '">' +
+        s.emoji + ' ' + esc(s.name) + '</button>').join('');
+
+    const listPacks = packs.filter(p => filt.series === 'all' || p.cat === filt.series);
+    let packChips = '<button class="chip small' + (filt.pack === 'all' ? ' active' : '') + '" data-fpack="all">🗂 시리즈 전체</button>' +
+      listPacks.map(p => '<button class="chip small' + (filt.pack === p.id ? ' active' : '') + '" data-fpack="' + p.id + '">' +
+        (p.cat === 'classic' ? (D.ERA_MARK[p.era] || '') + ' ' : '') +
+        esc(p.name.length > 13 ? p.name.slice(0, 13) + '…' : p.name) + '</button>').join('');
 
     const typeChips = '<button class="chip' + (filt.type === 'all' ? ' active' : '') + '" data-ftype="all">전체</button>' +
       D.TYPES.map(t => '<button class="chip' + (filt.type === t ? ' active' : '') + '" data-ftype="' + t + '">' +
@@ -82,9 +93,10 @@
 
     root.innerHTML =
       '<div class="h1">📖 내 도감 <span class="muted" style="font-size:12px;font-weight:700">' + U.uniqueCards(pr) + '종</span></div>' +
-      '<div class="card-panel" style="padding:10px">' +
+      '<div class="card-panel" style="padding:11px">' +
         '<div class="search-row"><input id="dexSearch" placeholder="포켓몬 이름 검색" value="' + esc(filt.q) + '">' +
           '<button class="btn ghost sm" id="dexSearchBtn">🔍</button></div>' +
+        '<div class="filter-bar" id="seriesChips">' + seriesChips + '</div>' +
         '<div class="filter-bar" id="packChips">' + packChips + '</div>' +
         '<div class="filter-bar" id="typeChips">' + typeChips + '</div>' +
         '<div class="filter-bar" id="ownChips">' +
@@ -95,8 +107,13 @@
       '</div>' +
       '<div id="dexBody"><div class="loading"><div class="spinner"></div>불러오는 중…</div></div>';
 
+    root.querySelectorAll('[data-fseries]').forEach(b => b.addEventListener('click', () => {
+      A.sfx.tap(); filt.series = b.dataset.fseries; filt.pack = null; render();
+    }));
     root.querySelectorAll('[data-fpack]').forEach(b => b.addEventListener('click', () => {
-      A.sfx.tap(); filt.pack = b.dataset.fpack; render();
+      A.sfx.tap(); filt.pack = b.dataset.fpack;
+      if (filt.pack !== 'all') { const p = D.packMeta(filt.pack); if (p) filt.series = p.cat; }
+      render();
     }));
     root.querySelectorAll('[data-ftype]').forEach(b => b.addEventListener('click', () => {
       A.sfx.tap(); filt.type = b.dataset.ftype; render();
@@ -116,8 +133,12 @@
         const txt = body.querySelector('#loadTxt');
         await loadAllCards((i, n) => { if (txt) txt.textContent = '도감 불러오는 중… ' + i + '/' + n; });
       }
+      let list = allCards || [];
+      if (filt.series !== 'all') {
+        list = list.filter(c => { const p = packOfCard(c.id); return p && p.cat === filt.series; });
+      }
       shown = 0;
-      paint(body, allCards || []);
+      paint(body, list);
     } else {
       const d = await ensurePack(filt.pack);
       shown = 0;
@@ -140,11 +161,11 @@
   function paint(host, list) {
     const pr = P.me();
     const arr = filtered(list);
-    const head = '<div class="muted" style="margin:10px 2px 6px">' + arr.length + '장 · 보유 ' +
+    const head = '<div class="muted" style="margin:12px 2px 7px">' + arr.length + '장 · 보유 ' +
       arr.filter(c => pr.cards[c.id]).length + '장</div>';
     if (!arr.length) { host.innerHTML = head + '<div class="empty">조건에 맞는 카드가 없어요</div>'; return; }
     host.innerHTML = head + '<div class="dex-grid" id="dexGrid"></div>' +
-      '<div id="dexMore" style="margin:14px 0"></div>';
+      '<div id="dexMore" style="margin:16px 0"></div>';
     const grid = host.querySelector('#dexGrid');
     const more = host.querySelector('#dexMore');
     function chunk() {
@@ -155,7 +176,7 @@
         div.className = 'dex-card r' + c.r + (own ? '' : ' lock');
         div.dataset.card = c.id;
         div.innerHTML = '<img loading="lazy" decoding="async" src="' + D.img(c.img) + '" alt="' + esc(c.name) + '">' +
-          (c.r >= 4 ? '<span class="rar" style="color:' + (c.r === 5 ? '#ffd24a' : '#c9a8ff') + '">' + (c.r === 5 ? '★5' : '★4') + '</span>' : '') +
+          (c.r >= 4 ? '<span class="rar" style="color:' + (c.r === 5 ? '#ffe9bf' : '#c9b6ff') + '">' + (c.r === 5 ? '★5' : '★4') + '</span>' : '') +
           (own > 1 ? '<span class="cnt">×' + own + '</span>' : '') +
           (own ? '<span class="pk">' + esc(c.name) + '</span>' : '');
         div.addEventListener('click', () => openCard(c.id));
@@ -170,7 +191,7 @@
     chunk();
   }
 
-  /* ---------------- 카드 팝업 ---------------- */
+  /* ---------------- 카드 팝업 (극적 리빌) ---------------- */
   async function openCard(id, opts) {
     const card = await ensureCard(id);
     if (!card) { P.toast('카드 정보를 찾을 수 없어요'); return; }
@@ -181,53 +202,77 @@
     const typeColor = D.typeColor(card.t);
     const isFav = pr.fav.indexOf(id) >= 0;
     const rarityLabel = D.rarityKo(card.rr) + (card.v ? '' : ' ·추정');
+    const big = card.r >= 4;
+    const grade = card.r === 5 ? 'ULTRA RARE' : card.r === 4 ? 'SPECIAL' : card.r === 2 ? 'RARE' : '';
 
     const wrap = P.el('div');
     wrap.innerHTML =
-      '<div class="card3d-wrap"><div class="card3d r' + card.r + (card.r >= 4 ? ' holo' + card.r : '') + '" id="c3d">' +
-        '<div class="frame"></div>' +
-        '<img src="' + D.img(card.img) + '" alt="' + esc(card.name) + '">' +
-        '<div class="holo"></div>' +
-        '<div class="type-fx" id="typeFx"></div>' +
-      '</div></div>' +
+      '<div class="reveal-stage">' +
+        '<div class="reveal-card r' + card.r + ' holo' + card.r + ' aura' + card.r + ' rays' + card.r + '" id="rc">' +
+          '<div class="aura"></div><div class="rays"></div>' +
+          '<div class="frame"></div>' +
+          '<img src="' + D.img(card.img) + '" alt="' + esc(card.name) + '">' +
+          '<div class="holo"></div>' +
+          '<div class="sparkles" id="rcSp"></div>' +
+          (grade ? '<div class="reveal-badge">' + grade + '</div>' : '') +
+          '<div class="type-fx" id="typeFx"></div>' +
+        '</div>' +
+      '</div>' +
       '<div class="card-info">' +
         '<div class="ct"><b>' + esc(card.name) + '</b>' +
           '<button class="btn ghost sm" id="ttsBtn" style="margin-left:auto">🔊 이름</button></div>' +
         '<div class="tset">' +
           '<span class="tbadge" style="color:' + typeColor + ';border-color:' + typeColor + '55;background:' + typeColor + '18">' +
             D.typeEmoji(card.t) + ' ' + esc(card.t || '기타') + '</span>' +
-          (card.hp ? '<span class="tbadge" style="color:#ffd24a;border-color:#ffd24a55;background:#ffd24a14">HP ' + card.hp + '</span>' : '') +
-          '<span class="tbadge" style="color:#c9a8ff;border-color:#c9a8ff55;background:#c9a8ff14">' + esc(rarityLabel) + '</span>' +
-          (isFav ? '<span class="tbadge" style="color:#ffd24a;border-color:#ffd24a66">⭐ 최애</span>' : '') +
+          (card.hp ? '<span class="tbadge" style="color:#ffe9bf;border-color:#ffe9bf55;background:#ffe9bf14">HP ' + card.hp + '</span>' : '') +
+          '<span class="tbadge" style="color:#c9b6ff;border-color:#c9b6ff55;background:#c9b6ff14">' + esc(rarityLabel) + '</span>' +
+          '<span class="tbadge" style="color:#ffe9bf;border-color:#ffe9bf66">' + '★' + D.stars(card.r) + ' COST</span>' +
+          (isFav ? '<span class="tbadge" style="color:#ffe9bf;border-color:#ffe9bf66">⭐ 최애</span>' : '') +
         '</div>' +
         '<div class="kv"><span>카드 번호</span><b>' + esc(card.nn) + '</b></div>' +
-        '<div class="kv"><span>카드 종류</span><b>' + esc(card.k || '-') + '</b></div>' +
+        '<div class="kv"><span>카드 종류</span><b>' + esc((card.k || '-').replace(/\[P\]/g, '')) + '</b></div>' +
         '<div class="kv"><span>내 보유</span><b>' + (own ? own + '장' : '미보유') + '</b></div>' +
-        '<div class="kv"><span>획득 팩</span><b>' + esc(srcPack ? srcPack.name : '-') + '</b></div>' +
+        '<div class="kv"><span>획득 팩</span><b>' + esc(srcPack ? srcPack.name : (packOfCard(card.id) ? packOfCard(card.id).name : '-')) + '</b></div>' +
         '<div class="kv"><span>별가루</span><b>' + P.won(pr.stardust || 0) + ' ✨</b></div>' +
+        (card.v ? '' : '<div class="muted" style="margin-top:8px;font-size:11px;line-height:1.6">·추정 : 공식 등급 정보가 없는 카드라 HP·이름·번호 규칙으로 ★코스트를 추정했어요.</div>') +
       '</div>' +
       '<div class="chips-row" id="cardActions"></div>';
 
     const m = P.modal({
-      title: '카드 정보',
+      title: big ? '✨ 카드 리빌' : '카드 정보',
       body: wrap,
       buttons: [
         { label: '✕ 나가기', kind: 'ghost' },
         { label: '확인', kind: 'primary' }
       ],
       onMount: (body, close) => {
+        const rc = wrap.querySelector('#rc');
         // 3D 틸트
-        const c3d = wrap.querySelector('#c3d');
-        c3d.addEventListener('pointermove', e => {
-          const r = c3d.getBoundingClientRect();
+        let tilt = false;
+        rc.addEventListener('pointermove', e => {
+          tilt = true;
+          const r = rc.getBoundingClientRect();
           const px = (e.clientX - r.left) / r.width - 0.5;
           const py = (e.clientY - r.top) / r.height - 0.5;
-          c3d.style.transform = 'rotateY(' + (px * 18).toFixed(1) + 'deg) rotateX(' + (-py * 18).toFixed(1) + 'deg) scale(1.03)';
+          rc.style.transform = 'rotateY(' + (px * 16).toFixed(1) + 'deg) rotateX(' + (-py * 16).toFixed(1) + 'deg) scale(1.03)';
         });
-        c3d.addEventListener('pointerleave', () => { c3d.style.transform = ''; });
-        // 속성 이펙트
-        setTimeout(() => { A.sfx.typePop(card.t); typeFx(wrap.querySelector('#typeFx'), card.t); }, 220);
-        setTimeout(() => { if (card.r >= 4) A.sfx.sparkle(); }, 500);
+        rc.addEventListener('pointerleave', () => { rc.style.transform = ''; });
+        // 속성 파티클 (카드 위)
+        setTimeout(() => typeFx(wrap.querySelector('#typeFx'), card.t), 300);
+        // 등급 리빌 사운드 + 이펙트
+        setTimeout(() => {
+          A.sfx.reveal(card.r);
+          P.haptic(card.r >= 4 ? 24 : card.r >= 2 ? 12 : 6);
+          sparkles(wrap.querySelector('#rcSp'), card.r);
+          if (card.r >= 4) {
+            window.PKShop.flash();
+            if (card.r >= 5) {
+              setTimeout(() => window.PKShop.flash(), 240);
+              setTimeout(() => window.PKShop.flash(), 460);
+            }
+            window.PKShop.burst(rc, card.r >= 5 ? 30 : 18);
+          }
+        }, 520);
         // TTS
         wrap.querySelector('#ttsBtn').addEventListener('click', () => speak(card.name));
         // 액션
@@ -236,6 +281,7 @@
           '<button class="btn ghost sm" id="favBtn">' + (isFav ? '⭐ 최애 해제' : '⭐ 최애 핀') + '</button>' +
           (own >= 2 ? '<button class="btn ghost sm" id="dustBtn">♻️ 별가루 변환 (' + starDust(card) + '✨)</button>' : '') +
           (own >= 2 ? '<button class="btn ghost sm" id="giftBtn">🎁 남매에게 선물</button>' : '') +
+          (own === 0 ? '<button class="btn ghost sm" id="dustExBtn">✨ 별가루로 교환 (' + dustCost(card) + '✨)</button>' : '') +
           '<button class="btn ghost sm" id="admBtn">' + (P.isAdmin() ? '🔓 아빠 모드' : '🔒 아빠') + '</button>';
 
         wrap.querySelector('#favBtn').addEventListener('click', () => {
@@ -246,6 +292,7 @@
             pr.fav.push(id); P.toast('⭐ 최애 카드로 고정!', true); A.sfx.sparkle();
           }
           P.save(); close(true);
+          if ($('#screen-home').classList.contains('active')) U.renderHome();
         });
         const db = wrap.querySelector('#dustBtn');
         if (db) db.addEventListener('click', () => {
@@ -259,12 +306,32 @@
         });
         const gb = wrap.querySelector('#giftBtn');
         if (gb) gb.addEventListener('click', () => { close(true); giftModal(card); });
+        const eb = wrap.querySelector('#dustExBtn');
+        if (eb) eb.addEventListener('click', async () => { close(true); await dustExchange(card); });
         wrap.querySelector('#admBtn').addEventListener('click', () => {
           if (P.isAdmin()) { close(true); adminCard(card); }
           else P.pinPrompt('🔒 아빠 확인', () => { close(true); adminCard(card); });
         });
       }
     });
+  }
+
+  function sparkles(host, tier) {
+    if (!host) return;
+    const n = tier >= 5 ? 26 : tier >= 4 ? 16 : tier >= 2 ? 8 : 4;
+    for (let i = 0; i < n; i++) {
+      const s = document.createElement('i');
+      const ang = Math.random() * Math.PI * 2;
+      const dist = 50 + Math.random() * 110;
+      s.style.left = (20 + Math.random() * 60) + '%';
+      s.style.top = (25 + Math.random() * 55) + '%';
+      s.style.setProperty('--dx', (Math.cos(ang) * dist * 0.4).toFixed(0) + 'px');
+      s.style.setProperty('--dy', (-40 - Math.random() * 90).toFixed(0) + 'px');
+      s.style.animationDelay = (Math.random() * 380) + 'ms';
+      s.style.background = ['#fff', '#ffe4a6', '#67e8ff', '#ff8ade'][i % 4];
+      host.appendChild(s);
+      setTimeout(() => s.remove(), 2600);
+    }
   }
 
   function typeFx(host, type) {

@@ -1,15 +1,17 @@
-/* shop.js — 팩 상점 · 팩 뜯기 연출 */
+/* shop.js — 팩 상점 · 팩 뜯기 (중앙 확대 3D 플립 · 등급별 이펙트) */
 (function () {
   'use strict';
   const P = window.PKC, D = window.PKData, U = window.PKUI, A = window.PKCAudio;
   const $ = P.$, esc = P.esc;
 
   let activeCat = 'sv';
+  let activeEra = 'all';
   let busy = false;
 
   function ownedInPack(pr, meta) {
     let n = 0;
-    for (const k in pr.cards) if (k.indexOf(meta.set + '-') === 0) n++;
+    const pre = meta.set + '-';
+    for (const k in pr.cards) if (k.indexOf(pre) === 0) n++;
     return n;
   }
 
@@ -18,23 +20,30 @@
     const pr = P.me();
     const idx = D.allPacks();
     if (!idx.length) { root.innerHTML = '<div class="loading"><div class="spinner"></div>불러오는 중…</div>'; return; }
-    if (!idx.some(p => p.cat === activeCat)) activeCat = 'sv';
+    if (!idx.some(p => p.cat === activeCat)) { activeCat = 'sv'; activeEra = 'all'; }
     const series = D.seriesList();
     const today = D.todayPack();
-    const list = D.packsOf(activeCat);
+    const list = D.packsOf(activeCat, activeCat === 'classic' ? activeEra : null);
 
     const tabs = series.map(s => {
       const n = D.packsOf(s.key).length;
       return '<button class="series-tab' + (s.key === activeCat ? ' active' : '') + '" data-cat="' + s.key + '">' +
-        s.emoji + ' ' + esc(s.name) + ' <span style="opacity:.6">' + n + '</span></button>';
+        s.emoji + ' ' + esc(s.name) + ' <span class="cnt">' + n + '</span></button>';
     }).join('');
 
+    let eraTabs = '';
+    if (activeCat === 'classic') {
+      eraTabs = '<div class="era-tabs">' + D.erasOf('classic').map(e =>
+        '<button class="era-tab' + (e.key === activeEra ? ' active' : '') + '" data-era="' + e.key + '">' +
+        e.emoji + ' ' + esc(e.name) + ' <span style="opacity:.6">' + e.n + '</span></button>').join('') + '</div>';
+    }
+
     const todayHtml = today ? (
-      '<button class="today-card" id="shopToday" style="margin-bottom:10px"><span class="shine"></span>' +
-      '<div style="width:84px;flex:0 0 84px">' + U.packArt(today.pack, {tiny:true}) + '</div>' +
+      '<button class="today-card" id="shopToday" style="margin-bottom:12px;width:100%"><span class="shine"></span>' +
+      '<div style="width:66px;flex:0 0 66px">' + U.packArt(today.pack, {tiny:true}) + '</div>' +
       '<div class="tc-txt"><div class="tagline">⚡ 오늘의 추천 팩 · R 이상 확률 UP</div>' +
       '<b>' + esc(today.pack.name) + '</b>' +
-      '<div class="muted" style="margin-top:3px"><s>' + today.pack.price + '코인</s> → <b style="color:#ffe9a8">' + today.price + '코인</b></div></div>' +
+      '<div class="muted" style="margin-top:3px"><s>' + today.pack.price + '코인</s> → <b style="color:#ffe9bf">' + today.price + '코인</b></div></div>' +
       '<div class="btn gold sm">뜯기</div></button>') : '';
 
     const grid = list.map(p => {
@@ -44,30 +53,38 @@
       const done = own >= p.total;
       const half = rate >= 0.5;
       const ticket = p.price === 80 ? pr.tickets.high : pr.tickets.normal;
+      const eraMark = p.cat === 'classic' ? (D.ERA_MARK[p.era] || 'SM') : '';
       return '<div class="pack' + (isToday ? ' today' : '') + '" data-pack="' + p.id + '">' +
         '<div class="cover">' + U.packArt(p, {}) +
           (isToday ? '<span class="badge-hot">오늘의 팩</span>' : '') +
           (done ? '<span class="badge-done">완주 🏆</span>' : (half ? '<span class="badge-done">50% 🏅</span>' : '')) +
+          (eraMark ? '<span class="era-badge">' + eraMark + '</span>' : '') +
         '</div>' +
         '<div class="pbody">' +
           '<div class="bar' + (done ? ' done' : '') + '"><i style="width:' + (rate * 100).toFixed(1) + '%"></i></div>' +
           '<div class="pmeta"><span>' + own + ' / ' + p.total + '장</span><span>' + (rate * 100).toFixed(0) + '%</span></div>' +
           '<div class="btn primary sm pbtn" data-open="' + p.id + '">' + (isToday ? today.price : p.price) + '🪙 뜯기</div>' +
-          (ticket > 0 ? '<div class="btn ghost sm" data-ticket="' + p.id + '" style="padding:6px;font-size:11.5px">🎟️ 티켓 ' + ticket + '장</div>' : '') +
+          (ticket > 0 ? '<div class="btn ghost sm" data-ticket="' + p.id + '" style="padding:6px;font-size:11px">🎟️ 티켓 ' + ticket + '장</div>' : '') +
         '</div></div>';
     }).join('');
 
     root.innerHTML =
       '<div class="h1">🛍️ 카드팩 상점</div>' +
-      '<div class="muted" style="margin:-6px 2px 8px">' + idx.length + '개 공식 카드팩 · 5장씩 뜯기</div>' +
+      '<div class="muted" style="margin:-6px 2px 10px">' + idx.length + '개 공식 카드팩 · 5장씩 뜯기' +
+        (activeCat === 'classic' ? ' · 썬&문·XY·BW ' + D.packsOf('classic').length + '팩' : '') + '</div>' +
       todayHtml +
       '<div class="series-tabs">' + tabs + '</div>' +
-      '<div class="muted" style="margin:0 2px 8px">' + esc((series.find(s => s.key === activeCat) || {}).desc || '') + '</div>' +
+      eraTabs +
+      '<div class="muted" style="margin:0 2px 10px">' + esc((series.find(s => s.key === activeCat) || {}).desc || '') + '</div>' +
       '<div class="pack-grid">' + grid + '</div>' +
-      '<div class="muted" style="margin:16px 2px;font-size:11.5px;line-height:1.6">일반 팩 50코인 · 하이클래스 팩 80코인. 아빠 PIN으로 코인·티켓을 선물할 수 있어요.</div>';
+      '<div class="muted" style="margin:18px 2px;font-size:11.5px;line-height:1.7">일반 팩 50코인 · 하이클래스 팩 80코인. 아빠 PIN으로 코인·티켓을 선물할 수 있어요.<br>' +
+        'XY·BW 카드 등급(★)은 공식 등급 DB가 없어 HP·카드 이름·번호 규칙으로 추정했어요. 카드 팝업에 <b>·추정</b>으로 표시됩니다.</div>';
 
     root.querySelectorAll('[data-cat]').forEach(b => b.addEventListener('click', () => {
-      A.sfx.tap(); activeCat = b.dataset.cat; render();
+      A.sfx.tap(); activeCat = b.dataset.cat; activeEra = 'all'; render();
+    }));
+    root.querySelectorAll('[data-era]').forEach(b => b.addEventListener('click', () => {
+      A.sfx.tap(); activeEra = b.dataset.era; render();
     }));
     root.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', (e) => {
       e.stopPropagation(); A.unlock();
@@ -118,36 +135,34 @@
 
     const cards = D.pull(packData, !!o.boosted);
     const isNew = cards.map(c => !pr.cards[c.id]);
-    // 뜯는 순간 카드 지급 (중간에 나가도 유지)
     cards.forEach(c => { U.addCard(P.state.active, c, packId, 1); });
     U.refreshHeader();
 
     const stage = P.el('div', 'open-stage');
     stage.innerHTML =
       '<button class="btn ghost sm close" id="opClose">✕ 나가기</button>' +
-      '<div id="opArea" style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:720px"></div>';
+      '<div id="opArea" style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:760px"></div>';
     document.body.appendChild(stage);
 
     let finished = false;
-    function finish(save) {
+    function finish() {
       if (finished) return;
       finished = true;
       stage.style.transition = 'opacity .25s'; stage.style.opacity = '0';
       setTimeout(() => stage.remove(), 260);
       busy = false;
       U.checkTrophies(P.state.active);
-      if (window.PKShop && $('#screen-shop').classList.contains('active')) render();
+      if ($('#screen-shop').classList.contains('active')) render();
       if ($('#screen-home').classList.contains('active')) U.renderHome();
       U.refreshHeader();
     }
     stage.querySelector('#opClose').addEventListener('click', () => {
-      // 아직 안 뜯었으면 코인 환불
       if (!torn) {
         if (o.ticket) pr.tickets[tkey] += 1; else pr.coins += price;
         pr.opened[packId] = Math.max(0, (pr.opened[packId] || 1) - 1);
         P.save(); U.refreshHeader();
-        finish(false);
-      } else finish(true);
+        finish();
+      } else finish();
     });
 
     let torn = false;
@@ -159,8 +174,8 @@
         '<div class="tear-line" id="tline"></div>' +
       '</div>' +
       '<div class="open-hint" id="opHint"><b>' + esc(meta.name) + '</b><br>팩 위쪽을 드래그하거나 아래 버튼을 눌러 뜯어요!</div>' +
-      '<div class="btn-row" style="margin-top:14px;justify-content:center">' +
-        '<button class="btn gold" id="ripBtn">✂️ 팩 뜯기</button>' +
+      '<div class="btn-row" style="margin-top:16px;justify-content:center">' +
+        '<button class="btn gold" id="ripBtn" style="padding:15px 28px;font-size:15px">✂️ 팩 뜯기</button>' +
       '</div>';
 
     const pv = area.querySelector('#pv');
@@ -177,18 +192,17 @@
       flap.style.opacity = '0.2';
       pv.style.transition = 'transform .5s ease';
       pv.style.transform = 'scale(1.06)';
-      sparkle(area, 18);
+      sparkle(area, 20);
       setTimeout(() => {
         A.sfx.whoosh();
         const b = P.el('div', 'burst');
         document.body.appendChild(b);
         setTimeout(() => b.remove(), 800);
       }, 380);
-      setTimeout(() => showCards(), 760);
+      setTimeout(() => showCards(), 780);
     }
     area.querySelector('#ripBtn').addEventListener('click', doRip);
     pv.addEventListener('click', doRip);
-    // swipe tear
     let sx = 0, sy = 0, dragging = false;
     pv.addEventListener('pointerdown', e => { dragging = true; sx = e.clientX; sy = e.clientY; });
     pv.addEventListener('pointerup', e => {
@@ -196,79 +210,149 @@
       if (Math.abs(e.clientX - sx) > 42 || Math.abs(e.clientY - sy) > 42) doRip();
     });
 
+    /* 카드 5장 — 실제 카드 뒷면 */
     function showCards() {
       area.innerHTML =
-        '<div class="muted" style="margin-bottom:8px">카드를 하나씩 터치해서 뒤집어 보세요!</div>' +
+        '<div class="muted" style="margin-bottom:10px;text-align:center">카드를 눌러 크게 뒤집어 보세요!</div>' +
         '<div class="open-cards">' + cards.map((c, i) =>
-          '<div class="flip-card" data-i="' + i + '">' +
-            '<div class="halo"></div><div class="rainbow"></div>' +
-            '<div class="flip-inner">' +
-              '<div class="flip-back">🎴</div>' +
-              '<div class="flip-front"><img src="' + D.img(c.img) + '" alt="' + esc(c.name) + '">' +
-                (isNew[i] ? '<span class="new-tag">NEW</span>' : '') +
-              '</div>' +
-            '</div>' +
-          '</div>').join('') + '</div>' +
+          '<div class="oc-card" data-i="' + i + '">' + (isNew[i] ? '<span class="new-tag">NEW</span>' : '') + '</div>').join('') + '</div>' +
+        '<div class="open-result" id="opResult"></div>' +
         '<div class="btn-row" style="margin-top:14px;justify-content:center">' +
           '<button class="btn ghost" id="allFlip">🔄 모두 뒤집기</button>' +
           '<button class="btn primary" id="doneBtn" disabled>확인 (0/5)</button>' +
-        '</div>' +
-        '<div class="open-result" id="opResult"></div>';
+        '</div>';
 
-      let revealed = 0;
-      const flipped = new Set();
+      const revealed = new Set();
       const doneBtn = area.querySelector('#doneBtn');
+      const allBtn = area.querySelector('#allFlip');
+      let autoRunning = false;
 
-      function flip(i) {
-        const el = area.querySelector('.flip-card[data-i="' + i + '"]');
-        if (!el || el.classList.contains('flipped')) return;
-        el.classList.add('flipped');
-        flipped.add(i);
-        const c = cards[i];
-        setTimeout(() => {
-          el.classList.add('revealed', 'r' + c.r);
-          A.sfx.flip();
-          if (c.r >= 2) P.haptic(c.r >= 4 ? 22 : 10);
-          setTimeout(() => {
-            A.sfx.fanfare(c.r);
-            if (c.r >= 4) sparkle(el.parentNode, c.r === 5 ? 26 : 14);
-          }, 120);
-        }, 240);
-        revealed++;
-        doneBtn.textContent = '확인 (' + revealed + '/5)';
-        if (revealed === 5) {
-          doneBtn.disabled = false;
-          renderResult();
-        }
-      }
-      area.querySelectorAll('.flip-card').forEach(el => {
-        el.addEventListener('click', () => flip(+el.dataset.i));
-      });
-      area.querySelector('#allFlip').addEventListener('click', () => {
-        cards.forEach((c, i) => {
-          const el = area.querySelector('.flip-card[data-i="' + i + '"]');
-          if (el && !el.classList.contains('flipped')) {
-            setTimeout(() => flip(i), flipped.size * 130);
-          }
+      area.querySelectorAll('.oc-card').forEach(el => {
+        el.addEventListener('click', () => {
+          const i = +el.dataset.i;
+          if (revealed.has(i) || autoRunning) return;
+          zoomReveal(i, false);
         });
+      });
+
+      function markSlot(i) {
+        const el = area.querySelector('.oc-card[data-i="' + i + '"]');
+        if (!el) return;
+        const c = cards[i];
+        el.classList.add('taken');
+        const img = document.createElement('img');
+        img.src = D.img(c.img);
+        img.alt = c.name;
+        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:5';
+        el.appendChild(img);
+        if (c.r >= 4) {
+          el.style.borderColor = c.r === 5 ? '#ffe9b0' : '#c3adff';
+          el.style.boxShadow = c.r === 5 ? '0 0 18px rgba(231,195,122,.65)' : '0 0 14px rgba(150,110,255,.5)';
+        }
+        revealed.add(i);
+        doneBtn.textContent = '확인 (' + revealed.size + '/5)';
+        if (revealed.size === 5) { doneBtn.disabled = false; renderResult(); }
+      }
+
+      function zoomReveal(i, auto) {
+        const c = cards[i];
+        const host = area.querySelector('.oc-card[data-i="' + i + '"]');
+        const from = host ? host.getBoundingClientRect() : null;
+        A.sfx.whoosh();
+
+        const z = P.el('div', 'zoom-stage');
+        z.innerHTML =
+          '<button class="btn ghost sm zclose" id="zclose">✕ 나가기</button>' +
+          '<div class="zoom-wrap">' +
+            '<div class="zoom-card" id="zc" style="transform:scale(.22);transition:transform .52s cubic-bezier(.2,.9,.2,1)">' +
+              '<div class="zoom-halo"></div><div class="zoom-rays"></div><div class="zoom-pop"></div>' +
+              '<div class="zi">' +
+                '<div class="zoom-face back"></div>' +
+                '<div class="zoom-face front"><img src="' + D.img(c.img) + '" alt="' + esc(c.name) + '"><div class="holo"></div></div>' +
+              '</div>' +
+            '</div>' +
+            '<div class="zoom-info" id="zi2">' +
+              '<b>' + esc(c.name) + '</b>' +
+              '<div class="zmeta">' + esc(c.t || '') + (c.hp ? ' · HP ' + c.hp : '') + ' · ' + esc(c.nn) + '</div>' +
+              '<div class="zrar">' + stars(c.r) + ' ' + esc(D.rarityKo(c.rr)) + (c.v ? '' : ' ·추정') + '</div>' +
+            '</div>' +
+            '<div class="zoom-btns" id="zbtns">' +
+              '<button class="btn ghost" id="zback">✕ 나가기</button>' +
+              '<button class="btn gold" id="zok">확인</button>' +
+            '</div>' +
+          '</div>';
+        document.body.appendChild(z);
+        const zc = z.querySelector('#zc');
+
+        // 확대 등장
+        requestAnimationFrame(() => { zc.style.transform = 'scale(1)'; });
+        // 뒤집기
+        setTimeout(() => {
+          zc.classList.add('flipped');
+          A.sfx.flip();
+          P.haptic(c.r >= 4 ? 22 : 10);
+        }, 240);
+        // 이펙트
+        setTimeout(() => {
+          zc.classList.add('rev', 'r' + c.r);
+          if (c.r >= 5) zc.classList.add('rays5', 'holo5');
+          else if (c.r >= 4) zc.classList.add('rays4', 'holo4');
+          else if (c.r >= 2) zc.classList.add('holo2');
+          A.sfx.reveal(c.r);
+          burst(zc, c.r === 5 ? 34 : c.r === 4 ? 20 : c.r === 2 ? 10 : 5);
+          if (c.r >= 5) { flash(); for (let k = 0; k < 3; k++) setTimeout(flash, 260 + k * 190); }
+          z.querySelector('#zi2').classList.add('show');
+          z.querySelector('#zbtns').classList.add('show');
+          if (auto) setTimeout(() => z.querySelector('#zok').click(), 1150);
+        }, 880);
+
+        z.querySelector('#zclose').addEventListener('click', () => { close(); });
+        z.querySelector('#zback').addEventListener('click', () => { A.sfx.tap(); close(); markSlot(i); });
+        z.querySelector('#zok').addEventListener('click', () => {
+          A.sfx.slot();
+          close();
+          markSlot(i);
+        });
+        function close() {
+          z.style.transition = 'opacity .22s'; z.style.opacity = '0';
+          setTimeout(() => z.remove(), 230);
+        }
+        window.__pkZoomOpen = true;
+      }
+
+      function stars(t) {
+        return ({ 1: '★', 2: '★★', 4: '★★★★', 5: '★★★★★' })[t] || '★';
+      }
+
+      allBtn.addEventListener('click', () => {
+        if (autoRunning) return;
+        autoRunning = true;
+        allBtn.disabled = true;
+        const todo = [0, 1, 2, 3, 4].filter(i => !revealed.has(i));
+        (function next(k) {
+          if (k >= todo.length) { autoRunning = false; allBtn.disabled = false; return; }
+          zoomReveal(todo[k], true);
+          setTimeout(() => next(k + 1), 1750);
+        })(0);
       });
 
       function renderResult() {
         const box = area.querySelector('#opResult');
         const best = cards.reduce((a, c) => c.r > a.r ? c : a, cards[0]);
         box.innerHTML = '<div class="hr"></div>' +
-          '<div style="font-size:15px;font-weight:900;margin-bottom:6px">' + (best.r >= 4 ? '✨ 대박 카드 획득!' : '카드 5장을 도감에 담았어요!') + '</div>' +
+          '<div style="font-size:15px;font-weight:900;margin-bottom:8px">' + (best.r >= 4 ? '✨ 대박 카드 획득!' : '카드 5장을 도감에 담았어요!') + '</div>' +
           '<div class="list" style="text-align:left">' + cards.map((c, i) =>
-            '<div class="row"><b style="color:' + (c.r === 5 ? '#ffd24a' : c.r === 4 ? '#c9a8ff' : c.r === 2 ? '#7fc4ff' : '#cfd8ff') + '">' +
+            '<div class="row"><b style="color:' + (c.r === 5 ? '#ffe9bf' : c.r === 4 ? '#c9b6ff' : c.r === 2 ? '#8fe3ff' : '#cfd8ff') + '">' +
             (c.r === 5 ? '★★★★★' : c.r === 4 ? '★★★★' : c.r === 2 ? '★★' : '★') + '</b>' +
-            '<div class="grow"><b>' + esc(c.name) + '</b><small>' + esc(c.t || '') + (c.hp ? ' · HP' + c.hp : '') + ' · ' + esc(c.nn) + '</small></div>' +
+            '<div class="grow"><b>' + esc(c.name) + '</b><small>' + esc(c.t || '') + (c.hp ? ' · HP' + c.hp : '') + ' · ' + esc(c.nn) +
+            (c.v ? '' : ' ·추정') + '</small></div>' +
             (isNew[i] ? '<span class="new-tag" style="position:static">NEW</span>' : '<span class="muted">×' + (P.me().cards[c.id] || 1) + '</span>') +
             '</div>').join('') + '</div>';
         U.refreshHeader();
         doneBtn.textContent = '✅ 확인 (도감에 저장됨)';
-        doneBtn.addEventListener('click', () => finish(true));
+        doneBtn.addEventListener('click', () => finish());
         A.sfx.coin();
-        const af = area.querySelector('#allFlip'); if (af) af.style.display = 'none';
+        allBtn.style.display = 'none';
       }
     }
   }
@@ -278,15 +362,42 @@
     const rect = host.getBoundingClientRect();
     for (let i = 0; i < n; i++) {
       const s = P.el('div', 'spark');
-      s.style.left = (rect.width / 2 + (Math.random() - 0.5) * rect.width * 0.7) + 'px';
-      s.style.top = (rect.height / 2 + (Math.random() - 0.5) * rect.height * 0.7) + 'px';
-      s.style.setProperty('--dx', ((Math.random() - 0.5) * 220) + 'px');
-      s.style.setProperty('--dy', ((Math.random() - 0.5) * 220) + 'px');
-      s.style.background = ['#fff', '#ffd24a', '#59e3ff', '#ff7ad9'][i % 4];
-      host.appendChild(s);
+      s.style.left = (rect.width / 2 + (Math.random() - 0.5) * rect.width * 0.8) + 'px';
+      s.style.top = (rect.height / 2 + (Math.random() - 0.5) * rect.height * 0.8) + 'px';
+      s.style.setProperty('--dx', ((Math.random() - 0.5) * 240) + 'px');
+      s.style.setProperty('--dy', ((Math.random() - 0.5) * 240) + 'px');
+      s.style.position = 'fixed';
+      s.style.background = ['#fff', '#ffe4a6', '#67e8ff', '#ff8ade'][i % 4];
+      document.body.appendChild(s);
       setTimeout(() => s.remove(), 950);
     }
   }
 
-  window.PKShop = { render, openFlow, sparkle };
+  /* 카드 위 파티클 폭발 */
+  function burst(host, n) {
+    if (!host) return;
+    const layer = P.el('div');
+    layer.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:12;overflow:visible';
+    host.appendChild(layer);
+    for (let i = 0; i < n; i++) {
+      const s = P.el('i');
+      const ang = Math.random() * Math.PI * 2;
+      const dist = 40 + Math.random() * 120;
+      s.style.cssText = 'position:absolute;left:50%;top:50%;width:' + (3 + Math.random() * 5) + 'px;height:' +
+        (3 + Math.random() * 5) + 'px;border-radius:50%;background:' +
+        ['#fff', '#ffe4a6', '#67e8ff', '#ff8ade', '#b6a6ff'][i % 5] +
+        ';box-shadow:0 0 10px 2px rgba(255,240,200,.8);--dx:' + (Math.cos(ang) * dist).toFixed(0) + 'px;--dy:' +
+        (Math.sin(ang) * dist).toFixed(0) + 'px;animation:sparkUp ' + (900 + Math.random() * 500) + 'ms ease-out forwards;animation-delay:' + (Math.random() * 160) + 'ms';
+      layer.appendChild(s);
+    }
+    setTimeout(() => layer.remove(), 2200);
+  }
+
+  function flash() {
+    const f = P.el('div', 'reveal-flash');
+    document.body.appendChild(f);
+    setTimeout(() => f.remove(), 640);
+  }
+
+  window.PKShop = { render, openFlow, sparkle, burst, flash };
 })();

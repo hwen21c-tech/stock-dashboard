@@ -1,10 +1,11 @@
 /* sw.js — 오프라인 셸 + 데이터 캐시 */
-const V = 'pkc-v1';
+const V = 'pkc-v2';
 const SHELL = [
   './', './index.html', './app.css',
   './js/util.js', './js/audio.js', './js/data.js', './js/ui.js',
   './js/shop.js', './js/dex.js', './js/battle.js', './js/more.js', './js/main.js',
   './pokemon-cards.webmanifest', './icons/icon-192.png', './icons/icon-512.png',
+  './assets/card-back.jpg',
   './data/packs.json'
 ];
 

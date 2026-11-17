@@ -74,7 +74,7 @@
 
       '<div class="muted" style="margin:18px 2px 8px;font-size:11px;line-height:1.7">' +
         '카드 정보·이미지: 포켓몬코리아 공식 카드 DB (pokemoncard.co.kr)<br>' +
-        '카드 등급: 공식 카드 등급 기준 (일부 소드&실드 팩은 카드 번호·이름 기반 추정)<br>' +
+        '카드 등급: 공식 카드 등급 기준 · XY·BW 카드는 HP·이름·번호 규칙으로 추정(·추정 표기)<br>' +
         '이 앱은 가족 전용이며 상업적 이용 목적이 아닙니다.</div>';
 
     root.querySelectorAll('[data-switch]').forEach(b => b.addEventListener('click', () => {
