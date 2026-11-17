@@ -1374,6 +1374,7 @@ document.addEventListener('click', async e => {
     case 'pin': pinInput(t.dataset.v); break;
     case 'guestPin': S.settings.guest = true; S.unlocked = true; play('tap'); go('home'); break;
     case 'goPack': play('tap'); go('pack'); break;
+    case 'openPack': openPack(); break;
     case 'openPackAgain': openPack(); break;
     case 'goDex': play('tap'); go('dex'); break;
     case 'goSettings': play('tap'); go('settings'); break;
