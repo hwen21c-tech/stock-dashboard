@@ -221,7 +221,8 @@ img{display:block}
 .result-big{font-size:22px;font-weight:900;letter-spacing:-.5px}
 
 /* 팩 */
-.packwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px}
+.packwrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px;max-width:1000px;margin:0 auto;width:100%}
+.pack.spent{display:none}
 .pack{width:158px;height:222px;border-radius:14px;position:relative;cursor:pointer;
   background:linear-gradient(150deg,#ff5f8f,#7a3cff 55%,#1e88e5);
   box-shadow:0 18px 40px rgba(122,60,255,.5),0 0 0 3px rgba(255,255,255,.16) inset;animation:packFloat 2.6s ease-in-out infinite}
@@ -285,10 +286,11 @@ img{display:block}
 /* 이펙트 레이어 */
 #vfxLayer{position:fixed;inset:0;pointer-events:none;z-index:80}
 #fxPopups{position:fixed;inset:0;pointer-events:none;z-index:81}
-#fxFlash{position:fixed;inset:0;pointer-events:none;z-index:79;background:radial-gradient(circle at 50% 45%,#fff8d0,#ffd23d 40%,transparent 70%);
-  opacity:0;mix-blend-mode:screen}
-#fxFlash.go{animation:flashOut .45s ease-out}
-@keyframes flashOut{from{opacity:.75}to{opacity:0}}
+#fxFlash{position:fixed;inset:0;pointer-events:none;z-index:79;
+  background:radial-gradient(circle at 50% 45%,rgba(255,248,208,.9),rgba(255,210,61,.55) 40%,transparent 70%);
+  opacity:0;mix-blend-mode:screen;transition:opacity .18s}
+#fxFlash.go{animation:flashOut .45s ease-out forwards}
+@keyframes flashOut{0%{opacity:0}12%{opacity:.7}100%{opacity:0}}
 .dmg-pop{position:absolute;transform:translate(-50%,-50%);font-weight:900;font-size:30px;color:#fff;
   text-shadow:0 0 12px #ff2e56,0 3px 0 #7a0d20,0 6px 14px rgba(0,0,0,.8);animation:dmgUp 1.15s cubic-bezier(.2,1.4,.4,1) forwards;
   white-space:nowrap;letter-spacing:-1px}

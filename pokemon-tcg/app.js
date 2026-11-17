@@ -1241,7 +1241,7 @@ async function openPack() {
   S.coins -= cost; save();
   play('packRip');
   const pack = document.getElementById('packEl');
-  if (pack) { pack.classList.add('opening'); }
+  if (pack) { pack.classList.add('opening'); setTimeout(() => pack.classList.add('spent'), 480); }
   window.VFX.packBurst(pack);
   await sleep(420);
   const cards = pickPackCards();

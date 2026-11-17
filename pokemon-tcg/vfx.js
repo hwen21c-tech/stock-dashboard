@@ -77,8 +77,10 @@
       this.mount();
       let f = document.getElementById('fxFlash');
       if (!f) { f = document.createElement('div'); f.id = 'fxFlash'; document.body.appendChild(f); }
-      f.style.opacity = String(Math.min(0.85, intensity || 0.5));
+      f.style.opacity = '0';
       f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
+      clearTimeout(this._flashT);
+      this._flashT = setTimeout(() => { f.classList.remove('go'); f.style.opacity = '0'; }, 520);
     }
     shake(power) {
       const el = document.getElementById('app') || document.body;
