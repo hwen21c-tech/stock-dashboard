@@ -2663,6 +2663,13 @@
     state.hookStyle = Number(b.getAttribute('data-h')) || 0;
     renderHooks(); renderSubStage(); updatePipelineIfOpen();
   });
+  function lastClause(s){
+    var t = String(s == null ? '' : s).trim();
+    var sent = t.split(/[.。]/).filter(function(x){ return x.trim(); });
+    if (sent.length > 1) return sent[sent.length - 1].trim();
+    var parts = t.split(/—|,/);
+    return parts[parts.length - 1].trim();
+  }
   function renderSubStage(){
     var p = $('#subPhone');
     if (!p) return;
@@ -2675,8 +2682,8 @@
     } else if (n === 2){
       html += '<div class="cap">' + hlKw(trunc(hook.text, 46)) + '</div>';
     } else {
-      html += '<div class="bar-t"><span class="l1">' + esc(trunc(topic, 16)) + '</span><span class="l2">' + esc(trunc(hook.text, 20)) + '</span></div>' +
-        '<div class="bar-b"><span class="p1">' + esc('포인트 · ' + trunc(topic, 20)) + '</span><span class="p2">출처 표기 · 자막 3단 레터박스</span></div>';
+      html += '<div class="bar-t"><span class="l1">' + esc(cutWords(topic, 16)) + '</span><span class="l2">' + esc(trunc(lastClause(hook.text), 18)) + '</span></div>' +
+        '<div class="bar-b"><span class="p1">' + esc('포인트 · ' + trunc(topic, 18)) + '</span><span class="p2">출처 표기 · 자막 3단 레터박스</span></div>';
     }
     p.className = 'phone pv' + n + (state.ratio === '16:9' ? ' land' : '');
     p.innerHTML = html;
