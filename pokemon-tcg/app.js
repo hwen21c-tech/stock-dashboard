@@ -1039,10 +1039,10 @@ function infoPanel(u, side) {
 function renderBattle() {
   const B = window.__B;
   if (!B) { go('home'); return; }
-  const me = B.players[0], foe = B.players[1];
-  const p = curP(B);
-  const myTurn = B.cur === 0;
-  const hideHand = B.mode === 'pvp' && B.cur === 1;
+  const viewIdx = B.mode === 'pvp' ? B.cur : 0;
+  const me = B.players[viewIdx], foe = B.players[1 - viewIdx];
+  const myTurn = B.cur === viewIdx;
+  const hideHand = false;
   const prizesMe = Math.max(0, S.settings.prizes - me.prizesTaken);
   const prizesFoe = Math.max(0, S.settings.prizes - foe.prizesTaken);
   const dots = n => `<span class="prize-dots">${Array.from({ length: S.settings.prizes }).map((_, i) => `<i class="${i < n ? 'on' : ''}"></i>`).join('')}</span>`;
@@ -1361,6 +1361,10 @@ async function doInstall() {
 }
 
 /* ------------------------------------------------------------ 이벤트 */
+function meP() {
+  const B = window.__B;
+  return B.players[B.mode === 'pvp' ? B.cur : 0];
+}
 document.addEventListener('click', async e => {
   const t = e.target.closest('[data-act]');
   if (!t) return;
@@ -1392,14 +1396,16 @@ document.addEventListener('click', async e => {
       break;
     }
     case 'handCard': {
-      if (!B || B.busy || B.cur !== 0) break;
-      const h = B.players[0].hand.find(x => x.uid === t.dataset.uid);
+      if (!B || B.busy) break;
+      const mp = meP();
+      if (B.cur !== mp.idx) break;
+      const h = mp.hand.find(x => x.uid === t.dataset.uid);
       if (!h) break;
       const c = BY[h.id];
       const items = [];
       if (c.stage === 'Basic') items.push({ label: `🃏 ${esc(c.name)} 벤치로 내보내기`, act: 'bench', kind: 'ghost' });
-      const evo = B.players[0].active && B.players[0].active.card.name === c.evolvesFromName;
-      const evoB = B.players[0].bench.find(u => u.card.name === c.evolvesFromName);
+      const evo = mp.active && mp.active.card.name === c.evolvesFromName;
+      const evoB = mp.bench.find(u => u.card.name === c.evolvesFromName);
       if (c.evolvesFromName && (evo || evoB)) items.push({ label: `✨ ${esc(c.name)}(으)로 진화!`, act: 'evolve', kind: 'primary' });
       items.push({ label: '🔍 카드 자세히 보기', act: 'detail', kind: 'ghost' });
       play('tap');
@@ -1412,15 +1418,16 @@ document.addEventListener('click', async e => {
       const it = items[parseInt(t.dataset.i, 10)];
       document.getElementById('modalRoot').innerHTML = '';
       if (!it || !B) break;
-      const h = B.players[0].hand.find(x => x.uid === window.__handUid);
+      const mp = meP();
+      const h = mp.hand.find(x => x.uid === window.__handUid);
       if (!h) break;
       const c = BY[h.id];
-      if (it.act === 'bench') benchFromHand(B.players[0], h);
+      if (it.act === 'bench') benchFromHand(mp, h);
       else if (it.act === 'detail') showDetail(c.id);
       else if (it.act === 'evolve') {
-        let target = B.players[0].active && B.players[0].active.card.name === c.evolvesFromName ? B.players[0].active : null;
-        if (!target) target = B.players[0].bench.find(u => u.card.name === c.evolvesFromName);
-        if (target) evolveUnit(B.players[0], target, h);
+        let target = mp.active && mp.active.card.name === c.evolvesFromName ? mp.active : null;
+        if (!target) target = mp.bench.find(u => u.card.name === c.evolvesFromName);
+        if (target) evolveUnit(mp, target, h);
       }
       break;
     }
@@ -1438,21 +1445,23 @@ document.addEventListener('click', async e => {
     }
     case 'tapActive': {
       if (!B || B.busy) break;
+      const mp = meP();
       const own = parseInt(t.dataset.own, 10);
-      if (own !== 0) break;
-      if (window.__energyType && !B.players[0].energyUsed && B.players[0].active) {
-        attachEnergy(B.players[0], B.players[0].active, window.__energyType);
+      if (own !== mp.idx) break;
+      if (window.__energyType && !mp.energyUsed && mp.active) {
+        attachEnergy(mp, mp.active, window.__energyType);
         window.__energyType = null;
-      } else showDetail(B.players[0].active.card.id);
+      } else showDetail(mp.active.card.id);
       break;
     }
     case 'tapBench': {
       if (!B || B.busy) break;
+      const mp = meP();
       const own = parseInt(t.dataset.own, 10), i = parseInt(t.dataset.i, 10);
-      if (own !== 0) break;
-      const u = B.players[0].bench[i];
+      if (own !== mp.idx) break;
+      const u = mp.bench[i];
       if (!u) break;
-      if (window.__energyType && !B.players[0].energyUsed) { attachEnergy(B.players[0], u, window.__energyType); window.__energyType = null; }
+      if (window.__energyType && !mp.energyUsed) { attachEnergy(mp, u, window.__energyType); window.__energyType = null; }
       else showDetail(u.card.id);
       break;
     }
@@ -1465,7 +1474,7 @@ document.addEventListener('click', async e => {
     case 'ability': if (B) useAbility(false); break;
     case 'retreat': {
       if (!B || B.busy) break;
-      const p = B.players[0], u = p.active;
+      const p = meP(), u = p.active;
       if (!u || !p.bench.length) { toast('벤치에 포켓몬이 없어요'); break; }
       if (p.cantRetreat) { toast('이번 차례엔 후퇴할 수 없어요'); break; }
       if (u.noRetreat) { toast('후퇴할 수 없는 상태예요'); break; }
@@ -1481,7 +1490,7 @@ document.addEventListener('click', async e => {
       render();
       break;
     }
-    case 'endTurn': if (B && B.cur === 0) { play('tap'); endTurn(); } break;
+    case 'endTurn': if (B && !B.busy && B.cur === meP().idx) { play('tap'); endTurn(); } break;
     case 'promote': if (window.__promoteResolve) window.__promoteResolve(parseInt(t.dataset.i, 10)); break;
     case 'passGo': if (window.__passNext) window.__passNext(); break;
     case 'confirmYes': if (window.__confirmYes) window.__confirmYes(); break;
