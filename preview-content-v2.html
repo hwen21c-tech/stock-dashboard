@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#070c14">
+<title>🎬✍️ AI 콘텐츠 스튜디오 v2 프리뷰</title>
+<style>
+  :root{
+    --bg:#070c14; --panel:#0b1120; --panel2:#0e1729; --hover:#111a2e;
+    --line:rgba(148,163,184,.16); --border:rgba(56,189,248,.20);
+    --text:#f8fafc; --sub:#94a3b8; --faint:#64748b;
+    --accent:#38bdf8; --violet:#a855f7; --gold:#f59e0b; --green:#22c55e; --red:#f43f5e;
+    --r:14px; --r-sm:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{max-width:100%;overflow-x:hidden}
+  body{
+    background:
+      radial-gradient(1100px 560px at 10% -12%, rgba(56,189,248,.10), transparent 60%),
+      radial-gradient(900px 500px at 98% -6%, rgba(168,85,247,.10), transparent 58%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,Roboto,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    line-height:1.55; letter-spacing:-.025em; word-break:keep-all; overflow-wrap:anywhere;
+    padding:14px 14px 40px; max-width:1200px; margin:0 auto;
+    -webkit-font-smoothing:antialiased;
+  }
+  button,input,select,textarea{font-family:inherit;letter-spacing:inherit;font-size:inherit;color:inherit}
+  button{cursor:pointer;background:none;border:none}
+  h1,h2,h3,h4{letter-spacing:-.035em;line-height:1.3}
+  [hidden]{display:none !important}
+
+  /* ---------- header ---------- */
+  header{
+    display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;
+    gap:10px;padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--border);
+  }
+  .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  .brand-icon{
+    flex:0 0 auto;width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+    font-size:20px;letter-spacing:-4px;
+    background:linear-gradient(135deg,rgba(56,189,248,.18),rgba(168,85,247,.20));
+    border:1px solid var(--border);
+  }
+  .brand h1{font-size:16.5px;font-weight:900}
+  .brand h1 .v2{
+    font-size:11px;font-weight:900;color:#0b1120;background:linear-gradient(135deg,#38bdf8,#a855f7);
+    border-radius:6px;padding:1px 5px;vertical-align:2px;margin-left:3px;letter-spacing:0;
+  }
+  .brand h1 .pv{font-size:11px;font-weight:800;color:#fbbf24;border:1px solid rgba(245,158,11,.4);background:rgba(245,158,11,.12);border-radius:6px;padding:1px 5px;vertical-align:2px;margin-left:3px;letter-spacing:0}
+  .brand-sub{font-size:11.5px;color:var(--sub);font-weight:600;margin-top:2px}
+  .top-actions{display:flex;flex-wrap:wrap;align-items:center;gap:7px;min-width:0}
+  .status-badge{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:11.5px;font-weight:800;color:#fcd34d;
+    background:rgba(245,158,11,.11);border:1px solid rgba(245,158,11,.38);
+    border-radius:999px;padding:5px 10px;white-space:nowrap;
+  }
+  .status-badge .dot{width:7px;height:7px;border-radius:50%;background:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,.16);flex:0 0 auto}
+  .btn-guide{
+    display:inline-flex;align-items:center;gap:5px;
+    font-size:12px;font-weight:800;color:#7dd3fc;
+    background:#0e2638;border:1px solid rgba(56,189,248,.42);
+    border-radius:9px;padding:6px 10px;white-space:nowrap;
+  }
+  .btn-guide:hover{filter:brightness(1.12)}
+  .btn-guide .cv{transition:transform .18s;font-size:10px}
+  .btn-guide[aria-expanded="true"] .cv{transform:rotate(180deg)}
+
+  /* ---------- api guide ---------- */
+  .guide{
+    background:linear-gradient(135deg,rgba(14,23,41,.96),rgba(11,17,32,.96));
+    border:1px solid var(--border);border-radius:var(--r);
+    padding:13px 14px;margin-bottom:12px;
+  }
+  .guide h3{font-size:13px;font-weight:900;display:flex;align-items:center;gap:6px;margin-bottom:8px}
+  .guide ol{margin:0 0 0 18px;display:grid;gap:5px}
+  .guide li{font-size:12.3px;color:#cbd5e1;font-weight:600}
+  .guide code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.3px;
+    background:#0a1626;border:1px solid rgba(56,189,248,.28);color:#7dd3fc;border-radius:5px;padding:1px 5px;
+  }
+  .guide .warn{
+    margin-top:9px;font-size:11.5px;font-weight:700;color:#fbbf24;
+    background:rgba(245,158,11,.09);border:1px dashed rgba(245,158,11,.34);border-radius:9px;padding:8px 10px;
+  }
+
+  /* ---------- tabs ---------- */
+  .tabs{
+    display:grid;grid-template-columns:1fr 1fr;gap:7px;
+    background:#0a1220;border:1px solid var(--line);border-radius:13px;padding:5px;margin-bottom:13px;
+  }
+  .tab{
+    display:flex;align-items:center;justify-content:center;gap:6px;
+    padding:10px 6px;border-radius:9px;font-size:13px;font-weight:800;color:var(--sub);
+    border:1px solid transparent;min-width:0;white-space:nowrap;
+  }
+  .tab.on{color:#e0f2fe;background:linear-gradient(135deg,rgba(56,189,248,.20),rgba(168,85,247,.16));border-color:rgba(56,189,248,.38);box-shadow:0 2px 12px rgba(56,189,248,.10)}
+  .tab .cnt{font-size:10.5px;font-weight:800;color:#94a3b8;background:rgba(148,163,184,.14);border-radius:999px;padding:1px 6px}
+
+  /* ---------- sub modes ---------- */
+  .submodes{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:12px}
+  .submode{
+    display:flex;flex-direction:column;align-items:flex-start;gap:2px;
+    padding:10px 11px;border-radius:11px;border:1px solid var(--line);
+    background:#0b1424;font-size:12.5px;font-weight:800;color:#cbd5e1;min-width:0;text-align:left;
+  }
+  .submode .st{font-size:11px;font-weight:700;color:var(--faint)}
+  .submode.on{background:linear-gradient(135deg,rgba(56,189,248,.14),rgba(168,85,247,.10));border-color:rgba(56,189,248,.42);color:#e0f2fe}
+  .submode.on .st{color:#7dd3fc}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:linear-gradient(150deg,rgba(14,23,41,.94),rgba(11,17,32,.94));
+    border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:11px;
+  }
+  .card-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:11px}
+  .card-head h2{font-size:13.5px;font-weight:900}
+  .card-head .num{
+    display:inline-flex;align-items:center;justify-content:center;width:19px;height:19px;border-radius:6px;flex:0 0 auto;
+    font-size:11px;font-weight:900;color:#7dd3fc;background:rgba(56,189,248,.14);border:1px solid rgba(56,189,248,.3);
+  }
+  .hint{font-size:11.5px;color:var(--faint);font-weight:600;line-height:1.5}
+
+  /* ---------- badges ---------- */
+  .bdg{
+    display:inline-flex;align-items:center;gap:4px;border-radius:999px;
+    font-size:10.5px;font-weight:900;padding:2px 8px;letter-spacing:-.01em;white-space:nowrap;
+  }
+  .bdg.real{color:#6ee7b7;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.35)}
+  .bdg.wait{color:#fbbf24;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.36)}
+  .bdg.info{color:#7dd3fc;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.32)}
+  .bdg.violet{color:#c4b5fd;background:rgba(168,85,247,.14);border:1px solid rgba(168,85,247,.34)}
+
+  /* ---------- buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:800;
+    border:1px solid var(--line);background:#0f1a2e;color:#cbd5e1;
+    transition:filter .15s,background .15s;min-width:0;
+  }
+  .btn:hover{filter:brightness(1.15)}
+  .btn.primary{
+    background:linear-gradient(135deg,#0ea5e9,#6366f1);color:#fff;border:none;
+    box-shadow:0 4px 16px rgba(14,165,233,.24);
+  }
+  .btn.ghost{background:#0b1424;color:#7dd3fc;border-color:rgba(56,189,248,.34)}
+  .btn.small{padding:6px 10px;font-size:11.5px}
+  .btn.danger{color:#fda4af;border-color:rgba(244,63,94,.36);background:rgba(244,63,94,.10)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+  .btn.big{width:100%;padding:13px;font-size:14px;border-radius:12px}
+
+  /* ---------- drop zone ---------- */
+  .drop{
+    border:1.5px dashed rgba(56,189,248,.34);border-radius:12px;
+    background:radial-gradient(400px 160px at 50% 0%,rgba(56,189,248,.08),transparent 70%),#0a1424;
+    padding:16px 14px;text-align:center;transition:border-color .15s,background .15s;
+  }
+  .drop.drag{border-color:rgba(56,189,248,.85);background:#0d1c2f}
+  .drop .big-ico{font-size:26px;line-height:1;margin-bottom:7px}
+  .drop b{display:block;font-size:13px;font-weight:900;margin-bottom:3px}
+  .drop p{font-size:11.5px;color:var(--sub);font-weight:600;margin-bottom:10px;line-height:1.5}
+  .drop .row{display:flex;justify-content:center}
+
+  .file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:9px;margin-top:11px}
+  .fcard{
+    background:#0a1424;border:1px solid var(--line);border-radius:11px;overflow:hidden;min-width:0;
+  }
+  .fthumb{position:relative;background:#000;aspect-ratio:16/9;min-width:0}
+  .fthumb video{width:100%;height:100%;object-fit:cover;display:block;background:#000}
+  .fthumb .dur{
+    position:absolute;right:6px;bottom:6px;font-size:10px;font-weight:900;color:#fff;
+    background:rgba(0,0,0,.72);border-radius:5px;padding:1px 5px;letter-spacing:0;
+  }
+  .fthumb .rm{
+    position:absolute;right:5px;top:5px;width:22px;height:22px;border-radius:50%;
+    background:rgba(0,0,0,.68);color:#fff;font-size:11px;font-weight:900;
+    display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.2);
+  }
+  .fmeta{padding:8px 9px 9px;min-width:0}
+  .fname{font-size:11.5px;font-weight:800;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fsub{font-size:10.5px;color:var(--sub);font-weight:700;margin-top:2px}
+  .fcrop{font-size:10.5px;color:#7dd3fc;font-weight:700;margin-top:3px}
+  .fcrop.bad{color:#fbbf24}
+  .warnline{
+    margin-top:10px;font-size:11.5px;font-weight:700;color:#fbbf24;
+    background:rgba(245,158,11,.09);border:1px solid rgba(245,158,11,.3);border-radius:9px;padding:7px 10px;
+  }
+  .summary{
+    margin-top:11px;border:1px solid rgba(34,197,94,.26);background:rgba(34,197,94,.07);
+    border-radius:10px;padding:9px 11px;font-size:12px;font-weight:700;color:#bbf7d0;
+  }
+  .summary b{color:#fff}
+
+  /* ---------- fields ---------- */
+  .field{margin-top:11px}
+  .field:first-child{margin-top:0}
+  .flabel{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#cbd5e1;margin-bottom:6px}
+  textarea,input[type=text],select{
+    width:100%;background:#081120;border:1px solid rgba(148,163,184,.24);border-radius:10px;
+    padding:10px 11px;font-size:12.8px;font-weight:600;color:var(--text);outline:none;max-width:100%;
+  }
+  textarea{resize:vertical;min-height:76px;line-height:1.55}
+  textarea:focus,input[type=text]:focus,select:focus{border-color:rgba(56,189,248,.65);box-shadow:0 0 0 3px rgba(56,189,248,.10)}
+  textarea::placeholder,input::placeholder{color:#4b5b70;font-weight:600}
+  select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#7dd3fc 50%),linear-gradient(135deg,#7dd3fc 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:32px}
+  .quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+  .qchip{
+    font-size:11px;font-weight:700;color:#94a3b8;background:#0d1829;
+    border:1px solid var(--line);border-radius:999px;padding:5px 9px;
+  }
+  .qchip:hover{color:#7dd3fc;border-color:rgba(56,189,248,.4)}
+
+  /* ---------- segmented ---------- */
+  .segment{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .seg{
+    display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:11px;
+    border:1px solid var(--line);background:#0a1424;min-width:0;text-align:left;
+  }
+  .seg b{font-size:12.5px;font-weight:900;color:#cbd5e1}
+  .seg span{font-size:10.5px;font-weight:700;color:var(--faint);letter-spacing:0}
+  .seg.on{border-color:rgba(56,189,248,.55);background:linear-gradient(135deg,rgba(56,189,248,.14),rgba(168,85,247,.08))}
+  .seg.on b{color:#e0f2fe}
+  .seg.on span{color:#7dd3fc}
+
+  /* ---------- pipeline ---------- */
+  .pipe-head{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-bottom:10px}
+  .pipe-head h3{font-size:13px;font-weight:900}
+  .steps{display:grid;gap:7px}
+  .step{
+    display:flex;gap:9px;align-items:flex-start;
+    border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#0a1424;min-width:0;
+  }
+  .step .ico{flex:0 0 auto;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:900}
+  .step.done .ico{background:rgba(34,197,94,.18);border:1px solid rgba(34,197,94,.45);color:#6ee7b7}
+  .step.wait .ico{background:rgba(245,158,11,.14);border:1px solid rgba(245,158,11,.4);color:#fbbf24}
+  .step .body{min-width:0;flex:1}
+  .step .t{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.3px;font-weight:800;color:#e2e8f0}
+  .step .d{font-size:11.3px;color:var(--sub);font-weight:600;margin-top:3px;line-height:1.5}
+  .realbox{
+    margin-top:11px;border:1px solid rgba(34,197,94,.24);background:rgba(34,197,94,.06);
+    border-radius:10px;padding:9px 11px;font-size:11.8px;font-weight:700;color:#bbf7d0;line-height:1.55;
+  }
+  .realbox b{color:#fff}
+  .waitbox{
+    margin-top:8px;border:1px dashed rgba(245,158,11,.34);background:rgba(245,158,11,.06);
+    border-radius:10px;padding:9px 11px;font-size:11.5px;font-weight:700;color:#fcd34d;line-height:1.55;
+  }
+
+  /* ---------- youtube ---------- */
+  .search-row{display:flex;flex-wrap:wrap;gap:7px}
+  .search-row input{flex:1 1 160px;min-width:0}
+  .search-row .btn{flex:0 0 auto}
+  .demo-banner{
+    display:flex;flex-wrap:wrap;align-items:center;gap:6px;
+    border:1px solid rgba(245,158,11,.3);background:rgba(245,158,11,.07);
+    border-radius:10px;padding:8px 10px;margin:11px 0;font-size:11.5px;font-weight:700;color:#fcd34d;line-height:1.5;
+  }
+  .yt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:9px}
+  .vcard{
+    position:relative;display:flex;gap:9px;padding:8px;border-radius:11px;
+    background:#0a1424;border:1px solid var(--line);text-align:left;min-width:0;align-items:stretch;
+    transition:border-color .15s,background .15s;
+  }
+  .vcard:hover{background:#0d1a2c}
+  .vcard.on{border-color:rgba(56,189,248,.6);background:linear-gradient(135deg,rgba(56,189,248,.13),rgba(168,85,247,.08))}
+  .vthumb{
+    flex:0 0 78px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+    font-size:20px;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,.07);
+  }
+  .vthumb .d{
+    position:absolute;right:3px;bottom:3px;font-size:8.5px;font-weight:900;color:#fff;
+    background:rgba(0,0,0,.7);border-radius:3px;padding:0 3px;letter-spacing:0;
+  }
+  .vinfo{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px}
+  .vt{font-size:11.8px;font-weight:800;color:#e2e8f0;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .vc{font-size:10.3px;color:var(--faint);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .vck{
+    position:absolute;right:8px;top:8px;width:17px;height:17px;border-radius:5px;
+    border:1.5px solid rgba(148,163,184,.5);display:flex;align-items:center;justify-content:center;
+    font-size:10px;font-weight:900;color:transparent;background:rgba(7,12,20,.6);
+  }
+  .vcard.on .vck{background:#0ea5e9;border-color:#38bdf8;color:#fff}
+  .yt-bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:9px}
+  .counter{
+    display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:900;color:#7dd3fc;
+    background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.36);border-radius:999px;padding:4px 10px;letter-spacing:0;
+  }
+  .counter.full{color:#6ee7b7;background:rgba(34,197,94,.13);border-color:rgba(34,197,94,.4)}
+  .progress{flex:1;min-width:70px;height:5px;border-radius:99px;background:rgba(148,163,184,.16);overflow:hidden}
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#38bdf8,#a855f7);transition:width .2s}
+  .planlist{display:grid;gap:7px;margin-top:4px}
+  .pitem{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);background:#0a1424;border-radius:10px;padding:8px 10px;min-width:0}
+  .pitem .role{
+    flex:0 0 auto;font-size:10px;font-weight:900;color:#c4b5fd;background:rgba(168,85,247,.14);
+    border:1px solid rgba(168,85,247,.32);border-radius:6px;padding:2px 6px;margin-top:1px;white-space:nowrap;
+  }
+  .pitem .pt{font-size:11.8px;font-weight:700;color:#e2e8f0;line-height:1.45;min-width:0}
+  .pitem .pt small{display:block;font-size:10.5px;color:var(--faint);font-weight:700;margin-top:2px}
+  .timeline{display:flex;height:24px;border-radius:7px;overflow:hidden;margin-top:10px;border:1px solid var(--line)}
+  .timeline i{display:block;height:100%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:900;color:#04121f;font-style:normal;overflow:hidden;white-space:nowrap}
+  .tl1{background:linear-gradient(135deg,#38bdf8,#22d3ee)}
+  .tl2{background:linear-gradient(135deg,#a855f7,#818cf8)}
+  .tl3{background:linear-gradient(135deg,#fbbf24,#f59e0b)}
+  .empty{
+    border:1px dashed var(--line);border-radius:11px;padding:16px 12px;text-align:center;
+    font-size:11.8px;color:var(--faint);font-weight:700;line-height:1.6;
+  }
+  .empty b{color:#94a3b8}
+
+  /* ---------- blog ---------- */
+  .chiprow{display:flex;flex-wrap:wrap;gap:6px}
+  .chipwrap{display:inline-flex;min-width:0;max-width:100%}
+  .fchip{
+    display:inline-flex;align-items:center;gap:5px;max-width:100%;
+    font-size:12px;font-weight:800;color:#bae6fd;
+    background:#0e1729;border:1px solid rgba(56,189,248,.3);border-radius:999px;
+    padding:7px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    transition:all .15s;
+  }
+  .fchip:hover{background:#122136}
+  .fchip.on{background:linear-gradient(135deg,rgba(56,189,248,.26),rgba(168,85,247,.2));border-color:rgba(56,189,248,.75);color:#f0f9ff;box-shadow:0 2px 12px rgba(56,189,248,.16)}
+  .chipwrap.has-edit .fchip{border-radius:999px 0 0 999px;border-right:none;padding-right:9px}
+  .chipedit{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;border-radius:0 999px 999px 0;font-size:10.5px;
+    background:#0e1729;border:1px solid rgba(56,189,248,.3);color:#7dd3fc;
+  }
+  .chipedit:hover{background:#152a44}
+  .addchip{
+    display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:900;color:#6ee7b7;
+    background:rgba(34,197,94,.10);border:1px dashed rgba(34,197,94,.45);border-radius:999px;padding:7px 12px;
+  }
+  .addchip:hover{background:rgba(34,197,94,.16)}
+  .store-note{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:10px;font-size:10.8px;font-weight:700;color:var(--faint)}
+  .linkbtn{font-size:10.8px;font-weight:800;color:#94a3b8;text-decoration:underline;text-underline-offset:2px}
+
+  .formbox{border:1px solid rgba(56,189,248,.24);border-radius:12px;background:linear-gradient(150deg,rgba(56,189,248,.07),rgba(168,85,247,.05));padding:12px}
+  .fb-head{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-bottom:8px}
+  .fb-emoji{font-size:19px;line-height:1}
+  .fb-name{font-size:13.5px;font-weight:900;color:#f0f9ff;min-width:0}
+  .fb-meta{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:9px}
+  .sec-list{list-style:none;display:grid;gap:5px;counter-reset:sec}
+  .sec-list li{
+    display:flex;gap:8px;align-items:flex-start;font-size:11.8px;font-weight:700;color:#dbeafe;
+    background:rgba(7,12,20,.5);border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-width:0;
+  }
+  .sec-list li .n{
+    flex:0 0 auto;width:16px;height:16px;border-radius:5px;font-size:9.5px;font-weight:900;
+    display:flex;align-items:center;justify-content:center;color:#7dd3fc;background:rgba(56,189,248,.14);margin-top:1px;
+  }
+  .hlbox{
+    margin-top:9px;font-size:11.3px;font-weight:700;color:#fde68a;line-height:1.55;
+    background:rgba(245,158,11,.08);border-left:3px solid rgba(245,158,11,.55);border-radius:0 8px 8px 0;padding:7px 10px;
+  }
+  .hlbox b{color:#fbbf24;display:block;font-size:10.5px;margin-bottom:2px;letter-spacing:.02em}
+
+  .out-card{border:1px solid rgba(56,189,248,.26);border-radius:12px;background:#08111f;overflow:hidden}
+  .out-head{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:9px 11px;border-bottom:1px solid var(--line);background:rgba(56,189,248,.05)}
+  .out-head h3{font-size:12.5px;font-weight:900}
+  .out-head .spacer{flex:1}
+  pre.out{
+    margin:0;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;
+    font-size:11.3px;line-height:1.62;color:#cbd5e1;white-space:pre-wrap;word-break:break-word;
+    max-height:min(52vh,520px);overflow:auto;letter-spacing:0;
+  }
+  .out-foot{padding:8px 11px;border-top:1px solid var(--line);font-size:10.8px;font-weight:700;color:var(--faint);line-height:1.55;background:rgba(7,12,20,.6)}
+  .out-foot b{color:#fbbf24}
+
+  .notice{
+    margin-top:10px;font-size:11.3px;font-weight:700;color:#94a3b8;line-height:1.55;
+    background:rgba(148,163,184,.06);border:1px dashed rgba(148,163,184,.24);border-radius:9px;padding:8px 10px;
+  }
+  .notice b{color:#7dd3fc}
+
+  /* ---------- modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(3,7,14,.78);backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;padding:14px;z-index:60;
+  }
+  .modal{
+    width:100%;max-width:520px;max-height:88vh;overflow-y:auto;
+    background:linear-gradient(160deg,#0e1729,#0a1120);border:1px solid rgba(56,189,248,.32);
+    border-radius:16px;box-shadow:0 24px 70px rgba(0,0,0,.6);
+  }
+  .modal-head{display:flex;align-items:center;gap:8px;padding:13px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#0e1729;z-index:2;border-radius:16px 16px 0 0}
+  .modal-head h3{font-size:14px;font-weight:900;flex:1;min-width:0}
+  .modal-head .x{width:28px;height:28px;border-radius:8px;background:#0a1424;border:1px solid var(--line);color:#94a3b8;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .modal-body{padding:13px 14px}
+  .modal-foot{display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:11px 14px 14px}
+  .modal-foot .spacer{flex:1}
+  .emoji-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+  .epick{
+    width:30px;height:30px;border-radius:8px;background:#0a1424;border:1px solid var(--line);
+    font-size:14px;display:flex;align-items:center;justify-content:center;
+  }
+  .epick:hover{border-color:rgba(56,189,248,.5)}
+  .err{
+    margin-top:9px;font-size:11.5px;font-weight:800;color:#fda4af;
+    background:rgba(244,63,94,.10);border:1px solid rgba(244,63,94,.3);border-radius:9px;padding:7px 10px;
+  }
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+
+  /* ---------- toast ---------- */
+  #toast{
+    position:fixed;left:50%;bottom:20px;transform:translate(-50%,16px);
+    max-width:calc(100% - 28px);width:max-content;
+    background:#0f2136;border:1px solid rgba(56,189,248,.45);color:#e0f2fe;
+    font-size:12px;font-weight:800;padding:10px 14px;border-radius:11px;
+    box-shadow:0 10px 34px rgba(0,0,0,.5);opacity:0;pointer-events:none;
+    transition:opacity .2s,transform .2s;z-index:80;
+  }
+  #toast.on{opacity:1;transform:translate(-50%,0)}
+
+  footer{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:10.8px;font-weight:600;color:var(--faint);line-height:1.65}
+  footer b{color:#94a3b8}
+
+  /* ---------- wide layouts ---------- */
+  @media (min-width:760px){
+    body{padding:18px 20px 48px}
+    .brand h1{font-size:18px}
+    .tab{font-size:13.5px}
+    .merge-cols{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:11px;align-items:start}
+    .merge-cols .card{margin-bottom:0}
+    .blog-cols{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,1fr);gap:11px;align-items:start}
+    .file-grid{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  }
+  @media (min-width:980px){
+    .yt-grid{grid-template-columns:repeat(auto-fill,minmax(258px,1fr))}
+  }
+  @media (max-width:359px){
+    .tabs{grid-template-columns:1fr}
+    .submodes{grid-template-columns:1fr}
+    .two{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-icon" aria-hidden="true">🎬✍️</div>
+    <div style="min-width:0">
+      <h1>AI 콘텐츠 스튜디오 <span class="v2">v2</span> <span class="pv">프리뷰</span></h1>
+      <p class="brand-sub">영상 컷편집 · 블로그 자동 작성 — 한 화면에서</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <span class="status-badge"><span class="dot"></span>정적 프리뷰 · Gemini API 연결 대기</span>
+    <button class="btn-guide" id="apiGuideBtn" aria-expanded="false" aria-controls="apiGuide">API 연결 안내 <span class="cv">▼</span></button>
+  </div>
+</header>
+
+<div class="guide" id="apiGuide" hidden>
+  <h3>🔑 Gemini API 키 연결 방법 <span class="bdg wait">연결 전 · 안내만</span></h3>
+  <ol>
+    <li><b>Google AI Studio</b>(aistudio.google.com) → <code>Get API key</code>에서 키 발급 <span style="color:#fbbf24">(무료 티어 있음, 사용량 초과 시 종량제로 별도 결제 설정 필요)</span></li>
+    <li><b>Vercel 프로젝트</b>(sd_live) → Settings → Environment Variables → <code>GEMINI_API_KEY</code> 이름으로 값 저장, Production 체크</li>
+    <li>Redeploy 후 동적 웹에서 실시간 유튜브 검색 · AI 문장 생성 · Gemini 영상 타임코드 분석이 켜집니다.</li>
+  </ol>
+  <div class="warn">⚠️ 키는 이 정적 페이지·GitHub 저장소에 넣지 않습니다. Vercel 서버리스 함수에서만 읽고, 이 프리뷰는 키를 요구하지도 저장하지도 않습니다.</div>
+</div>
+
+<nav class="tabs" role="tablist" aria-label="모드 전환">
+  <button class="tab on" id="tabVideo" role="tab" aria-selected="true" aria-controls="panelVideo">🎬 AI 영상 스튜디오</button>
+  <button class="tab" id="tabBlog" role="tab" aria-selected="false" aria-controls="panelBlog">✍️ 블로그 자동 작성기</button>
+</nav>
+
+<!-- ================= VIDEO ================= -->
+<section id="panelVideo" role="tabpanel" aria-labelledby="tabVideo">
+  <div class="submodes">
+    <button class="submode on" id="smMerge" aria-pressed="true">
+      <span>① 내 영상 합치기</span><span class="st">2~3개 업로드</span>
+    </button>
+    <button class="submode" id="smYt" aria-pressed="false">
+      <span>② 유튜브 검색</span><span class="st">7개 중 3개 선택</span>
+    </button>
+  </div>
+
+  <!-- (A) merge -->
+  <div id="modeMerge">
+    <div class="merge-cols">
+      <div>
+        <div class="card">
+          <div class="card-head">
+            <span class="num">1</span><h2>영상 파일 선택</h2>
+            <span class="bdg real">✓ 이 화면에서 실제 동작</span>
+          </div>
+          <div class="drop" id="drop">
+            <div class="big-ico">🎥</div>
+            <b>내 영상 2~3개를 고르세요</b>
+            <p>파일명 · 용량 · 길이 · 미리보기를 브라우저에서 바로 읽습니다.<br>영상은 서버로 전송되지 않습니다.</p>
+            <div class="row"><button class="btn primary" id="pickBtn">영상 선택</button></div>
+            <input type="file" id="fileInput" accept="video/*" multiple hidden>
+          </div>
+          <div class="file-grid" id="fileCards"></div>
+          <div class="summary" id="fileSummary" hidden></div>
+          <div class="warnline" id="fileWarn" hidden></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-head"><span class="num">2</span><h2>스토리 · 편집 방향</h2></div>
+          <div class="field">
+            <label class="flabel" for="story">어떤 순서로, 어떤 느낌으로 이어 붙일까요? <span class="bdg wait">AI 분석은 연결 후</span></label>
+            <textarea id="story" placeholder="예) 후렴 부분에서 두 영상을 교차하고, 마지막에 손인사 엔딩. 자막은 곡 제목과 멤버 이름만." maxlength="400"></textarea>
+            <div class="quick" id="storyQuick">
+              <button class="qchip" data-story="후렴에서 두 영상을 교차편집">후렴 교차편집</button>
+              <button class="qchip" data-story="인트로 → 핵심 장면 → 엔딩 순서로">인트로-본편-엔딩</button>
+              <button class="qchip" data-story="각 영상의 하이라이트만 짧게 모아서">하이라이트만</button>
+              <button class="qchip" data-story="시작은 세로 직캠, 후반은 무대 클로즈업">직캠→무대</button>
+            </div>
+          </div>
+          <div class="field">
+            <div class="flabel">출력 비율</div>
+            <div class="segment" id="ratioSeg">
+              <button class="seg on" data-ratio="9:16"><b>9:16 쇼츠</b><span>1080 × 1920</span></button>
+              <button class="seg" data-ratio="16:9"><b>16:9 가로</b><span>1920 × 1080</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><span class="num">3</span><h2>편집 실행</h2></div>
+          <button class="btn primary big" id="runEdit">편집 실행</button>
+          <p class="hint" style="margin-top:8px">지금은 <b style="color:#fbbf24">파이프라인 준비 상태</b>를 단계별로 보여 줍니다. 실제 AI 분석·컷편집은 Gemini API 연결 후 켜집니다.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="pipeline" hidden>
+      <div class="pipe-head">
+        <h3>🧩 편집 파이프라인</h3>
+        <span class="bdg info" id="pipeRatio">9:16</span>
+        <span class="bdg wait">API 연결 전 = 준비 상태</span>
+      </div>
+      <div class="steps" id="steps"></div>
+      <div class="realbox" id="realBox"></div>
+      <div class="waitbox">🔒 <b>지금 실행되지 않은 것</b> — Gemini 영상 분석, 컷 설계, ffmpeg.wasm 컷편집, 자막·BGM 합성, MP4 저장. 이 프리뷰는 정적 페이지라 API도 편집 엔진도 싣지 않았습니다. 위에서 <b>실제로 확인된 값</b>만 표시하고, 나머지는 성공한 것처럼 꾸미지 않습니다.</div>
+    </div>
+  </div>
+
+  <!-- (B) youtube -->
+  <div id="modeYt" hidden>
+    <div class="card">
+      <div class="card-head">
+        <span class="num">1</span><h2>유튜브 검색</h2>
+        <span class="bdg wait">실시간 검색 · API 연결 전</span>
+      </div>
+      <div class="search-row">
+        <input type="text" id="ytQuery" placeholder="검색어 (예: 동탄 아이랑 키즈카페)" maxlength="60">
+        <button class="btn ghost" id="ytSearchBtn">검색</button>
+        <button class="btn primary" id="ytDemoBtn">데모 예시 보기</button>
+      </div>
+      <div class="warnline" id="ytNotice" hidden></div>
+
+      <div id="ytResults" hidden>
+        <div class="demo-banner">
+          <span class="bdg wait">API 연결 전 데모</span>
+          <span>아래 7개는 <b>UI 확인용 예시 데이터</b>입니다. 실제 유튜브 검색 결과가 아니며, 영상 링크도 없습니다.</span>
+        </div>
+        <div class="yt-bar">
+          <span class="counter" id="ytCounter">0 / 3 선택</span>
+          <span class="progress"><i id="ytProgress"></i></span>
+          <button class="btn small" id="ytClear">선택 초기화</button>
+        </div>
+        <div class="yt-grid" id="ytGrid"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="num">2</span><h2>스토리 구성안 미리보기</h2>
+        <span class="bdg violet">템플릿 자동 구성</span>
+      </div>
+      <div id="ytPlan"><div class="empty">영상을 <b>3개</b> 고르면 오프닝 → 본편 → 엔딩 구성안이 여기에 만들어집니다.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= BLOG ================= -->
+<section id="panelBlog" role="tabpanel" aria-labelledby="tabBlog" hidden>
+  <div class="blog-cols">
+    <div>
+      <div class="card">
+        <div class="card-head">
+          <span class="num">1</span><h2>카테고리 양식</h2>
+          <span class="bdg real">✓ localStorage 저장</span>
+        </div>
+        <div class="chiprow" id="formChips"></div>
+        <div class="quick" style="margin-top:10px">
+          <button class="addchip" id="addFormBtn">+ 새 양식 추가</button>
+        </div>
+        <div class="store-note">
+          <span id="storeInfo">기본 5종 + 내 양식 0개 · 이 브라우저에 저장</span>
+          <button class="linkbtn" id="resetForms">내 양식 전체 초기화</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="num">2</span><h2>선택한 양식 구조</h2><span class="bdg info" id="formKind">기본 양식</span></div>
+        <div class="formbox" id="formBox"></div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:9px">
+          <button class="btn small ghost" id="dupFormBtn">이 양식 복제해서 수정</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><span class="num">3</span><h2>주제 · 키워드</h2></div>
+        <div class="field">
+          <input type="text" id="topic" placeholder="예) 동탄 아이랑 갈 만한 실내 키즈카페 3곳" maxlength="80">
+          <div class="quick" id="topicQuick">
+            <button class="qchip" data-topic="동탄 아이랑 갈 만한 실내 키즈카페 3곳">동탄 키즈카페</button>
+            <button class="qchip" data-topic="이번 주 코스피 마감 정리와 다음 주 체크포인트">코스피 주간 정리</button>
+            <button class="qchip" data-topic="읽은 책: 하루 10분 몰입의 힘">자기계발서 리뷰</button>
+            <button class="qchip" data-topic="겨울 제주 가족여행 항공+숙소 최저가 정리">제주 특가</button>
+          </div>
+        </div>
+        <button class="btn primary big" id="genBtn" style="margin-top:11px">양식 뼈대 생성</button>
+        <p class="hint" style="margin-top:8px">이모지 · 말투 · 섹션 순서 · 강조 포인트를 그대로 반영해 <b>마크다운 초안 틀</b>을 만듭니다. 문장 채우기는 동적 웹 연결 후 자동입니다.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" id="outCard" hidden style="padding:0;background:none;border:none">
+        <div class="out-card">
+          <div class="out-head">
+            <h3>📄 생성된 마크다운 뼈대</h3>
+            <span class="bdg real" id="outStat">생성됨</span>
+            <span class="spacer"></span>
+            <button class="btn small primary" id="copyBtn">복사</button>
+          </div>
+          <pre class="out" id="outText"></pre>
+          <div class="out-foot"><b>이 틀은 양식 구조만으로 만든 초안입니다.</b> 동적 웹(Gemini 연결)에서는 각 섹션에 검색·요약·문장이 자동으로 채워지고, 여기서는 직접 채워 넣으면 됩니다.</div>
+        </div>
+      </div>
+      <div class="card" id="outEmpty">
+        <div class="empty">
+          <b>아직 생성된 뼈대가 없습니다.</b><br>
+          양식을 고르고 주제를 입력한 뒤 <b>[양식 뼈대 생성]</b>을 눌러 주세요.<br>
+          생성된 마크다운은 <b>[복사]</b>로 바로 블로그에 붙여 넣을 수 있습니다.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <b>정적 프리뷰 안내</b> — 이 페이지는 UI·동선을 먼저 눌러 보기 위한 독립 미리보기입니다. 실제 동작: 영상 파일 메타·길이·미리보기, 양식 추가/수정/삭제 저장(localStorage), 양식 기반 마크다운 뼈대 생성·복사. 연결 대기: 유튜브 실시간 검색, AI 문장 생성, Gemini 영상 타임코드 분석, ffmpeg.wasm 컷편집. 기존 콘텐츠 스튜디오·관제탑과는 별개 파일이며 서로 영향을 주지 않습니다.
+</footer>
+
+<!-- modal -->
+<div class="overlay" id="formModal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-head">
+      <h3 id="mTitle">새 양식 추가</h3>
+      <button class="x" id="mClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="two">
+        <div class="field" style="margin-top:0">
+          <label class="flabel" for="mName">양식 이름 <span style="color:#f43f5e">*</span></label>
+          <input type="text" id="mName" placeholder="예) 맛집 리뷰" maxlength="20">
+        </div>
+        <div class="field" style="margin-top:0">
+          <label class="flabel" for="mEmoji">이모지</label>
+          <input type="text" id="mEmoji" placeholder="🍜" maxlength="6">
+        </div>
+      </div>
+      <div class="emoji-row" id="emojiRow"></div>
+
+      <div class="field">
+        <label class="flabel" for="mTone">말투</label>
+        <select id="mTone">
+          <option>친근한 리뷰형</option>
+          <option>전문 분석형</option>
+          <option>스토리텔링형</option>
+          <option>정보 요약형</option>
+          <option>단호한 팩트체크형</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="flabel" for="mSections">섹션 구성 <span class="bdg info">한 줄에 하나 · 3~6개</span></label>
+        <textarea id="mSections" rows="6" placeholder="도입 훅&#10;핵심 포인트 3가지&#10;가격·조건 비교&#10;추천 대상&#10;마무리 한 줄"></textarea>
+      </div>
+
+      <div class="field">
+        <label class="flabel" for="mHighlight">강조 포인트</label>
+        <textarea id="mHighlight" rows="2" placeholder="예) 가격과 조건은 실측값만. 없는 수치는 쓰지 않기."></textarea>
+      </div>
+
+      <div class="err" id="mErr" hidden></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn danger small" id="mDelete" hidden>삭제</button>
+      <span class="spacer"></span>
+      <button class="btn" id="mCancel">취소</button>
+      <button class="btn primary" id="mSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(s,r){ return (r||document).querySelector(s); };
+  var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+  var ESC = { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' };
+  function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g, function(c){ return ESC[c]; }); }
+
+  var toastEl = $('#toast'), toastTimer = null;
+  function toast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove('on'); }, 2400);
+  }
+
+  /* ================= tabs + guide ================= */
+  var tabVideo = $('#tabVideo'), tabBlog = $('#tabBlog');
+  var panelVideo = $('#panelVideo'), panelBlog = $('#panelBlog');
+  function setTab(which){
+    var v = which === 'video';
+    tabVideo.classList.toggle('on', v);
+    tabBlog.classList.toggle('on', !v);
+    tabVideo.setAttribute('aria-selected', v ? 'true' : 'false');
+    tabBlog.setAttribute('aria-selected', v ? 'false' : 'true');
+    panelVideo.hidden = !v;
+    panelBlog.hidden = v;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  tabVideo.addEventListener('click', function(){ setTab('video'); });
+  tabBlog.addEventListener('click', function(){ setTab('blog'); });
+
+  var guideBtn = $('#apiGuideBtn'), guide = $('#apiGuide');
+  guideBtn.addEventListener('click', function(){
+    var open = guide.hidden;
+    guide.hidden = !open;
+    guideBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  /* ================= sub modes ================= */
+  var smMerge = $('#smMerge'), smYt = $('#smYt');
+  var modeMerge = $('#modeMerge'), modeYt = $('#modeYt');
+  function setSub(which){
+    var m = which === 'merge';
+    smMerge.classList.toggle('on', m); smYt.classList.toggle('on', !m);
+    smMerge.setAttribute('aria-pressed', m ? 'true' : 'false');
+    smYt.setAttribute('aria-pressed', m ? 'false' : 'true');
+    modeMerge.hidden = !m; modeYt.hidden = m;
+  }
+  smMerge.addEventListener('click', function(){ setSub('merge'); });
+  smYt.addEventListener('click', function(){ setSub('yt'); });
+
+  /* ================= state ================= */
+  var state = {
+    files: [],          // {file, url, w, h, dur, name, size}
+    ratio: '9:16',
+    ytSelected: [],
+    forms: [],          // custom forms from localStorage
+    selectedFormId: 'travel',
+    editingId: null,
+    deleteArmed: false
+  };
+
+  function fmtSize(bytes){
+    if (!bytes) return '—';
+    if (bytes >= 1024*1024*1024) return (bytes/1024/1024/1024).toFixed(2) + 'GB';
+    if (bytes >= 1024*1024) return (bytes/1024/1024).toFixed(1) + 'MB';
+    return Math.max(1, Math.round(bytes/1024)) + 'KB';
+  }
+  function fmtDur(sec){
+    if (!isFinite(sec) || sec <= 0) return '—';
+    var m = Math.floor(sec/60), s = sec - m*60;
+    return m + ':' + (s < 10 ? '0' : '') + s.toFixed(1);
+  }
+  function ratioNum(r){ return r === '16:9' ? 16/9 : 9/16; }
+  function targetRes(r){ return r === '16:9' ? '1920×1080' : '1080×1920'; }
+
+  /* ================= video files ================= */
+  var fileInput = $('#fileInput'), pickBtn = $('#pickBtn'), drop = $('#drop');
+  var fileCards = $('#fileCards'), fileSummary = $('#fileSummary'), fileWarn = $('#fileWarn');
+
+  pickBtn.addEventListener('click', function(e){ e.stopPropagation(); fileInput.click(); });
+  drop.addEventListener('click', function(e){ if (e.target === pickBtn) return; fileInput.click(); });
+  ['dragenter','dragover'].forEach(function(t){
+    drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.add('drag'); });
+  });
+  ['dragleave','drop'].forEach(function(t){
+    drop.addEventListener(t, function(e){ e.preventDefault(); drop.classList.remove('drag'); });
+  });
+  drop.addEventListener('drop', function(e){
+    if (e.dataTransfer && e.dataTransfer.files) addFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener('change', function(){
+    if (fileInput.files && fileInput.files.length) addFiles(fileInput.files);
+    fileInput.value = '';
+  });
+
+  function addFiles(list){
+    var incoming = Array.prototype.slice.call(list);
+    var videos = incoming.filter(function(f){ return /^video\//.test(f.type) || /\.(mp4|mov|webm|m4v|avi|mkv)$/i.test(f.name); });
+    var skipped = incoming.length - videos.length;
+    var room = 3 - state.files.length;
+    if (room <= 0){ toast('이미 3개를 담았습니다. 하나를 지우고 다시 골라 주세요.'); return; }
+    var take = videos.slice(0, room);
+    var over = videos.length - take.length;
+
+    take.forEach(function(f){
+      var item = { file: f, url: URL.createObjectURL(f), w: 0, h: 0, dur: 0, name: f.name, size: f.size };
+      state.files.push(item);
+      var v = document.createElement('video');
+      v.preload = 'metadata';
+      v.muted = true;
+      v.src = item.url;
+      v.addEventListener('loadedmetadata', function(){
+        item.dur = isFinite(v.duration) ? v.duration : 0;
+        item.w = v.videoWidth || 0;
+        item.h = v.videoHeight || 0;
+        renderFiles();
+      });
+    });
+    renderFiles();
+    if (over > 0) toast('최대 3개까지 — 앞의 ' + take.length + '개만 담았습니다.');
+    else if (skipped > 0) toast('영상 파일 ' + take.length + '개를 담았습니다. (영상이 아닌 파일 ' + skipped + '개 제외)');
+    else toast('영상 ' + take.length + '개를 읽었습니다.');
+  }
+
+  function cropText(item){
+    if (!item.w || !item.h) return { txt: '해상도 확인 중…', bad: false };
+    var r = ratioNum(state.ratio), src = item.w / item.h;
+    if (Math.abs(src - r) < 0.01) return { txt: '크롭 없음 (' + item.w + '×' + item.h + ')', bad: false };
+    if (src > r){
+      var cut = Math.round((1 - r/src) * 100);
+      return { txt: state.ratio + ' 크롭 시 좌우 ' + cut + '% 잘림', bad: cut > 30 };
+    }
+    var cutH = Math.round((1 - src/r) * 100);
+    return { txt: state.ratio + ' 크롭 시 상하 ' + cutH + '% 잘림', bad: cutH > 30 };
+  }
+
+  function renderFiles(){
+    fileCards.innerHTML = '';
+    state.files.forEach(function(item, i){
+      var c = cropText(item);
+      var card = document.createElement('article');
+      card.className = 'fcard';
+      card.innerHTML =
+        '<div class="fthumb">' +
+          '<video src="' + item.url + '" muted playsinline preload="metadata" controls></video>' +
+          '<span class="dur">' + fmtDur(item.dur) + '</span>' +
+          '<button class="rm" data-i="' + i + '" aria-label="이 영상 빼기">✕</button>' +
+        '</div>' +
+        '<div class="fmeta">' +
+          '<div class="fname" title="' + esc(item.name) + '">' + esc(item.name) + '</div>' +
+          '<div class="fsub">' + fmtSize(item.size) + ' · ' + (item.w ? item.w + '×' + item.h : '해상도 확인 중') + '</div>' +
+          '<div class="fcrop' + (c.bad ? ' bad' : '') + '">' + esc(c.txt) + '</div>' +
+        '</div>';
+      fileCards.appendChild(card);
+    });
+
+    var known = state.files.filter(function(f){ return f.dur > 0; });
+    var total = known.reduce(function(a, f){ return a + f.dur; }, 0);
+    if (state.files.length){
+      fileSummary.hidden = false;
+      fileSummary.innerHTML = '총 <b>' + state.files.length + '개</b> · 합계 <b>' + fmtDur(total) + '</b> · 출력 <b>' + state.ratio + '</b> (' + targetRes(state.ratio) + ')' +
+        (known.length < state.files.length ? ' <span style="color:#fbbf24">(일부 길이 읽는 중)</span>' : '');
+    } else {
+      fileSummary.hidden = true;
+    }
+
+    fileWarn.hidden = true;
+    if (state.files.length === 1){
+      fileWarn.hidden = false;
+      fileWarn.textContent = '1개만 있으면 "합치기"가 아니라 구간 편집이 됩니다. 2~3개를 권장합니다.';
+    }
+    updatePipelineIfOpen();
+  }
+
+  fileCards.addEventListener('click', function(e){
+    var btn = e.target.closest('.rm');
+    if (!btn) return;
+    var i = Number(btn.getAttribute('data-i'));
+    var item = state.files[i];
+    if (item) URL.revokeObjectURL(item.url);
+    state.files.splice(i, 1);
+    renderFiles();
+    toast('영상을 뺐습니다.');
+  });
+
+  $$('.seg').forEach(function(seg){
+    seg.addEventListener('click', function(){
+      $$('.seg').forEach(function(s){ s.classList.remove('on'); });
+      seg.classList.add('on');
+      state.ratio = seg.getAttribute('data-ratio');
+      renderFiles();
+      updatePipelineIfOpen();
+    });
+  });
+
+  $$('#storyQuick .qchip').forEach(function(c){
+    c.addEventListener('click', function(){
+      var t = $('#story');
+      t.value = t.value ? (t.value.replace(/\s+$/,'') + ' ' + c.getAttribute('data-story')) : c.getAttribute('data-story');
+      t.focus();
+    });
+  });
+
+  /* ---------- pipeline ---------- */
+  var pipeline = $('#pipeline'), stepsEl = $('#steps'), realBox = $('#realBox'), pipeRatio = $('#pipeRatio');
+
+  function updatePipelineIfOpen(){ if (!pipeline.hidden) renderPipeline(); }
+
+  function renderPipeline(){
+    var total = state.files.reduce(function(a, f){ return a + (f.dur || 0); }, 0);
+    var known = state.files.filter(function(f){ return f.w && f.h; });
+    var resTxt = known.length
+      ? known.map(function(f){ return f.w + '×' + f.h; }).join(' / ')
+      : '해상도 확인 중';
+    var story = ($('#story').value || '').trim();
+
+    pipeRatio.textContent = state.ratio + ' · ' + targetRes(state.ratio);
+    stepsEl.innerHTML = '';
+
+    var steps = [
+      {
+        done: true,
+        t: '영상 메타 · 길이 확인',
+        d: state.files.length + '개 · 합계 ' + fmtDur(total) + ' · 원본 ' + resTxt + ' → 출력 ' + targetRes(state.ratio) + (story ? ' · 방향 입력됨' : ' · 방향 미입력')
+      },
+      {
+        done: false,
+        t: 'Gemini 영상 타임코드 분석',
+        d: '영상 전체를 보고 하이라이트 구간·가림 구간·전환 지점을 초 단위로 뽑아냅니다. (연결 후 10~20초 예상)'
+      },
+      {
+        done: false,
+        t: '컷 설계도(JSON) 만들기',
+        d: '분석 결과 + 스토리 방향을 in/out 컷 목록과 자막 위치로 정리합니다. 지금은 출력되지 않습니다.'
+      },
+      {
+        done: false,
+        t: 'ffmpeg.wasm 브라우저 컷편집',
+        d: '폰 브라우저 안에서 자르고 붙입니다. 서버 업로드가 없어 Vercel 4.5MB 제한과 무관합니다. 이 프리뷰에는 엔진을 싣지 않았습니다.'
+      },
+      {
+        done: false,
+        t: '자막 · BGM · 전환 합성',
+        d: '스토리 방향 문장을 기준으로 자막을 얹고 컷 전환에 페이드를 넣습니다.'
+      },
+      {
+        done: false,
+        t: 'MP4 저장',
+        d: '완성 파일을 폰에 저장합니다. (' + targetRes(state.ratio) + ', 30fps 기준)'
+      }
+    ];
+
+    steps.forEach(function(s){
+      var el = document.createElement('div');
+      el.className = 'step ' + (s.done ? 'done' : 'wait');
+      el.innerHTML =
+        '<span class="ico">' + (s.done ? '✓' : '!') + '</span>' +
+        '<div class="body">' +
+          '<div class="t">' + esc(s.t) + (s.done ? '<span class="bdg real">지금 확인됨</span>' : '<span class="bdg wait">API 연결 전 · 준비 상태</span>') + '</div>' +
+          '<div class="d">' + esc(s.d) + '</div>' +
+        '</div>';
+      stepsEl.appendChild(el);
+    });
+
+    var failed = state.files.filter(function(f){ return f.dur > 0 && (!f.w || !f.h); }).length;
+    realBox.innerHTML = state.files.length
+      ? '✅ <b>이 화면에서 실제로 읽은 값</b> — 파일 ' + state.files.length + '개 · 합계 길이 ' + fmtDur(total) +
+        ' · 출력 ' + state.ratio + '(' + targetRes(state.ratio) + ')' +
+        (failed ? ' · <span style="color:#fbbf24">일부 영상 메타를 못 읽었습니다(코덱 확인 필요)</span>' : '') +
+        '. 컷 편집 결과물은 아직 없습니다.'
+      : '✅ 위에서 영상을 고르면 파일명·용량·길이·해상도를 실제로 읽어 여기에 표시합니다.';
+  }
+
+  $('#runEdit').addEventListener('click', function(){
+    if (!state.files.length){
+      toast('먼저 영상 파일을 2~3개 골라 주세요.');
+      pickBtn.focus();
+      return;
+    }
+    renderPipeline();
+    pipeline.hidden = false;
+    pipeline.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  /* ================= youtube demo ================= */
+  var YT = [
+    { emoji:'🌊', title:'동탄 근교 가을 드라이브 브이로그', ch:'데모 채널 · 여행', dur:'8:42', grad:'linear-gradient(135deg,#0ea5e9,#1e3a8a)' },
+    { emoji:'🍜', title:'아이랑 먹기 좋은 순한맛 국물 요리 3가지', ch:'데모 채널 · 요리', dur:'6:15', grad:'linear-gradient(135deg,#f97316,#7c2d12)' },
+    { emoji:'📈', title:'이번 주 코스피, 수급으로 읽는 3가지 신호', ch:'데모 채널 · 경제', dur:'11:03', grad:'linear-gradient(135deg,#22c55e,#065f46)' },
+    { emoji:'🎤', title:'릴레이댄스 비하인드 — 카메라 3대 직캠', ch:'데모 채널 · 음악', dur:'9:28', grad:'linear-gradient(135deg,#a855f7,#4c1d95)' },
+    { emoji:'🏕', title:'차박 초보가 처음 밤을 보내는 법', ch:'데모 채널 · 아웃도어', dur:'14:20', grad:'linear-gradient(135deg,#64748b,#1e293b)' },
+    { emoji:'📚', title:'한 달에 책 4권, 현실적인 루틴 만들기', ch:'데모 채널 · 자기계발', dur:'7:51', grad:'linear-gradient(135deg,#f59e0b,#78350f)' },
+    { emoji:'🏃', title:'무릎 아픈 사람의 러닝 자세 교정', ch:'데모 채널 · 운동', dur:'10:07', grad:'linear-gradient(135deg,#ef4444,#7f1d1d)' }
+  ];
+  var ytResults = $('#ytResults'), ytGrid = $('#ytGrid'), ytCounter = $('#ytCounter'), ytProgress = $('#ytProgress');
+  var ytPlan = $('#ytPlan'), ytNotice = $('#ytNotice');
+
+  $('#ytDemoBtn').addEventListener('click', function(){
+    ytResults.hidden = false;
+    ytNotice.hidden = true;
+    renderYt();
+    ytResults.scrollIntoView({ behavior:'smooth', block:'start' });
+    toast('데모 예시 7개를 열었습니다. (실제 검색 결과 아님)');
+  });
+  $('#ytSearchBtn').addEventListener('click', function(){
+    ytNotice.hidden = false;
+    ytNotice.textContent = '실시간 유튜브 검색은 Gemini API 키 연결 후 작동합니다. 지금은 아래 [데모 예시 보기]로 UI·선택 동선만 확인할 수 있습니다.';
+    if (ytResults.hidden) $('#ytDemoBtn').scrollIntoView({ behavior:'smooth', block:'center' });
+  });
+  $('#ytQuery').addEventListener('keydown', function(e){
+    if (e.key === 'Enter') $('#ytSearchBtn').click();
+  });
+  $('#ytClear').addEventListener('click', function(){
+    state.ytSelected = [];
+    renderYt();
+    toast('선택을 초기화했습니다.');
+  });
+
+  function renderYt(){
+    ytGrid.innerHTML = '';
+    YT.forEach(function(v, i){
+      var on = state.ytSelected.indexOf(i) > -1;
+      var b = document.createElement('button');
+      b.className = 'vcard' + (on ? ' on' : '');
+      b.setAttribute('data-i', i);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.innerHTML =
+        '<span class="vthumb" style="background:' + v.grad + '">' + v.emoji + '<span class="d">' + v.dur + '</span></span>' +
+        '<span class="vinfo"><span class="vt">' + esc(v.title) + '</span><span class="vc">' + esc(v.ch) + '</span></span>' +
+        '<span class="vck">✓</span>';
+      ytGrid.appendChild(b);
+    });
+    var n = state.ytSelected.length;
+    ytCounter.textContent = n + ' / 3 선택';
+    ytCounter.classList.toggle('full', n === 3);
+    ytProgress.style.width = (n / 3 * 100) + '%';
+    renderYtPlan();
+  }
+
+  ytGrid.addEventListener('click', function(e){
+    var card = e.target.closest('.vcard');
+    if (!card) return;
+    var i = Number(card.getAttribute('data-i'));
+    var at = state.ytSelected.indexOf(i);
+    if (at > -1){
+      state.ytSelected.splice(at, 1);
+    } else {
+      if (state.ytSelected.length >= 3){ toast('최대 3개까지 고를 수 있습니다.'); return; }
+      state.ytSelected.push(i);
+    }
+    renderYt();
+  });
+
+  function renderYtPlan(){
+    var picks = state.ytSelected.map(function(i){ return YT[i]; });
+    if (!picks.length){
+      ytPlan.innerHTML = '<div class="empty">영상을 <b>3개</b> 고르면 오프닝 → 본편 → 엔딩 구성안이 여기에 만들어집니다.</div>';
+      return;
+    }
+    var roles = ['오프닝 훅', '본편', '엔딩 CTA'];
+    var notes = [
+      '가장 임팩트 있는 장면을 3초 안에. 첫 자막으로 주제를 바로 던집니다.',
+      '선택한 영상의 핵심 장면을 순서대로 이어 붙이고, 장면마다 한 줄 자막.',
+      '여운 한 줄 + 다음 행동 유도(저장·구독). 마지막 2초는 로고/엔딩카드.'
+    ];
+    var html = '<div class="planlist">';
+    picks.forEach(function(p, k){
+      html += '<div class="pitem"><span class="role">' + roles[k] + '</span><span class="pt">' +
+        esc(p.title) + '<small>' + esc(p.ch) + ' · ' + p.dur + ' · 발췌 구간은 AI 분석 후 결정</small></span></div>';
+    });
+    html += '</div>';
+
+    var widths = [26, 48, 26];
+    if (picks.length < 3) widths = picks.length === 1 ? [100] : [40, 60];
+    var cls = ['tl1','tl2','tl3'];
+    html += '<div class="timeline">';
+    picks.forEach(function(p, k){
+      html += '<i class="' + cls[k] + '" style="width:' + widths[k] + '%">' + roles[k] + '</i>';
+    });
+    html += '</div>';
+    html += '<p class="hint" style="margin-top:8px">' + (picks.length < 3
+      ? '지금 ' + picks.length + '/3 선택 — 3개를 채우면 오프닝·본편·엔딩 구성이 완성됩니다.'
+      : '3개 선택 완료 — 위 구성안은 <b>선택 순서와 길이</b>로 만든 템플릿입니다. 실제 대사·장면 분석과 문장 생성은 Gemini 연결 후입니다.') + '</p>';
+    ytPlan.innerHTML = html;
+  }
+
+  /* ================= blog forms ================= */
+  var DEFAULT_FORMS = [
+    { id:'travel', emoji:'✈️', name:'여행(특가)', tone:'친근한 리뷰형',
+      sections:['한 줄 요약 (얼마에 어디를)','왜 지금 싼가 — 특가 조건·기간','가족 동선 체크 (아이·이동·주차)','실제 비용 계산 — 항공+숙소+식비','예약 링크·주의사항'],
+      highlight:'가격과 조건(기간·포함/불포함)은 실측값만. 확인 안 된 가격은 쓰지 않기.' },
+    { id:'selfhelp', emoji:'📘', name:'도서 · 자기계발', tone:'스토리텔링형',
+      sections:['이 책을 고른 이유','한 줄 핵심 메시지','기억에 남은 3문장 인용','내 생활에 적용한 1가지','이런 사람에게 추천'],
+      highlight:'책 문장은 인용 표시. 요약과 내 감상을 구분해서 쓰기.' },
+    { id:'economy', emoji:'💹', name:'도서 · 경제', tone:'전문 분석형',
+      sections:['책 주제·저자 한 줄','핵심 논리 3단 요약','데이터·사례로 본 근거','지금 경제 상황에 대입','한계와 반론'],
+      highlight:'수치는 출처와 시점 병기. 저자 주장과 내 해석을 구분.' },
+    { id:'novel', emoji:'📖', name:'도서 · 소설', tone:'스토리텔링형',
+      sections:['첫 문장 인상','인물과 갈등 소개 (스포일러 최소)','가장 좋았던 장면','작가가 말하려는 것','추천 대상'],
+      highlight:'스포일러 금지. 인용은 짧게, 출처(페이지) 표기.' },
+    { id:'stock', emoji:'📈', name:'주식시장분석', tone:'전문 분석형',
+      sections:['오늘 시장 한 줄 (지수·수급)','주도 테마·종목','수급 주체별 해석','내일 체크포인트','리스크 요인'],
+      highlight:'확정 종가와 장중 값을 구분. 추측은 추측이라고 표시.' }
+  ];
+  var LSK = 'cs2_custom_forms_v1';
+
+  function loadForms(){
+    try {
+      var raw = localStorage.getItem(LSK);
+      if (!raw) return [];
+      var arr = JSON.parse(raw);
+      if (!Array.isArray(arr)) return [];
+      return arr.filter(function(f){ return f && f.id && f.name && Array.isArray(f.sections); });
+    } catch(e){ return []; }
+  }
+  function saveForms(){
+    try { localStorage.setItem(LSK, JSON.stringify(state.forms)); }
+    catch(e){ toast('저장에 실패했습니다(브라우저 저장 공간 확인).'); }
+  }
+  function allForms(){ return DEFAULT_FORMS.concat(state.forms); }
+  function getForm(id){ return allForms().filter(function(f){ return f.id === id; })[0] || DEFAULT_FORMS[0]; }
+  function isCustom(id){ return state.forms.some(function(f){ return f.id === id; }); }
+
+  var chipsEl = $('#formChips'), storeInfo = $('#storeInfo');
+
+  function renderChips(){
+    chipsEl.innerHTML = '';
+    allForms().forEach(function(f){
+      var custom = isCustom(f.id);
+      var wrap = document.createElement('div');
+      wrap.className = 'chipwrap' + (custom ? ' has-edit' : '');
+      var chip = document.createElement('button');
+      chip.className = 'fchip' + (state.selectedFormId === f.id ? ' on' : '');
+      chip.setAttribute('data-id', f.id);
+      chip.setAttribute('aria-pressed', state.selectedFormId === f.id ? 'true' : 'false');
+      chip.innerHTML = '<span>' + esc(f.emoji || '📝') + '</span>' + esc(f.name);
+      wrap.appendChild(chip);
+      if (custom){
+        var ed = document.createElement('button');
+        ed.className = 'chipedit';
+        ed.setAttribute('data-edit', f.id);
+        ed.setAttribute('aria-label', f.name + ' 양식 수정');
+        ed.textContent = '✎';
+        wrap.appendChild(ed);
+      }
+      chipsEl.appendChild(wrap);
+    });
+    storeInfo.textContent = '기본 5종 + 내 양식 ' + state.forms.length + '개 · 이 브라우저에 저장';
+    renderFormBox();
+  }
+
+  chipsEl.addEventListener('click', function(e){
+    if (e.target.closest('#addFormBtn')){ openModal(null); return; }
+    var ed = e.target.closest('[data-edit]');
+    if (ed){ openModal(ed.getAttribute('data-edit')); return; }
+    var chip = e.target.closest('.fchip');
+    if (!chip) return;
+    state.selectedFormId = chip.getAttribute('data-id');
+    renderChips();
+  });
+
+  var formBox = $('#formBox'), formKind = $('#formKind');
+  function renderFormBox(){
+    var f = getForm(state.selectedFormId);
+    var custom = isCustom(f.id);
+    formKind.textContent = custom ? '내 양식' : '기본 양식';
+    formKind.className = 'bdg ' + (custom ? 'violet' : 'info');
+    var html = '<div class="fb-head"><span class="fb-emoji">' + esc(f.emoji || '📝') + '</span>' +
+      '<span class="fb-name">' + esc(f.name) + '</span></div>' +
+      '<div class="fb-meta"><span class="bdg info">' + esc(f.tone) + '</span>' +
+      '<span class="bdg violet">섹션 ' + f.sections.length + '개</span></div>' +
+      '<ol class="sec-list">';
+    f.sections.forEach(function(s, i){
+      html += '<li><span class="n">' + (i+1) + '</span><span>' + esc(s) + '</span></li>';
+    });
+    html += '</ol>';
+    if (f.highlight) html += '<div class="hlbox"><b>강조 포인트</b>' + esc(f.highlight) + '</div>';
+    formBox.innerHTML = html;
+  }
+
+  /* ---------- modal ---------- */
+  var modal = $('#formModal'), mTitle = $('#mTitle');
+  var mName = $('#mName'), mEmoji = $('#mEmoji'), mTone = $('#mTone'), mSections = $('#mSections'), mHighlight = $('#mHighlight');
+  var mErr = $('#mErr'), mDelete = $('#mDelete');
+  var EMOJIS = ['✈️','📘','💹','📖','📈','🍜','🏠','💪','🎮','👨‍👩‍👧','💰','✍️','🎬','🌿','🛒','🧾'];
+
+  var emojiRow = $('#emojiRow');
+  EMOJIS.forEach(function(e){
+    var b = document.createElement('button');
+    b.className = 'epick'; b.type = 'button'; b.textContent = e; b.setAttribute('aria-label', '이모지 ' + e);
+    b.addEventListener('click', function(){ mEmoji.value = e; });
+    emojiRow.appendChild(b);
+  });
+
+  function openModal(id){
+    state.editingId = id || null;
+    state.deleteArmed = false;
+    mErr.hidden = true;
+    mDelete.hidden = !id;
+    mDelete.textContent = '삭제';
+    if (id){
+      var f = getForm(id);
+      mTitle.textContent = '양식 수정 — ' + f.name;
+      mName.value = f.name; mEmoji.value = f.emoji || ''; mTone.value = f.tone || '친근한 리뷰형';
+      mSections.value = f.sections.join('\n'); mHighlight.value = f.highlight || '';
+    } else {
+      mTitle.textContent = '새 양식 추가';
+      mName.value = ''; mEmoji.value = ''; mTone.value = '친근한 리뷰형';
+      mSections.value = ''; mHighlight.value = '';
+    }
+    modal.hidden = false;
+    setTimeout(function(){ mName.focus(); }, 30);
+  }
+  function closeModal(){ modal.hidden = true; state.editingId = null; state.deleteArmed = false; }
+
+  $('#addFormBtn') && $('#addFormBtn').addEventListener('click', function(){ openModal(null); });
+  $('#mClose').addEventListener('click', closeModal);
+  $('#mCancel').addEventListener('click', closeModal);
+  modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+
+  mDelete.addEventListener('click', function(){
+    if (!state.editingId) return;
+    if (!state.deleteArmed){
+      state.deleteArmed = true;
+      mDelete.textContent = '정말 삭제? 한 번 더';
+      return;
+    }
+    var id = state.editingId;
+    state.forms = state.forms.filter(function(f){ return f.id !== id; });
+    saveForms();
+    if (state.selectedFormId === id) state.selectedFormId = 'travel';
+    closeModal();
+    renderChips();
+    toast('양식을 삭제했습니다.');
+  });
+
+  $('#mSave').addEventListener('click', function(){
+    var name = mName.value.trim();
+    var emoji = mEmoji.value.trim() || '📝';
+    var tone = mTone.value;
+    var lines = mSections.value.split('\n').map(function(s){ return s.trim(); }).filter(function(s){ return s.length; });
+    var hl = mHighlight.value.trim();
+
+    if (!name){ mErr.hidden = false; mErr.textContent = '양식 이름을 입력해 주세요.'; mName.focus(); return; }
+    if (lines.length < 3){ mErr.hidden = false; mErr.textContent = '섹션을 3개 이상 입력해 주세요 (한 줄에 하나).'; mSections.focus(); return; }
+    if (lines.length > 6){ mErr.hidden = false; mErr.textContent = '섹션은 6개까지입니다. 지금 ' + lines.length + '개 — 줄여 주세요.'; mSections.focus(); return; }
+
+    if (state.editingId){
+      state.forms = state.forms.map(function(f){
+        if (f.id !== state.editingId) return f;
+        return { id: f.id, name: name, emoji: emoji, tone: tone, sections: lines, highlight: hl };
+      });
+      state.selectedFormId = state.editingId;
+    } else {
+      var id = 'c' + Date.now().toString(36);
+      state.forms.push({ id: id, name: name, emoji: emoji, tone: tone, sections: lines, highlight: hl });
+      state.selectedFormId = id;
+    }
+    saveForms();
+    mErr.hidden = true;
+    var wasEdit = !!state.editingId;
+    closeModal();
+    renderChips();
+    toast(wasEdit ? '양식을 수정해 저장했습니다.' : '새 양식을 저장했습니다. 칩에서 바로 쓸 수 있어요.');
+  });
+
+  $('#resetForms').addEventListener('click', function(){
+    if (!state.forms.length){ toast('초기화할 내 양식이 없습니다.'); return; }
+    if (this.getAttribute('data-armed') === '1'){
+      state.forms = [];
+      saveForms();
+      if (!allForms().some(function(f){ return f.id === state.selectedFormId; })) state.selectedFormId = 'travel';
+      this.removeAttribute('data-armed');
+      renderChips();
+      toast('내 양식을 모두 지웠습니다. 기본 5종은 그대로입니다.');
+    } else {
+      this.setAttribute('data-armed','1');
+      this.textContent = '한 번 더 누르면 전부 삭제';
+      var self = this;
+      setTimeout(function(){ self.removeAttribute('data-armed'); self.textContent = '내 양식 전체 초기화'; }, 4000);
+    }
+  });
+
+  $('#dupFormBtn').addEventListener('click', function(){
+    var f = getForm(state.selectedFormId);
+    openModal(null);
+    mName.value = f.name + ' 사본';
+    mEmoji.value = f.emoji || '📝';
+    mTone.value = f.tone || '친근한 리뷰형';
+    mSections.value = f.sections.join('\n');
+    mHighlight.value = f.highlight || '';
+    mTitle.textContent = '양식 복제해서 추가';
+  });
+
+  /* ---------- skeleton ---------- */
+  var topicEl = $('#topic');
+  $$('#topicQuick .qchip').forEach(function(c){
+    c.addEventListener('click', function(){
+      topicEl.value = c.getAttribute('data-topic');
+      topicEl.focus();
+    });
+  });
+
+  function todayKr(){
+    var d = new Date();
+    var days = ['일','월','화','수','목','금','토'];
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') +
+      ' (' + days[d.getDay()] + ')';
+  }
+
+  function buildSkeleton(form, topic){
+    var L = [];
+    L.push('# ' + topic);
+    L.push('');
+    L.push('> ' + (form.emoji || '📝') + ' ' + form.name + ' 양식 · 말투: ' + form.tone);
+    L.push('> 뼈대 생성: ' + todayKr() + '');
+    L.push('');
+    L.push('*정적 프리뷰에서 양식 구조만으로 만든 초안 틀입니다. 동적 웹(Gemini 연결)에서는 각 섹션에 검색·요약·문장이 자동으로 채워집니다.*');
+    L.push('');
+    L.push('---');
+    L.push('');
+    form.sections.forEach(function(sec, i){
+      L.push('## ' + (i+1) + '. ' + sec);
+      L.push('');
+      if (i === 0){
+        L.push('- 결론부터 한 줄: (여기에 핵심 결론)');
+      } else if (i === form.sections.length - 1){
+        L.push('- 마무리 한 줄: (독자가 가져갈 한 문장)');
+      } else {
+        L.push('- 핵심 포인트: ');
+      }
+      L.push('- 근거·수치 (출처·시점): ');
+      L.push('- ' + topic + ' 관련 구체 내용: ');
+      L.push('');
+    });
+    L.push('## ✅ 발행 전 체크');
+    L.push('');
+    if (form.highlight) L.push('- [ ] 강조 포인트 지켰는지 — ' + form.highlight);
+    L.push('- [ ] 수치·가격·날짜의 출처와 시점 표기');
+    L.push('- [ ] 제목 3안 뽑기');
+    L.push('- [ ] 썸네일 문구 한 줄');
+    L.push('- [ ] 링크·이미지 저작권 확인');
+    L.push('');
+    L.push('---');
+    L.push('*이 뼈대는 정적 프리뷰 산출물입니다. AI가 쓴 문장이 아니라 틀만 채운 상태입니다.*');
+    return L.join('\n');
+  }
+
+  var outCard = $('#outCard'), outEmpty = $('#outEmpty'), outText = $('#outText'), outStat = $('#outStat');
+
+  $('#genBtn').addEventListener('click', function(){
+    var topic = topicEl.value.trim();
+    if (!topic){
+      toast('주제나 키워드를 먼저 입력해 주세요.');
+      topicEl.focus();
+      return;
+    }
+    var f = getForm(state.selectedFormId);
+    outText.textContent = buildSkeleton(f, topic);
+    outCard.hidden = false;
+    outEmpty.hidden = true;
+    outStat.textContent = f.name + ' · ' + f.sections.length + '섹션';
+    outCard.scrollIntoView({ behavior:'smooth', block:'start' });
+    toast('뼈대를 만들었습니다. [복사]로 바로 붙여 넣으세요.');
+  });
+  topicEl.addEventListener('keydown', function(e){ if (e.key === 'Enter') $('#genBtn').click(); });
+
+  $('#copyBtn').addEventListener('click', function(){
+    var txt = outText.textContent || '';
+    if (!txt) { toast('복사할 내용이 없습니다.'); return; }
+    function done(){ toast('마크다운을 복사했습니다.'); outStat.textContent = '복사됨'; }
+    function fallback(){
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = txt;
+        ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (ok) done(); else toast('복사가 차단되었습니다. 본문을 직접 선택해 주세요.');
+      } catch(e){ toast('복사가 차단되었습니다. 본문을 직접 선택해 주세요.'); }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done).catch(fallback);
+    } else fallback();
+  });
+
+  /* ================= init ================= */
+  state.forms = loadForms();
+  if (!allForms().some(function(f){ return f.id === state.selectedFormId; })) state.selectedFormId = 'travel';
+  renderChips();
+  renderFiles();
+})();
+</script>
+</body>
+</html>
