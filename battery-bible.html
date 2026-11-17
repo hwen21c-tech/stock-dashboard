@@ -214,7 +214,7 @@ main{max-width:1180px; margin:0 auto; padding:0 16px 90px}
 .formula{
   font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12.5px; line-height:1.7;
   background:var(--code); border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin:7px 0;
-  overflow-x:auto; white-space:pre; color:var(--fg);
+  overflow-x:auto; white-space:pre-wrap; word-break:break-word; color:var(--fg);
 }
 
 /* ---------- 표 ---------- */
@@ -806,13 +806,16 @@ fig:'anode'},
 {id:'vdrop', t:'실리콘을 쓰면 평균 방전전압이 떨어지는 이유', tag:'V_cell = V_cathode − V_anode · 에너지 손실',
 k:['평균전압','방전전압','에너지밀도','실리콘','전압 하락','Vcathode','Vanode','에너지','히스테리시스','효율'],
 why:`<p>에너지는 용량만으로 정해지지 않는다. <b>E = ∫V dQ</b>이므로 평균 전압이 1% 떨어지면 에너지도 1% 줄어든다. 실리콘은 탈리 전위가 흑연보다 높아(0.4~0.5 V vs 0.08~0.2 V) 음극 평균 전위를 끌어올리고, 풀셀 전압 V<sub>cell</sub> = V<sub>cathode</sub> − V<sub>anode</sub> 가 그만큼 내려간다. 여기에 히스테리시스까지 더해져 <b>용량 증가분의 일부가 전압 손실로 상쇄</b>된다.</p>
-<div class="formula">E_cell = ∫ (V_cathode − V_anode) dQ  =  Q_cell × (V̄_cathode − V̄_anode)
+<div class="formula">E_cell = ∫ (V_cat − V_an) dQ
+       = Q_cell × (V̄_cat − V̄_an)
 
-ΔE/E ≈ ΔQ/Q − ΔV̄_cell/V̄_cell
+ΔE/E ≈ ΔQ/Q − ΔV̄_cell / V̄_cell
 
-예: V̄_cell 3.70 V, 음극 평균전위 0.115 → 0.24 V (+0.125 V)
-    → V̄_cell 3.575 V (−3.4%)
-    소재 용량 +97% × 전압 −3.4% ≈ 에너지 +90%(소재 기준)</div>`,
+예) V̄_cell 3.70 V
+    음극 평균 0.115 → 0.24 V (+0.125)
+    → V̄_cell 3.575 V (전압 −3.4%)
+    소재 용량 +97% × 0.966
+    ≈ 에너지 +90% (소재 기준)</div>`,
 how:`<ul><li>풀셀 충·방전 곡선에서 <code>평균 방전전압 = ∫V dQ / Q</code> 계산</li><li>3전극으로 양·음극 전위를 분리해 어느 쪽이 전압을 끌어내렸는지 확인</li><li>전류율별 평균전압·히스테리시스, 왕복 에너지효율(Wh_out/Wh_in)</li><li>셀 수준에서는 N/P, 로딩, 압연밀도까지 포함해 체적 에너지밀도로 환산</li></ul>`,
 see:`<ul><li>평균 방전전압(V), ΔV(%), 에너지효율(%), 히스테리시스(mV)</li><li>Si 비율별 전압 하락 기울기 — 대략 Si 10 wt%당 20~40 mV</li></ul>`,
 ex:`<p>흑연 단독 셀: 3.72 V, 5.0 Ah → 18.6 Wh. SiC 30% 블렌딩 셀: 5.9 Ah지만 평균 3.62 V → 21.4 Wh. 용량 +18%, 에너지 +15%로 <b>전압 손실이 이득의 약 15%를 깎는다</b>. 여기에 팽창 여유(압연밀도 −0.2 g/cc)로 체적 에너지는 +8~10% 수준. 실무에서는 “소재 용량 +97%”를 셀 에너지 +97%로 착각해 목표를 잡는 실수를 조심해야 한다.</p>`},
@@ -913,7 +916,8 @@ ex:`<p>−20 °C에서 R<sub>ct</sub>가 25 °C 대비 8.5배로 증가(Ea 58 kJ
 {id:'gitt', t:'GITT — 펄스-휴지로 확산계수와 과전위 분리', tag:'ΔE_s / ΔE_τ · D_Li+',
 k:['GITT','갈바노스타틱','펄스','휴지','relaxation','확산계수','DLi','ΔEs','ΔEτ','과전위','확산'],
 why:`<p>GITT는 일정 용량마다 <b>짧은 전류 펄스 + 긴 휴지</b>를 반복해, 준평형 OCV 곡선과 <b>과전위 성분</b>을 동시에 얻는다. 펄스 직후의 순간 전압강하(ΔE<sub>0</sub>)는 Ohmic, 펄스 중 전압 변화(ΔE<sub>τ</sub>)는 확산, 휴지 후 안정화된 변화(ΔE<sub>s</sub>)는 준평형 OCV 차이다. 이 비(ΔE<sub>s</sub>/ΔE<sub>τ</sub>)로 <b>고체 확산계수</b>를 계산한다.</p>
-<div class="formula">D_Li⁺ = (4/π) · (m_B·V_m / (M_B·A))² · (ΔE_s / ΔE_τ)²</div>
+<div class="formula">D_Li⁺ = (4/π) · (m_B·V_m / (M_B·A))²
+        · (ΔE_s / ΔE_τ)²</div>
 <p class="q">m<sub>B</sub>: 활물질 질량, V<sub>m</sub>: 몰부피, M<sub>B</sub>: 분자량, A: 전극 면적. τ는 펄스 시간.</p>`,
 how:`<ul><li>펄스: C/10~C/20, 10~30 min. 휴지: OCV 변화율 &lt;1 mV/h 될 때까지(30~120 min)</li><li>전압 샘플링 1 s 이하, 온도 25 °C 고정</li><li>ΔE<sub>0</sub>는 펄스 시작 직후(수 초) 전압강하, ΔE<sub>τ</sub>는 펄스 종료 직전까지의 추가 변화</li><li>각 스텝에서 SOC·OCV 기록 → 준평형 곡선 확보</li></ul>`,
 see:`<ul><li>D<sub>Li⁺</sub>(cm²/s): 양극 10⁻¹⁰~10⁻⁸, 흑연 10⁻¹¹~10⁻⁹(Stage에 따라 변동)</li><li>ΔE<sub>0</sub>(Ohmic), ΔE<sub>τ</sub>(확산 과전위), 히스테리시스</li><li>D의 SOC 의존성 — 상전이 구간에서 급락하면 구조적 병목</li></ul>`,
