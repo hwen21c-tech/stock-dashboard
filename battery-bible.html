@@ -238,6 +238,9 @@ table.t .dn{color:var(--good); font-weight:700}
   display:flex; align-items:center; gap:7px; padding:9px 11px; border-bottom:1px solid var(--line);
   font-size:11.5px; font-weight:800; color:var(--fg2); letter-spacing:.01em;
 }
+.fig-h>span{flex:1 1 auto; min-width:0}
+.fig-h>span.badge{flex:0 0 auto}
+@media(max-width:560px){ .fig-h .hint{display:none} .fig-h{align-items:flex-start} }
 .fig-h .badge{
   flex:0 0 auto; font-size:9.5px; font-weight:800; letter-spacing:.05em; color:var(--pc);
   padding:2px 6px; border-radius:5px; background:color-mix(in srgb,var(--pc) 16%,transparent);
@@ -590,7 +593,8 @@ k:['Peel','필테스트','접착력','adhesion','180','90','바인더','마이�
 why:`<p>접착력은 사이클 중 <b>합제 박리·저항 상승·Si 팽창 버팀</b>을 결정한다. 특히 실리콘 블렌딩은 충방전 부피변화가 커서 접착력이 수명의 상한을 만든다. Peel 값은 바인더 총량보다 <b>분포(두께 방향 편석)</b>에 더 민감해서, 건조 프로파일 이상을 조기에 잡아내는 지표로 쓴다.</p>`,
 how:`<ul><li>180° peel: 폭 20~30 mm 스트립, 양면테이프로 SUS 플레이트 고정, 50 mm/min 인장, 5회 평균</li><li>90° peel은 박리각이 실제 셀 거동과 유사해 음극에 자주 사용</li><li>건조 상태와 전해액 함침 후(젖은 상태) 모두 측정 — 실사용 조건은 후자에 가깝다</li><li>파괴 모드를 함께 기록: 계면(집전체) 파괴 vs 합제 내부 응집 파괴</li></ul>`,
 see:`<ul><li>gf/mm 또는 gf/25mm, 하중-변위 곡선의 진동(불균일 박리), 파괴 모드</li><li>양극 통상 1.0~2.0 gf/mm, 음극 0.6~1.5 gf/mm(규격·단위는 사내 기준)</li><li>압연 전후 비교 — 압연이 접착을 올리지만 과압연은 합제 내부 파괴로 전환</li></ul>`,
-ex:`<p>건조 1존 온도를 95→115 °C로 올린 배치에서 표면은 단단해졌지만 peel이 1.45→0.92 gf/mm로 떨어지고 <b>집전체 계면 파괴</b>가 나타났다. 단면 EDS에서 상층 PVDF F 신호가 1.6배, 하층이 0.6배 → <b>바인더 상향 마이그레이션</b>이다. 이 상태로 500 사이클을 돌리면 용량유지가 92→85%로 떨어지고, 음극 Si 블렌딩 전극에서는 박리 면적이 12%까지 확대된다.</p>`},
+ex:`<p>건조 1존 온도를 95→115 °C로 올린 배치에서 표면은 단단해졌지만 peel이 1.45→0.92 gf/mm로 떨어지고 <b>집전체 계면 파괴</b>가 나타났다. 단면 EDS에서 상층 PVDF F 신호가 1.6배, 하층이 0.6배 → <b>바인더 상향 마이그레이션</b>이다. 이 상태로 500 사이클을 돌리면 용량유지가 92→85%로 떨어지고, 음극 Si 블렌딩 전극에서는 박리 면적이 12%까지 확대된다.</p>`,
+fig:'peel'},
 
 {id:'res', t:'Multi-probe 저항 — 극판·계면 저항 매핑', tag:'전자저항 vs 이온경로',
 k:['저항','multi-probe','멀티프로브','면저항','계면저항','contact resistance','도전재','mapping'],
@@ -772,7 +776,8 @@ see:`<div class="tw"><table class="t"><thead><tr><th>Stage</th><th>조성(근사
 <tr><td>1</td><td>LiC₆</td><td class="n">~0.078</td><td>가장 큰 피크</td></tr>
 </tbody></table></div>
 <p>용량 배분(대략): stage 4→3 전이가 0~10%, 3→2L 10~30%, 2L→2 30~55%, 2→1 55~100%. 즉 <b>용량의 절반 이상이 0.12 V 이하</b>에서 나온다.</p>`,
-ex:`<p>사이클 후 dQ/dV에서 0.085 V 피크만 30% 줄고 0.12 V 이상 피크가 유지되면, 음극 상부(리튬화 깊은 영역)에서 <b>활물질 고립·국부 리튬 석출</b>이 발생한 것이다. 반대로 모든 피크가 균일하게 줄면 LAM_NE(음극 활물질 손실)다. 0.21 V 피크가 오른쪽(고전위)으로 이동하면 <b>분극 증가</b>로, 저온·고율에서 두드러진다.</p>`}
+ex:`<p>사이클 후 dQ/dV에서 0.085 V 피크만 30% 줄고 0.12 V 이상 피크가 유지되면, 음극 상부(리튬화 깊은 영역)에서 <b>활물질 고립·국부 리튬 석출</b>이 발생한 것이다. 반대로 모든 피크가 균일하게 줄면 LAM_NE(음극 활물질 손실)다. 0.21 V 피크가 오른쪽(고전위)으로 이동하면 <b>분극 증가</b>로, 저온·고율에서 두드러진다.</p>`,
+fig:'stage'}
 ]},
 
 {id:'p3-2', title:'3.2 흑연 + SiC 30% 블렌딩', cards:[
@@ -882,7 +887,8 @@ k:['3전극','three electrode','reference','기준전극','리튬 석출','Li pl
 why:`<p>풀셀에서 측정하는 전압은 <b>양극과 음극의 합</b>이라, 어느 쪽이 문제인지 알 수 없다. 3전극 셀은 기준전극(Li 또는 Li 합금)을 넣어 양·음극 전위를 따로 읽는다. 특히 급속충전에서 <b>음극 전위가 0 V vs Li/Li⁺ 아래로 떨어지는 순간</b>이 리튬 석출의 시작이며, 이것을 직접 볼 수 있는 유일한 실험실 방법이다.</p>`,
 how:`<ul><li>기준전극: Li foil/Cu 와이어, Li 합금(In·Sn), 또는 Ag/Ag⁺(전해액 호환)</li><li>세퍼레이터 사이에 삽입, 위치(양극 쪽/음극 쪽)에 따라 IR 보정 필요</li><li>충전 프로파일별(1C/2C/3C, 저온) 양·음극 전위 동시 기록</li><li>기준전극 안정화 24 h, 개로 전위 안정 확인 후 측정</li></ul>`,
 see:`<ul><li>음극 전위 vs Li/Li⁺ (0 V 접근 = 석출 위험), 양극 전위 상승폭</li><li>과전위 분해: 양극 과전위 vs 음극 과전위 비율</li><li>석출 개시 SOC·C-rate·온도 → 충전 프로파일 설계</li></ul>`,
-ex:`<p>2C 충전 시 음극 전위가 SOC 72%에서 0.012 V까지 내려가고, 3C에서는 68%에서 <b>−0.006 V</b>로 떨어진다. 이 지점 이후 음극 표면이 회백색으로 변하고 dV/dt 완화 변곡이 나타난다. → 3C 충전의 안전 상한은 SOC 65%로 두고, 이후 1C로 전환하는 <b>스텝 충전 프로파일</b>을 설계한다. 이때 양극 과전위는 0.18 V로 여유가 있어, 제한은 음극이지 양극이 아니다.</p>`}
+ex:`<p>2C 충전 시 음극 전위가 SOC 72%에서 0.012 V까지 내려가고, 3C에서는 68%에서 <b>−0.006 V</b>로 떨어진다. 이 지점 이후 음극 표면이 회백색으로 변하고 dV/dt 완화 변곡이 나타난다. → 3C 충전의 안전 상한은 SOC 65%로 두고, 이후 1C로 전환하는 <b>스텝 충전 프로파일</b>을 설계한다. 이때 양극 과전위는 0.18 V로 여유가 있어, 제한은 음극이지 양극이 아니다.</p>`,
+fig:'three'}
 ]},
 
 {id:'p4-2', title:'4.2 EIS · GITT · 출력 평가', cards:[
@@ -913,7 +919,8 @@ k:['EIS','SOC','온도','Arrhenius','활성화에너지','열화','저온','진�
 why:`<p>EIS 값은 SOC·온도에 따라 크게 달라져, 한 조건만 찍으면 오판한다. 반대로 <b>SOC·온도 스캔</b>을 하면 저항의 물리적 기원(전해액/계면/확산)을 거의 확정할 수 있다. 열화 진단에서는 “어느 성분이 성장했는가”가 곧 대응책이다.</p>`,
 how:`<ul><li>SOC 10/50/90%, 온도 −20/0/25/45 °C 매트릭스(최소 3×3)</li><li>R<sub>ct</sub>의 온도 의존성으로 활성화에너지 <code>Ea = −R·d(ln R_ct)/d(1/T)</code> 산출</li><li>열화 셀은 같은 SOC·온도에서 신품과 1:1 비교</li><li>측정 전 온도 평형(2 h 이상) 필수</li></ul>`,
 see:`<ul><li>Ea(전하전달 50~70 kJ/mol, 전해액 전도 10~20 kJ/mol)</li><li>저SOC에서 R<sub>ct</sub> 증가 폭, −20 °C에서 R<sub>s</sub>·R<sub>ct</sub> 비</li><li>열화 후 R<sub>sei</sub>/R<sub>ct</sub> 비 변화</li></ul>`,
-ex:`<p>−20 °C에서 R<sub>ct</sub>가 25 °C 대비 8.5배로 증가(Ea 58 kJ/mol), R<sub>s</sub>는 3.1배. 이 셀은 저온 급속충전에서 음극 전위가 빠르게 0 V로 내려가 리튬 석출 위험이 크다. 반면 R<sub>s</sub>만 5배로 커지는 셀은 <b>전해액 점도·염 농도</b> 문제로, 첨가제·전해액 조성으로 개선 여지가 있다.</p>`},
+ex:`<p>−20 °C에서 R<sub>ct</sub>가 25 °C 대비 8.5배로 증가(Ea 58 kJ/mol), R<sub>s</sub>는 3.1배. 이 셀은 저온 급속충전에서 음극 전위가 빠르게 0 V로 내려가 리튬 석출 위험이 크다. 반면 R<sub>s</sub>만 5배로 커지는 셀은 <b>전해액 점도·염 농도</b> 문제로, 첨가제·전해액 조성으로 개선 여지가 있다.</p>`,
+fig:'eist'},
 
 {id:'gitt', t:'GITT — 펄스-휴지로 확산계수와 과전위 분리', tag:'ΔE_s / ΔE_τ · D_Li+',
 k:['GITT','갈바노스타틱','펄스','휴지','relaxation','확산계수','DLi','ΔEs','ΔEτ','과전위','확산'],
@@ -996,7 +1003,8 @@ ex:`<div class="tw"><table class="t wide"><thead><tr><th>모드</th><th>ICA(dQ/d
 <tr><td>LAM_PE</td><td>고전위 피크 면적 ↓</td><td>양극 피크 폭 ↑</td><td>입자 크랙·고립, 구조 붕괴, 용출</td></tr>
 <tr><td>LAM_NE</td><td>저전위 피크 면적 ↓</td><td>음극 피크 폭 ↑</td><td>입자 분화, 바인더 열화, 공극 폐쇄</td></tr>
 </tbody></table></div>
-<p>실무: 500cy 후 −12% 용량에서 반쪽셀 재조립 결과 양극 잔여용량 96%, 음극 89%, LLI 기여 6%로 나오면 <b>주 원인은 음극(LAM_NE)+LLI</b>이고 양극은 건강하다. 이때 대응은 양극 코팅·도핑이 아니라 음극 바인더·압연·전해액 첨가제다.</p>`},
+<p>실무: 500cy 후 −12% 용량에서 반쪽셀 재조립 결과 양극 잔여용량 96%, 음극 89%, LLI 기여 6%로 나오면 <b>주 원인은 음극(LAM_NE)+LLI</b>이고 양극은 건강하다. 이때 대응은 양극 코팅·도핑이 아니라 음극 바인더·압연·전해액 첨가제다.</p>`,
+fig:'dva'},
 
 {id:'ica', t:'ICA · DVA 실전 해석 — 피크 변화로 3가지 구분', tag:'dQ/dV · dV/dQ · 열화 지문',
 k:['ICA','DVA','dQ/dV','dV/dQ','피크','열화','해석','반쪽셀','재조립','피크 이동'],
@@ -1011,7 +1019,8 @@ k:['리튬 석출','Li plating','plating','휴지','relaxation','dV/dt','쿨롱�
 why:`<p>리튬 석출은 용량을 잃게 하는 것을 넘어 <b>안전 문제(덴드라이트·내부단락)</b>로 직결된다. 석출된 리튬은 충전 후 휴지 중 전해액과 반응하며 전압이 <b>천천히 완화</b>되고, 방전 시 0.2~0.3 V에서 <b>스트리핑 피크</b>가 나타난다. 이 신호를 조기에 잡으면 충전 프로파일로 회피할 수 있다.</p>`,
 how:`<ul><li>저온(−10~0 °C)·고율(2~3C) 충전 후 30~60 min 휴지하며 전압 1 s 간격 기록</li><li><code>dV/dt</code> 계산 — 완화 초반 음의 기울기·변곡점 유무</li><li>방전 dQ/dV에서 0.2~0.3 V 피크(스트리핑) 확인</li><li>3전극으로 음극 전위가 0 V 이하로 떨어지는지 확인(가장 직접적)</li><li>해체 후 음극 표면 육안(회백색·광택)·SEM(덴드라이트/파우더)</li></ul>`,
 see:`<ul><li>dV/dt 변곡점(석출량과 상관), 휴지 후 OCV 회복 곡선</li><li>CE 99.9%→99.5% 이하 급락, 방전 초반 전압 plateau</li><li>스트리핑 용량(mAh) — 석출량 추정</li></ul>`,
-ex:`<p>−5 °C, 2C 충전 후 10 min 휴지에서 dV/dt가 −0.8 mV/min로 변곡, 30 min 후 3.2 mV 회복. 방전 dQ/dV에 0.25 V 피크(스트리핑 4.5 mAh). 해체 음극 표면 회백색 면적 8%. → <b>저온 2C 충전 금지, 0 °C 이하에서는 0.3C 이하·가열 후 충전</b>으로 규정. 같은 셀을 25 °C 2C로 충전하면 석출 신호가 사라진다.</p>`}
+ex:`<p>−5 °C, 2C 충전 후 10 min 휴지에서 dV/dt가 −0.8 mV/min로 변곡, 30 min 후 3.2 mV 회복. 방전 dQ/dV에 0.25 V 피크(스트리핑 4.5 mAh). 해체 음극 표면 회백색 면적 8%. → <b>저온 2C 충전 금지, 0 °C 이하에서는 0.3C 이하·가열 후 충전</b>으로 규정. 같은 셀을 25 °C 2C로 충전하면 석출 신호가 사라진다.</p>`,
+fig:'relax'}
 ]},
 
 {id:'p5-2', title:'5.3 해체(Post-mortem) 분석', cards:[
@@ -1729,7 +1738,412 @@ function figFull(host){
   figWire(f,['fresh','shift','broad','loss']);
 }
 
-var FIGS={half:figHalf, anode:figAnode, dcir:figDcir, eis:figEis, gitt:figGitt, lli:figLli, arc:figArc, full:figFull};
+/* ============================================================
+   도해 09 ~ 14 — 3전극 · 흑연 Stage · DVA · EIS 온도 · 완화 · 극판 단면
+   ============================================================ */
+function stack(parent){
+  var d=document.createElement('div');
+  d.style.cssText='display:grid;grid-template-columns:1fr;gap:6px';
+  parent.appendChild(d);return d;
+}
+function dArrow(svg,x1,y1,x2,y2,color){
+  color=color||'var(--muted)';
+  svg.appendChild(S('line',{x1:x1,y1:y1,x2:x2,y2:y2,style:'stroke:'+color+';stroke-width:1.3'}));
+  var ang=Math.atan2(y2-y1,x2-x1), s=4.4;
+  [[x2,y2,ang],[x1,y1,ang+Math.PI]].forEach(function(h){
+    svg.appendChild(S('path',{d:'M'+h[0].toFixed(1)+' '+h[1].toFixed(1)+
+      ' L'+(h[0]-s*Math.cos(h[2]-0.42)).toFixed(1)+' '+(h[1]-s*Math.sin(h[2]-0.42)).toFixed(1)+
+      ' L'+(h[0]-s*Math.cos(h[2]+0.42)).toFixed(1)+' '+(h[1]-s*Math.sin(h[2]+0.42)).toFixed(1)+' Z',
+      style:'fill:'+color}));
+  });
+}
+function txtS(svg,x,y,s,style,anchor){
+  svg.appendChild(S('text',{x:x,y:y,'text-anchor':anchor||'start',style:(style||'')+';paint-order:stroke;stroke:var(--panel2);stroke-width:2.6;stroke-linejoin:round'},s));
+}
+
+/* ---- ⑨ 3전극 셀 전위 분리 ---- */
+function fig3el(host){
+  var f=figShell(host,'09','3전극 셀 전위 분리 — 4C 급속충전에서 음극 전위가 0 V vs Li/Li⁺ 이하로 내려가는 순간','계열 클릭 · 포인트 툴팁',
+    '개념 설명용 <b>모식 곡선</b>(실측 데이터 아님). NCMA/흑연 4.7 Ah 풀셀, 25 °C CC 충전 예시. 풀셀 전압은 <b>V<sub>cell</sub> = V<sub>cathode</sub> − V<sub>anode</sub></b>의 차이일 뿐이므로, 풀셀 곡선만 봐서는 어느 전극이 문제인지 알 수 없다. 기준전극을 넣은 3전극 셀에서 <b>음극 전위가 0 V vs Li/Li⁺ 이하(음전위)</b>로 내려가는 순간이 리튬 석출(Li-plating) 개시점이다. 1C에서는 0.076~0.55 V로 양전위를 유지하던 음극이 4C에서는 SOC 75% 부근부터 0 V를 지나 −0.094 V까지 내려간다. 같은 4C라도 −10 °C에서는 더 낮은 SOC에서 시작되고, 실제 석출 여부는 휴지 전압 완화(도해 13)와 스트리핑 피크로 확인한다.');
+  var pr=pair(f);
+  var a=chartHost(pr), b=chartHost(pr);
+  var W=Math.max(280,Math.min(440,Math.floor(a.clientWidth||360)));
+  var H=272;
+  var soc=[0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100];
+  var cath=[3.350,3.440,3.550,3.620,3.665,3.700,3.720,3.735,3.750,3.765,3.790,3.815,3.845,3.875,3.905,3.940,3.985,4.045,4.110,4.190,4.285];
+  var an1 =[0.550,0.400,0.280,0.215,0.207,0.200,0.175,0.145,0.125,0.118,0.112,0.104,0.098,0.092,0.088,0.086,0.084,0.082,0.080,0.078,0.076];
+  var d4  =[0.030,0.035,0.040,0.045,0.050,0.050,0.050,0.055,0.055,0.055,0.060,0.060,0.065,0.070,0.075,0.086,0.100,0.115,0.130,0.150,0.170];
+  var d3  =[0.025,0.030,0.030,0.035,0.040,0.040,0.040,0.045,0.045,0.045,0.050,0.050,0.050,0.055,0.060,0.065,0.075,0.085,0.095,0.105,0.115];
+  var dc4 =[0.020,0.020,0.025,0.030,0.030,0.035,0.035,0.040,0.040,0.045,0.045,0.050,0.050,0.055,0.055,0.060,0.065,0.070,0.075,0.080,0.085];
+  function sub(base,d){return base.map(function(v,i){return +(v-d[i]).toFixed(3);});}
+  function add(base,d){return base.map(function(v,i){return +(v+d[i]).toFixed(3);});}
+  var an4=sub(an1,d4), an3=sub(an1,d3), cath4=add(cath,dc4);
+  function zip(v){return v.map(function(y,i){return [soc[i],y];});}
+  var cell1=soc.map(function(s,i){return [s,+(cath[i]-an1[i]).toFixed(3)];});
+
+  var ch=frame(a,{w:W,h:H,x:[0,100],y:[-0.15,4.55],xt:[0,20,40,60,80,100],yt:[0,1,2,3,4],
+    xlab:'SOC (%)',ylab:'전위 (V vs Li/Li⁺)',yfmt:function(v){return v.toFixed(0);},xfmt:function(v){return v;}});
+  ch.svg.appendChild(S('rect',{x:ch.x0,y:ch.Y(0),width:ch.x1-ch.x0,height:ch.Y(-0.15)-ch.Y(0),
+    style:'fill:var(--bad);opacity:.09'}));
+  ch.svg.appendChild(S('rect',{x:ch.X(75),y:ch.Y(0),width:ch.x1-ch.X(75),height:ch.Y(-0.15)-ch.Y(0),
+    style:'fill:var(--bad);opacity:.22','data-tip':'SOC 75~100% 구간: 4C에서 음극 전위가 0 V 이하로 내려간 구간 = 리튬이 흑연 층간이 아닌 표면에 금속으로 석출되는 영역'}));
+  txtS(ch.svg,ch.X(7),ch.Y(-0.115),'0 V 이하 = 석출 영역','fill:var(--bad);font-size:9px;font-weight:700','start');
+
+  var gc1=S('g',{'data-series':'cell'}), gc2=S('g',{'data-series':'cath'}),
+      g24=S('g',{'data-series':'cath'}), g1=S('g',{'data-series':'an1'}), g4=S('g',{'data-series':'an4'});
+  [gc1,gc2,g24,g1,g4].forEach(function(g){ch.svg.appendChild(g);});
+  curve(gc1,ch.X,ch.Y,cell1,'s1');
+  curve(gc2,ch.X,ch.Y,zip(cath),'s2');
+  curve(g24,ch.X,ch.Y,zip(cath4),'s2',{'stroke-dasharray':'5 3','opacity':'.75'});
+  curve(g1,ch.X,ch.Y,zip(an1),'s3');
+  curve(g4,ch.X,ch.Y,zip(an4),'s5');
+
+  txtS(ch.svg,ch.X(22),ch.Y(3.18),'V_cell (1C)','fill:var(--c1);font-size:10.5px;font-weight:800');
+  txtS(ch.svg,ch.X(99),ch.Y(4.44),'V_cathode 1C·4C','fill:var(--c2);font-size:9.5px;font-weight:700','end');
+  txtS(ch.svg,ch.X(4),ch.Y(2.35),'⚠️ Li-plating 개시 임계점','fill:var(--bad);font-size:10px;font-weight:800');
+  txtS(ch.svg,ch.X(4),ch.Y(1.95),'음극 전위 0 V 이하 — 3전극에서만 직접 보인다','fill:var(--bad);font-size:9.5px;font-weight:700');
+  txtS(ch.svg,ch.X(4),ch.Y(1.55),'음극 전위(1C·3C·4C)는 아래 확대 그래프 참조 ↓','fill:var(--muted);font-size:9px');
+
+  marker(ch.svg,ch.X(50),ch.Y(3.678),'SOC 50%: V_cell 3.68 V = V_cathode 3.79 − V_anode 0.112. 풀셀 전압 한 점만으로는 두 전극의 이상을 구분할 수 없다','mk');
+  marker(ch.svg,ch.X(75),ch.Y(0),'4C: SOC 약 75%에서 음극 전위가 0 V vs Li/Li⁺ 도달 — 이 순간이 Li-plating 개시점','mk4');
+  marker(ch.svg,ch.X(100),ch.Y(0.076),'1C 만충: 음극 0.076 V — 석출까지 약 76 mV의 여유가 남는다','mk3');
+  marker(ch.svg,ch.X(100),ch.Y(-0.094),'4C 만충: 음극 −0.094 V(음전위). 석출된 Li은 휴지 중 흑연으로 재삽입되며 전압 평탄부를 만든다(도해 13)','mk4');
+
+  var zm=frame(b,{w:W,h:H,x:[0,100],y:[-0.13,0.60],xt:[0,20,40,60,80,100],yt:[0,0.2,0.4,0.6],
+    xlab:'SOC (%)',ylab:'음극 전위 (V vs Li/Li⁺)',yfmt:function(v){return v.toFixed(1);},xfmt:function(v){return v;}});
+  zm.svg.appendChild(S('rect',{x:zm.x0,y:zm.Y(0),width:zm.x1-zm.x0,height:zm.Y(-0.13)-zm.Y(0),
+    style:'fill:var(--bad);opacity:.09'}));
+  zm.svg.appendChild(S('rect',{x:zm.X(75),y:zm.Y(0),width:zm.x1-zm.X(75),height:zm.Y(-0.13)-zm.Y(0),
+    style:'fill:var(--bad);opacity:.22'}));
+  var z1=S('g',{'data-series':'an1'}), z3=S('g',{'data-series':'an3'}), z4=S('g',{'data-series':'an4'});
+  [z1,z3,z4].forEach(function(g){zm.svg.appendChild(g);});
+  curve(z1,zm.X,zm.Y,zip(an1),'s3');
+  curve(z3,zm.X,zm.Y,zip(an3),'s4');
+  curve(z4,zm.X,zm.Y,zip(an4),'s5');
+  txtS(zm.svg,zm.X(98),zm.Y(0.50),'1C·3C는 전 구간 양전위','fill:var(--muted);font-size:9.5px','end');
+  txtS(zm.svg,zm.X(98),zm.Y(0.43),'4C만 SOC 75%부터 음전위','fill:var(--c5);font-size:9.5px;font-weight:700','end');
+  marker(zm.svg,zm.X(75),zm.Y(0),'4C: SOC 75%에서 0 V','mk4');
+  marker(zm.svg,zm.X(90),zm.Y(-0.003),'3C: SOC 약 90%에서 0 V (2C는 만충 직전 −0.004 V까지 접근)','mk');
+  marker(zm.svg,zm.X(100),zm.Y(-0.094),'4C 만충 −0.094 V: 음전위가 깊을수록 석출 Li 두께·덴드라이트 위험이 커진다','mk4');
+  marker(zm.svg,zm.X(0),zm.Y(0.55),'SOC 0%: 음극 0.55 V — 탈리흑연(dilute stage) 영역','mk3');
+
+  legend(f,[{s:'cell',label:'V_cell (풀셀 전압)',c:'var(--c1)'},
+            {s:'cath',label:'V_cathode (양극)',c:'var(--c2)'},
+            {s:'an1',label:'V_anode 1C (정상)',c:'var(--c3)'},
+            {s:'an3',label:'V_anode 3C',c:'var(--c4)',dash:true},
+            {s:'an4',label:'V_anode 4C (급속충전)',c:'var(--c5)',dash:true}]);
+  figWire(f,['cell','cath','an1','an3','an4']);
+}
+
+/* ---- ⑩ 흑연 Stage ↔ dQ/dV 1:1 매핑 ---- */
+function figStage(host){
+  var f=figShell(host,'10','흑연 리튬화 Stage 4→3→2L→2→1 — 전위 평탄부와 dQ/dV 피크의 1:1 매핑','계열 클릭 · 포인트 툴팁',
+    '개념 설명용 <b>모식 곡선</b>(실측 데이터 아님). 인조흑연 하프코인셀(대향 Li), 0.05C, 25 °C. 두 그래프의 x축을 <b>같은 리튬화 용량</b>으로 맞췄으므로, 점선을 따라 내려가면 “어느 평탄부가 어느 dQ/dV 피크인지”가 1:1로 대응한다. 리튬화는 dilute stage 4(LiC<sub>72</sub>)에서 시작해 Stage 4(LiC<sub>36</sub>) → Stage 3(LiC<sub>27</sub>) → Stage 2L(LiC<sub>18</sub>) → Stage 2(LiC<sub>12</sub>) → Stage 1(LiC<sub>6</sub>)로 진행한다. 평탄부는 두 stage가 공존하는 <b>2상 반응</b>이라 전위가 거의 변하지 않고, 그 구간의 dQ/dV가 피크로 나타난다. 용량 배분은 4→3이 0~10%, 3→2L 10~30%, 2L→2 30~55%, 2→1 55~100% — 절반 이상이 0.12 V 이하에서 나온다.');
+  var st=stack(f);
+  var a=chartHost(st), b=chartHost(st);
+  var W=Math.max(300,Math.min(620,Math.floor(a.clientWidth||520)));
+
+  var top=frame(a,{w:W,h:236,x:[0,380],y:[0,0.48],xt:[0,60,120,180,240,300,360],yt:[0,0.1,0.2,0.3,0.4],
+    xlab:'리튬화 용량 (mAh/g)',ylab:'전위 (V vs Li/Li⁺)',yfmt:function(v){return v.toFixed(1);}});
+  var bot=frame(b,{w:W,h:190,x:[0,380],y:[0,200],xt:[0,60,120,180,240,300,360],yt:[0,50,100,150,200],
+    xlab:'리튬화 용량 (mAh/g)',ylab:'dQ/dV (mAh/g·V⁻¹)',yfmt:function(v){return v.toFixed(0);}});
+
+  var lith=[[0,0.430],[6,0.340],[12,0.260],[18,0.225],[26,0.218],[37,0.213],[50,0.200],[62,0.194],[78,0.190],[96,0.187],[112,0.181],[120,0.162],[132,0.140],[142,0.126],[155,0.121],[172,0.120],[190,0.119],[205,0.114],[216,0.103],[230,0.093],[248,0.088],[268,0.0855],[292,0.084],[318,0.0815],[340,0.078],[358,0.0755],[372,0.070]];
+  var delith=lith.map(function(p){return [p[0], +(p[1]+0.018+0.030*(1-p[0]/372)).toFixed(3)];});
+  var gl=S('g',{'data-series':'lith'}), gd=S('g',{'data-series':'delith'});
+  top.svg.appendChild(gl);top.svg.appendChild(gd);
+  curve(gl,top.X,top.Y,lith,'s1');
+  curve(gd,top.X,top.Y,delith,'s2',{'stroke-dasharray':'4 3','opacity':'.8'});
+
+  function peaks(q){return 6+gauss(q,22,11,50)+gauss(q,74,13,24)+gauss(q,160,17,80)+gauss(q,262,20,150)+gauss(q,340,26,116);}
+  var pts=[];for(var q=0;q<=372;q+=2)pts.push([q,peaks(q)]);
+  var gp=S('g',{'data-series':'lith'});
+  bot.svg.appendChild(gp);
+  curve(gp,bot.X,bot.Y,pts,'s3');
+
+  function rot(svg,px,py,t,cls){
+    svg.appendChild(S('text',{x:px,y:py,'text-anchor':'start',class:cls,
+      transform:'rotate(-90 '+px+' '+py+')'},t));
+  }
+  var ST=[
+    {q:22, v:0.212, n:'Stage 4', s:'LiC36 · 0.21 V', tip:'Stage 4 (LiC36) 0.21 V — dilute stage 4(LiC72)에서 Stage 4로 들어가는 2상 공존 평탄부. 첫 번째 작은 dQ/dV 피크'},
+    {q:74, v:0.190, n:'Stage 3', s:'LiC27 · 0.19 V', tip:'Stage 3 (LiC27) 0.19 V — 분해능이 낮아 작은 어깨로만 보인다(저율·온도 평형이 필수)'},
+    {q:160, v:0.121, n:'Stage 2L', s:'LiC18 · 0.12 V', tip:'Stage 2L (LiC18) 0.12 V — 중간 크기 피크. 이 피크가 줄면 리튬화 깊이가 얕아진 것'},
+    {q:262, v:0.0855, n:'Stage 2', s:'LiC12 · 0.085 V', tip:'Stage 2 (LiC12) 0.085 V — 큰 피크. 흑연 용량의 대부분이 여기서 나온다'},
+    {q:340, v:0.078, n:'Stage 1', s:'LiC6 · 0.078 V', tip:'Stage 1 (LiC6) 0.078 V — 가장 큰 피크. 이 구간이 무너지면 만충 용량 자체가 사라진다'}
+  ];
+  ST.forEach(function(s){
+    var x=top.X(s.q);
+    top.svg.appendChild(S('line',{x1:x,x2:x,y1:top.y1,y2:top.Y(s.v),class:'hl-line','data-tip':s.tip}));
+    bot.svg.appendChild(S('line',{x1:bot.X(s.q),x2:bot.X(s.q),y1:bot.y1,y2:bot.Y(peaks(s.q)),class:'hl-line','data-tip':s.tip}));
+    marker(top.svg,x,top.Y(s.v),s.tip,'mk');
+    top.svg.appendChild(S('line',{x1:x,x2:x,y1:top.Y(s.v)-6,y2:top.Y(s.v)-22,class:'hl-line'}));
+    rot(top.svg,x+4,top.Y(s.v)-24,s.n,'anno');
+    rot(top.svg,x+15,top.Y(s.v)-24,s.s,'note');
+    marker(bot.svg,bot.X(s.q),bot.Y(peaks(s.q)),s.tip,'mk3');
+  });
+  txtS(top.svg,top.x1-3,top.y1+11,'위: 전위 곡선 · 아래: dQ/dV — 같은 용량에서 1:1 대응','fill:var(--muted);font-size:9px','end');
+
+  legend(f,[{s:'lith',label:'리튬화(충전) — 평탄부·피크',c:'var(--c1)'},
+            {s:'delith',label:'탈리(방전) — 히스테리시스 +18~48 mV',c:'var(--c2)',dash:true}]);
+  figWire(f,['lith','delith']);
+}
+
+/* ---- ⑪ DVA (dV/dQ) ---- */
+function figDva(host){
+  var f=figShell(host,'11','DVA (dV/dQ) — 피크 간격 Q<sub>a</sub> · Q<sub>c</sub>로 LLI와 LAM_NE를 분리','계열 클릭 · 포인트 툴팁',
+    '개념 설명용 <b>모식 곡선</b>(실측 데이터 아님). 풀셀 4.7 Ah, 0.05C. DVA는 ICA(dQ/dV)를 뒤집은 곡선으로, 전압 평탄부가 <b>피크</b>로 나타난다. 피크 사이 간격은 곧 그 전극의 이용 용량이다 — <b>Q<sub>a</sub></b>(음극 피크 간격)가 줄면 LAM_NE, <b>Q<sub>c</sub></b>(양극 피크 간격)가 줄면 LAM_PE다. 반면 <b>간격은 그대로인데 전체가 용량축으로 밀리면</b> 리튬 인벤토리가 줄어든 LLI다(양극 피크 대비 음극 피크의 상대 위치 슬리피지).');
+  var pr=pair(f);
+  var a=chartHost(pr), b=chartHost(pr);
+  var W=Math.max(280,Math.min(440,Math.floor(a.clientWidth||360)));
+
+  function mk(c1,a1,a2,c2){
+    return function(x){return 0.25+gauss(x,c1,0.042,2.4)+gauss(x,a1,0.062,4.9)+gauss(x,a2,0.062,4.3)+gauss(x,c2,0.042,3.1);};
+  }
+  var fr=mk(0.40,2.20,2.80,4.30), ll=mk(0.40,2.36,2.96,4.18), ne=mk(0.40,2.30,2.70,4.30);
+
+  var ch=frame(a,{w:W,h:272,x:[0,5.2],y:[0,7.4],xt:[0,1,2,3,4,5],yt:[0,2,4,6],
+    xlab:'용량 Q (Ah)',ylab:'dV/dQ (V/Ah)',yfmt:function(v){return v.toFixed(0);},xfmt:function(v){return v.toFixed(0);}});
+  var gf=S('g',{'data-series':'fresh'}), gl=S('g',{'data-series':'lli'}), gn=S('g',{'data-series':'ne'});
+  [gf,gl,gn].forEach(function(g){ch.svg.appendChild(g);});
+  function plot(g,fn,cls){var p=[];for(var x=0;x<=5.2001;x+=0.01)p.push([x,fn(x)]);curve(g,ch.X,ch.Y,p,cls);}
+  plot(gf,fr,'s1'); plot(gl,ll,'s4'); plot(gn,ne,'s3');
+
+  dArrow(ch.svg,ch.X(0.40),ch.Y(6.55),ch.X(4.30),ch.Y(6.55),'var(--c2)');
+  txtS(ch.svg,ch.X(2.35),ch.Y(6.85),'Q_c = 3.90 Ah — 양극 피크 간격(유지)','fill:var(--c2);font-size:10px;font-weight:700','middle');
+  marker(ch.svg,ch.X(2.20),ch.Y(fr(2.20)),'신품 음극 피크 ① 2.20 Ah','mk');
+  marker(ch.svg,ch.X(2.80),ch.Y(fr(2.80)),'신품 음극 피크 ② 2.80 Ah — Q_a = 0.60 Ah','mk');
+  marker(ch.svg,ch.X(4.30),ch.Y(fr(4.30)),'양극 피크 ② 4.30 Ah — 양극 쪽 피크는 기준으로 고정','mk');
+  marker(ch.svg,ch.X(0.40),ch.Y(fr(0.40)),'양극 피크 ① 0.40 Ah','mk');
+  marker(ch.svg,ch.X(2.36),ch.Y(ll(2.36)),'LLI: 음극 피크가 +0.16 Ah 슬리피지(피크 간격은 0.60 Ah 그대로)','mk4');
+  marker(ch.svg,ch.X(2.70),ch.Y(ne(2.70)),'LAM_NE: 음극 피크 간격이 0.60→0.40 Ah로 축소','mk3');
+
+  var zm=frame(b,{w:W,h:272,x:[2.05,3.10],y:[0,9.0],xt:[2.2,2.4,2.6,2.8,3.0],yt:[0,1,2,3,4,5],
+    xlab:'용량 Q (Ah) — 음극 피크 확대',ylab:'dV/dQ (V/Ah)',yfmt:function(v){return v.toFixed(0);},xfmt:function(v){return v.toFixed(1);}});
+  var zf=S('g',{'data-series':'fresh'}), zl=S('g',{'data-series':'lli'}), zn=S('g',{'data-series':'ne'});
+  [zf,zl,zn].forEach(function(g){zm.svg.appendChild(g);});
+  function zplot(g,fn,cls){var p=[];for(var x=2.05;x<=3.1001;x+=0.005)p.push([x,fn(x)]);curve(g,zm.X,zm.Y,p,cls);}
+  zplot(zf,fr,'s1'); zplot(zl,ll,'s4'); zplot(zn,ne,'s3');
+
+  dArrow(zm.svg,zm.X(2.20),zm.Y(8.05),zm.X(2.80),zm.Y(8.05),'var(--c1)');
+  txtS(zm.svg,zm.X(2.50),zm.Y(8.45),'Q_a(신품) 0.60 Ah','fill:var(--c1);font-size:10px;font-weight:700','middle');
+  dArrow(zm.svg,zm.X(2.30),zm.Y(7.05),zm.X(2.70),zm.Y(7.05),'var(--c3)');
+  txtS(zm.svg,zm.X(2.50),zm.Y(7.45),'Q_a(LAM_NE) 0.40 Ah · −33%','fill:var(--c3);font-size:10px;font-weight:700','middle');
+  dArrow(zm.svg,zm.X(2.20),zm.Y(6.05),zm.X(2.36),zm.Y(6.05),'var(--c4)');
+  txtS(zm.svg,zm.X(2.38),zm.Y(6.35),'LLI +0.16 Ah','fill:var(--c4);font-size:10px;font-weight:700','start');
+  marker(zm.svg,zm.X(2.20),zm.Y(fr(2.20)),'신품 2.20 Ah','mk');
+  marker(zm.svg,zm.X(2.36),zm.Y(ll(2.36)),'LLI 2.36 Ah — 간격은 0.60 Ah 그대로','mk4');
+  marker(zm.svg,zm.X(2.30),zm.Y(ne(2.30)),'LAM_NE 2.30 Ah — 두 피크가 0.40 Ah로 좁혀짐','mk3');
+  marker(zm.svg,zm.X(2.70),zm.Y(ne(2.70)),'LAM_NE 2.70 Ah — 음극 이용 창 축소 = 활물질 손실','mk3');
+
+  legend(f,[{s:'fresh',label:'신품',c:'var(--c1)'},
+            {s:'lli',label:'LLI — 피크 슬리피지(간격 유지)',c:'var(--c4)',dash:true},
+            {s:'ne',label:'LAM_NE — Q_a 축소',c:'var(--c3)'}]);
+  figWire(f,['fresh','lli','ne']);
+}
+
+/* ---- ⑫ EIS 온도별 Nyquist + Bode ---- */
+function figEisT(host){
+  var f=figShell(host,'12','EIS 온도 의존 — 25 °C → 0 °C → −20 °C에서 R<sub>ct</sub> 반원 확대와 Bode 위상각 이동','계열 클릭 · 포인트 툴팁',
+    '개념 설명용 <b>모식 곡선</b>(실측 데이터 아님). SOC 50%, 진폭 10 mV, 10 kHz~10 mHz. 온도가 내려가면 전해액 점도 상승(R<sub>s</sub>)보다 <b>전하전달·확산(R<sub>ct</sub>)</b>이 훨씬 크게 나빠진다 — 25 °C 2.1 → 0 °C 5.6 → −20 °C 17.0 mΩ(약 8배). 이는 아레니우스 활성화 에너지 <b>E<sub>a</sub> ≈ 58 kJ/mol</b>에 해당하며, 저온 급속충전에서 음극 전위를 0 V 아래로 밀어 넣는 직접 원인이다. Bode 위상각에서는 온도가 낮을수록 위상이 더 깊어지고 저주파 쪽으로 이동해, 확산·계면 지배가 일찍 시작되는 것이 보인다.');
+  var pr=pair(f);
+  var a=chartHost(pr), b=chartHost(pr);
+  var W=Math.max(280,Math.min(440,Math.floor(a.clientWidth||360)));
+
+  function nyq(rs,r1,r2){
+    var p=[];
+    for(var i=0;i<=24;i++){var th=Math.PI-Math.PI*i/24;p.push([rs+r1/2+r1/2*Math.cos(th),r1/2*Math.sin(th)]);}
+    for(var j=0;j<=30;j++){var t2=Math.PI-Math.PI*j/30;p.push([rs+r1+r2/2+r2/2*Math.cos(t2),r2/2*Math.sin(t2)]);}
+    return p;
+  }
+  function tail(g,ch,xv,cls,n){
+    var d='M'+ch.X(xv).toFixed(1)+' '+ch.Y(0).toFixed(1);
+    for(var k=1;k<=n;k++){d+=' L'+(ch.X(xv)+k*8).toFixed(1)+' '+(ch.Y(0)-k*8).toFixed(1);}
+    g.appendChild(S('path',{d:d,class:cls,fill:'none'}));
+  }
+  var n25=nyq(1.20,0.90,2.10), n0=nyq(1.60,1.60,5.60), nm=nyq(3.70,3.00,17.00);
+
+  var ch=frame(a,{w:W,h:288,x:[0,28],y:[0,9.6],xt:[0,5,10,15,20,25],yt:[0,2,4,6,8],
+    xlab:'Z′ (mΩ)',ylab:'−Z″ (mΩ)',yfmt:function(v){return v.toFixed(0);},xfmt:function(v){return v.toFixed(0);}});
+  var g1=S('g',{'data-series':'t25'}), g2=S('g',{'data-series':'t0'}), g3=S('g',{'data-series':'tm20'});
+  [g1,g2,g3].forEach(function(g){ch.svg.appendChild(g);});
+  curve(g1,ch.X,ch.Y,n25,'s1');tail(g1,ch,4.20,'s1',7);
+  curve(g2,ch.X,ch.Y,n0,'s3');tail(g2,ch,8.80,'s3',5);
+  curve(g3,ch.X,ch.Y,nm,'s5');tail(g3,ch,23.70,'s5',4);
+  txtS(ch.svg,ch.X(0.8),ch.Y(9.35),'왼쪽 = 고주파 · 반원 지름 = R_sei → R_ct','fill:var(--muted);font-size:9px');
+  txtS(ch.svg,ch.X(0.8),ch.Y(8.90),'온도↓ R_ct 2.1 → 5.6 → 17.0 mΩ (25 → 0 → −20 °C)','fill:var(--fg2);font-size:9px;font-weight:700');
+  txtS(ch.svg,ch.X(10.6),ch.Y(0.55),'45° 꼬리 = Warburg(확산)','fill:var(--muted);font-size:9px');
+  marker(ch.svg,ch.X(1.20),ch.Y(0),'R_s 1.2 mΩ (25 °C) — 고주파 x절편: 전해액·집전체·접촉','mk');
+  marker(ch.svg,ch.X(3.40),ch.Y(1.05),'25 °C R_ct 반원 꼭짓점 ≈ 100 Hz','mk');
+  marker(ch.svg,ch.X(15.2),ch.Y(8.5),'−20 °C R_ct 17.0 mΩ(25 °C의 약 8배). 아레니우스 Ea ≈ 58 kJ/mol — 저온에서 음극 전위를 0 V 아래로 밀어낸다','mk4');
+  marker(ch.svg,ch.X(3.70),ch.Y(0),'−20 °C R_s 3.7 mΩ(약 3배) — 점도·염 이동도 저하','mk3');
+
+  var logs=[-2,-1.5,-1,-0.5,0,0.5,1,1.5,2,2.5,3,3.5,4,4.5,5];
+  var P25=[
+    [-84,-83,-80,-75,-68,-60,-50,-41,-33,-26,-19,-13,-8,-5,-3],
+    [-87,-86,-84,-81,-76,-69,-60,-50,-40,-31,-23,-16,-10,-6,-3],
+    [-89,-89,-88,-86,-83,-78,-71,-62,-51,-40,-29,-20,-13,-7,-4]];
+  var bc=frame(b,{w:W,h:288,x:[-2,5],y:[-90,0],xt:[-2,-1,0,1,2,3,4,5],yt:[-90,-60,-30,0],
+    xlab:'주파수 f (Hz)',ylab:'위상각 (°)',yfmt:function(v){return v.toFixed(0);},
+    xfmt:function(v){return v===-2?'0.01':(v===-1?'0.1':(v===0?'1':(v===1?'10':(v===2?'100':(v===3?'1k':(v===4?'10k':'100k'))))));}});
+  [[4,'10 kHz'],[2,'100 Hz'],[0,'1 Hz'],[-1,'0.1 Hz']].forEach(function(mk){
+    var x=bc.X(mk[0]);
+    bc.svg.appendChild(S('line',{x1:x,x2:x,y1:bc.y0,y2:bc.y1,class:'dash',
+      'data-tip':mk[1]+' — '+(mk[0]===4?'전해액·전자 이동(R_s)':(mk[0]===2?'SEI·계면(R_sei)':(mk[0]===0?'전하전달(R_ct)':'확산(Warburg)')))}));
+    txtS(bc.svg,x,bc.y1-4,mk[1],'fill:var(--muted);font-size:9px','middle');
+  });
+  function P(arr){var o=[];for(var i=0;i<logs.length;i++)o.push([logs[i],arr[i]]);return o;}
+  var c25=S('g',{'data-series':'t25'}), c0=S('g',{'data-series':'t0'}), cm=S('g',{'data-series':'tm20'});
+  [c25,c0,cm].forEach(function(g){bc.svg.appendChild(g);});
+  curve(c25,bc.X,bc.Y,P(P25[0]),'s1');
+  curve(c0,bc.X,bc.Y,P(P25[1]),'s3');
+  curve(cm,bc.X,bc.Y,P(P25[2]),'s5');
+  txtS(bc.svg,bc.x0+3,bc.y1+13,'10 kHz↑ R_s · 1k~100 Hz R_sei','fill:var(--muted);font-size:9px');
+  txtS(bc.svg,bc.x0+3,bc.y1+25,'100~1 Hz R_ct · 1 Hz↓ Warburg','fill:var(--muted);font-size:9px');
+  marker(bc.svg,bc.X(0),bc.Y(P25[0][4]),'25 °C · 1 Hz에서 위상 −68°','mk');
+  marker(bc.svg,bc.X(0),bc.Y(P25[2][4]),'−20 °C · 같은 1 Hz에서 −83° — 계면·확산 지배가 저주파까지 확장','mk4');
+
+  legend(f,[{s:'t25',label:'25 °C (R_ct 2.1 mΩ)',c:'var(--c1)'},
+            {s:'t0',label:'0 °C (R_ct 5.6 mΩ)',c:'var(--c3)'},
+            {s:'tm20',label:'−20 °C (R_ct 17.0 mΩ)',c:'var(--c5)',dash:true}]);
+  figWire(f,['t25','t0','tm20']);
+}
+
+/* ---- ⑬ 휴지 전압 완화 (dV/dt) ---- */
+function figRelax(host){
+  var f=figShell(host,'13','충전 직후 휴지 전압 완화 — 평탄/변곡 구간과 |dV/dt| 국소 피크로 Li-plating 포착','계열 클릭 · 포인트 툴팁',
+    '개념 설명용 <b>모식 곡선</b>(실측 데이터 아님). 2C 충전 직후 40 min 휴지, 1 s 간격 기록 예시. 정상 셀은 휴지 중 전압이 <b>단조 감소</b>하며 |dV/dt|가 한 번도 다시 커지지 않는다. 석출이 일어난 셀은 표면의 금속 Li이 흑연으로 <b>재삽입</b>되면서 음극 전위가 잠시 올라가고, 그만큼 <b>평탄(변곡) 구간</b>이 생기며 |dV/dt|에 <b>국소 피크</b>가 나타난다. 이후 전압은 정상선보다 낮게 안착한다 — 그 차이가 곧 석출로 잃은 리튬(LLI)이다.');
+  var pr=pair(f);
+  var a=chartHost(pr), b=chartHost(pr);
+  var W=Math.max(280,Math.min(440,Math.floor(a.clientWidth||360)));
+
+  function vNorm(t){return 3.872+0.030*Math.exp(-t/3.2);}
+  function vPlat(t){return 3.872+0.026*Math.exp(-t/1.8)+0.0075*Math.exp(-Math.pow((t-12)/3.4,2))-0.004*(1-Math.exp(-t/6));}
+
+  var ch=frame(a,{w:W,h:272,x:[0,40],y:[3.855,3.912],xt:[0,10,20,30,40],yt:[3.86,3.87,3.88,3.89,3.90,3.91],
+    xlab:'휴지 시간 (min)',ylab:'OCV (V)',yfmt:function(v){return v.toFixed(3);}});
+  ch.svg.appendChild(S('rect',{x:ch.X(7),y:ch.y1,width:ch.X(16)-ch.X(7),height:ch.y0-ch.y1,
+    style:'fill:var(--c3);opacity:.10','data-tip':'평탄/변곡 구간: 석출 Li의 흑연 재삽입이 음극 전위를 끌어올려 풀셀 전압 기울기가 0에 가까워진다'}));
+  txtS(ch.svg,ch.X(11.5),ch.y1+12,'평탄/변곡','fill:var(--c3);font-size:9.5px;font-weight:800','middle');
+  var p1=[],p2=[];
+  for(var t=0;t<=40.001;t+=0.5){p1.push([t,vNorm(t)]);p2.push([t,vPlat(t)]);}
+  var g1=S('g',{'data-series':'norm'}), g2=S('g',{'data-series':'plat'});
+  [g1,g2].forEach(function(g){ch.svg.appendChild(g);});
+  curve(g1,ch.X,ch.Y,p1,'s2');
+  curve(g2,ch.X,ch.Y,p2,'s5');
+  txtS(ch.svg,ch.X(22),ch.Y(3.8808),'정상: 단조 감소','fill:var(--c2);font-size:10px;font-weight:700');
+  txtS(ch.svg,ch.X(38),ch.Y(3.8622),'석출 셀: 더 낮게 안착','fill:var(--c5);font-size:9.5px;font-weight:700','end');
+  marker(ch.svg,ch.X(0),ch.Y(3.902),'충전 종료 직후 OCV 3.902 V','mk');
+  marker(ch.svg,ch.X(12),ch.Y(vPlat(12)),'t ≈ 12 min 변곡점 — 기울기가 0에 가까워졌다가 다시 꺾인다','mk4');
+  marker(ch.svg,ch.X(40),ch.Y(vPlat(40)),'40 min 후 3.868 V vs 정상 3.872 V — 차이 4 mV ≈ 잃은 리튬','mk4');
+
+  var d=frame(b,{w:W,h:272,x:[0,40],y:[-1.15,1.2],xt:[0,10,20,30,40],yt:[-1,0,1],
+    xlab:'휴지 시간 (min)',ylab:'|dV/dt| (mV/min · 로그)',yfmt:function(v){return v===-1?'0.1':(v===0?'1':'10');}});
+  function L(v){return Math.log10(Math.max(v,0.07));}
+  var q1=[],q2=[];
+  for(var t2=0.25;t2<=40.001;t2+=0.5){
+    var d1=Math.abs((vNorm(t2+0.25)-vNorm(t2-0.25))/0.5)*1000;
+    var d2=Math.abs((vPlat(t2+0.25)-vPlat(t2-0.25))/0.5)*1000;
+    q1.push([t2,L(d1)]);q2.push([t2,L(d2)]);
+  }
+  var h1=S('g',{'data-series':'norm'}), h2=S('g',{'data-series':'plat'});
+  [h1,h2].forEach(function(g){d.svg.appendChild(g);});
+  curve(h1,d.X,d.Y,q1,'s2');
+  curve(h2,d.X,d.Y,q2,'s5');
+  txtS(d.svg,d.X(13),d.Y(0.72),'초기 급강하 = 오믹 + 계면 완화(두 셀 공통)','fill:var(--muted);font-size:9px');
+  marker(d.svg,d.X(9.5),d.Y(L(2.0)),'|dV/dt| 국소 피크 ≈ 2.0 mV/min — 석출 Li 재삽입의 지문','mk4');
+  marker(d.svg,d.X(9.5),d.Y(L(0.58)),'같은 시점 정상 셀 0.6 mV/min — 단조 감소','mk');
+  txtS(d.svg,d.X(13),d.Y(0.95),'국소 피크 = 석출 지문','fill:var(--c4);font-size:9.5px;font-weight:700');
+  txtS(d.svg,d.X(13),d.Y(0.72),'(깊이 ∝ 석출량)','fill:var(--c4);font-size:9px;font-weight:700');
+
+  legend(f,[{s:'norm',label:'정상 충전 (단조 감소)',c:'var(--c2)'},
+            {s:'plat',label:'Li-plating 발생 셀 (평탄·변곡)',c:'var(--c5)',dash:true}]);
+  figWire(f,['norm','plat']);
+}
+
+/* ---- ⑭ 극판 건조 불량 · 계면 박리 모식 ---- */
+function figPeel(host){
+  var f=figShell(host,'14','극판 건조 불량(바인더 마이그레이션)과 계면 박리 — 정상 vs 급속 건조 단면','범례 클릭 · 도형 툴팁',
+    '개념 설명용 <b>모식 도해</b>(실측 이미지 아님). 건조가 빠르면 용매가 표면에서 먼저 증발하며 <b>바인더가 상층부로 끌려 올라가고</b>(상향 마이그레이션), 집전체 계면은 바인더가 고갈되어 접착력이 사라진다. 그 결과 Peel 강도는 떨어지고 파괴 모드가 합제 내부(응집 파괴)에서 <b>집전체 계면 파괴</b>로 바뀌며, Multi-probe 계면저항이 급증한다. 단면 EDS의 F(바인더) 신호가 상층/하층으로 갈라지는 것(예: 1.6× / 0.6×)이 직접 증거다.');
+  var pr=pair(f);
+  var a=chartHost(pr), b=chartHost(pr);
+  var W=Math.max(280,Math.min(440,Math.floor(a.clientWidth||360)));
+  var H=330;
+
+  function panel(host_,o){
+    var svg=S('svg',{viewBox:'0 0 '+W+' '+H,class:'chart',role:'img'});
+    host_.appendChild(svg);
+    var L=14,R=W-14,CW=R-L;
+    svg.appendChild(S('rect',{x:L,y:26,width:CW,height:H-40,rx:10,style:'fill:var(--panel3);stroke:var(--line);stroke-width:1'}));
+    txtS(svg,L+8,18,o.title,'fill:'+o.color+';font-size:11px;font-weight:800');
+    var top=76, ccTop=196, ccBot=208, x0=L+12, x1=R-12;
+    svg.appendChild(S('rect',{x:x0,y:top,width:x1-x0,height:ccTop-top,style:'fill:var(--panel2);stroke:var(--line2);stroke-width:1'}));
+    var part=[[40,108],[40,140],[40,172],[84,96],[84,128],[84,160],[128,112],[128,144],[128,176],[172,96],[172,128],[172,160],[216,112],[216,144],[216,176],[252,124],[252,156]];
+    var pg=S('g');
+    svg.appendChild(pg);
+    part.forEach(function(p,i){
+      pg.appendChild(S('circle',{cx:x0+p[0]*((x1-x0)/270),cy:p[1],r:(i%3===0?10:8),
+        style:'fill:var(--muted);fill-opacity:.16;stroke:var(--line2);stroke-width:.9'}));
+    });
+    svg.appendChild(S('rect',{x:x0,y:ccTop,width:x1-x0,height:ccBot-ccTop,style:'fill:var(--c2);opacity:.45'}));
+    txtS(svg,(x0+x1)/2,ccBot+15,'Cu 집전체 (10 µm)','fill:var(--muted);font-size:9.5px','middle');
+
+    var bg=S('g',{'data-series':'binder'});
+    svg.appendChild(bg);
+    o.binder.forEach(function(p){
+      bg.appendChild(S('circle',{cx:x0+p[0]*((x1-x0)/270),cy:p[1],r:2.1,
+        style:'fill:var(--c5)','data-tip':'바인더(PVDF) — EDS F 신호로 정량. 건조가 빠르면 상층에 몰리고 계면은 고갈된다'}));
+    });
+
+    var cg=S('g',{'data-series':'crack'});
+    svg.appendChild(cg);
+    if(o.delam){
+      var xa=x0+2, xb=x1-2, y=ccTop-2;
+      var path='M'+xa+' '+y;
+      for(var i=1;i<=18;i++){var xx=xa+(xb-xa)*i/18;path+=' L'+xx.toFixed(1)+' '+(y+((i%2)?3.5:-2.5));}
+      cg.appendChild(S('path',{d:path,style:'fill:none;stroke:var(--bad);stroke-width:2',
+        'data-tip':'집전체 계면 박리 — 파괴 모드가 응집 파괴에서 계면 파괴로 바뀐 상태'}));
+      cg.appendChild(S('path',{d:'M'+(x0+34)+' '+(ccTop-4)+' L'+(x0+64)+' '+(ccTop-24)+' L'+(x0+108)+' '+(ccTop-22)+' L'+(x0+132)+' '+(ccTop-6)+' Z',
+        style:'fill:var(--bad);opacity:.18;stroke:var(--bad);stroke-width:1.2',
+        'data-tip':'박리된 합제 조각 — Peel 시험에서 계면에서 떨어져 나온 층'}));
+      txtS(svg,x0+3,ccTop-30,'계면 박리','fill:var(--bad);font-size:9.5px;font-weight:800');
+      cg.appendChild(S('path',{d:'M'+(x1-26)+' '+(ccTop-18)+' L'+(x1-40)+' '+(ccTop-62)+' M'+(x1-40)+' '+(ccTop-62)+' L'+(x1-46)+' '+(ccTop-53)+' M'+(x1-40)+' '+(ccTop-62)+' L'+(x1-32)+' '+(ccTop-53),
+        style:'fill:none;stroke:var(--bad);stroke-width:1.6','data-tip':'바인더가 상층으로 이동한 방향(상향 마이그레이션)'}));
+      txtS(svg,x1-2,ccTop-66,'바인더 ↑','fill:var(--bad);font-size:9px;font-weight:700','end');
+    }else{
+      cg.appendChild(S('path',{d:'M'+x0+' '+(ccTop-1)+' L'+x1+' '+(ccTop-1),
+        style:'fill:none;stroke:var(--c1);stroke-width:1.6;opacity:.8','data-tip':'계면 접착 유지 — 바인더가 계면까지 균일하게 분포'}));
+    }
+
+    svg.appendChild(S('path',{d:'M'+(x0+(x1-x0)/2)+' '+(top-4)+' L'+(x0+(x1-x0)/2)+' '+(top-30)+' M'+(x0+(x1-x0)/2)+' '+(top-30)+' L'+(x0+(x1-x0)/2-6)+' '+(top-22)+' M'+(x0+(x1-x0)/2)+' '+(top-30)+' L'+(x0+(x1-x0)/2+6)+' '+(top-22),
+      style:'fill:none;stroke:'+o.color+';stroke-width:1.5','data-tip':'Peel 시험(180°) 인장 방향 — 값이 낮거나 진동이 크면 두께 방향 분포 불균일'}));
+    txtS(svg,(x0+x1)/2+10,top-32,'Peel ↑','fill:'+o.color+';font-size:9.5px;font-weight:800');
+
+    function bar(y,label,val,max,txt,color){
+      txtS(svg,x0,y-4,label,'fill:var(--muted);font-size:9px');
+      txtS(svg,x1,y-4,txt,'fill:'+color+';font-size:9.5px;font-weight:800','end');
+      svg.appendChild(S('rect',{x:x0,y:y,width:x1-x0,height:7,rx:3.5,style:'fill:var(--line);opacity:.55'}));
+      svg.appendChild(S('rect',{x:x0,y:y,width:Math.min(1,val/max)*(x1-x0),height:7,rx:3.5,style:'fill:'+color}));
+    }
+    bar(258,'Peel 강도',o.peel,2.0,o.peel.toFixed(2)+' gf/mm',o.color);
+    bar(292,'계면저항 (Multi-probe, 예시)',o.r,20,o.r.toFixed(1)+' Ω·cm²',o.delam?'var(--bad)':'var(--c1)');
+    return svg;
+  }
+
+  var uniform=[];
+  for(var i=0;i<5;i++)for(var j=0;j<4;j++){uniform.push([30+i*56,92+j*26+i*4]);}
+  var topHeavy=[[38,88],[58,84],[80,90],[102,82],[126,88],[150,84],[174,90],[198,86],[222,88],[246,84]]
+    .concat([[66,104],[116,100],[166,104],[216,100],[44,150],[248,146],[146,170],[196,170],[90,174]]);
+  panel(a,{title:'정상 극판 — 균일 건조',color:'var(--c1)',binder:uniform,delam:false,peel:1.45,r:2.1});
+  panel(b,{title:'급속 건조 — 바인더 상향 편석',color:'var(--bad)',binder:topHeavy,delam:true,peel:0.92,r:18.4});
+
+  txtCap(f,'좌: 두께 방향으로 균일한 바인더 → 계면 접착 유지 / 우: 상층 바인더 1.6× · 계면 0.6×(EDS F 신호) → 계면 박리와 저항 급증','var(--muted)');
+  legend(f,[{s:'binder',label:'바인더 분포',c:'var(--c5)'},{s:'crack',label:'박리·계면 균열',c:'var(--bad)'}]);
+  figWire(f,['binder','crack']);
+}
+
+var FIGS={half:figHalf, anode:figAnode, dcir:figDcir, eis:figEis, gitt:figGitt, lli:figLli, arc:figArc, full:figFull,
+          three:fig3el, stage:figStage, dva:figDva, eist:figEisT, relax:figRelax, peel:figPeel};
 function ensureFig(c){
   if(!c.fig||c._figDone)return;
   var fn=FIGS[c.fig];if(!fn)return;
