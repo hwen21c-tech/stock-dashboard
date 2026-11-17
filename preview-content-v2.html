@@ -148,6 +148,8 @@
   }
   .btn.ghost{background:#0b1424;color:#7dd3fc;border-color:rgba(56,189,248,.34)}
   .btn.small{padding:6px 10px;font-size:11.5px}
+  .btn.naver{background:rgba(3,199,90,.14);color:#4ade80;border-color:rgba(3,199,90,.42)}
+  .btn.naver:hover{filter:brightness(1.18)}
   .btn.danger{color:#fda4af;border-color:rgba(244,63,94,.36);background:rgba(244,63,94,.10)}
   .btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
   .btn.big{width:100%;padding:13px;font-size:14px;border-radius:12px}
@@ -1001,6 +1003,7 @@
             <button class="btn small" id="editOutBtn">✎ 편집</button>
             <button class="btn small ghost" id="saveBlogBtn">보관함에 저장</button>
             <button class="btn small primary" id="copyBtn">복사</button>
+            <button class="btn small naver" id="copyHtmlBtn" title="네이버 스마트에디터·티스토리·워드에 붙여넣으면 굵은 소제목·인용구·표·불릿 서식이 그대로 살아 있는 HTML로 복사합니다">📋 네이버 서식 복사</button>
           </div>
           <pre class="out" id="outText"></pre>
           <textarea class="outedit" id="outEdit" hidden aria-label="초안 직접 편집"></textarea>
@@ -1026,7 +1029,7 @@
 </section>
 
 <footer>
-  <b>정적 프리뷰 안내</b> — 이 페이지는 UI·동선을 먼저 눌러 보기 위한 독립 미리보기입니다. 실제 동작: 영상 파일 메타·길이·미리보기, 클립별 In/Out 구간 슬라이더(재생 위치 이동·구간 합산), 자막 스타일 미리보기, 양식 추가/수정/삭제 저장, 내 문체 샘플·금지 상투어 저장, 양식 기반 마크다운 뼈대 생성·편집·복사, 제목 3종·네이버 32자 잘림 미리보기, 발행 전 체크리스트, 경쟁 콘텐츠 빈틈 메모, 주간 발행 루틴표, 내 작업 보관함(localStorage), 블로그→쇼츠 대본 넘기기. 연결 대기: 유튜브 실시간 검색·경쟁 콘텐츠 자동 분석, AI 문장 생성·문체 복제, 제목 AI 추천, Gemini 영상 타임코드 분석, ffmpeg.wasm 컷편집·자막·BGM 합성. 기존 콘텐츠 스튜디오·관제탑과는 별개 파일이며 서로 영향을 주지 않습니다.
+  <b>정적 프리뷰 안내</b> — 이 페이지는 UI·동선을 먼저 눌러 보기 위한 독립 미리보기입니다. 실제 동작: 영상 파일 메타·길이·미리보기, 클립별 In/Out 구간 슬라이더(재생 위치 이동·구간 합산), 자막 스타일 미리보기, 양식 추가/수정/삭제 저장, 내 문체 샘플·금지 상투어 저장, 양식 기반 마크다운 뼈대 생성·편집·복사(네이버 서식 HTML 복사 포함), 제목 3종·네이버 32자 잘림 미리보기, 발행 전 체크리스트, 경쟁 콘텐츠 빈틈 메모, 주간 발행 루틴표, 내 작업 보관함(localStorage), 블로그→쇼츠 대본 넘기기. 연결 대기: 유튜브 실시간 검색·경쟁 콘텐츠 자동 분석, AI 문장 생성·문체 복제, 제목 AI 추천, Gemini 영상 타임코드 분석, ffmpeg.wasm 컷편집·자막·BGM 합성. 기존 콘텐츠 스튜디오·관제탑과는 별개 파일이며 서로 영향을 주지 않습니다.
 </footer>
 
 <!-- modal -->
@@ -1888,6 +1891,202 @@
   });
   topicEl.addEventListener('keydown', function(e){ if (e.key === 'Enter') $('#genBtn').click(); });
 
+  /* ================================================================
+     네이버 서식 복사 — Markdown → Rich HTML
+     스마트에디터·티스토리·워드에 붙여넣었을 때 굵은 소제목 / 인용구 /
+     표(<table>) / 불릿이 '서식'으로 그대로 살아 있도록 text/html 로 복사한다.
+     (동적 웹 sd_live 전환 시에도 이 블록을 그대로 재사용: window.CS_RICH)
+     ================================================================ */
+  var RICH = (function(){
+    function inline(s){
+      var t = esc(s);
+      t = t.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:13px">$1</code>');
+      t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      t = t.replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s).,!?:]|$)/g, '$1<em>$2</em>');
+      return t;
+    }
+    function isTableRow(t){ return t.length > 2 && t.charAt(0) === '|' && t.charAt(t.length - 1) === '|'; }
+    function isSep(cells){ return cells.length > 0 && cells.every(function(c){ return /^:?-{2,}:?$/.test(c); }); }
+    function splitRow(t){
+      return t.replace(/^\|/, '').replace(/\|$/, '').split('|').map(function(c){ return c.trim(); });
+    }
+    function tableHtml(rows){
+      var cells = rows.map(splitRow);
+      var hasHead = cells.length > 1 && isSep(cells[1]);
+      var head = hasHead ? cells[0] : null;
+      var body = (hasHead ? cells.slice(2) : cells).filter(function(r){ return !isSep(r); });
+      var h = '<table style="border-collapse:collapse;width:100%;margin:6px 0 16px;font-size:13.5px;background-color:#ffffff">';
+      if (head){
+        h += '<thead><tr>' + head.map(function(c){
+          return '<th style="border:1px solid #cbd5e1;background-color:#f1f5f9;padding:7px 9px;font-size:13px;font-weight:800;text-align:left;color:#0f172a">' + (inline(c) || '&nbsp;') + '</th>';
+        }).join('') + '</tr></thead>';
+      }
+      h += '<tbody>' + body.map(function(r){
+        return '<tr>' + r.map(function(c){
+          return '<td style="border:1px solid #cbd5e1;background-color:#ffffff;padding:7px 9px;font-size:13.5px;line-height:1.6;color:#1f2937;vertical-align:top">' + (inline(c) || '&nbsp;') + '</td>';
+        }).join('') + '</tr>';
+      }).join('') + '</tbody></table>';
+      return h;
+    }
+    function listMatch(raw){
+      if (/^[ \t]*$/.test(raw)) return null;
+      var m = /^([ ]*)([-*]|\d+[.)])(?:[ ]+(.*))?[ ]*$/.exec(raw);
+      if (!m) return null;
+      var txt = (m[3] == null ? '' : m[3]).trim();
+      if (/^\[[ xX]\]/.test(txt)){
+        txt = (/^\[[xX]\]/.test(txt) ? '☑ ' : '☐ ') + txt.replace(/^\[[ xX]\]\s*/, '');
+      }
+      return { indent: m[1].length, ord: /\d/.test(m[2]), html: inline(txt) || '&nbsp;' };
+    }
+    function listHtml(items){
+      var h = [], stack = [];
+      function open(ord){
+        return ord
+          ? '<ol style="margin:8px 0 14px;padding-left:22px;font-size:14px;line-height:1.85;color:#1f2937;background-color:#ffffff">'
+          : '<ul style="margin:8px 0 14px;padding-left:20px;font-size:14px;line-height:1.85;color:#1f2937;background-color:#ffffff">';
+      }
+      function nm(ord){ return ord ? 'ol' : 'ul'; }
+      items.forEach(function(it){
+        while (stack.length && it.indent < stack[stack.length - 1].indent){
+          var s1 = stack.pop();
+          h.push('</li></' + nm(s1.ord) + '>');
+        }
+        var top = stack[stack.length - 1];
+        if (!top || it.indent > top.indent){
+          h.push(open(it.ord));
+          stack.push({ indent: it.indent, ord: it.ord });
+        } else {
+          h.push('</li>');
+          if (top.ord !== it.ord){
+            h.push('</' + nm(top.ord) + '>');
+            stack.pop();
+            h.push(open(it.ord));
+            stack.push({ indent: it.indent, ord: it.ord });
+          }
+        }
+        h.push('<li style="margin:0 0 4px;background-color:#ffffff">' + it.html);
+      });
+      while (stack.length){
+        var s2 = stack.pop();
+        h.push('</li></' + nm(s2.ord) + '>');
+      }
+      return h.join('');
+    }
+    function mdToHtml(md){
+      var lines = String(md == null ? '' : md).replace(/\r\n?/g, '\n').split('\n');
+      var out = [], i = 0;
+      while (i < lines.length){
+        var t = lines[i].trim();
+        if (!t){ i++; continue; }
+        if (/^([-*_])\1{2,}$/.test(t)){
+          out.push('<hr style="border:0;border-top:1px solid #e2e8f0;margin:20px 0">');
+          i++; continue;
+        }
+        if (isTableRow(t)){
+          var rows = [];
+          while (i < lines.length && isTableRow(lines[i].trim())){ rows.push(lines[i].trim()); i++; }
+          out.push(tableHtml(rows));
+          continue;
+        }
+        var hm = /^(#{1,4})\s+(.+)$/.exec(t);
+        if (hm){
+          var lv = hm[1].length;
+          var fs = { 1:'21px', 2:'17.5px', 3:'16px', 4:'15px' }[lv];
+          var st = 'font-size:' + fs + ';font-weight:800;line-height:1.45;color:#0f172a;background-color:#ffffff;margin:' + (lv === 1 ? '0 0 14px' : '22px 0 10px');
+          if (lv === 1) st += ';padding-bottom:8px;border-bottom:2px solid #e2e8f0';
+          if (lv === 2) st += ';padding:2px 0 2px 10px;border-left:4px solid #03c75a';
+          out.push('<h' + lv + ' style="' + st + '">' + inline(hm[2]) + '</h' + lv + '>');
+          i++; continue;
+        }
+        if (t.charAt(0) === '>'){
+          var q = [];
+          while (i < lines.length && lines[i].trim().charAt(0) === '>'){
+            q.push(lines[i].trim().replace(/^>\s?/, '')); i++;
+          }
+          out.push('<blockquote style="margin:12px 0 16px;padding:10px 14px;border-left:4px solid #03c75a;background-color:#f8fafc;color:#334155;font-size:13.5px;line-height:1.7">' +
+            q.filter(function(x){ return !!x; }).map(function(x){ return '<p style="margin:0 0 4px;background-color:#ffffff">' + inline(x) + '</p>'; }).join('') +
+            '</blockquote>');
+          continue;
+        }
+        if (listMatch(lines[i])){
+          var items = [], li;
+          while (i < lines.length && (li = listMatch(lines[i]))){ items.push(li); i++; }
+          out.push(listHtml(items));
+          continue;
+        }
+        var buf = [];
+        while (i < lines.length){
+          var tt = lines[i].trim();
+          if (!tt) break;
+          if (/^([-*_])\1{2,}$/.test(tt)) break;
+          if (isTableRow(tt)) break;
+          if (/^#{1,4}\s+/.test(tt)) break;
+          if (tt.charAt(0) === '>') break;
+          if (listMatch(lines[i])) break;
+          buf.push(tt); i++;
+        }
+        if (!buf.length){ buf.push(t); i++; }
+        out.push('<p style="margin:0 0 12px;font-size:14px;line-height:1.85;color:#1f2937;background-color:#ffffff">' + buf.map(inline).join('<br>') + '</p>');
+      }
+      return out.join('\n');
+    }
+    function mdToPlain(md){
+      var lines = String(md == null ? '' : md).replace(/\r\n?/g, '\n').split('\n');
+      var body = lines.map(function(raw){
+        var t = raw.trim();
+        if (!t) return '';
+        if (/^([-*_])\1{2,}$/.test(t)) return '';
+        if (isTableRow(t)){
+          var cs = splitRow(t);
+          if (isSep(cs)) return '';
+          return cs.join('  |  ');
+        }
+        t = t.replace(/^#{1,6}\s+/, '').replace(/^>\s?/, '');
+        t = t.replace(/^([-*])\s+/, '· ');
+        t = t.replace(/^(\d+)[.)]\s+/, '$1. ');
+        t = t.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1');
+        t = t.replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s).,!?:]|$)/g, '$1$2');
+        return t;
+      }).join('\n');
+      return body.replace(/\n{3,}/g, '\n\n').trim();
+    }
+    function copyRich(md, okMsg){
+      var html = '<div style="font-family:-apple-system,BlinkMacSystemFont,\'Malgun Gothic\',\'맑은 고딕\',sans-serif;font-size:14px;line-height:1.85;color:#1f2937;background-color:#ffffff">' + mdToHtml(md) + '</div>';
+      var plain = mdToPlain(md);
+      var DEMOTE = '서식 복사가 차단되어 일반 텍스트로 복사했습니다.';
+      function done(){ toast(okMsg || '네이버 서식(HTML)으로 복사했습니다. 스마트에디터에 바로 붙여넣으세요.'); }
+      function fallback(){
+        try {
+          var host = document.createElement('div');
+          host.setAttribute('contenteditable', 'true');
+          host.style.cssText = 'position:fixed;left:-9999px;top:0;width:100%;max-width:560px;opacity:0;pointer-events:none';
+          host.innerHTML = html;
+          document.body.appendChild(host);
+          var rng = document.createRange();
+          rng.selectNodeContents(host);
+          var sel = window.getSelection();
+          sel.removeAllRanges(); sel.addRange(rng);
+          var ok = document.execCommand('copy');
+          sel.removeAllRanges();
+          document.body.removeChild(host);
+          if (ok) done(); else copyText(plain, DEMOTE);
+        } catch(e){ copyText(plain, DEMOTE); }
+      }
+      try {
+        if (navigator.clipboard && window.ClipboardItem && navigator.clipboard.write){
+          var blobHtml = new Blob([html], { type: 'text/html' });
+          var blobText = new Blob([plain], { type: 'text/plain' });
+          navigator.clipboard.write([new ClipboardItem({ 'text/html': blobHtml, 'text/plain': blobText })])
+            .then(done).catch(fallback);
+          return;
+        }
+      } catch(e){}
+      fallback();
+    }
+    return { mdToHtml: mdToHtml, mdToPlain: mdToPlain, copyRich: copyRich };
+  })();
+  try { window.CS_RICH = RICH; } catch(e){}
+
   $('#copyBtn').addEventListener('click', function(){
     var txt = outText.textContent || '';
     if (!txt) { toast('복사할 내용이 없습니다.'); return; }
@@ -1907,6 +2106,13 @@
     if (navigator.clipboard && navigator.clipboard.writeText){
       navigator.clipboard.writeText(txt).then(done).catch(fallback);
     } else fallback();
+  });
+
+  $('#copyHtmlBtn').addEventListener('click', function(){
+    var txt = currentDraftText();
+    if (!txt || !txt.trim()){ toast('복사할 내용이 없습니다. 먼저 뼈대를 생성해 주세요.'); return; }
+    RICH.copyRich(txt, '네이버 서식(HTML)으로 복사했습니다. 스마트에디터에 바로 붙여넣으세요.');
+    outStat.textContent = '서식 복사됨';
   });
 
   /* ================================================================
