@@ -42,6 +42,13 @@ async function run(id, label) {
   const rep = { label };
   await until(() => { const x = R(); return x.d && (x.d.querySelector('.pinpad') || x.d.querySelector('.modes')); }, 15000);
   ({ w, d } = R());
+  w.__errs = [];
+  try {
+    w.addEventListener('error', e => w.__errs.push('error: ' + (e.message || '')));
+    w.addEventListener('unhandledrejection', e => w.__errs.push('rejection: ' + String(e.reason)));
+    const ce = w.console.error.bind(w.console);
+    w.console.error = (...a) => { w.__errs.push('console: ' + a.map(String).join(' ').slice(0, 120)); ce(...a); };
+  } catch (e) {}
   const dq = (sel) => { const x = R(); return x.d ? x.d.querySelector(sel) : null; };
   const dqa = (sel) => { const x = R(); return x.d ? [...x.d.querySelectorAll(sel)] : []; };
   rep.unlocked = await unlock(d);
@@ -160,7 +167,23 @@ async function run(id, label) {
     await sleep(2200);
     const D2 = w.__DEBUG, B3 = w.__B;
     if (D2 && B3) { D2.attachEnergy(B3.players[0], B3.players[0].active, 'Fire'); await sleep(700); }
+    // 스트레스: 12턴 자동 진행 (크래시·에러 감지)
+    for (let k = 0; k < 14; k++) {
+      if (!w.__B || w.__B.over) break;
+      const atk = d.querySelector('[data-act="attack"]:not([disabled])');
+      const end = d.querySelector('[data-act="endTurn"]:not([disabled])');
+      if (atk) atk.click(); else if (end) end.click(); else break;
+      await sleep(1500);
+      if (d.querySelector('#coinEl')) await sleep(2200);
+      if (d.querySelector('[data-act="confirmYes"]')) { d.querySelector('[data-act="confirmYes"]').click(); }
+    }
+    await sleep(800);
+    rep.stress = { over: w.__B ? w.__B.over : null, turn: w.__B ? w.__B.turn : null,
+                   errors: (w.__errs || []).slice(0, 8), badImgs: [...d.images].filter(i => i.complete && i.naturalWidth === 0).length,
+                   overflow: [Math.max(0, d.documentElement.scrollWidth - w.innerWidth), Math.max(0, d.documentElement.scrollHeight - w.innerHeight)] };
+    if (w.__B && w.__B.over) { d.querySelector('[data-act="rematch"]') && d.querySelector('[data-act="rematch"]').click(); await sleep(2500); }
   }
+  rep.errors = (w.__errs || []).slice(0, 8);
   return rep;
 }
 
