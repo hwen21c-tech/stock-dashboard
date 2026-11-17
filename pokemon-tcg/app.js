@@ -1249,7 +1249,8 @@ async function openPack() {
   const res = document.getElementById('packResult');
   if (!res) return;
   res.innerHTML = cards.map((c, i) => `<div class="reveal facedown" data-i="${i}" style="animation-delay:${i * 0.12}s" data-act="revealCard" data-id="${c.id}"></div>`).join('');
-  render();
+  const coinChip = document.querySelector('.topbar .coins');
+  if (coinChip) coinChip.textContent = '🪙 ' + S.coins;
   // 순차 공개
   for (let i = 0; i < cards.length; i++) {
     await sleep(300);
