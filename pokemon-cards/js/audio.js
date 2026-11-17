@@ -281,6 +281,32 @@
       tone(72, t + 0.02, 0.7, 'sine', 0.2, sfxBus, 34);
       for (let i = 0; i < 3; i++) noiseBurst(t + 0.4 + i * 0.14, 0.22, 1600 - i * 400, 300, 1.0, 0.09);
     },
+    /* 타이밍 바 미니게임 */
+    barStart() {
+      init(); const t = now();
+      noiseBurst(t, 0.26, 320, 2600, 0.9, 0.11);
+      tone(420, t, 0.36, 'sawtooth', 0.07, sfxBus, 940);
+      tone(620, t + 0.06, 0.3, 'triangle', 0.055, sfxBus, 1280);
+    },
+    barTick(z) {
+      init(); const t = now();
+      const f = z >= 3 ? 1980 : z >= 2 ? 1560 : 1120;
+      tone(f, t, 0.05, 'square', z >= 2 ? 0.06 : 0.04);
+    },
+    critHit(mult) {
+      init(); const t = now();
+      const T = mult || 1.5;
+      noiseBurst(t, 0.2, 4200, 700, 1.1, 0.15);
+      kick(t, sfxBus, T >= 2 ? 0.3 : 0.2);
+      if (T >= 2.5) [523, 784, 1046, 1318, 1568, 2093].forEach((f, i) => bell(t + 0.02 + i * 0.05, f, 0.7, sfxBus, 0.08));
+      else if (T >= 2) [523, 784, 1046, 1318].forEach((f, i) => bell(t + 0.02 + i * 0.06, f, 0.55, sfxBus, 0.07));
+      else [659, 880].forEach((f, i) => bell(t + 0.01 + i * 0.06, f, 0.4, sfxBus, 0.06));
+    },
+    barMiss() {
+      init(); const t = now();
+      tone(300, t, 0.12, 'square', 0.09, sfxBus, 190);
+      noiseBurst(t + 0.02, 0.16, 900, 260, 1.2, 0.08, sfxBus, 'lowpass');
+    },
     /* 카드가 슬롯으로 날아가 붙는 소리 */
     slot() {
       init(); const t = now();

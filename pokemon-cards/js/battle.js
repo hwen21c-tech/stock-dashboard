@@ -368,13 +368,22 @@
       mode: ui.mode, round: 0, score: [0, 0], results: [],
       me: { profile: meId, name: P.me().name, deck: mine.slice() },
       foe: { profile: foeProfile, name: foeName, deck: foe.slice() },
-      phase: 'ready'
+      phase: 'ready',
+      base: [0, 0], final: [0, 0], mult: [1, 1],
+      pickA: null, pickC: null, advA: false, advB: false,
+      dead: false
     };
     ui.step = 'arena';
     openArena();
   }
 
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  function alive() { return !!(ui.bt && !ui.bt.dead && ui.arenaEl); }
+  function msg(html) { if (alive()) ui.arenaEl.querySelector('#arenaMsg').innerHTML = html; }
+  function q(sel) { return ui.arenaEl ? ui.arenaEl.querySelector(sel) : null; }
+
   function closeArena() {
+    if (ui.bt) ui.bt.dead = true;
     if (ui.arenaEl) { ui.arenaEl.remove(); ui.arenaEl = null; }
     A.setMode('home');
     ui.bt = null;
@@ -400,25 +409,43 @@
           '<div class="round-chip"><b id="roundNum">1</b><span>ROUND</span></div>' +
           '<div class="hud-side b"><div class="hud-name">' + esc(b.foe.name) + '</div><div class="pips b" id="pipsB"></div></div>' +
         '</div>' +
-        '<div class="duel">' +
-          '<div class="dside" id="sideA">' +
-            '<div class="dcard" id="cardA"><div class="inner">' +
-              '<div class="dface back"></div>' +
-              '<div class="dface front"><img id="imgA" alt=""><div class="holo"></div></div>' +
-            '</div><div class="fx-layer" id="fxA"></div></div>' +
-            '<div class="pow-tag" id="powA"></div>' +
-          '</div>' +
-          '<div class="vs-mark">VS</div>' +
-          '<div class="dside" id="sideB">' +
-            '<div class="dcard" id="cardB"><div class="inner">' +
-              '<div class="dface back"></div>' +
-              '<div class="dface front"><img id="imgB" alt=""><div class="holo"></div></div>' +
-            '</div><div class="fx-layer" id="fxB"></div></div>' +
-            '<div class="pow-tag" id="powB"></div>' +
+        '<div class="duel-zone">' +
+          '<div class="duel">' +
+            '<div class="dside empty" id="sideA">' +
+              '<div class="dslot"><span>1P</span></div>' +
+              '<div class="dcard" id="cardA"><div class="inner">' +
+                '<div class="dface back"></div>' +
+                '<div class="dface front"><img id="imgA" alt=""><div class="holo"></div></div>' +
+              '</div></div>' +
+              '<div class="fx-layer" id="fxA"></div>' +
+              '<div class="pow-tag" id="powA"></div>' +
+            '</div>' +
+            '<div class="vs-mark">VS</div>' +
+            '<div class="dside empty" id="sideB">' +
+              '<div class="dslot"><span>2P</span></div>' +
+              '<div class="dcard" id="cardB"><div class="inner">' +
+                '<div class="dface back"></div>' +
+                '<div class="dface front"><img id="imgB" alt=""><div class="holo"></div></div>' +
+              '</div></div>' +
+              '<div class="fx-layer" id="fxB"></div>' +
+              '<div class="pow-tag" id="powB"></div>' +
+            '</div>' +
           '</div>' +
         '</div>' +
-        '<div class="arena-msg" id="arenaMsg">카드를 엎어 두고 시작을 기다리는 중…<span class="sub">1라운드 · ' + esc(b.me.name) + ' vs ' + esc(b.foe.name) + '</span></div>' +
-        '<div class="arena-cta"><button class="btn gold" id="battleGo">⚔️ 배틀 시작!</button></div>' +
+        '<div class="arena-msg" id="arenaMsg">' +
+          '카드를 엎어 두고 시작을 기다리는 중…<span class="sub">1라운드 · ' + esc(b.me.name) + ' vs ' + esc(b.foe.name) + '</span>' +
+        '</div>' +
+        '<div class="action-zone" id="actionZone"></div>' +
+        '<div class="decks">' +
+          '<div class="deckcol a">' +
+            '<div class="deck-label"><b>' + esc(b.me.name) + '</b><span>1P</span></div>' +
+            '<div class="deck-row" id="deckA"></div>' +
+          '</div>' +
+          '<div class="deckcol b">' +
+            '<div class="deck-label"><span>2P</span><b>' + esc(b.foe.name) + '</b></div>' +
+            '<div class="deck-row" id="deckB"></div>' +
+          '</div>' +
+        '</div>' +
       '</div>';
     document.body.appendChild(el);
     ui.arenaEl = el;
@@ -427,143 +454,343 @@
       const ok = await P.confirmBox('배틀 종료', '지금 나가면 기록이 저장되지 않아요. 나갈까요?', '나가기');
       if (ok) closeArena();
     });
-    el.querySelector('#battleGo').addEventListener('click', onGo);
     paintPips();
     enterRound();
   }
 
   function paintPips() {
     const b = ui.bt;
-    const a = ui.arenaEl.querySelector('#pipsA');
-    const c = ui.arenaEl.querySelector('#pipsB');
+    if (!alive()) return;
+    const a = q('#pipsA'), c = q('#pipsB');
     a.innerHTML = [0, 1, 2].map(i => '<i class="' + (b.score[0] > i ? 'on' : '') + '"></i>').join('');
     c.innerHTML = [0, 1, 2].map(i => '<i class="' + (b.score[1] > i ? 'on' : '') + '"></i>').join('');
-    ui.arenaEl.querySelector('#roundNum').textContent = String(Math.min(5, b.round + 1));
+    q('#roundNum').textContent = String(Math.min(5, b.round + 1));
   }
 
-  /* 라운드 카드 등장 (양쪽 뒷면) */
+  /* 하단 좌·우 5장 대기열 (실제 카드 뒷면) */
+  function paintDecks() {
+    const b = ui.bt;
+    if (!alive()) return;
+    [['A', b.me.deck], ['B', b.foe.deck]].forEach(pair => {
+      const row = q('#deck' + pair[0]);
+      if (!row) return;
+      row.innerHTML = pair[1].map((c, i) => {
+        const st = i < b.round ? ' used' : (i === b.round ? ' next' : '');
+        return '<div class="deck-card' + st + '" data-i="' + i + '" title="' + esc(c ? c.name : '') + '"></div>';
+      }).join('');
+    });
+  }
+
+  function showCta(label) {
+    if (!alive()) return;
+    const az = q('#actionZone');
+    az.innerHTML = '<div class="arena-cta"><button class="btn gold" id="battleGo">' + label + '</button></div>';
+    az.querySelector('#battleGo').addEventListener('click', onGo);
+  }
+  function clearCta() { const az = q('#actionZone'); if (az) az.innerHTML = ''; }
+
+  /* 라운드 준비: 배틀존 비우고 대기열 재도색 */
   function enterRound() {
     const b = ui.bt;
-    const el = ui.arenaEl;
-    const a = b.me.deck[b.round], c = b.foe.deck[b.round];
+    if (!alive()) return;
     b.phase = 'ready';
-    b.pickA = a; b.pickC = c;
-
-    const sideA = el.querySelector('#sideA');
-    const sideB = el.querySelector('#sideB');
-    sideA.className = 'dside';
-    sideB.className = 'dside';
-    const cardA = el.querySelector('#cardA');
-    const cardB = el.querySelector('#cardB');
-    cardA.className = 'dcard';
-    cardB.className = 'dcard';
-    el.querySelector('#imgA').src = D.img(a.img);
-    el.querySelector('#imgB').src = D.img(c.img);
-    el.querySelector('#imgA').alt = a.name;
-    el.querySelector('#imgB').alt = c.name;
-    el.querySelector('#fxA').innerHTML = '';
-    el.querySelector('#fxB').innerHTML = '';
-    el.querySelector('#powA').className = 'pow-tag';
-    el.querySelector('#powB').className = 'pow-tag';
-    el.querySelector('#powA').textContent = '';
-    el.querySelector('#powB').textContent = '';
-    el.querySelectorAll('.ko-tag,.dmg-pop').forEach(x => x.remove());
-
-    // 등장 애니메이션
-    void cardA.offsetWidth;
-    cardA.classList.add('enter');
-    cardB.classList.add('enter');
-    A.sfx.whoosh();
-
-    const msg = el.querySelector('#arenaMsg');
-    msg.innerHTML = (b.round + 1) + '라운드 · 두 카드가 엎어진 채 등장!<span class="sub">' +
-      (ui.mode === 'p2' ? '서로 무엇을 냈는지 몰라요' : '컴퓨터의 카드도 뒷면이에요') + '</span>';
-    const go = el.querySelector('#battleGo');
-    go.textContent = b.round === 0 ? '⚔️ 배틀 시작!' : (b.round + 1) + '라운드 시작 ▶';
-    go.disabled = false;
-    go.style.display = '';
-    go.onclick = onGo;
+    b.pickA = b.me.deck[b.round];
+    b.pickC = b.foe.deck[b.round];
+    b.mult = [1, 1];
+    b.base = [0, 0];
+    b.final = [0, 0];
+    ['A', 'B'].forEach(s => {
+      const dside = q('#side' + s);
+      const dc = q('#card' + s);
+      const pw = q('#pow' + s);
+      const fx = q('#fx' + s);
+      if (dside) dside.className = 'dside empty';
+      if (dc) { dc.className = 'dcard'; dc.style.cssText = ''; }
+      if (pw) { pw.className = 'pow-tag'; pw.textContent = ''; }
+      if (fx) fx.innerHTML = '';
+      if (dside) Array.prototype.slice.call(dside.querySelectorAll('.ko-tag,.dmg-pop')).forEach(x => x.remove());
+    });
+    b.mult = [1, 1];
+    paintDecks();
     paintPips();
+    msg((b.round + 1) + '라운드 · 두 카드가 엎어진 채 대기 중!<span class="sub">' +
+      (b.round === 0 ? '아래 대기열의 1번 카드가 배틀존으로 날아가요' : '왼쪽 아래 · 오른쪽 아래 5장 대기열') + '</span>');
+    showCta(b.round === 0 ? '⚔️ 배틀 시작!' : (b.round + 1) + '라운드 시작 ▶');
+  }
+
+  /* 대기열 카드 → 배틀존 비행 + 동시 플립 */
+  function flyIn(side, card) {
+    const b = ui.bt;
+    if (!alive()) return;
+    const s = side ? 'B' : 'A';
+    const dside = q('#side' + s);
+    const dc = q('#card' + s);
+    const img = q('#img' + s);
+    if (!dside || !dc || !img) return;
+    img.src = D.img(card.img);
+    img.alt = card.name;
+    dc.className = 'dcard' + (card.r === 5 ? ' r5' : card.r === 4 ? ' r4' : '');
+    dc.style.cssText = '';
+    dside.classList.remove('empty', 'win', 'lose', 'clearing');
+
+    const thumb = q('#deck' + s + ' .deck-card[data-i="' + b.round + '"]');
+    let dx = 0, dy = 0, sc = 1, rot = 0;
+    if (thumb) {
+      const tr = thumb.getBoundingClientRect();
+      const cr = dc.getBoundingClientRect();
+      if (cr.width > 1 && tr.width > 1) {
+        dx = (tr.left + tr.width / 2) - (cr.left + cr.width / 2);
+        dy = (tr.top + tr.height / 2) - (cr.top + cr.height / 2);
+        sc = tr.width / cr.width;
+        rot = side ? 14 : -14;
+      }
+      thumb.classList.add('used');
+      thumb.classList.remove('next');
+    }
+    dc.style.transition = 'none';
+    dc.style.transform = 'translate(' + dx.toFixed(1) + 'px,' + dy.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ') rotate(' + rot + 'deg)';
+    dc.style.opacity = '0.99';
+    void dc.offsetWidth;
+    requestAnimationFrame(() => {
+      if (!dc) return;
+      dc.style.transition = '';
+      dc.style.transform = '';
+      dc.style.opacity = '';
+      dc.classList.add('flip');
+    });
   }
 
   let busyRound = false;
   function onGo() {
     if (busyRound) return;
     const b = ui.bt;
-    if (!b || !ui.arenaEl) return;
-    if (b.phase === 'done') return;
+    if (!alive()) return;
     if (b.phase === 'ready') { startRound(); return; }
     if (b.phase === 'result') { nextRound(); return; }
   }
 
-  function startRound() {
+  async function startRound() {
+    if (busyRound || !alive()) return;
     const b = ui.bt;
-    const el = ui.arenaEl;
-    if (!b || !el) { busyRound = false; return; }
+    if (b.phase !== 'ready') return;
+    const a = b.pickA, c = b.pickC;
+    if (!a || !c) { P.toast('카드를 불러오지 못했어요'); return; }
     busyRound = true;
     b.phase = 'flip';
-    el.querySelector('#battleGo').style.display = 'none';
-    const a = b.pickA, c = b.pickC;
-    el.querySelector('#cardA').classList.add('flip');
-    el.querySelector('#cardB').classList.add('flip');
+    clearCta();
+
+    flyIn(0, a);
+    flyIn(1, c);
+    A.sfx.whoosh();
+    msg('카드가 대기열에서 배틀존으로 날아간다…!<span class="sub">' + esc(a.name) + ' vs ' + esc(c.name) + '</span>');
+    await wait(110);
+    if (!alive()) return;
     A.sfx.flip();
-    const msg = el.querySelector('#arenaMsg');
-    msg.innerHTML = '두 카드가 동시에 뒤집힌다…!<span class="sub">잠깐만…</span>';
+    await wait(720);
+    if (!alive()) { busyRound = false; return; }
 
-    setTimeout(() => {
-      if (!ui.bt || !ui.arenaEl) { busyRound = false; return; }
-      const advA = advantage(a, c), advB = advantage(c, a);
-      const pa = power(a) + (advA ? ADV : 0);
-      const pb = power(c) + (advB ? ADV : 0);
-      const win = pa > pb ? 0 : pb > pa ? 1 : -1;
-      const rec = { a: a.id, c: c.id, pa, pb, advA, advB, win };
-      b.results.push(rec);
+    const advA = advantage(a, c), advB = advantage(c, a);
+    b.advA = advA; b.advB = advB;
+    const pa = power(a) + (advA ? ADV : 0);
+    const pb = power(c) + (advB ? ADV : 0);
+    b.base = [pa, pb];
+    b.final = [pa, pb];
+    const powA = q('#powA'), powB = q('#powB');
+    if (powA) { powA.innerHTML = '파워 <b>' + pa + '</b>' + (advA ? ' · 상성+30' : ''); powA.classList.add('show'); }
+    if (powB) { powB.innerHTML = '파워 <b>' + pb + '</b>' + (advB ? ' · 상성+30' : ''); powB.classList.add('show'); }
+    A.sfx.tap();
+    await wait(640);
+    if (!alive()) { busyRound = false; return; }
 
-      const powA = el.querySelector('#powA');
-      const powB = el.querySelector('#powB');
-      powA.innerHTML = '파워 <b>' + pa + '</b>' + (advA ? ' · 상성+30' : '');
-      powB.innerHTML = '파워 <b>' + pb + '</b>' + (advB ? ' · 상성+30' : '');
-      powA.classList.add('show'); powB.classList.add('show');
+    await barPhase();
+    if (!alive()) { busyRound = false; return; }
 
-      setTimeout(() => {
-        if (!ui.bt || !ui.arenaEl) { busyRound = false; return; }
-        if (win === 0) b.score[0]++; else if (win === 1) b.score[1]++;
-        playRound(a, c, win, pa, pb);
-      }, 560);
-    }, 780);
+    const fa = b.final[0], fb = b.final[1];
+    const win = fa > fb ? 0 : fb > fa ? 1 : -1;
+    b.results.push({
+      a: a.id, c: c.id, pa: fa, pb: fb, base: [pa, pb],
+      mult: [b.mult[0], b.mult[1]], advA: advA, advB: advB, win: win
+    });
+    if (win === 0) b.score[0]++;
+    else if (win === 1) b.score[1]++;
+    playRound(win, fa, fb);
   }
 
-  function playRound(a, c, win, pa, pb) {
+  /* ---------------- 타이밍 바 미니게임 ---------------- */
+  const ZN = { m3: [.455, .545], m2: [.405, .595], m15: [.315, .685] };
+  function zoneOf(r) {
+    if (r >= ZN.m3[0] && r <= ZN.m3[1]) return 3;
+    if (r >= ZN.m2[0] && r <= ZN.m2[1]) return 2;
+    if (r >= ZN.m15[0] && r <= ZN.m15[1]) return 1.5;
+    return 0;
+  }
+  function barHint(base, other) {
+    if (base > other) return '지금 앞서 있어요 · 맞히면 더 벌려요!';
+    if (base * 1.5 > other) return '×1.5만 맞히면 역전!';
+    if (base * 2 > other) return '×2 이상 맞히면 역전 가능!';
+    if (base * 3 > other) return '×3을 맞히면 역전!';
+    return '×3을 맞히면 격차가 크게 줄어요!';
+  }
+
+  async function barPhase() {
     const b = ui.bt;
-    const el = ui.arenaEl;
-    if (!b || !el) { busyRound = false; return; }
-    const sideA = el.querySelector('#sideA');
-    const sideB = el.querySelector('#sideB');
-    const msg = el.querySelector('#arenaMsg');
+    if (!alive()) return;
+    const pa = b.base[0], pb = b.base[1];
+    let steps;
+    if (pa === pb) {
+      steps = [{ side: 0, kind: 'crit' }, { side: 1, kind: 'crit' }];
+      msg('완전 동점!<span class="sub">1P → 2P 순서로 둘 다 크리티컬 바를 돌려요</span>');
+      await wait(600);
+    } else if (pa < pb) {
+      steps = [{ side: 0, kind: 'crit' }, { side: 1, kind: 'def' }];
+    } else {
+      steps = [{ side: 1, kind: 'crit' }, { side: 0, kind: 'def' }];
+    }
+    for (let i = 0; i < steps.length; i++) {
+      if (!alive()) return;
+      const st = steps[i];
+      const nm = st.side === 0 ? b.me.name : b.foe.name;
+      msg((st.kind === 'crit' ? '⚡ ' : '🛡️ ') + esc(nm) + '의 ' + (st.kind === 'crit' ? '크리티컬 찬스!' : '방어 찬스!') +
+        '<span class="sub">' + (st.side === 0 ? '1P' : '2P') + ' · 기본 파워 ' + b.base[st.side] + '</span>');
+      const res = await runBar(st);
+      if (!alive()) return;
+      b.mult[st.side] = res.mult;
+      const to = Math.round(b.base[st.side] * res.mult);
+      b.final[st.side] = to;
+      countPower(st.side, b.base[st.side], to, res.mult, st.kind);
+      await wait(820);
+    }
+  }
+
+  function runBar(step) {
+    return new Promise(resolve => {
+      const b = ui.bt;
+      if (!alive()) { resolve({ mult: 1 }); return; }
+      const side = step.side;
+      const isP1 = side === 0;
+      const name = isP1 ? b.me.name : b.foe.name;
+      const ai = b.mode === 'ai' && side === 1;
+      const base = b.base[side];
+      const other = b.final[1 - side];
+      const kind = step.kind;
+
+      const az = q('#actionZone');
+      if (!az) { resolve({ mult: 1 }); return; }
+      az.innerHTML =
+        '<div class="barbox' + (kind === 'def' ? ' def' : '') + '">' +
+          '<div class="bar-head">' +
+            '<span class="bar-kind">' + (kind === 'crit' ? '⚡ 크리티컬 바' : '🛡️ 방어 바') + '</span>' +
+            '<span class="bar-owner">' + esc(name) + '</span>' +
+          '</div>' +
+          '<div class="bar-hint">' + barHint(base, other) + '</div>' +
+          '<div class="bar-track" id="barTrack">' +
+            '<div class="bz z15">×1.5</div><div class="bz z2">×2</div><div class="bz z3">×3</div>' +
+            '<div class="mk" id="barMk"></div>' +
+          '</div>' +
+          '<button class="bar-btn" id="barBtn">' + (ai ? '🤖 컴퓨터가 조준 중…' : '⚡ 지금 터치!') + '</button>' +
+        '</div>';
+
+      const track = az.querySelector('#barTrack');
+      const mk = az.querySelector('#barMk');
+      const btn = az.querySelector('#barBtn');
+      const BW = 14, PERIOD = 2300;
+      let stopped = false, raf = 0, p = 0, lastZone = -1;
+      const t0 = performance.now() + 90;
+
+      function place(now) {
+        if (stopped || !alive()) return;
+        const t = Math.max(0, now - t0) / PERIOD * Math.PI * 2;
+        p = 0.5 + 0.5 * Math.sin(t - Math.PI / 2);
+        const W = track.clientWidth || 1;
+        const cx = p * Math.max(1, W - BW) + BW / 2;
+        mk.style.left = cx + 'px';
+        const z = zoneOf(cx / W);
+        if (z !== lastZone) {
+          lastZone = z;
+          if (z) { A.sfx.barTick(z); P.haptic(6); }
+          track.dataset.zone = String(z);
+        }
+        raf = requestAnimationFrame(place);
+      }
+
+      function stop() {
+        if (stopped || !alive()) return;
+        stopped = true;
+        cancelAnimationFrame(raf);
+        const W = track.clientWidth || 1;
+        const cx = parseFloat(mk.style.left) || 0;
+        const mult = zoneOf(cx / W);
+        mk.classList.add(mult ? 'hit' : 'miss');
+        track.classList.add('done');
+        const badge = P.el('div', 'bar-res ' + (mult ? 'ok' : 'no'), mult ? '×' + mult + '!' : 'MISS');
+        track.appendChild(badge);
+        btn.disabled = true;
+        btn.textContent = mult ? '×' + mult + ' 성공!' : '빗나감 ×1.0';
+        if (mult) { A.sfx.critHit(mult); P.haptic(mult >= 3 ? 45 : mult >= 2 ? 32 : 20); }
+        else { A.sfx.barMiss(); P.haptic(10); }
+        setTimeout(() => resolve({ mult: mult || 1 }), 900);
+      }
+
+      btn.addEventListener('click', stop);
+      track.addEventListener('click', stop);
+      A.sfx.barStart();
+      raf = requestAnimationFrame(place);
+      if (ai) {
+        const delay = 980 + Math.random() * 520;
+        setTimeout(() => { if (!stopped && alive()) stop(); }, delay);
+      }
+    });
+  }
+
+  function countPower(side, from, to, mult, kind) {
+    if (!alive()) return;
+    const tag = q('#pow' + (side ? 'B' : 'A'));
+    if (!tag) return;
+    const b = ui.bt;
+    const adv = side === 0 ? b.advA : b.advB;
+    const suffix = adv ? ' · 상성+30' : '';
+    tag.classList.add('show');
+    const start = performance.now(), dur = 620;
+    let lastV = from;
+    function step(now) {
+      if (!alive() || !tag) return;
+      const k = Math.min(1, (now - start) / dur);
+      const v = Math.round(from + (to - from) * k);
+      if (v !== lastV) { lastV = v; A.sfx.barTick(1); }
+      tag.innerHTML = '파워 <b>' + v + '</b>' + suffix +
+        (k >= 1 && mult !== 1 ? ' <em class="mult-chip' + (kind === 'def' ? ' def' : '') + '">×' + mult + '</em>' : '');
+      if (k < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ---------------- 공개 결과 · 공격 · KO ---------------- */
+  function playRound(win, pa, pb) {
+    const b = ui.bt;
+    if (!alive()) { busyRound = false; return; }
+    const a = b.pickA, c = b.pickC;
+    const sideA = q('#sideA'), sideB = q('#sideB');
 
     if (win === -1) {
-      msg.innerHTML = '무승부!<span class="sub">' + esc(a.name) + ' ' + pa + ' vs ' + pb + ' ' + esc(c.name) + '</span>';
+      msg('무승부!<span class="sub">' + esc(a.name) + ' ' + pa + ' vs ' + pb + ' ' + esc(c.name) + '</span>');
       A.sfx.tap();
       finishRoundUI(win);
       return;
     }
     const winnerCard = win === 0 ? a : c;
-    const loserCard = win === 0 ? c : a;
     const winSide = win === 0 ? sideA : sideB;
     const loseSide = win === 0 ? sideB : sideA;
     const winType = winnerCard.t || '무색';
 
     winSide.classList.add('win');
-    // 공격 이펙트 → 진 카드
     attackFx(loseSide, winType);
     A.sfx.attack(winType);
     P.haptic(14);
-
-    msg.innerHTML = '<b style="color:#ffe9bf">' + esc(winnerCard.name) + '</b> 의 ' + esc(winType) + ' 공격!<span class="sub">' +
-      pa + ' vs ' + pb + '</span>';
+    msg('<b style="color:#ffe9bf">' + esc(winnerCard.name) + '</b> 의 ' + esc(winType) + ' 공격!<span class="sub">' +
+      pa + ' vs ' + pb + '</span>');
 
     setTimeout(() => {
-      if (!ui.bt || !ui.arenaEl) return;
+      if (!alive()) return;
       loseSide.classList.add('lose');
       const kt = P.el('div', 'ko-tag', 'KO!');
       loseSide.appendChild(kt);
@@ -573,43 +800,49 @@
       P.haptic(30);
       const rect = loseSide.getBoundingClientRect();
       const dir = win === 0 ? 1 : -1;
-      el.querySelector('#card' + (win === 0 ? 'B' : 'A')).style.setProperty('--ko-x', (dir * (rect.width * 0.9 + 120)).toFixed(0) + 'px');
-      el.querySelector('#card' + (win === 0 ? 'B' : 'A')).style.setProperty('--ko-y', '-260px');
-      el.querySelector('#card' + (win === 0 ? 'B' : 'A')).style.setProperty('--ko-r', (dir * 620) + 'deg');
-    }, 420);
+      const koCard = q('#card' + (win === 0 ? 'B' : 'A'));
+      if (koCard) {
+        koCard.style.setProperty('--ko-x', (dir * (rect.width * 0.9 + 120)).toFixed(0) + 'px');
+        koCard.style.setProperty('--ko-y', '-260px');
+        koCard.style.setProperty('--ko-r', (dir * 620) + 'deg');
+      }
+    }, 430);
 
     setTimeout(() => {
-      if (!ui.bt || !ui.arenaEl) return;
-      msg.innerHTML = '<b style="color:#ffe9bf">' + esc(win === 0 ? b.me.name : b.foe.name) + ' 승리!</b><span class="sub">' +
-        esc(a.name) + ' ' + pa + ' vs ' + pb + ' ' + esc(c.name) + '</span>';
+      if (!alive()) return;
+      msg('<b style="color:#ffe9bf">' + esc(win === 0 ? b.me.name : b.foe.name) + ' 승리!</b><span class="sub">' +
+        esc(a.name) + ' ' + pa + ' vs ' + pb + ' ' + esc(c.name) + '</span>');
       A.sfx.roundWin();
       finishRoundUI(win);
-    }, 1500);
+    }, 1560);
   }
 
   function finishRoundUI(win) {
     const b = ui.bt;
-    if (!b || !ui.arenaEl) { busyRound = false; return; }
+    if (!alive()) { busyRound = false; return; }
     b.phase = 'result';
     paintPips();
-    const el = ui.arenaEl;
-    const go = el.querySelector('#battleGo');
     const over = b.round >= 4 || b.score[0] >= 3 || b.score[1] >= 3;
-    go.textContent = over ? '🏆 결과 보기' : (b.round + 2) + '라운드 시작 ▶';
-    go.style.display = '';
-    go.disabled = false;
-    go.onclick = onGo;
+    showCta(over ? '🏆 결과 보기' : (b.round + 2) + '라운드 시작 ▶');
     busyRound = false;
-    // 패배 측에 위로(?) 표현
     if (ui.mode === 'p2' && win === 0) P.haptic(30);
   }
 
   function nextRound() {
     const b = ui.bt;
+    if (!alive()) return;
     if (b.round >= 4 || b.score[0] >= 3 || b.score[1] >= 3) { finishBattle(); return; }
+    busyRound = true;
+    clearCta();
+    const sa = q('#sideA'), sb = q('#sideB');
+    if (sa) sa.classList.add('clearing');
+    if (sb) sb.classList.add('clearing');
     b.round++;
-    b.phase = 'ready';
-    enterRound();
+    setTimeout(() => {
+      if (!alive()) return;
+      busyRound = false;
+      enterRound();
+    }, 300);
   }
 
   /* ---------------- 속성 공격 이펙트 ---------------- */
@@ -640,7 +873,6 @@
     fx.appendChild(atk);
     setTimeout(() => { if (atk.parentNode) atk.remove(); }, 1600);
 
-    // 별도 타격 폭발
     const hit = P.el('div');
     hit.className = 'atk';
     hit.style.animationDelay = '.3s';
@@ -652,6 +884,7 @@
   /* ---------------- 결과 ---------------- */
   function finishBattle() {
     const b = ui.bt;
+    if (!b) return;
     const winner = b.score[0] > b.score[1] ? 0 : b.score[1] > b.score[0] ? 1 : -1;
     let reward = '';
     if (winner === 0) {
@@ -678,8 +911,12 @@
       (reward ? '<div style="text-align:center;margin-top:8px;color:#6ef2b0;font-weight:900">' + reward + '</div>' : '') +
       '<div class="list" style="margin-top:16px">' + b.results.map((r, i) => {
         const ca = b.me.deck.find(c => c.id === r.a), cc = b.foe.deck.find(c => c.id === r.c);
+        const m = r.mult || [1, 1];
+        const mchip = (m[0] !== 1 ? ' <em class="mult-chip">×' + m[0] + '</em>' : '') + ' / ' +
+          (m[1] !== 1 ? '<em class="mult-chip">×' + m[1] + '</em>' : '×1.0');
         return '<div class="row"><b style="color:#ffe9bf">' + (i + 1) + 'R</b><div class="grow"><b>' +
-          esc(ca ? ca.name : '') + ' ' + r.pa + ' vs ' + r.pb + ' ' + esc(cc ? cc.name : '') + '</b></div>' +
+          esc(ca ? ca.name : '') + ' ' + r.pa + ' vs ' + r.pb + ' ' + esc(cc ? cc.name : '') + '</b>' +
+          '<small style="display:block;font-size:10.5px;color:#9aa6cc">기본 ' + (r.base ? r.base[0] + ' / ' + r.base[1] : '-') + mchip + '</small></div>' +
           '<span style="width:12px;height:12px;border-radius:4px;display:inline-block;background:' +
           (r.win === 0 ? '#67e8ff' : r.win === 1 ? '#ff8ade' : 'rgba(255,255,255,.28)') + '"></span></div>';
       }).join('') + '</div>';
