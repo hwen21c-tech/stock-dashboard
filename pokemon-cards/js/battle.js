@@ -687,7 +687,7 @@
             '<div class="bz z15">×1.5</div><div class="bz z2">×2</div><div class="bz z3">×3</div>' +
             '<div class="mk" id="barMk"></div>' +
           '</div>' +
-          '<button class="bar-btn" id="barBtn">' + (ai ? '🤖 컴퓨터가 조준 중…' : '⚡ 지금 터치!') + '</button>' +
+          '<button class="bar-btn' + (ai ? ' ai' : '') + '" id="barBtn"' + (ai ? ' disabled' : '') + '>' + (ai ? '🤖 컴퓨터가 조준 중…' : '⚡ 지금 터치!') + '</button>' +
         '</div>';
 
       const track = az.querySelector('#barTrack');
@@ -713,8 +713,9 @@
         raf = requestAnimationFrame(place);
       }
 
-      function stop() {
+      function stop(force) {
         if (stopped || !alive()) return;
+        if (ai && !force) return;
         stopped = true;
         cancelAnimationFrame(raf);
         const W = track.clientWidth || 1;
@@ -731,13 +732,13 @@
         setTimeout(() => resolve({ mult: mult || 1 }), 900);
       }
 
-      btn.addEventListener('click', stop);
-      track.addEventListener('click', stop);
+      btn.addEventListener('click', () => stop(false));
+      track.addEventListener('click', () => stop(false));
       A.sfx.barStart();
       raf = requestAnimationFrame(place);
       if (ai) {
         const delay = 980 + Math.random() * 520;
-        setTimeout(() => { if (!stopped && alive()) stop(); }, delay);
+        setTimeout(() => { if (!stopped && alive()) stop(true); }, delay);
       }
     });
   }
@@ -751,12 +752,15 @@
     const suffix = adv ? ' · 상성+30' : '';
     tag.classList.add('show');
     const start = performance.now(), dur = 620;
-    let lastV = from;
+    let lastV = from, lastTick = 0;
     function step(now) {
       if (!alive() || !tag) return;
       const k = Math.min(1, (now - start) / dur);
       const v = Math.round(from + (to - from) * k);
-      if (v !== lastV) { lastV = v; A.sfx.barTick(1); }
+      if (v !== lastV) {
+        lastV = v;
+        if (now - lastTick > 55) { lastTick = now; A.sfx.barTick(1); }
+      }
       tag.innerHTML = '파워 <b>' + v + '</b>' + suffix +
         (k >= 1 && mult !== 1 ? ' <em class="mult-chip' + (kind === 'def' ? ' def' : '') + '">×' + mult + '</em>' : '');
       if (k < 1) requestAnimationFrame(step);
