@@ -131,8 +131,11 @@ async function run(id, label) {
   rep.afterAction = await measure(w, d);
 
   // 5) 카드팩 (실제 클릭)
-  click(d, '[data-act="home"]'); await sleep(500);
-  if (d.querySelector('[data-act="confirmYes"]')) { d.querySelector('[data-act="confirmYes"]').click(); await sleep(500); }
+  const quitBtn = d.querySelector('[data-act="quit"]');
+  if (quitBtn) { quitBtn.click(); await sleep(400); }
+  const yesBtn = d.querySelector('[data-act="confirmYes"]');
+  if (yesBtn) { yesBtn.click(); await sleep(600); }
+  await until(() => d.querySelector('[data-act="goPack"]'), 5000);
   click(d, '[data-act="goPack"]');
   await until(() => d.querySelector('#packEl'), 5000);
   await sleep(600);
@@ -149,6 +152,7 @@ async function run(id, label) {
 
   // 400 화면은 배틀 장면으로 되돌려 스크린샷용으로 남긴다
   if (label.indexOf('400') === 0) {
+    await until(() => d.querySelector('[data-act="goDex"]'), 3000);
     click(d, '[data-act="home"]'); await sleep(400);
     click(d, '[data-act="toDecks"]'); await sleep(500);
     click(d, '[data-act="startBattle"]');
