@@ -1671,7 +1671,7 @@ function figArc(host){
 /* ---- ⑧ 풀셀 dQ/dV — 시프트 · FWHM 확대 · 면적 감소 ---- */
 function figFull(host){
   var f=figShell(host,'08','풀셀 dQ/dV — 시프트 · FWHM · 면적 변화','토글 · 툴팁',
-    '개념 설명용 <b>모식 곡선</b>(실측 데이터 아님). NCMA/흑연+SiC 풀셀 충전 ICA를 예로, 3.45 · 3.65 · 3.85 · 4.10 V 네 피크의 위치·높이·면적·FWHM만 바꿔 그렸다. ① 전 피크 +28 mV 이동(분극) ② 높이 −30%·FWHM 1.4배(면적 유지) ③ 4.10 V(양극 H2→H3) 피크 면적 −40%.');
+    '개념 설명용 <b>모식 곡선</b>(실측 데이터 아님). NCMA/흑연+SiC 풀셀 충전 ICA를 예로, 3.45 · 3.65 · 3.85 · 4.10 V 네 피크의 위치·높이·면적·FWHM만 바꿔 그렸다. ① 전 피크 +28 mV 이동(시프트 — 대칭이면 분극, 같은 방향이면 LLI) ② 높이 −30%·FWHM 1.4배(면적 유지) ③ 4.10 V(양극 H2→H3) 피크 면적 −40%.');
   var a=chartHost(f);
   var W=Math.max(300,Math.min(620,Math.floor(a.clientWidth||520)));
   var H=300;
@@ -1707,7 +1707,7 @@ function figFull(host){
   /* ① 시프트 — 3.65 V 피크 정상에서 우측 이동 */
   arrow(gs,ch.X(3.65),ch.Y(27.6),ch.X(3.678),ch.Y(27.6),'var(--c4)',true);
   txt(ch.svg,ch.X(3.69),ch.Y(27.6)+3.5,'+28 mV','anno4','start');
-  marker(ch.svg,ch.X(3.678),ch.Y(26.2),'① 시프트: 충전 피크가 +28 mV 우측으로(방전 피크는 −28 mV) → 분극 = 28 mV = Ohmic·계면 저항 증가','mk4');
+  marker(ch.svg,ch.X(3.678),ch.Y(26.2),'① 시프트: 피크가 +28 mV 우측으로. 충전 +·방전 −로 대칭이면 분극(=ΔV/2, Ohmic·계면 저항), 충·방전이 같은 방향이면 LLI(전압창 슬리피지)','mk4');
 
   /* ② FWHM 확대 — 3.65 V 피크 꼭대기 */
   marker(ch.svg,ch.X(3.65),ch.Y(18.2),'② FWHM 확대: 높이 26→18.2 Ah/V(−30%), FWHM 1.4배, 면적 유지 → 전해액 고갈·R_ct 상승·극판 불균일(kinetic broadening)','mk3');
