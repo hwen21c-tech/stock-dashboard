@@ -1,5 +1,5 @@
 // Service Worker for Yeonolang Stock Dashboard PWA (Live Real-time Force Network)
-const CACHE_NAME = 'yeonolang-terminal-v22';
+const CACHE_NAME = 'yeonolang-terminal-v23';
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
