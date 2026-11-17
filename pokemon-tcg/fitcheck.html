@@ -5,107 +5,168 @@
  .col{display:flex;flex-direction:column;gap:6px}
  .frame{border:1px solid #444;border-radius:8px;overflow:hidden;background:#000}
  iframe{border:0;display:block}
- pre{max-width:520px;white-space:pre-wrap;color:#9fe;font-size:11px}
+ pre{max-width:560px;white-space:pre-wrap;color:#9fe;font-size:11px}
 </style></head><body>
 <div class="col"><b>400×860</b><div class="frame"><iframe id="f400" src="./index.html" width="400" height="860"></iframe></div></div>
 <div class="col"><b>884×960</b><div class="frame"><iframe id="f884" src="./index.html" width="884" height="960"></iframe></div></div>
 <pre id="out">running…</pre>
 <script>
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-async function clickIf(doc, sel) { const el = doc.querySelector(sel); if (el) { el.click(); return true; } return false; }
-async function run(id, label) {
+async function until(fn, ms = 9000) { const t0 = Date.now(); while (Date.now() - t0 < ms) { try { if (fn()) return true; } catch (e) {} await sleep(150); } return false; }
+function click(d, sel) { const el = d.querySelector(sel); if (el && !el.disabled) { el.click(); return true; } return false; }
+
+async function measure(w, d) {
+  const imgs = [...d.images];
+  return {
+    vw: w.innerWidth, vh: w.innerHeight,
+    scrollH: d.documentElement.scrollHeight, scrollW: d.documentElement.scrollWidth,
+    overflowX: Math.max(0, d.documentElement.scrollWidth - w.innerWidth),
+    overflowY: Math.max(0, d.documentElement.scrollHeight - w.innerHeight),
+    imgs: imgs.length,
+    badImgs: imgs.filter(i => i.complete && i.naturalWidth === 0).length,
+    pendingImgs: imgs.filter(i => !i.complete).length
+  };
+}
+
+async function unlock(d) {
+  if (d.querySelector('.pinpad')) {
+    for (const v of '0623') { const b = d.querySelector(`[data-act="pin"][data-v="${v}"]`); if (b) b.click(); await sleep(140); }
+    await until(() => d.querySelector('.modes'), 4000);
+  }
+  return !!d.querySelector('.modes');
+}
+
+async function run(id, label, deckIdx) {
   const f = document.getElementById(id), w = f.contentWindow, d = f.contentDocument;
   const rep = { label, steps: [] };
-  await sleep(1600);
-  if (d.querySelector('.pinpad')) {
-    for (const v of '0623') { d.querySelector(`[data-act="pin"][data-v="${v}"]`).click(); await sleep(120); }
-    await sleep(500);
+  await until(() => d.querySelector('.pinpad') || d.querySelector('.modes') || d.querySelector('.battle'), 12000);
+  rep.unlocked = await unlock(d);
+  await sleep(300);
+  rep.home = await measure(w, d);
+  // 덱 선택
+  const modes = d.querySelectorAll('[data-act="toDecks"]');
+  if (modes[0]) modes[0].click();
+  await until(() => d.querySelector('[data-act="startBattle"]'));
+  await sleep(300);
+  rep.decks = await measure(w, d);
+  // 특성 있는 카드가 활성/벤치에 올 때까지 새 배틀 (최대 8회)
+  let tries = 0;
+  while (tries < 8) {
+    tries++;
+    click(d, '[data-act="startBattle"]');
+    await until(() => d.querySelector('.battle') && d.querySelector('[data-act="endTurn"]'), 8000);
+    await sleep(900);
+    if (d.querySelector('[data-act="ability"]:not([disabled])')) break;
+    // 활성에 특성이 없으면 벤치에 특성 포켓몬을 찾아본다
+    const B = w.__B;
+    if (B) {
+      const pool = [B.players[0].active, ...B.players[0].bench].filter(Boolean);
+      const withAb = pool.findIndex(u => u && u.card.ability);
+      if (withAb > 0) { // 벤치 → 후퇴 불가 시 강제 교체는 하지 않고 재시작
+      }
+    }
+    click(d, '[data-act="quit"]'); await sleep(200);
+    click(d, '[data-act="confirmYes"]'); await sleep(500);
+    click(d, '[data-act="toDecks"]'); await sleep(300);
+    click(d, '[data-act="startBattle"]'); await sleep(1200);
   }
-  rep.steps.push('home:' + !!d.querySelector('.modes'));
-  const m0 = () => ({
-    vw: w.innerWidth, vh: w.innerHeight,
-    scrollW: d.documentElement.scrollWidth, scrollH: d.documentElement.scrollHeight,
-    bodyH: d.body.scrollHeight,
-    overflowX: d.documentElement.scrollWidth - w.innerWidth,
-    imgs: [...d.images].length,
-    badImgs: [...d.images].filter(i => i.complete && i.naturalWidth === 0).length,
-    pendingImgs: [...d.images].filter(i => !i.complete).length,
-    appH: (d.getElementById('app') || {}).scrollHeight
-  });
-  rep.home = m0();
-  await clickIf(d, '[data-act="toDecks"][data-mode="ai"]'); await sleep(500);
-  rep.decks = m0();
-  await clickIf(d, '[data-act="startBattle"]'); await sleep(2800);
-  rep.battleStart = m0();
-  rep.battle = {
-    active: (() => { const c = d.querySelectorAll('.activerow .nm'); return c.length ? c[0].textContent.trim() : null; })(),
-    bench: d.querySelectorAll('.side.me .card.bench').length,
-    hand: d.querySelectorAll('.handrow .card').length,
-    attackBtns: d.querySelectorAll('[data-act="attack"]').length,
-    attackEnabled: d.querySelectorAll('[data-act="attack"]:not([disabled])').length,
-    abilityEnabled: !!d.querySelector('[data-act="ability"]:not([disabled])'),
-    energyBtns: d.querySelectorAll('.enbtn').length,
-    cardRect: (() => { const c = d.querySelector('.card.active'); if (!c) return null; const r = c.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })()
+  rep.battleTries = tries;
+  rep.battle = await measure(w, d);
+  const B = w.__B;
+  const D = w.__DEBUG;
+  rep.prizes = B ? B.players[0].prizeLeft : null;
+  rep.mine = B && B.players[0].active ? B.players[0].active.card.name : null;
+  rep.foe = B && B.players[1].active ? B.players[1].active.card.name : null;
+  rep.hand = d.querySelectorAll('.handrow .card').length;
+  rep.cardRect = (() => { const c = d.querySelector('.card.active'); if (!c) return null; const r = c.getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)]; })();
+
+  // ---- 1) 에너지 붙이기 (UI 클릭)
+  const enBtn = d.querySelector('.enbtn');
+  if (enBtn) {
+    enBtn.click(); await sleep(250);
+    const mine = d.querySelector('.side.me .card.active');
+    if (mine) { mine.click(); await sleep(700); }
+  }
+  rep.energy = {
+    dots: d.querySelectorAll('.side.me .card.active .enrow .en-dot').length,
+    usedLabel: !!d.querySelector('.energybar .chip')
   };
-  // 에너지 붙이기
-  await clickIf(d, '.enbtn'); await sleep(250);
-  const myActive = d.querySelector('.side.me .card.active');
-  if (myActive) { myActive.click(); await sleep(600); }
-  rep.afterEnergy = { energyUsed: !!d.querySelector('.enbtn'), attached: d.querySelectorAll('.side.me .card.active .enrow .en-dot').length };
-  // 특성
-  const abBtn = d.querySelector('[data-act="ability"]:not([disabled])');
-  if (abBtn) { abBtn.click(); await sleep(1200); rep.abilityFired = true; } else rep.abilityFired = false;
-  // 공격
-  const atk = d.querySelector('[data-act="attack"]:not([disabled])');
-  if (atk) {
-    atk.click();
-    await sleep(700);
+  // ---- 2) 특성 발동 (UI 클릭)
+  const ab = d.querySelector('[data-act="ability"]:not([disabled])');
+  if (ab) {
+    ab.click();
+    await sleep(1500);
+    rep.abilityFired = true;
+    rep.abilityLog = [...d.querySelectorAll('#sidepanel div')].map(x => x.textContent).filter(t => t.includes('특성')).slice(-2).join(' / ');
+  } else rep.abilityFired = false;
+
+  // ---- 3) 약점 ×2 결정론적 검증: 화염(앤티골) vs 풀(야나프 약점 불꽃)
+  if (B && D) {
+    const atkU = D.unitOf('SV5K-009'); // 앤티골 110 불꽃
+    D.addEnergy(atkU, ['Fire', 'Fire', 'Colorless']);
+    atkU.enteredTurn = 0;
+    B.players[0].active = atkU;
+    const foeU = D.unitOf('SV4K-001'); // 야나프 약점 불꽃 ×2
+    B.players[1].active = foeU;
+    B.players[0].energyUsed = true;
+    D.render();
+    await sleep(600);
+    const btn = [...d.querySelectorAll('[data-act="attack"]')].find(b => b.textContent.includes('핥아'));
+    rep.atkBtnFound = !!btn;
+    if (btn) { btn.click(); } else click(d, '[data-act="attack"]:not([disabled])');
+    await sleep(500);
     rep.coinOverlay = !!d.querySelector('#coinEl');
-    await sleep(3200);
-  } else {
-    // 에너지 2개 필요한 기술: 턴 넘기고 다음 턴에 재시도
-    await clickIf(d, '[data-act="endTurn"]'); await sleep(300);
-    for (let i = 0; i < 40 && d.querySelector('[data-act="attack"]:not([disabled])') === null; i++) await sleep(250);
-    await clickIf(d, '.enbtn'); await sleep(200);
-    const a2 = d.querySelector('.side.me .card.active'); if (a2) { a2.click(); await sleep(500); }
-    const atk2 = d.querySelector('[data-act="attack"]:not([disabled])');
-    if (atk2) { atk2.click(); await sleep(700); rep.coinOverlay = !!d.querySelector('#coinEl'); await sleep(3200); }
+    await sleep(3600);
+    const foeNow = w.__B.players[1].active;
+    rep.weak = foeNow ? { name: foeNow.card.name, dmg: foeNow.dmg, base: 130 } : null;
   }
-  rep.afterAttack = m0();
-  rep.logTail = [...d.querySelectorAll('#sidepanel div, .logline')].slice(-6).map(x => x.textContent).join(' | ').slice(0, 300);
-  return rep;
-}
-async function packTest(id, label) {
-  const f = document.getElementById(id), w = f.contentWindow, d = f.contentDocument;
-  const rep = { label };
-  // 배틀 중이면 홈으로
-  const back = d.querySelector('[data-act="home"]'); if (back) back.click();
-  await sleep(200);
-  const cover = d.querySelector('[data-act="confirmYes"]'); if (cover) cover.click();
+  rep.afterAttack = await measure(w, d);
+
+  // ---- 4) 코인토스 검증: 비조도(격투) 삼단찌르기 3×20
+  if (B && D) {
+    const B2 = w.__B;
+    const coinU = D.unitOf('SV4K-034');
+    D.addEnergy(coinU, ['Fighting']);
+    coinU.enteredTurn = 0;
+    B2.players[B2.cur].active = coinU;
+    B2.players[B2.cur].cantAttack = false;
+    B2.players[B2.cur].energyUsed = true;
+    D.render();
+    await sleep(500);
+    const cb = [...d.querySelectorAll('[data-act="attack"]')].find(b => b.textContent.includes('삼단'));
+    rep.coinBtnFound = !!cb;
+    if (cb) cb.click();
+    await sleep(600);
+    rep.coinOverlay2 = !!d.querySelector('#coinEl');
+    await sleep(4200);
+  }
+
+  // ---- 5) 팩 뽑기 (UI 클릭)
+  click(d, '[data-act="home"]'); await sleep(400);
+  if (d.querySelector('[data-act="confirmYes"]')) { d.querySelector('[data-act="confirmYes"]').click(); await sleep(400); }
+  click(d, '[data-act="goPack"]');
+  await until(() => d.querySelector('#packEl'), 4000);
   await sleep(500);
-  await clickIf(d, '[data-act="goPack"]'); await sleep(700);
-  await clickIf(d, '#packEl'); await sleep(3400);
-  rep.revealed = d.querySelectorAll('#packResult .reveal:not(.facedown)').length;
-  rep.total = d.querySelectorAll('#packResult .reveal').length;
-  rep.dexAfter = (d.querySelector('.chip') || {}).textContent;
-  rep.scroll = { overflowX: d.documentElement.scrollWidth - w.innerWidth, scrollH: d.documentElement.scrollHeight, vh: w.innerHeight };
-  rep.badImgs = [...d.images].filter(i => i.complete && i.naturalWidth === 0).length;
-  rep.pendingImgs = [...d.images].filter(i => !i.complete).length;
+  click(d, '#packEl');
+  await sleep(4200);
+  rep.pack = {
+    revealed: d.querySelectorAll('#packResult .reveal:not(.facedown)').length,
+    total: d.querySelectorAll('#packResult .reveal').length,
+    badImgs: [...d.images].filter(i => i.complete && i.naturalWidth === 0).length
+  };
+  rep.packMetrics = await measure(w, d);
+  rep.dex = (d.querySelector('.chip') || {}).textContent;
   return rep;
 }
+
 (async () => {
   const out = document.getElementById('out');
   const r = {};
-  try {
-    r.a = await run('f400', '400x860');
-    out.textContent = JSON.stringify(r, null, 1);
-  } catch (e) { r.errA = String(e); }
-  try {
-    r.b = await run('f884', '884x960');
-  } catch (e) { r.errB = String(e); }
+  try { r.a = await run('f400', '400x860'); } catch (e) { r.errA = String(e && e.stack || e); }
+  out.textContent = JSON.stringify(r, null, 1);
+  try { r.b = await run('f884', '884x960'); } catch (e) { r.errB = String(e && e.stack || e); }
   window.__report = r;
   out.textContent = JSON.stringify(r, null, 1);
-  // 화면 정지 상태(배틀)에서 스크린샷을 찍을 수 있게 유지
   window.__ready = true;
 })();
 </script>

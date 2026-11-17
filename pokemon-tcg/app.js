@@ -1535,5 +1535,6 @@ function boot() {
   if (!POOL || !POOL.length) { $app.innerHTML = '<div class="home"><h2>카드 데이터를 불러오지 못했어요</h2></div>'; }
 }
 boot();
-window.__DEBUG = { S, startBattle, openPack, useAttack, useAbility, attachEnergy, endTurn, render };
+window.__DEBUG = { S, startBattle, openPack, useAttack, useAbility, attachEnergy, endTurn, render,
+  unitOf, BY, newPlayer, DECKS, addEnergy(u, types) { types.forEach(t => u.energies.push(t)); } };
 })();
