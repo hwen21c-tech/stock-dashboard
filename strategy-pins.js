@@ -27,7 +27,8 @@
     hong: { label: '홍인기', root: '#tabHonginki' },
     manju: { label: '만쥬', root: '#tabManju' },
     jongbe: { label: '종가베팅', root: '#tabJongbe' },
-    rn: { label: 'RN존', root: '#tabRnzone' }
+    rn: { label: 'RN존', root: '#tabRnzone' },
+    kk: { label: '깡토', root: '#tabKkangto' }
   };
   var TAB_KEYS = Object.keys(TABS);
 
@@ -35,7 +36,7 @@
   /* 동적 본체(Vercel)만 /api 를 쓴다 — 정적 GitHub Pages 미러에는 live-api.js 가 없다.
      없는데도 호출하면 콘솔에 404 가 쌓이므로 처음부터 시도하지 않는다. */
   var HAS_API = (function () {
-    try { return !!document.querySelector('script[src*="live-api.js"]'); } catch (e) { return false; }
+    try { return !!(window.__API_BASE) || !!document.querySelector('script[src*="live-api.js"]'); } catch (e) { return false; }
   })();
   var S = {
     tabs: {},          /* tab -> { code: {code,name,at,del,price,pct,value,rn,candles} } */
@@ -290,6 +291,7 @@
     if (tab === 'bij') return Array.prototype.slice.call(root.querySelectorAll('article.card'));
     if (tab === 'hong') return Array.prototype.slice.call(root.querySelectorAll('.hi-stock-card'));
     if (tab === 'rn') return Array.prototype.slice.call(root.querySelectorAll('#stockListGrid .stock-card'));
+    if (tab === 'kk') return Array.prototype.slice.call(root.querySelectorAll('#kkNearGrid .kk-card, #kkBreakGrid .kk-card'));
     if (tab === 'jongbe') return Array.prototype.slice.call(root.querySelectorAll('#stockListContainer .stock-card'));
     if (tab === 'manju') return manjuCards(root);
     return [];
@@ -311,6 +313,14 @@
         if (j) {
           snap.price = j.price; snap.pct = j.changeRatio; snap.track = j.track; snap.badge = j.badge;
           if (j.candles && j.candles.length) snap.candles = j.candles.slice(-60);
+        }
+      }
+      else if (tab === 'kk' && window.KkangtoTab && window.KkangtoTab.getStocks) {
+        var k = (window.KkangtoTab.getStocks() || []).filter(function (s) { return s && s.code === code; })[0];
+        if (k) {
+          snap.price = k.price; snap.pct = k.changeRatio; snap.value = k.valueText || '';
+          snap.kk = { basis: k.basis, stop: k.stop, tp: k.tp, ma60: k.ma60 };
+          if (k.candles && k.candles.length) snap.candles = k.candles.slice(-60);
         }
       }
     } catch (e) { /* 스냅샷은 없어도 핀은 유지된다 */ }
@@ -436,6 +446,12 @@
         '<span>1차 타점 <b>' + nf(item.rn.buy1) + '</b></span>' +
         '<span>2차 타점 <b>' + nf(item.rn.buy2) + '</b></span>' +
         '</div>') : '') +
+      (item.kk ? ('<div class="spx-row">' +
+        '<span>전고점(타점) <b>' + nf(item.kk.basis) + '</b></span>' +
+        '<span>−8% <b>' + nf(item.kk.stop) + '</b></span>' +
+        '<span>+24% <b>' + nf(item.kk.tp) + '</b></span>' +
+        '<span>60일선 <b>' + nf(item.kk.ma60) + '</b></span>' +
+        '</div>') : '') +
       '<canvas data-spx="cv"></canvas>';
     el.querySelector('[data-spx="unpin"]').addEventListener('click', function (e) {
       e.preventDefault(); e.stopPropagation();
@@ -451,7 +467,7 @@
 
   function renderExtras(tab, root, cards) {
     if (!root) return;
-    var grid = cards.length ? cards[0].parentNode : root.querySelector('#stockListGrid, #stockListContainer, #hiStockGrid, #cards');
+    var grid = cards.length ? cards[0].parentNode : root.querySelector(tab === 'kk' ? '#kkNearGrid' : '#stockListGrid, #stockListContainer, #hiStockGrid, #cards');
     if (!grid) return;
     var present = {};
     cards.forEach(function (el) {
@@ -966,7 +982,10 @@
       var v = activeView();
       if (!v || v === lastView) return;
       lastView = v;
-      if (v === 'bijoong' || v === 'honginki' || v === 'jongbe' || v === 'manju' || v === 'rnzone') {
+      if (v === 'bijoong' || v === 'honginki' || v === 'kkangto' || v === 'jongbe' || v === 'manju' || v === 'rnzone') {
+        if (v === 'kkangto' && window.KkangtoTab && typeof window.KkangtoTab.reloadCharts === 'function') {
+          try { window.KkangtoTab.reloadCharts(); } catch (e) { /* */ }
+        }
         setTimeout(function () { refreshVisibleCharts(true); paintManjuCharts(); }, 700);
       }
     }, 700);
