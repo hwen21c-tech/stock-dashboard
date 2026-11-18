@@ -34,6 +34,12 @@
   }
   /* 이전 버전(localStorage)으로 한 번 열어 둔 기록은 지운다 — 새로 열면 PIN부터 */
   try { localStorage.removeItem(STORE); } catch (e) { /* */ }
+  /* 카드팩 앱에서 🏠 배틀 월드 버튼으로 돌아온 경우 같은 세션으로 이어준다 */
+  try {
+    if (document.referrer && document.referrer.indexOf('https://hwen21c-tech.github.io/stock-dashboard/pokemon-cards/') === 0) {
+      ssWrite(STORE, '1');
+    }
+  } catch (e) { /* */ }
   function isUnlocked() { return ssRead(STORE, '') === '1'; }
 
   var CSS = [

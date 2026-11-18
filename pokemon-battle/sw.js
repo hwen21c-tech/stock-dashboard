@@ -7,7 +7,7 @@
    · 경로는 모두 상대경로 — 워커 파일 위치(이 폴더)를 기준으로 찾는다.
    ============================================================ */
 const PREFIX = 'pkm-world-';
-const VERSION = PREFIX + 'static-v2';  /* 2026-11-18 경량 선캐시(설치 속도 개선) + 나머지 에셋은 실행 시 자동 캐시 */
+const VERSION = PREFIX + 'static-v3';  /* 2026-11-18 경량 선캐시 + 카드팩 복귀 PIN 유지 */
 const SHELL = [
   './',
   './manifest.json',
