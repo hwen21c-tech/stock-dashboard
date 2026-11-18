@@ -1,20 +1,21 @@
 /* ============================================================
-   연오랑 eBook 오디오북 — 독립 PWA 서비스워커
-   · 이 파일은 /ebook/sw.js 이고 scope 는 /ebook/ 으로 한정된다.
-   · 같은 오리진의 '연오랑 관제탑'(/sw.js, scope: /) 과는 완전히 별개 앱이다.
-   · 캐시 이름에 ebook-reader- 접두사를 붙여, 관제탑 워커의 캐시 정리와 섞이지 않게 한다.
+   연오랑 eBook — 독립 PWA 서비스워커
+   · 이 파일은 /stock-dashboard/ebook/sw.js 이고 scope 는 이 폴더뿐이다.
+   · 같은 오리진의 '연오랑 관제탑'(/sw.js, scope: /) · '포켓몬 배틀 월드'(/pokemon-battle/) ·
+     '카드팩'(/pokemon-cards/) 과는 완전히 별개 앱으로 인식된다.
+   · 캐시 이름에 ebook-reader- 접두사를 붙여 다른 워커의 캐시 정리와 섞이지 않게 한다.
+   · 경로는 모두 상대경로 — 워커 파일 위치(이 폴더)를 기준으로 찾는다.
    ============================================================ */
 const PREFIX = 'ebook-reader-';
-const VERSION = PREFIX + 'v3';
-/* 상대 경로로 적는다 — Vercel(/ebook/) 에서도, GitHub Pages(/stock-dashboard/ebook/) 에서도
-   서비스워커 파일 위치를 기준으로 같은 파일을 찾는다 */
+const VERSION = PREFIX + 'static-v1';  /* 2026-11-18 정적 GitHub Pages 독립 분리(/stock-dashboard/ebook/) */
 const SHELL = [
-  './manifest.json',
-  '../ebook.html',
-  '../ebook-sync.js',
-  '../ebook-icon.svg',
-  '../ebook-icon-192.png',
-  '../ebook-icon-512.png'
+  './',
+  './index.html',
+  './ebook.webmanifest',
+  './ebook-sync.js',
+  './ebook-icon.svg',
+  './ebook-icon-192.png',
+  './ebook-icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -42,9 +43,10 @@ self.addEventListener('fetch', (event) => {
 
   let url;
   try { url = new URL(req.url); } catch (e) { return; }
-  // 다른 오리진과 API(/api/tts 음성)는 손대지 않고 브라우저에 맡긴다.
+  // 다른 오리진(책갈피 클라우드, TTS 함수)은 손대지 않고 브라우저에 맡긴다.
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/api/')) return;
+  // 이 앱 폴더(/ebook/) 밖 — 관제탑·배틀 월드·카드팩 — 은 절대 건드리지 않는다.
+  if (!url.pathname.startsWith(self.registration.scope.replace(self.location.origin, ''))) return;
 
   event.respondWith((async () => {
     const cache = await caches.open(VERSION).catch(() => null);
@@ -59,6 +61,10 @@ self.addEventListener('fetch', (event) => {
       if (cache) {
         const hit = await cache.match(req, { ignoreSearch: true });
         if (hit) return hit;
+        if (req.mode === 'navigate') {
+          const home = await cache.match('./index.html');
+          if (home) return home;
+        }
       }
       throw err;
     }

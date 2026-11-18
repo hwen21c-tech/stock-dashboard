@@ -1,0 +1,901 @@
+/* ============================================================
+   포켓몬 배틀 2탄 — 3게임(산수·한글·영어) 공통 확장
+   타입별 배경 · 파트너 · 공격/피격 모션 · 진화 · 콤보 · 미션 · 복습 · 볼 · 이로치
+   ============================================================ */
+
+/* ---------- 1. 타입별 배틀 배경 ---------- */
+.pb2-bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  background:linear-gradient(180deg,#8ed24a,#bdea74)}
+.pb2-bg>*{position:absolute;left:0;right:0;display:block;pointer-events:none}
+.pb2-sky{top:0;height:100%;transition:background .6s ease}
+.pb2-far{top:18%;height:62%;
+  clip-path:polygon(0 100%,0 64%,7% 46%,13% 60%,21% 32%,29% 54%,37% 38%,46% 60%,54% 42%,63% 62%,71% 46%,80% 64%,88% 50%,95% 62%,100% 54%,100% 100%)}
+.pb2-mid{top:52%;height:38%}
+.pb2-ground{left:0;right:0;bottom:0;height:32%}
+.pb2-motes{inset:0;overflow:hidden}
+.pb2-mote{position:absolute;display:block;border-radius:50%;opacity:0}
+@keyframes pb2-up{0%{transform:translateY(10px) scale(.7);opacity:0}
+  18%{opacity:.95}75%{opacity:.75}100%{transform:translateY(-120px) scale(1.1);opacity:0}}
+@keyframes pb2-down{0%{transform:translateY(-30px) rotate(0);opacity:0}
+  15%{opacity:.95}100%{transform:translateY(150px) rotate(220deg);opacity:0}}
+@keyframes pb2-drift{0%{transform:translate(0,0);opacity:0}
+  20%{opacity:.6}100%{transform:translate(70px,-16px);opacity:0}}
+@keyframes pb2-twinkle{0%,100%{opacity:.15;transform:scale(.7)}50%{opacity:1;transform:scale(1.15)}}
+
+/* 물·얼음 — 에메랄드 호수 · 물결 · 빙산 */
+.pb2-bg[data-theme="lake"] .pb2-sky{background:
+  radial-gradient(80% 46% at 50% 0%,rgba(255,255,255,.65),transparent 62%),
+  linear-gradient(180deg,#8fdcf4 0%,#c9f3ff 24%,#79d4e8 44%,#1589a3 58%,#0a6277 100%)}
+.pb2-bg[data-theme="lake"] .pb2-far{background:linear-gradient(180deg,#f4fdff,#c6ecf8 68%,#8fd2e6);
+  filter:drop-shadow(0 8px 12px rgba(4,60,80,.4))}
+.pb2-bg[data-theme="lake"] .pb2-mid{background:
+  radial-gradient(closest-side,rgba(255,255,255,.55),transparent 72%) 0 12%/110px 20px repeat-x,
+  repeating-linear-gradient(180deg,rgba(255,255,255,.18) 0 2px,transparent 2px 11px);
+  animation:pb2wave 7s linear infinite;opacity:.85}
+@keyframes pb2wave{from{background-position:0 12%,0 0}to{background-position:110px 12%,0 0}}
+.pb2-bg[data-theme="lake"] .pb2-ground{background:
+  radial-gradient(closest-side,rgba(190,255,255,.5),transparent 70%) 20% 10%/90px 14px repeat-x,
+  linear-gradient(180deg,rgba(6,74,92,.1),#04404f 70%)}
+.pb2-bg[data-theme="lake"] .pb2-mote{background:#e8fdff;box-shadow:0 0 8px #bdf3ff}
+
+/* 불꽃·드래곤 — 붉은 화산 · 불티 */
+.pb2-bg[data-theme="volcano"] .pb2-sky{background:
+  radial-gradient(70% 44% at 50% 66%,rgba(255,150,40,.6),transparent 70%),
+  linear-gradient(180deg,#2a0a06 0%,#5c1508 34%,#9c2f0c 58%,#5d1b08 82%,#2a0d05 100%)}
+.pb2-bg[data-theme="volcano"] .pb2-far{background:linear-gradient(180deg,#4a1408,#250a04);
+  filter:drop-shadow(0 -2px 10px rgba(255,120,30,.45))}
+.pb2-bg[data-theme="volcano"] .pb2-mid{background:
+  repeating-linear-gradient(102deg,rgba(255,132,20,.75) 0 3px,rgba(255,72,0,.15) 3px 26px),
+  radial-gradient(60% 50% at 50% 100%,rgba(255,190,60,.75),transparent 72%);
+  animation:pb2lava 3.2s ease-in-out infinite;opacity:.9}
+@keyframes pb2lava{0%,100%{opacity:.65;filter:brightness(1)}50%{opacity:1;filter:brightness(1.35)}}
+.pb2-bg[data-theme="volcano"] .pb2-ground{background:
+  radial-gradient(60% 90% at 50% 0%,rgba(255,110,20,.55),transparent 70%),
+  linear-gradient(180deg,#3a1106,#160604)}
+.pb2-bg[data-theme="volcano"] .pb2-mote{background:#ffb347;box-shadow:0 0 10px #ff6a00}
+
+/* 전기·강철 — 밤하늘 발전소 · 번개 스파크 */
+.pb2-bg[data-theme="power"] .pb2-sky{background:
+  radial-gradient(60% 40% at 72% 22%,rgba(120,200,255,.35),transparent 70%),
+  linear-gradient(180deg,#050d24 0%,#0d1c44 40%,#132a5e 70%,#091530 100%)}
+.pb2-bg[data-theme="power"] .pb2-sky::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(180deg,rgba(255,255,255,.75),transparent 55%);
+  opacity:0;animation:pb2flash 6.5s steps(1) infinite;mix-blend-mode:screen}
+@keyframes pb2flash{0%,92%{opacity:0}93%{opacity:.55}94%{opacity:0}96%{opacity:.35}97%,100%{opacity:0}}
+.pb2-bg[data-theme="power"] .pb2-far{background:linear-gradient(180deg,#16234a,#0a1229);
+  clip-path:polygon(0 100%,0 78%,9% 78%,9% 62%,18% 62%,18% 74%,27% 74%,27% 52%,36% 52%,36% 70%,48% 70%,48% 58%,57% 58%,57% 76%,66% 76%,66% 48%,75% 48%,75% 68%,84% 68%,84% 74%,93% 74%,93% 60%,100% 60%,100% 100%)}
+.pb2-bg[data-theme="power"] .pb2-mid{background:
+  repeating-linear-gradient(90deg,rgba(120,200,255,.35) 0 2px,transparent 2px 34px),
+  repeating-linear-gradient(180deg,rgba(120,200,255,.22) 0 1px,transparent 1px 26px);
+  opacity:.7}
+.pb2-bg[data-theme="power"] .pb2-ground{background:linear-gradient(180deg,rgba(10,20,45,.2),#050b1c 70%)}
+.pb2-bg[data-theme="power"] .pb2-mote{background:#ffe873;box-shadow:0 0 10px #8fd6ff;border-radius:1px}
+
+/* 에스퍼·고스트·악 — 보랏빛 신비 유적 · 별빛 */
+.pb2-bg[data-theme="ruins"] .pb2-sky{background:
+  radial-gradient(50% 40% at 50% 46%,rgba(190,120,255,.35),transparent 72%),
+  linear-gradient(180deg,#160a2b 0%,#2b1250 40%,#3d1a6b 66%,#1a0a30 100%)}
+.pb2-bg[data-theme="ruins"] .pb2-far{background:linear-gradient(180deg,#3b1f63,#1c0c33);
+  clip-path:polygon(0 100%,0 60%,6% 60%,6% 44%,12% 44%,12% 60%,20% 60%,20% 34%,28% 34%,28% 60%,50% 60%,50% 26%,58% 26%,58% 60%,68% 60%,68% 46%,76% 46%,76% 60%,88% 60%,88% 40%,96% 40%,96% 60%,100% 60%,100% 100%)}
+.pb2-bg[data-theme="ruins"] .pb2-mid{background:
+  radial-gradient(circle at 24% 40%,rgba(214,160,255,.5),transparent 26%),
+  radial-gradient(circle at 76% 30%,rgba(150,200,255,.45),transparent 22%),
+  repeating-linear-gradient(180deg,rgba(255,255,255,.14) 0 2px,transparent 2px 40px);
+  animation:pb2rune 5s ease-in-out infinite}
+@keyframes pb2rune{0%,100%{opacity:.6;transform:translateY(0)}50%{opacity:1;transform:translateY(-6px)}}
+.pb2-bg[data-theme="ruins"] .pb2-ground{background:linear-gradient(180deg,rgba(40,10,70,.2),#140726 70%)}
+.pb2-bg[data-theme="ruins"] .pb2-mote{background:#e2b6ff;box-shadow:0 0 10px #b96bff}
+
+/* 바위·땅 — 황토 협곡 · 바위산 */
+.pb2-bg[data-theme="canyon"] .pb2-sky{background:
+  radial-gradient(60% 44% at 50% 12%,rgba(255,236,180,.85),transparent 66%),
+  linear-gradient(180deg,#f6dfae 0%,#e6bb74 38%,#c9924a 66%,#8a5a22 100%)}
+.pb2-bg[data-theme="canyon"] .pb2-far{background:linear-gradient(180deg,#d9a45c,#8b5620);
+  filter:drop-shadow(0 8px 10px rgba(90,50,10,.35))}
+.pb2-bg[data-theme="canyon"] .pb2-mid{background:
+  repeating-linear-gradient(174deg,rgba(120,70,20,.22) 0 10px,transparent 10px 26px);
+  opacity:.75}
+.pb2-bg[data-theme="canyon"] .pb2-ground{background:
+  radial-gradient(closest-side,rgba(255,225,160,.5),transparent 72%) 0 0/80px 16px repeat-x,
+  linear-gradient(180deg,rgba(140,90,30,.04),#6d431a 72%)}
+.pb2-bg[data-theme="canyon"] .pb2-mote{background:#ffe6b0;box-shadow:0 0 8px #d9a45c}
+
+/* 비행·페어리 — 맑은 구름 · 파스텔 꽃밭 */
+.pb2-bg[data-theme="sky"] .pb2-sky{background:
+  radial-gradient(60% 40% at 50% 6%,rgba(255,255,255,.85),transparent 68%),
+  linear-gradient(180deg,#a9e4ff 0%,#cdf0ff 38%,#ffe6f6 72%,#ffd7ef 100%)}
+.pb2-bg[data-theme="sky"] .pb2-far{background:linear-gradient(180deg,#f6fbff,#dcf1ff);
+  filter:drop-shadow(0 10px 14px rgba(120,160,210,.4));opacity:1}
+.pb2-bg[data-theme="sky"] .pb2-mid{background:
+  radial-gradient(closest-side,#fff,transparent 72%) 6% 16%/150px 56px no-repeat,
+  radial-gradient(closest-side,#fff,transparent 72%) 46% 34%/120px 44px no-repeat,
+  radial-gradient(closest-side,#fff8fd,transparent 72%) 64% 58%/190px 66px no-repeat,
+  radial-gradient(closest-side,#fff,transparent 72%) 24% 84%/230px 74px no-repeat;
+  filter:drop-shadow(0 6px 10px rgba(140,175,215,.45));
+  animation:pb2cloud 14s ease-in-out infinite}
+@keyframes pb2cloud{0%,100%{transform:translateX(-8px)}50%{transform:translateX(10px)}}
+.pb2-bg[data-theme="sky"] .pb2-ground{background:
+  radial-gradient(circle at 12% 26%,#ff9ecb 0 7px,transparent 8px),
+  radial-gradient(circle at 26% 52%,#ffe066 0 6px,transparent 7px),
+  radial-gradient(circle at 42% 22%,#ffb3d9 0 6px,transparent 7px),
+  radial-gradient(circle at 58% 48%,#9be88a 0 7px,transparent 8px),
+  radial-gradient(circle at 74% 26%,#ffe066 0 6px,transparent 7px),
+  radial-gradient(circle at 88% 54%,#ff9ecb 0 7px,transparent 8px),
+  linear-gradient(180deg,#dcf9c8,#9fe08e 72%)}
+.pb2-bg[data-theme="sky"] .pb2-mote{background:#ffc0e0;box-shadow:0 0 8px #ffd7ef;border-radius:50% 0 50% 50%}
+
+/* 풀·벌레·독·노말 — 푸른 상록수 숲 */
+.pb2-bg[data-theme="forest"] .pb2-sky{background:
+  radial-gradient(120% 70% at 50% 118%,#d9f59b 0%,#b6e765 38%,transparent 62%),
+  radial-gradient(90% 60% at 12% 2%,#a4e05a 0%,transparent 55%),
+  radial-gradient(80% 55% at 92% 4%,#9ddd52 0%,transparent 55%),
+  linear-gradient(180deg,#8ed24a 0%,#a8e35e 35%,#bdea74 65%,#a9e061 100%)}
+.pb2-bg[data-theme="forest"] .pb2-far{background:linear-gradient(180deg,rgba(47,122,42,.55),rgba(95,182,58,.2) 70%);
+  opacity:.5}
+.pb2-bg[data-theme="forest"] .pb2-mid{background:
+  radial-gradient(closest-side,rgba(255,255,240,.42),transparent 72%) 32% 8%/240px 200px no-repeat;
+  opacity:.55}
+.pb2-bg[data-theme="forest"] .pb2-ground{background:linear-gradient(180deg,transparent,rgba(70,140,30,.35))}
+.pb2-bg[data-theme="forest"] .pb2-mote{background:#f5ffcf;box-shadow:0 0 8px #d6ff8f}
+
+/* 테마가 숲이 아니면 기존 나무·블레이드는 잠시 숨긴다 */
+.stage.pb2-themed .trees,
+.stage.pb2-themed .blade{opacity:0;transition:opacity .5s}
+.stage.pb2-themed .grass{opacity:.22;transition:opacity .5s}
+.stage.pb2-themed .glow{opacity:.55}
+.stage.pb2-themed .hint{
+  left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:86%;
+  padding:2px 11px;border-radius:999px;color:#fff;font-weight:900;
+  background:rgba(16,32,48,.52);text-shadow:0 1px 2px rgba(0,0,0,.5);
+  -webkit-backdrop-filter:blur(1.5px);backdrop-filter:blur(1.5px);
+}
+
+/* 야생 포켓몬 대기 호흡 */
+#wildSprite{animation:pb2wildidle 2.7s ease-in-out infinite;transform-origin:50% 92%}
+@keyframes pb2wildidle{0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-4px) scale(1.018,1.03)}}
+/* 피격 번쩍임 */
+.pb2-flash{animation:pb2flashhit .42s steps(2) both}
+@keyframes pb2flashhit{0%{filter:brightness(3.2) saturate(.15)}
+  30%{filter:none}55%{filter:brightness(2.4) saturate(.3)}100%{filter:none}}
+
+/* ---------- 2. 파트너 포켓몬 ---------- */
+.pb2-partner{
+  position:absolute;left:clamp(18px,5vw,44px);bottom:5%;z-index:5;
+  width:clamp(112px,15.5vh,126px);aspect-ratio:1;pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  filter:drop-shadow(0 7px 7px rgba(10,40,10,.32));
+}
+/* 둥근 배틀 발판 */
+.pb2-partner::before{content:"";position:absolute;left:50%;bottom:-9%;width:128%;height:38%;
+  transform:translateX(-50%);border-radius:50%;z-index:-1;
+  background:radial-gradient(closest-side,rgba(255,255,255,.92),rgba(224,255,196,.6) 56%,rgba(120,200,80,.22) 76%,transparent 88%);
+  box-shadow:0 0 0 3px rgba(255,255,255,.34),0 7px 16px rgba(20,60,10,.22)}
+.pb2-partner::after{content:"";position:absolute;left:50%;bottom:-2%;width:92%;height:16%;
+  transform:translateX(-50%);border-radius:50%;z-index:-1;
+  background:radial-gradient(closest-side,rgba(16,44,14,.45),transparent 76%)}
+.pb2-partner img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;image-rendering:pixelated;
+  animation:pb2bob 2.2s ease-in-out infinite;transform-origin:50% 92%}
+@keyframes pb2bob{0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-3px) scale(1.025,1.035)}}
+.pb2-partner .pb2-pname{
+  position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
+  font-size:clamp(8px,2.1vw,10px);font-weight:900;color:#fff;white-space:nowrap;
+  background:rgba(28,60,18,.72);border-radius:999px;padding:0 6px;line-height:1.5;
+  letter-spacing:-.02em}
+.pb2-partner.pb2-jump img{animation:pb2jump .55s cubic-bezier(.2,1.5,.4,1)}
+@keyframes pb2jump{0%{transform:translateY(0) scale(1)}
+  35%{transform:translateY(-40%) scale(1.08,.94)}70%{transform:translateY(0) scale(.94,1.06)}
+  100%{transform:translateY(0) scale(1)}}
+.pb2-partner.pb2-hurt img{animation:pb2hurt .5s steps(1)}
+@keyframes pb2hurt{0%{filter:brightness(3.4) saturate(.15);transform:scale(1.06)}
+  18%{filter:none;transform:translateX(6px) scale(.98)}
+  38%{filter:brightness(2.6) saturate(.3);transform:translateX(-6px) scale(1.02)}
+  58%{filter:none;transform:translateX(4px) scale(.99)}
+  100%{filter:none;transform:none}}
+.pb2-partner:active{transform:translateY(1px) scale(.97)}
+.pb2-partner .pb2-pswap{
+  position:absolute;right:-3px;top:-3px;width:16px;height:16px;border-radius:50%;
+  display:grid;place-items:center;font-size:9px;line-height:1;
+  background:#fffdf2;border:1.5px solid #cfe0ab;box-shadow:0 1px 3px rgba(0,0,0,.28)}
+.pb2-partner.empty{background:rgba(255,255,255,.22);border:2px dashed rgba(255,255,255,.9);
+  border-radius:50%;display:grid;place-items:center}
+.pb2-partner.empty img{display:none!important}
+.pb2-partner.empty::before{display:none}
+.pb2-partner.empty::after{
+  content:"＋";position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);
+  font-size:clamp(20px,5.4vw,30px);font-weight:900;color:#fff;
+  text-shadow:0 2px 5px rgba(0,0,0,.45);width:auto;height:auto;bottom:auto;border-radius:0;background:none}
+.pb2-partner.empty .pb2-pname{bottom:-3px}
+.pb2-combo{
+  position:absolute;top:-4px;left:50%;transform:translateX(-50%);
+  font-size:clamp(8px,2.2vw,10.5px);font-weight:900;color:#fff;white-space:nowrap;
+  background:linear-gradient(180deg,#ff9a3c,#ec5a12);border:1.5px solid #fff6d6;
+  border-radius:999px;padding:0 7px;line-height:1.55;box-shadow:0 2px 6px rgba(120,40,0,.45);
+  animation:pb2pop .3s ease-out}
+@keyframes pb2pop{from{transform:translateX(-50%) scale(.6)}to{transform:translateX(-50%) scale(1)}}
+
+/* ---------- 3탄: 앞·뒤 원근감 구도 (내 파트너=앞·큰, 야생=뒤·작) ---------- */
+/* 태블릿·폴드8에서는 155~175px 로 한층 더 당당하게 */
+@media (min-width:700px),(min-height:900px){
+  .pb2-partner{width:clamp(155px,17vh,175px);bottom:5%}
+}
+/* 야생은 오른쪽 위 뒤쪽으로 물러나 둘이 원작처럼 마주 봄 */
+.stage .wildzone{left:auto;right:clamp(10px,4vw,44px);top:40%;
+  width:min(clamp(108px,18.5vh,186px),29vw);transform:translateY(-50%) scale(.88);transform-origin:50% 60%}
+@media (max-height:700px){ .stage .wildzone{top:41%} }
+@media (orientation:landscape) and (max-height:520px){
+  .stage .wildzone{top:44%;right:clamp(8px,3vw,30px);width:min(clamp(86px,23vh,164px),38vw);transform:translateY(-50%) scale(.86)}
+  .pb2-partner{width:clamp(112px,24vh,132px)}
+}
+/* 좁은 폰: 왼쪽 메뉴를 피해 파트너를 조금 오른쪽·아래로 */
+@media (max-width:470px){
+  .pb2-partner{left:clamp(26px,7.5vw,52px);bottom:4%;width:clamp(112px,14.5vh,124px)}
+}
+
+/* ---------- 3. 배너 · 진화 연출 ---------- */
+.pb2-banner{
+  position:absolute;left:50%;top:22%;transform:translateX(-50%);z-index:8;
+  display:flex;align-items:center;gap:6px;padding:5px 14px;border-radius:999px;
+  font-weight:900;font-size:clamp(11px,3.2vw,15px);color:#fff;white-space:nowrap;
+  background:linear-gradient(180deg,rgba(70,20,90,.95),rgba(40,10,60,.95));
+  border:2px solid #e8c7ff;box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 16px rgba(214,150,255,.5);
+  animation:pb2banner .5s cubic-bezier(.2,1.5,.4,1) both;
+}
+.pb2-banner[hidden]{display:none}
+.pb2-banner b{background:linear-gradient(180deg,#fff,#ffd9a8 55%,#ff9a3c);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 2px 6px rgba(0,0,0,.35)}
+.pb2-banner[data-kind="combo"]{border-color:#ffcf8a;
+  background:linear-gradient(180deg,rgba(150,60,10,.95),rgba(80,22,4,.95));
+  box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 18px rgba(255,170,60,.55)}
+.pb2-banner[data-kind="evo"]{border-color:#ffcf8a;
+  background:linear-gradient(180deg,rgba(120,30,10,.95),rgba(60,10,4,.95));
+  box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 18px rgba(255,160,60,.55)}
+.pb2-banner[data-kind="shiny"]{border-color:#fff2a8;
+  background:linear-gradient(180deg,rgba(90,60,0,.95),rgba(40,26,0,.95));
+  box-shadow:0 6px 20px rgba(0,0,0,.45),inset 0 0 18px rgba(255,240,150,.6)}
+@keyframes pb2banner{from{opacity:0;transform:translate(-50%,-12px) scale(.85)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+
+.pb2-evo{position:absolute;inset:0;z-index:7;pointer-events:none;overflow:hidden}
+.pb2-evo[hidden]{display:none}
+.pb2-evo .pb2-ring{
+  position:absolute;left:50%;top:42%;width:40%;aspect-ratio:1;margin:-20% 0 0 -20%;
+  border-radius:50%;border:4px solid rgba(255,255,255,.85);
+  box-shadow:0 0 22px rgba(255,255,255,.7);animation:pb2ring 1.3s ease-out forwards}
+.pb2-evo .pb2-ring:nth-child(2){animation-delay:.16s}
+.pb2-evo .pb2-ring:nth-child(3){animation-delay:.32s}
+@keyframes pb2ring{0%{transform:scale(.2);opacity:0}25%{opacity:1}100%{transform:scale(2.6);opacity:0}}
+.pb2-evo .pb2-pillar{
+  position:absolute;left:50%;top:0;width:34%;height:100%;transform:translateX(-50%);
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.55),transparent);
+  animation:pb2pillar 1.2s ease-out forwards;filter:blur(2px)}
+@keyframes pb2pillar{0%{opacity:0;transform:translateX(-50%) scaleX(.2)}
+  40%{opacity:.95;transform:translateX(-50%) scaleX(1)}
+  100%{opacity:0;transform:translateX(-50%) scaleX(1.6)}}
+/* 타입별 진화 기둥 색 */
+.pb2-evo[data-el="water"] .pb2-pillar{background:linear-gradient(180deg,transparent,#79e0ff,#0a6277)} 
+.pb2-evo[data-el="fire"] .pb2-pillar{background:linear-gradient(180deg,transparent,#ffd166,#ff5a00)}
+.pb2-evo[data-el="elec"] .pb2-pillar{background:linear-gradient(180deg,transparent,#fff58a,#ffb300)}
+.pb2-evo[data-el="psychic"] .pb2-pillar{background:linear-gradient(180deg,transparent,#f7b6ff,#8a3ad6)}
+.pb2-evo[data-el="grass"] .pb2-pillar{background:linear-gradient(180deg,transparent,#c6f78a,#3fa32a)}
+.pb2-evo[data-el="rock"] .pb2-pillar{background:linear-gradient(180deg,transparent,#f0dca0,#8b5620)}
+.pb2-evo[data-el="sky"] .pb2-pillar{background:linear-gradient(180deg,transparent,#ffffff,#a9e4ff)}
+
+/* 이로치 무지개 반짝임(이미지 없을 때 대비) */
+.pb2-shiny-fallback .art,
+.pb2-shiny-fallback .sprite{filter:hue-rotate(140deg) saturate(1.5) drop-shadow(0 0 14px rgba(255,240,150,.9))!important;animation:pb2shine 2.4s ease-in-out infinite}
+@keyframes pb2shine{0%,100%{filter:hue-rotate(120deg) saturate(1.4) drop-shadow(0 0 12px rgba(255,240,150,.8))}
+  50%{filter:hue-rotate(200deg) saturate(1.7) drop-shadow(0 0 20px rgba(255,255,200,1))}}
+.pb2-shinylight{position:absolute;inset:0;z-index:2;pointer-events:none;
+  background:radial-gradient(circle at 50% 44%,rgba(255,250,190,.55),transparent 58%);
+  animation:pb2shinylight 2.2s ease-in-out infinite}
+@keyframes pb2shinylight{0%,100%{opacity:.35}50%{opacity:.8}}
+
+/* ---------- 4. 볼 스트립 ---------- */
+.pb2-balls{display:flex;gap:4px;align-items:stretch;min-width:0}
+.pb2-ball{
+  flex:1 1 0;min-width:0;display:flex;align-items:center;justify-content:center;gap:3px;
+  padding:2px 3px;border-radius:9px;border:1.5px solid #cfe0ab;
+  background:linear-gradient(180deg,#ffffff,#f0f8dd);color:#4b6a2a;
+  font-weight:900;font-size:clamp(8px,2.2vw,10px);line-height:1.15;white-space:nowrap;overflow:hidden;
+  transition:.15s;
+}
+.pb2-ball .dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;border:1.5px solid #2a2a2a;
+  background:linear-gradient(180deg,#f0553f 48%,#fff 52%)}
+.pb2-ball .nm{overflow:hidden;text-overflow:ellipsis}
+.pb2-ball .ct{flex:0 0 auto;font-size:.92em;color:#7d8a63}
+.pb2-ball[data-ball="super"] .dot{background:linear-gradient(180deg,#3d7ff0 48%,#fff 52%)}
+.pb2-ball[data-ball="hyper"] .dot{background:linear-gradient(180deg,#f0c419 48%,#2a2a2a 52%)}
+.pb2-ball[data-ball="master"] .dot{background:linear-gradient(180deg,#a45cf0 48%,#fff 52%)}
+.pb2-ball.on{background:linear-gradient(180deg,#ffe9a8,#ffc94d);border-color:#c98a10;color:#6a3f00;
+  box-shadow:0 2px 0 rgba(140,90,10,.35)}
+.pb2-ball.dim{opacity:.45;filter:grayscale(.5)}
+.pb2-ball:active{transform:translateY(1px)}
+@media (max-width:430px){
+  .pb2-ball .dmg{display:none}
+}
+@media (max-width:470px){
+  #pb2MissionBadge{position:absolute;right:1px;top:1px;font-size:8px;line-height:1.55;
+    padding:0 3px;border-radius:6px}
+  #pb2MissionBadge .mb-all{display:none}
+}
+.pb2-ball .dmg{font-size:.86em;color:#8a7a3a}
+
+/* ---------- 5. 트레이너 뱃지 ---------- */
+.pb2-rank{
+  flex:0 0 auto;margin-left:3px;font-style:normal;font-size:clamp(8.5px,2.2vw,10.5px);font-weight:900;
+  color:#6b4212;background:linear-gradient(180deg,#fff8d8,#ffe9a8);border:1.4px solid #e8c25a;
+  border-radius:999px;padding:0 5px;line-height:1.55;white-space:nowrap;
+}
+.pb2-rank .rt{display:inline}
+@media (max-width:430px){ .pb2-rank .rt{display:none} }
+
+/* 파트너 고르기 모달 */
+.pb2-pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:7px;max-height:46dvh;overflow:auto;padding:2px}
+.pb2-pcard{display:flex;flex-direction:column;align-items:center;gap:1px;padding:6px 4px;
+  border-radius:12px;background:linear-gradient(180deg,#fff,#f4fbe8);border:2px solid #e0ecc8;
+  box-shadow:0 2px 0 rgba(70,120,30,.18);min-width:0}
+.pb2-pcard img{width:44px;height:44px;object-fit:contain;image-rendering:pixelated}
+.pb2-pcard span{font-size:clamp(8.5px,2.3vw,10px);font-weight:900;color:#33501a;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb2-pcard.on{border-color:#c98a10;background:linear-gradient(180deg,#fffbe8,#ffeec3);
+  box-shadow:0 2px 0 rgba(150,100,10,.35)}
+.pb2-pcard.on span{color:#6a3f00}
+.pb2-pcard:active{transform:translateY(2px);box-shadow:none}
+
+/* ---------- 6. 도감 · 상세 확장 ---------- */
+.pb2-pbtn{
+  padding:8px 13px;border-radius:10px;font-weight:900;font-size:clamp(11px,3vw,12.5px);
+  background:linear-gradient(180deg,#e8f7ff,#c9e9ff);border:2px solid #7cb8e8;color:#14456b;
+  box-shadow:0 2px 0 rgba(40,90,140,.3);margin-left:6px;
+}
+.pb2-pbtn.on{background:linear-gradient(180deg,#fff3c4,#ffd166);border-color:#c98a10;color:#6a3f00}
+.pb2-pbtn:active{transform:translateY(2px);box-shadow:none}
+.pb2-crybtn{
+  padding:8px 13px;border-radius:10px;font-weight:900;font-size:clamp(11px,3vw,12.5px);
+  background:linear-gradient(180deg,#fff,#eaf8d0);border:2px solid #bfe08b;color:#2b4318;
+  box-shadow:0 2px 0 rgba(70,120,30,.3);margin-left:6px;
+}
+.pb2-crybtn:active{transform:translateY(2px);box-shadow:none}
+.dexcell .pb2-shinymark{position:absolute;right:2px;top:1px;font-size:10px;line-height:1;
+  filter:drop-shadow(0 0 4px #fff)}
+.dexcell{position:relative}
+.dexcell.pb2-shiny{box-shadow:inset 0 0 0 2px #ffdf6a,0 0 10px rgba(255,220,90,.6)}
+
+/* ---------- 7. 설정 확인 · 타이머 토글 ---------- */
+.pb2-setfoot{justify-content:center}
+.sheet-foot[hidden]{display:none!important}
+.modal[hidden]{display:none!important}
+.pb2-confirm{
+  width:100%;padding:11px 14px;border-radius:12px;font-weight:900;font-size:clamp(13px,3.6vw,15px);
+  background:linear-gradient(180deg,#8ef06a,#3fc22a);border:2px solid #2ea11c;color:#0d3903;
+  box-shadow:0 3px 0 #2b7a1c;
+}
+.pb2-confirm:active{transform:translateY(2px);box-shadow:0 1px 0 #2b7a1c}
+.pb2-timgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pb2-timgrid button{
+  padding:9px 6px;border-radius:11px;font-weight:900;font-size:clamp(10.5px,2.9vw,12px);
+  background:linear-gradient(180deg,#fff,#eef7dd);border:2px solid #d7e8b0;color:#4b6a2a;
+  display:flex;flex-direction:column;gap:2px;align-items:center;
+}
+.pb2-timgrid button span{font-size:.86em;color:#7d8a63;font-weight:800}
+.pb2-timgrid button.on{background:linear-gradient(180deg,#d9efff,#9ed3ff);border-color:#5aa8dd;color:#14456b}
+.pb2-notimer #timerBar{background:#dff0c8}
+.pb2-notimer #timerFill{background:linear-gradient(90deg,#b6e79a,#7fd24a);transform:scaleX(1)!important}
+.pb2-notimer #timerNum{color:#5b7a34}
+
+/* ---------- 8. 미션 · 복습 모달 ---------- */
+.pb2-mission-list{display:flex;flex-direction:column;gap:7px;margin:2px 0 8px}
+.pb2-mrow{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:12px;
+  background:linear-gradient(180deg,#fff,#f4fbe8);border:1.6px solid #dfecc6}
+.pb2-mrow .mi{font-size:18px;flex:0 0 auto}
+.pb2-mrow .mt{flex:1 1 auto;min-width:0;font-weight:900;font-size:clamp(11px,3vw,13px);color:#33501a}
+.pb2-mrow .mt small{display:block;font-weight:800;font-size:.82em;color:#7d8a63}
+.pb2-mrow .mk{flex:0 0 auto;font-size:15px;font-weight:900}
+.pb2-mrow.done{border-color:#8ed36a;background:linear-gradient(180deg,#f2ffe4,#e2f7c8)}
+.pb2-mrow.done .mk{color:#2ea11c}
+.pb2-mnote{font-size:clamp(10px,2.8vw,11.5px);font-weight:800;color:#6b8547;text-align:center;
+  background:#f4fbe8;border-radius:10px;padding:7px 9px;margin-bottom:8px}
+.pb2-mreward{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:4px}
+.pb2-mreward span{font-size:clamp(10px,2.8vw,11.5px);font-weight:900;color:#7a4a00;
+  background:linear-gradient(180deg,#fff6d2,#ffe9a8);border:1.5px solid #e8c25a;border-radius:999px;padding:2px 9px}
+.pb2-mreward span.off{color:#8a8a7a;background:#f0f0e8;border-color:#d8d8cc}
+
+.pb2-reviewbtn{
+  width:100%;margin-top:8px;padding:10px 12px;border-radius:12px;font-weight:900;
+  font-size:clamp(12px,3.2vw,13.5px);color:#14456b;
+  background:linear-gradient(180deg,#e8f7ff,#c9e9ff);border:2px solid #7cb8e8;
+  box-shadow:0 3px 0 rgba(40,90,140,.35);
+}
+.pb2-reviewbtn:active{transform:translateY(2px);box-shadow:none}
+.pb2-rv{display:flex;flex-direction:column;gap:8px}
+.pb2-rvhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pb2-rvhead b{font-size:clamp(11px,3vw,12.5px);color:#4b7a2a}
+.pb2-rvq{padding:10px 12px;border-radius:12px;background:linear-gradient(180deg,#fffdf0,#fff7dd);
+  border:2px solid #f0cf6a;text-align:center;font-weight:900;font-size:clamp(20px,6vw,30px);
+  color:#2f4a16;line-height:1.25;word-break:keep-all}
+.pb2-rvq .qemoji{font-size:1.05em}
+.pb2-rvchoices{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.pb2-rvchoices button{
+  padding:11px 6px;border-radius:11px;font-weight:900;font-size:clamp(14px,4vw,20px);
+  background:linear-gradient(180deg,#fff,#f3ffe0);border:2px solid #cfe7a2;color:#2f4a16;
+  box-shadow:0 2px 0 rgba(70,120,30,.25);min-height:46px;
+}
+.pb2-rvchoices button.ok{background:linear-gradient(180deg,#b8f79a,#6fdc4d);border-color:#2ea11c;color:#0d3903}
+.pb2-rvchoices button.no{background:linear-gradient(180deg,#ffc9c2,#ff8a80);border-color:#c0342a;color:#5c0f08}
+.pb2-rvchoices button:disabled{opacity:1}
+.pb2-rvmsg{text-align:center;font-weight:900;font-size:clamp(11px,3vw,13px);color:#4b7a2a;min-height:18px}
+.pb2-rvmsg.bad{color:#c0392b}
+.pb2-rvdone{text-align:center;padding:14px 6px}
+.pb2-rvdone .big{font-size:44px;line-height:1}
+.pb2-rvdone h3{margin:6px 0 4px;font-size:clamp(15px,4.2vw,19px);color:#2f4a16}
+.pb2-rvdone p{margin:0 0 8px;font-weight:800;font-size:clamp(11px,3vw,12.5px);color:#5b7a34}
+
+/* ---------- 9. 공격 이펙트 ---------- */
+.pb2-proj{position:fixed;z-index:58;pointer-events:none;width:44px;height:44px;margin:-22px 0 0 -22px;
+  will-change:transform}
+.pb2-proj i{position:absolute;left:50%;top:50%;display:block;will-change:transform,opacity}
+.pb2-proj .core{width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.5))}
+.pb2-proj .tr{width:11px;height:11px;margin:-5.5px 0 0 -5.5px;border-radius:50%;opacity:.85}
+/* 물 */
+.pb2-proj[data-el="water"] .core{background:radial-gradient(circle at 35% 30%,#fff,#4fc3f7 60%,#0277bd);box-shadow:0 0 14px #4fc3f7}
+.pb2-proj[data-el="water"] .tr{background:#8fe4ff;box-shadow:0 0 8px #4fc3f7}
+/* 불꽃 */
+.pb2-proj[data-el="fire"] .core{background:radial-gradient(circle at 40% 40%,#fff8c4,#ffb300 45%,#e63900);box-shadow:0 0 16px #ff6a00}
+.pb2-proj[data-el="fire"] .tr{background:#ff8a3c;box-shadow:0 0 10px #ff4d00}
+/* 전기 */
+.pb2-proj[data-el="elec"] .core{width:26px;height:14px;margin:-7px 0 0 -13px;border-radius:2px;
+  background:#fff58a;box-shadow:0 0 16px #ffe14d;clip-path:polygon(0 40%,36% 40%,44% 0,58% 40%,100% 40%,64% 60%,72% 100%,50% 60%,0 60%)}
+.pb2-proj[data-el="elec"] .tr{background:#fff58a;box-shadow:0 0 8px #ffd000;border-radius:1px}
+/* 얼음 */
+.pb2-proj[data-el="ice"] .core{background:linear-gradient(140deg,#fff,#8fe4ff);border-radius:2px;
+  clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);box-shadow:0 0 14px #b3ecff}
+.pb2-proj[data-el="ice"] .tr{background:#d9f7ff;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}
+/* 풀 */
+.pb2-proj[data-el="grass"] .core{background:linear-gradient(140deg,#d9f78a,#4caf50);border-radius:2px 60% 2px 60%;
+  box-shadow:0 0 12px #7cd94a}
+.pb2-proj[data-el="grass"] .tr{background:#a8e06a;border-radius:2px 60% 2px 60%}
+/* 에스퍼 */
+.pb2-proj[data-el="psychic"] .core{background:radial-gradient(circle,#fff,#f7a8ff 55%,#c04de0);box-shadow:0 0 18px #e28bff}
+.pb2-proj[data-el="psychic"] .tr{border:2px solid #f0b6ff;width:14px;height:14px;margin:-7px 0 0 -7px;background:transparent}
+/* 고스트·악 */
+.pb2-proj[data-el="ghost"] .core{background:radial-gradient(circle,#e3c0ff,#7b2fff 60%,#2a0a4a);box-shadow:0 0 16px #9a5cff}
+.pb2-proj[data-el="dark"] .core{background:radial-gradient(circle,#a88bff,#3a1060 60%,#12021f);box-shadow:0 0 16px #6a2fbf}
+/* 바위·땅 */
+.pb2-proj[data-el="rock"] .core{background:linear-gradient(140deg,#e6cfa0,#8b5620);border-radius:4px;
+  clip-path:polygon(20% 0,80% 10%,100% 60%,60% 100%,10% 80%,0 30%);box-shadow:0 0 10px #c9924a}
+.pb2-proj[data-el="ground"] .core{background:radial-gradient(circle,#f3dcaa,#b07f2f);box-shadow:0 0 10px #d9a45c}
+/* 비행 */
+.pb2-proj[data-el="flying"] .core{background:radial-gradient(circle,#fff,#cfe9ff);border-radius:2px 60% 2px 60%;box-shadow:0 0 14px #a9e4ff}
+/* 페어리 */
+.pb2-proj[data-el="fairy"] .core{background:radial-gradient(circle,#fff,#ffb3d9 55%,#ff5fa2);box-shadow:0 0 16px #ff9ad0}
+.pb2-proj[data-el="fairy"] .tr{background:#ffd1e8;box-shadow:0 0 8px #ff9ad0}
+/* 드래곤 */
+.pb2-proj[data-el="dragon"] .core{width:30px;height:12px;margin:-6px 0 0 -15px;border-radius:999px;
+  background:linear-gradient(90deg,#ffe6ff,#b03cff 60%,#4a0a8f);box-shadow:0 0 18px #b03cff}
+/* 강철 */
+.pb2-proj[data-el="steel"] .core{background:linear-gradient(140deg,#fff,#b8c4d4 55%,#5d6b80);border-radius:2px;
+  clip-path:polygon(0 30%,70% 0,100% 50%,70% 100%,0 70%);box-shadow:0 0 12px #cfd9e6}
+/* 격투 */
+.pb2-proj[data-el="fight"] .core{background:radial-gradient(circle,#ffe0c2,#e5493a 55%,#7a1a10);box-shadow:0 0 14px #ff6a4d}
+/* 노말·벌레·독 */
+.pb2-proj[data-el="normal"] .core{background:radial-gradient(circle,#fff,#ffe9a8);box-shadow:0 0 12px #ffe9a8;
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.pb2-proj[data-el="bug"] .core{background:radial-gradient(circle,#e9ffb0,#8bc34a);box-shadow:0 0 10px #a8e06a}
+.pb2-proj[data-el="poison"] .core{background:radial-gradient(circle,#f0c0ff,#a040a0 60%,#4a0a4a);box-shadow:0 0 12px #c86bd4}
+
+/* ---------- 10. 좁은 화면 ---------- */
+@media (max-width:430px){
+  .pb2-partner{left:clamp(26px,7.5vw,52px);bottom:4%;width:clamp(112px,14.5vh,124px)}
+  .pb2-banner{top:13%;padding:4px 11px}
+  .pb2-evo .pb2-ring{width:56%;margin:-28% 0 0 -28%}
+}
+@media (orientation:landscape) and (max-height:520px){
+  .pb2-partner{width:clamp(72px,25vh,112px);bottom:1%}
+  .pb2-banner{top:10%}
+}
+@media (prefers-reduced-motion:reduce){
+  .pb2-bg .pb2-mote{display:none}
+  .pb2-partner img{animation:none}
+}
+
+/* ============================================================
+   3탄 — 💥 타입 상성 배너 · 👑 주말 보스 · 🏅 등급 승급
+   ============================================================ */
+.pb2-banner[data-kind="super"]{border-color:#ffb3a0;
+  background:linear-gradient(180deg,rgba(150,20,20,.96),rgba(80,6,6,.96));
+  box-shadow:0 6px 22px rgba(0,0,0,.45),inset 0 0 20px rgba(255,120,80,.65)}
+.pb2-banner[data-kind="super"] b{background:linear-gradient(180deg,#fff,#ffd9d0 55%,#ff8a5c);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+.pb2-banner[data-kind="boss"]{border-color:#ffe58a;top:15%;
+  background:linear-gradient(180deg,rgba(60,24,0,.97),rgba(28,10,0,.97));
+  box-shadow:0 8px 26px rgba(0,0,0,.5),inset 0 0 24px rgba(255,205,80,.7);
+  animation:pb3bossbanner .7s cubic-bezier(.2,1.6,.4,1) both}
+.pb2-banner[data-kind="boss"] b{background:linear-gradient(180deg,#fffdf0,#ffe066 55%,#d99a00);
+  -webkit-background-clip:text;background-clip:text;color:transparent}
+@keyframes pb3bossbanner{0%{opacity:0;transform:translate(-50%,-18px) scale(.7) rotate(-3deg)}
+  60%{opacity:1;transform:translate(-50%,0) scale(1.06) rotate(1deg)}
+  100%{opacity:1;transform:translate(-50%,0) scale(1) rotate(0)}}
+
+/* 보스 뱃지 칩 */
+.pb3-bosschip{position:absolute;top:6px;right:6px;z-index:9;
+  display:flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;
+  background:rgba(30,18,6,.72);border:1.5px solid #e8c25a;color:#ffe9a8;
+  font-size:clamp(8px,2.3vw,10.5px);font-weight:900;letter-spacing:-.02em;
+  box-shadow:0 3px 10px rgba(0,0,0,.3);backdrop-filter:blur(2px)}
+.pb3-bosschip[hidden]{display:none}
+.pb3-bosschip b{font-size:1.15em}
+.pb3-bosschip.live{background:linear-gradient(180deg,#4a2a00,#2a1500);border-color:#ffd24d;
+  animation:pb3chip 1.8s ease-in-out infinite}
+@keyframes pb3chip{0%,100%{box-shadow:0 0 0 0 rgba(255,210,77,.5)}50%{box-shadow:0 0 0 6px rgba(255,210,77,0)}}
+
+/* 보스 등장 시 스테이지 어둡게 + 금빛 오라 */
+.pb3-boss::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:radial-gradient(120% 70% at 50% 45%,transparent 40%,rgba(20,8,0,.42) 100%);
+  animation:pb3bossaura 3.4s ease-in-out infinite}
+@keyframes pb3bossaura{0%,100%{opacity:.55}50%{opacity:.85}}
+
+/* 등급 승급 오버레이 */
+.pb3-rankup{position:fixed;inset:0;z-index:75;display:grid;place-items:center;
+  background:radial-gradient(60% 50% at 50% 50%,rgba(20,10,40,.55),rgba(10,6,20,.78));
+  pointer-events:none}
+.pb3-rankup[hidden]{display:none}
+.pb3-rankup .ru-in{position:relative;width:min(88%,420px);padding:16px 14px 18px;text-align:center;
+  border-radius:20px;border:3px solid #ffe58a;
+  background:linear-gradient(180deg,rgba(48,26,80,.94),rgba(22,12,40,.96));
+  box-shadow:0 18px 46px rgba(0,0,0,.5),inset 0 0 26px rgba(255,214,110,.35);
+  transform:scale(.6);opacity:0}
+.pb3-rankup.play .ru-in{animation:pb3ruin 3.6s cubic-bezier(.2,1.4,.3,1) forwards}
+@keyframes pb3ruin{0%{transform:scale(.55) rotate(-4deg);opacity:0}
+  12%{transform:scale(1.06) rotate(1deg);opacity:1}
+  20%{transform:scale(1) rotate(0)}
+  88%{transform:scale(1);opacity:1}
+  100%{transform:scale(1.02);opacity:0}}
+.pb3-rankup .ru-k{font-size:clamp(10px,2.8vw,12px);font-weight:900;color:#ffe9a8;letter-spacing:.06em}
+.pb3-rankup .ru-row{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;
+  margin-top:8px;font-weight:900;letter-spacing:-.03em}
+.pb3-rankup .ru-from{font-size:clamp(15px,4.6vw,22px);color:#cbb6ff;
+  text-decoration:line-through;text-decoration-color:rgba(255,255,255,.35)}
+.pb3-rankup .ru-flash{font-size:clamp(18px,5vw,26px);animation:pb3flash 1.1s ease-in-out infinite}
+@keyframes pb3flash{0%,100%{opacity:.35;transform:scale(.8)}50%{opacity:1;transform:scale(1.25)}}
+.pb3-rankup .ru-to{font-size:clamp(18px,5.4vw,28px);
+  background:linear-gradient(180deg,#fffdf0,#ffe066 45%,#ff9f1c);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 3px 0 rgba(90,50,0,.55))}
+.pb3-rankup .ru-spark{position:absolute;inset:-10%;pointer-events:none}
+.pb3-rankup .ru-spark i{position:absolute;width:9px;height:9px;border-radius:50%;
+  background:radial-gradient(circle,#fff,#ffd75e 60%,transparent 70%);
+  left:50%;top:50%;opacity:0;animation:pb3spark 1.6s ease-out infinite}
+.pb3-rankup .ru-spark i:nth-child(1){--dx:-90px;--dy:-46px;animation-delay:.05s}
+.pb3-rankup .ru-spark i:nth-child(2){--dx:82px;--dy:-58px;animation-delay:.18s}
+.pb3-rankup .ru-spark i:nth-child(3){--dx:-64px;--dy:48px;animation-delay:.3s}
+.pb3-rankup .ru-spark i:nth-child(4){--dx:96px;--dy:34px;animation-delay:.42s}
+.pb3-rankup .ru-spark i:nth-child(5){--dx:-16px;--dy:-72px;animation-delay:.54s}
+.pb3-rankup .ru-spark i:nth-child(6){--dx:24px;--dy:72px;animation-delay:.66s}
+.pb3-rankup .ru-spark i:nth-child(7){--dx:-108px;--dy:6px;animation-delay:.78s}
+.pb3-rankup .ru-spark i:nth-child(8){--dx:110px;--dy:-2px;animation-delay:.9s}
+@keyframes pb3spark{0%{transform:translate(0,0) scale(.4);opacity:0}
+  25%{opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.15);opacity:0}}
+
+@media (prefers-reduced-motion:reduce){
+  .pb3-boss::after,.pb3-bosschip.live,.pb3-rankup .ru-flash{animation:none}
+}
+
+/* ============================================================
+   3탄 안전장치 — 가족 PIN 확인 (도감 초기화 · 카드 삭제)
+   ============================================================ */
+.pb3-pin{position:fixed;inset:0;z-index:90;display:grid;place-items:center;padding:16px;
+  background:rgba(12,36,6,.58);backdrop-filter:blur(3px);
+  font-family:"Apple SD Gothic Neo","Noto Sans KR",system-ui,-apple-system,"Segoe UI",sans-serif}
+.pb3-pin[hidden]{display:none}
+.pb3-pin .pin-card{width:min(336px,100%);padding:14px 14px 12px;text-align:center;border-radius:22px;
+  background:linear-gradient(180deg,#fffdf3,#f2ffe0);border:3px solid #cfe6a6;
+  box-shadow:0 18px 40px rgba(10,40,4,.45),inset 0 1px 0 #fff;
+  animation:pb3pinin .24s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes pb3pinin{from{transform:translateY(12px) scale(.95);opacity:0}to{transform:none;opacity:1}}
+.pb3-pin .pin-head{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.pb3-pin .pin-head b{flex:1 1 auto;min-width:0;font-size:clamp(13px,3.7vw,16px);letter-spacing:-.03em;
+  color:#22400f;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb3-pin .pin-x{flex:0 0 26px;width:26px;height:26px;border-radius:50%;border:1.5px solid #cfe6a6;
+  background:#f1f9e2;color:#5c7a34;font-weight:900;font-size:12px}
+.pb3-pin .pin-desc{margin:2px 0 8px;text-align:left;font-size:clamp(10px,2.8vw,12px);font-weight:800;
+  color:#5c7a34;line-height:1.55;word-break:keep-all}
+.pb3-pin .pin-dots{display:flex;justify-content:center;gap:11px;margin:4px 0 2px}
+.pb3-pin .pin-dots i{width:13px;height:13px;border-radius:50%;background:#e9f3d8;border:2px solid #cfe6a6;
+  transition:.12s}
+.pb3-pin .pin-dots i.on{background:linear-gradient(180deg,#8ef06a,#3fc22a);border-color:#2ea11c;transform:scale(1.1)}
+.pb3-pin .pin-msg{min-height:15px;margin:2px 0 6px;font-size:clamp(9.5px,2.7vw,11px);font-weight:900;color:#6b8547}
+.pb3-pin .pin-msg.bad{color:#c0392b}
+.pb3-pin .pin-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pb3-pin .pin-pad button{height:clamp(42px,11.5vw,52px);border-radius:14px;font-weight:900;
+  font-size:clamp(16px,4.8vw,20px);color:#2f4a16;background:linear-gradient(180deg,#fff,#eaf8d0);
+  border:2.5px solid #cfe7a2;box-shadow:0 3px 0 rgba(70,120,30,.3);transition:transform .06s}
+.pb3-pin .pin-pad button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(70,120,30,.3)}
+.pb3-pin .pin-pad button.wide{font-size:clamp(12px,3.4vw,15px);color:#5c7a34;
+  background:linear-gradient(180deg,#fff,#f4f4e8);border-color:#dcdcd0}
+.pb3-pin .pin-pad button.blank{visibility:hidden}
+
+/* ============================================================
+   4탄: 공정 횟수 잠금 — 아빠 PIN(0623) 관리
+   몫을 다 채운 친구에게 배틀 화면 위로 올라오는 잠금 오버레이
+   ============================================================ */
+#pkmQuota{position:fixed;inset:0;z-index:86;display:grid;place-items:center;padding:14px;
+  background:rgba(10,30,4,.6);backdrop-filter:blur(3px);
+  font-family:"Apple SD Gothic Neo","Noto Sans KR",system-ui,-apple-system,"Segoe UI",sans-serif;
+  overscroll-behavior:contain}
+#pkmQuota[hidden]{display:none}
+#pkmQuota .pkq-sheet{position:relative;width:min(340px,100%);max-height:88dvh;overflow:auto;
+  padding:15px 14px 12px;text-align:center;border-radius:24px;
+  background:linear-gradient(180deg,#fffdf3,#f2ffe0);border:3px solid #cfe6a6;
+  box-shadow:0 18px 44px rgba(8,30,2,.5),inset 0 1px 0 #fff;
+  animation:pkqin .26s cubic-bezier(.2,1.5,.4,1) both;-webkit-overflow-scrolling:touch}
+@keyframes pkqin{from{transform:translateY(14px) scale(.94);opacity:0}to{transform:none;opacity:1}}
+#pkmQuota .pkq-badge{font-size:30px;line-height:1;filter:drop-shadow(0 3px 4px rgba(20,60,10,.28))}
+#pkmQuota h2{margin:6px 0 2px;font-size:clamp(15px,4.4vw,18px);font-weight:900;letter-spacing:-.03em;color:#22400f;line-height:1.3;word-break:keep-all}
+#pkmQuota .pkq-sub{margin:0 0 10px;font-size:clamp(11px,3vw,12.5px);font-weight:900;color:#5c7a34;letter-spacing:-.01em;word-break:keep-all}
+#pkmQuota .pkq-rows{display:grid;gap:6px;margin:0 0 11px}
+#pkmQuota .pkq-row{display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:12px;
+  background:#f4fbe8;border:1.6px solid #e2eecd;font-size:clamp(10.5px,2.9vw,12px);font-weight:900}
+#pkmQuota .pkq-row.me{background:linear-gradient(180deg,#fff8db,#fdf0b8);border-color:#ecd07a}
+#pkmQuota .pkq-row.done{background:#eef2e6;border-color:#dde5d0;color:#7d8a63}
+#pkmQuota .pkq-row .who{flex:0 0 auto;color:#33501a}
+#pkmQuota .pkq-row .cnt{flex:1 1 auto;text-align:right;font-variant-numeric:tabular-nums;color:#22400f}
+#pkmQuota .pkq-row .st{flex:0 0 auto;font-size:.9em;color:#7a4a00}
+#pkmQuota .pkq-note{margin:2px 0 0;font-size:clamp(9.5px,2.6vw,10.5px);font-weight:900;color:#93a87a}
+#pkmQuota .pkq-acts{display:grid;gap:7px}
+#pkmQuota .pkq-acts[hidden]{display:none}
+#pkmQuota .pkq-main,#pkmQuota .pkq-pin,#pkmQuota .pkq-home,#pkmQuota .pkq-adm{
+  display:block;width:100%;padding:11px 12px;border-radius:14px;font-weight:900;
+  font-size:clamp(12px,3.2vw,13.5px);letter-spacing:-.02em;text-decoration:none;
+  border:2.5px solid #cfe7a2;background:linear-gradient(180deg,#fff,#eaf8d0);color:#2f4a16;
+  box-shadow:0 3px 0 rgba(70,120,30,.28);transition:transform .06s}
+#pkmQuota .pkq-main{background:linear-gradient(180deg,#8ce86a,#3fbe2c);color:#10340a;border-color:#2ea11c;
+  box-shadow:0 3px 0 rgba(30,90,10,.35)}
+#pkmQuota .pkq-pin{background:linear-gradient(180deg,#fff8db,#ffe9a8);color:#6a3f00;border-color:#e8c25a;
+  box-shadow:0 3px 0 rgba(150,100,10,.28)}
+#pkmQuota .pkq-home{background:linear-gradient(180deg,#fff,#f4f4e8);color:#5c7a34;border-color:#dcdcd0;
+  box-shadow:0 3px 0 rgba(120,120,100,.18);font-size:clamp(11px,3vw,12.5px)}
+#pkmQuota .pkq-main:active,#pkmQuota .pkq-pin:active,#pkmQuota .pkq-home:active,#pkmQuota .pkq-adm:active{
+  transform:translateY(2px);box-shadow:none}
+#pkmQuota .pkq-admin{display:grid;gap:7px;margin-top:2px}
+#pkmQuota .pkq-admin[hidden]{display:none}
+#pkmQuota .pkq-adminh{margin:0 0 2px;font-size:clamp(10.5px,2.9vw,12px);font-weight:900;color:#7a4a00}
+#pkmQuota .pkq-adm{background:linear-gradient(180deg,#fff,#eef7ff);border-color:#a8c6f0;color:#1d3f6b;
+  box-shadow:0 3px 0 rgba(30,80,150,.2)}
+@media (prefers-reduced-motion:reduce){#pkmQuota .pkq-sheet{animation:none}}
+
+/* ============================================================
+   5탄 레이아웃 보정 (2026-11-15)
+   · 태블릿·폴드8(가로/세로)·일반폰에서 오른쪽 잘림 0
+   · 왼쪽 버튼 레일(도감·힌트·도망간다)과 내 파트너 겹침 0
+   · 내 파트너·야생 포켓몬을 조금 더 큼직하게(앞/뒤 원근 비율 유지)
+   ============================================================ */
+:root{
+  --pb2-rail-w:clamp(78px,19vw,124px);   /* #menu 폭과 같은 값 */
+}
+
+/* 1) #app 의 그리드 트랙이 내용 min-content 에 끌려 화면 밖으로 밀리던 문제 */
+#app{grid-template-columns:minmax(0,1fr);max-width:100%;width:100%}
+#app>*{min-width:0;max-width:100%}
+
+/* 2) 상단바 — 오른쪽 아이콘(🔊)이 잘리지 않게 */
+#app .profilebar{flex-wrap:nowrap;overflow:hidden;gap:5px}
+#app .profilebar .pchip{flex:0 1 auto;min-width:0}
+#app .profilebar .pstat{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#app .profilebar .icobtn{flex:0 0 auto}
+
+/* 3) HUD — 야생 Lv·타입 배지가 오른쪽에서 넘치지 않게 */
+#app .hud{flex-wrap:nowrap;overflow:hidden}
+#app .hud .pcard{min-width:0}
+#app .hud .pcard .top{min-width:0;flex-wrap:nowrap;overflow:hidden}
+#app .hud .pcard .nm{flex:0 1 auto;min-width:0}
+#app .hud .pcard .lv{flex:0 0 auto;margin-left:auto}
+#app .hud .tyb{flex:0 1 auto;min-width:0;overflow:hidden}
+
+/* 4) 문제 카드 — 오른쪽 0/5 잘림 방지 */
+#app .controls{min-width:0}
+#app .qhead{min-width:0}
+#app .qtext{min-width:0;flex:1 1 0}
+#app .qcount{flex:0 0 auto}
+#app .choices{min-width:0}
+#app .choice{min-width:0;overflow:hidden}
+#app .choice .v{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* 5) 왼쪽 버튼 레일 바깥으로 내 파트너를 옮긴다(모든 폭에서 겹침 0) */
+.pb2-partner{
+  left:calc(8px + var(--pb2-rail-w) + 18px);
+  bottom:5%;
+  width:clamp(124px,17.5vh,148px);
+}
+/* 태블릿·폴드8 펼침: 한층 더 크게 */
+@media (min-width:700px),(min-height:900px){
+  .pb2-partner{left:calc(8px + var(--pb2-rail-w) + 22px);bottom:5%;width:clamp(178px,20vh,212px)}
+}
+/* 좁은 폰: 레일 옆에 붙이되 겹치지 않게 */
+@media (max-width:470px){
+  .pb2-partner{left:calc(8px + var(--pb2-rail-w) + 14px);bottom:4%;width:clamp(122px,16vh,140px)}
+}
+/* 6) 야생 포켓몬도 조금 더 크게 — 뒤쪽 원근 비율(scale .88)은 그대로 */
+.stage .wildzone{
+  right:clamp(10px,4vw,44px);top:40%;
+  width:min(clamp(122px,21vh,208px),31vw);
+  transform:translateY(-50%) scale(.88);
+  transform-origin:50% 60%;
+}
+@media (max-height:700px){ .stage .wildzone{top:41%} }
+@media (orientation:landscape) and (max-height:560px){
+  .stage .wildzone{top:44%;right:clamp(8px,3vw,30px);width:min(clamp(104px,25vh,182px),34vw);transform:translateY(-50%) scale(.86)}
+  .pb2-partner{width:clamp(120px,26vh,150px)}
+}
+
+/* 6-b) 넓은 무대(가로 800px~): 양 끝에 붙어 가운데가 휑하던 구도 →
+   파트너·야생을 같은 식으로 안쪽에서 당겨 서로 마주 보게 한다(좌우 대칭 유지).
+   ~800px 에서는 레일 옆자리(min)가 그대로 쓰이고, 넓어질수록 안쪽으로 들어온다. */
+@media (min-width:800px){
+  .pb2-partner{left:clamp(calc(8px + var(--pb2-rail-w) + 22px), calc(44% - 220px), 46%)}
+  .stage .wildzone{right:clamp(24px, calc(44% - 220px), 46%)}
+}
+/* 6-c) 좁은 세로 화면(폰): 파트너를 왼쪽 메뉴 열에 붙여 몬스터볼과 겹침 0,
+   안내 문구는 파트너 머리 위로 올려 글자가 가려지지 않게. */
+@media (max-width:599px) and (orientation:portrait){
+  .pb2-partner{left:8px}
+  #stage .hint{bottom:calc(6% + 156px)}
+}
+
+/* 7) 낮은 화면(폴드8 가로·태블릿 가로)에서 보기 4개가 한 화면에 들어오게 */
+@media (max-height:820px){
+  #app{grid-template-rows:auto auto auto minmax(0,1fr) auto}
+  #app .profilebar{padding:3px 8px 4px}
+  #app .hud{padding:2px 8px 3px;gap:5px}
+  #app .hud .pcard{padding:3px 7px 4px;gap:2px}
+  #app .hud .diffrow button{padding:1px 2px;font-size:clamp(8.5px,2.2vw,10.5px);line-height:1.35}
+  #app .hud .hp i{height:6px}
+  #app .timerstrip{padding:0 8px 2px}
+  #app .timerbar{height:11px}
+  #app .controls{padding:4px 9px calc(5px + env(safe-area-inset-bottom));gap:4px}
+  #app .controls .qtext{font-size:clamp(19px,5.4vw,34px)}
+  #app .controls .choice{min-height:clamp(42px,7.4vh,62px);font-size:clamp(18px,4.6vw,28px)}
+  #app .stage{min-height:64px}
+}
+@media (max-height:680px){
+  #app .profilebar .icobtn{width:30px !important;height:28px !important;font-size:13px !important}
+  #app .hud .pcard .nm{font-size:clamp(12px,3.2vw,16px)}
+  #app .controls .qtext{font-size:clamp(17px,4.8vw,28px)}
+  #app .controls .choice{min-height:40px}
+}
+
+/* ============================================================
+   10. 생성 일러스트 배경 — 타입별 배틀 무대
+   ─ /art/*.webp 를 받아 두고 성공한 뒤에만 [data-art] 가 붙는다(pokemon-art.js).
+     그림이 없거나 실패하면 위의 CSS 그라데이션 풍경이 그대로 폴백으로 남는다.
+   ============================================================ */
+.pb2-bg{background-repeat:no-repeat;background-size:cover;background-position:50% 56%}
+.pb2-bg[data-theme="forest"]{background-image:url("./art/battle-forest.webp")}
+.pb2-bg[data-theme="lake"]{background-image:url("./art/battle-lake.webp")}
+.pb2-bg[data-theme="volcano"]{background-image:url("./art/battle-volcano.webp")}
+.pb2-bg[data-theme="power"]{background-image:url("./art/battle-night.webp")}
+.pb2-bg[data-theme="ruins"]{background-image:url("./art/battle-ruins.webp")}
+.pb2-bg[data-theme="canyon"]{background-image:url("./art/battle-canyon.webp")}
+.pb2-bg[data-theme="sky"]{background-image:url("./art/battle-sky.webp")}
+/* 그림이 뜨면 위에 덮여 있던 CSS 풍경층(하늘·산·물결)은 끈다 */
+.pb2-bg[data-art] .pb2-sky{background:none !important}
+.pb2-bg[data-art] .pb2-far,
+.pb2-bg[data-art] .pb2-mid{display:none}
+.pb2-bg[data-art] .pb2-ground{height:34%;
+  background:linear-gradient(180deg,transparent 44%,rgba(10,26,8,.42) 100%)}
+/* 소프트 비네팅 + 위쪽 빛 — 포켓몬·글자가 배경에 묻히지 않게 */
+.pb2-bg[data-art]::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(118% 92% at 50% 40%,transparent 44%,rgba(8,20,6,.30) 100%),
+    linear-gradient(180deg,rgba(255,255,255,.14),transparent 22%)}
+/* 그림 위에서 파트너 발판은 은은하게만 (그림 속 땅과 어우러지도록) */
+.stage:has(.pb2-bg[data-art]) .pb2-partner::before{opacity:.55;
+  box-shadow:0 0 0 2px rgba(255,255,255,.22),0 7px 16px rgba(20,60,10,.18)}
+.stage:has(.pb2-bg[data-art]) .pb2-partner::after{opacity:.7}
+.stage:has(.pb2-bg[data-art]) .hint{background:rgba(10,26,20,.5)}
+
+/* ============================================================
+   11. ✨ 타격 · 포획 이펙트 강화
+   ============================================================ */
+/* 파티클(점·별) */
+.pb2-pt{position:fixed;left:0;top:0;z-index:61;pointer-events:none;border-radius:50%;
+  will-change:transform,opacity;mix-blend-mode:screen}
+.pb2-pt.star{border-radius:0;mix-blend-mode:normal;
+  clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)}
+/* 충격파 링 */
+.pb2-ring{position:fixed;left:0;top:0;z-index:60;pointer-events:none;border-radius:50%;
+  border-style:solid;background:none;will-change:transform,opacity;mix-blend-mode:screen;
+  box-shadow:0 0 16px currentColor,inset 0 0 12px currentColor}
+/* 명중 섬광 */
+.pb2-spark{position:fixed;left:0;top:0;z-index:60;pointer-events:none;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(255,255,255,.95),rgba(255,246,190,.5) 42%,rgba(255,220,120,0) 72%);
+  will-change:transform,opacity;mix-blend-mode:screen}
+/* 데미지 -1 팝업 */
+.pb2-dmg{position:fixed;z-index:63;pointer-events:none;font-weight:900;letter-spacing:-.02em;
+  color:#fff;font-size:clamp(22px,6vw,40px);transform:translate(-50%,-50%);
+  -webkit-text-stroke:0.08em rgba(40,12,0,.6);
+  text-shadow:0 3px 9px rgba(0,0,0,.5),0 0 16px rgba(255,220,120,.75);
+  animation:pb2dmg .95s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes pb2dmg{
+  0%{opacity:0;transform:translate(-50%,-34%) scale(.35) rotate(-9deg)}
+  20%{opacity:1;transform:translate(-50%,-62%) scale(1.2) rotate(3deg)}
+  44%{transform:translate(-50%,-70%) scale(1) rotate(0)}
+  100%{opacity:0;transform:translate(-50%,-132%) scale(.9)}}
+.pb2-dmg.hurt{color:#ffd6c8;-webkit-text-stroke:0.08em rgba(70,0,0,.6);
+  text-shadow:0 3px 9px rgba(0,0,0,.55),0 0 16px rgba(255,120,80,.8)}
+/* 효과 굉장했다! 띠 */
+.pb2-strong{position:fixed;z-index:64;pointer-events:none;transform:translate(-50%,-50%);
+  font-weight:900;font-size:clamp(11px,3.2vw,17px);white-space:nowrap;color:#fff;letter-spacing:-.02em;
+  padding:3px 12px;border-radius:999px;border:2px solid #fff6d6;
+  background:linear-gradient(180deg,#ff9a3c,#e6331a);
+  box-shadow:0 4px 14px rgba(120,20,0,.5),0 0 22px rgba(255,180,60,.75);
+  animation:pb2strong 1.2s cubic-bezier(.2,1.5,.4,1) forwards}
+@keyframes pb2strong{
+  0%{opacity:0;transform:translate(-50%,-26%) scale(.5)}
+  16%{opacity:1;transform:translate(-50%,-50%) scale(1.14)}
+  30%{transform:translate(-50%,-50%) scale(1)}
+  76%{opacity:1}
+  100%{opacity:0;transform:translate(-50%,-80%) scale(.95)}}
+/* 피격 —더 세게 흔들리고 눌렸다 튀어오른다 */
+.wildwrap.pb2-impact{animation:pb2impact .64s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes pb2impact{
+  0%{filter:brightness(4.2) saturate(0);transform:translate(0,0) scale(1.07)}
+  10%{filter:brightness(1.1) saturate(.5);transform:translate(-9px,4px) scale(.94,1.06)}
+  22%{filter:brightness(3.2) saturate(.1);transform:translate(9px,-3px) scale(1.05,.95)}
+  36%{filter:none;transform:translate(-7px,2px) scale(.99,1.01)}
+  52%{transform:translate(6px,-1px)}
+  68%{transform:translate(-3px,1px)}
+  100%{filter:none;transform:none}}
+/* 화면 흔들림(강화) — 정답 타격 · 포획 성공 순간 */
+.pb2-quake{animation:pb2quake .52s cubic-bezier(.36,.07,.19,.97) both}
+@keyframes pb2quake{
+  0%{transform:translate(0,0)}
+  12%{transform:translate(-5px,3px) rotate(-.25deg)}
+  26%{transform:translate(6px,-4px) rotate(.3deg)}
+  42%{transform:translate(-4px,2px) rotate(-.16deg)}
+  58%{transform:translate(3px,-1px)}
+  74%{transform:translate(-2px,1px)}
+  100%{transform:none}}
+/* 포획 성공 — 황금 별빛 폭발 */
+.pb2-catchburst{position:fixed;left:0;top:0;z-index:62;pointer-events:none;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(255,255,255,.98),rgba(255,236,140,.7) 38%,rgba(255,180,60,0) 72%);
+  will-change:transform,opacity;mix-blend-mode:screen}
+
+/* 그림 배경과 어울리게 — 무대의 옛 장식(나무·풀잎)은 끄고 안내 띠는 알약 모양으로 */
+.stage:has(.pb2-bg[data-art]) .trees,
+.stage:has(.pb2-bg[data-art]) .blade{opacity:0;transition:opacity .5s}
+.stage:has(.pb2-bg[data-art]) .grass{opacity:.16;transition:opacity .5s}
+.stage:has(.pb2-bg[data-art]) .hint{
+  left:50%;right:auto;transform:translateX(-50%);width:max-content;max-width:86%;
+  padding:2px 11px;border-radius:999px;color:#fff;font-weight:900;font-size:clamp(9.5px,2.6vw,12px);
+  background:rgba(14,30,26,.55);text-shadow:0 1px 2px rgba(0,0,0,.55);
+  -webkit-backdrop-filter:blur(1.5px);backdrop-filter:blur(1.5px)}
+.stage:has(.pb2-bg[data-art]) .wildzone .halo{opacity:.55}
+
+/* ---------- 6-3. 🎫 위시 소환권 (도감 10마리마다 1장) ---------- */
+.mbtn.pb2-dim{opacity:.6}
+#pb2TicketBtn .badge{background:#e08a12}
+.pb2-sumrow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:2px 0 4px}
+.pb2-sumin{flex:1 1 140px;min-width:0;padding:8px 11px;border-radius:10px;
+  border:2px solid #dbe8c2;background:#fff;font-weight:800;color:#33501a;
+  font-size:clamp(11px,3vw,13px);font-family:inherit}
+.pb2-sumin:focus{outline:none;border-color:#8ec63f;box-shadow:0 0 0 3px rgba(142,198,63,.18)}
+.pb2-sumsel{flex:0 1 auto;padding:7px 8px;border-radius:10px;border:2px solid #dbe8c2;
+  background:#fff;font-weight:800;color:#33501a;font-size:clamp(10.5px,2.8vw,12px);font-family:inherit}
+.pb2-sumnote{font-size:clamp(10px,2.7vw,11.5px);font-weight:800;color:#6b8547;text-align:center;margin:0 0 4px}
+.pb2-sumgrid{max-height:38dvh}
+.pb2-sumempty{grid-column:1/-1;text-align:center;padding:18px 8px;font-weight:800;
+  color:#8a9a6a;font-size:clamp(10.5px,2.8vw,12px)}
+.pb2-confirm:disabled,.pb2-confirm.off{opacity:.5;filter:grayscale(.35);box-shadow:none}
+
+/* ---------- 7. 🔁 오답 복습 배지 · 출전 화면 복습 개수 ---------- */
+/* 문제 머리의 태그 자리를 잠깐 '🔁 복습!' 으로 바꿔 쓴다(폭 변화 없음) */
+.qhead .tag.pb2-rvtag{background:linear-gradient(180deg,#ffd76e,#ffb733);color:#7a3d00;
+  box-shadow:0 1px 0 rgba(0,0,0,.12);animation:pb2rvt 1.1s ease-in-out infinite alternate}
+@keyframes pb2rvt{from{transform:scale(1)}to{transform:scale(1.06)}}
+@media (prefers-reduced-motion:reduce){.qhead .tag.pb2-rvtag{animation:none}}
+/* 출전 준비 줄 — 복습 개수 (아주 작은 칩) */
+.pb2-rvpq{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;
+  background:#fff1cf;border:1.5px solid #f0c979;border-radius:999px;
+  padding:1px 7px;font-weight:900;color:#8a5300}

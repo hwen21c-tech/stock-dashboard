@@ -1,0 +1,3665 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<title>나만의 포켓몬 마을 — 배틀 월드 3탄</title>
+<meta name="theme-color" content="#5cc235">
+<meta name="description" content="잡은 포켓몬과 꾸미기 아이템으로 만드는 나만의 포켓몬 마을">
+<link rel="icon" type="image/svg+xml" href="./pokemon-battle-icon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="./pokemon-battle-icon-180.png">
+<link rel="manifest" href="./manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<script src="./pokemon-lock.js"></script>
+<script src="./pokemon-3rd.js"></script>
+<script src="./pokemon-art.js"></script>
+<script src="./pokemon-props.js"></script>
+<style>
+  :root{
+    --ink:#22400f; --line:#cfe6a6; --card:#fffdf3;
+    --grass1:#d9f7b0; --grass2:#a8e86b; --grass3:#57bd2f;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0;font-family:"Apple SD Gothic Neo","Noto Sans KR",system-ui,-apple-system,"Segoe UI",sans-serif;
+    color:var(--ink);overflow-x:hidden;
+    background:linear-gradient(180deg,#bff0ff 0%,#d8f7ff 18%,#e9ffcf 40%,var(--grass2) 100%);
+    min-height:100dvh;
+  }
+  button{font-family:inherit;color:inherit;cursor:pointer}
+
+  /* ---------- 상단 ---------- */
+  .vhead{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:7px;
+    padding:calc(8px + env(safe-area-inset-top)) 10px 7px;
+    background:rgba(255,255,255,.86);border-bottom:2px solid rgba(160,210,120,.7);backdrop-filter:blur(6px)}
+  .vhead h1{margin:0;font-size:clamp(13.5px,3.9vw,18px);letter-spacing:-.03em;flex:1 1 auto;min-width:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .back{flex:0 0 auto;display:flex;align-items:center;gap:4px;padding:6px 10px;border-radius:999px;text-decoration:none;
+    font-size:clamp(10px,2.8vw,12px);font-weight:900;color:#2f4a16;background:#fff;border:2px solid var(--line);
+    box-shadow:0 2px 0 rgba(60,110,30,.18)}
+  .icob{flex:0 0 auto;width:32px;height:30px;border-radius:9px;border:2px solid var(--line);background:#fff;font-size:14px}
+
+  .vbar{display:flex;align-items:center;gap:5px;padding:7px 10px 0;flex-wrap:wrap}
+  .slots{display:flex;gap:4px;flex:1 1 auto;min-width:0}
+  .slots button{padding:4px 9px;border-radius:999px;font-size:clamp(9.5px,2.7vw,11.5px);font-weight:900;
+    background:#fff;border:1.8px solid var(--line);color:#5c7a34;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;max-width:33%}
+  .slots button.on{background:linear-gradient(180deg,#d9f7bd,#a8e86b);border-color:#79c94a;color:#1c4a0e}
+  .stats{flex:0 0 auto;font-size:clamp(9px,2.5vw,11px);font-weight:900;color:#3c6524;
+    background:rgba(255,255,255,.8);border-radius:999px;padding:3px 9px;border:1.5px solid #dcebc4}
+
+  /* 네 개 버튼(포켓몬 배치 · 마을 꾸미기 · 크게 보기 · 아빠 선물)이
+     폰 세로에서도 한 줄에 그대로 선다 — 줄바꿈·가림·가로 넘침 0 */
+  .acts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:7px 9px 0;max-width:760px;margin:0 auto;width:100%}
+  .acts button{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;padding:7px 1px;border-radius:12px;
+    font-size:clamp(9px,2.45vw,11.5px);font-weight:900;letter-spacing:-.04em;
+    background:linear-gradient(180deg,#fff,#f6fbea);border:2px solid var(--line);border-bottom-width:4px;
+    color:#2f4a16;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .acts button .e{font-size:clamp(14px,3.9vw,19px);line-height:1.1}
+  .acts button > span:not(.e){display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .acts button:active{transform:translateY(2px)}
+  .acts button.gift{background:linear-gradient(180deg,#fff6f0,#ffe6dc);border-color:#f3c1ac;color:#8a3a12}
+
+  /* ---------- 마을: 하나의 큰 풀밭 무대 ---------- */
+  .village{padding:7px 9px calc(10px + env(safe-area-inset-bottom));max-width:1120px;margin:0 auto}
+  .vbar2{display:flex;align-items:center;gap:6px;padding:6px 10px 0;max-width:1120px;margin:0 auto;width:100%}
+  /* 시간대는 실제 시각을 따라 자동으로 바뀐다(수동 버튼 없음) — 지금 상태만 살짝 알려 준다 */
+  .todnow{flex:1 1 auto;min-width:0;font-size:clamp(9.5px,2.6vw,11px);font-weight:900;color:#4f6b33;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .shot{flex:0 0 auto;padding:6px 11px;border-radius:999px;font-weight:900;font-size:clamp(10px,2.8vw,12px);
+    background:linear-gradient(180deg,#e8f2ff,#c9e0ff);border:2px solid #a8c6f0;color:#1d3f6b;
+    box-shadow:0 2px 0 rgba(30,80,150,.22)}
+  .meadow{position:relative;border-radius:20px;overflow:hidden;isolation:isolate;
+    min-height:clamp(320px, calc(100dvh - 304px), 760px);border:2.5px solid rgba(255,255,255,.78);
+    /* 그림이 정사각 맵이라, 무대가 지나치게 넓적해지면 맵 위아래가 잘린다 — 1.30 비율까지만 넓힌다 */
+    max-width:calc((100dvh - 304px) * 1.30);margin:0 auto;
+    box-shadow:0 8px 22px rgba(20,60,10,.2),inset 0 0 40px rgba(0,0,0,.06);
+    transition:background .5s ease}
+  /* 배경 그림 한 겹(.art) + 시간대 빛막(.wash) — 그림만 따로 색 보정해도 포켓몬·소품은 영향받지 않게 분리했다 */
+  .meadow .bg{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .meadow .art{position:absolute;inset:0;background:var(--art,url("./art/village-day.webp")) 50% 50%/cover no-repeat;
+    transition:filter .6s ease}
+  .meadow .wash{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .6s ease}
+  .meadow .glow{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .6s ease}
+  .meadow .floor{position:absolute;inset:0;z-index:1}
+  .meadow .sky{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+  .meadow .sun{position:absolute;right:12%;top:9%;width:clamp(38px,8vw,72px);aspect-ratio:1;border-radius:50%;
+    background:radial-gradient(circle at 40% 35%,#fffde3,#ffe066 55%,#ffc93c 100%);
+    box-shadow:0 0 26px rgba(255,214,80,.75);transition:.6s}
+  .meadow .stars{position:absolute;inset:0;opacity:0;transition:opacity .8s;
+    background-image:radial-gradient(1.6px 1.6px at 20% 18%,#fff,transparent),radial-gradient(1.4px 1.4px at 42% 9%,#fff,transparent),
+      radial-gradient(1.8px 1.8px at 63% 22%,#fff,transparent),radial-gradient(1.4px 1.4px at 78% 12%,#fff,transparent),
+      radial-gradient(1.5px 1.5px at 88% 28%,#fff,transparent),radial-gradient(1.3px 1.3px at 33% 30%,#fff,transparent),
+      radial-gradient(1.6px 1.6px at 12% 34%,#fff,transparent),radial-gradient(1.4px 1.4px at 55% 33%,#fff,transparent)}
+  /* 별은 밤에만 — 트윙클 애니메이션이 낮에도 opacity 를 덮어 별이 보이던 문제 수정 */
+  .meadow.t-night .stars{opacity:1;animation:twinkle 3.6s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.45}50%{opacity:.95}}
+  .meadow .clouds{position:absolute;left:-8%;right:-8%;top:4%;height:40%;opacity:.9;
+    background:radial-gradient(closest-side,#fff,transparent 70%) 8% 26%/32% 44% no-repeat,
+      radial-gradient(closest-side,#fff,transparent 72%) 66% 10%/40% 52% no-repeat,
+      radial-gradient(closest-side,#fff,transparent 74%) 42% 62%/30% 40% no-repeat;filter:blur(.4px)}
+  .meadow::after{content:"";position:absolute;left:0;right:0;bottom:0;height:46%;z-index:0;pointer-events:none;
+    background:radial-gradient(120% 90% at 50% 100%,rgba(38,110,22,.32),transparent 70%)}
+  .meadow.t-day{background:linear-gradient(180deg,#bfe9ff 0%,#d9f7ff 24%,#dcf7b4 44%,#a8e36b 70%,#78c947 100%)}
+  .meadow.t-sunset{background:linear-gradient(180deg,#ffd6a5 0%,#ffb37b 22%,#ffd9a8 42%,#c8e88a 68%,#8ec95a 100%)}
+  .meadow.t-sunset .sun{top:26%;background:radial-gradient(circle at 40% 35%,#fff1c9,#ffb347 60%,#ff7a45 100%);
+    box-shadow:0 0 34px rgba(255,140,60,.85)}
+  .meadow.t-sunset .clouds{opacity:.72;filter:blur(.6px) hue-rotate(-16deg) saturate(1.35)}
+  .meadow.t-sunset::after{background:radial-gradient(120% 90% at 50% 100%,rgba(120,60,10,.3),transparent 72%)}
+  .meadow.t-night{background:linear-gradient(180deg,#101a3d 0%,#1b2a5c 28%,#26406e 46%,#2f5a52 70%,#2a5a30 100%)}
+  .meadow.t-night .sun{opacity:0}
+  .meadow.t-night .clouds{opacity:.16;filter:blur(1px)}
+  .meadow.t-night::after{background:radial-gradient(120% 90% at 50% 100%,rgba(0,10,20,.58),transparent 72%)}
+  .meadow.t-night .pk img{filter:brightness(1.16) drop-shadow(0 4px 6px rgba(0,0,0,.55))}
+  .meadow.t-night .it{filter:brightness(1.08) drop-shadow(0 4px 6px rgba(0,0,0,.5))}
+  .meadow.t-night .it.nightlight{filter:drop-shadow(0 0 14px #ffd66b) brightness(1.2)}
+
+  /* ---------- 마을 맵 일러스트 (게임 속 마을 그림) ----------
+     그림이 준비되면(data-art) 위에 있던 CSS 가짜 지형·해·구름은 모두 끄고
+     그림 속 실제 연못·언덕·배틀터만 보이게 한다. 판정 좌표는 그림에 맞춰 계산한다. */
+  .meadow{background-size:cover;background-position:50% 50%;background-repeat:no-repeat}
+  /* 사진 테마(바다·고원·사막)는 낮 그림 한 장만 쓰고, 노을·밤은 그림 색 보정 + 빛막으로 만든다 */
+  .meadow.wsunset .art{filter:sepia(.20) saturate(1.24) hue-rotate(-8deg) brightness(.97) contrast(1.05)}
+  .meadow.wnight .art{filter:brightness(.94) saturate(.86) contrast(1.02)}
+  .meadow.wsunset .wash{opacity:1;
+    background:linear-gradient(180deg,rgba(255,126,44,.30) 0%,rgba(255,168,86,.18) 34%,rgba(255,198,122,.07) 58%,rgba(96,40,12,.32) 100%)}
+  .meadow.wsunset .glow{opacity:1;
+    background:radial-gradient(34% 34% at 72% 9%,rgba(255,222,150,.85) 0%,rgba(255,190,100,.42) 45%,transparent 78%)}
+  /* 밤 — 그림을 곱셈(multiply)으로 남색에 물들여 음영을 유지한 채 어둡게 */
+  .meadow.wnight .wash{opacity:1;mix-blend-mode:multiply;
+    background:linear-gradient(180deg,#5568b0 0%,#44549a 32%,#2c3766 66%,#1b2244 100%)}
+  .meadow.wnight .glow{opacity:1;animation:twinkle 3.8s ease-in-out infinite;
+    background-image:radial-gradient(1.8px 1.8px at 14% 12%,#fff,transparent),radial-gradient(1.5px 1.5px at 33% 7%,#fff,transparent),
+      radial-gradient(1.9px 1.9px at 52% 15%,#fff,transparent),radial-gradient(1.4px 1.4px at 69% 6%,#fff,transparent),
+      radial-gradient(1.6px 1.6px at 85% 11%,#fff,transparent),radial-gradient(1.3px 1.3px at 24% 22%,#fff,transparent),
+      radial-gradient(1.4px 1.4px at 45% 24%,#fff,transparent),radial-gradient(1.3px 1.3px at 63% 20%,#fff,transparent),
+      radial-gradient(42% 36% at 76% 9%,rgba(206,226,255,.42) 0%,rgba(170,196,240,.16) 45%,transparent 72%)}
+  .meadow.wnight .wash::after{content:none}
+
+  /* 시간대 규칙보다 뒤에 두고 선택자 무게도 같게 — background 단축 속성이 size 를 되돌리지 않게 */
+  .meadow.t-day,.meadow.t-sunset,.meadow.t-night{
+    background-size:cover;background-position:50% 50%;background-repeat:no-repeat}
+  /* 마을 그림은 .art 겹이 그리고(--art 변수를 JS 가 테마·시간대·가로/세로에 맞춰 바꾼다).
+     위 그라데이션은 그림을 못 받았을 때의 폴백으로만 남겼다. */
+  .meadow[data-art] .terr,
+  .meadow[data-art] .sky{display:none}
+  .meadow[data-art]{box-shadow:0 10px 26px rgba(20,60,10,.26),inset 0 0 34px rgba(0,0,0,.10);
+    border-color:rgba(255,255,255,.55)}
+  .meadow[data-art]::after{background:radial-gradient(120% 90% at 50% 100%,rgba(16,44,10,.16),transparent 72%)}
+  /* 밤 그림은 어두워서 포켓몬·소품이 묻힌다 — 살짝 밝혀 준다 */
+  .meadow[data-art="night"] .pk img{filter:brightness(1.34) saturate(1.06) drop-shadow(0 5px 6px rgba(0,0,0,.5))}
+  .meadow[data-art="night"] .it{filter:brightness(1.2) drop-shadow(0 5px 6px rgba(0,0,0,.45))}
+
+  /* 발밑 타원 그림자 — 땅/물 위에 실제로 서 있는 느낌 */
+  .pk::before,.it::before{content:"";position:absolute;left:50%;border-radius:50%;pointer-events:none;z-index:0;
+    background:radial-gradient(closest-side,rgba(16,46,8,.44),rgba(16,46,8,.22) 60%,transparent 82%)}
+  .pk::before{bottom:-6%;width:78%;height:19%;transform:translateX(-50%)}
+  .pk.b-pond::before{background:radial-gradient(closest-side,rgba(4,48,76,.46),rgba(4,48,76,.2) 60%,transparent 82%)}
+  .it::before{bottom:-5%;width:66%;height:15%;transform:translateX(-50%)}
+  .it .g{position:relative;z-index:1}
+  .pk img{z-index:1}
+  /* 수채화 소품 PNG — 1em 높이로 그리고, 그림에 이미 발밑 그림자가 들어 있어 CSS 타원 그림자는 끈다 */
+  .it .pi{display:block;width:auto;height:1.16em;max-width:none;filter:drop-shadow(0 6px 7px rgba(18,48,8,.34))}
+  .it.has-png::before{display:none}
+  .it.has-png .g{animation:itbob 4.2s ease-in-out infinite}
+  .meadow.wnight .it .pi{filter:drop-shadow(0 6px 7px rgba(0,0,0,.5)) brightness(1.06)}
+  .meadow.t-night .it .pi{filter:drop-shadow(0 6px 7px rgba(0,0,0,.5)) brightness(1.12)}
+  .icell .pie{width:auto;height:26px;display:block;filter:drop-shadow(0 2px 3px rgba(18,48,8,.28))}
+  /* 소품 벡터 아트(SVG) — 이모지와 같은 크기(1em)로 그린다 */
+  .it .g svg.pa{display:block;width:1em;height:1em;overflow:visible}
+
+  /* ---------- 자연 지형 (연못 · 언덕 · 배틀장소) — 테두리 없는 풍경 ---------- */
+  .meadow .terr{position:absolute;inset:0;z-index:1;pointer-events:none;transition:filter .5s}
+  .meadow .terr .t{position:absolute;display:block}
+  .meadow .terr .t b{position:absolute;display:block}
+  /* 💧 연못 — 유기적인 타원, 가장자리는 풀밭으로 자연스럽게 번진다 */
+  .terr .t-pond{left:1%;top:57%;width:38%;height:30%;border-radius:52% 48% 46% 54%/50% 52% 48% 50%;
+    background:radial-gradient(ellipse at 46% 34%,#e8feff 0%,#a9ecfb 16%,#6ed3ef 40%,#35b0d6 62%,rgba(30,150,190,0) 80%)}
+  .terr .t-pond .rip{left:12%;top:26%;width:76%;height:56%;border-radius:50%;
+    background:radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.55) 0 2%,rgba(255,255,255,0) 3%),
+      radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.4) 0 6%,rgba(255,255,255,0) 8%),
+      radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.3) 0 14%,rgba(255,255,255,0) 17%),
+      radial-gradient(ellipse at 50% 50%,rgba(255,255,255,.2) 0 24%,rgba(255,255,255,0) 28%);
+    animation:pondRip 4.2s ease-in-out infinite}
+  @keyframes pondRip{0%,100%{opacity:.45;transform:scale(.94)}50%{opacity:1;transform:scale(1.03)}}
+  .terr .t-pond .reeds{inset:0;
+    background:radial-gradient(closest-side,#2f8a3a,rgba(47,138,58,0) 72%) 6% 22%/13% 22% no-repeat,
+      radial-gradient(closest-side,#3aa347,rgba(58,163,71,0) 72%) 24% 88%/15% 24% no-repeat,
+      radial-gradient(closest-side,#2f8a3a,rgba(47,138,58,0) 72%) 82% 30%/13% 22% no-repeat,
+      radial-gradient(closest-side,#57bd2f,rgba(87,189,47,0) 70%) 66% 92%/12% 20% no-repeat,
+      radial-gradient(closest-side,#3aa347,rgba(58,163,71,0) 72%) 94% 74%/14% 24% no-repeat;opacity:.9}
+  /* 😴 언덕 — 완만한 풀 언덕 + 나무 그늘 */
+  .terr .t-hill{left:56%;top:21%;width:40%;height:30%;border-radius:50% 50% 46% 46%/62% 62% 38% 38%;
+    background:radial-gradient(ellipse at 44% 76%,#a5e072 0%,#86cf52 22%,#6cba3e 44%,rgba(108,186,62,.55) 62%,rgba(108,186,62,0) 78%)}
+  .terr .t-hill .shade{right:8%;top:8%;width:44%;height:52%;border-radius:50%;
+    background:radial-gradient(ellipse at 50% 50%,rgba(30,80,20,.34),rgba(30,80,20,0) 72%);filter:blur(1px)}
+  .terr .t-hill .tuft{inset:0;
+    background:radial-gradient(closest-side,#4f9c2c,rgba(79,156,44,0) 70%) 22% 74%/9% 14% no-repeat,
+      radial-gradient(closest-side,#4f9c2c,rgba(79,156,44,0) 70%) 54% 84%/8% 12% no-repeat,
+      radial-gradient(closest-side,#3f8a22,rgba(63,138,34,0) 70%) 76% 62%/9% 14% no-repeat,
+      radial-gradient(closest-side,#57bd2f,rgba(87,189,47,0) 70%) 40% 52%/7% 11% no-repeat;opacity:.8}
+  /* ⚔️ 배틀장소 — 모래로 다진 원형 대련장 */
+  .terr .t-arena{left:42%;top:70%;width:32%;height:24%;border-radius:50%;
+    background:radial-gradient(ellipse at 50% 44%,#fdf1d2 0%,#f0d8a3 26%,#e0bd7f 48%,#cca25c 66%,rgba(200,155,80,0) 80%)}
+  .terr .t-arena .ring{left:16%;top:16%;right:16%;bottom:16%;border-radius:50%;
+    border:2px solid rgba(255,255,255,.5);box-shadow:inset 0 0 12px rgba(140,95,30,.22)}
+  .terr .t-arena .line{left:50%;top:20%;bottom:20%;width:2px;margin-left:-1px;border-radius:2px;
+    background:repeating-linear-gradient(180deg,rgba(255,255,255,.6) 0 5px,rgba(255,255,255,0) 5px 11px)}
+  .terr .tlabel{position:absolute;transform:translate(-50%,-50%);white-space:nowrap;pointer-events:none;
+    font-size:clamp(8px,2.2vw,10px);font-weight:900;color:rgba(255,255,255,.92);
+    text-shadow:0 1px 4px rgba(15,50,10,.75)}
+  .terr .l-pond{left:20%;top:55%}
+  .terr .l-hill{left:76%;top:19%}
+  .terr .l-arena{left:58%;top:67%}
+  .meadow.t-sunset .terr{filter:saturate(1.08) hue-rotate(-6deg) brightness(.97)}
+  .meadow.t-night .terr{filter:brightness(.58) saturate(.82) hue-rotate(8deg)}
+
+  /* ---------- 배치된 포켓몬 ---------- */
+  .pk{position:absolute;z-index:4;width:clamp(76px,11.5vw,96px);transform:translate(-50%,-50%);
+    transition:left 3.4s linear,top 3.4s linear;cursor:grab;padding:0;border:0;background:none;touch-action:none}
+  .pk.dragging{transition:none;cursor:grabbing;z-index:8}
+  .pk.sel{outline:3px dashed rgba(255,214,77,.95);outline-offset:6px;border-radius:50%;z-index:7}
+  .pk img{width:100%;display:block;image-rendering:pixelated;transform-origin:50% 92%;
+    filter:drop-shadow(0 4px 5px rgba(20,60,10,.35));animation:pkbob 2.6s ease-in-out infinite}
+  @keyframes pkbob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.02)}}
+  /* 💧 연못 위 — 찰방찰방 물장구 */
+  .pk.b-pond img{animation:pksplash 1.15s ease-in-out infinite}
+  @keyframes pksplash{0%,100%{transform:translateY(0) scale(1,1)}
+    40%{transform:translateY(-8px) scale(.96,1.07)}70%{transform:translateY(1px) scale(1.05,.94)}}
+  .pk.b-pond::after{content:"";position:absolute;left:50%;bottom:0;width:66%;height:14%;
+    transform:translateX(-50%);border-radius:50%;border:2px solid rgba(255,255,255,.8);
+    animation:pkRipple 1.7s ease-out infinite;pointer-events:none}
+  @keyframes pkRipple{0%{opacity:.9;transform:translateX(-50%) scale(.45)}100%{opacity:0;transform:translateX(-50%) scale(1.5)}}
+  /* 😴 언덕 위 — 살짝 기울어 느리게 숨쉬며 자는 척 */
+  .pk.b-hill img{animation:pksnooze 3.9s ease-in-out infinite}
+  @keyframes pksnooze{0%,100%{transform:rotate(-8deg) translateY(1px) scale(1,1)}
+    50%{transform:rotate(-10deg) translateY(4px) scale(1.03,.94)}}
+  /* ⚔️ 배틀장소 위 — 기합 넣고 좌우로 대련 */
+  .pk.b-arena img{animation:pkfight .78s ease-in-out infinite}
+  @keyframes pkfight{0%,100%{transform:translateX(0) rotate(0)}
+    25%{transform:translateX(-7px) rotate(-6deg)}50%{transform:translateX(7px) rotate(5deg) scale(1.04)}
+    75%{transform:translateX(-3px) rotate(-2deg)}}
+  .pk .stb{position:absolute;left:54%;top:-6px;font-size:clamp(11px,3vw,14px);line-height:1;pointer-events:none;
+    filter:drop-shadow(0 1px 2px rgba(20,60,10,.5));opacity:.95}
+  .pkfx{position:absolute;z-index:7;pointer-events:none;font-size:clamp(11px,3vw,15px);
+    transform:translate(-50%,-50%);animation:pkfxfloat 1.5s ease-out forwards}
+  @keyframes pkfxfloat{0%{opacity:0;transform:translate(-50%,-40%) scale(.5)}
+    30%{opacity:1;transform:translate(-50%,-70%) scale(1.1)}100%{opacity:0;transform:translate(-50%,-150%) scale(.9)}}
+  .pk.jump img{animation:pkjump .6s cubic-bezier(.2,1.6,.4,1)}
+  @keyframes pkjump{0%{transform:translateY(0) scale(1)}35%{transform:translateY(-22px) scale(1.08)}70%{transform:translateY(2px) scale(.96,1.04)}100%{transform:translateY(0) scale(1)}}
+  .pk .zzz{position:absolute;left:56%;top:-14px;font-size:clamp(9px,2.6vw,12px);font-weight:900;color:#fff;
+    text-shadow:0 1px 2px rgba(20,60,10,.5);animation:zzz 2.6s ease-in-out infinite;pointer-events:none}
+  @keyframes zzz{0%,100%{opacity:.25;transform:translateY(2px)}50%{opacity:1;transform:translateY(-4px)}}
+  .bubble{position:absolute;z-index:7;font-size:clamp(14px,4vw,20px);pointer-events:none;
+    animation:bubbleup 1.4s ease-out forwards;transform:translate(-50%,-100%)}
+  @keyframes bubbleup{0%{opacity:0;transform:translate(-50%,-70%) scale(.6)}
+    25%{opacity:1;transform:translate(-50%,-105%) scale(1.1)}
+    100%{opacity:0;transform:translate(-50%,-160%) scale(1)}}
+  .berry{position:absolute;z-index:6;font-size:clamp(11px,3vw,15px);pointer-events:none;
+    animation:berrypop 1.8s ease-out forwards}
+  @keyframes berrypop{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}
+    30%{opacity:1;transform:translate(-50%,-90%) scale(1)}
+    100%{opacity:0;transform:translate(-50%,-150%) scale(.9)}}
+
+  /* ---------- 배치된 아이템 (누르면 크게/작게 · 끌어서 이동) ---------- */
+  .it{position:absolute;z-index:3;transform:translate(-50%,-50%) scale(var(--sc,1));
+    pointer-events:auto;cursor:grab;touch-action:none;
+    font-size:clamp(48px,10vw,86px);line-height:1;filter:drop-shadow(0 4px 5px rgba(20,60,10,.32))}
+  .it .g{display:block;animation:itbob 4.2s ease-in-out infinite}
+  @keyframes itbob{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3%) scale(1.04)}}
+  .it.sel{outline:3px dashed rgba(255,214,77,.95);outline-offset:5px;border-radius:18px;z-index:6;cursor:grabbing}
+  .it.sel .g{animation:none}
+  .it.k-butterfly .g{animation:itflit 2.2s ease-in-out infinite}
+  @keyframes itflit{0%,100%{transform:translate(0,0) rotate(-6deg)}50%{transform:translate(4%,-10%) rotate(8deg)}}
+  .it.k-garland .g,.it.k-chime .g{animation:itglow 3s ease-in-out infinite}
+  @keyframes itglow{0%,100%{filter:drop-shadow(0 0 4px rgba(255,214,107,.55)) brightness(1.02)}
+    50%{filter:drop-shadow(0 0 12px rgba(255,214,107,.95)) brightness(1.2)}}
+  .meadow .it.nightlight{filter:drop-shadow(0 0 14px #ffd66b) brightness(1.16)}
+  .meadow .it.sel{filter:drop-shadow(0 0 12px rgba(255,214,77,.9))}
+
+  /* 동상의 ⚡ · 분수의 💧 는 벡터 아트 안에 이미 들어 있어 CSS 이모지는 쓰지 않는다 */
+  .it.k-campfire{animation:itfire 1.6s ease-in-out infinite}
+  @keyframes itfire{0%,100%{filter:drop-shadow(0 3px 4px rgba(20,60,10,.3)) brightness(1)}
+    50%{filter:drop-shadow(0 0 8px #ffb347) brightness(1.18)}}
+
+  .empty{position:absolute;inset:0;z-index:5;display:grid;place-items:center;pointer-events:none;text-align:center;
+    padding:10px;font-size:clamp(9.5px,2.7vw,11.5px);font-weight:900;color:#2f4a16;
+    background:rgba(255,255,255,.28)}
+  .empty b{display:block;font-size:1.15em;margin-bottom:2px}
+  .empty[hidden]{display:none}
+
+  /* ---------- 아이템 조작 바 ---------- */
+  .itemctl{position:fixed;left:50%;bottom:calc(10px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    z-index:66;display:flex;gap:5px;align-items:center;padding:6px 8px;border-radius:16px;max-width:94vw;
+    background:rgba(255,253,243,.97);border:2px solid #cfe6a6;box-shadow:0 10px 24px rgba(10,40,4,.32)}
+  .itemctl[hidden]{display:none}
+  .itemctl .nm{font-size:clamp(10px,2.7vw,12px);font-weight:900;color:#33501a;max-width:32vw;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .itemctl button{width:38px;height:38px;border-radius:12px;font-weight:900;font-size:15px;
+    background:linear-gradient(180deg,#fff,#eaf8d0);border:2px solid #cfe7a2;color:#2f4a16;
+    box-shadow:0 2px 0 rgba(70,120,30,.25)}
+  .itemctl button:active{transform:translateY(2px);box-shadow:none}
+  .itemctl button.del{background:linear-gradient(180deg,#fff0ee,#ffd9d4);border-color:#f0a89c;color:#8a2412}
+  .itemctl .sc{min-width:38px;text-align:center;font-size:clamp(10px,2.7vw,12px);font-weight:900;color:#6a3f00}
+  .vtoast{position:fixed;left:50%;bottom:calc(74px + env(safe-area-inset-bottom));transform:translateX(-50%);
+    z-index:80;padding:8px 14px;border-radius:999px;background:rgba(20,50,10,.9);color:#fff;
+    font-weight:900;font-size:clamp(11px,3vw,12.5px);opacity:0;pointer-events:none;transition:opacity .25s}
+  .vtoast.on{opacity:1}
+
+  /* ---------- 모달 ---------- */
+  .modal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:14px;
+    background:rgba(14,40,8,.5);backdrop-filter:blur(3px)}
+  .modal[hidden]{display:none}
+  .sheet{width:min(480px,100%);max-height:88dvh;display:flex;flex-direction:column;overflow:hidden;
+    background:linear-gradient(180deg,#fffdf3,#f6ffea);border:3px solid var(--line);border-radius:20px;
+    box-shadow:0 18px 40px rgba(10,40,4,.45);animation:sheetin .26s cubic-bezier(.2,1.4,.4,1) both}
+  @keyframes sheetin{from{transform:translateY(14px) scale(.97);opacity:0}to{transform:none;opacity:1}}
+  .mhead{display:flex;align-items:center;gap:8px;padding:12px 13px 9px;border-bottom:2px solid #eef6dd}
+  .mhead h2{margin:0;flex:1 1 auto;min-width:0;font-size:clamp(14px,3.9vw,17px);letter-spacing:-.03em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mx{width:28px;height:28px;flex:0 0 28px;border-radius:50%;background:#f1f9e2;border:1.5px solid var(--line);
+    font-weight:900;color:#5c7a34;font-size:13px}
+  .mbody{padding:10px 13px 14px;overflow:auto;min-height:0}
+  .mnote{margin:0 0 8px;font-size:clamp(9.5px,2.7vw,11.5px);font-weight:900;color:#6b8547}
+  .zchips{display:flex;gap:4px;margin-bottom:9px;flex-wrap:wrap}
+  .zchips button{flex:1 1 0;min-width:0;padding:5px 4px;border-radius:10px;font-size:clamp(9px,2.6vw,11px);
+    font-weight:900;background:#fff;border:1.8px solid #dcebc4;color:#5c7a34;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .zchips button.on{background:linear-gradient(180deg,#d9f7bd,#a8e86b);border-color:#79c94a;color:#1c4a0e}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px}
+  .pcell{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 3px;
+    border-radius:13px;background:#fff;border:2px solid #e2eecd;border-bottom-width:4px;
+    font-size:clamp(8.5px,2.4vw,10px);font-weight:900;letter-spacing:-.03em;text-align:center}
+  .pcell img{width:38px;height:38px;object-fit:contain;image-rendering:pixelated}
+  .pcell.on{border-color:#79c94a;background:linear-gradient(180deg,#f2ffe0,#dcf7bc)}
+  .pcell .zz{position:absolute;right:2px;top:2px;font-size:8px;font-weight:900;color:#fff;background:#57bd2f;
+    border-radius:999px;padding:0 4px}
+  .pcell .zz.tow{background:#5b86bd;font-size:8px;padding:1px 4px;max-width:96%;overflow:hidden;text-overflow:ellipsis}
+  .pcell.away{border-color:#c9ddf2;background:linear-gradient(180deg,#f8fcff,#e9f2ff)}
+  .pcell.away img{opacity:.82}
+  .pcell.dim{opacity:.55}
+  .icell{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:7px 3px;
+    border-radius:13px;background:#fff;border:2px solid #e2eecd;border-bottom-width:4px;
+    font-size:clamp(8.5px,2.4vw,10px);font-weight:900;letter-spacing:-.03em;text-align:center}
+  .icell .e{font-size:clamp(19px,5vw,24px);line-height:1}
+  .icell .c{position:absolute;right:3px;top:2px;font-size:8px;font-weight:900;color:#fff;background:#f0a71c;
+    border-radius:999px;padding:0 4px}
+  .icell.dim{opacity:.55}
+  /* 아직 얻지 못한 아이템 — 잠금 표시만 하고 놓을 수 없다 */
+  .icell.lock{filter:grayscale(.6);opacity:.7;background:#f7f7ef;border-color:#e2e2d4}
+  .icell.lock .c.lockc{background:#8a9a72;color:#fff}
+  .pcell:active,.icell:active{transform:translateY(2px)}
+
+  .strip{margin-top:12px;padding-top:9px;border-top:2px dashed #e2eecd}
+  .strip h3{margin:0 0 6px;font-size:clamp(10px,2.8vw,12px);color:#4d6b32}
+  .plist{display:flex;flex-wrap:wrap;gap:5px}
+  .ptag{display:flex;align-items:center;gap:4px;padding:3px 4px 3px 8px;border-radius:999px;background:#fff;
+    border:1.6px solid #e2eecd;font-size:clamp(8.5px,2.4vw,10.5px);font-weight:900}
+  .ptag button{border:none;background:#ffe6dc;color:#b03a12;border-radius:50%;width:17px;height:17px;
+    font-size:10px;font-weight:900;line-height:1}
+  .ptag em{font-style:normal;color:#8a9a72;font-weight:800}
+
+  /* 아빠 선물 */
+  .pinpad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:270px;margin:6px auto 0}
+  .pinpad button{height:clamp(44px,12vw,54px);border-radius:14px;font-size:clamp(17px,5vw,21px);font-weight:900;
+    color:#2f4a16;background:linear-gradient(180deg,#fff,#eaf8d0);border:2.5px solid #cfe7a2;
+    box-shadow:0 3px 0 rgba(70,120,30,.28)}
+  .pinpad button.wide{font-size:clamp(12px,3.4vw,15px);color:#5c7a34;background:#f6f6ea;border-color:#dcdcd0;
+    box-shadow:0 3px 0 rgba(60,60,50,.18)}
+  .pinpad button.blank{visibility:hidden}
+  .pindots{display:flex;justify-content:center;gap:11px;margin:10px 0 4px}
+  .pindots i{width:13px;height:13px;border-radius:50%;background:#e9f3d8;border:2px solid #cfe6a6}
+  .pindots i.on{background:linear-gradient(180deg,#8ef06a,#3fc22a);border-color:#2ea11c;transform:scale(1.1)}
+  .pinmsg{margin:0 0 4px;text-align:center;font-size:clamp(10px,2.8vw,12px);font-weight:900;color:#6b8547;min-height:16px}
+  .pinmsg.bad{color:#c0392b}
+  .giftstep{display:grid;gap:9px}
+  .giftstep .lb{font-size:clamp(10px,2.8vw,12px);font-weight:900;color:#4d6b32}
+  .gsel{display:flex;gap:5px;flex-wrap:wrap}
+  .gsel button{padding:6px 10px;border-radius:11px;font-size:clamp(10px,2.8vw,12px);font-weight:900;
+    background:#fff;border:2px solid #e2eecd;color:#5c7a34}
+  .gsel button.on{background:linear-gradient(180deg,#ffe9a8,#ffcf4d);border-color:#d9a01a;color:#5a3200}
+  .gitems{display:grid;grid-template-columns:repeat(auto-fill,minmax(74px,1fr));gap:6px;max-height:34dvh;overflow:auto;
+    padding:3px}
+  .gbtn{width:100%;margin-top:12px;padding:12px;border:none;border-radius:15px;font-size:clamp(13px,3.6vw,16px);
+    font-weight:900;color:#fff;background:linear-gradient(180deg,#ff9f3c,#e8760a);
+    box-shadow:0 5px 0 #a5520a}
+  .gbtn[disabled]{filter:grayscale(.7);opacity:.6;box-shadow:0 4px 0 #8b8b7a}
+  .gbtn:active{transform:translateY(2px)}
+  .gnote{margin:8px 0 0;font-size:clamp(9px,2.6vw,11px);font-weight:900;color:#8a9a72;text-align:center}
+
+  /* 축하 배너 */
+  .party{position:fixed;inset:0;z-index:80;display:none;place-items:center;pointer-events:none;
+    background:radial-gradient(60% 50% at 50% 45%,rgba(255,240,180,.35),rgba(20,50,10,.35))}
+  .party.on{display:grid}
+  .pcard{position:relative;width:min(88%,400px);padding:18px 14px;text-align:center;border-radius:22px;
+    background:linear-gradient(180deg,#fffdf0,#fff0c4);border:3px solid #ffd75e;
+    box-shadow:0 18px 44px rgba(40,20,0,.45),inset 0 0 30px rgba(255,220,120,.6);
+    animation:partyin .55s cubic-bezier(.2,1.6,.4,1) both}
+  @keyframes partyin{from{transform:scale(.6) rotate(-4deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+  .pcard .giftem{font-size:clamp(40px,13vw,60px);line-height:1;animation:giftbob 1.2s ease-in-out infinite}
+  @keyframes giftbob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-8px) rotate(4deg)}}
+  .pcard h2{margin:6px 0 3px;font-size:clamp(16px,4.6vw,22px);letter-spacing:-.03em;color:#7a3c00}
+  .pcard p{margin:0;font-size:clamp(11px,3vw,13px);font-weight:900;color:#8a5a12}
+  .confetti{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+  .confetti i{position:absolute;top:-12px;width:8px;height:12px;border-radius:2px;opacity:0;
+    animation:conf 2.4s linear forwards}
+  @keyframes conf{0%{opacity:0;transform:translateY(0) rotate(0)}10%{opacity:1}
+    100%{opacity:0;transform:translateY(90vh) rotate(620deg)}}
+
+  @media (prefers-reduced-motion:reduce){
+    .pk img,.it,.pcard .giftem,.z-pond .floor::after,.it.k-fountain::after{animation:none}
+  }
+
+  /* ============ 4탄: 마을 크게 보기 ============ */
+  .modal.zoom{padding:7px;z-index:70}
+  .zoom .zsheet{width:min(1180px,100%);height:min(94dvh,100%);display:flex;flex-direction:column;gap:6px;
+    background:linear-gradient(180deg,#ffffff,#f2ffe4);border:2.5px solid #cfe6a6;border-radius:20px;
+    box-shadow:0 18px 46px rgba(12,40,6,.42);padding:9px 9px calc(8px + env(safe-area-inset-bottom))}
+  .zoom .zhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .zoom .zhead h2{margin:0;font-size:clamp(13px,3.6vw,17px);letter-spacing:-.03em;color:#22400f;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .zoom .ztabs{display:flex;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:1px}
+  .zoom .ztabs button{flex:0 0 auto;padding:5px 10px;border-radius:999px;font-weight:900;
+    font-size:clamp(9.5px,2.7vw,11.5px);background:#f5fbe8;border:2px solid #d6e4b6;color:#5c7a34;white-space:nowrap}
+  .zoom .ztabs button.on{background:linear-gradient(180deg,#ffe9a8,#ffc94d);border-color:#e8c25a;color:#6a3f00}
+  .zstage{position:relative;flex:1 1 auto;min-height:0;border-radius:16px;overflow:hidden;
+    border:2px solid #cfe6a6;box-shadow:inset 0 2px 10px rgba(20,60,10,.14)}
+  .zstage .meadow{min-height:100%;height:100%;border-radius:0;border:none;box-shadow:none}
+  .zstage .pk{width:clamp(84px,10vw,128px)}
+  .zstage .it{font-size:clamp(56px,9vw,104px)}
+  .zstage .bubble{font-size:clamp(20px,5vw,36px)}
+  .zstage .berry{font-size:clamp(16px,4vw,28px)}
+  .zstage .zzz{font-size:clamp(12px,3.4vw,20px)}
+  .zoom .ztip{margin:0;text-align:center;font-size:clamp(9.5px,2.6vw,11px);font-weight:900;color:#7d8a63}
+  @media (max-height:520px){ .zoom .ztip{display:none} }
+
+  /* ============ 📖 도감 보기 (마을 꾸미기 옆) ============ */
+  .modal.dex{padding:9px;z-index:64}
+  /* 아빠 PIN 창은 도감(z 64)·상세(z 72)보다 위에 — 도감을 열어 둔 채로도 PIN 을 누를 수 있게 */
+  #delItemModal{z-index:76}
+  .modal.dexdetail{padding:9px;z-index:72}
+  .dxsheet{width:min(760px,100%);height:min(92dvh,100%);display:flex;flex-direction:column;overflow:hidden;
+    background:linear-gradient(180deg,#fffdf3,#f4ffe8);border:3px solid var(--line);border-radius:20px;
+    box-shadow:0 18px 40px rgba(10,40,4,.45);animation:sheetin .26s cubic-bezier(.2,1.4,.4,1) both}
+  .dxhead{display:flex;align-items:center;gap:8px;padding:11px 12px 8px;border-bottom:2px solid #eef6dd}
+  .dxhead h2{margin:0;flex:1 1 auto;min-width:0;font-size:clamp(13.5px,3.7vw,17px);letter-spacing:-.03em;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dxsum{padding:9px 12px 0}
+  .dxbar{height:11px;border-radius:999px;background:#e9f3d8;border:1.5px solid #d5e7b4;overflow:hidden}
+  .dxbar i{display:block;height:100%;width:0;border-radius:999px;
+    background:linear-gradient(90deg,#8ef06a,#3fc22a);transition:width .45s cubic-bezier(.2,1,.3,1)}
+  .dxnum{display:flex;align-items:baseline;gap:6px;margin:6px 0 0;flex-wrap:wrap;
+    font-size:clamp(9.5px,2.6vw,11.5px);font-weight:900;color:#4d6b32}
+  .dxnum b{color:#1f6b12;font-size:1.18em}
+  .dxnum .gene{color:#8a9a72;font-weight:800;font-size:.95em}
+  .dxtabs{display:flex;gap:5px;padding:9px 12px 0}
+  .dxtabs button{flex:1 1 0;min-width:0;padding:6px 4px;border-radius:11px;font-weight:900;
+    font-size:clamp(9.5px,2.6vw,11.5px);letter-spacing:-.03em;background:#fff;border:2px solid #e2eecd;color:#5c7a34;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dxtabs button.on{background:linear-gradient(180deg,#d9f7bd,#a8e86b);border-color:#79c94a;color:#1c4a0e}
+  .dxtypes{display:flex;gap:4px;padding:7px 12px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .dxtypes::-webkit-scrollbar{display:none}
+  .dxtypes button{flex:0 0 auto;padding:4px 9px;border-radius:999px;font-weight:900;white-space:nowrap;
+    font-size:clamp(9px,2.5vw,11px);background:#fff;border:1.8px solid #e2eecd;color:#5c7a34}
+  .dxtypes button.on{background:linear-gradient(180deg,#ffe9a8,#ffcf4d);border-color:#d9a01a;color:#5a3200}
+  .dxbody{flex:1 1 auto;min-height:0;overflow:auto;padding:9px 12px 14px;-webkit-overflow-scrolling:touch}
+  /* ➕ 아빠 권한 — 아빠 PIN 이 풀려 있을 때만 보인다(도감에 포켓몬을 생기게 한다) */
+  .dxfoot{flex:0 0 auto;display:flex;gap:6px;padding:8px 12px calc(10px + env(safe-area-inset-bottom));border-top:2px solid #eef6dd;background:#f7ffea}
+  .dxfoot button{flex:1 1 0;min-width:0;padding:9px 6px;border-radius:12px;font-weight:900;font-size:clamp(11px,2.9vw,13px);
+    background:linear-gradient(180deg,#eaffcc,#cdf3a2);border:2px solid #9fd46f;color:#2f5c14;box-shadow:0 2px 0 #c2e59a}
+  .dxfoot button:active{transform:translateY(2px);box-shadow:none}
+  .dxfoot button[hidden]{display:none !important}
+  .dxtip{margin:0 0 7px;font-size:clamp(9px,2.5vw,10.5px);font-weight:900;color:#6b8547}
+  .dxgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:6px;align-items:start}
+  .dcell{position:relative;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:0;
+    padding:6px 3px 5px;border-radius:13px;background:#fff;border:2px solid #e2eecd;border-bottom-width:4px;
+    font-size:clamp(8.5px,2.4vw,10px);font-weight:900;letter-spacing:-.03em;text-align:center;color:#2f4a16;
+    overflow:hidden}
+  .dcell .dn{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dcell .dimg{display:flex;align-items:center;justify-content:center;width:100%;height:clamp(38px,10vw,46px)}
+  .dcell img{width:auto;max-width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
+  .dcell .dy{display:flex;gap:2px;max-width:100%;overflow:hidden}
+  .dcell .dy b{font-size:.86em;line-height:1.5;padding:0 4px;border-radius:999px;color:#fff;background:#8a9a72;white-space:nowrap}
+  .dcell .tw{position:absolute;left:3px;top:2px;font-size:.9em;line-height:1}
+  .dcell .lk{position:absolute;right:3px;top:2px;font-size:9px;line-height:1}
+  .dcell.miss{background:linear-gradient(180deg,#f7f7ef,#eef1e4);border-color:#e0e0d0;color:#9a9a84}
+  .dcell.miss img{filter:brightness(0) opacity(.3)}
+  .dcell.got:active{transform:translateY(2px)}
+  .dxmore{display:flex;justify-content:center;margin:11px 0 0}
+  /* class 로 display 를 잡으면 hidden 이 먹지 않는다 — 숨김은 강제로 */
+  .dxmore[hidden],.dxempty[hidden],.dxtypes[hidden],.prep-head .pq[hidden]{display:none !important}
+  .dxmore button{padding:8px 16px;border-radius:999px;font-weight:900;color:#2f4a16;
+    font-size:clamp(10px,2.8vw,12px);background:linear-gradient(180deg,#fff,#eaf8d0);border:2px solid #cfe7a2;
+    box-shadow:0 3px 0 rgba(70,120,30,.22)}
+  .dxempty{margin:16px 4px;text-align:center;font-size:clamp(10px,2.8vw,12px);font-weight:900;color:#7d8a63;line-height:1.65}
+  /* 도감 상세 */
+  .dxdet .sheet{width:min(430px,100%)}
+  .dxdet .dart{display:block;width:min(150px,42vw);margin:2px auto 4px;object-fit:contain}
+  .dxdet h3{margin:2px 0 1px;text-align:center;font-size:clamp(15px,4.2vw,19px);letter-spacing:-.03em;color:#22400f}
+  .dxdet .dsub{margin:0 0 6px;text-align:center;font-size:clamp(9.5px,2.6vw,11px);font-weight:900;color:#7d8a63}
+  .dxdet .dty{display:flex;justify-content:center;gap:4px;flex-wrap:wrap;margin-bottom:7px}
+  .dxdet .dty b{font-size:clamp(9.5px,2.6vw,11px);padding:2px 8px;border-radius:999px;color:#fff;background:#8a9a72}
+  .dxdet .ddesc{margin:0 0 8px;font-size:clamp(10px,2.7vw,12px);font-weight:800;line-height:1.55;color:#4d6b32}
+  .dxdet .dstats{display:grid;gap:5px;padding:8px 10px;border-radius:14px;background:#f6fbea;border:1.6px solid #e2eecd}
+  .dxdet .dstats span{font-size:clamp(9.5px,2.6vw,11px);font-weight:900;color:#4d6b32}
+  .dxdet .dstats .dsub2{margin:0;font-size:clamp(9px,2.4vw,10.5px);font-weight:900;color:#8a9a72}
+
+  /* ============ 마을 테마 선택 (도감 10마리마다 새 마을이 열린다) ============ */
+  .vtop{display:contents}
+  /* 마을 테마 9종 — 좁은 화면에서는 두 줄로 자연스럽게 접힌다(가로에서는 자기 줄을 하나 차지한다) */
+  .themebar{display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 8px 0;max-width:760px;margin:0 auto;width:100%;
+    flex-wrap:wrap;overflow-x:visible}
+  .themebar::-webkit-scrollbar{display:none}
+  .themebar button{flex:0 0 auto;display:flex;align-items:center;gap:4px;padding:5px 10px;border-radius:999px;
+    font-size:clamp(9.5px,2.7vw,11.5px);font-weight:900;letter-spacing:-.03em;white-space:nowrap;
+    background:#fff;border:1.8px solid var(--line);color:#5c7a34;box-shadow:0 2px 0 rgba(60,110,30,.14)}
+  .themebar button .te{font-size:1.15em;line-height:1}
+  .themebar button.on{background:linear-gradient(180deg,#fff2c9,#ffd75e);border-color:#e0b531;color:#6a4400;
+    box-shadow:0 2px 0 rgba(150,100,10,.28)}
+  .themebar button.lock{background:#f7f7ef;border-color:#e0e0d0;color:#8b8b74;box-shadow:none}
+  .themebar button:active{transform:translateY(1px)}
+
+  /* 테마 바가 9종이 되어 폰 세로에서는 두 줄로 접힌다 — 그만큼 지도 높이 계산에서 빼 준다(넘침 0) */
+  @media (max-width:759px){
+    .meadow{min-height:clamp(320px, calc(100dvh - 334px), 760px);max-width:calc((100dvh - 334px) * 1.30)}
+  }
+
+  /* ============ 가로(태블릿·폴드 펌침 등 넓은 화면) — 상단 두 줄(조작 + 테마), 마을은 화면을 꽉 체운다 ============ */
+  @media (min-width:760px){
+    body{display:flex;flex-direction:column;height:100dvh;overflow:hidden}
+    .vtop{display:flex;align-items:center;flex-wrap:wrap;gap:4px 5px;flex:0 0 auto;padding:5px 8px 4px;
+      background:rgba(255,255,255,.9);border-bottom:2px solid rgba(160,210,120,.72);
+      backdrop-filter:blur(6px);position:relative;z-index:30}
+    .vhead{position:static;padding:0;background:none;border:0;flex:0 0 auto;gap:5px;min-width:0}
+    .vhead h1{font-size:15px;flex:0 0 auto}
+    .vhead h1 .h1t{display:none}
+    .back{padding:5px 8px}
+    .icob{width:29px;height:27px;font-size:13px}
+    .vbar{padding:0;flex:0 1 auto;flex-wrap:nowrap;min-width:0;gap:4px}
+    .slots{flex:0 0 auto;min-width:0}
+    .slots button{padding:4px 8px;max-width:44%}
+    .stats{white-space:nowrap;padding:2px 8px}
+    /* 테마 9종은 자기 줄을 하나 차지한다 — 이름·잠금 마릿수가 언제나 다 보이고 넘치지 않는다 */
+    .themebar{padding:0;margin:0;max-width:none;width:100%;flex:0 0 100%;order:99;
+      justify-content:center;flex-wrap:nowrap;overflow:visible}
+    .themebar button{padding:4px 8px}
+    .acts{display:flex;gap:4px;padding:0;margin:0;max-width:none;width:auto;flex:0 0 auto;flex-wrap:nowrap}
+    /* 가로에서도 버튼 이름이 보이게 — 아이콘 + 짧은 이름의 컴팩트 필(글자를 숨기지 않는다) */
+    .acts button{flex-direction:row;gap:3px;padding:4px 7px;border-radius:10px;border-bottom-width:3px;
+      font-size:clamp(9.5px,1.25vw,11.5px);letter-spacing:-.045em}
+    .acts button .e{font-size:clamp(12px,1.6vw,15px)}
+    .acts button > span:not(.e){display:inline;max-width:none}
+    .vbar2{padding:0;flex:0 0 auto;width:auto;margin-left:auto;gap:4px}
+    .todnow .tsub{display:none}
+    .todnow{flex:0 0 auto;white-space:nowrap}
+    .shot{padding:5px 9px}
+    .village{flex:1 1 auto;min-height:0;padding:0;max-width:none;margin:0;position:relative}
+    .meadow{height:100%;min-height:0;max-width:none;width:100%;margin:0;border:0;border-radius:0;box-shadow:none}
+    .itemctl{bottom:calc(8px + env(safe-area-inset-bottom))}
+    .vtoast{bottom:calc(64px + env(safe-area-inset-bottom))}
+  }
+  @media (min-width:760px) and (max-width:999px){
+    .stats{display:none}
+    .slots button{max-width:48%}
+    .themebar button{padding:4px 7px}
+    .back{font-size:0;padding:5px 9px}
+    .back::before{content:"◀";font-size:12px}
+    .todnow{max-width:4.6em;overflow:hidden;text-overflow:ellipsis}
+  }
+  /* 좀 더 짧은 가로 화면(폰을 옆으로) — 머리글·날씨는 아이콘으로 */
+  @media (min-width:760px) and (max-width:819px){
+    .vhead h1{display:none}
+    .todnow{display:none}
+    .slots button{max-width:48%;padding:4px 6px}
+  }
+</style>
+<script src="./pokemon-sync.js"></script>
+<script src="./pokemon-dexadd.js"></script>
+</head>
+<body>
+
+<div class="vtop">
+<div class="vhead">
+  <a class="back" href="./">◀ 놀이터</a>
+  <h1><span class="h1e">🏡</span><span class="h1t">나만의 포켓몬 마을</span></h1>
+  <button class="icob" id="volBtn" aria-label="소리 크기 조절" title="배경음·효과음 크기">🔉</button>
+  <button class="icob" id="muteBtn" aria-label="소리 켜기/끄기">🔊</button>
+</div>
+
+<div class="vbar">
+  <div class="slots" id="slotChips" role="group" aria-label="마을 주인 선택"></div>
+  <span class="stats" id="stats">🐾 0/8 · 🎨 0/8</span>
+</div>
+
+<div class="vbar2">
+  <p class="todnow" id="todNow" aria-live="polite">☀️ 낮<span class="tsub"> · 지금 시각에 맞춰 하늘이 바뀌어요</span></p>
+  <button type="button" class="shot" id="photoBtn">📸 사진</button>
+</div>
+
+<div class="acts">
+  <button id="pokeBtn" aria-label="포켓몬 배치" title="포켓몬 배치"><span class="e">🐾</span><span>포켓몬 배치</span></button>
+  <button id="itemBtn" aria-label="마을 꾸미기" title="마을 꾸미기"><span class="e">🎨</span><span>마을 꾸미기</span></button>
+  <button id="zoomBtn" aria-label="크게 보기" title="크게 보기"><span class="e">🔍</span><span>크게 보기</span></button>
+  <button class="gift" id="giftBtn" aria-label="아빠 선물" title="아빠 선물"><span class="e">🎁</span><span>아빠 선물</span></button>
+</div>
+
+<!-- 마을 테마 — 도감 10마리마다 새 마을이 하나씩 열린다 -->
+<div class="themebar" id="themeBar" role="group" aria-label="마을 테마 선택"></div>
+</div>
+
+<div class="village" id="village">
+  <div class="meadow t-day" id="meadow" data-tod="day" data-vtheme="meadow" data-fmt="square">
+    <div class="bg" aria-hidden="true">
+      <div class="art" id="meadowArt"></div>
+      <div class="sky"><span class="clouds"></span><span class="stars"></span><span class="sun"></span></div>
+      <div class="wash"></div>
+      <div class="glow"></div>
+    </div>
+    <div class="terr" id="terr" aria-hidden="true">
+      <i class="t t-pond"><b class="rip"></b><b class="reeds"></b></i>
+      <i class="t t-hill"><b class="shade"></b><b class="tuft"></b></i>
+      <i class="t t-arena"><b class="ring"></b><b class="line"></b></i>
+      <span class="tlabel l-pond">💧 연못</span>
+      <span class="tlabel l-hill">😴 언덕</span>
+      <span class="tlabel l-arena">⚔️ 배틀장소</span>
+    </div>
+    <div class="floor" id="meadowFloor" data-floor="meadow"></div>
+  </div>
+</div>
+
+<div class="itemctl" id="itemCtl" hidden>
+  <span class="nm" id="ctlName">아이템</span>
+  <button type="button" data-scz="small" aria-label="작게">➖</button>
+  <span class="sc" id="ctlSc">1.0x</span>
+  <button type="button" data-scz="big" aria-label="크게">➕</button>
+  <button type="button" class="del" data-scdel="1" aria-label="빼기">🗑</button>
+  <button type="button" data-scclose="1" aria-label="닫기">✕</button>
+</div>
+
+<!-- 🔍 마을 크게 보기 -->
+<div class="modal zoom" id="zoomModal" hidden>
+  <div class="zsheet" role="dialog" aria-modal="true" aria-label="마을 크게 보기">
+    <div class="zhead">
+      <h2 id="zoomTitle">🔍 크게 보기</h2>
+      <button class="mx" data-close="zoomModal" aria-label="닫기">✕</button>
+    </div>
+    <div class="ztabs" id="zoomTabs" role="group" aria-label="구역 선택"></div>
+    <div class="zstage" id="zoomStage"></div>
+    <p class="ztip">포켓몬을 톡톡 두드리면 펄쩍 뛰고 열매를 줘요 · 꾸미기 아이템도 같이 보여요</p>
+  </div>
+</div>
+
+<!-- 포켓몬 배치 -->
+<div class="modal" id="pokeModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pokeTitle">
+    <div class="mhead"><h2 id="pokeTitle">🐾 포켓몬 배치</h2><button class="mx" data-close="pokeModal" aria-label="닫기">✕</button></div>
+    <div class="mbody">
+      <p class="mnote" id="pokeNote">도감에서 잡은 포켓몬만 놓을 수 있어요 · 최대 8마리</p>
+      <div class="zchips" id="zoneChips"></div>
+      <div class="grid" id="pokeGrid"></div>
+      <div class="strip">
+        <h3>지금 마을에 있는 친구</h3>
+        <div class="plist" id="placedList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 마을 꾸미기 -->
+<div class="modal" id="itemModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="itemTitle">
+    <div class="mhead"><h2 id="itemTitle">🎨 마을 꾸미기</h2><button class="mx" data-close="itemModal" aria-label="닫기">✕</button></div>
+    <div class="mbody">
+      <p class="mnote" id="itemNote">가방에 있는 아이템이에요 · 최대 8개까지 놓을 수 있어요</p>
+      <div class="grid" id="itemGrid"></div>
+      <div class="strip">
+        <h3>지금 마을에 있는 아이템</h3>
+        <div class="plist" id="placedItems"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 📖 도감 보기 (마을 꾸미기 바로 옆 버튼) -->
+<div class="modal dex" id="dexModal" hidden>
+  <div class="dxsheet" role="dialog" aria-modal="true" aria-labelledby="dexTitle">
+    <div class="dxhead">
+      <h2 id="dexTitle">📖 <span id="dexOwner">첫째</span>의 도감</h2>
+      <button class="mx" data-close="dexModal" aria-label="닫기">✕</button>
+    </div>
+    <div class="dxsum">
+      <div class="dxbar"><i id="dexBar"></i></div>
+      <p class="dxnum"><b id="dexCaught">0</b><span>/ <span id="dexTotal">0</span>마리</span>
+        <span id="dexPct">0%</span><span class="gene" id="dexGen1"></span></p>
+    </div>
+    <div class="dxtabs" id="dexTabs" role="tablist" aria-label="도감 보기 방식">
+      <button type="button" data-dtab="caught" class="on" role="tab" aria-selected="true">🐾 잡은 친구 <span id="dexCaughtN">0</span></button>
+      <button type="button" data-dtab="miss" role="tab" aria-selected="false">🔒 못 잡은 친구 <span id="dexMissN">0</span></button>
+    </div>
+    <div class="dxtypes" id="dexTypes" role="group" aria-label="속성으로 보기"></div>
+    <div class="dxbody" id="dexBody">
+      <p class="dxtip" id="dexTip">잡은 친구를 누르면 자세히 볼 수 있어요</p>
+      <div class="dxgrid" id="dexGrid"></div>
+      <p class="dxempty" id="dexEmpty" hidden></p>
+      <div class="dxmore" id="dexMoreWrap" hidden><button type="button" id="dexMore">더 보기</button></div>
+    </div>
+    <div class="dxfoot">
+      <button type="button" id="dexAddBtn" hidden>➕ 포켓몬 추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- 📖 도감 상세 -->
+<div class="modal dexdetail dxdet" id="dexDetailModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="dxdName">
+    <div class="mhead"><h2>📖 도감 상세</h2><button class="mx" data-close="dexDetailModal" aria-label="닫기">✕</button></div>
+    <div class="mbody">
+      <img class="dart" id="dxdImg" alt="" decoding="async">
+      <h3 id="dxdName">포켓몬</h3>
+      <p class="dsub"><span id="dxdNum"></span><span id="dxdGenusWrap"> · <span id="dxdGenus"></span></span><span id="dxdRankWrap"> <b id="dxdRank"></b></span></p>
+      <div class="dty" id="dxdTypes"></div>
+      <p class="ddesc" id="dxdDesc"></p>
+      <div class="dstats" id="dxdStats"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 이사 확인 -->
+<div class="modal" id="moveModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="moveTitle">
+    <div class="mhead"><h2 id="moveTitle">🚚 다른 마을에 살고 있어요</h2><button class="mx" data-close="moveModal" aria-label="닫기">✕</button></div>
+    <div class="mbody">
+      <p class="mnote" id="moveNote">이 마을로 이사시킬까요?</p>
+      <div class="gsel" style="margin-top:4px">
+        <button type="button" id="moveYes" class="on">🚚 이사시키기</button>
+        <button type="button" data-close="moveModal">그냥 두기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 교체 -->
+<div class="modal" id="swapModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="swapTitle">
+    <div class="mhead"><h2 id="swapTitle">자리가 꽉 찼어요!</h2><button class="mx" data-close="swapModal" aria-label="닫기">✕</button></div>
+    <div class="mbody">
+      <p class="mnote" id="swapNote">어떤 걸 바꿀까요? 고르면 새 친구가 그 자리에 들어와요.</p>
+      <div class="plist" id="swapList" style="flex-direction:column;gap:6px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 🎁 아빠 선물 -->
+<div class="modal" id="giftModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="giftTitle">
+    <div class="mhead"><h2 id="giftTitle">🎁 아빠 선물</h2><button class="mx" data-close="giftModal" aria-label="닫기">✕</button></div>
+    <div class="mbody">
+      <div id="giftPin">
+        <p class="mnote" style="text-align:center">어른만 쓰는 선물이에요. 가족 PIN 4자리를 눌러 주세요.</p>
+        <div class="pindots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+        <p class="pinmsg" id="pinMsg">가족 PIN</p>
+        <div class="pinpad" id="pinPad"></div>
+      </div>
+      <div id="giftPick" hidden class="giftstep">
+        <div>
+          <div class="lb">🎯 누구에게 선물할까요?</div>
+          <div class="gsel" id="gTargets"></div>
+        </div>
+        <div>
+          <div class="lb">🎁 무엇을 선물할까요?</div>
+          <div class="gitems" id="gItems"></div>
+        </div>
+        <button class="gbtn" id="gSend" disabled>🎁 선물 보내기</button>
+        <p class="gnote">선물은 바로 그 친구의 마을 가방/볼 주머니에 들어가요</p>
+        <p class="gnote" id="gHealNote">🎁 3D 아지트 회복권 — 아린 <b>0회</b> · 지안 <b>0회</b> 남음</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 🗑 아빠: 아이템 지우기 (꾹 누르면 PIN) -->
+<div class="modal" id="delItemModal" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="delTitle">
+    <div class="mhead"><h2 id="delTitle">🗑 아이템 지우기</h2><button class="mx" data-close="delItemModal" aria-label="닫기">✕</button></div>
+    <div class="mbody">
+      <p class="mnote" id="delNote" style="text-align:center">어른만 지울 수 있어요. 가족 PIN 4자리를 눌러 주세요.</p>
+      <div class="pindots" id="delDots"><i></i><i></i><i></i><i></i></div>
+      <p class="pinmsg" id="delMsg">가족 PIN</p>
+      <div class="pinpad" id="delPad"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 축하 -->
+<div class="party" id="party" aria-live="assertive">
+  <div class="pcard">
+    <div class="confetti" id="confetti"></div>
+    <div class="giftem">🎁</div>
+    <h2 id="partyTitle">첫째에게 선물!</h2>
+    <p id="partySub">포켓몬센터 텐트 1개</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const $ = (s, r) => (r || document).querySelector(s);
+  const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
+  const rnd = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const pickOf = (a) => a[Math.floor(Math.random() * a.length)];
+  const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* */ } };
+  const SPR = (id) => 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/' + id + '.png';
+  const ART = (id) => 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/' + id + '.png';
+  const CRY = (id) => 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/' + id + '.ogg';
+
+  /* 구역 안에 골고루 놓이도록 쓰는 자리(퍼센트) */
+  const SPOTS = [[24,50],[46,44],[68,52],[33,70],[57,71],[79,64],[14,60],[87,46]];
+  const MAX_PK = 8;
+  const MAX_ITEM = 8;
+
+  /* ---------- 자연 지형 (그림 속 실제 연못·언덕·배틀터) ----------
+     cx·cy = 마을 그림 안의 중심 퍼센트, rx·ry = 반지름 퍼센트.
+     그림은 정사각 1:1 이고 무대에 cover 로 깔리므로, 화면 퍼센트와 그림 퍼센트를
+     mapFit()/boxToMap() 으로 서로 바꿔 판정한다 — 화면 비율이 달라져도 위치가 어긋나지 않는다. */
+  const MAP_W = 1000;   /* 그림 좌표계 기준 너비 — 비율만 쓰므로 임의 단위(높이는 그림 비율로 정한다) */
+  /* 테마별 자연 지형 판정 — 테마마다, 또 가로/세로 그림마다 연못·언덕·배틀터 자리가 달라서 표로 나눠 둔다.
+     sq = 정사각(세로 화면) 그림, wd = 16:9 가로 그림. k 는 행동 종류(pond 물 · hill 높은 곳 · arena 배틀터). */
+  const TERRAIN_SET = {
+    meadow: {
+      sq: [
+        { k: 'pond', emoji: '💧', name: '연못', cx: 27, cy: 54, rx: 16, ry: 9.5 },
+        { k: 'hill', emoji: '😴', name: '언덕', cx: 72, cy: 26, rx: 14, ry: 10 },
+        { k: 'arena', emoji: '⚔️', name: '배틀장소', cx: 53, cy: 79, rx: 15.5, ry: 8 },
+      ],
+      wd: [
+        { k: 'pond', emoji: '💧', name: '연못', cx: 28, cy: 62, rx: 14, ry: 11 },
+        { k: 'hill', emoji: '😴', name: '언덕', cx: 72, cy: 33, rx: 12, ry: 10 },
+        { k: 'arena', emoji: '⚔️', name: '배틀장소', cx: 52, cy: 83, rx: 13, ry: 8 },
+      ],
+    },
+    beach: {
+      sq: [
+        { k: 'pond', emoji: '🌊', name: '바다', cx: 15, cy: 50, rx: 19, ry: 22 },
+        { k: 'hill', emoji: '😴', name: '모래언덕', cx: 74, cy: 28, rx: 14, ry: 11 },
+        { k: 'arena', emoji: '⚔️', name: '모래 운동장', cx: 55, cy: 76, rx: 16, ry: 10 },
+      ],
+      wd: [
+        { k: 'pond', emoji: '🌊', name: '바다', cx: 17, cy: 52, rx: 17, ry: 25 },
+        { k: 'hill', emoji: '😴', name: '모래언덕', cx: 78, cy: 28, rx: 12, ry: 10 },
+        { k: 'arena', emoji: '⚔️', name: '모래 운동장', cx: 58, cy: 78, rx: 15, ry: 9 },
+      ],
+    },
+    mountain: {
+      sq: [
+        { k: 'pond', emoji: '💦', name: '계곡물', cx: 15, cy: 52, rx: 16, ry: 19 },
+        { k: 'hill', emoji: '😴', name: '바위언덕', cx: 73, cy: 34, rx: 15, ry: 11 },
+        { k: 'arena', emoji: '⚔️', name: '풀밭 마당', cx: 52, cy: 77, rx: 15, ry: 9 },
+      ],
+      wd: [
+        { k: 'pond', emoji: '💦', name: '계곡물', cx: 14, cy: 52, rx: 13, ry: 21 },
+        { k: 'hill', emoji: '😴', name: '바위언덕', cx: 76, cy: 36, rx: 13, ry: 10 },
+        { k: 'arena', emoji: '⚔️', name: '풀밭 마당', cx: 50, cy: 79, rx: 14, ry: 8 },
+      ],
+    },
+    desert: {
+      sq: [
+        { k: 'pond', emoji: '💧', name: '오아시스', cx: 20, cy: 52, rx: 16, ry: 14 },
+        { k: 'hill', emoji: '😴', name: '모래언덕', cx: 76, cy: 28, rx: 13, ry: 10 },
+        { k: 'arena', emoji: '⚔️', name: '모래 마당', cx: 55, cy: 75, rx: 16, ry: 9 },
+      ],
+      wd: [
+        { k: 'pond', emoji: '💧', name: '오아시스', cx: 18, cy: 38, rx: 13, ry: 16 },
+        { k: 'hill', emoji: '😴', name: '모래언덕', cx: 78, cy: 30, rx: 12, ry: 9 },
+        { k: 'arena', emoji: '⚔️', name: '모래 마당', cx: 56, cy: 72, rx: 16, ry: 9 },
+      ],
+    },
+    /* 태초 바람 마을 — 왼쪽 냇물 · 꽃밭 울타리 · 가운데 빈 마당 */
+    starter: {
+      sq: [
+        { k: 'pond', emoji: '💧', name: '냇물', cx: 8, cy: 66, rx: 8, ry: 17 },
+        { k: 'hill', emoji: '😴', name: '꽃밭', cx: 23, cy: 42, rx: 11, ry: 8 },
+        { k: 'arena', emoji: '⚔️', name: '마을 마당', cx: 52, cy: 74, rx: 20, ry: 13 },
+      ],
+      wd: [
+        { k: 'pond', emoji: '💧', name: '냇물', cx: 4.5, cy: 62, rx: 6, ry: 22 },
+        { k: 'hill', emoji: '😴', name: '꽃밭', cx: 20, cy: 74, rx: 11, ry: 12 },
+        { k: 'arena', emoji: '⚔️', name: '마을 마당', cx: 52, cy: 72, rx: 22, ry: 15 },
+      ],
+    },
+    /* 파란 지붕 항구 마을 — 부두 아래 바다 · 오른쪽 솔숲 · 모래 광장 */
+    harbor: {
+      sq: [
+        { k: 'pond', emoji: '🌊', name: '바다', cx: 45, cy: 95, rx: 20, ry: 6 },
+        { k: 'hill', emoji: '😴', name: '솔숲 언덕', cx: 93, cy: 70, rx: 7, ry: 8 },
+        { k: 'arena', emoji: '⚔️', name: '모래 마당', cx: 48, cy: 50, rx: 24, ry: 20 },
+      ],
+      wd: [
+        { k: 'pond', emoji: '🌊', name: '바다', cx: 45, cy: 92, rx: 26, ry: 8 },
+        { k: 'hill', emoji: '😴', name: '솔숲 언덕', cx: 92, cy: 28, rx: 7, ry: 10 },
+        { k: 'arena', emoji: '⚔️', name: '모래 마당', cx: 55, cy: 52, rx: 25, ry: 18 },
+      ],
+    },
+    /* 고목 숲속 마을 — 돌 우물 · 고목 그늘 · 숲속 마당 */
+    forest: {
+      sq: [
+        { k: 'pond', emoji: '💧', name: '돌 우물', cx: 84.5, cy: 40, rx: 7, ry: 6 },
+        { k: 'hill', emoji: '😴', name: '고목 그늘', cx: 12, cy: 74, rx: 9, ry: 11 },
+        { k: 'arena', emoji: '⚔️', name: '숲속 마당', cx: 48, cy: 55, rx: 22, ry: 20 },
+      ],
+      wd: [
+        { k: 'pond', emoji: '💧', name: '돌 우물', cx: 75, cy: 39, rx: 6, ry: 8 },
+        { k: 'hill', emoji: '😴', name: '고목 그늘', cx: 8, cy: 66, rx: 7, ry: 12 },
+        { k: 'arena', emoji: '⚔️', name: '숲속 마당', cx: 48, cy: 65, rx: 25, ry: 22 },
+      ],
+    },
+    /* 설원 온천 마을 — 노천 온천 · 눈더미 · 눈 마당 */
+    snow: {
+      sq: [
+        { k: 'pond', emoji: '♨️', name: '온천', cx: 19, cy: 29, rx: 16, ry: 11 },
+        { k: 'hill', emoji: '😴', name: '눈더미 언덕', cx: 79, cy: 52, rx: 8, ry: 10 },
+        { k: 'arena', emoji: '⚔️', name: '눈 마당', cx: 50, cy: 66, rx: 24, ry: 18 },
+      ],
+      wd: [
+        { k: 'pond', emoji: '♨️', name: '온천', cx: 12, cy: 66, rx: 12, ry: 20 },
+        { k: 'hill', emoji: '😴', name: '눈더미 언덕', cx: 74, cy: 78, rx: 9, ry: 11 },
+        { k: 'arena', emoji: '⚔️', name: '눈 마당', cx: 55, cy: 58, rx: 24, ry: 18 },
+      ],
+    },
+    /* 물의 운하 도시 — 운하 · 물가 계단 · 광장 */
+    canal: {
+      sq: [
+        { k: 'pond', emoji: '🌊', name: '운하', cx: 12, cy: 62, rx: 12, ry: 22 },
+        { k: 'hill', emoji: '😴', name: '물가 계단', cx: 80, cy: 84, rx: 9, ry: 8 },
+        { k: 'arena', emoji: '⚔️', name: '광장', cx: 47, cy: 55, rx: 22, ry: 18 },
+      ],
+      wd: [
+        { k: 'pond', emoji: '🌊', name: '운하', cx: 20, cy: 86, rx: 20, ry: 13 },
+        { k: 'hill', emoji: '😴', name: '물가 계단', cx: 52, cy: 82, rx: 10, ry: 7 },
+        { k: 'arena', emoji: '⚔️', name: '광장', cx: 58, cy: 60, rx: 22, ry: 16 },
+      ],
+    },
+  };
+  let TERRAIN = TERRAIN_SET.meadow.sq;
+  let MAP_FIT = null;
+  /* 지금 그림의 비율 — 가로 와이드 그림(data-fmt="wide")이면 16:9, 세로는 정사각 1:1 */
+  function mapAspect() {
+    const m = document.getElementById('meadow');
+    return (m && m.dataset && m.dataset.fmt === 'wide') ? 16 / 9 : 1;
+  }
+  function refreshTerrain() {
+    const t = TERRAIN_SET[THEME] || TERRAIN_SET.meadow;
+    TERRAIN = (mapAspect() === 1) ? t.sq : t.wd;
+    resetMapFit();
+  }
+  /* 마을 무대에 그림이 cover 로 깔렸을 때의 배율과 여백(px) */
+  function mapFit() {
+    if (MAP_FIT) return MAP_FIT;
+    const m = document.getElementById('meadow');
+    const r = m ? m.getBoundingClientRect() : null;
+    const w = (r && r.width) || 1;
+    const h = (r && r.height) || 1;
+    const mh = MAP_W / mapAspect();
+    const k = Math.max(w / MAP_W, h / mh);
+    MAP_FIT = { w: w, h: h, k: k, mw: MAP_W, mh: mh, ox: (w - MAP_W * k) / 2, oy: (h - mh * k) / 2 };
+    return MAP_FIT;
+  }
+  function resetMapFit() { MAP_FIT = null; }
+  /* 화면(무대) 퍼센트 → 그림 퍼센트 */
+  function boxToMap(xb, yb) {
+    const f = mapFit();
+    return {
+      x: ((Number(xb) / 100) * f.w - f.ox) / (f.mw * f.k) * 100,
+      y: ((Number(yb) / 100) * f.h - f.oy) / (f.mh * f.k) * 100,
+    };
+  }
+  /* 그림 퍼센트 → 화면(무대) 퍼센트 */
+  function mapToBox(xa, ya) {
+    const f = mapFit();
+    return {
+      x: (f.ox + f.mw * f.k * Number(xa) / 100) / f.w * 100,
+      y: (f.oy + f.mh * f.k * Number(ya) / 100) / f.h * 100,
+    };
+  }
+  const ZONE_ACTS = {
+    pond: { cls: 'b-pond', stb: '💦', fx: ['💦', '💧', '🌊'], bubble: '💦' },
+    hill: { cls: 'b-hill', stb: '💤', fx: ['💤', '✨', '😴'], bubble: '💤' },
+    arena: { cls: 'b-arena', stb: '⚡', fx: ['⚡', '💥', '🔥'], bubble: '⚡' },
+    grass: { cls: 'b-grass', stb: '', fx: ['🌿', '🍃', '🎵'], bubble: '🎵' },
+  };
+  function zoneAt(x, y) {
+    const px = Number(x);
+    const py = Number(y);
+    if (!Number.isFinite(px) || !Number.isFinite(py)) return 'grass';
+    const m = boxToMap(px, py);
+    for (let i = 0; i < TERRAIN.length; i += 1) {
+      const t = TERRAIN[i];
+      const dx = (m.x - t.cx) / t.rx;
+      const dy = (m.y - t.cy) / t.ry;
+      if (dx * dx + dy * dy <= 1) return t.k;
+    }
+    return 'grass';
+  }
+
+  const SLOTS = [
+    { k: 'p1', fb: '첫째', emoji: '👧' },
+    { k: 'p2', fb: '둘째', emoji: '🧒' },
+    { k: 'guest', fb: '게스트', emoji: '🧪' },
+  ];
+  const K_PLACE = (s) => 'pkm.village.v1.' + s;
+  const K_INV = (s) => 'pkm.village.inv.v1.' + s;
+  const K_BALLS = (s) => 'pkm.balls.v1.' + s;
+  const K_PIN = 'pkm.family.pin.v1';
+  const DEFAULT_PIN = '0623';
+
+  /* ---------- 🎁 3D 아지트 회복 3회권 ----------
+     아빠가 선물한 회복권은 슬롯(p1·p2·guest)별 장수로 저장하고,
+     pokemon-sync.js 가 클라우드로 함께 올려 아이들 태블릿의 3D 아지트(pokemon-3d.html)가 바로 받아 쓴다.
+     at(마지막으로 바뀐 시각)으로 낡은 기기의 예전 장수가 새 선물을 지우지 않게 한다. */
+  const K_HEAL_GIFT = 'pkm.agit.healBonus.v1';
+  function healGiftAll() {
+    const o = lsGet(K_HEAL_GIFT, null);
+    const out = { v: 1, p1: 0, p2: 0, guest: 0, at: {}, seen: {} };
+    if (!o || typeof o !== 'object') return out;
+    ['p1', 'p2', 'guest'].forEach((s) => {
+      const n = Number(o[s]);
+      out[s] = Number.isFinite(n) && n > 0 ? Math.round(n) : 0;
+    });
+    ['at', 'seen'].forEach((f) => {
+      const src = o[f];
+      if (!src || typeof src !== 'object') return;
+      Object.keys(src).forEach((k) => {
+        const t = Number(src[k]);
+        if (Number.isFinite(t) && t > 0) out[f][k] = t;
+      });
+    });
+    return out;
+  }
+  function healGiftOf(slot) { return healGiftAll()[slot] || 0; }
+  function addHealGift(slot, n) {
+    const k = slot === 'p2' ? 'p2' : slot === 'guest' ? 'guest' : 'p1';
+    const st = healGiftAll();
+    st[k] = Math.max(0, (st[k] || 0) + (Number(n) || 0));
+    st.at[k] = Date.now();
+    lsSet(K_HEAL_GIFT, st);
+    return st[k];
+  }
+
+  /* ---------- 마을 테마 ----------
+     도감 10마리마다 새 마을이 하나씩 열린다(need). 이 배열에 한 줄만 더하면
+     40·50·60마리 마을도 그대로 다음 테마가 된다(need: 다음 해금 마릿수). */
+  const THEMES = [
+    { k: 'meadow', emoji: '🌿', name: '초원 마을', short: '초원', need: 0, tag: 'village-day' },
+    { k: 'beach', emoji: '🏖️', name: '바다 해변 마을', short: '바다', need: 10, tag: 'village-beach' },
+    { k: 'mountain', emoji: '🏔️', name: '산속 고원 마을', short: '고원', need: 20, tag: 'village-mountain' },
+    { k: 'desert', emoji: '🏜️', name: '사막 오아시스 마을', short: '사막', need: 30, tag: 'village-desert' },
+    { k: 'starter', emoji: '🏠', name: '태초 바람 마을', short: '태초', need: 40, tag: 'village-starter' },
+    { k: 'harbor', emoji: '⛵', name: '파란 지붕 항구 마을', short: '항구', need: 50, tag: 'village-harbor' },
+    { k: 'forest', emoji: '🌲', name: '고목 숲속 마을', short: '숲속', need: 60, tag: 'village-forest' },
+    { k: 'snow', emoji: '❄️', name: '설원 온천 마을', short: '설원', need: 70, tag: 'village-snow' },
+    { k: 'canal', emoji: '🌊', name: '물의 운하 도시', short: '운하', need: 80, tag: 'village-canal' },
+  ];
+  const K_THEME = (s) => 'pkm.village.theme.v1.' + s;
+  let THEME = 'meadow';
+  function themeDef(k) { return THEMES.find((t) => t.k === k) || THEMES[0]; }
+  /* '마을로 / 숲으로' — 받침에 맞는 조사를 고른다(ㄹ받침·받침없음은 '로') */
+  function roJosa(word) {
+    const s = String(word || '');
+    const c = s.charCodeAt(s.length - 1);
+    if (!(c >= 0xAC00 && c <= 0xD7A3)) return '로';
+    const jong = (c - 0xAC00) % 28;
+    return (jong === 0 || jong === 8) ? '로' : '으로';
+  }
+  function dexCount(slot) { try { return dexIds(slot || SLOT).length; } catch (e) { return 0; } }
+  /* 게스트는 체험용이라 전부 열려 있고, 나머지는 도감 마릿수만큼 열린다 */
+  function themeOpen(t) { return !t || !t.need || SLOT === 'guest' || dexCount(SLOT) >= Number(t.need); }
+  function openThemes() { return THEMES.filter(themeOpen); }
+
+  /* ---------- 마을 그림(테마 · 시간대 · 가로/세로) ---------- */
+  function villageSrc(tod, theme, wide) {
+    if (window.POK_ART && POK_ART.srcVillage) return POK_ART.srcVillage(tod, theme, wide);
+    const n = theme === 'meadow' ? 'village-' + tod : 'village-' + theme;
+    return './art/' + n + (wide ? '-wide' : '') + '.webp';
+  }
+  /* 무대가 가로로 충분히 넓을 때만 와이드 그림을 쓴다 — 1.30 아래(폴드8 펼침 3:4 등)는
+     정사각 그림이 더 꽉 차게 보인다 */
+  function isWideStage() {
+    const m = document.getElementById('meadow');
+    if (!m) return false;
+    const r = m.getBoundingClientRect();
+    if (!r.width || !r.height) return false;
+    return (r.width / r.height) >= 1.30;
+  }
+  let ART_TOKEN = 0;
+  function applyArt() {
+    const m = document.getElementById('meadow');
+    if (!m) return null;
+    const tod = todNow();
+    const wide = isWideStage();
+    m.dataset.fmt = wide ? 'wide' : 'square';
+    m.dataset.vtheme = THEME;
+    m.dataset.tod = tod;
+    refreshTerrain();
+    const src = villageSrc(tod, THEME, wide);
+    const token = (ART_TOKEN += 1);
+    const paint = () => {
+      if (!m.isConnected || token !== ART_TOKEN) return;   /* 그새 테마가 또 바뀌었으면 늦게 온 그림은 버린다 */
+      m.style.setProperty('--art', 'url("' + src + '")');
+      m.removeAttribute('data-art-pending');
+      m.dataset.art = tod;
+      const tinted = THEME !== 'meadow';   /* 바다·고원·사막은 낮 그림 한 장 + 빛막으로 노을·밤을 만든다 */
+      m.classList.toggle('wsunset', tinted && tod === 'sunset');
+      m.classList.toggle('wnight', tinted && tod === 'night');
+      resetMapFit();
+    };
+    if (!src) { m.style.removeProperty('--art'); m.removeAttribute('data-art'); return tod; }
+    m.setAttribute('data-art-pending', THEME + ':' + tod);
+    if (window.POK_ART && POK_ART.ensure) {
+      POK_ART.ensure(src, (ok) => {
+        if (ok) paint();
+        else {
+          m.style.removeProperty('--art');
+          m.removeAttribute('data-art');
+          m.removeAttribute('data-art-pending');
+        }
+      });
+    } else paint();
+    return tod;
+  }
+  function loadTheme() {
+    const t = themeDef(lsGet(K_THEME(SLOT), 'meadow'));
+    THEME = themeOpen(t) ? t.k : 'meadow';
+    return THEME;
+  }
+  function paintThemeBar() {
+    const host = document.getElementById('themeBar');
+    if (!host) return;
+    const dex = dexCount(SLOT);
+    host.innerHTML = THEMES.map((t) => {
+      const on = t.k === THEME;
+      const open = themeOpen(t);
+      const cls = (on ? 'on ' : '') + (open ? '' : 'lock');
+      const tip = open ? t.name : (t.name + ' — 도감 ' + t.need + '마리를 모으면 열려요');
+      const inner = open
+        ? '<span class="te">' + t.emoji + '</span><span class="tn">' + t.short + '</span>'
+        : '<span class="te">🔒</span><span class="tn lockn">' + t.need + '마리</span>';
+      return '<button type="button" data-vtheme="' + t.k + '" class="' + cls + '" title="' + tip + '"'
+        + ' aria-label="' + tip + '" aria-pressed="' + (on ? 'true' : 'false') + '">' + inner + '</button>';
+    }).join('');
+    host.dataset.dex = String(dex);
+  }
+  function setTheme(k) {
+    const t = themeDef(k);
+    if (!themeOpen(t)) {
+      toast('🔒 도감 ' + t.need + '마리를 모으면 열려요! (지금 ' + dexCount(SLOT) + '마리)');
+      try { Sfx.tone(220, 0.10, 'square', 0.05, 180); } catch (e) { /* */ }
+      return false;
+    }
+    THEME = t.k;
+    lsSet(K_THEME(SLOT), THEME);
+    applyArt();
+    paintThemeBar();
+    paintVillage();
+    try { Sfx.click(); } catch (e) { /* */ }
+    if (t.k !== 'meadow') toast(t.emoji + ' ' + t.name + roJosa(t.name) + ' 놀러 왔어요!');
+    return true;
+  }
+
+  const POK3 = window.POK3 || null;
+  const DB = { list: [], byId: {} };
+  let SLOT = 'p1';
+  let swapFor = null;   // {type:'poke'|'item', ...}
+  let moveFor = null;   // 다른 마을에서 데려올 포켓몬 id
+  let TOD_FORCE = null;   // 검증용 시간대 주입 훅(day|sunset|night) — 평소엔 null
+  let todTimer = 0;
+  let selectedItem = -1;
+  let selectedPoke = '';   // 탭으로 고른 포켓몬 id(문자열)
+  let pkDrag = null;
+  function isGlow(k) {
+    if (POK3 && POK3.isGlow) return POK3.isGlow(k);
+    return ['campfire', 'lantern', 'lamp', 'star', 'fireflies', 'garland', 'chime', 'fireflyjar'].indexOf(k) >= 0;
+  }
+
+  /* ---------- 소리 ---------- */
+  const Sfx = {
+    ctx: null,
+    muted: lsGet('pkm.mute.v1', false) === true,
+    ensure() {
+      if (this.muted) return null;
+      try {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        return this.ctx;
+      } catch (e) { return null; }
+    },
+    tone(f, d, type, v, f2) {
+      const ctx = this.ensure();
+      if (!ctx) return;
+      /* 🔊 볼륨 분리 — 효과음은 '발음·효과음' 쪽 크기를 따른다(설정 없으면 예전 그대로) */
+      const vol = (v || 0.05) * (window.PKMAudio ? window.PKMAudio.voice() : 1);
+      try {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = type || 'triangle';
+        o.frequency.setValueAtTime(f, ctx.currentTime);
+        if (f2) o.frequency.exponentialRampToValueAtTime(f2, ctx.currentTime + (d || 0.12));
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(Math.max(0.0002, vol), ctx.currentTime + 0.012);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (d || 0.12));
+        o.connect(g).connect(ctx.destination);
+        o.start();
+        o.stop(ctx.currentTime + (d || 0.12) + 0.02);
+      } catch (e) { /* */ }
+    },
+    click() { this.tone(680, 0.06, 'square', 0.035, 900); },
+    pop() { this.tone(520, 0.09, 'triangle', 0.05, 780); },
+    fanfare() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => this.tone(f, 0.22, 'triangle', 0.07), i * 130)); },
+    cry(id) {
+      if (this.muted) return;
+      try {
+        const a = new Audio(CRY(id));
+        a.volume = 0.5 * (window.PKMAudio ? window.PKMAudio.voice() : 1);
+        const pr = a.play();
+        if (pr && pr.catch) pr.catch(() => { /* */ });
+      } catch (e) { /* */ }
+    },
+  };
+
+  /* ============================================================
+     배경음악 — public/audio/*.mp3 (전곡 CC0, 출처는 public/audio/CREDITS.md)
+     · AudioBuffer 루프로 재생해 파일 끝에서 끊기지 않고 이어진다.
+     · 소리는 모두 master gain 을 지나므로 🔊/🔇 하나로 효과음과 함께 꺼진다.
+     · 자동재생 정책 때문에 첫 터치 전에는 조용히 대기하고, 터치 순간 시작한다.
+     · 파일을 못 받아도 게임은 그대로 진행된다(조용해질 뿐).
+     ============================================================ */
+  const BGM = {
+    ctx: null, master: null, analyser: null, meterBuf: null,
+    files: {}, loading: {}, src: null, ambSrc: null,
+    musicName: '', ambName: '', wantMusic: '', wantAmb: '',
+    level: 0, meterT: 0, unlocked: false,
+    bgmLevel: 1,   /* 🔊 볼륨 분리 — 배경음만의 크기(0~1). 효과음은 Sfx 가 따로 곱한다 */
+    MUSIC_VOL: 0.62, AMB_VOL: 0.3,
+    AMB_GAIN: { amb_forest: 1.25, amb_wind: 0.9 },
+    url(name) { return './audio/' + name + '.mp3'; },
+    ensure() {
+      try {
+        if (!this.ctx) {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return null;
+          this.ctx = new AC();
+          this.master = this.ctx.createGain();
+          this.master.gain.value = Sfx.muted ? 0 : this.bgmLevel;
+          this.analyser = this.ctx.createAnalyser();
+          this.analyser.fftSize = 1024;
+          this.master.connect(this.analyser);
+          this.analyser.connect(this.ctx.destination);
+          this.meterBuf = new Uint8Array(this.analyser.fftSize);
+        }
+        if (this.ctx.state === 'suspended') { try { this.ctx.resume(); } catch (e) { /* */ } }
+        return this.ctx;
+      } catch (e) { return null; }
+    },
+    /* 첫 터치 — 음소거 상태면 컨텍스트를 만들지 않고, 해제되면 그때 깨운다 */
+    unlock() {
+      if (Sfx.muted) return;
+      const ctx = this.ensure();
+      if (!ctx) return;
+      this.unlocked = true;
+      if (this.wantMusic && !this.src) this.startMusic(this.wantMusic);
+      if (this.wantAmb && !this.ambSrc) this.startAmb(this.wantAmb);
+    },
+    load(name) {
+      const ctx = this.ensure();
+      if (!ctx) return Promise.resolve(null);
+      if (this.files[name]) return Promise.resolve(this.files[name]);
+      if (this.loading[name]) return this.loading[name];
+      const url = this.url(name);
+      this.loading[name] = fetch(url, { cache: 'force-cache' })
+        .then((r) => { if (!r.ok) throw new Error(r.status + ' ' + url); return r.arrayBuffer(); })
+        .then((buf) => new Promise((res, rej) => {
+          const p = ctx.decodeAudioData(buf, res, rej);
+          if (p && typeof p.then === 'function') p.then(res, rej);
+        }))
+        .then((b) => {
+          const t = this.trimBuffer(b);
+          this.files[name] = t;
+          delete this.loading[name];
+          /* 받자마자, 기다리던 곡이면 바로 건다(이미 다른 곡이 흐르고 있어도 갈아 끼운다) */
+          if (name === this.wantMusic && this.unlocked && !Sfx.muted) this.startMusic(name);
+          if (name === this.wantAmb && this.unlocked && !Sfx.muted) this.startAmb(name);
+          return t;
+        })
+        .catch((e) => {
+          delete this.loading[name];
+          console.warn('[BGM] 음원 로드 실패:', url, e && e.message);
+          return null;
+        });
+      return this.loading[name];
+    },
+    /* MP3 인코더가 붙인 수십 샘플 패딩만 잘라 내고, 실제 무음 구간은 건드리지 않는다 */
+    trimBuffer(buf) {
+      try {
+        const ctx = this.ctx;
+        if (!ctx || !buf) return buf;
+        const ch0 = buf.getChannelData(0);
+        const n = buf.length;
+        let s = 0; let e = n - 1;
+        const TH = 0.0008;
+        while (s < n && Math.abs(ch0[s]) < TH) s += 1;
+        while (e > 0 && Math.abs(ch0[e]) < TH) e -= 1;
+        if (s > 256 || (n - 1 - e) > 256) return buf;   /* 진짜 무음이면 그대로 둔다 */
+        if (s === 0 && e === n - 1) return buf;
+        const len = e - s + 1;
+        const out = ctx.createBuffer(buf.numberOfChannels, len, buf.sampleRate);
+        for (let c = 0; c < buf.numberOfChannels; c += 1) {
+          out.getChannelData(c).set(buf.getChannelData(c).subarray(s, e + 1));
+        }
+        return out;
+      } catch (err) { return buf; }
+    },
+    music(name) {
+      if (!name) return;
+      this.wantMusic = name;
+      if (!this.unlocked || Sfx.muted) return;   /* 첫 터치 전에는 대기 */
+      this.startMusic(name);
+    },
+    startMusic(name) {
+      const ctx = this.ensure();
+      if (!ctx) return false;
+      const buf = this.files[name];
+      if (!buf) { this.load(name); return false; }
+      if (this.src && this.musicName === name) return true;
+      if (this.src) { const old = this.src; this.src = null; this.fadeSrc(old, 0.9); }
+      const now = ctx.currentTime;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(this.MUSIC_VOL, now + 1.2);
+      g.connect(this.master);
+      const s = ctx.createBufferSource();
+      s.buffer = buf;
+      s.loop = true;
+      s.connect(g);
+      s.start(now);
+      this.src = { node: s, gain: g, name };
+      this.musicName = name;
+      if (!this.meterT) this.meterT = setInterval(() => this.meter(), 200);
+      return true;
+    },
+    stopMusic(fade) {
+      const rec = this.src;
+      this.src = null;
+      this.musicName = '';
+      this.wantMusic = '';
+      if (rec) this.fadeSrc(rec, fade == null ? 0.8 : fade);
+    },
+    amb(name) {
+      this.wantAmb = name || '';
+      if (!name) { this.stopAmb(1.2); return; }
+      if (!this.unlocked || Sfx.muted) return;
+      this.startAmb(name);
+    },
+    startAmb(name) {
+      const ctx = this.ensure();
+      if (!ctx) return false;
+      const buf = this.files[name];
+      if (!buf) { this.load(name); return false; }
+      if (this.ambSrc && this.ambName === name) return true;
+      if (this.ambSrc) { const old = this.ambSrc; this.ambSrc = null; this.fadeSrc(old, 1.6); }
+      const now = ctx.currentTime;
+      const g = ctx.createGain();
+      const peak = this.AMB_VOL * (this.AMB_GAIN[name] || 1);
+      g.gain.setValueAtTime(0.0001, now);
+      g.gain.linearRampToValueAtTime(peak, now + 2.2);
+      g.connect(this.master);
+      const s = ctx.createBufferSource();
+      s.buffer = buf;
+      s.loop = true;
+      s.connect(g);
+      s.start(now);
+      this.ambSrc = { node: s, gain: g, name };
+      this.ambName = name;
+      return true;
+    },
+    stopAmb(fade) {
+      const rec = this.ambSrc;
+      this.ambSrc = null;
+      this.ambName = '';
+      if (rec) this.fadeSrc(rec, fade == null ? 1.2 : fade);
+    },
+    fadeSrc(rec, fade) {
+      const ctx = this.ctx;
+      if (!ctx || !rec) return;
+      const t = ctx.currentTime;
+      try {
+        if (fade > 0) {
+          const g = rec.gain.gain;
+          g.cancelScheduledValues(t);
+          g.setValueAtTime(g.value, t);
+          g.linearRampToValueAtTime(0.0001, t + fade);
+          rec.node.stop(t + fade + 0.05);
+        } else {
+          rec.node.stop(t + 0.01);
+        }
+      } catch (e) { /* */ }
+    },
+    /* 🔊/🔇 — 효과음(Sfx)과 같은 스위치를 따른다 */
+    setMuted(m) {
+      if (!this.master) {
+        if (!m) this.unlock();
+        return;
+      }
+      const ctx = this.ctx;
+      const t = ctx.currentTime;
+      const g = this.master.gain;
+      try {
+        g.cancelScheduledValues(t);
+        g.setValueAtTime(g.value, t);
+        g.linearRampToValueAtTime(m ? 0.0001 : Math.max(0.0001, this.bgmLevel), t + 0.25);
+      } catch (e) { /* */ }
+      if (!m) this.unlock();
+    },
+    /* 볼륨 분리 — 배경음 크기만 바꿔 master 에 반영(음소거가 우선) */
+    applyLevel() {
+      if (!this.master || !this.ctx) return this.bgmLevel;
+      const target = Sfx.muted ? 0.0001 : Math.max(0.0001, this.bgmLevel);
+      const t = this.ctx.currentTime;
+      const g = this.master.gain;
+      try {
+        g.cancelScheduledValues(t);
+        g.setValueAtTime(g.value, t);
+        g.linearRampToValueAtTime(target, t + 0.2);
+      } catch (e) { /* */ }
+      return this.bgmLevel;
+    },
+    meter() {
+      if (!this.analyser || !this.ctx) { this.level = 0; return; }
+      const b = this.meterBuf;
+      this.analyser.getByteTimeDomainData(b);
+      let s = 0;
+      for (let i = 0; i < b.length; i += 1) { const v = (b[i] - 128) / 128; s += v * v; }
+      this.level = Math.sqrt(s / b.length);
+    },
+    state() {
+      return {
+        unlocked: this.unlocked,
+        muted: !!Sfx.muted,
+        ctx: this.ctx ? this.ctx.state : 'none',
+        music: this.musicName,
+        amb: this.ambName,
+        wantMusic: this.wantMusic,
+        wantAmb: this.wantAmb,
+        loaded: Object.keys(this.files),
+        level: Math.round((this.level || 0) * 1000) / 1000,
+        musicGain: this.src ? Math.round(this.src.gain.gain.value * 100) / 100 : null,
+        ambGain: this.ambSrc ? Math.round(this.ambSrc.gain.gain.value * 100) / 100 : null,
+        masterGain: this.master ? Math.round(this.master.gain.value * 1000) / 1000 : null,
+      };
+    },
+  };
+
+  /* 자동재생 정책 — 터치가 올 때마다 깨워 본다(한 번에 안 되면 다음 터치에) */
+  ['pointerdown', 'touchstart', 'keydown'].forEach((ev) => {
+    try { window.addEventListener(ev, () => BGM.unlock(), { passive: true }); } catch (e) { /* */ }
+  });
+
+  /* 시간대별 자연 환경음 — 낮·노을은 새소리 숲, 밤은 바람 */
+  function ambForTod() { return todNow() === 'night' ? 'amb_wind' : 'amb_forest'; }
+
+  /* ---------- 데이터 ---------- */
+  function slotName(slot) {
+    const map = { math: 'mpb.profiles.v1', english: 'epb.profiles.v1', hangul: 'hpb.profiles.v1' };
+    const want = slot === 'guest' ? 'p3' : slot === 'p1' ? 'p1' : 'p2';
+    for (const g of ['math', 'english', 'hangul']) {
+      const o = lsGet(map[g], null);
+      const p = (o && Array.isArray(o.list) ? o.list : []).find((x) => x && x.id === want);
+      if (p && p.name) return String(p.name).slice(0, 8);
+    }
+    return (SLOTS.find((s) => s.k === slot) || {}).fb || '친구';
+  }
+  function dexIds(slot) {
+    const o = lsGet('pkm.shared.dex.v1.' + slot, null);
+    return o && Array.isArray(o.ids) ? o.ids.filter((n) => Number.isFinite(n)) : [];
+  }
+  function byId(id) { return DB.byId[id] || null; }
+  function pkName(id) { const p = byId(id); return p ? p.name : ('#' + id); }
+
+  function isRetired(k) {
+    if (POK3 && POK3.isRetired) return POK3.isRetired(k);
+    return ['pond', 'hill', 'arena'].indexOf(k) >= 0;
+  }
+
+  /* ---------- 마을별(테마별) 저장 ----------
+     초원·바다·고원·사막을 각각 따로 꾸며도 서로 덮지 않는다(기기별 저장).
+     예전 단일 저장(pkm.village.v1.*)은 초원 마을로 그대로 옮겨 와 손실 없이 이어 간다. */
+  const K_VIL = (s) => 'pkm.village.v2.' + s;
+  function blankTheme() { return { poke: [], items: [] }; }
+  function normTheme(v) {
+    const s = v && typeof v === 'object' ? v : {};
+    return {
+      poke: Array.isArray(s.poke) ? s.poke.filter((x) => x && Number.isFinite(Number(x.id))) : [],
+      /* 예전에 연못·언덕·연습장을 아이템으로 놓아 둔 저장분은 자연 지형으로 옮겨 왔으니 지운다 */
+      items: Array.isArray(s.items) ? s.items.filter((x) => x && x.k && !isRetired(x.k)) : [],
+    };
+  }
+  function allVillages(slot) {
+    const s = slot || SLOT;
+    let o = lsGet(K_VIL(s), null);
+    if (!o || typeof o !== 'object' || Array.isArray(o)) {
+      const old = lsGet(K_PLACE(s), null);
+      o = {};
+      THEMES.forEach((t) => { o[t.k] = blankTheme(); });
+      o.meadow = normTheme(old);
+      lsSet(K_VIL(s), o);
+    }
+    let dirty = false;
+    THEMES.forEach((t) => {
+      const v = normTheme(o[t.k]);
+      if (!o[t.k] || JSON.stringify(v) !== JSON.stringify(o[t.k])) dirty = true;
+      o[t.k] = v;
+    });
+    if (dirty) lsSet(K_VIL(s), o);
+    return o;
+  }
+  function state() {
+    const o = allVillages(SLOT);
+    const st = o[THEME];
+    return st && typeof st === 'object' ? st : blankTheme();
+  }
+  function save(st) {
+    const o = allVillages(SLOT);
+    o[THEME] = st;
+    lsSet(K_VIL(SLOT), o);
+  }
+  /* 다른 마을에 살고 있는 포켓몬 — pid → 테마 정의 */
+  function homesElsewhere() {
+    const o = allVillages(SLOT);
+    const home = {};
+    THEMES.forEach((t) => {
+      if (t.k === THEME) return;
+      const list = (o[t.k] && o[t.k].poke) || [];
+      list.forEach((p) => { if (p && p.id != null) home[p.id] = t; });
+    });
+    return home;
+  }
+  function themesWithPoke(pid) {
+    const o = allVillages(SLOT);
+    return THEMES.filter((t) => t.k !== THEME && (o[t.k] && o[t.k].poke || []).some((p) => String(p.id) === String(pid)));
+  }
+  /* 이사 — 다른 마을에서 빼고 지금 마을로 옴(손실 없이 이동) */
+  function movePokeHere(id) {
+    const from = themesWithPoke(id);
+    if (!from.length) return placePoke(id);
+    const o = allVillages(SLOT);
+    from.forEach((t) => {
+      const list = o[t.k].poke || [];
+      const i = list.findIndex((p) => String(p.id) === String(id));
+      if (i >= 0) list.splice(i, 1);
+    });
+    lsSet(K_VIL(SLOT), o);
+    return placePoke(id);
+  }
+  function inv() {
+    const o = lsGet(K_INV(SLOT), {}) || {};
+    const out = {};
+    Object.keys(o).forEach((k) => {
+      if (isRetired(k)) return;
+      const n = Number(o[k]) || 0;
+      if (n > 0) out[k] = n;
+    });
+    return out;
+  }
+  function saveInv(o) { lsSet(K_INV(SLOT), o); }
+
+  /* ---------- 그리기 ---------- */
+  function paintChips() {
+    const host = $('#slotChips');
+    host.innerHTML = SLOTS.map((s) =>
+      '<button data-slot="' + s.k + '" class="' + (s.k === SLOT ? 'on' : '') + '">' + s.emoji + ' ' + slotName(s.k) + '</button>'
+    ).join('');
+  }
+
+  function floorOf() { return document.getElementById('meadowFloor'); }
+
+  /* 수채화 소품 PNG — 파일 이름은 꾸미기 아이템 키와 같다(저장된 배치는 그대로 살아난다) */
+  const PROP_PNG = {
+    bench: 'bench', mat: 'mat', campfire: 'campfire', tent: 'tent', arch: 'arch',
+    fountain: 'fountain', hammock: 'hammock', sign: 'sign', lantern: 'lantern',
+    flowerbed: 'flowerbed', chest: 'chest', log: 'log',
+  };
+  function PRO_PNG(k) { return !!(PROP_PNG[k]); }
+  /* 이번에 새로 그린 수채화 소품을 프로필마다 한 번씩 선물한다(이미 받았으면 그대로 둔다).
+     저장된 마을 배치·다른 아이템 개수는 건드리지 않는다. */
+  const PROP_GIFT_VER = 'p2';
+  function giftNewProps() {
+    const flagKey = 'pkm.village.propsgift.' + PROP_GIFT_VER;
+    const done = lsGet(flagKey, null) || {};
+    let changed = false;
+    SLOTS.forEach((s) => {
+      if (done[s.k]) return;
+      const o = lsGet(K_INV(s.k), {}) || {};
+      Object.keys(PROP_PNG).forEach((k) => { o[k] = Math.max(1, Number(o[k]) || 0); });
+      lsSet(K_INV(s.k), o);
+      done[s.k] = 1;
+      changed = true;
+    });
+    if (changed) lsSet(flagKey, done);
+  }
+
+  /* 11/15 정정 — '수채화 소품 전부'를 무료로 챙겨 주던 선물을 회수한다.
+     아이템은 배틀 보상·아빠 선물로 '실제로 얻은 것'만 가방에 있어야 한다.
+     (받은 기록이 있는 프로필에서, 아이템마다 1개씩만 뺀다. 이미 놓아 둔 장식은 그대로 둔다) */
+  const PROP_UNDO_KEY = 'pkm.village.propsgift.undo.v1';
+  function revokeFreeProps() {
+    const flagKey = 'pkm.village.propsgift.' + PROP_GIFT_VER;
+    const done = lsGet(flagKey, null) || {};
+    const undone = lsGet(PROP_UNDO_KEY, null) || {};
+    let changed = false;
+    SLOTS.forEach((s) => {
+      if (!done[s.k] || undone[s.k]) return;
+      const o = lsGet(K_INV(s.k), {}) || {};
+      let touched = false;
+      Object.keys(PROP_PNG).forEach((k) => {
+        const n = Number(o[k]) || 0;
+        if (n <= 0) return;
+        if (n - 1 <= 0) delete o[k]; else o[k] = n - 1;
+        touched = true;
+      });
+      if (touched) changed = true;
+      lsSet(K_INV(s.k), o);
+      undone[s.k] = 1;
+    });
+    if (Object.keys(undone).length) lsSet(PROP_UNDO_KEY, undone);
+    return changed;
+  }
+
+  /* 아이템 하나를 가방과 마을(모든 테마)에서 완전히 회수한다 */
+  function purgeItemKey(k) {
+    const bag = inv();
+    const had = Number(bag[k]) || 0;
+    if (had) { delete bag[k]; saveInv(bag); }
+    const o = allVillages(SLOT);
+    let removed = 0;
+    THEMES.forEach((t) => {
+      const list = (o[t.k] && o[t.k].items) || [];
+      for (let i = list.length - 1; i >= 0; i -= 1) {
+        if (list[i] && String(list[i].k) === String(k)) { list.splice(i, 1); removed += 1; }
+      }
+    });
+    lsSet(K_VIL(SLOT), o);
+    selectedItem = -1;
+    paintVillage();
+    return { had: had, removed: removed };
+  }
+
+  /* 지형에 따른 행동 클래스 + 상태 배지(💦/💤/⚡) */
+  function applyZone(el, z) {
+    const act = ZONE_ACTS[z] || ZONE_ACTS.grass;
+    el.classList.remove('b-pond', 'b-hill', 'b-arena', 'b-grass');
+    el.classList.add(act.cls);
+    el.dataset.zone = z;
+    const old = el.querySelector('.stb');
+    if (act.stb) {
+      if (old) old.textContent = act.stb;
+      else {
+        const s = document.createElement('span');
+        s.className = 'stb';
+        s.textContent = act.stb;
+        el.appendChild(s);
+      }
+    } else if (old) {
+      old.remove();
+    }
+    return z;
+  }
+
+  function paintVillage() {
+    const floor = floorOf();
+    if (!floor) return;
+    resetMapFit();
+    floor.innerHTML = '';
+    const st = state();
+
+    st.items.forEach((it, idx) => {
+      const meta = (POK3 && POK3.item(it.k)) || { emoji: '🏡', name: '아이템' };
+      const el = document.createElement('div');
+      el.className = 'it k-' + it.k + (isGlow(it.k) ? ' light' : '') + (idx === selectedItem ? ' sel' : '');
+      el.dataset.item = String(idx);
+      el.dataset.k = it.k;
+      el.title = meta.name + ' — 눌러서 크게/작게 · 끌어서 옮기기';
+      el.setAttribute('role', 'button');
+      el.setAttribute('aria-label', meta.name + ' 꾸미기 아이템');
+      const art = (window.POK_PROPS && POK_PROPS.has(it.k)) ? POK_PROPS.svg(it.k) : '';
+      const png = PROP_PNG[it.k];
+      if (png) el.classList.add('has-png');
+      el.innerHTML = png
+        ? '<span class="g"><img class="pi" src="./assets/props/' + png + '.png" alt="" loading="lazy" decoding="async"></span>'
+        : (art ? '<span class="g">' + art + '</span>' : '<span class="g">' + meta.emoji + '</span>');
+      el.style.left = clamp(Number(it.x) || 50, 5, 95) + '%';
+      el.style.top = clamp(Number(it.y) || 70, 14, 93) + '%';
+      el.style.setProperty('--sc', String(Number(it.sc) || 1));
+      floor.appendChild(el);
+    });
+
+    st.poke.forEach((p, idx) => {
+      const el = document.createElement('button');
+      el.className = 'pk';
+      el.type = 'button';
+      el.dataset.pid = String(p.id);
+      el.dataset.idx = String(idx);
+      el.setAttribute('aria-label', pkName(p.id) + ' · 톡톡 두드리면 반응해요 · 끌어서 옮겨요');
+      const px = clamp(Number(p.x) || rnd(16, 84), 8, 92);
+      const py = clamp(Number(p.y) || rnd(46, 80), 26, 90);
+      el.style.left = px + '%';
+      el.style.top = py + '%';
+      el.innerHTML = '<img src="' + SPR(p.id) + '" alt="" decoding="async">';
+      el.querySelector('img').addEventListener('error', () => {
+        el.querySelector('img').src = ART(p.id);
+      }, { once: true });
+      applyZone(el, zoneAt(px, py));
+      if (String(p.id) === String(selectedPoke)) el.classList.add('sel');
+      floor.appendChild(el);
+    });
+
+    const st2 = state();
+    $('#stats').textContent = '🐾 ' + st2.poke.length + '/' + MAX_PK + ' · 🎨 ' + st2.items.length + '/' + MAX_ITEM;
+    paintChips();
+    paintThemeBar();
+    applyTod();
+  }
+
+  /* ---------- 배치: 포켓몬 ---------- */
+  function paintPokeModal() {
+    const st = state();
+    const placed = {};
+    st.poke.forEach((p) => { placed[p.id] = 1; });
+    const home = homesElsewhere();
+    const ids = dexIds(SLOT).slice().sort((a, b) => a - b);
+    $('#pokeNote').textContent = '도감 ' + ids.length + '마리 중에서 고를 수 있어요 · 마을에는 최대 ' + MAX_PK + '마리'
+      + ' · 마을마다 따로 꾸밀 수 있어요';
+    $('#zoneChips').innerHTML = '<span class="mnote">🌿 넓은 풀밭 어디에나 놓을 수 있어요 · 끌거나 톡 골라 옮기면 💧연못·😴언덕·⚔️배틀장소에서 행동이 바뀌어요</span>';
+
+    const grid = $('#pokeGrid');
+    if (!ids.length) {
+      grid.innerHTML = '<p class="mnote" style="grid-column:1/-1;text-align:center;padding:14px">아직 잡은 포켓몬이 없어요.<br>산수·한글·영어 배틀에서 먼저 잡아 보세요!</p>';
+    } else {
+      grid.innerHTML = ids.map((id) => {
+        const here = !!placed[id];
+        const away = !here ? home[id] : null;
+        const badge = here ? '<span class="zz">배치</span>'
+          : (away ? '<span class="zz tow">' + away.emoji + ' ' + away.short + ' 거주중</span>' : '');
+        return '<button class="pcell' + (here ? ' on' : '') + (away ? ' away' : '') + '" data-pid="' + id + '"'
+          + ' title="' + (away ? away.name + '에 살고 있어요 — 누르면 이 마을로 이사' : pkName(id)) + '">'
+          + badge
+          + '<img src="' + SPR(id) + '" alt="" loading="lazy"><span>' + pkName(id) + '</span></button>';
+      }).join('');
+    }
+
+    $('#placedList').innerHTML = st.poke.length
+      ? st.poke.map((p, i) => '<span class="ptag">' + pkName(p.id)
+        + '<button data-remove-poke="' + i + '" aria-label="' + pkName(p.id) + ' 빼기">✕</button></span>').join('')
+      : '<span class="mnote">아직 아무도 없어요</span>';
+  }
+
+  function placePoke(id) {
+    const st = state();
+    if (st.poke.some((p) => p.id === id)) return { ok: false, why: 'already' };
+    if (st.poke.length >= MAX_PK) {
+      swapFor = { type: 'poke', id };
+      openSwap();
+      return { ok: false, why: 'full' };
+    }
+    const n = st.poke.length;
+    const sp = SPOTS[n % SPOTS.length];
+    st.poke.push({ id, x: sp[0] + rnd(-4, 4), y: sp[1] + rnd(-4, 6) });
+    save(st);
+    paintVillage();
+    paintPokeModal();
+    Sfx.pop();
+    return { ok: true };
+  }
+
+  function removePoke(idx) {
+    const st = state();
+    if (!st.poke[idx]) return;
+    st.poke.splice(idx, 1);
+    save(st);
+    paintVillage();
+    paintPokeModal();
+  }
+
+  /* 다른 마을(예: 초원)에 살고 있는 포켓몬을 누를 때 — 그냥 데려오지 않고 한 번 물어본다 */
+  function askMove(id) {
+    const from = themesWithPoke(id);
+    if (!from.length) { placePoke(id); return; }
+    moveFor = id;
+    const note = document.getElementById('moveNote');
+    if (note) {
+      note.innerHTML = '<b>' + pkName(id) + '</b>은(는) 지금 <b>'
+        + from.map((t) => t.emoji + ' ' + t.name).join(', ') + '</b>에 살고 있어요.<br>이 마을(' + themeDef(THEME).emoji + ' '
+        + themeDef(THEME).name + ')로 이사시킬까요? 원래 마을에서는 빠져요.';
+    }
+    open('moveModal');
+  }
+
+  /* ---------- 배치: 아이템 ---------- */
+  function paintItemModal() {
+    const st = state();
+    const bag = inv();
+    const keys = POK3 ? POK3.itemKeys() : Object.keys(bag);
+    const n = Object.keys(bag).reduce((a, k) => a + bag[k], 0);
+    $('#itemNote').textContent = '가방에 있는 꾸미기 아이템이에요 · 마을에는 최대 ' + MAX_ITEM + '개 · 🔒는 아직 못 얻은 아이템(배틀 승리·아빠 선물로 받아요) · 꾹 누르면 아빠가 넣거나 지울 수 있어요';
+    $('#itemGrid').innerHTML = keys.map((k) => {
+      const it = (POK3 && POK3.item(k)) || { emoji: '🏡', name: k };
+      const free = !!(it && (it.env || it.free));
+      const c = free ? 1 : (bag[k] || 0);
+      return '<button class="icell' + (c ? '' : ' dim lock') + '" data-item="' + k + '"'
+        + (c ? '' : ' aria-label="' + it.name + ' · 아직 얻지 못한 아이템"')
+        + '>'
+        + (free ? '<span class="c">기본</span>' : (c ? '<span class="c">×' + c + '</span>' : '<span class="c lockc">🔒</span>'))
+        + (PRO_PNG(k) ? '<img class="pie" src="./assets/props/' + PROP_PNG[k] + '.png" alt="" loading="lazy">'
+          : '<span class="e">' + it.emoji + '</span>')
+        + '<span>' + it.name + '</span></button>';
+    }).join('');
+    $('#placedItems').innerHTML = st.items.length
+      ? st.items.map((it, i) => {
+        const meta = (POK3 && POK3.item(it.k)) || { emoji: '🏡', name: it.k };
+        return '<span class="ptag">' + meta.emoji + ' ' + meta.name
+          + '<button data-remove-item="' + i + '" aria-label="빼기">✕</button></span>';
+      }).join('')
+      : '<span class="mnote">아직 놓은 아이템이 없어요</span>';
+  }
+
+  function placeItem(k) {
+    const meta = (POK3 && POK3.item(k)) || {};
+    const free = !!(meta.env || meta.free);
+    const bag = inv();
+    if (!free && !bag[k]) return { ok: false, why: 'none' };
+    const st = state();
+    if (st.items.length >= MAX_ITEM) {
+      swapFor = { type: 'item', k };
+      openSwap();
+      return { ok: false, why: 'full' };
+    }
+    if (!free) {
+      bag[k] -= 1;
+      if (bag[k] <= 0) delete bag[k];
+      saveInv(bag);
+    }
+    const ni = st.items.length;
+    const isp = SPOTS[ni % SPOTS.length];
+    st.items.push({ k, x: clamp(isp[0] + rnd(-5, 5), 8, 92), y: clamp(isp[1] + rnd(-4, 10), 30, 86), sc: 1 });
+    save(st);
+    selectedItem = st.items.length - 1;
+    paintVillage();
+    paintItemModal();
+    paintCtl();
+    Sfx.pop();
+    return { ok: true };
+  }
+
+  function removeItem(idx) {
+    const st = state();
+    const it = st.items[idx];
+    if (!it) return;
+    const meta = (POK3 && POK3.item(it.k)) || {};
+    if (!meta.env && !meta.free) {
+      const bag = inv();
+      bag[it.k] = (bag[it.k] || 0) + 1;
+      saveInv(bag);
+    }
+    st.items.splice(idx, 1);
+    if (selectedItem === idx) selectedItem = -1;
+    else if (selectedItem > idx) selectedItem -= 1;
+    save(st);
+    paintVillage();
+    paintItemModal();
+    paintCtl();
+  }
+
+  /* ---------- 교체 ---------- */
+  function openSwap() {
+    if (!swapFor) return;
+    const st = state();
+    const what = swapFor.type === 'poke'
+      ? pkName(swapFor.id) + '을(를) 놓을 자리가 없어요'
+      : ((POK3 && POK3.item(swapFor.k) && POK3.item(swapFor.k).name) || '아이템') + '을(를) 놓을 자리가 없어요';
+    $('#swapNote').textContent = what + ' — 바꿀 것을 골라 주세요.';
+    const list = swapFor.type === 'poke' ? st.poke : st.items;
+    $('#swapList').innerHTML = list.length ? list.map((x, i) => {
+      if (swapFor.type === 'poke') {
+        return '<button class="ptag" data-swap="' + i + '" style="justify-content:space-between">'
+          + '<span>' + pkName(x.id) + '</span><span>🔄</span></button>';
+      }
+      const meta = (POK3 && POK3.item(x.k)) || { emoji: '🏡', name: x.k };
+      return '<button class="ptag" data-swap="' + i + '" style="justify-content:space-between">'
+        + '<span>' + meta.emoji + ' ' + meta.name + '</span><span>🔄</span></button>';
+    }).join('') : '<span class="mnote">바꿀 것이 없어요</span>';
+    open('swapModal');
+  }
+
+  function doSwap(idx) {
+    const st = state();
+    if (!swapFor) return;
+    if (swapFor.type === 'poke') {
+      if (!st.poke[idx]) return;
+      st.poke.splice(idx, 1);
+      const n = st.poke.length;
+      const sp = SPOTS[n % SPOTS.length];
+      st.poke.push({ id: swapFor.id, x: sp[0] + rnd(-4, 4), y: sp[1] + rnd(-4, 6) });
+      save(st);
+      close('swapModal');
+      swapFor = null;
+      paintVillage();
+      paintPokeModal();
+      Sfx.pop();
+    } else {
+      const old = st.items[idx];
+      if (!old) return;
+      const bag = inv();
+      bag[old.k] = (bag[old.k] || 0) + 1;
+      if (bag[swapFor.k]) bag[swapFor.k] -= 1;
+      if (bag[swapFor.k] <= 0) delete bag[swapFor.k];
+      saveInv(bag);
+      const meta2 = (POK3 && POK3.item(swapFor.k)) || {};
+      st.items.splice(idx, 1);
+      const ni2 = st.items.length;
+      const isp2 = SPOTS[ni2 % SPOTS.length];
+      st.items.push({ k: swapFor.k, x: clamp(isp2[0] + rnd(-5, 5), 8, 92), y: clamp(isp2[1] + rnd(-4, 8), 30, 86), sc: (meta2.env ? 1 : 1) });
+      save(st);
+      close('swapModal');
+      swapFor = null;
+      paintVillage();
+      paintItemModal();
+      Sfx.pop();
+    }
+  }
+
+  /* ---------- 살아있는 행동 & 터치 반응 ---------- */
+  /* 들판(🌿)에 있는 친구만 자유롭게 산책한다 — 연못·언덕·배틀장소에 놓인 친구는 그 자리에서 제 행동 */
+  function wanderTick() {
+    const st = state();
+    $$('.village .pk').forEach((el) => {
+      if (el.classList.contains('jump') || el.classList.contains('dragging')) return;
+      if ((el.dataset.zone || 'grass') !== 'grass') return;
+      if (Math.random() < 0.45) return;            // 다들 한꺼번에 움직이지 않게
+      let x = 0;
+      let y = 0;
+      let ok = false;
+      for (let i = 0; i < 6; i += 1) {
+        const cx = rnd(10, 90);
+        const cy = rnd(40, 86);
+        if (zoneAt(cx, cy) === 'grass') { x = cx; y = cy; ok = true; break; }
+      }
+      if (!ok) return;
+      el.style.left = x + '%';
+      el.style.top = y + '%';
+      const p = st.poke.find((q) => String(q.id) === el.dataset.pid);
+      if (p) { p.x = x; p.y = y; }
+    });
+  }
+
+  /* 지형별 잔물결 효과 — 물보라 💦 · 졸음 💤 · 스파크 ⚡ */
+  function zoneFx(el) {
+    const act = ZONE_ACTS[el.dataset.zone || 'grass'] || ZONE_ACTS.grass;
+    const floor = el.parentNode;
+    if (!floor) return;
+    const f = document.createElement('span');
+    f.className = 'pkfx';
+    f.textContent = pickOf(act.fx);
+    f.style.left = (parseFloat(el.style.left) + rnd(-5, 5)) + '%';
+    f.style.top = (parseFloat(el.style.top) - rnd(4, 11)) + '%';
+    floor.appendChild(f);
+    setTimeout(() => f.remove(), 1600);
+  }
+  function fxTick() {
+    $$('.village .pk').forEach((el) => {
+      if (Math.random() < 0.55) return;
+      zoneFx(el);
+    });
+  }
+
+  function savePositions() {
+    const st = state();
+    $$('.village .pk').forEach((el) => {
+      const p = st.poke.find((q) => String(q.id) === el.dataset.pid);
+      if (p) {
+        p.x = parseFloat(el.style.left) || p.x;
+        p.y = parseFloat(el.style.top) || p.y;
+      }
+    });
+    save(st);
+  }
+
+  function bubble(el, text) {
+    const b = document.createElement('span');
+    b.className = 'bubble';
+    b.textContent = text;
+    const floor = el.parentNode;
+    b.style.left = el.style.left;
+    b.style.top = el.style.top;
+    floor.appendChild(b);
+    setTimeout(() => b.remove(), 1450);
+  }
+  function berry(el) {
+    const b = document.createElement('span');
+    b.className = 'berry';
+    b.textContent = '🍓';
+    const floor = el.parentNode;
+    b.style.left = (parseFloat(el.style.left) + rnd(-6, 6)) + '%';
+    b.style.top = (parseFloat(el.style.top) + 6) + '%';
+    floor.appendChild(b);
+    setTimeout(() => b.remove(), 1900);
+  }
+
+  let cryAt = 0;
+  function touchPokemon(el) {
+    const id = Number(el.dataset.pid);
+    if (!id) return;
+    el.classList.remove('jump');
+    void el.offsetWidth;
+    el.classList.add('jump');
+    setTimeout(() => el.classList.remove('jump'), 640);
+    const act = ZONE_ACTS[el.dataset.zone || 'grass'] || ZONE_ACTS.grass;
+    bubble(el, Math.random() < 0.55 ? '❤️' : act.bubble);
+    setTimeout(() => berry(el), 220);
+    const now = Date.now();
+    if (now - cryAt > 700) { cryAt = now; Sfx.cry(id); }
+    Sfx.tone(760, 0.07, 'triangle', 0.04, 1080);
+  }
+
+  /* ---------- 포켓몬 위치 옮기기 (끌기 · 탭 선택 → 탭한 곳으로) ---------- */
+  const ZONE_LABEL = { pond: '💧 연못', hill: '😴 언덕', arena: '⚔️ 배틀장소', grass: '🌿 들판' };
+  function selectPoke(pid) {
+    selectedPoke = pid ? String(pid) : '';
+    if (selectedPoke) selectedItem = -1;
+    $$('#meadowFloor .pk').forEach((el) => el.classList.toggle('sel', el.dataset.pid === selectedPoke));
+    if (selectedPoke) $$('#meadowFloor .it').forEach((el) => el.classList.remove('sel'));
+    paintCtl();
+    return selectedPoke;
+  }
+  function movePokeTo(id, x, y, quiet) {
+    const st = state();
+    const p = st.poke.find((q) => String(q.id) === String(id));
+    if (!p) return null;
+    const nx = Math.round(clamp(Number(x), 8, 92) * 10) / 10;
+    const ny = Math.round(clamp(Number(y), 26, 90) * 10) / 10;
+    const z = zoneAt(nx, ny);
+    p.x = nx;
+    p.y = ny;
+    save(st);
+    $$('#meadowFloor .pk').filter((el) => el.dataset.pid === String(id)).forEach((el) => {
+      el.style.left = nx + '%';
+      el.style.top = ny + '%';
+      applyZone(el, z);
+      if (!quiet) {
+        el.classList.remove('jump');
+        void el.offsetWidth;
+        el.classList.add('jump');
+        setTimeout(() => el.classList.remove('jump'), 640);
+      }
+    });
+    return { id: Number(id), x: nx, y: ny, zone: z };
+  }
+
+  /* ---------- 모달 공통 ---------- */
+  function open(id) { const m = document.getElementById(id); if (m) m.hidden = false; }
+  function close(id) { const m = document.getElementById(id); if (m) m.hidden = true; }
+  function closeAll() { $$('.modal').forEach((m) => { m.hidden = true; }); }
+
+  /* ---------- 🎁 아빠 선물 ---------- */
+  const Gift = {
+    step: 'pin',
+    buf: '',
+    target: 'p1',
+    pick: '',
+    fails: 0,
+    reset() {
+      this.step = 'pin';
+      this.buf = '';
+      this.target = SLOT;
+      this.pick = '';
+      this.fails = 0;
+      $('#giftPin').hidden = false;
+      $('#giftPick').hidden = true;
+      $('#pinMsg').className = 'pinmsg';
+      $('#pinMsg').textContent = '가족 PIN 4자리를 눌러 주세요';
+      this.paintDots();
+    },
+    pin() {
+      const raw = localStorage.getItem(K_PIN);
+      const p = /^\d{4}$/.test(raw || '') ? raw : DEFAULT_PIN;
+      return p;
+    },
+    paintDots() {
+      const n = this.buf.length;
+      $$('#pinDots i').forEach((d, i) => d.classList.toggle('on', i < n));
+    },
+    press(d) {
+      if (this.buf.length >= 4) return;
+      this.buf += d;
+      this.paintDots();
+      Sfx.tone(660 + this.buf.length * 60, 0.07, 'triangle', 0.04);
+      if (this.buf.length === 4) setTimeout(() => this.check(), 90);
+    },
+    back() { this.buf = this.buf.slice(0, -1); this.paintDots(); },
+    check() {
+      if (this.buf === this.pin()) {
+        this.step = 'pick';
+        $('#pinMsg').className = 'pinmsg';
+        $('#pinMsg').textContent = '확인! 누구에게 선물할까요?';
+        $('#giftPin').hidden = true;
+        $('#giftPick').hidden = false;
+        Sfx.tone(1180, 0.16, 'triangle', 0.05);
+        this.paintPick();
+        return;
+      }
+      this.fails += 1;
+      this.buf = '';
+      this.paintDots();
+      const m = $('#pinMsg');
+      m.className = 'pinmsg bad';
+      m.textContent = this.fails >= 5
+        ? 'PIN을 5번 틀렸어요. 잠시 뒤 다시 해 보세요.'
+        : 'PIN이 달라요. 다시 눌러 주세요 (' + this.fails + '/5)';
+      Sfx.tone(220, 0.16, 'sawtooth', 0.05, 120);
+      if (this.fails >= 5) {
+        $$('#pinPad button').forEach((b) => { b.disabled = true; });
+        setTimeout(() => {
+          this.fails = 0;
+          $$('#pinPad button').forEach((b) => { b.disabled = false; });
+          $('#pinMsg').className = 'pinmsg';
+          $('#pinMsg').textContent = '가족 PIN 4자리를 눌러 주세요';
+        }, 7000);
+      }
+    },
+    paintPick() {
+      $('#gTargets').innerHTML = SLOTS.map((s) =>
+        '<button data-gtarget="' + s.k + '" class="' + (s.k === this.target ? 'on' : '') + '">' + s.emoji + ' ' + slotName(s.k) + '</button>'
+      ).join('');
+      const items = POK3 ? POK3.items : [];
+      const cells = items.map((it) =>
+        '<button class="icell' + (this.pick === it.k ? ' on' : '') + '" data-gitem="' + it.k + '" style="'
+        + (this.pick === it.k ? 'border-color:#d9a01a;background:linear-gradient(180deg,#fff8e0,#ffe9a8)' : '') + '">'
+        + '<span class="e">' + it.emoji + '</span><span>' + it.name + '</span></button>'
+      ).join('');
+      /* 💖 아빠 선물 회복 3회권은 목록 맨 앞에 크게 — 바로 보이게 */
+      const healCell =
+        '<button class="icell heal3" data-gitem="@heal3" style="grid-column:1/-1;flex-direction:row;gap:7px;'
+        + 'background:' + (this.pick === '@heal3' ? 'linear-gradient(180deg,#ffe9a8,#ffcf4d)' : 'linear-gradient(180deg,#fff0f6,#ffe1ef)') + ';'
+        + 'border-color:' + (this.pick === '@heal3' ? '#d9a01a' : '#f6b8d2') + ';box-shadow:0 2px 0 rgba(200,80,130,.16)">'
+        + '<span class="e" style="font-size:clamp(17px,4.4vw,21px)">💖</span>'
+        + '<span style="text-align:left;line-height:1.25;font-size:clamp(9.5px,2.7vw,11.5px)">3D 아지트 회복 3회권<br>'
+        + '<em style="font-style:normal;color:#c2306a;font-size:clamp(8.5px,2.4vw,10px)">센터에서 +3회 · 클라우드로 바로</em></span></button>';
+      const extras =
+        '<button class="icell' + (this.pick === '@random' ? ' on' : '') + '" data-gitem="@random"' + (this.pick === '@random' ? ' style="border-color:#d9a01a;background:linear-gradient(180deg,#fff8e0,#ffe9a8)"' : '') + '>'
+        + '<span class="e">🎲</span><span>랜덤 아이템</span></button>'
+        + '<button class="icell' + (this.pick === '@super' ? ' on' : '') + '" data-gitem="@super"' + (this.pick === '@super' ? ' style="border-color:#d9a01a;background:linear-gradient(180deg,#fff8e0,#ffe9a8)"' : '') + '>'
+        + '<span class="e">🔵</span><span>슈퍼볼 1개</span></button>'
+        + '<button class="icell' + (this.pick === '@hyper' ? ' on' : '') + '" data-gitem="@hyper"' + (this.pick === '@hyper' ? ' style="border-color:#d9a01a;background:linear-gradient(180deg,#fff8e0,#ffe9a8)"' : '') + '>'
+        + '<span class="e">🟡</span><span>하이퍼볼 1개</span></button>'
+        + '<button class="icell' + (this.pick === '@master' ? ' on' : '') + '" data-gitem="@master"' + (this.pick === '@master' ? ' style="border-color:#d9a01a;background:linear-gradient(180deg,#fff8e0,#ffe9a8)"' : '') + '>'
+        + '<span class="e">🟣</span><span>마스터볼 1개</span></button>';
+      $('#gItems').innerHTML = healCell + cells + extras;
+      const hn = $('#gHealNote');
+      if (hn) {
+        hn.innerHTML = '🎁 3D 아지트 회복권 — '
+          + SLOTS.filter((s) => s.k !== 'guest').map((s) => slotName(s.k) + ' <b>' + healGiftOf(s.k) + '회</b>').join(' · ')
+          + ' 남음';
+      }
+      const btn = $('#gSend');
+      btn.disabled = !this.pick;
+      btn.textContent = this.pick
+        ? '🎁 ' + slotName(this.target) + '에게 ' + this.pickName() + ' 선물하기'
+        : '🎁 선물할 것을 골라 주세요';
+    },
+    pickName() {
+      if (this.pick === '@random') return '랜덤 아이템';
+      if (this.pick === '@heal3') return '3D 아지트 회복 3회권';
+      if (this.pick === '@super') return '슈퍼볼';
+      if (this.pick === '@hyper') return '하이퍼볼';
+      if (this.pick === '@master') return '마스터볼';
+      const it = POK3 ? POK3.item(this.pick) : null;
+      return it ? it.name : '아이템';
+    },
+    send() {
+      if (!this.pick) return;
+      const t = this.target;
+      let what = '';
+      if (this.pick === '@heal3') {
+        const n = addHealGift(t, 3);
+        what = '💖 3D 아지트 회복 3회권 3회 (총 ' + n + '회)';
+      } else if (this.pick === '@super' || this.pick === '@hyper' || this.pick === '@master') {
+        const b = lsGet(K_BALLS(t), null) || { super: 2, hyper: 0, master: 0 };
+        const key = this.pick.slice(1);
+        b[key] = (Number(b[key]) || 0) + 1;
+        lsSet(K_BALLS(t), b);
+        what = ({ super: '🔵 슈퍼볼', hyper: '🟡 하이퍼볼', master: '🟣 마스터볼' })[key] + ' 1개';
+      } else {
+        let k = this.pick;
+        if (k === '@random') {
+          const keys = POK3 ? POK3.itemKeys() : ['tent'];
+          k = keys[Math.floor(Math.random() * keys.length)];
+        }
+        const bag = lsGet(K_INV(t), {}) || {};
+        bag[k] = (Number(bag[k]) || 0) + 1;
+        lsSet(K_INV(t), bag);
+        const it = POK3 ? POK3.item(k) : { emoji: '🏡', name: '아이템' };
+        what = it.emoji + ' ' + it.name + ' 1개';
+      }
+      close('giftModal');
+      party(slotName(t), what);
+      if (this.pick === '@heal3') toast('🎁 ' + slotName(t) + '에게 3D 아지트 회복 3회권이 도착했어요!');
+      if (t === SLOT) { paintVillage(); paintItemModal(); }
+      Sfx.fanfare();
+    },
+  };
+
+  function party(name, what) {
+    const el = $('#party');
+    $('#partyTitle').textContent = name + '에게 선물!';
+    $('#partySub').textContent = what + ' 이(가) 도착했어요 🎉';
+    const host = $('#confetti');
+    host.innerHTML = '';
+    const colors = ['#ff6b6b', '#ffd93d', '#6bcB77', '#4d96ff', '#c780ff', '#ff9f43'];
+    for (let i = 0; i < 26; i += 1) {
+      const c = document.createElement('i');
+      c.style.left = (Math.random() * 100).toFixed(1) + '%';
+      c.style.background = colors[i % colors.length];
+      c.style.animationDelay = (Math.random() * 0.7).toFixed(2) + 's';
+      c.style.animationDuration = (1.8 + Math.random() * 1.2).toFixed(2) + 's';
+      host.appendChild(c);
+    }
+    el.classList.add('on');
+    clearTimeout(party._t);
+    party._t = setTimeout(() => { el.classList.remove('on'); host.innerHTML = ''; }, 3200);
+  }
+
+  /* ---------- 4탄: 아이템 크기 조절 · 이동 ---------- */
+  function itemMeta(k) { return (POK3 && POK3.item(k)) || { emoji: '🏡', name: '아이템' }; }
+  function toast(msg) {
+    let t = document.getElementById('vtoast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'vtoast';
+      t.className = 'vtoast';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => { t.classList.remove('on'); }, 2300);
+  }
+  function paintCtl() {
+    const bar = document.getElementById('itemCtl');
+    if (!bar) return;
+    const st = state();
+    const it = st.items[selectedItem];
+    if (!it) { bar.hidden = true; return; }
+    const meta = itemMeta(it.k);
+    const nm = document.getElementById('ctlName');
+    const sc = document.getElementById('ctlSc');
+    if (nm) nm.textContent = meta.emoji + ' ' + meta.name;
+    if (sc) sc.textContent = (Number(it.sc) || 1).toFixed(1) + 'x';
+    bar.hidden = false;
+  }
+  function selectItem(idx) {
+    selectedItem = idx;
+    selectedPoke = '';
+    $$('#meadowFloor .it').forEach((el) => el.classList.toggle('sel', Number(el.dataset.item) === idx));
+    $$('#meadowFloor .pk').forEach((el) => el.classList.remove('sel'));
+    paintCtl();
+    try { Sfx.click(); } catch (e) { /* */ }
+  }
+  function scaleItem(delta) {
+    const st = state();
+    const it = st.items[selectedItem];
+    if (!it) return;
+    it.sc = Math.round(clamp((Number(it.sc) || 1) + delta, 0.7, 1.8) * 10) / 10;
+    save(st);
+    const el = document.querySelector('#meadowFloor .it[data-item="' + selectedItem + '"]');
+    if (el) el.style.setProperty('--sc', String(it.sc));
+    paintCtl();
+    try { Sfx.tone(520, 0.06, 'triangle', 0.04, 760); } catch (e) { /* */ }
+  }
+  function moveItemTo(idx, x, y) {
+    const st = state();
+    const it = st.items[idx];
+    if (!it) return;
+    it.x = Math.round(clamp(x, 5, 95) * 10) / 10;
+    it.y = Math.round(clamp(y, 12, 93) * 10) / 10;
+    save(st);
+    const el = document.querySelector('#meadowFloor .it[data-item="' + idx + '"]');
+    if (el) { el.style.left = it.x + '%'; el.style.top = it.y + '%'; }
+  }
+
+  /* ---------- 5탄: 실제 시각을 따라 저절로 바뀌는 마을 하늘 ----------
+     06~16 낮 / 17~19 노을 / 20~05 밤 — 수동 버튼 없이 기기 시각(한국)으로만 정해진다. */
+  function hourKST() { return new Date(Date.now() + 9 * 3600 * 1000).getUTCHours(); }
+  function todOf(h) {
+    const hh = Number(h);
+    if (hh >= 6 && hh < 17) return 'day';
+    if (hh >= 17 && hh < 20) return 'sunset';
+    return 'night';
+  }
+  function todNow() { return TOD_FORCE || todOf(hourKST()); }
+  function applyTod() {
+    const m = document.getElementById('meadow');
+    if (!m) return null;
+    const k = todNow();
+    m.classList.remove('t-day', 't-sunset', 't-night');
+    m.classList.add('t-' + k);
+    m.dataset.tod = k;
+    try { applyArt(); } catch (e) { /* */ }
+    $$('#meadowFloor .it').forEach((el) => el.classList.toggle('nightlight', k === 'night'));
+    const lab = document.getElementById('todNow');
+    if (lab) {
+      const nm = { day: '☀️ 낮', sunset: '🌅 노을', night: '🌙 밤' }[k];
+      lab.innerHTML = nm + '<span class="tsub"> · 실제 시각에 맞춰 저절로 바뀌어요</span>';
+    }
+    const zClone = document.querySelector('#zoomStage .meadow');
+    if (zClone) {
+      zClone.classList.remove('t-day', 't-sunset', 't-night');
+      zClone.classList.add('t-' + k);
+      zClone.dataset.tod = k;
+    }
+    /* 시간대가 넘어가면 환경음도 낮 숲 ↔ 밤 바람으로 따라간다 */
+    try { BGM.amb(ambForTod()); } catch (e) { /* */ }
+    return k;
+  }
+  /* 검증용 시간대 주입 훅 — 평소 화면에는 영향이 없다(낮·노을·밤을 모두 볼 수 있게) */
+  function forceTod(k) {
+    TOD_FORCE = (k === 'day' || k === 'sunset' || k === 'night') ? k : null;
+    return applyTod();
+  }
+
+  /* ---------- 마을 기념사진 (PNG) ---------- */
+  const PHOTO_COLORS = {
+    day: ['#bfe9ff', '#d9f7ff', '#dcf7b4', '#a8e36b', '#78c947'],
+    sunset: ['#ffd6a5', '#ffb37b', '#ffd9a8', '#c8e88a', '#8ec95a'],
+    night: ['#101a3d', '#1b2a5c', '#26406e', '#2f5a52', '#2a5a30'],
+  };
+  /* 배경 그림을 무대와 같은 방식(cover·가운데)으로 캔버스에 깔기 */
+  function drawCover(ctx, im, W, H) {
+    if (!im || !im.width || !im.height) return false;
+    const k = Math.max(W / im.width, H / im.height);
+    const dw = im.width * k;
+    const dh = im.height * k;
+    try {
+      ctx.drawImage(im, (W - dw) / 2, (H - dh) / 2, dw, dh);
+      return true;
+    } catch (e) { return false; }
+  }
+  /* 발밑 타원 그림자(부드러운 방사형) */
+  function softShadow(ctx, cx, cy, rx, ry, rgb, a) {
+    const R = Math.max(2, rx);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(1, Math.max(0.08, ry / R));
+    const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, R);
+    gr.addColorStop(0, 'rgba(' + rgb + ',' + a + ')');
+    gr.addColorStop(0.6, 'rgba(' + rgb + ',' + (a * 0.55).toFixed(3) + ')');
+    gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+    ctx.fillStyle = gr;
+    ctx.beginPath();
+    ctx.arc(0, 0, R, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+  function loadImg(src) {
+    return new Promise((res) => {
+      let done = false;
+      const fin = (v) => { if (!done) { done = true; res(v); } };
+      try {
+        const im = new Image();
+        im.crossOrigin = 'anonymous';
+        im.onload = () => fin(im);
+        im.onerror = () => fin(null);
+        setTimeout(() => fin(null), 4500);
+        im.src = src;
+      } catch (e) { fin(null); }
+    });
+  }
+  /* 자연 지형도 사진에 그대로 담는다 — 화면의 풍경과 같은 자리·같은 색 */
+  function drawTerrain(ctx, W, H, tod) {
+    TERRAIN.forEach((t) => {
+      const cx = (t.cx / 100) * W;
+      const cy = (t.cy / 100) * H;
+      const rx = (t.rx / 100) * W;
+      const ry = (t.ry / 100) * H;
+      const big = Math.max(rx, ry);
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+      ctx.clip();
+      if (t.k === 'pond') {
+        const g = ctx.createRadialGradient(cx - rx * 0.1, cy - ry * 0.3, big * 0.08, cx, cy, big);
+        g.addColorStop(0, '#e8feff');
+        g.addColorStop(0.18, '#a9ecfb');
+        g.addColorStop(0.44, '#6ed3ef');
+        g.addColorStop(0.68, '#35b0d6');
+        g.addColorStop(1, 'rgba(30,150,190,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(cx - rx, cy - ry, rx * 2, ry * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,.55)';
+        ctx.lineWidth = Math.max(1.5, W * 0.0022);
+        [0.36, 0.56, 0.76].forEach((k) => {
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, rx * k, ry * k, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        });
+      } else if (t.k === 'hill') {
+        const g = ctx.createRadialGradient(cx - rx * 0.2, cy + ry * 0.55, big * 0.08, cx, cy, big);
+        g.addColorStop(0, '#a5e072');
+        g.addColorStop(0.34, '#86cf52');
+        g.addColorStop(0.6, '#6cba3e');
+        g.addColorStop(1, 'rgba(108,186,62,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(cx - rx, cy - ry, rx * 2, ry * 2);
+        ctx.fillStyle = 'rgba(30,80,20,.28)';
+        ctx.beginPath();
+        ctx.ellipse(cx + rx * 0.32, cy - ry * 0.28, rx * 0.42, ry * 0.46, 0, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        const g = ctx.createRadialGradient(cx, cy - ry * 0.12, big * 0.08, cx, cy, big);
+        g.addColorStop(0, '#fdf1d2');
+        g.addColorStop(0.32, '#f0d8a3');
+        g.addColorStop(0.58, '#e0bd7f');
+        g.addColorStop(0.78, 'rgba(204,162,92,.75)');
+        g.addColorStop(1, 'rgba(200,155,80,0)');
+        ctx.fillStyle = g;
+        ctx.fillRect(cx - rx, cy - ry, rx * 2, ry * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,.5)';
+        ctx.lineWidth = Math.max(2, W * 0.003);
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx * 0.7, ry * 0.7, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      if (tod === 'night') {
+        ctx.globalAlpha = 0.44;
+        ctx.fillStyle = '#0a1428';
+        ctx.fillRect(cx - rx, cy - ry, rx * 2, ry * 2);
+      }
+      ctx.restore();
+    });
+  }
+
+  function stampDate() {
+    const d = new Date(Date.now() + 9 * 3600 * 1000);
+    return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+  }
+  async function takePhoto() {
+    const m = document.getElementById('meadow');
+    const floor = floorOf();
+    if (!m || !floor) return { ok: false, why: 'no-stage' };
+    const fr = floor.getBoundingClientRect();
+    if (!fr.width || !fr.height) return { ok: false, why: 'no-size' };
+    const W = 1280;
+    const H = Math.round(W * (fr.height / fr.width));
+    const tod = m.dataset.tod || 'day';
+    const cols = PHOTO_COLORS[tod] || PHOTO_COLORS.day;
+    let withImages = true;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const cv = document.createElement('canvas');
+      cv.width = W; cv.height = H;
+      const ctx = cv.getContext('2d');
+      if (!ctx) return { ok: false, why: 'no-ctx' };
+      /* 배경: 마을 맵 일러스트를 무대와 똑같이 cover 로 깔고,
+         그림을 못 받았을 때만 그라데이션으로 대신 그린다. */
+      let artDrawn = false;
+      const bgArt = await loadImg(villageSrc(tod, THEME, isWideStage()));
+      if (bgArt) artDrawn = drawCover(ctx, bgArt, W, H);
+      if (!artDrawn) {
+      /* 하늘 그라데이션 */
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      cols.forEach((c, i) => g.addColorStop(i / (cols.length - 1), c));
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, W, H);
+      /* 별 / 해 */
+      if (tod === 'night') {
+        for (let i = 0; i < 70; i += 1) {
+          const x = ((i * 173) % W);
+          const y = ((i * 97) % Math.round(H * 0.5));
+          ctx.globalAlpha = 0.3 + ((i % 7) / 14);
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(x, y, (i % 3) * 0.7 + 1, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = Math.round(W * 0.05) + 'px "Apple Color Emoji","Noto Color Emoji",system-ui';
+        ctx.fillText('🌙', W * 0.86, H * 0.13);
+      } else {
+        const sx = W * 0.85; const sy = H * 0.13; const r = W * 0.045;
+        const rg = ctx.createRadialGradient(sx, sy, r * 0.15, sx, sy, r * 1.6);
+        rg.addColorStop(0, tod === 'sunset' ? '#fff1c9' : '#fffde3');
+        rg.addColorStop(0.55, tod === 'sunset' ? '#ffb347' : '#ffe066');
+        rg.addColorStop(1, 'rgba(255,200,60,0)');
+        ctx.fillStyle = rg;
+        ctx.beginPath();
+        ctx.arc(sx, sy, r * 1.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      /* 땅 그라데이션 */
+      const gg = ctx.createLinearGradient(0, H * 0.45, 0, H);
+      gg.addColorStop(0, 'rgba(0,0,0,0)');
+      gg.addColorStop(1, tod === 'night' ? 'rgba(0,10,20,.55)' : 'rgba(30,90,20,.26)');
+      ctx.fillStyle = gg;
+      ctx.fillRect(0, H * 0.45, W, H * 0.55);
+      /* 자연 지형(연못·언덕·배틀장소) — 그림이 없을 때만 CSS 대신 그려 준다 */
+      drawTerrain(ctx, W, H, tod);
+      }
+      /* 포켓몬·소품이 땅(물) 위에 서 있게 — 발밑 타원 그림자 */
+      /* 꾸미기 아이템 (+ 발밑 그림자) — 수채화 PNG 소품은 그림을 그대로 얹는다 */
+      const usedProps = {};
+      $$('#meadowFloor .it').forEach((el) => { const k = el.dataset.k || ''; if (PRO_PNG(k)) usedProps[k] = 1; });
+      const propImgs = {};
+      for (const pk of Object.keys(usedProps)) {
+        const im = await loadImg('./assets/props/' + PROP_PNG[pk] + '.png');
+        if (im) propImgs[pk] = im;
+      }
+      $$('#meadowFloor .it').forEach((el) => {
+        const b = el.getBoundingClientRect();
+        const cx = ((b.left + b.width / 2 - fr.left) / fr.width) * W;
+        const cy = ((b.top + b.height / 2 - fr.top) / fr.height) * H;
+        const size = Math.max(18, (b.width / fr.width) * W);
+        const key = el.dataset.k || '';
+        const pim = propImgs[key];
+        if (pim) {
+          const h2 = size * 1.16;
+          const w2 = h2 * (pim.width / pim.height);
+          try { ctx.drawImage(pim, cx - w2 / 2, cy - h2 / 2, w2, h2); return; } catch (err) { /* */ }
+        }
+        softShadow(ctx, cx, cy + size * 0.42, size * 0.36, size * 0.11, '16,46,8', 0.34);
+        if (window.POK_PROPS && POK_PROPS.has(key)) {
+          POK_PROPS.draw(ctx, key, cx, cy, size);
+          return;
+        }
+        const glyph = el.querySelector('.g');
+        const emoji = (glyph && glyph.textContent) || '';
+        if (!emoji) return;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = Math.round(size * 0.92) + 'px "Apple Color Emoji","Noto Color Emoji",system-ui';
+        ctx.fillText(emoji, cx, cy);
+      });
+      /* 포켓몬 (PokeAPI 스프라이트) */
+      const pks = $$('#meadowFloor .pk');
+      for (let i = 0; i < pks.length; i += 1) {
+        const el = pks[i];
+        const b = el.getBoundingClientRect();
+        const cx = ((b.left + b.width / 2 - fr.left) / fr.width) * W;
+        const cy = ((b.top + b.height / 2 - fr.top) / fr.height) * H;
+        const size = Math.max(28, (b.width / fr.width) * W);
+        /* 발밑 그림자 — 물 위에서는 물빛 그림자 */
+        const zk = el.dataset.zone || 'grass';
+        softShadow(ctx, cx, cy + size * 0.40, size * 0.40, size * 0.12,
+          zk === 'pond' ? '4,48,76' : '16,46,8', zk === 'pond' ? 0.4 : 0.38);
+        let drawn = false;
+        if (withImages) {
+          const im = await loadImg(SPR(el.dataset.pid));
+          if (im) {
+            try {
+              ctx.drawImage(im, cx - size / 2, cy - size / 2, size, size);
+              drawn = true;
+            } catch (err) { drawn = false; }
+          }
+        }
+        if (!drawn) {
+          /* 스프라이트를 못 받으면 조용히 건너뛴다 */
+        }
+        /* 지형에 따른 상태 배지(💦/💤/⚡)도 사진에 담는다 */
+        const act = ZONE_ACTS[el.dataset.zone || 'grass'] || ZONE_ACTS.grass;
+        if (act.stb) {
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.font = Math.round(size * 0.34) + 'px "Apple Color Emoji","Noto Color Emoji",system-ui';
+          ctx.fillText(act.stb, cx + size * 0.26, cy - size * 0.44);
+        }
+      }
+      /* 날짜 도장 */
+      const label = '🏡 ' + slotName(SLOT) + '의 포켓몬 마을 · ' + stampDate();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '800 ' + Math.round(W * 0.024) + 'px "Apple SD Gothic Neo","Noto Sans KR",system-ui';
+      ctx.lineWidth = Math.max(2, W * 0.006);
+      ctx.strokeStyle = 'rgba(255,255,255,.85)';
+      ctx.strokeText(label, W / 2, H - Math.round(H * 0.045));
+      ctx.fillStyle = 'rgba(30,60,15,.92)';
+      ctx.fillText(label, W / 2, H - Math.round(H * 0.045));
+      let url = '';
+      try {
+        url = cv.toDataURL('image/png');
+      } catch (err) {
+        withImages = false;
+        continue;                 // 이미지 때문에 캔버스가 오염됐다면 이미지 없이 다시
+      }
+      if (!url || url.length < 5000) return { ok: false, why: 'empty' };
+      try {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pokemon-village-' + stampDate().replace(/-/g, '') + '.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } catch (e) { /* 다운로드가 막혀도 아래에서 확인할 수 있게 url 을 돌려준다 */ }
+      try { Sfx.fanfare(); } catch (e) { /* */ }
+      toast('📸 사진을 저장했어요!');
+      return { ok: true, w: W, h: H, withImages: withImages, url: url };
+    }
+    return { ok: false };
+  }
+
+  /* ---------- 4탄: 마을 크게 보기 ---------- */
+  let zoomTimer = 0;
+
+  function zoneMeta(k) {
+    const t = TERRAIN.find((x) => x.k === k);
+    return t ? { emoji: t.emoji, name: t.name } : { emoji: '🌿', name: '들판' };
+  }
+  function liveZone(k) { return document.querySelector('.village .zone[data-zone="' + k + '"]'); }
+
+  /* 지금 마을 그대로를 복제해 큰 무대에 한 번 더 그린다(위치는 주기적으로 따라온다) */
+  function paintZoom() {
+    const stage = document.getElementById('zoomStage');
+    const src = document.getElementById('meadow');
+    if (!stage || !src) return;
+    const clone = src.cloneNode(true);
+    clone.removeAttribute('id');
+    Array.prototype.forEach.call(clone.querySelectorAll('[id]'), (n) => { n.removeAttribute('id'); });
+    stage.innerHTML = '';
+    stage.appendChild(clone);
+    const t = document.getElementById('zoomTitle');
+    if (t) t.textContent = '🔍 크게 보기 — ' + slotName(SLOT) + '의 마을';
+    const tabs = document.getElementById('zoomTabs');
+    if (tabs) tabs.innerHTML = '';
+  }
+
+  /* 살아 있는 마을의 위치·모션을 큰 무대로 복사 */
+  function syncZoom() {
+    const stage = document.getElementById('zoomStage');
+    const src = floorOf();
+    if (!stage || !src) return;
+    const dst = stage.querySelector('.floor');
+    if (!dst) return;
+    const live = {};
+    Array.prototype.forEach.call(src.querySelectorAll('.pk'), (el) => { live[el.dataset.pid] = el; });
+    Array.prototype.forEach.call(dst.querySelectorAll('.pk'), (el) => {
+      const from = live[el.dataset.pid];
+      if (!from) return;
+      el.style.left = from.style.left;
+      el.style.top = from.style.top;
+      el.classList.toggle('jump', from.classList.contains('jump'));
+      el.classList.toggle('sel', from.classList.contains('sel'));
+      const z = from.dataset.zone || 'grass';
+      el.classList.remove('b-pond', 'b-hill', 'b-arena', 'b-grass');
+      el.classList.add('b-' + z);
+      el.dataset.zone = z;
+    });
+    applyTod();
+  }
+
+  function openZoom() {
+    const m = document.getElementById('zoomModal');
+    if (!m) return;
+    paintZoom();
+    syncZoom();
+    m.hidden = false;
+    try { Sfx.click(); } catch (e) { /* */ }
+    clearInterval(zoomTimer);
+    zoomTimer = setInterval(() => { if (!m.hidden) syncZoom(); }, 1000);
+  }
+  function closeZoom() {
+    const m = $('#zoomModal');
+    if (m) m.hidden = true;
+    clearInterval(zoomTimer);
+    zoomTimer = 0;
+  }
+
+  function bindZoom() {
+    const btn = $('#zoomBtn');
+    if (btn) btn.addEventListener('click', () => openZoom());
+    const stage = $('#zoomStage');
+    if (stage) {
+      stage.addEventListener('pointerdown', (e) => {
+        const el = e.target.closest('.pk');
+        if (!el) return;
+        e.preventDefault();
+        touchPokemon(el);
+      });
+    }
+    const m = $('#zoomModal');
+    if (m) {
+      m.addEventListener('click', (e) => {
+        if (e.target === m) { closeZoom(); return; }
+        if (e.target.closest('[data-close="zoomModal"]')) closeZoom();
+      });
+    }
+    /* 크게 보기 안에서도 아이템을 톡 누르면 반응한다 */
+    if (stage) {
+      stage.addEventListener('pointerdown', (e) => {
+        const it = e.target.closest('.it');
+        if (!it) return;
+        const clone = it.cloneNode(true);
+        clone.style.animation = 'none';
+        try { Sfx.tone(640, 0.06, 'square', 0.035, 900); } catch (err) { /* */ }
+        void clone;
+      }, true);
+    }
+  }
+
+  /* ---------- 이벤트 ---------- */
+  function bind() {
+    $('#muteBtn').textContent = Sfx.muted ? '🔇' : '🔊';
+    $('#muteBtn').addEventListener('click', () => {
+      Sfx.muted = !Sfx.muted;
+      lsSet('pkm.mute.v1', Sfx.muted);
+      $('#muteBtn').textContent = Sfx.muted ? '🔇' : '🔊';
+      BGM.setMuted(Sfx.muted);   /* 배경음악도 같은 버튼으로 함께 꺼진다 */
+    });
+    if (Sfx.muted) BGM.setMuted(true);   /* 저장된 음소거 상태로 시작 */
+
+    $('#slotChips').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-slot]');
+      if (!b) return;
+      SLOT = b.dataset.slot;
+      Sfx.click();
+      loadTheme();
+      paintThemeBar();
+      paintVillage();
+    });
+
+    /* 마을 테마 선택 — 잠긴 테마는 마릿수를 알려 준다 */
+    const tb = $('#themeBar');
+    if (tb) {
+      tb.addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-vtheme]');
+        if (!b) return;
+        setTheme(b.dataset.vtheme);
+      });
+    }
+
+    $('#pokeBtn').addEventListener('click', () => { Sfx.click(); paintPokeModal(); open('pokeModal'); });
+    const mvYes = $('#moveYes');
+    if (mvYes) {
+      mvYes.addEventListener('click', () => {
+        const id = moveFor;
+        moveFor = null;
+        close('moveModal');
+        if (id != null) { movePokeHere(id); Sfx.pop(); }
+      });
+    }
+    $('#itemBtn').addEventListener('click', () => { Sfx.click(); paintItemModal(); open('itemModal'); });
+    $('#giftBtn').addEventListener('click', () => { Sfx.click(); Gift.reset(); open('giftModal'); });
+    bindZoom();
+
+    document.addEventListener('click', (e) => {
+      const x = e.target.closest('[data-close]');
+      if (x) { close(x.dataset.close); return; }
+      if (e.target.classList && e.target.classList.contains('modal')) { e.target.hidden = true; return; }
+
+      const z = e.target.closest('#zoneChips button');
+      if (z) { paintPokeModal(); return; }
+
+      const pc = e.target.closest('#pokeGrid .pcell');
+      if (pc) {
+        const id = Number(pc.dataset.pid);
+        if (pc.classList.contains('on')) {
+          const st = state();
+          const i = st.poke.findIndex((p) => p.id === id);
+          if (i >= 0) removePoke(i);
+        } else if (pc.classList.contains('away')) {
+          askMove(id);
+        } else {
+          placePoke(id);
+        }
+        return;
+      }
+      const rp = e.target.closest('[data-remove-poke]');
+      if (rp) { removePoke(Number(rp.dataset.removePoke)); return; }
+
+      const ic = e.target.closest('#itemGrid .icell');
+      if (ic) {
+        if (ic.classList.contains('dim') || ic.classList.contains('lock')) {
+          try { Sfx.tone(240, 0.1, 'sawtooth', 0.04); } catch (err) { /* */ }
+          toast('🔒 아직 얻지 못한 아이템이에요 · 배틀에서 이기면 받을 수 있어요');
+          return;
+        }
+        placeItem(ic.dataset.item);
+        return;
+      }
+      const ri = e.target.closest('[data-remove-item]');
+      if (ri) { removeItem(Number(ri.dataset.removeItem)); return; }
+
+      const sw = e.target.closest('[data-swap]');
+      if (sw) { doSwap(Number(sw.dataset.swap)); return; }
+
+      /* 아빠 선물 */
+      const pd = e.target.closest('#pinPad button[data-d]');
+      if (pd) { Gift.press(pd.dataset.d); return; }
+      const pb = e.target.closest('#pinPad button[data-act="back"]');
+      if (pb) { Gift.back(); return; }
+      const gt = e.target.closest('#gTargets button[data-gtarget]');
+      if (gt) { Gift.target = gt.dataset.gtarget; Sfx.click(); Gift.paintPick(); return; }
+      const gi = e.target.closest('#gItems button[data-gitem]');
+      if (gi) { Gift.pick = gi.dataset.gitem; Sfx.click(); Gift.paintPick(); return; }
+      if (e.target.closest('#gSend')) { Gift.send(); return; }
+    });
+
+    const v = $('#village');
+    /* 하나의 풀밭: 아이템·포켓몬 모두 눌러서 고르고 끌어서 옮긴다 */
+    const stage = document.getElementById('meadow');
+    const floor = floorOf();
+    let drag = null;
+    if (stage) {
+      stage.addEventListener('pointerdown', (e) => {
+        const itEl = e.target.closest('.it');
+        if (itEl) {
+          const idx = Number(itEl.dataset.item);
+          selectItem(idx);
+          drag = { idx: idx, el: itEl, moved: false, pid: e.pointerId };
+          try { itEl.setPointerCapture(e.pointerId); } catch (err) { /* */ }
+          e.preventDefault();
+          return;
+        }
+        const pkEl = e.target.closest('.pk');
+        if (pkEl) {
+          e.preventDefault();
+          selectPoke(pkEl.dataset.pid);
+          pkDrag = { id: pkEl.dataset.pid, el: pkEl, moved: false, x0: e.clientX, y0: e.clientY, pid: e.pointerId };
+          try { pkEl.setPointerCapture(e.pointerId); } catch (err) { /* */ }
+          return;
+        }
+        /* 빈 풀밭을 누르면 — 고른 포켓몬이 있으면 그 곳으로 이동, 아니면 고른 아이템이 그 자리로 */
+        if (selectedPoke && floor) {
+          const r = floor.getBoundingClientRect();
+          const mx = ((e.clientX - r.left) / r.width) * 100;
+          const my = ((e.clientY - r.top) / r.height) * 100;
+          const res = movePokeTo(selectedPoke, mx, my);
+          if (res) {
+            try { Sfx.pop(); } catch (err) { /* */ }
+            toast('🐾 ' + pkName(res.id) + ' → ' + (ZONE_LABEL[res.zone] || '들판'));
+          }
+          return;
+        }
+        if (selectedItem >= 0 && floor) {
+          const r = floor.getBoundingClientRect();
+          moveItemTo(selectedItem, ((e.clientX - r.left) / r.width) * 100, ((e.clientY - r.top) / r.height) * 100);
+          try { Sfx.pop(); } catch (err) { /* */ }
+        }
+      });
+      stage.addEventListener('pointermove', (e) => {
+        if (pkDrag) {
+          if (!floor) return;
+          const r = floor.getBoundingClientRect();
+          if (!pkDrag.moved) {
+            if (Math.abs(e.clientX - pkDrag.x0) < 8 && Math.abs(e.clientY - pkDrag.y0) < 8) return;
+            pkDrag.moved = true;
+            pkDrag.el.classList.add('dragging');
+          }
+          pkDrag.el.style.left = clamp(((e.clientX - r.left) / r.width) * 100, 8, 92) + '%';
+          pkDrag.el.style.top = clamp(((e.clientY - r.top) / r.height) * 100, 26, 90) + '%';
+          return;
+        }
+        if (!drag || !floor) return;
+        const r = floor.getBoundingClientRect();
+        drag.el.style.left = clamp(((e.clientX - r.left) / r.width) * 100, 5, 95) + '%';
+        drag.el.style.top = clamp(((e.clientY - r.top) / r.height) * 100, 12, 93) + '%';
+        drag.moved = true;
+      });
+      const endDrag = () => {
+        if (pkDrag) {
+          const d = pkDrag;
+          pkDrag = null;
+          d.el.classList.remove('dragging');
+          if (d.moved) {
+            const res = movePokeTo(d.id, parseFloat(d.el.style.left) || 50, parseFloat(d.el.style.top) || 70, true);
+            if (res) {
+              try { Sfx.pop(); } catch (err) { /* */ }
+              toast('🐾 ' + pkName(res.id) + ' → ' + (ZONE_LABEL[res.zone] || '들판'));
+            }
+          } else {
+            touchPokemon(d.el);
+          }
+        }
+        if (!drag) return;
+        if (drag.moved) {
+          moveItemTo(drag.idx, parseFloat(drag.el.style.left) || 50, parseFloat(drag.el.style.top) || 70);
+          try { Sfx.pop(); } catch (err) { /* */ }
+        }
+        drag = null;
+      };
+      stage.addEventListener('pointerup', endDrag);
+      stage.addEventListener('pointercancel', endDrag);
+    }
+
+    /* 아이템 조작 바 */
+    const ctl = document.getElementById('itemCtl');
+    if (ctl) {
+      ctl.addEventListener('click', (e) => {
+        const b = e.target.closest('button');
+        if (!b) return;
+        if (b.dataset.scz === 'big') { scaleItem(0.1); return; }
+        if (b.dataset.scz === 'small') { scaleItem(-0.1); return; }
+        if (b.dataset.scdel) {
+          const i = selectedItem;
+          selectedItem = -1;
+          paintCtl();
+          removeItem(i);
+          return;
+        }
+        if (b.dataset.scclose) {
+          selectedItem = -1;
+          paintCtl();
+          $$('#meadowFloor .it').forEach((el) => el.classList.remove('sel'));
+        }
+      });
+    }
+
+    /* 기념사진 */
+    const shot = document.getElementById('photoBtn');
+    if (shot) {
+      shot.addEventListener('click', () => {
+        shot.disabled = true;
+        takePhoto().then((r) => {
+          shot.disabled = false;
+          if (r && r.ok === false) toast('사진을 만들지 못했어요 — 잠시 뒤 다시 해 보세요');
+        }).catch(() => {
+          shot.disabled = false;
+          toast('사진을 만들지 못했어요');
+        });
+      });
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) savePositions();
+      else applyTod();
+    });
+  }
+
+  function loop() {
+    wanderTick();
+    fxTick();
+  }
+
+  /* ---------- 📖 도감 보기 ----------
+     산수·한글·영어·마을이 함께 쓰는 통합 도감(pkm.shared.dex.v1.<slot>)을 마을 화면에서 바로 펼쳐 본다.
+     잡은 친구 · 진행률 · 속성 · 레어도 · 그림 · 미획득 실루엣/잠금까지 한 화면. */
+  const TYPE_COLOR = {
+    노말: '#9a9a84', 불꽃: '#ef6f2a', 물: '#3d8fe0', 풀: '#4aa93a', 전기: '#dfae15', 얼음: '#4fb8c9',
+    격투: '#c0392b', 독: '#9240a0', 땅: '#b58a2e', 비행: '#7f9fd0', 에스퍼: '#d64f8a', 벌레: '#8aa61f',
+    바위: '#a08a52', 고스트: '#6a5fa8', 드래곤: '#5a48c8', 악: '#5a4a44', 강철: '#8794a0', 페어리: '#e07fb8',
+  };
+  const DEX_PAGE = 60;
+  const SUBJECT_NAME = { math: '⚡ 산수', hangul: '📖 한글', english: '🔤 영어' };
+  const Dex = { tab: 'caught', type: '', shown: DEX_PAGE, obs: null };
+
+  function dexStore(slot) {
+    const o = lsGet('pkm.shared.dex.v1.' + (slot || SLOT), null) || {};
+    const ids = new Set((Array.isArray(o.ids) ? o.ids : []).filter((n) => Number.isFinite(n)));
+    return {
+      ids: ids,
+      counts: o.counts && typeof o.counts === 'object' ? o.counts : {},
+      dates: o.dates && typeof o.dates === 'object' ? o.dates : {},
+      subjects: o.subjects && typeof o.subjects === 'object' ? o.subjects : {},
+    };
+  }
+  function dexNumOf(p) { return String((p && (p.num || p.id)) || '').padStart(3, '0'); }
+  function dexRankOf(p) { return p && (p.mythical ? '🌟' : (p.legend ? '👑' : '')); }
+  function typeTags(types) {
+    return (types || []).map((t) => '<b style="background:' + (TYPE_COLOR[t] || '#8a9a72') + '">' + t + '</b>').join('');
+  }
+  function dexSortByNum(a, b) { return (Number(a.num) || a.id) - (Number(b.num) || b.id) || a.id - b.id; }
+  function dexBase(store) {
+    const all = DB.list.filter((p) => p && Number.isFinite(p.id));
+    return (Dex.tab === 'caught' ? all.filter((p) => store.ids.has(p.id)) : all.filter((p) => !store.ids.has(p.id))).sort(dexSortByNum);
+  }
+  function loadDexImg(img) {
+    const src = img.getAttribute('data-src');
+    if (!src) return;
+    img.removeAttribute('data-src');
+    img.addEventListener('error', function () {
+      const art = img.getAttribute('data-art');
+      if (art) { img.removeAttribute('data-art'); img.src = art; }
+    });
+    img.src = src;
+  }
+  function lazyDexImages(root) {
+    const imgs = $$('img[data-src]', root);
+    if (!imgs.length) return;
+    if (!('IntersectionObserver' in window)) { imgs.forEach(loadDexImg); return; }
+    if (!Dex.obs) {
+      Dex.obs = new IntersectionObserver((ents) => {
+        ents.forEach((en) => { if (en.isIntersecting) { Dex.obs.unobserve(en.target); loadDexImg(en.target); } });
+      }, { root: $('#dexBody'), rootMargin: '240px' });
+    }
+    imgs.forEach((img) => Dex.obs.observe(img));
+  }
+  function dexCellHtml(p, has) {
+    const rank = has ? dexRankOf(p) : '';
+    const label = has
+      ? p.name + ' · ' + (p.types || []).join('·') + ' · ' + dexNumOf(p)
+      : '아직 잡지 못한 포켓몬 ' + dexNumOf(p);
+    return '<button type="button" class="dcell ' + (has ? 'got' : 'miss') + '" data-dexid="' + p.id + '" aria-label="' + label + '">'
+      + (rank ? '<span class="tw">' + rank + '</span>' : '')
+      + (has ? '' : '<span class="lk">🔒</span>')
+      + '<span class="dn">#' + dexNumOf(p) + '</span>'
+      + '<span class="dimg"><img data-src="' + SPR(p.id) + '" data-art="' + ART(p.id) + '" alt="" loading="lazy" decoding="async"></span>'
+      + '<span class="dn">' + (has ? p.name : '???') + '</span>'
+      + (has ? '<span class="dy">' + typeTags(p.types) + '</span>' : '')
+      + '</button>';
+  }
+  function paintDexTypes(base) {
+    const host = $('#dexTypes');
+    if (!host) return;
+    const counts = {};
+    base.forEach((p) => (p.types || []).forEach((t) => { counts[t] = (counts[t] || 0) + 1; }));
+    if (Dex.type && !counts[Dex.type]) Dex.type = '';
+    const order = Object.keys(TYPE_COLOR).filter((t) => counts[t]);
+    host.innerHTML = '<button type="button" data-dtype=""' + (Dex.type ? '' : ' class="on"') + '>전체 ' + base.length + '</button>'
+      + order.map((t) => '<button type="button" data-dtype="' + t + '"' + (t === Dex.type ? ' class="on"' : '')
+        + ' style="' + (t === Dex.type ? '' : 'border-color:' + (TYPE_COLOR[t] || '#e2eecd')) + '">' + t + ' ' + counts[t] + '</button>').join('');
+  }
+  function renderDex() {
+    const store = dexStore(SLOT);
+    const total = DB.list.length;
+    const got = store.ids.size;
+    $('#dexOwner').textContent = slotName(SLOT);
+    $('#dexCaught').textContent = got.toLocaleString('ko-KR');
+    $('#dexTotal').textContent = total.toLocaleString('ko-KR');
+    const pct = total ? (got / total) * 100 : 0;
+    $('#dexPct').textContent = (pct >= 10 ? pct.toFixed(0) : pct.toFixed(1)) + '%';
+    $('#dexBar').style.width = (total ? Math.min(100, pct) : 0).toFixed(2) + '%';
+    const gen1 = DB.list.filter((p) => p.id <= 151);
+    const gen1Got = gen1.filter((p) => store.ids.has(p.id)).length;
+    $('#dexGen1').textContent = gen1.length ? '· 1세대 ' + gen1Got + '/' + gen1.length : '';
+    $('#dexCaughtN').textContent = got;
+    $('#dexMissN').textContent = Math.max(0, total - got);
+    $$('#dexTabs button').forEach((b) => {
+      const on = b.dataset.dtab === Dex.tab;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    const grid = $('#dexGrid');
+    const more = $('#dexMoreWrap');
+    const empty = $('#dexEmpty');
+    if (!total) {
+      grid.innerHTML = '';
+      more.hidden = true;
+      empty.hidden = false;
+      empty.textContent = '도감 목록을 불러오는 중이에요…';
+      return;
+    }
+    const base = dexBase(store);
+    paintDexTypes(base);
+    const list = Dex.type ? base.filter((p) => (p.types || []).indexOf(Dex.type) >= 0) : base;
+    const slice = list.slice(0, Dex.shown);
+    grid.innerHTML = slice.map((p) => dexCellHtml(p, store.ids.has(p.id))).join('');
+    $('#dexTip').textContent = Dex.tab === 'caught'
+      ? '잡은 친구를 누르면 자세히 볼 수 있어요'
+      : '아직 못 잡은 친구예요 · 실루엣과 잠금만 보여요';
+    empty.hidden = list.length > 0;
+    empty.textContent = Dex.tab === 'caught'
+      ? (Dex.type ? Dex.type + ' 속성으로 잡은 친구가 아직 없어요' : '아직 잡은 친구가 없어요 · 배틀에서 이기면 도감에 차곡차곡 쌓여요!')
+      : (Dex.type ? Dex.type + ' 속성은 모두 잡았어요! 🎉' : '모든 친구를 다 잡았어요! 🎉');
+    const rest = list.length - slice.length;
+    more.hidden = rest <= 0;
+    if (rest > 0) $('#dexMore').textContent = '더 보기 (+' + Math.min(DEX_PAGE, rest) + ') · 남은 ' + rest + '마리';
+    lazyDexImages(grid);
+  }
+  function dexScrollTop() { const b = $('#dexBody'); if (b) b.scrollTop = 0; }
+  function openDex() {
+    Dex.tab = 'caught';
+    Dex.type = '';
+    Dex.shown = DEX_PAGE;
+    renderDex();
+    open('dexModal');
+    dexScrollTop();
+  }
+  function openDexDetail(id) {
+    const p = byId(Number(id));
+    const store = dexStore(SLOT);
+    if (!p || !store.ids.has(p.id)) { toast('🔒 아직 잡지 못한 친구예요'); return; }
+    const times = Number(store.counts[p.id] || store.counts[String(p.id)] || 0);
+    const first = String(store.dates[p.id] || store.dates[String(p.id)] || '');
+    const subs = store.subjects[p.id] || store.subjects[String(p.id)] || [];
+    const rank = dexRankOf(p);
+    $('#dxdName').textContent = p.name;
+    $('#dxdNum').textContent = '#' + dexNumOf(p) + (p.form ? ' · 특별폼' : ' · ' + (p.gen || 1) + '세대');
+    $('#dxdGenus').textContent = p.genus || '분류 없음';
+    $('#dxdRankWrap').hidden = !rank;
+    $('#dxdRank').textContent = rank ? (p.mythical ? '🌟 환상' : '👑 전설') : '';
+    $('#dxdTypes').innerHTML = typeTags(p.types);
+    const desc = String(p.desc || '').trim();
+    $('#dxdDesc').textContent = desc;
+    $('#dxdDesc').hidden = !desc;
+    const img = $('#dxdImg');
+    img.onerror = () => { img.onerror = null; img.src = SPR(p.id); };
+    img.src = ART(p.id);
+    img.alt = p.name;
+    const rows = [
+      '<span>🐾 잡은 횟수 ' + (times || 1) + '번</span>',
+      first ? '<span>📅 처음 잡은 날 ' + first + '</span>' : '',
+      subs.length ? '<span>📚 ' + subs.map((s) => SUBJECT_NAME[s] || s).join(' · ') + '에서 잡았어요</span>' : '',
+      '<span>🏡 지금 ' + slotName(SLOT) + '의 도감에 있어요</span>',
+    ].filter(Boolean);
+    $('#dxdStats').innerHTML = rows.join('') + '<p class="dsub2">이 도감은 산수 · 한글 · 영어 · 마을이 함께 써요</p>';
+    open('dexDetailModal');
+    try { Sfx.click(); } catch (e) { /* */ }
+  }
+  function bindDex() {
+    const btn = $('#dexBtn');
+    if (btn) btn.addEventListener('click', () => { Sfx.click(); openDex(); });
+    const m = $('#dexModal');
+    if (!m) return;
+    m.addEventListener('click', (e) => {
+      if (e.target.closest('[data-close="dexModal"]')) { close('dexModal'); close('dexDetailModal'); return; }
+      const tab = e.target.closest('#dexTabs button');
+      if (tab) {
+        Dex.tab = tab.dataset.dtab === 'miss' ? 'miss' : 'caught';
+        Dex.type = '';
+        Dex.shown = DEX_PAGE;
+        try { Sfx.click(); } catch (err) { /* */ }
+        renderDex();
+        dexScrollTop();
+        return;
+      }
+      const ty = e.target.closest('#dexTypes button');
+      if (ty) {
+        Dex.type = ty.dataset.dtype || '';
+        Dex.shown = DEX_PAGE;
+        try { Sfx.click(); } catch (err) { /* */ }
+        renderDex();
+        dexScrollTop();
+        return;
+      }
+      if (e.target.closest('#dexMore')) {
+        Dex.shown += DEX_PAGE;
+        try { Sfx.click(); } catch (err) { /* */ }
+        renderDex();
+        return;
+      }
+      const cell = e.target.closest('#dexGrid .dcell');
+      if (cell) {
+        if (DexPress.fired) { DexPress.fired = false; return; }
+        if (cell.classList.contains('got')) openDexDetail(cell.dataset.dexid);
+        else { try { Sfx.tone(240, 0.08, 'sawtooth', 0.04); } catch (err) { /* */ } toast('🔒 아직 잡지 못한 친구예요'); }
+      }
+    });
+  }
+
+  /* ---------- 🛡 아빠 관리자 — 꾹 누르면 PIN, 도감·꾸미기를 자유롭게 넣었다 뺐다 ----------
+     · 한 번 PIN을 통과하면 2분 동안은 다시 묻지 않는다(여러 개를 연달아 토글).
+     · 보유 → 지우기(도감 삭제 / 아이템 회수 + 마을 배치 회수)
+     · 미보유(잠금·실루엣) → 넣기(도감 등록 / 아이템 +1개) */
+  const Adm = {
+    until: 0,
+    pending: null,
+    gate(title, desc, fn) {
+      if (Date.now() < this.until) { return fn(); }
+      this.pending = fn;
+      PinUI.reset(title, desc);
+      open('delItemModal');
+      return null;
+    },
+    pass() {
+      this.until = Date.now() + 120000;
+      const fn = this.pending;
+      this.pending = null;
+      close('delItemModal');
+      if (fn) { try { fn(); } catch (e) { /* */ } }
+    },
+    state() { return { unlocked: Date.now() < this.until, left: Math.max(0, Math.round((this.until - Date.now()) / 1000)) }; },
+  };
+
+  const PinUI = {
+    buf: '',
+    fails: 0,
+    reset(title, desc) {
+      this.buf = '';
+      this.fails = 0;
+      $$('#delDots i').forEach((d) => d.classList.remove('on'));
+      const msg = $('#delMsg');
+      if (msg) { msg.className = 'pinmsg'; msg.textContent = '가족 PIN'; }
+      const t = $('#delTitle');
+      if (t) t.textContent = title || '🛡 아빠 관리자';
+      const note = $('#delNote');
+      if (note) note.textContent = desc || '가족 PIN 4자리를 눌러 주세요.';
+      const pad = $('#delPad');
+      if (pad && !pad.children.length) {
+        let keys = '';
+        [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach((n) => { keys += '<button type="button" data-dd="' + n + '">' + n + '</button>'; });
+        keys += '<button type="button" class="wide" data-dact="back">⌫</button>'
+          + '<button type="button" data-dd="0">0</button>'
+          + '<button type="button" class="blank" tabindex="-1" aria-hidden="true"></button>';
+        pad.innerHTML = keys;
+      }
+    },
+    pin() {
+      const raw = lsGet(K_PIN, DEFAULT_PIN);
+      return /^\d{4}$/.test(String(raw)) ? String(raw) : DEFAULT_PIN;
+    },
+    press(d) {
+      if (this.buf.length >= 4) this.buf = '';
+      this.buf += String(d);
+      $$('#delDots i').forEach((el, i) => el.classList.toggle('on', i < this.buf.length));
+      if (this.buf.length < 4) return;
+      if (this.buf === this.pin()) { this.buf = ''; Adm.pass(); return; }
+      this.fails += 1;
+      this.buf = '';
+      $$('#delDots i').forEach((el) => el.classList.remove('on'));
+      const msg = $('#delMsg');
+      if (msg) {
+        msg.className = 'pinmsg bad';
+        msg.textContent = this.fails >= 5 ? 'PIN을 5번 틀렸어요. 잠시 뒤 다시 해 보세요.' : 'PIN이 달라요. 다시 눌러 주세요 (' + this.fails + '/5)';
+      }
+      try { Sfx.tone(220, 0.12, 'square', 0.05, 170); } catch (e) { /* */ }
+    },
+    back() {
+      if (!this.buf) return;
+      this.buf = this.buf.slice(0, -1);
+      $$('#delDots i').forEach((el, i) => el.classList.toggle('on', i < this.buf.length));
+    },
+  };
+
+  /* ---------- 도감 넣기/빼기 ---------- */
+  function dexKey(slot) { return 'pkm.shared.dex.v1.' + (slot || SLOT); }
+  function setDexMon(id, on) {
+    const p = byId(Number(id));
+    if (!p) return null;
+    const o = lsGet(dexKey(SLOT), null) || {};
+    const ids = (Array.isArray(o.ids) ? o.ids : []).filter((n) => Number.isFinite(n));
+    const counts = o.counts && typeof o.counts === 'object' ? o.counts : {};
+    const dates = o.dates && typeof o.dates === 'object' ? o.dates : {};
+    const subjects = o.subjects && typeof o.subjects === 'object' ? o.subjects : {};
+    /* 🗑 지운 기록 · 🎁 다시 잡은 기록 · 🧹 초기화 표시 — 저장할 때 그대로 다시 써야
+       다른 기기·낡은 탭이 예전 목록을 올려도 지운 것이 되살아나지 않는다. */
+    const removed = o.removed && typeof o.removed === 'object' ? o.removed : {};
+    const caughtAt = o.caughtAt && typeof o.caughtAt === 'object' ? o.caughtAt : {};
+    const at = ids.indexOf(Number(p.id));
+    const had = at >= 0;
+    if (on && !had) {
+      ids.push(Number(p.id));
+      counts[p.id] = Math.max(1, Number(counts[p.id]) || 0);
+      dates[p.id] = dates[p.id] || stampDate();
+      subjects[p.id] = subjects[p.id] || ['admin'];
+      delete removed[p.id];
+      caughtAt[p.id] = Date.now();
+    } else if (!on && had) {
+      ids.splice(at, 1);
+      delete counts[p.id];
+      delete dates[p.id];
+      delete subjects[p.id];
+      delete caughtAt[p.id];
+      removed[p.id] = Date.now();
+      /* 마을에 놓여 있던 친구도 함께 정리 */
+      const v = allVillages(SLOT);
+      let dirty = false;
+      THEMES.forEach((t) => {
+        const list = (v[t.k] && v[t.k].poke) || [];
+        for (let j = list.length - 1; j >= 0; j -= 1) {
+          if (String(list[j].id) === String(p.id)) { list.splice(j, 1); dirty = true; }
+        }
+      });
+      if (dirty) lsSet(K_VIL(SLOT), v);
+    }
+    const stored = { ids: ids, counts: counts, dates: dates, subjects: subjects, v: 1 };
+    if (Object.keys(removed).length) stored.removed = removed;
+    if (Object.keys(caughtAt).length) stored.caughtAt = caughtAt;
+    if (Number(o.resetAt) > 0) stored.resetAt = Number(o.resetAt);
+    lsSet(dexKey(SLOT), stored);
+    paintVillage();
+    renderDex();
+    return !had;
+  }
+  function askToggleDex(id) {
+    const p = byId(Number(id));
+    if (!p) return;
+    const has = dexStore(SLOT).ids.has(Number(p.id));
+    const desc = has
+      ? p.name + '을(를) 도감에서 지울까요? 마을에 놓여 있으면 그 자리에서도 사라져요.'
+      : p.name + '을(를) 도감에 넣을까요? 이제 마을에도 놓을 수 있어요.';
+    Adm.gate(has ? '🗑 도감에서 지우기' : '🎁 도감에 넣기', desc, () => {
+      const now = setDexMon(p.id, !has);
+      toast(now ? '🎁 ' + p.name + '을(를) 도감에 넣었어요' : '🗑 ' + p.name + '을(를) 도감에서 지웠어요');
+    });
+    try { Sfx.tone(420, 0.08, 'square', 0.05, 620); } catch (e) { /* */ }
+  }
+  function bindDexPress() {
+    const grid = $('#dexGrid');
+    if (!grid) return;
+    const stop = () => { if (DexPress.timer) { clearTimeout(DexPress.timer); DexPress.timer = 0; } };
+    grid.addEventListener('pointerdown', (e) => {
+      const cell = e.target.closest('.dcell');
+      if (!cell) return;
+      stop();
+      DexPress.id = cell.dataset.dexid || '';
+      DexPress.x = e.clientX;
+      DexPress.y = e.clientY;
+      DexPress.fired = false;
+      DexPress.timer = setTimeout(() => {
+        DexPress.timer = 0;
+        DexPress.fired = true;
+        askToggleDex(DexPress.id);
+      }, 620);
+    });
+    grid.addEventListener('pointerup', stop);
+    grid.addEventListener('pointercancel', stop);
+    grid.addEventListener('pointerleave', stop);
+    grid.addEventListener('pointermove', (e) => {
+      if (!DexPress.timer) return;
+      if (Math.abs(e.clientX - DexPress.x) > 12 || Math.abs(e.clientY - DexPress.y) > 12) stop();
+    });
+  }
+  const DexPress = { timer: 0, id: '', x: 0, y: 0, fired: false };
+
+  /* ---------- 아이템 주기/지우기 ---------- */
+  function askToggleItem(k) {
+    if (!k) return;
+    const meta = (POK3 && POK3.item(k)) || { k: k, name: k, emoji: '🏡' };
+    const bag = inv();
+    const has = Number(bag[k]) > 0;
+    const desc = has
+      ? meta.emoji + ' ' + meta.name + '을(를) 지울까요? 마을에 놓인 것도 함께 사라져요.'
+      : meta.emoji + ' ' + meta.name + ' 1개를 가방에 넣을까요?';
+    Adm.gate(has ? '🗑 아이템 지우기' : '🎁 아이템 주기', desc, () => {
+      if (has) {
+        const res = purgeItemKey(k);
+        paintItemModal();
+        toast('🗑 ' + meta.emoji + ' ' + meta.name + '을(를) 지웠어요' + (res.removed ? ' · 마을에 놓인 ' + res.removed + '개도 함께' : ''));
+      } else {
+        const b = inv();
+        b[k] = Math.max(0, Number(b[k]) || 0) + 1;
+        saveInv(b);
+        paintItemModal();
+        toast('🎁 ' + meta.emoji + ' ' + meta.name + ' 1개를 넣었어요');
+      }
+    });
+    try { Sfx.tone(420, 0.08, 'square', 0.05, 620); } catch (e) { /* */ }
+  }
+  const ItemPress = { timer: 0, k: '', x: 0, y: 0 };
+  function bindItemPress() {
+    const grid = $('#itemGrid');
+    if (!grid) return;
+    const stop = () => { if (ItemPress.timer) { clearTimeout(ItemPress.timer); ItemPress.timer = 0; } };
+    grid.addEventListener('pointerdown', (e) => {
+      const cell = e.target.closest('.icell');
+      if (!cell) return;
+      stop();
+      ItemPress.k = cell.dataset.item || '';
+      ItemPress.x = e.clientX;
+      ItemPress.y = e.clientY;
+      ItemPress.timer = setTimeout(() => {
+        ItemPress.timer = 0;
+        askToggleItem(ItemPress.k);
+      }, 620);
+    });
+    grid.addEventListener('pointerup', stop);
+    grid.addEventListener('pointercancel', stop);
+    grid.addEventListener('pointerleave', stop);
+    grid.addEventListener('pointermove', (e) => {
+      if (!ItemPress.timer) return;
+      if (Math.abs(e.clientX - ItemPress.x) > 12 || Math.abs(e.clientY - ItemPress.y) > 12) stop();
+    });
+    const pad = $('#delPad');
+    if (pad) {
+      pad.addEventListener('click', (e) => {
+        const n = e.target.closest('button[data-dd]');
+        if (n) { try { Sfx.click(); } catch (err) { /* */ } PinUI.press(n.dataset.dd); return; }
+        if (e.target.closest('button[data-dact="back"]')) { try { Sfx.click(); } catch (err) { /* */ } PinUI.back(); }
+      });
+    }
+  }
+
+  /* ---------- 부팅 ---------- */
+  function boot() {
+    const pad = $('#pinPad');
+    let keys = '';
+    [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach((n) => { keys += '<button type="button" data-d="' + n + '">' + n + '</button>'; });
+    keys += '<button type="button" class="wide" data-act="back">⌫</button>'
+      + '<button type="button" data-d="0">0</button>'
+      + '<button type="button" class="blank" tabindex="-1" aria-hidden="true"></button>';
+    pad.innerHTML = keys;
+
+    bind();
+    bindDex();
+    bindDexPress();
+    bindItemPress();
+    /* ➕ 포켓몬 추가 — 아빠 관리자(PIN)가 풀려 있는 동안만 도감 하단에 나타난다 */
+    (function () {
+      const ab = document.getElementById('dexAddBtn');
+      if (!ab || !window.PkmDexAdd) return;
+      PkmDexAdd.bind({
+        button: ab,
+        isUnlocked: function () { try { return !!Adm.state().unlocked; } catch (e) { return false; } },
+        getSlot: function () { return SLOT; },
+        onDone: function () { try { renderDex(); paintVillage(); } catch (e) { /* */ } }
+      });
+    })();
+    loadTheme();
+    revokeFreeProps();
+    paintThemeBar();
+    paintVillage();
+    /* 화면 회전·창 크기 변경으로 무대 비율이 바뀌면 지형 판정 좌표와 그림(가로/세로)을 다시 고른다 */
+    const onResize = () => {
+      const m = document.getElementById('meadow');
+      const was = m ? m.dataset.fmt : '';
+      resetMapFit();
+      refreshTerrain();
+      if (m && (isWideStage() ? 'wide' : 'square') !== was) applyArt();
+    };
+    window.addEventListener('resize', onResize, { passive: true });
+    window.addEventListener('orientationchange', onResize, { passive: true });
+
+    fetch('./pokemon-db.json', { cache: 'no-cache' })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((db) => {
+        if (!Array.isArray(db)) return;
+        DB.list = db;
+        db.forEach((p) => { DB.byId[p.id] = p; });
+        paintVillage();
+        const dm = document.getElementById('dexModal');
+        if (dm && !dm.hidden) renderDex();   /* 도감을 먼저 열고 목록이 늦게 오면 그때 다시 그린다 */
+      })
+      .catch(() => { /* */ });
+
+    applyTod();
+    /* 마을 배경음악 — 첫 터치에 music_village(74bpm 20마디 루프)가 흐른다 */
+    BGM.amb(ambForTod());
+    BGM.music('music_village');
+    setInterval(loop, 2600);
+    setInterval(savePositions, 15000);
+    clearInterval(todTimer);
+    /* 실제 시각이 넘어가면(낮→노을→밤) 저절로 하늘이 바뀐다 */
+    todTimer = setInterval(applyTod, 30000);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+
+  /* 검증용 최소 API */
+  window.VLG = {
+    audio: () => BGM.state(),
+    slot: () => SLOT,
+    setSlot(s) { SLOT = s; paintVillage(); },
+    state,
+    inv,
+    placePoke(id) { return placePoke(Number(id)); },
+    placeItem(k) { return placeItem(k); },
+    removePoke,
+    removeItem,
+    zone(z) { return zoneAt(z && z.x, z && z.y); },
+    tod() { return (document.getElementById('meadow') || {}).dataset ? document.getElementById('meadow').dataset.tod : ''; },
+    todOf,
+    hourKST,
+    forceTod,
+    /* 테마 검증용 */
+    theme: () => THEME,
+    themes: () => THEMES.map((t) => ({ k: t.k, name: t.name, need: t.need, open: themeOpen(t), dex: dexCount(SLOT) })),
+    setTheme(k) { return setTheme(k); },
+    fmt: () => { const m = document.getElementById('meadow'); return m ? m.dataset.fmt : ''; },
+    artSrc: () => villageSrc(todNow(), THEME, isWideStage()),
+    artVar: () => { const m = document.getElementById('meadow'); return m ? getComputedStyle(m).getPropertyValue('--art').trim() : ''; },
+    dex: () => dexCount(SLOT),
+    /* 마을별 저장 검증용 */
+    villages: () => { const o = allVillages(SLOT); return Object.keys(o).map((k) => ({ k, poke: o[k].poke.map((p) => p.id), items: o[k].items.map((i) => i.k) })); },
+    homesElsewhere: () => { const h = homesElsewhere(); return Object.keys(h).map((k) => ({ id: Number(k), theme: h[k].k })); },
+    movePokeHere: (id) => movePokeHere(Number(id)),
+    askMove: (id) => { askMove(Number(id)); return document.getElementById('moveModal').hidden === false; },
+    terrain: () => TERRAIN.map((t) => ({ k: t.k, emoji: t.emoji, cx: t.cx, cy: t.cy, rx: t.rx, ry: t.ry })),
+    zoneAt,
+    mapToBox,
+    boxToMap,
+    movePoke(id, x, y) { return movePokeTo(Number(id), Number(x), Number(y), true); },
+    selectPoke(pid) { return selectPoke(pid); },
+    selectedPoke: () => selectedPoke,
+    applyZone(id, z) {
+      const el = document.querySelector('#meadowFloor .pk[data-pid="' + String(id) + '"]');
+      if (!el) return null;
+      return applyZone(el, z);
+    },
+    pokeInfo(id) {
+      const el = document.querySelector('#meadowFloor .pk[data-pid="' + String(id) + '"]');
+      if (!el) return null;
+      const st = state().poke.find((p) => String(p.id) === String(id));
+      const img = el.querySelector('img');
+      const stb = el.querySelector('.stb');
+      return {
+        id: Number(id),
+        x: parseFloat(el.style.left) || 0,
+        y: parseFloat(el.style.top) || 0,
+        zone: el.dataset.zone || 'grass',
+        cls: el.className,
+        sel: el.classList.contains('sel'),
+        stb: stb ? stb.textContent : '',
+        saved: st ? { x: st.x, y: st.y } : null,
+        anim: img ? getComputedStyle(img).animationName : '',
+      };
+    },
+    pkList() { return $$('#meadowFloor .pk').map((el) => ({ id: Number(el.dataset.pid), zone: el.dataset.zone || 'grass' })); },
+    photo() { return takePhoto(); },
+    select(i) { selectItem(Number(i)); return selectedItem; },
+    selected: () => selectedItem,
+    scale(d) { scaleItem(Number(d)); return state().items[selectedItem] ? state().items[selectedItem].sc : null; },
+    move(i, x, y) { moveItemTo(Number(i), Number(x), Number(y)); return state().items[Number(i)]; },
+    itemInfo(i) {
+      const st = state();
+      const it = st.items[Number(i)];
+      if (!it) return null;
+      const el = document.querySelector('#meadowFloor .it[data-item="' + Number(i) + '"]');
+      return { k: it.k, x: it.x, y: it.y, sc: Number(it.sc) || 1, w: el ? Math.round(el.getBoundingClientRect().width) : 0 };
+    },
+    touch(id) {
+      const el = document.querySelector('.pk[data-pid="' + id + '"]');
+      if (!el) return false;
+      touchPokemon(el);
+      return true;
+    },
+    gift: {
+      open() { Gift.reset(); open('giftModal'); },
+      pin(p) { Gift.reset(); (p || '0623').split('').forEach((d) => Gift.press(d)); },
+      state() { return { step: Gift.step, target: Gift.target, pick: Gift.pick, fails: Gift.fails }; },
+      step() { return Gift.step; },
+      target(t) { Gift.target = t; Gift.paintPick(); },
+      pick(k) { Gift.pick = k; Gift.paintPick(); },
+      send() { Gift.send(); },
+    },
+    zoom: {
+      open() { openZoom(); },
+      close() { closeZoom(); },
+      state() {
+        const m = document.getElementById('zoomModal');
+        const stage = document.getElementById('zoomStage');
+        return {
+          open: !!m && !m.hidden,
+          tod: (document.getElementById('meadow') || {}).dataset ? document.getElementById('meadow').dataset.tod : '',
+          title: (document.getElementById('zoomTitle') || {}).textContent,
+          tabs: m ? m.querySelectorAll('#zoomTabs button').length : 0,
+          pk: stage ? stage.querySelectorAll('.pk').length : 0,
+          items: stage ? stage.querySelectorAll('.it').length : 0,
+          pkW: stage && stage.querySelector('.pk') ? Math.round(stage.querySelector('.pk').getBoundingClientRect().width) : 0,
+        };
+      },
+      touch(pid) {
+        const stage = document.getElementById('zoomStage');
+        const el = stage ? stage.querySelector('.pk[data-pid="' + pid + '"]') : null;
+        if (!el) return false;
+        touchPokemon(el);
+        return true;
+      },
+    },
+    /* 📖 도감 보기 검증용 */
+    dex: {
+      open() { openDex(); },
+      close() { close('dexDetailModal'); close('dexModal'); },
+      state() {
+        const store = dexStore(SLOT);
+        const m = document.getElementById('dexModal');
+        return {
+          open: !!m && !m.hidden,
+          owner: (document.getElementById('dexOwner') || {}).textContent,
+          caught: store.ids.size,
+          total: DB.list.length,
+          tab: Dex.tab,
+          type: Dex.type,
+          cells: document.querySelectorAll('#dexGrid .dcell').length,
+          got: document.querySelectorAll('#dexGrid .dcell.got').length,
+          miss: document.querySelectorAll('#dexGrid .dcell.miss').length,
+          more: !document.getElementById('dexMoreWrap').hidden,
+          empty: !document.getElementById('dexEmpty').hidden,
+          types: document.querySelectorAll('#dexTypes button').length,
+        };
+      },
+      tab(t) {
+        Dex.tab = t === 'miss' ? 'miss' : 'caught';
+        Dex.type = '';
+        Dex.shown = DEX_PAGE;
+        renderDex();
+        return Dex.tab;
+      },
+      type(t) {
+        Dex.type = t || '';
+        Dex.shown = DEX_PAGE;
+        renderDex();
+        return Dex.type;
+      },
+      more() { Dex.shown += DEX_PAGE; renderDex(); return Dex.shown; },
+      tap(id) { openDexDetail(id); },
+      longPress(id) { askToggleDex(id); },
+      toggle(id, on) { const r = setDexMon(id, on); return r; },
+      ids() { return Array.from(dexStore(SLOT).ids); },
+      pin(p) { String(p || '').split('').forEach((d) => PinUI.press(d)); },
+      adm() { return Adm.state(); },
+      detail() {
+        const d = document.getElementById('dexDetailModal');
+        return {
+          open: !!d && !d.hidden,
+          name: (document.getElementById('dxdName') || {}).textContent,
+          num: (document.getElementById('dxdNum') || {}).textContent,
+          stats: (document.getElementById('dxdStats') || {}).textContent,
+        };
+      },
+    },
+    /* 🗑 아이템 잠금·꾹 누르기 삭제 검증용 */
+    items: {
+      open() { Sfx.click(); paintItemModal(); open('itemModal'); },
+      state() {
+        const bag = inv();
+        const cells = Array.from(document.querySelectorAll('#itemGrid .icell'));
+        return {
+          bag: Object.assign({}, bag),
+          cells: cells.length,
+          locked: cells.filter((c) => c.classList.contains('lock')).length,
+          owned: cells.filter((c) => !c.classList.contains('lock')).map((c) => c.dataset.item),
+          placed: state().items.map((it) => it.k),
+          delOpen: !document.getElementById('delItemModal').hidden,
+        };
+      },
+      longPress(k) { askToggleItem(k); },
+      pin(p) { String(p || '').split('').forEach((d) => PinUI.press(d)); },
+      purge(k) { const r = purgeItemKey(k); paintItemModal(); return r; },
+      adm() { return Adm.state(); },
+    },
+    MAX: { poke: MAX_PK, item: MAX_ITEM },
+  };
+
+  /* ============================================================
+     🔊 볼륨 분리 — 공용 모듈(pokemon-audio.js)이 이 다리를 통해
+     배경음만 따로 조절한다. 효과음(Sfx)·울음소리는 Sfx 쪽에서
+     PKMAudio.voice() 를 곱하는 방식으로 같은 설정을 본다.
+     ============================================================ */
+  window.PKMVillageAudio = {
+    bgmLevel(v) {
+      const n = Number(v);
+      BGM.bgmLevel = isFinite(n) ? Math.max(0, Math.min(1, n)) : 1;
+      BGM.applyLevel();
+      return BGM.bgmLevel;
+    },
+    bgmState() {
+      return {
+        level: BGM.bgmLevel,
+        master: BGM.master ? BGM.master.gain.value : null,
+        muted: !!Sfx.muted,
+        playing: !!BGM.src,
+      };
+    },
+  };
+})();
+</script>
+<script src="./pokemon-audio.js"></script>
+<!-- 포켓몬 배틀 월드 — 이 폴더(pokemon-battle/) 전용 서비스워커 (관제탑 PWA와 분리) -->
+<script>
+if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
