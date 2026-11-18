@@ -18,6 +18,25 @@
     { id: 'c600', name: '도감 마스터', desc: '카드 600장', need: 600 }
   ];
 
+  /* ---------- ⚔️ 1:1(사람끼리) 배틀 칭호 — 누적 1:1 승수로 진화 ----------
+     컴퓨터와의 대전은 여기에 절대 들어가지 않는다(승수·연승·카드 파워·무료팩·칭호 전부 해당). */
+  const BATTLE_TITLES = [
+    { id: 'champ', min: 20, name: '👑 챔피언' },
+    { id: 'gym', min: 10, name: '🏅 체육관 관장' },
+    { id: 'ace', min: 3, name: '⚡ 배틀 에이스' },
+    { id: 'rookie', min: 0, name: '🥚 루키' }
+  ];
+  function battleTitle(wins) {
+    const w = Math.max(0, Math.round(Number(wins) || 0));
+    return BATTLE_TITLES.find(t => w >= t.min) || BATTLE_TITLES[BATTLE_TITLES.length - 1];
+  }
+  /* 다음 칭호까지 몇 승 남았는지 (이미 최고면 null) */
+  function nextBattleTitle(wins) {
+    const w = Math.max(0, Math.round(Number(wins) || 0));
+    const up = BATTLE_TITLES.slice().sort((a, b) => a.min - b.min).find(t => t.min > w);
+    return up ? { title: up, need: up.min - w } : null;
+  }
+
   const state = {
     v: 1,
     active: 'arin',
@@ -32,8 +51,36 @@
       cards: {}, src: {}, fav: [], tickets: { normal: 0, high: 0 },
       opened: {}, badges: [], titles: ['start'], log: [],
       deck: [], wins: 0, losses: 0, trades: [], seen: Date.now(),
-      stardust: 0, at: 0, coinsAt: 0
+      stardust: 0, at: 0, coinsAt: 0,
+      /* ⚔️ 사람끼리 1:1 전용 기록 */
+      pvp: { w: 0, l: 0, streak: 0, best: 0, vs: {} },   /* 승/패·현재 연승·최고 연승·상대별 전적 */
+      cardWins: {},                                        /* 카드별 1:1 승수 (1승 = 파워 +5) */
+      freePacks: []                                        /* 5승마다 받은 무료팩 [{id, packId, at}] */
     };
+  }
+
+  /* ---------- ⚔️ 1:1 기록 도우미 (없는 값은 0으로) ---------- */
+  function intOf(v) { const x = Math.round(Number(v)); return isFinite(x) && x > 0 ? x : 0; }
+  function pvpOf(pr) {
+    const p = (pr && pr.pvp) || {};
+    const vs = {};
+    Object.keys(p.vs || {}).forEach(k => {
+      const x = p.vs[k] || {};
+      vs[k] = { w: intOf(x.w), l: intOf(x.l) };
+    });
+    return { w: intOf(p.w), l: intOf(p.l), streak: intOf(p.streak), best: intOf(p.best), vs: vs };
+  }
+  function cardWinsOf(pr) {
+    const out = {};
+    Object.keys((pr && pr.cardWins) || {}).forEach(k => { const v = intOf(pr.cardWins[k]); if (v) out[k] = v; });
+    return out;
+  }
+  function cardWinCount(profileId, cardId) {
+    const pr = state.profiles[profileId];
+    return pr ? intOf((pr.cardWins || {})[cardId]) : 0;
+  }
+  function freePacksOf(pr) {
+    return ((pr && pr.freePacks) || []).filter(x => x && x.id);
   }
 
   /* ---------- 바뀐 시각 기록 (클라우드에서 '누가 더 최근인지' 가리는 데 쓴다) ----------
@@ -41,7 +88,8 @@
   let coinSnap = null, profSnap = null;
   function profSig(pr) {
     return JSON.stringify([pr.name, pr.emoji, pr.cards, pr.src, pr.fav, pr.tickets,
-      pr.stardust || 0, pr.badges, pr.titles, pr.deck, pr.wins || 0, pr.losses || 0, pr.trades]);
+      pr.stardust || 0, pr.badges, pr.titles, pr.deck, pr.wins || 0, pr.losses || 0, pr.trades,
+      pr.pvp || null, pr.cardWins || null, pr.freePacks || null]);
   }
   function resetTrack() {
     coinSnap = {}; profSnap = {};
@@ -84,6 +132,10 @@
       if (typeof pr.stardust !== 'number') pr.stardust = 0;
       if (typeof pr.at !== 'number') pr.at = 0;
       if (typeof pr.coinsAt !== 'number') pr.coinsAt = 0;
+      /* ⚔️ 1:1 기록 — 예전 저장본에는 없으므로 기본값을 채운다 */
+      pr.pvp = pvpOf(pr);
+      pr.cardWins = cardWinsOf(pr);
+      pr.freePacks = freePacksOf(pr).map(x => ({ id: String(x.id), packId: String(x.packId || ''), at: Number(x.at) || 0, reason: String(x.reason || '') }));
     });
     if (!state.profiles[state.active]) state.active = 'arin';
     if (!state.settings) state.settings = { sfx: true, bgm: true, vibration: true, volume: 0.7 };
@@ -246,9 +298,10 @@
   }
 
   window.PKC = {
-    KEY, PIN, PROFILES, TITLES,
+    KEY, PIN, PROFILES, TITLES, BATTLE_TITLES,
     state, load, save, me, prof, profileMeta, isAdmin, setAdmin,
     $, $$, el, esc, won, toast, modal, confirmBox, pinPrompt, haptic,
-    vibOn, setVib, resetTrack
+    vibOn, setVib, resetTrack,
+    battleTitle, nextBattleTitle, pvpOf, cardWinsOf, cardWinCount, freePacksOf
   };
 })();

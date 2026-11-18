@@ -172,11 +172,13 @@
       const next = arr.slice(shown, shown + PAGE);
       next.forEach(c => {
         const own = pr.cards[c.id] || 0;
+        const cw = own ? P.cardWinCount(P.state.active, c.id) : 0;
         const div = document.createElement('div');
         div.className = 'dex-card r' + c.r + (own ? '' : ' lock');
         div.dataset.card = c.id;
         div.innerHTML = '<img loading="lazy" decoding="async" src="' + D.img(c.img) + '" alt="' + esc(c.name) + '">' +
           (c.r >= 4 ? '<span class="rar" style="color:' + (c.r === 5 ? '#ffe9bf' : '#c9b6ff') + '">' + (c.r === 5 ? '★5' : '★4') + '</span>' : '') +
+          (cw > 0 ? '<span class="pw-badge">⚡+' + (cw * 5) + '</span>' : '') +
           (own > 1 ? '<span class="cnt">×' + own + '</span>' : '') +
           (own ? '<span class="pk">' + esc(c.name) + '</span>' : '');
         div.addEventListener('click', () => {
@@ -240,6 +242,9 @@
         '<div class="kv"><span>카드 번호</span><b>' + esc(card.nn) + '</b></div>' +
         '<div class="kv"><span>카드 종류</span><b>' + esc((card.k || '-').replace(/\[P\]/g, '')) + '</b></div>' +
         '<div class="kv"><span>내 보유</span><b>' + (own ? own + '장' : '미보유') + '</b></div>' +
+        (P.cardWinCount(P.state.active, card.id) > 0 ? '<div class="kv"><span>⚡ 1:1 승리</span><b>' +
+          P.cardWinCount(P.state.active, card.id) + '승 · 파워 +' +
+          (P.cardWinCount(P.state.active, card.id) * 5) + '</b></div>' : '') +
         '<div class="kv"><span>획득 팩</span><b>' + esc(srcPack ? srcPack.name : (packOfCard(card.id) ? packOfCard(card.id).name : '-')) + '</b></div>' +
         '<div class="kv"><span>별가루</span><b>' + P.won(pr.stardust || 0) + ' ✨</b></div>' +
         (card.v ? '' : '<div class="muted" style="margin-top:8px;font-size:11px;line-height:1.6">·추정 : 공식 등급 정보가 없는 카드라 HP·이름·번호 규칙으로 ★코스트를 추정했어요.</div>') +

@@ -11,6 +11,10 @@
     const root = $('#screen-more');
     const pr = P.me();
     const uniq = U.uniqueCards(pr), total = U.totalCards(pr);
+    const pvp = P.pvpOf(pr);
+    const bTitle = P.battleTitle(pvp.w);
+    const bNext = P.nextBattleTitle(pvp.w);
+    const freeN = P.freePacksOf(pr).length;
     const titles = P.TITLES.map(t => {
       const has = pr.titles.indexOf(t.id) >= 0;
       return '<div class="trophy' + (has ? '' : ' locked-trophy') + '"><div class="em">' + (has ? '🎖️' : '🔒') + '</div>' +
@@ -39,10 +43,27 @@
         '<div class="kv"><span>🎟️ 하이클래스 티켓</span><b>' + (pr.tickets.high || 0) + '장</b></div>' +
         '<div class="kv"><span>🏅 50% 팩</span><b>' + packsHalf + '개</b></div>' +
         '<div class="kv"><span>🏆 완주 팩</span><b>' + packsDone + '개</b></div>' +
-        '<div class="kv"><span>⚔️ 전적</span><b>' + (pr.wins || 0) + '승 ' + (pr.losses || 0) + '패</b></div>' +
+        '<div class="kv"><span>⚔️ 전체 전적 (컴퓨터 포함)</span><b>' + (pr.wins || 0) + '승 ' + (pr.losses || 0) + '패</b></div>' +
+        '<div class="kv"><span>🎁 무료 팩</span><b>' + freeN + '개' + (freeN ? ' · 카드팩 상점에서 무료로 뜯기' : '') + '</b></div>' +
       '</div>' +
 
-      '<div class="h2">🎖️ 칭호 <span class="muted" style="font-size:11px">' + pr.titles.length + '/' + P.TITLES.length + '</span></div>' +
+      '<div class="pvp-panel" style="margin-top:10px">' +
+        '<div class="pvp-top"><span class="pvp-h">🏆 1:1 전적 · 칭호</span><span class="pvp-title">' + bTitle.name + '</span></div>' +
+        '<div class="pvp-nums">' +
+          '<span><b>' + pvp.w + '</b><i>승</i></span>' +
+          '<span><b>' + pvp.l + '</b><i>패</i></span>' +
+          '<span><b>' + pvp.streak + '</b><i>연승</i></span>' +
+          '<span><b>' + pvp.best + '</b><i>최고</i></span>' +
+        '</div>' +
+        '<div class="pvp-vs">' + P.PROFILES.filter(x => x.id !== P.state.active).map(o => {
+          const r = pvp.vs[o.id] || { w: 0, l: 0 };
+          return '<span>' + esc(pr.name) + ' vs ' + esc(P.prof(o.id).name) + ' <b>' + r.w + ':' + r.l + '</b></span>';
+        }).join('') + '</div>' +
+        '<div class="pvp-note">사람끼리(1:1) 대전만 기록 · 컴퓨터 대전은 제외' +
+          (bNext ? ' · 다음 칭호까지 ' + bNext.need + '승' : ' · 최고 칭호') + '</div>' +
+      '</div>' +
+
+      '<div class="h2">🎖️ 수집 칭호 <span class="muted" style="font-size:11px">' + pr.titles.length + '/' + P.TITLES.length + '</span></div>' +
       '<div class="list">' + titles + '</div>' +
 
       '<div class="h2">🤝 남매 카드 교환함</div>' +

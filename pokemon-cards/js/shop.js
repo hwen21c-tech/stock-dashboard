@@ -8,6 +8,23 @@
   let activeEra = 'all';
   let busy = false;
 
+  /* 🎁 1:1 5승 보상으로 받은 무료팩 — 코인·티켓 없이 바로 뜯는다 */
+  function freeSection(pr) {
+    const list = P.freePacksOf(pr);
+    if (!list.length) return '';
+    const rows = list.slice().reverse().map(fp => {
+      const m = D.packMeta(fp.packId);
+      if (!m) return '';
+      return '<button class="free-row" data-freepack="' + esc(fp.id) + '">' +
+        '<div class="free-art">' + U.packArt(m, { tiny: true }) + '</div>' +
+        '<div class="free-txt"><b>' + esc(m.name) + '</b><small>1:1 ' + esc(fp.reason || '5승') + ' 보상 · 무료</small></div>' +
+        '<span class="btn gold sm">무료로 뜯기</span></button>';
+    }).join('');
+    if (!rows) return '';
+    return '<div class="free-bar"><div class="free-h">🎁 무료 팩 <b>' + list.length + '</b>개' +
+      '<span>1:1에서 5승마다 받는 보상 · 코인 0</span></div>' + rows + '</div>';
+  }
+
   function ownedInPack(pr, meta) {
     let n = 0;
     const pre = meta.set + '-';
@@ -73,6 +90,7 @@
       '<div class="muted" style="margin:-6px 2px 10px">' + idx.length + '개 공식 카드팩 · 5장씩 뜯기' +
         (activeCat === 'classic' ? ' · 썬&문·XY·BW ' + D.packsOf('classic').length + '팩' : '') + '</div>' +
       todayHtml +
+      freeSection(pr) +
       '<div class="series-tabs">' + tabs + '</div>' +
       eraTabs +
       '<div class="muted" style="margin:0 2px 10px">' + esc((series.find(s => s.key === activeCat) || {}).desc || '') + '</div>' +
@@ -105,6 +123,12 @@
       A.unlock();
       openFlow(today.pack.id, { price: today.price, boosted: true });
     });
+    root.querySelectorAll('[data-freepack]').forEach(b => b.addEventListener('click', (e) => {
+      e.stopPropagation(); A.unlock();
+      const fp = P.freePacksOf(P.me()).filter(x => x.id === b.dataset.freepack)[0];
+      if (!fp) { P.toast('무료팩을 찾을 수 없어요'); return; }
+      openFlow(fp.packId, { price: 0, free: true, fpId: fp.id });
+    }));
   }
 
   /* =====================================================================
@@ -123,7 +147,9 @@
     const price = o.price != null ? o.price : meta.price;
     const isHigh = meta.price === 80;
     const tkey = isHigh ? 'high' : 'normal';
-    if (o.ticket) {
+    if (o.free) {
+      if (!P.freePacksOf(pr).some(x => x.id === o.fpId)) { P.toast('무료팩이 없어요'); return; }
+    } else if (o.ticket) {
       if (!pr.tickets[tkey]) { P.toast('티켓이 없어요'); return; }
     } else if (pr.coins < price) {
       A.sfx.error(); P.toast('코인이 부족해요 · ' + (price - pr.coins) + '코인 더 필요해요');
@@ -165,7 +191,13 @@
     /* 팩이 찢어진 순간에만 코인/티켓 차감 · opened 증가 · 카드 도감 저장 */
     function spend() {
       const p = P.me();
-      if (o.ticket) {
+      if (o.free) {
+        /* 🎁 무료팩 — 코인·티켓 차감 0, 무료팩 1개만 쓴다 */
+        const before = P.freePacksOf(p);
+        const after = before.filter(x => x.id !== o.fpId);
+        if (after.length === before.length) { A.sfx.error(); P.toast('무료팩이 없어요'); return false; }
+        p.freePacks = after;
+      } else if (o.ticket) {
         if (!p.tickets[tkey]) { A.sfx.error(); P.toast('티켓이 없어요'); return false; }
         p.tickets[tkey] -= 1;
       } else {

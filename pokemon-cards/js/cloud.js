@@ -5,6 +5,9 @@
        pkm.cards.v1  🃏 이 앱의 카드·티켓·최애·별가루·트로피·교환함
                         + 💾 나만의 덱 3칸(프로필별 decks · decksAt)
                         + ⚙️ 타이밍 바 속도(루트 settings · 아빠 PIN)
+     ─ ⚔️ 사람끼리 1:1 기록도 pkm.cards.v1 안에 프로필별로 들어간다:
+         pvp(승·패·연승·최고·상대별) · cardWins(카드별 승수) · freePacks(5승 무료팩)
+         — 컴퓨터 대전은 이 세 가지에 절대 들어가지 않는다.
      ─ 덱은 프로필의 카드 기록과 따로 비교한다(decksAt). 그래서 덱을 고쳐도
        그 프로필의 카드·티켓이 낡은 기록으로 덮이지 않는다. 덱·속도의 '바뀐 시각'은
        기기 저장소 pkc_sync_meta_v1 에도 적어 두어 다음 비교에 쓴다.
@@ -143,7 +146,11 @@
         tickets: { normal: n((pr.tickets || {}).normal), high: n((pr.tickets || {}).high) },
         stardust: n(pr.stardust), badges: pr.badges || [], titles: pr.titles || [],
         deck: pr.deck || [], wins: n(pr.wins), losses: n(pr.losses),
-        trades: pr.trades || []
+        trades: pr.trades || [],
+        /* ⚔️ 사람끼리 1:1 전용 — 전적/연승 · 카드별 승수 · 무료팩 */
+        pvp: normPvp(pr.pvp),
+        cardWins: normIntMap(pr.cardWins),
+        freePacks: normFreePacks(pr.freePacks)
       };
       /* 💾 나만의 덱 3칸 — 이 프로필의 칸과 바뀐 시각 */
       if (DS) {
@@ -165,6 +172,67 @@
     }
     return out;
   }
+  /* ---------- ⚔️ 1:1 전용 기록 모양/병합 도우미 ----------
+     pvp(승·패·연승·최고·상대별) · cardWins(카드별 1:1 승수) · freePacks(5승 무료팩).
+     원칙: 승수·전적은 '더 많이 쌓인 쪽'(최대값), 무료팩은 하나도 잃지 않게 '합집합(union)'. */
+  function normIntMap(m) {
+    const out = {};
+    Object.keys(m || {}).forEach(k => {
+      const v = Math.max(0, Math.round(n(m[k])));
+      if (v > 0) out[k] = v;
+    });
+    return out;
+  }
+  function normPvp(p) {
+    const x = p || {};
+    const vs = {};
+    Object.keys(x.vs || {}).forEach(k => {
+      const r = x.vs[k] || {};
+      vs[k] = { w: Math.max(0, Math.round(n(r.w))), l: Math.max(0, Math.round(n(r.l))) };
+    });
+    return {
+      w: Math.max(0, Math.round(n(x.w))), l: Math.max(0, Math.round(n(x.l))),
+      streak: Math.max(0, Math.round(n(x.streak))), best: Math.max(0, Math.round(n(x.best))),
+      vs: vs
+    };
+  }
+  function normFreePacks(a) {
+    const out = [];
+    (Array.isArray(a) ? a : []).forEach(x => {
+      if (!x || !x.id) return;
+      out.push({ id: String(x.id), packId: String(x.packId || ''), at: n(x.at), reason: String(x.reason || '') });
+    });
+    return out.slice(-40);
+  }
+  function mergeIntMap(a, b) {
+    const out = {};
+    [normIntMap(a), normIntMap(b)].forEach(m => {
+      Object.keys(m).forEach(k => { out[k] = Math.max(out[k] || 0, m[k]); });
+    });
+    return out;
+  }
+  function mergePvp(a, b, latest) {
+    const x = normPvp(a), y = normPvp(b), pick = latest ? normPvp(latest) : (y.w + y.l >= x.w + x.l ? y : x);
+    const vs = {};
+    Object.keys(x.vs).concat(Object.keys(y.vs)).forEach(k => {
+      const p = x.vs[k] || { w: 0, l: 0 }, q = y.vs[k] || { w: 0, l: 0 };
+      vs[k] = { w: Math.max(p.w, q.w), l: Math.max(p.l, q.l) };
+    });
+    return {
+      w: Math.max(x.w, y.w), l: Math.max(x.l, y.l), best: Math.max(x.best, y.best),
+      streak: pick.streak,   /* 현재 연승은 '가장 최근에 바뀐 기록' 기준 (패배 0연승이 되살아나지 않게) */
+      vs: vs
+    };
+  }
+  function mergeFreePacks(a, b) {
+    const out = [], seen = {};
+    normFreePacks(a).concat(normFreePacks(b)).forEach(x => {
+      if (seen[x.id]) return;
+      seen[x.id] = 1; out.push(x);
+    });
+    return out.slice(-40);
+  }
+
   function snapCoins() {
     const out = { v: 1, coins: {}, at: {} };
     IDS.forEach(id => {
@@ -269,6 +337,11 @@
       const tr = (rec.trades || []).slice();
       (lose.trades || []).forEach(t => { if (!tr.some(x => x.cardId === t.cardId)) tr.push(t); });
       rec.trades = tr;
+      /* ⚔️ 1:1 기록 — 전적·카드 승수는 더 많이 쌓인 쪽, 무료팩은 합집합.
+         (상대 기기에서 딴 승리·받은 무료팩이 20초 동기화에 지워지지 않는다) */
+      rec.pvp = mergePvp(rp.pvp, lp.pvp, win);
+      rec.cardWins = mergeIntMap(rp.cardWins, lp.cardWins);
+      rec.freePacks = mergeFreePacks(rp.freePacks, lp.freePacks);
       /* 💾 나만의 덱 3칸 — 카드·코인과 따로, 덱만의 바뀐 시각(decksAt)으로 가린다.
          (덱을 고쳤다고 그 프로필의 카드·티켓 기록 전체가 덮이지 않게) */
       const dk = pickDecks(rp, lp);
@@ -330,6 +403,16 @@
         if (Array.isArray(c.deck) && !eqv(c.deck, pr.deck)) { pr.deck = c.deck; dirty = true; visual = true; }
         if (pr.wins !== n(c.wins)) { pr.wins = n(c.wins); dirty = true; visual = true; }
         if (pr.losses !== n(c.losses)) { pr.losses = n(c.losses); dirty = true; visual = true; }
+        /* ⚔️ 1:1 전적 · 카드 승수 · 무료팩 (같으면 건드리지 않는다) */
+        if (c.pvp && !eqv(normPvp(c.pvp), normPvp(pr.pvp))) {
+          pr.pvp = normPvp(c.pvp); dirty = true; visual = true;
+        }
+        if (c.cardWins && !eqv(normIntMap(c.cardWins), normIntMap(pr.cardWins))) {
+          pr.cardWins = normIntMap(c.cardWins); dirty = true; visual = true;
+        }
+        if (Array.isArray(c.freePacks) && !eqv(normFreePacks(c.freePacks), normFreePacks(pr.freePacks))) {
+          pr.freePacks = normFreePacks(c.freePacks); dirty = true; visual = true;
+        }
         if (Array.isArray(c.trades) && !eqv(c.trades, pr.trades)) { pr.trades = c.trades; dirty = true; visual = true; }
         const at = n((cards.at || {})[id]);
         if (at > 0 && pr.at !== at) { pr.at = at; dirty = true; }

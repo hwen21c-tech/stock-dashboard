@@ -12,6 +12,41 @@
     '페어리': ['드래곤'], '무색': []
   };
   const TIER_BONUS = { 1: 0, 2: 10, 4: 40, 5: 60 };
+  const CARD_WIN_POWER = 5;          /* 1:1에서 카드가 1승 할 때마다 파워 +5 (10승 = +50) */
+
+  /* ---------------- 🤖 컴퓨터(AI) 난이도 3단계 ----------------
+     타이밍 바에서 컴퓨터가 노릴 배수(plan)를 확률로 먼저 정하고,
+     바늘이 그 칸에 들어오는 순간 멈춘다. 0 = 일부러 빗나가기.
+     컴퓨터와의 대전은 1:1 기록·칭호·무료팩·카드 파워에 절대 들어가지 않는다. */
+  const DIFF_KEY = 'pkc_ai_diff_v1';
+  const DIFFS = [
+    { k: 'easy', name: '쉬움', emoji: '🌱', desc: '컴퓨터가 자주 빗나가요',
+      plan: [[0, 0.66], [1.5, 0.27], [2, 0.06], [3, 0.01]] },
+    { k: 'normal', name: '보통', emoji: '⚔️', desc: '가끔은 맞히는 보통 실력',
+      plan: [[0, 0.30], [1.5, 0.42], [2, 0.20], [3, 0.08]] },
+    { k: 'hard', name: '어려움', emoji: '🔥', desc: '×2·×3을 잘 노려요',
+      plan: [[0, 0.08], [1.5, 0.30], [2, 0.37], [3, 0.25]] }
+  ];
+  function diffOf(k) { return DIFFS.find(d => d.k === k) || DIFFS[1]; }
+  function getDiff() {
+    try {
+      const v = localStorage.getItem(DIFF_KEY);
+      if (v && DIFFS.some(d => d.k === v)) return v;
+    } catch (e) { /* */ }
+    return 'normal';
+  }
+  function setDiff(k) {
+    if (!DIFFS.some(d => d.k === k)) return getDiff();
+    try { localStorage.setItem(DIFF_KEY, k); } catch (e) { /* */ }
+    return k;
+  }
+  /* 난이도 확률표로 이번 바에서 노릴 배수를 뽑는다 (테스트에서도 쓴다) */
+  function aiPlan(k, rnd) {
+    const d = diffOf(k);
+    let r = (typeof rnd === 'number' ? rnd : Math.random());
+    for (const pair of d.plan) { r -= pair[1]; if (r <= 0) return pair[0]; }
+    return d.plan[d.plan.length - 1][0];
+  }
 
   const ui = {
     mode: 'ai',            // 'ai' | 'p2'
@@ -29,12 +64,19 @@
     noAuto: false,         // 지우기 후 자동 채움 금지
     fType: 'all',          // 속성 필터
     fCost: 'all',          // 코스트(★) 필터
-    sort: 'hp'             // 'hp' | 'fav' | 'pack'
+    sort: 'hp',            // 'hp' | 'fav' | 'pack'
+    diff: 'normal'         // 🤖 컴퓨터 난이도
   };
+  ui.diff = getDiff();
 
-  function power(card) {
+  /* 파워 = HP + 등급 보너스 + ⚡1:1 승리 보너스(그 카드 주인 기준 1승당 +5) */
+  function power(card, ownerId) {
     const hp = card.hp || 40;
-    return hp + (TIER_BONUS[card.r] || 0);
+    return hp + (TIER_BONUS[card.r] || 0) + P.cardWinCount(ownerId || P.state.active, card.id) * CARD_WIN_POWER;
+  }
+  function pwBadge(cardId, ownerId) {
+    const n = P.cardWinCount(ownerId || P.state.active, cardId);
+    return n > 0 ? '<span class="pw-badge">⚡+' + (n * CARD_WIN_POWER) + '</span>' : '';
   }
   function advantage(a, b) { return (TYPE_BONUS[a.t] || []).indexOf(b.t) >= 0; }
 
@@ -58,10 +100,11 @@
     });
     if (!pool.length) return [];
     const st = c => D.stars(c.r);
-    const cheap = pool.slice().sort((a, b) => (st(a) - st(b)) || (power(b) - power(a)));
+    const who = profileId || P.state.active;
+    const cheap = pool.slice().sort((a, b) => (st(a) - st(b)) || (power(b, who) - power(a, who)));
     const deck = cheap.slice(0, 5);
     let total = deck.reduce((a, c) => a + st(c), 0);
-    const better = pool.slice().sort((a, b) => (power(b) + st(b) * 20) - (power(a) + st(a) * 20));
+    const better = pool.slice().sort((a, b) => (power(b, who) + st(b) * 20) - (power(a, who) + st(a) * 20));
     for (const c of better) {
       if (deck.indexOf(c) >= 0) continue;
       let worst = -1;
@@ -96,7 +139,7 @@
     }
     dp[0][0] = { pow: 0, ids: [] };
     pool.forEach(card => {
-      const st = D.stars(card.r), pw = power(card);
+      const st = D.stars(card.r), pw = power(card, profileId);
       for (let cost = budget; cost >= st; cost--) {
         for (let n = maxN; n >= 1; n--) {
           const prev = dp[cost - st][n - 1];
@@ -128,7 +171,8 @@
       const c = window.PKDex.findCard(id);
       if (c) cost += D.stars(c.r);
     });
-    const pool = cards.slice().sort((a, b) => (D.stars(a.r) - D.stars(b.r)) || (power(b) - power(a)));
+    const who = profileId || P.state.active;
+    const pool = cards.slice().sort((a, b) => (D.stars(a.r) - D.stars(b.r)) || (power(b, who) - power(a, who)));
     let guard = 0;
     while (out.length < 5 && guard++ < 600) {
       let added = false;
@@ -371,6 +415,10 @@
     const who = ui.turn === 0 ? P.me().name : P.prof(ui.p2).name;
     const favOrder = {};
     (pr.fav || []).forEach((id, i) => { if (!(id in favOrder)) favOrder[id] = i; });
+    const pvp = P.pvpOf(pr);
+    const bTitle = P.battleTitle(pvp.w);
+    const bNext = P.nextBattleTitle(pvp.w);
+    const diff = diffOf(ui.diff);
 
     /* ---- 속성 · 코스트 필터 (보유 카드에 있는 것만) ---- */
     const TYPE_ORDER = ['불꽃', '물', '번개', '풀', '초', '격투', '악', '강철', '드래곤', '무색', '페어리'];
@@ -403,7 +451,7 @@
     const shownCards = cards.filter(c =>
       (ui.fType === 'all' || (c.t || '무색') === ui.fType) &&
       (ui.fCost === 'all' || D.stars(c.r) === +ui.fCost));
-    const byPower = (a, b) => (power(b) - power(a)) || ((b.hp || 0) - (a.hp || 0));
+    const byPower = (a, b) => (power(b, meId) - power(a, meId)) || ((b.hp || 0) - (a.hp || 0));
     const byFav = (a, b) => {
       const fa = a.id in favOrder ? favOrder[a.id] : 99;
       const fb = b.id in favOrder ? favOrder[b.id] : 99;
@@ -426,6 +474,7 @@
         (short ? ' title="남은 코스트가 부족해요"' : '') + '>' +
         '<img loading="lazy" src="' + D.img(c.img) + '" alt="' + esc(c.name) + '">' +
         '<span class="star">★' + st + '</span>' +
+        pwBadge(c.id, meId) +
         (short ? '<span class="shortb">★부족</span>' : '') +
         (n > 1 ? '<span class="cnt">×' + n + '</span>' : '') +
         '</button>';
@@ -492,6 +541,7 @@
             if (!c) return '<div class="tslot"><span class="tnum">' + (i + 1) + '</span></div>';
             return '<button class="tslot filled" data-tpop="' + i + '" aria-label="' + esc(c.name) + ' 덱에서 빼기">' +
               '<img src="' + D.img(c.img) + '" alt="' + esc(c.name) + '">' +
+              pwBadge(c.id, meId) +
               '<span class="ts">★' + D.stars(c.r) + '</span>' +
               '<span class="tx">✕</span>' +
               '<span class="tn">' + esc(c.name) + '</span>' +
@@ -537,12 +587,37 @@
       (ui.mode === 'p2' && ui.turn === 1 ? '<div class="card-panel" style="margin-bottom:10px;text-align:center">' +
         '<b style="color:#ffe9bf">' + esc(who) + ' 차례</b>' +
         '<div class="muted" style="margin-top:4px;font-size:11.5px">' + esc(P.me().name) + '님은 화면을 보지 않아요!</div></div>' : '') +
+      /* 🏆 1:1 전적 · 연승 · 칭호 */
+      '<div class="pvp-panel">' +
+        '<div class="pvp-top">' +
+          '<span class="pvp-h">🧒 ' + esc(pr.name) + ' 1:1 전적</span>' +
+          '<span class="pvp-title">' + bTitle.name + '</span>' +
+        '</div>' +
+        '<div class="pvp-nums">' +
+          '<span><b>' + pvp.w + '</b><i>승</i></span>' +
+          '<span><b>' + pvp.l + '</b><i>패</i></span>' +
+          '<span><b>' + pvp.streak + '</b><i>연승</i></span>' +
+          '<span><b>' + pvp.best + '</b><i>최고</i></span>' +
+        '</div>' +
+        '<div class="pvp-vs">' + P.PROFILES.filter(x => x.id !== meId).map(o => {
+          const r = pvp.vs[o.id] || { w: 0, l: 0 };
+          return '<span>' + esc(pr.name) + ' vs ' + esc(P.prof(o.id).name) + ' <b>' + r.w + ':' + r.l + '</b></span>';
+        }).join('') + '</div>' +
+        '<div class="pvp-note">사람끼리(1:1) 대전만 기록 · 컴퓨터 대전은 제외' +
+          (bNext ? ' · 다음 칭호까지 ' + bNext.need + '승' : ' · 최고 칭호') + '</div>' +
+      '</div>' +
       '<div class="card-panel">' +
         '<div class="btn-row" style="margin-bottom:12px">' +
           '<button class="chip' + (ui.mode === 'ai' ? ' active' : '') + '" data-mode="ai">🤖 컴퓨터와 대전</button>' +
           '<button class="chip' + (ui.mode === 'p2' ? ' active' : '') + '" data-mode="p2">🧒 남매 1:1 대전</button>' +
           (ui.mode === 'p2' && ui.p2 ? '<button class="chip small" data-pickp2="1">상대: ' + esc(P.prof(ui.p2).name) + ' ✎</button>' : '') +
         '</div>' +
+        (ui.mode === 'ai' ? '<div class="diff-wrap">' +
+          '<div class="df-label">🤖 컴퓨터 난이도</div>' +
+          '<div class="diff-row">' + DIFFS.map(d =>
+            '<button class="diff-btn' + (ui.diff === d.k ? ' active' : '') + '" data-diff="' + d.k + '">' +
+            '<b>' + d.emoji + ' ' + d.name + '</b></button>').join('') + '</div>' +
+          '<div class="diff-desc">' + diff.desc + ' · 지난번 선택한 난이도로 기억해요</div></div>' : '') +
         '<div class="rules-panel">' +
           '<b>룰</b> · 5장 덱, <b>★코스트 합계 12 이하</b> · 낼 <b>순서 1~5</b> 직접 지정<br>' +
           '<span class="muted">5라운드 동시 공개 → 파워(HP+등급) + 상성 보너스 +30 · 먼저 3승 승리 (+10코인)</span>' +
@@ -768,7 +843,7 @@
       // 약한 카드부터 → 강한 카드 순 (역순 배치)
       arr.sort((a, b) => {
         const ca = window.PKDex.findCard(a), cb = window.PKDex.findCard(b);
-        return power(ca) - power(cb);
+        return power(ca, meId) - power(cb, meId);
       });
       ui.order = arr; A.sfx.sparkle(); renderSetup(root);
     });
@@ -781,6 +856,12 @@
       onReady(root);
     });
 
+    root.querySelectorAll('[data-diff]').forEach(b => b.addEventListener('click', () => {
+      A.sfx.tap(); P.haptic(8);
+      ui.diff = setDiff(b.dataset.diff);
+      P.toast('🤖 컴퓨터 난이도 · ' + diffOf(ui.diff).name, true);
+      renderSetup(root);
+    }));
     root.querySelectorAll('[data-mode]').forEach(b => b.addEventListener('click', () => {
       A.sfx.tap();
       ui.mode = b.dataset.mode;
@@ -904,7 +985,7 @@
         const p = await deckFor(meId);
         foe = p.slice();
       }
-      foeName = '🤖 컴퓨터';
+      foeName = '🤖 컴퓨터 · ' + diffOf(ui.diff).name;
     } else {
       foeProfile = ui.p2;
       const ord = ui.p2Order && ui.p2Order.length === 5 ? ui.p2Order : [];
@@ -981,7 +1062,8 @@
               '<div class="dslot"><span>1P</span></div>' +
               '<div class="dcard" id="cardA"><div class="inner">' +
                 '<div class="dface back"></div>' +
-                '<div class="dface front"><img id="imgA" alt=""><div class="holo"></div></div>' +
+                '<div class="dface front"><img id="imgA" alt=""><div class="holo"></div>' +
+                  '<span class="pw-badge" id="cbadgeA"></span></div>' +
               '</div></div>' +
               '<div class="fx-layer" id="fxA"></div>' +
               '<div class="pow-tag" id="powA"></div>' +
@@ -991,7 +1073,8 @@
               '<div class="dslot"><span>2P</span></div>' +
               '<div class="dcard" id="cardB"><div class="inner">' +
                 '<div class="dface back"></div>' +
-                '<div class="dface front"><img id="imgB" alt=""><div class="holo"></div></div>' +
+                '<div class="dface front"><img id="imgB" alt=""><div class="holo"></div>' +
+                  '<span class="pw-badge" id="cbadgeB"></span></div>' +
               '</div></div>' +
               '<div class="fx-layer" id="fxB"></div>' +
               '<div class="pow-tag" id="powB"></div>' +
@@ -1102,6 +1185,13 @@
     void img.offsetWidth;
     img.src = D.img(card.img);
     img.alt = card.name;
+    /* ⚡ 카드 이미지 위 1:1 승리 파워 배지 (컴퓨터 카드는 승수 기록이 없어 표시되지 않는다) */
+    const badge = q('#cbadge' + s);
+    if (badge) {
+      const n = P.cardWinCount(side ? b.foe.profile : b.me.profile, card.id);
+      badge.textContent = n > 0 ? '⚡+' + (n * CARD_WIN_POWER) : '';
+      badge.classList.toggle('show', n > 0);
+    }
     dc.className = 'dcard' + (card.r === 5 ? ' r5' : card.r === 4 ? ' r4' : '');
     dc.style.cssText = '';
     dside.classList.remove('empty', 'win', 'lose', 'clearing');
@@ -1167,8 +1257,8 @@
 
     const advA = advantage(a, c), advB = advantage(c, a);
     b.advA = advA; b.advB = advB;
-    const pa = power(a) + (advA ? ADV : 0);
-    const pb = power(c) + (advB ? ADV : 0);
+    const pa = power(a, b.me.profile) + (advA ? ADV : 0);
+    const pb = power(c, b.foe.profile) + (advB ? ADV : 0);
     b.base = [pa, pb];
     b.final = [pa, pb];
     const powA = q('#powA'), powB = q('#powB');
@@ -1309,7 +1399,7 @@
         '<div class="barbox' + (kind === 'def' ? ' def' : '') + '">' +
           '<div class="bar-head">' +
             '<span class="bar-kind">' + (kind === 'crit' ? '⚡ 크리티컬 바' : '🛡️ 방어 바') + '</span>' +
-            '<span class="bar-owner">' + esc(name) + '</span>' +
+            '<span class="bar-owner">' + esc(name) + (ai ? ' · ' + diffOf(ui.diff).name : '') + '</span>' +
           '</div>' +
           '<div class="bar-hint">' + barHint(base, other) + '</div>' +
           '<div class="bar-track" id="barTrack">' +
@@ -1329,6 +1419,12 @@
       const t0 = performance.now() + 90;
       /* spd = ⚙️ 설정 배율(barSpeed) — 첫 프레임부터 곱해지고, 바가 도는 중에 바꿔도 다음 프레임에 바로 반영 */
       let spd = barSpeed, phase = 0, prevT = t0;
+      /* 🤖 컴퓨터가 이번 바에서 노릴 배수 (0 = 일부러 빗나가기) */
+      const aiPlanMult = ai ? aiPlan(ui.diff) : null;
+      function clearOfZones(frac) {
+        const pad = 0.018;
+        return [zn.m15, zn.m2, zn.m3].every(pair => frac < pair[0] - pad || frac > pair[1] + pad);
+      }
 
       function place(now) {
         if (stopped || !alive()) return;
@@ -1346,6 +1442,15 @@
           lastZone = z;
           if (z) { A.sfx.barTick(z); P.haptic(6); }
           track.dataset.zone = String(z);
+        }
+        /* 🤖 난이도만큼만 맞히는 컴퓨터: 노린 칸에 들어오면 멈추고,
+           빗나가기로 정해졌으면 확실히 빈 곳에서 멈춘다. */
+        if (ai && aiPlanMult != null && now > t0) {
+          if (aiPlanMult > 0) {
+            if (z === aiPlanMult && now - t0 > 340) { stop(true); return; }
+          } else if (now - t0 > 520 && clearOfZones(cx / W)) {
+            stop(true); return;
+          }
         }
         raf = requestAnimationFrame(place);
       }
@@ -1374,8 +1479,8 @@
       A.sfx.barStart();
       raf = requestAnimationFrame(place);
       if (ai) {
-        const delay = 980 + Math.random() * 520;
-        setTimeout(() => { if (!stopped && alive()) stop(true); }, delay);
+        /* 안전장치 — 6초 안에 못 멈추면 그 자리에서 멈춘다(화면이 멈춰 보이지 않게) */
+        setTimeout(() => { if (!stopped && alive()) stop(true); }, 6000);
       }
     });
   }
@@ -1523,6 +1628,83 @@
   }
 
   /* ---------------- 결과 ---------------- */
+  /* ⚔️ 사람끼리(1:1) 전용 보상 — 컴퓨터 대전에서는 이 함수가 아예 불리지 않는다.
+     ① 승/패·연승·최고 연승·상대별 전적  ② 출전 카드 5장 각 +1승(파워 +5)
+     ③ 누적 5승마다 랜덤 무료팩 1개  ④ 누적 승수로 칭호 진화(칭호는 승수에서 바로 계산) */
+  function pvpRec(pr) {
+    pr.pvp = P.pvpOf(pr);
+    return pr.pvp;
+  }
+  function grantRandomFreePack(pr) {
+    const packs = D.allPacks();
+    if (!packs.length) return null;
+    const pack = packs[Math.floor(Math.random() * packs.length)];
+    const fp = {
+      id: 'fp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      packId: pack.id, at: Date.now(), reason: '5승'
+    };
+    pr.freePacks = P.freePacksOf(pr).concat([fp]).slice(-40);
+    return fp;
+  }
+  function applyPvpResult(b, winner) {
+    const mePr = P.prof(b.me.profile), foePr = P.prof(b.foe.profile);
+    if (!mePr || !foePr) return null;
+    const wPr = winner === 0 ? mePr : foePr;
+    const lPr = winner === 0 ? foePr : mePr;
+    const wId = winner === 0 ? b.me.profile : b.foe.profile;
+    const lId = winner === 0 ? b.foe.profile : b.me.profile;
+    const wDeck = winner === 0 ? b.me.deck : b.foe.deck;
+
+    const wp = pvpRec(wPr), lp = pvpRec(lPr);
+    wp.w += 1;
+    wp.streak = (wp.streak || 0) + 1;
+    wp.best = Math.max(wp.best || 0, wp.streak);
+    const wv = wp.vs[lId] || { w: 0, l: 0 };
+    wp.vs[lId] = { w: wv.w + 1, l: wv.l };
+    lp.l += 1;
+    lp.streak = 0;
+    const lv = lp.vs[wId] || { w: 0, l: 0 };
+    lp.vs[wId] = { w: lv.w, l: lv.l + 1 };
+
+    /* ② 출전 카드 5장 각 +1승 (한 매치당 1승 · 같은 카드가 두 장이어도 1승) */
+    wPr.cardWins = P.cardWinsOf(wPr);
+    const ids = [];
+    (wDeck || []).forEach(c => { if (c && c.id && ids.indexOf(c.id) < 0) ids.push(c.id); });
+    const ups = ids.map(id => {
+      wPr.cardWins[id] = (wPr.cardWins[id] || 0) + 1;
+      return { id: id, n: wPr.cardWins[id] };
+    });
+
+    /* ③ 누적 5승(5·10·15…)마다 124개 팩 중 랜덤 무료팩 1개 */
+    const fp = (wp.w % 5 === 0) ? grantRandomFreePack(wPr) : null;
+
+    P.save();
+    return {
+      name: wPr.name, profileId: wId, pr: wPr, pvp: wp,
+      ups: ups, fp: fp, title: P.battleTitle(wp.w),
+      next: P.nextBattleTitle(wp.w)
+    };
+  }
+  function pvpResultHtml(res) {
+    if (!res) return '';
+    const fpMeta = res.fp ? D.packMeta(res.fp.packId) : null;
+    const ups = res.ups.map(u => {
+      const c = window.PKDex.findCard(u.id);
+      return '<span class="pr-up">' + (c ? '<img src="' + D.img(c.img) + '" alt="">' : '') +
+        '<i>⚡+' + (u.n * CARD_WIN_POWER) + '</i></span>';
+    }).join('');
+    return '<div class="pvp-result">' +
+      '<div class="pr-title">' + res.title.name + ' <b>' + esc(res.name) + '</b></div>' +
+      '<div class="pr-line">1:1 <b>' + res.pvp.w + '승</b> ' + res.pvp.l + '패 · 현재 <b>' + res.pvp.streak +
+        '연승</b> (최고 ' + res.pvp.best + '연승)</div>' +
+      (res.next ? '<div class="pr-sub">다음 칭호까지 ' + res.next.need + '승 · ' + res.next.title.name + '</div>' :
+        '<div class="pr-sub">최고 칭호를 달성했어요! 👑</div>') +
+      (ups ? '<div class="pr-ups-h">카드 파워업 +' + CARD_WIN_POWER + ' (출전 5장)</div><div class="pr-ups">' + ups + '</div>' : '') +
+      (res.fp ? '<div class="pr-free">🎁 ' + res.pvp.w + '승 달성! 무료팩 1개 · <b>' +
+        esc(fpMeta ? fpMeta.name : '랜덤 팩') + '</b></div>' : '') +
+      '</div>';
+  }
+
   function finishBattle() {
     const b = ui.bt;
     if (!b) return;
@@ -1544,12 +1726,16 @@
     }
     if (winner === 0) A.sfx.win(); else if (winner === 1) A.sfx.lose();
 
+    /* 🧒 사람끼리(1:1) 대전일 때만 — 컴퓨터 대전은 여기에 들어오지 않는다 */
+    const pvpRes = (b.mode === 'p2' && winner !== -1) ? applyPvpResult(b, winner) : null;
+
     const body = '<div style="text-align:center;font-size:44px;margin-bottom:6px">' +
       (winner === 0 ? '🏆' : winner === 1 ? '💧' : '🤝') + '</div>' +
       '<div style="text-align:center;font-size:20px;font-weight:900;margin-bottom:6px">' +
       (winner === 0 ? P.prof(b.me.profile).name + ' 승리!' : winner === 1 ? b.foe.name + ' 승리!' : '무승부') + '</div>' +
       '<div style="text-align:center;font-size:16px;font-weight:900;color:#ffe9bf">' + b.score[0] + ' : ' + b.score[1] + '</div>' +
       (reward ? '<div style="text-align:center;margin-top:8px;color:#6ef2b0;font-weight:900">' + reward + '</div>' : '') +
+      pvpResultHtml(pvpRes) +
       '<div class="list" style="margin-top:16px">' + b.results.map((r, i) => {
         const ca = b.me.deck.find(c => c.id === r.a), cc = b.foe.deck.find(c => c.id === r.c);
         const m = r.mult || [1, 1];
@@ -1562,13 +1748,20 @@
           (r.win === 0 ? '#67e8ff' : r.win === 1 ? '#ff8ade' : 'rgba(255,255,255,.28)') + '"></span></div>';
       }).join('') + '</div>';
     closeArena();
+    const btns = [{ label: '홈으로', kind: 'ghost', onClick: () => { U.go('home'); } }];
+    if (pvpRes && pvpRes.fp) {
+      const fp = pvpRes.fp;
+      btns.push({
+        label: '🎁 무료팩', kind: 'gold', onClick: () => {
+          setTimeout(() => { try { window.PKShop.openFlow(fp.packId, { price: 0, free: true, fpId: fp.id }); } catch (e) { /* */ } }, 260);
+        }
+      });
+    }
+    btns.push({ label: '다시 배틀', kind: 'primary', onClick: () => { render(); } });
     P.modal({
       title: winner === 0 ? '🏆 배틀 승리' : '배틀 결과',
       body,
-      buttons: [
-        { label: '홈으로', kind: 'ghost', onClick: () => { U.go('home'); } },
-        { label: '다시 배틀', kind: 'primary', onClick: () => { render(); } }
-      ]
+      buttons: btns
     });
     U.refreshHeader();
   }
@@ -1609,5 +1802,9 @@
     }
   };
 
-  window.PKBattle = { render, power, advantage };
+  window.PKBattle = {
+    render, power, advantage,
+    diff: function () { return ui.diff; }, setDiff: setDiff, DIFFS: DIFFS, aiPlan: aiPlan,
+    cardPower: function (id, ownerId) { return P.cardWinCount(ownerId || P.state.active, id) * CARD_WIN_POWER; }
+  };
 })();

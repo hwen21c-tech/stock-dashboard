@@ -83,6 +83,12 @@
     $('#coinNum').textContent = P.won(pr.coins);
     $('#pfName').textContent = pr.name || meta.name;
     $('#pfEmoji').textContent = pr.emoji || meta.emoji;
+    /* 🎖️ 배틀 칭호는 프로필 칩에 마우스를 올리면 보인다 */
+    const pf = $('#pfChip');
+    if (pf) {
+      const bt = P.battleTitle(P.pvpOf(pr).w);
+      pf.setAttribute('title', (pr.name || meta.name) + ' · ' + bt.name);
+    }
     const sb = $('#soundBtn');
     const on = P.state.settings.sfx;
     sb.textContent = on ? (P.state.settings.bgm ? '🔊' : '🔈') : '🔇';
@@ -190,9 +196,11 @@
   function cardTile(card, opts) {
     opts = opts || {};
     const cls = 'dex-card r' + card.r + (opts.locked ? ' lock' : '');
+    const pw = P.cardWinCount(opts.profile || P.state.active, card.id) * 5;
     return '<button class="' + cls + '" data-card="' + esc(card.id) + '">' +
       '<img loading="lazy" decoding="async" src="' + D.img(card.img) + '" alt="' + esc(card.name) + '">' +
       (card.r >= 4 ? '<span class="rar" style="color:' + (card.r === 5 ? '#ffe9bf' : '#c9b6ff') + '">' + (card.r === 5 ? '★5' : '★4') + '</span>' : '') +
+      (pw > 0 ? '<span class="pw-badge">⚡+' + pw + '</span>' : '') +
       (opts.count > 1 ? '<span class="cnt">×' + opts.count + '</span>' : '') +
       '</button>';
   }
