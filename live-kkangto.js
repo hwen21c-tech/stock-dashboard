@@ -595,6 +595,19 @@ function bindMini(code) {
 function pinned(code) {
   try { return !!(window.StrategyPins && window.StrategyPins.has && window.StrategyPins.has('kk', code)); } catch (e) { return false; }
 }
+/* ───────── 장전(PREOPEN) 미체결 가드 ─────────
+ *  장전에는 네이버가 전 종목을 '보합 0.00% · 대금 -' 로 내려준다.
+ *  그 값으로 카드를 덮으면 07:30 동기화로 그려 둔 전일(11/18) 확정 등락률이 지워진다.
+ *  → 거래량·등락 근거가 없는 장전 응답은 쓰지 않는다. */
+function preopenHeld(d, s) {
+  if (String((d && d.marketStatus) || '').toUpperCase() !== 'PREOPEN') return false;
+  var vol = typeof s.volume === 'number' && isFinite(s.volume) ? s.volume : null;
+  if (vol !== null && vol > 0) return false;
+  if (typeof s.change === 'number' && s.change !== 0) return false;
+  if (typeof s.changePct === 'number' && s.changePct !== 0) return false;
+  return true;
+}
+
 function applyLive() {
   var codes = (DATA.cards || []).map(function (c) { return c.code; });
   if (SEARCH && SEARCH.code) codes.push(SEARCH.code);
@@ -608,6 +621,7 @@ function applyLive() {
       S.liveAt = new Date().toLocaleTimeString('ko-KR', { hour12: false });
       (d.stocks || []).forEach(function (s) {
         if (!s || !s.code) return;
+        if (preopenHeld(d, s)) return;   /* 장전 미체결 → 카드의 전일 확정값 유지 */
         S.live[s.code] = { price: Number(s.price), changePct: Number(s.changePct) };
       });
       paintLive();

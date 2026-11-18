@@ -55,6 +55,16 @@
   TAB_KEYS.forEach(function (k) { S.tabs[k] = {}; });
 
   function now() { return Date.now(); }
+
+  /* 장전(PREOPEN) 미체결 가드 — 0.00%·'-' 로 고정핀 카드의 전일 확정값을 덮지 않는다 */
+  function preopenHeld(d, s) {
+    if (String((d && d.marketStatus) || '').toUpperCase() !== 'PREOPEN') return false;
+    var vol = typeof s.volume === 'number' && isFinite(s.volume) ? s.volume : null;
+    if (vol !== null && vol > 0) return false;
+    if (typeof s.change === 'number' && s.change !== 0) return false;
+    if (typeof s.changePct === 'number' && s.changePct !== 0) return false;
+    return true;
+  }
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* */ } }
   function esc(s) {
@@ -627,6 +637,7 @@
         S.liveAt = new Date().toLocaleTimeString('ko-KR', { hour12: false });
         (d.stocks || []).forEach(function (s) {
           if (!s || !s.code) return;
+          if (preopenHeld(d, s)) return;   /* 장전 미체결 → 고정핀 카드의 전일 확정값 유지 */
           S.live[s.code] = {
             price: typeof s.price === 'number' ? s.price : Number(s.price),
             changePct: typeof s.changePct === 'number' ? s.changePct : Number(s.changePct),

@@ -21816,6 +21816,16 @@ function openReject(code) {
 /* ---------- 실시간 시세 ---------- */
 const lastLive = Object.create(null);
 
+/* 장전(PREOPEN) 미체결 가드 — 거래량·등락 근거가 없는 장전 응답은 반영하지 않는다 */
+function quoteTraded(q) {
+  if (!q) return false;
+  const vol = typeof q.volume === 'number' && isFinite(q.volume) ? q.volume : null;
+  if (vol !== null && vol > 0) return true;
+  if (typeof q.change === 'number' && q.change !== 0) return true;
+  if (typeof q.changePct === 'number' && q.changePct !== 0) return true;
+  return false;
+}
+
 function loadLive() {
   const codes = (DATA.cards || []).map((c) => c.code).join(',');
   liveInfo.tried = true;
@@ -21836,8 +21846,11 @@ function loadLive() {
     .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
     .then((d) => {
       const arr = (d && d.stocks) || [];
+      const preopen = String((d && d.marketStatus) || '').toUpperCase() === 'PREOPEN';
       let n = 0, d1n = 0;
       arr.forEach((s) => {
+        /* 장전(PREOPEN) 미체결 응답(0.00% · 대금 -)으로 화면의 전일 확정값을 덮지 않는다 */
+        if (preopen && !quoteTraded(s)) return;
         n += 1;
         lastLive[s.code] = s;
         const el = document.querySelector('[data-live="' + s.code + '"]');
