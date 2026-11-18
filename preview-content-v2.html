@@ -1258,7 +1258,8 @@
           <div class="stbody" id="styleBody"></div>
           <div class="mybox" id="myBlogBox" hidden>
             <div class="mlabel">4번 · 내 블로거 양식 자동 분석</div>
-            <div class="extcard"><div class="extnote">정적 페이지(GitHub Pages)는 브라우저 보안(CORS) 때문에 <b>다른 블로그 주소를 직접 열 수 없습니다</b>. 아래 칸에 <b>내 글 본문 일부</b>(800자 이상 권장)를 붙여넣으면 같은 분석이 이 브라우저에서 <b>내 Gemini 키</b>로 돌아갑니다. 동적 스튜디오에서는 링크만 넣으면 자동으로 읽습니다.</div></div>
+            <div class="extcard"><div class="extnote">정적 페이지(GitHub Pages)는 브라우저 보안(CORS) 때문에 <b>다른 블로그 주소를 직접 열 수 없습니다</b>. 아래 <b>참고용 URL</b>은 양식과 함께 저장만 하고, <b>글 본문 일부</b>(800자 이상 권장)를 붙여넣으면 같은 분석이 이 브라우저에서 <b>내 Gemini 키</b>로 돌아갑니다. 동적 스튜디오에서는 링크만 넣으면 자동으로 읽습니다.</div></div>
+            <input type="text" id="myBlogUrl" placeholder="참고용 내 글 주소 — 저장만 하고 열지 않습니다" maxlength="300" autocomplete="off" spellcheck="false" aria-label="참고용 내 블로그 글 링크">
             <div id="myBlogPasteWrap">
               <textarea id="myBlogPaste" maxlength="12000" placeholder="내 글 본문 일부(800자 이상 권장)를 붙여넣으세요. 문장은 저장되지 않고 구조·호흡·기호·말투만 뽑습니다." aria-label="내 글 본문 붙여넣기"></textarea>
               <div class="myrow" style="margin-top:6px">
@@ -6401,7 +6402,7 @@ const GEN_ACTIONS = [
           (m.at ? ' · ' + esc(m.at) : '');
       } else {
         stat.className = 'mystat bad';
-        stat.textContent = '아직 4번 양식이 없습니다 — 링크를 분석하거나 본문을 붙여넣어 주세요.';
+        stat.textContent = (document.getElementById('myBlogAnalyze') ? '아직 4번 양식이 없습니다 — 링크를 분석하거나 본문을 붙여넣어 주세요.' : '아직 4번 양식이 없습니다 — 내 글 본문을 붙여넣어 주세요.');
       }
     }
     if (note && !note.dataset.touched){
@@ -6423,7 +6424,9 @@ const GEN_ACTIONS = [
     if (!st){
       box.className = 'stnow off';
       box.innerHTML = (pick === 4)
-        ? '4번 양식이 아직 없습니다 — 아래에서 <b>링크 분석</b> 또는 <b>본문 붙여넣기</b>로 만들어 주세요.'
+        ? (document.getElementById('myBlogAnalyze')
+          ? '4번 양식이 아직 없습니다 — 아래에서 <b>링크 분석</b> 또는 <b>본문 붙여넣기</b>로 만들어 주세요.'
+          : '4번 양식이 아직 없습니다 — 아래에 <b>내 글 본문을 붙여넣어</b> 만들어 주세요. (정적: 링크 직접 열기 불가)')
         : '이 양식은 등록된 블로거 양식이 없습니다 — 기본 말투로 씁니다.';
       body.innerHTML = '';
       return;
