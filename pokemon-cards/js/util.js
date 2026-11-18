@@ -48,14 +48,16 @@
   function blankProfile(p) {
     return {
       name: p.name, emoji: p.emoji, coins: 100,
-      cards: {}, src: {}, fav: [], tickets: { normal: 0, high: 0 },
+      cards: {}, src: {}, fav: [], favAt: {}, tickets: { normal: 0, high: 0 },
       opened: {}, badges: [], titles: ['start'], log: [],
       deck: [], wins: 0, losses: 0, trades: [], seen: Date.now(),
       stardust: 0, at: 0, coinsAt: 0,
       /* ⚔️ 사람끼리 1:1 전용 기록 */
       pvp: { w: 0, l: 0, streak: 0, best: 0, vs: {} },   /* 승/패·현재 연승·최고 연승·상대별 전적 */
       cardWins: {},                                        /* 카드별 1:1 승수 (1승 = 파워 +5) */
-      freePacks: []                                        /* 5승마다 받은 무료팩 [{id, packId, at}] */
+      freePacks: [],                                       /* 5승마다 받은 무료팩 [{id, packId, at}] */
+      /* 🗑 지운 것 기록 — 클라우드가 되살리지 않게 (카드·무료팩·교환함) */
+      cardDel: {}, freeUsed: {}, tradeOff: {}
     };
   }
 
@@ -79,6 +81,23 @@
     const pr = state.profiles[profileId];
     return pr ? intOf((pr.cardWins || {})[cardId]) : 0;
   }
+  /* 🤝 교환함 — 예전 저장본({cardId} 낱장)도 '묶음' 모양으로 맞춘다.
+     [{id, cards:[카드id…], at}] · 한 묶음 10장 · 최대 10묶음 */
+  function normTradeList(a) {
+    const out = [], seen = {};
+    (Array.isArray(a) ? a : []).forEach(t => {
+      if (!t) return;
+      const ids = (Array.isArray(t.cards) ? t.cards : (t.cardId ? [t.cardId] : []))
+        .filter(x => x && typeof x === 'string');
+      if (!ids.length) return;
+      const id = String(t.id || ('tr-' + ids.join('|')));
+      if (seen[id]) return;
+      seen[id] = 1;
+      out.push({ id: id, cards: ids.slice(0, 10), at: Math.max(0, Math.round(Number(t.at) || 0)) });
+    });
+    return out.slice(0, 10);
+  }
+
   function freePacksOf(pr) {
     return ((pr && pr.freePacks) || []).filter(x => x && x.id);
   }
@@ -87,9 +106,10 @@
      코인은 coinsAt, 카드·티켓·별가루·교환함은 at. */
   let coinSnap = null, profSnap = null;
   function profSig(pr) {
-    return JSON.stringify([pr.name, pr.emoji, pr.cards, pr.src, pr.fav, pr.tickets,
+    return JSON.stringify([pr.name, pr.emoji, pr.cards, pr.src, pr.fav, pr.favAt || null, pr.tickets,
       pr.stardust || 0, pr.badges, pr.titles, pr.deck, pr.wins || 0, pr.losses || 0, pr.trades,
-      pr.pvp || null, pr.cardWins || null, pr.freePacks || null]);
+      pr.pvp || null, pr.cardWins || null, pr.freePacks || null,
+      pr.cardDel || null, pr.freeUsed || null, pr.tradeOff || null]);
   }
   function resetTrack() {
     coinSnap = {}; profSnap = {};
@@ -125,9 +145,14 @@
       if (!state.profiles[p.id]) state.profiles[p.id] = blankProfile(p);
       const pr = state.profiles[p.id];
       pr.cards = pr.cards || {}; pr.src = pr.src || {}; pr.fav = pr.fav || [];
+      pr.favAt = (pr.favAt && typeof pr.favAt === 'object') ? pr.favAt : {};
+      pr.cardDel = (pr.cardDel && typeof pr.cardDel === 'object') ? pr.cardDel : {};
+      pr.freeUsed = (pr.freeUsed && typeof pr.freeUsed === 'object') ? pr.freeUsed : {};
+      pr.tradeOff = (pr.tradeOff && typeof pr.tradeOff === 'object') ? pr.tradeOff : {};
       pr.tickets = pr.tickets || { normal: 0, high: 0 };
       pr.opened = pr.opened || {}; pr.badges = pr.badges || [];
       pr.titles = pr.titles || ['start']; pr.deck = pr.deck || []; pr.trades = pr.trades || [];
+      pr.trades = normTradeList(pr.trades);
       if (typeof pr.coins !== 'number') pr.coins = 100;
       if (typeof pr.stardust !== 'number') pr.stardust = 0;
       if (typeof pr.at !== 'number') pr.at = 0;
@@ -278,6 +303,58 @@
     });
   }
 
+  /* ---------- 🃏 가로형 카드(BREAK 등) 자동 감지 ----------
+     카드 그림 중 가로가 더 긴 카드(예: 블로스터 BREAK)는 세로 틀(63/88)에
+     꽉 채우면(object-fit:cover) 좌우가 잘려 글씨·일러스트가 깨져 보인다.
+     그림이 실제로 붙는 순간 크기를 재서 img.is-landscape 를 달고,
+     CSS 가 object-fit:contain + 어두운 배경으로 틀 안에 온전히 담게 한다.
+     · 일반 세로형 카드는 아무것도 바뀌지 않는다.
+     · 팩 표지(.pack-art 등)는 카드가 아니므로 건드리지 않는다. */
+  const ART_SKIP = '.pack-art,.pack,.pack-visual,.today-card,.lid-part,.pa-bg';
+  function markOrientation(img) {
+    if (!img || img.dataset.ori) return;
+    const w = img.naturalWidth, h = img.naturalHeight;
+    if (!w || !h) return;
+    img.dataset.ori = w > h ? 'L' : 'P';
+    if (w <= h) return;
+    if (img.closest && img.closest(ART_SKIP)) return;
+    img.classList.add('is-landscape');
+    try {
+      const box = img.closest('.reveal-card,.zoom-card');
+      if (box) {                       /* 리빌·확대 팝업은 카드 비율 그대로 크게 */
+        box.classList.add('is-landscape');
+        box.style.aspectRatio = w + ' / ' + h;
+      }
+    } catch (e) { /* */ }
+  }
+  function sweepOrientation(root) {
+    const list = (root || document).querySelectorAll('img');
+    for (let i = 0; i < list.length; i++) {
+      const img = list[i];
+      if (!img.dataset.ori && img.complete) markOrientation(img);
+    }
+  }
+  document.addEventListener('load', e => {
+    const t = e.target;
+    if (t && t.tagName === 'IMG') markOrientation(t);
+  }, true);
+  (function watchImgs() {
+    if (typeof MutationObserver !== 'function') return;
+    let queued = false;
+    const obs = new MutationObserver(() => {
+      if (queued) return;
+      queued = true;
+      const run = () => { queued = false; sweepOrientation(document); };
+      if (window.requestAnimationFrame) requestAnimationFrame(run); else setTimeout(run, 30);
+    });
+    const start = () => {
+      if (!document.body) return setTimeout(start, 30);
+      obs.observe(document.body, { childList: true, subtree: true });
+      sweepOrientation(document);
+    };
+    start();
+  })();
+
   function haptic(ms) {
     if (!vibOn()) return;                       /* 📴 무진동이면 아예 울리지 않는다 */
     if (navigator.vibrate) { try { navigator.vibrate(ms || 8); } catch (e) { } }
@@ -301,7 +378,7 @@
     KEY, PIN, PROFILES, TITLES, BATTLE_TITLES,
     state, load, save, me, prof, profileMeta, isAdmin, setAdmin,
     $, $$, el, esc, won, toast, modal, confirmBox, pinPrompt, haptic,
-    vibOn, setVib, resetTrack,
+    vibOn, setVib, resetTrack, markOrientation, sweepOrientation, normTradeList,
     battleTitle, nextBattleTitle, pvpOf, cardWinsOf, cardWinCount, freePacksOf
   };
 })();

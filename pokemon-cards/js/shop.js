@@ -197,6 +197,11 @@
         const after = before.filter(x => x.id !== o.fpId);
         if (after.length === before.length) { A.sfx.error(); P.toast('무료팩이 없어요'); return false; }
         p.freePacks = after;
+        /* 🗑 쓴 무료팩 기록 — 다음 동기화(20초)가 판으로 되살리지 않게 */
+        p.freeUsed = p.freeUsed || {};
+        p.freeUsed[o.fpId] = Date.now();
+        const cut = Object.keys(p.freeUsed).sort((a, b) => p.freeUsed[b] - p.freeUsed[a]).slice(60);
+        cut.forEach(k => { delete p.freeUsed[k]; });
       } else if (o.ticket) {
         if (!p.tickets[tkey]) { A.sfx.error(); P.toast('티켓이 없어요'); return false; }
         p.tickets[tkey] -= 1;

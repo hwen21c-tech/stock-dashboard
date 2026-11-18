@@ -10,6 +10,8 @@
     const before = pr.cards[card.id] || 0;
     pr.cards[card.id] = before + (n || 1);
     if (packId) pr.src[card.id] = packId;
+    /* 다시 얻은 카드는 '지움' 기록을 지운다 */
+    if (pr.cardDel && pr.cardDel[card.id]) delete pr.cardDel[card.id];
     P.save();
     return before;
   }
@@ -17,8 +19,13 @@
     const pr = P.prof(profileId);
     const cur = pr.cards[cardId] || 0;
     const next = Math.max(0, cur - (n || 1));
-    if (next === 0) { delete pr.cards[cardId]; delete pr.src[cardId]; }
-    else pr.cards[cardId] = next;
+    if (next === 0) {
+      delete pr.cards[cardId]; delete pr.src[cardId];
+      /* 🗑 0장이 되면 '지운 시각'을 남긴다 — 다른 기기의 클라우드 기록이
+         다음 동기화에 이 카드를 조용히 되실리지 않게 (cloud.js cardDel) */
+      pr.cardDel = pr.cardDel || {};
+      pr.cardDel[cardId] = Date.now();
+    } else pr.cards[cardId] = next;
     pr.fav = pr.fav.filter(id => pr.cards[id]);
     P.save();
     return next;

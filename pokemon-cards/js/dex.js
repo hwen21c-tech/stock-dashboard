@@ -7,7 +7,8 @@
   const filt = { series: 'all', pack: null, type: 'all', owned: 'all', q: '' };
   const cardMap = {};          // id -> card (로드된 팩)
   let allCards = null;         // 전체 카드 배열 (한 번만 구성)
-  let loadingAll = false;
+  let allCardsP = null;        // 구성 중인 약속 — 동시에 여러 번 요청해도 하나만 돐다
+  let renderSeq = 0;           // 지금 화면을 맡은 render 번호 (늦게 끝난 녕은 그림을 안 나눈다)
   let shown = 0;
   const PAGE = 120;
 
@@ -35,25 +36,30 @@
     return cardMap[id] || null;
   }
 
-  async function loadAllCards(progress) {
-    if (allCards) return allCards;
-    if (loadingAll) return null;
-    loadingAll = true;
-    const packs = D.allPacks();
-    const out = [];
-    let i = 0;
-    for (const p of packs) {
-      try {
-        const d = await D.loadPack(p.id);
-        registerCards(d);
-        d.cards.forEach(c => out.push(c));
-      } catch (e) { }
-      i++;
-      if (progress && i % 4 === 0) progress(i, packs.length);
-    }
-    allCards = out;
-    loadingAll = false;
-    return out;
+  /* 전체 카드 DB — 첫 요청이 만든 '하나의 약속'을 모두가 같이 기다린다.
+     (예전에는 로드 중에 또 부르면 null 을 주고, 그 호출이 빈 목록을 그려
+      『15종인데 0장 · 조건에 맞는 카드가 없어요』가 남았다) */
+  function loadAllCards(progress) {
+    if (allCards) return Promise.resolve(allCards);
+    if (allCardsP) return allCardsP;
+    allCardsP = (async () => {
+      const packs = D.allPacks();
+      const out = [];
+      let i = 0;
+      for (const p of packs) {
+        try {
+          const d = await D.loadPack(p.id);
+          registerCards(d);
+          d.cards.forEach(c => out.push(c));
+        } catch (e) { }
+        i++;
+        if (progress && i % 4 === 0) { try { progress(i, packs.length); } catch (e) { /* */ } }
+      }
+      allCards = out;
+      return out;
+    })();
+    allCardsP.catch(() => { allCardsP = null; });
+    return allCardsP;
   }
 
   function packOfCard(id) {
@@ -63,6 +69,7 @@
 
   /* ---------------- 화면 ---------------- */
   async function render() {
+    const seq = ++renderSeq;          /* 이 호출이 화면을 맡는다 */
     const root = $('#screen-dex');
     const pr = P.me();
     const packs = D.allPacks();
@@ -128,19 +135,32 @@
 
     const body = root.querySelector('#dexBody');
     if (filt.pack === 'all') {
+      let list;
       if (!allCards) {
         body.innerHTML = '<div class="loading"><div class="spinner"></div><div id="loadTxt">도감 불러오는 중…</div></div>';
         const txt = body.querySelector('#loadTxt');
-        await loadAllCards((i, n) => { if (txt) txt.textContent = '도감 불러오는 중… ' + i + '/' + n; });
+        const cards = await loadAllCards((i, n) => {
+          if (seq !== renderSeq || !txt) return;
+          txt.textContent = '도감 불러오는 중… ' + i + '/' + n;
+        });
+        if (seq !== renderSeq) return;            /* 더 새로운 render 가 화면을 맡았다 → 이 그림은 버린다 */
+        list = cards || allCards || [];
+      } else {
+        list = allCards;
       }
-      let list = allCards || [];
       if (filt.series !== 'all') {
         list = list.filter(c => { const p = packOfCard(c.id); return p && p.cat === filt.series; });
       }
       shown = 0;
       paint(body, list);
     } else {
-      const d = await ensurePack(filt.pack);
+      let d = null;
+      try { d = await ensurePack(filt.pack); } catch (e) { d = null; }
+      if (seq !== renderSeq || !body.isConnected) return;
+      if (!d || !d.cards) {                    /* 데이터를 못 받아 와도 에러 대신 안내 */
+        body.innerHTML = '<div class="empty">카드 목록을 불러오지 못했어요.<br>인터넷 연결을 확인하고 다시 들어와 주세요.</div>';
+        return;
+      }
       shown = 0;
       paint(body, d.cards);
     }
@@ -299,12 +319,20 @@
 
         wrap.querySelector('#favBtn').addEventListener('click', () => {
           const i = pr.fav.indexOf(id);
-          if (i >= 0) { pr.fav.splice(i, 1); P.toast('최애에서 뺐어요'); }
+          const now = Date.now();
+          pr.favAt = pr.favAt || {};
+          if (i >= 0) { pr.fav.splice(i, 1); pr.favAt[id] = now; P.toast('최애에서 뻤어요'); }
           else {
             if (pr.fav.length >= 3) { P.toast('최애는 3장까지만 고정할 수 있어요'); A.sfx.error(); return; }
-            pr.fav.push(id); P.toast('⭐ 최애 카드로 고정!', true); A.sfx.sparkle();
+            pr.fav.push(id); pr.favAt[id] = now; P.toast('⭐ 최애 카드로 고정!', true); A.sfx.sparkle();
           }
-          P.save(); close(true);
+          P.save();
+          /* 해제·핀을 바로 올린다 — 다음 자동 확인(20초)이 옛 목록을 받아 오지 않게.
+             최애는 카드별 시각(favAt)으로 합치므로, 다른 기기의 옛 목록도 되살리지 못한다. */
+          setTimeout(() => {
+            try { if (window.PKCCloud) window.PKCCloud.flush(); } catch (e) { /* */ }
+          }, 160);
+          close(true);
           if ($('#screen-home').classList.contains('active')) U.renderHome();
         });
         const db = wrap.querySelector('#dustBtn');

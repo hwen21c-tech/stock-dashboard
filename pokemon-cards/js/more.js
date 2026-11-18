@@ -68,7 +68,7 @@
 
       '<div class="h2">🤝 남매 카드 교환함</div>' +
       '<div class="card-panel" style="padding:12px">' +
-        '<div class="muted" style="font-size:12px;margin-bottom:8px">2장 이상 가진 중복 카드를 올리면, 다른 프로필이 1:1로 맞교환할 수 있어요.</div>' +
+        '<div class="muted" style="font-size:12px;margin-bottom:8px">2장 이상 가진 중복 카드를 <b>원하는 만큼</b> 묶어 올리면, 다른 프로필이 <b>원하는 장수</b>로 맞교환할 수 있어요. (1↔1 · 1↔3 · 2↔5 모두 가능)</div>' +
         '<div class="btn-row"><button class="btn primary sm" id="regTrade">📤 내 중복카드 올리기</button>' +
         '<button class="btn ghost sm" id="myTrades">📥 내가 올린 카드</button></div>' +
         '<div id="tradeBox" style="margin-top:12px"></div>' +
@@ -133,10 +133,24 @@
     renderTradeBox(root.querySelector('#tradeBox'));
   }
 
-  /* ---------------- 교환함 ---------------- */
-  function allMyDupes(pr) {
-    const ids = Object.keys(pr.cards).filter(id => pr.cards[id] >= 2 && (!pr.trades || !pr.trades.some(t => t.cardId === id)));
-    return ids;
+  /* ---------------- 🤝 교환함 ----------------
+     · 한 칸(trades)은 '묶음'이다 — [{id, cards:[카드id…], at}] · 한 묶음 최대 10장
+     · 교환할 때 양쪽 모두 1장 이상이면 되고, 장수는 자유롭다
+       (1장↔1장 · 1장↔3장 · 2장↔5장 모두 가능 — 비대칭 OK)
+     · 조건 검증: 내가 줄 카드는 지금 2장 이상 보유, 받는 카드는 상대가 1장 이상 보유
+     · 예전 저장본({cardId})은 P.normTradeList 가 묶음 모양으로 바꿔 준다 */
+  function allMyDupes(pr, extraOff) {
+    const used = {};
+    (P.normTradeList(pr.trades) || []).forEach(t => t.cards.forEach(id => { used[id] = 1; }));
+    Object.keys(extraOff || {}).forEach(id => { used[id] = 1; });
+    return Object.keys(pr.cards).filter(id => pr.cards[id] >= 2 && !used[id]);
+  }
+
+  function cardGridHtml(cards, attr, counts) {
+    return '<div class="dex-grid">' + cards.map(c =>
+      '<button class="dex-card r' + c.r + '" ' + attr + '="' + c.id + '"><img loading="lazy" src="' + D.img(c.img) + '" alt="' +
+      esc(c.name) + '">' + (counts && counts[c.id] ? '<span class="cnt">×' + counts[c.id] + '</span>' : '') +
+      '</button>').join('') + '</div>';
   }
 
   async function registerTrade() {
@@ -144,41 +158,79 @@
     const ids = allMyDupes(pr);
     if (!ids.length) { P.toast('교환함에 올릴 중복 카드(2장 이상)가 없어요'); return; }
     const cards = [];
-    for (const id of ids.slice(0, 80)) {
-      const c = await window.PKDex.ensureCard(id);
+    for (const id of ids.slice(0, 90)) {
+      const c = await window.PKDex.ensureCard(id);   /* 아직 팩 데이터를 안 읽은 카드는 여기서 불러온다 */
       if (c) cards.push(c);
     }
+    if (!cards.length) { P.toast('올릴 카드를 찾지 못했어요'); return; }
     const body = P.el('div');
-    body.innerHTML = '<p class="muted" style="margin:0 0 10px">교환함에 올릴 카드를 골라 주세요. (내 보유 2장 이상)</p>' +
-      '<div class="dex-grid">' + cards.map(c =>
-        '<button class="dex-card r' + c.r + '" data-reg="' + c.id + '"><img loading="lazy" src="' + D.img(c.img) + '" alt="">' +
-        '<span class="cnt">×' + pr.cards[c.id] + '</span></button>').join('') + '</div>';
-    const m = P.modal({ title: '📤 교환함에 올리기', body, buttons: [{ label: '✕ 나가기', kind: 'ghost' }] });
+    body.innerHTML =
+      '<p class="muted" style="margin:0 0 8px;line-height:1.6">교환함에 올릴 카드를 <b>원하는 만큼</b> 골라 주세요.<br>' +
+      '<span style="font-size:11px">2장 이상 보유한 중복 카드 · 한 묶음 10장까지</span></p>' +
+      '<div class="trade-count" id="regCount">0장 골랐어요</div>' +
+      cardGridHtml(cards, 'data-reg', pr.cards) +
+      '<button class="btn gold wide" id="regGo" disabled style="margin-top:12px">📤 0장 올리기</button>';
+    const m = P.modal({
+      title: '📤 교환함에 올리기', body,
+      buttons: [{ label: '✕ 나가기', kind: 'ghost' }]
+    });
+    const sel = [];
+    const go = body.querySelector('#regGo');
+    const cnt = body.querySelector('#regCount');
+    function sync() {
+      cnt.textContent = sel.length ? sel.length + '장 골랐어요' : '0장 골랐어요';
+      go.disabled = !sel.length;
+      go.textContent = '📤 ' + sel.length + '장 올리기';
+    }
     body.querySelectorAll('[data-reg]').forEach(b => b.addEventListener('click', () => {
       const id = b.dataset.reg;
-      pr.trades = pr.trades || [];
-      if (pr.trades.some(t => t.cardId === id) || pr.trades.length >= 10) { P.toast('이미 올렸거나 10개를 넘었어요'); return; }
-      pr.trades.push({ cardId: id, at: Date.now() });
-      P.save(); A.sfx.coin(); P.toast('교환함에 올렸어요!', true);
-      m.close(true); render();
+      const i = sel.indexOf(id);
+      if (i >= 0) { sel.splice(i, 1); b.classList.remove('picked'); }
+      else {
+        if (sel.length >= 10) { P.toast('한 묶음은 10장까지예요'); return; }
+        sel.push(id); b.classList.add('picked');
+      }
+      A.sfx.tap(); sync();
     }));
+    go.addEventListener('click', () => {
+      if (!sel.length) return;
+      if (P.normTradeList(pr.trades).length >= 10) { P.toast('교환함 묶음은 10개까지예요'); return; }
+      const bundle = {
+        id: 'tr' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+        cards: sel.slice(), at: Date.now()
+      };
+      pr.trades = P.normTradeList(P.normTradeList(pr.trades).concat([bundle]));
+      pr.tradeOff = pr.tradeOff || {};
+      sel.forEach(id => { delete pr.tradeOff[id]; });   /* 다시 올렸으니 '내림' 기록 해제 */
+      P.save(); A.sfx.coin(); P.toast(sel.length + '장 묶음을 교환함에 올렸어요!', true);
+      m.close(true); render();
+    });
+    sync();
   }
 
   async function myTrades() {
     const pr = P.me();
-    if (!pr.trades || !pr.trades.length) { P.toast('올린 카드가 없어요'); return; }
-    const body = P.el('div');
+    const list = P.normTradeList(pr.trades);
+    if (!list.length) { P.toast('올린 카드가 없어요'); return; }
     const rows = [];
-    for (const t of pr.trades) {
-      const c = await window.PKDex.ensureCard(t.cardId);
-      if (c) rows.push('<div class="row"><img src="' + D.img(c.img) + '" style="width:38px;border-radius:6px" alt="">' +
-        '<div class="grow"><b>' + esc(c.name) + '</b><small>' + esc(c.nn) + '</small></div>' +
-        '<button class="btn sm danger" data-unreg="' + c.id + '">내리기</button></div>');
+    for (const t of list) {
+      const names = [];
+      for (const id of t.cards) {
+        const c = await window.PKDex.ensureCard(id);
+        if (c) names.push(c.name);
+      }
+      rows.push('<div class="row"><div class="grow"><b>' + esc(names.join(' · ') || t.cards.join(' · ')) + '</b>' +
+        '<small>' + t.cards.length + '장 묶음</small></div>' +
+        '<button class="btn sm danger" data-unreg="' + t.id + '">내리기</button></div>');
     }
+    const body = P.el('div');
     body.innerHTML = '<div class="list">' + rows.join('') + '</div>';
     const m = P.modal({ title: '📥 내가 올린 카드', body, buttons: [{ label: '확인', kind: 'primary' }] });
     body.querySelectorAll('[data-unreg]').forEach(b => b.addEventListener('click', () => {
-      pr.trades = pr.trades.filter(t => t.cardId !== b.dataset.unreg);
+      pr.trades = P.normTradeList(pr.trades).filter(t => t.id !== b.dataset.unreg);
+      /* 🗑 내린 기록 — 다음 동기화에 교환함에 다시 올라오지 않게 */
+      pr.tradeOff = pr.tradeOff || {};
+      pr.tradeOff[b.dataset.unreg] = Date.now();
       P.save(); m.close(true); render(); P.toast('교환함에서 내렸어요');
     }));
   }
@@ -189,73 +241,131 @@
     P.PROFILES.forEach(p => {
       if (p.id === P.state.active) return;
       const op = P.prof(p.id);
-      (op.trades || []).forEach(t => {
-        if (!op.cards[t.cardId]) return;
-        offers.push({ from: p.id, fromName: op.name, cardId: t.cardId });
+      P.normTradeList(op.trades).forEach(t => {
+        const have = t.cards.filter(id => op.cards[id]);
+        if (!have.length) return;                    /* 이미 다 나간 묶음은 보여 주지 않는다 */
+        offers.push({ from: p.id, fromName: op.name, entryId: t.id, cards: have });
       });
     });
     if (!offers.length) { host.innerHTML = '<div class="empty">아직 올라온 교환 카드가 없어요</div>'; return; }
     host.innerHTML = '<div class="list">' + offers.map((o, i) =>
-      '<div class="row" data-offer="' + i + '"><div class="avatar">' + P.profileMeta(o.from).emoji + '</div>' +
-      '<div class="grow"><b>' + esc(o.fromName) + '의 카드</b><small data-cname="' + o.cardId + '">' + esc(o.cardId) + '</small></div>' +
+      '<div class="row"><div class="avatar">' + P.profileMeta(o.from).emoji + '</div>' +
+      '<div class="grow"><b>' + esc(o.fromName) + '의 카드 ' + o.cards.length + '장</b>' +
+      '<small data-oname="' + i + '">' + esc(o.cards.join(' · ')) + '</small></div>' +
       '<button class="btn sm primary" data-acc="' + i + '">교환</button></div>').join('') + '</div>';
-    for (const o of offers) {
-      const c = await window.PKDex.ensureCard(o.cardId);
-      const el = host.querySelector('[data-cname="' + o.cardId + '"]');
-      if (el && c) el.textContent = c.name + ' · ' + c.nn;
+    for (let i = 0; i < offers.length; i++) {
+      const o = offers[i];
+      const el = host.querySelector('[data-oname="' + i + '"]');
+      if (!el) continue;
+      const names = [];
+      for (const id of o.cards) {
+        const c = await window.PKDex.ensureCard(id);
+        if (c) names.push(c.name);
+      }
+      if (names.length) el.textContent = names.join(' · ');
     }
     host.querySelectorAll('[data-acc]').forEach(b => b.addEventListener('click', () => {
-      const o = offers[+b.dataset.acc];
-      acceptTrade(o);
+      acceptTrade(offers[+b.dataset.acc]);
     }));
   }
 
+  /* 🤝 교환 — 받는 장수(상대 묶음)와 주는 장수(내 선택)를 각각 자유롭게 */
   async function acceptTrade(o) {
     const me = P.me();
-    const mine = allMyDupes(me);
-    const giveCard = await window.PKDex.ensureCard(o.cardId);
-    if (!giveCard) return;
-    const cards = [];
-    for (const id of mine.slice(0, 80)) {
+    const fromPr = P.prof(o.from);
+    const offerCards = [];
+    for (const id of o.cards) {
       const c = await window.PKDex.ensureCard(id);
-      if (c) cards.push(c);
+      if (c) offerCards.push(c);
     }
-    if (!cards.length) { P.toast('내놓을 중복 카드(2장 이상)가 없어요'); return; }
+    if (!offerCards.length) { P.toast('받을 카드를 찾지 못했어요'); return; }
+    if (offerCards.some(c => !fromPr.cards[c.id])) { P.toast('조건이 바뀌었어요'); render(); return; }
+
+    const mineIds = allMyDupes(me, {});              /* 지금 2장 이상 보유한 카드만 내놓을 수 있다 */
+    const mineCards = [];
+    for (const id of mineIds.slice(0, 90)) {
+      const c = await window.PKDex.ensureCard(id);
+      if (c) mineCards.push(c);
+    }
+    if (!mineCards.length) { P.toast('내놓을 중복 카드(2장 이상)가 없어요'); return; }
+
     const body = P.el('div');
-    body.innerHTML = '<div class="row" style="margin-bottom:10px"><div class="grow"><b>받는 카드 · ' + esc(giveCard.name) + '</b>' +
-      '<small>' + esc(o.fromName) + ' 님의 카드 1장</small></div></div>' +
-      '<p class="muted" style="margin:0 0 8px">내가 줄 카드를 고르세요 (2장 이상 보유)</p>' +
-      '<div class="dex-grid">' + cards.map(c =>
-        '<button class="dex-card r' + c.r + '" data-give="' + c.id + '"><img loading="lazy" src="' + D.img(c.img) + '" alt="">' +
-        '<span class="cnt">×' + me.cards[c.id] + '</span></button>').join('') + '</div>';
-    const m = P.modal({ title: '🤝 1:1 교환', body, buttons: [{ label: '✕ 나가기', kind: 'ghost' }] });
-    body.querySelectorAll('[data-give]').forEach(b => b.addEventListener('click', async () => {
-      const giveId = b.dataset.give;
-      const giveMe = await window.PKDex.ensureCard(giveId);
+    body.innerHTML =
+      '<div class="trade-head"><b>' + esc(o.fromName) + ' 님이 주는 카드 ' + offerCards.length + '장</b></div>' +
+      cardGridHtml(offerCards, 'data-offer-card', fromPr.cards) +
+      '<div class="trade-head" style="margin-top:14px"><b>내가 주는 카드 <span id="giveCnt">0</span>장</b>' +
+      '<span class="muted" style="font-size:11px;font-weight:800">원하는 만큼 고르세요 (2장 이상 보유)</span></div>' +
+      cardGridHtml(mineCards, 'data-give', me.cards) +
+      '<div class="trade-count" id="tradeSum">' + offerCards.length + '장 ↔ 0장</div>' +
+      '<button class="btn gold wide" id="tradeGo" disabled style="margin-top:12px">🤝 0장 골라서 교환하기</button>';
+    const m = P.modal({
+      title: '🤝 1:1 교환', body,
+      buttons: [{ label: '✕ 나가기', kind: 'ghost' }]
+    });
+
+    const sel = [];
+    const go = body.querySelector('#tradeGo');
+    const sum = body.querySelector('#tradeSum');
+    const gcnt = body.querySelector('#giveCnt');
+    function sync() {
+      gcnt.textContent = sel.length;
+      sum.textContent = offerCards.length + '장 ↔ ' + sel.length + '장';
+      go.disabled = !sel.length;
+      go.textContent = sel.length ? '🤝 ' + offerCards.length + '장 ↔ ' + sel.length + '장 교환하기'
+        : '🤝 내 카드를 1장 이상 골라 주세요';
+    }
+    body.querySelectorAll('[data-give]').forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.give;
+      const i = sel.indexOf(id);
+      if (i >= 0) { sel.splice(i, 1); b.classList.remove('picked'); }
+      else { sel.push(id); b.classList.add('picked'); }
+      A.sfx.tap(); sync();
+    }));
+
+    go.addEventListener('click', async () => {
+      if (!sel.length) return;
+      /* ---- 양쪽 최소 1장 검증 (지금 이 순간의 보유 확인) ---- */
+      if (sel.some(id => (me.cards[id] || 0) < 2)) { P.toast('조건이 바뀌었어요 (내 카드)'); return; }
+      if (offerCards.some(c => (fromPr.cards[c.id] || 0) < 1)) { P.toast('조건이 바뀌었어요 (상대 카드)'); return; }
+      const giveNames = [];
+      for (const id of sel) { const c = await window.PKDex.ensureCard(id); if (c) giveNames.push(c.name); }
       const ok = await P.confirmBox('교환 확인',
-        '<b>' + esc(me.name) + '</b>: ' + esc(giveMe.name) + ' 1장 ✕<br>' +
-        '<b>' + esc(giveCard.name) + '</b> 1장 받기<br><br>' +
-        '서로 1:1로 바꿀까요?', '🤝 교환하기');
+        '<b>' + esc(me.name) + '</b> → ' + esc(giveNames.join(' · ')) + ' (' + sel.length + '장)<br>' +
+        '<b>' + esc(o.fromName) + '</b> → ' + esc(offerCards.map(c => c.name).join(' · ')) + ' (' + offerCards.length + '장)<br><br>' +
+        '이대로 교환할까요?', '🤝 교환하기');
       if (!ok) return;
-      if ((me.cards[giveId] || 0) < 2 || (P.prof(o.from).cards[giveCard.id] || 0) < 1) { P.toast('조건이 바뀌었어요'); return; }
-      U.removeCard(P.state.active, giveId, 1);
-      U.addCard(P.state.active, giveCard, P.prof(o.from).src[giveCard.id] || null, 1);
-      U.removeCard(o.from, giveCard.id, 1);
-      U.addCard(o.from, giveMe, me.src[giveId] || null, 1);
-      P.prof(o.from).trades = (P.prof(o.from).trades || []).filter(t => t.cardId !== giveCard.id);
+
+      /* ---- 카드 옮기기 (받는 쪽 먼저 보관 → 주는 쪽) ---- */
+      offerCards.forEach(c => {
+        U.removeCard(o.from, c.id, 1);
+        U.addCard(P.state.active, c, fromPr.src[c.id] || null, 1);
+      });
+      for (const id of sel) {
+        const c = await window.PKDex.ensureCard(id);
+        U.removeCard(P.state.active, id, 1);
+        if (c) U.addCard(o.from, c, me.src[id] || null, 1);
+      }
+      /* 이 묶음은 끝났다 — 다시 교환함에 올라오지 않게 */
+      fromPr.trades = P.normTradeList(fromPr.trades).filter(t => t.id !== o.entryId);
+      fromPr.tradeOff = fromPr.tradeOff || {};
+      fromPr.tradeOff[o.entryId] = Date.now();
+      me.tradeOff = me.tradeOff || {};
+      delete me.tradeOff[o.entryId];
       P.save();
       A.sfx.levelUp();
       m.close(true);
       P.modal({
         title: '🎉 교환 완료!',
-        body: '<p style="font-size:14px;line-height:1.7;margin:0">' + esc(me.name) + ' → <b>' + esc(giveCard.name) + '</b> 획득<br>' +
-          esc(o.fromName) + ' → <b>' + esc(giveMe.name) + '</b> 획득</p>',
+        body: '<p style="font-size:14px;line-height:1.75;margin:0">' +
+          esc(me.name) + ' → <b>' + esc(offerCards.map(c => c.name).join(' · ')) + '</b> (' + offerCards.length + '장) 획득<br>' +
+          esc(o.fromName) + ' → <b>' + esc(giveNames.join(' · ')) + '</b> (' + sel.length + '장) 획득</p>',
         buttons: [{ label: '확인', kind: 'primary' }]
       });
       U.checkTrophies(P.state.active, true);
       U.checkTrophies(o.from, true);
       render();
-    }));
+    });
+    sync();
   }
 
   /* ---------------- 아빠 관리자 ---------------- */

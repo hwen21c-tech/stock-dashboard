@@ -17,7 +17,9 @@
           → 게임으로 번 +10도, 카드팩으로 쓴 -50도 서로 지워지지 않는다
        3) 카드·티켓·별가루는 프로필별 at 이 더 최근인 기록을 쓰고,
           트로피(뱃지·칭호)는 합집합 — 한 번 딴 트로피는 사라지지 않는다
-       4) 실패(오프라인·키 오류)해도 앱은 그대로 동작한다 (로컬 저장 우선)
+       4) ⭐ 최애는 카드별 마지막 핀/해제 시각(favAt)이 더 최근인 쪽을 따른다
+          → 한 기기에서 해제한 최애가 20초 동기화에 되살아나지 않는다
+       5) 실패(오프라인·키 오류)해도 앱은 그대로 동작한다 (로컬 저장 우선)
 */
 (function () {
   'use strict';
@@ -143,10 +145,16 @@
         name: pr.name || '', emoji: pr.emoji || '',
         cards: pr.cards || {}, src: pr.src || {},
         fav: (pr.fav || []).filter(x => x && pr.cards && pr.cards[x]),
+        /* ⭐ 최애를 '해제'한 기록 — 카드별 마지막 핀/해제 시각 */
+        favAt: normFavAt(pr.favAt),
         tickets: { normal: n((pr.tickets || {}).normal), high: n((pr.tickets || {}).high) },
         stardust: n(pr.stardust), badges: pr.badges || [], titles: pr.titles || [],
         deck: pr.deck || [], wins: n(pr.wins), losses: n(pr.losses),
-        trades: pr.trades || [],
+        trades: normTrades(pr.trades),
+        /* 🗑 지운 기록 — 다른 기기의 옛 기록이 조용히 되살리지 않게 */
+        cardDel: normCardDel(pr.cardDel, pr.cards),
+        freeUsed: normFreeUsed(pr.freeUsed),
+        tradeOff: normFavAt(pr.tradeOff),
         /* ⚔️ 사람끼리 1:1 전용 — 전적/연승 · 카드별 승수 · 무료팩 */
         pvp: normPvp(pr.pvp),
         cardWins: normIntMap(pr.cardWins),
@@ -183,6 +191,63 @@
     });
     return out;
   }
+  /* ⭐ 최애 카드별 '마지막으로 핀/해제한 시각' */
+  function normFavAt(m) {
+    const out = {};
+    Object.keys(m || {}).forEach(k => {
+      const t = Math.max(0, Math.round(n(m[k])));
+      if (t > 0) out[k] = t;
+    });
+    return out;
+  }
+  /* 두 쪽의 'id → 시각' 기록을 합진다 (카드·무료팩·교환함의 지운 기록) */
+  function mergeStamps(a, b) {
+    const out = {};
+    [a, b].forEach(m => Object.keys(m || {}).forEach(k => {
+      const t = Math.max(0, Math.round(n(m[k])));
+      if (t > 0) out[k] = Math.max(out[k] || 0, t);
+    }));
+    return out;
+  }
+  /* ---------- ⭐ 최애 3장 합치기 ----------
+     예전에는 '합집합'(빈 자리가 있으면 상대 목록에서 채움)이라, 한 기기에서
+     최애를 해제해도 다른 기기의 옛 목록이 20초 동기화마다 되살렸다.
+     이제 카드마다 핀/해제 시각(favAt)을 두고, 그 시각이 더 최근인 쪽의
+     상태(핀 / 해제)를 따른다. 해제도 하나의 변경으로 똑같이 전해진다.
+     · 양쪽 다 시각이 없으면(이 업그레이드 전 저장본) 예전처럼 합집합 — 핀이 조용히 사라지지 않게
+     · 목록 순서는 '이긴 쪽 순서 → 진 쪽 순서', 지금 가진 카드 안에서 3장까지 */
+  function mergeFav(rp, lp, win, lose, cards) {    const rFav = Array.isArray(rp.fav) ? rp.fav : [];
+    const lFav = Array.isArray(lp.fav) ? lp.fav : [];
+    const rAt = normFavAt(rp.favAt), lAt = normFavAt(lp.favAt);
+    const ids = {};
+    rFav.concat(lFav).forEach(x => { if (x) ids[x] = 1; });
+    Object.keys(rAt).forEach(k => { ids[k] = 1; });
+    Object.keys(lAt).forEach(k => { ids[k] = 1; });
+    const wFav = Array.isArray(win && win.fav) ? win.fav : [];
+    const on = {};
+    Object.keys(ids).forEach(id => {
+      const rt = rAt[id] || 0, lt = lAt[id] || 0;
+      const inR = rFav.indexOf(id) >= 0, inL = lFav.indexOf(id) >= 0;
+      if (!rt && !lt) { on[id] = inR || inL; return; }
+      if (rt > lt) { on[id] = inR; return; }
+      if (lt > rt) { on[id] = inL; return; }
+      on[id] = wFav.indexOf(id) >= 0;        /* 같은 시각 — 프로필 전체가 최근인 쪽 */
+    });
+    const order = [];
+    [wFav, Array.isArray(lose && lose.fav) ? lose.fav : []].forEach(arr => {
+      arr.forEach(x => { if (on[x] && order.indexOf(x) < 0) order.push(x); });
+    });
+    Object.keys(ids).forEach(id => { if (on[id] && order.indexOf(id) < 0) order.push(id); });
+    const fav = order.filter(x => cards && cards[x]).slice(0, 3);
+    const favAt = {};
+    Object.keys(ids).forEach(id => {
+      const t = Math.max(rAt[id] || 0, lAt[id] || 0);
+      if (!t) return;
+      /* 가진 카드의 기록은 계속 남긴다 — 해제 기록까지 지우면 옛 목록이 되살아난다 */
+      if (on[id] || (cards && cards[id])) favAt[id] = t;
+    });
+    return { fav: fav, favAt: favAt };
+  }
   function normPvp(p) {
     const x = p || {};
     const vs = {};
@@ -204,6 +269,43 @@
     });
     return out.slice(-40);
   }
+  /* ---- 🗑 지운 기록 도우미 ---- */
+  /* 지운 카드: id → 지운 시각 (30일 지난 기록·다시 가진 카드는 버린다) */
+  function normCardDel(m, cards) {
+    const out = {}, now = Date.now(), LIM = 30 * 86400000;
+    Object.keys(m || {}).forEach(k => {
+      const t = Math.max(0, Math.round(n(m[k])));
+      if (!t || now - t > LIM) return;
+      if (cards && cards[k]) return;
+      out[k] = t;
+    });
+    return out;
+  }
+  /* 쓴 무료팩: id → 쓴 시각 (최근 60개만) */
+  function normFreeUsed(m) {
+    const now = Date.now(), LIM = 120 * 86400000;
+    const pairs = Object.keys(m || {}).map(k => [String(k), Math.max(0, Math.round(n(m[k])))])
+      .filter(p => p[1] > 0 && now - p[1] <= LIM)
+      .sort((a, b) => b[1] - a[1]).slice(0, 60);
+    const out = {};
+    pairs.forEach(p => { out[p[0]] = p[1]; });
+    return out;
+  }
+  /* 교환함 올린 카드: [{id, cards:[카드id…], at}] — 예전 {cardId} 낱장도 같이 받는다 */
+  function normTrades(a) {
+    const out = [], seen = {};
+    (Array.isArray(a) ? a : []).forEach(t => {
+      if (!t) return;
+      const ids = (Array.isArray(t.cards) ? t.cards : (t.cardId ? [t.cardId] : []))
+        .filter(x => x && typeof x === 'string');
+      if (!ids.length) return;
+      const id = String(t.id || ('tr-' + ids.join('|')));
+      if (seen[id]) return;
+      seen[id] = 1;
+      out.push({ id: id, cards: ids.slice(0, 10), at: Math.max(0, Math.round(n(t.at))) });
+    });
+    return out.slice(0, 10);
+  }
   function mergeIntMap(a, b) {
     const out = {};
     [normIntMap(a), normIntMap(b)].forEach(m => {
@@ -224,13 +326,30 @@
       vs: vs
     };
   }
-  function mergeFreePacks(a, b) {
+  /* 🎁 무료팩 — '쓴 팩(freeUsed)'은 되살리지 않는다.
+     예전에는 하나도 잃지 않게 합집합만 해서, 무료팩을 써도 다음 동기화에 다시 생겼다(무한 무료팩). */
+  function mergeFreePacks(a, b, used) {
     const out = [], seen = {};
     normFreePacks(a).concat(normFreePacks(b)).forEach(x => {
       if (seen[x.id]) return;
+      if (used && used[x.id]) return;          /* 이미 쓴 팩 */
       seen[x.id] = 1; out.push(x);
     });
     return out.slice(-40);
+  }
+  /* 🤝 교환함 — 올린 카드는 살리되 '내린 묶음(tradeOff)'은 다시 올리지 않는다.
+     예전에는 합집합이라, 교환함에서 내리거나 교환이 끝나도 옛 기록이 다시 올라왔다. */
+  function mergeTrades(a, b, off) {
+    const out = [], seen = {};
+    normTrades(a).concat(normTrades(b)).forEach(t => {
+      if (seen[t.id]) return;
+      /* 내림 기록은 '묶음 id' 로 적지만, 예전 저장본의 '카드 id' 기록도 함께 본다 */
+      let offAt = (off && off[t.id]) || 0;
+      if (off) t.cards.forEach(cid => { const v = off[cid] || 0; if (v > offAt) offAt = v; });
+      if (offAt > 0 && offAt >= t.at) return;   /* 내린 뒤(또는 같은 시각) 기록은 버린다 */
+      seen[t.id] = 1; out.push(t);
+    });
+    return out.slice(0, 10);
   }
 
   function snapCoins() {
@@ -326,22 +445,19 @@
       /* 트로피는 합집합 — 딴 것은 사라지지 않는다 */
       rec.badges = union(rp.badges, lp.badges);
       rec.titles = union(rp.titles, lp.titles);
-      /* 최애 3장은 지금 가진 카드 안에서만 */
-      rec.fav = (rec.fav || []).filter(x => rec.cards && rec.cards[x]);
-      if ((rec.fav || []).length < 3) {
-        (lose.fav || []).forEach(x => {
-          if (rec.fav.length < 3 && rec.cards && rec.cards[x] && rec.fav.indexOf(x) < 0) rec.fav.push(x);
-        });
-      }
-      /* 교환함 — 양쪽에 올라온 카드는 살린다 */
-      const tr = (rec.trades || []).slice();
-      (lose.trades || []).forEach(t => { if (!tr.some(x => x.cardId === t.cardId)) tr.push(t); });
-      rec.trades = tr;
-      /* ⚔️ 1:1 기록 — 전적·카드 승수는 더 많이 쌓인 쪽, 무료팩은 합집합.
+      /* 🗑 양쪽의 '지운 기록'을 합쳐 둔다 (더 늦은 시각이 이긴다) */
+      const tradeOff = mergeStamps(rp.tradeOff, lp.tradeOff);
+      const cardDel = mergeStamps(rp.cardDel, lp.cardDel);
+      const freeUsed = mergeStamps(rp.freeUsed, lp.freeUsed);
+      rec.tradeOff = tradeOff;
+      /* 🤝 교환함 — 양쪽에 올라온 카드는 살리되, 내린 카드(tradeOff)는 다시 올리지 않는다 */
+      rec.trades = mergeTrades(rp.trades, lp.trades, tradeOff);
+      /* ⚔️ 1:1 기록 — 전적·카드 승수는 더 많이 쌓인 쪽, 무료팩은 합집합(단, 쓴 팩은 제외).
          (상대 기기에서 딴 승리·받은 무료팩이 20초 동기화에 지워지지 않는다) */
       rec.pvp = mergePvp(rp.pvp, lp.pvp, win);
       rec.cardWins = mergeIntMap(rp.cardWins, lp.cardWins);
-      rec.freePacks = mergeFreePacks(rp.freePacks, lp.freePacks);
+      rec.freeUsed = freeUsed;
+      rec.freePacks = mergeFreePacks(rp.freePacks, lp.freePacks, freeUsed);
       /* 💾 나만의 덱 3칸 — 카드·코인과 따로, 덱만의 바뀐 시각(decksAt)으로 가린다.
          (덱을 고쳤다고 그 프로필의 카드·티켓 기록 전체가 덮이지 않게) */
       const dk = pickDecks(rp, lp);
@@ -354,9 +470,19 @@
       rec.cards = Object.assign({}, rec.cards || {});
       if (!(resetAt > 0 && resetAt > n(lose.at))) {
         Object.keys(lose.cards || {}).forEach(cid => {
-          if (!(cid in rec.cards)) rec.cards[cid] = lose.cards[cid];
+          if (cid in rec.cards) return;
+          /* 🗑 이 기기에서 지운 카드는 상대 기록이 더 늦지 않으면 되살리지 않는다
+             (아밸 관리자·선물·교환으로 줄인 카드가 동기화에 다시 생기던 문제) */
+          const dt = cardDel[cid] || 0;
+          if (dt > 0 && dt >= n(lose.at)) return;
+          rec.cards[cid] = lose.cards[cid];
         });
       }
+      rec.cardDel = normCardDel(cardDel, rec.cards);
+      /* ⭐ 최애 3장 — 합친 카드 목록을 기준으로, 카드별 '바꾼 시각'으로 해제까지 정확히 (합집합 아님) */
+      const fv = mergeFav(rp, lp, win, lose, rec.cards);
+      rec.fav = fv.fav;
+      rec.favAt = fv.favAt;
       out.p[id] = rec;
       out.at[id] = Math.max(rt, lt);
     });
@@ -395,6 +521,23 @@
         if (c.cards && typeof c.cards === 'object' && !eqv(c.cards, pr.cards)) { pr.cards = c.cards; dirty = true; visual = true; }
         if (c.src && typeof c.src === 'object' && !eqv(c.src, pr.src)) { pr.src = c.src; dirty = true; visual = true; }
         if (Array.isArray(c.fav) && !eqv(c.fav, pr.fav)) { pr.fav = c.fav; dirty = true; visual = true; }
+        if (c.favAt && typeof c.favAt === 'object') {
+          const fa = normFavAt(c.favAt);
+          if (!eqv(fa, normFavAt(pr.favAt))) { pr.favAt = fa; dirty = true; }
+        }
+        /* 🗑 지운 기록 — 화면에 보이는 것은 아니므로 dirty 만 (다시 그리지 않는다) */
+        if (c.cardDel && typeof c.cardDel === 'object') {
+          const v = normCardDel(c.cardDel, pr.cards);
+          if (!eqv(v, normCardDel(pr.cardDel, pr.cards))) { pr.cardDel = v; dirty = true; }
+        }
+        if (c.freeUsed && typeof c.freeUsed === 'object') {
+          const v = normFreeUsed(c.freeUsed);
+          if (!eqv(v, normFreeUsed(pr.freeUsed))) { pr.freeUsed = v; dirty = true; }
+        }
+        if (c.tradeOff && typeof c.tradeOff === 'object') {
+          const v = normFavAt(c.tradeOff);
+          if (!eqv(v, normFavAt(pr.tradeOff))) { pr.tradeOff = v; dirty = true; }
+        }
         const tk = { normal: n((c.tickets || {}).normal), high: n((c.tickets || {}).high) };
         if (!eqv(tk, pr.tickets)) { pr.tickets = tk; dirty = true; visual = true; }
         if (pr.stardust !== n(c.stardust)) { pr.stardust = n(c.stardust); dirty = true; visual = true; }
@@ -545,6 +688,11 @@
       const rec = Object.assign({}, p);
       rec.cards = Object.assign({}, rec.cards || {});
       rec.fav = (rec.fav || []).filter(x => rec.cards[x]);
+      /* 되돌린 시점의 최애 목록이 이 기기의 옛 기록을 이기도록 시각을 '지금'으로 다시 찍는다 */
+      const fat = {};
+      (rec.fav || []).forEach(x => { fat[x] = now; });
+      Object.keys(normFavAt(rec.favAt)).forEach(x => { if (!fat[x]) fat[x] = now; });
+      rec.favAt = fat;
       rec.resetAt = now;          /* 이 시점 값이 낡은 기기의 옛 카드보다 우선한다 */
       out.p[id] = rec;
       out.at[id] = now;

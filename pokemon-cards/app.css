@@ -1304,3 +1304,27 @@ b,strong{font-weight:800}
 .free-txt{flex:1 1 auto;min-width:0}
 .free-txt b{display:block;font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .free-txt small{font-size:9.5px;color:#8fd6b0;font-weight:800}
+
+/* ============================================================
+   🃏 가로형 카드(BREAK 등) — 좌우가 잘리지 않게
+   util.js 가 그림 크기를 재서 img.is-landscape 를 달아 준다.
+   (naturalWidth > naturalHeight 인 카드만 해당 — 일반 세로형 카드는 그대로)
+   틀은 그대로 두고 contain + 어두운 배경으로 카드 전체를 담는다.
+   ============================================================ */
+img.is-landscape{object-fit:contain !important;object-position:center;
+  background:radial-gradient(125% 130% at 50% 45%,#1d2750 0%,#0c1229 56%,#05080f 100%)}
+.dex-card img.is-landscape,.pick-card img.is-landscape,.dkslot .dk-t img.is-landscape{border-radius:10px}
+.dex-card:active img.is-landscape{transform:scale(1.03)}
+/* 리빌·확대 팝업은 카드 비율 그대로 크게 (가로 카드가 작아 보이지 않게) */
+.reveal-card.is-landscape{max-width:86vw}
+.zoom-card.is-landscape{max-width:86vw}
+/* 홈 최애 · 트레이 · 대기덱의 작은 칸에서도 가로 카드가 뭉개지지 않게 */
+
+/* 🤝 교환함 — 여러 장 고르기 */
+.dex-card.picked{border-color:var(--gold2);box-shadow:0 0 0 2px var(--gold2),0 8px 20px rgba(231,195,122,.45)}
+.dex-card.picked::after{content:"✓";position:absolute;right:4px;top:4px;z-index:4;width:18px;height:18px;border-radius:50%;
+  display:grid;place-items:center;font-size:11px;font-weight:900;color:#241a05;
+  background:linear-gradient(180deg,#ffe9a8,#f0b64a);box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.trade-count{margin:8px 2px 2px;font-size:12px;font-weight:900;color:#ffe9bf;text-align:center}
+.trade-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 2px 7px}
+.trade-head b{font-size:12.5px;font-weight:900;color:#dfe6ff}
