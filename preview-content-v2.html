@@ -3321,7 +3321,7 @@ const GEN_ACTIONS = [
     }
     var h = '<div class="ainote"><b>Gemini 컷 설계도</b> · ' + esc(j.model || AI.model) + ' · 컷 ' + cuts.length + '개 / 총 ' +
       (d.totalSec || 0) + '초';
-    if (j.fellBack) h += ' <span style="color:#fbbf24">(3.8 Flash가 밀려 대체 모델이 설계)</span>';
+    if (j.fellBack) h += ' <span style="color:#fbbf24">(우선 모델이 밀려 대체 모델이 설계)</span>';
     h += '</div>';
     h += '<div class="aicutwrap"><table class="cuttable"><thead><tr>' +
       '<th style="width:26px">#</th><th>클립</th><th style="width:92px">구간</th><th style="width:40px">길이</th><th>자막</th><th style="width:48px">전환</th>' +
@@ -3878,7 +3878,7 @@ const GEN_ACTIONS = [
     if (!li.length && !j.fellBack){ host.innerHTML = ''; return; }
     var h = '<div class="ainote"><b>이 글은 ' + esc(j.model || AI.model) + '이(가) 썼습니다</b> · ' +
       (Math.round((j.elapsedMs || 0) / 100) / 10) + '초';
-    if (j.fellBack) h += ' <span style="color:#fbbf24">(3.8 Flash가 밀려 대체 모델이 작성)</span>';
+    if (j.fellBack) h += ' <span style="color:#fbbf24">(우선 모델이 밀려 대체 모델이 작성)</span>';
     if (li.length) h += '<ul>' + li.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
     host.innerHTML = h + '</div>';
   }
