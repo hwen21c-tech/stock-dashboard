@@ -959,10 +959,8 @@ details.sx-fold .fold-body ul{padding-left:15px;margin:4px 0}
     </div>
   </header>
 
-  <nav class="appnav" aria-label="다른 앱으로 이동">
-    <a href="index.html" class="appnav-link stock"><span class="ico">📈</span>주식 관제탑</a>
-    <a href="deals.html" class="appnav-link deals"><span class="ico">✈️</span>특가 레이더</a>
-    <a href="content-studio.html" class="appnav-link content"><span class="ico">✍️</span>콘텐츠 스튜디오</a>
+  <nav class="appnav" aria-label="콘텐츠 스튜디오로 이동">
+    <a href="preview-content-v2.html" class="appnav-link content"><span class="ico">✍️</span>사주·운세 글쓰기 (콘텐츠 스튜디오)</a>
   </nav>
 
   <!-- 가족 프로필 칩 · ☁️ 동기화 -->
@@ -3715,7 +3713,9 @@ function load(){
   loadMemo();
   try { state.profiles = JSON.parse(localStorage.getItem(LS_P) || '[]'); } catch(e){ state.profiles = []; }
   if (!Array.isArray(state.profiles)) state.profiles = [];
-  state.profiles = state.profiles.filter(function(p){ return p && p.y && p.m && p.d; });
+  var rawLen = state.profiles.length;
+  state.profiles = state.profiles.filter(function(p){ return p && p.y && p.m && p.d && !p.sample && p.name !== '김하늘'; });
+  if (state.profiles.length !== rawLen) { try { localStorage.setItem(LS_P, JSON.stringify(state.profiles)); } catch(e){} }
   var a = localStorage.getItem(LS_A);
   state.activeId = state.profiles.some(function(p){ return p.id===a; }) ? a : (state.profiles[0] ? state.profiles[0].id : null);
   var t = localStorage.getItem(LS_T);
@@ -4926,10 +4926,7 @@ var SajuCloud = (function(){
   }
   function writeLocal(doc){
     var beforeP = lsGet(LS_P), beforeM = lsGet(LS_MEMO);
-    var keep = [];
-    var cur = jp(beforeP, []);
-    if (Array.isArray(cur)) cur.forEach(function(p){ if (p && p.sample && !(doc.profiles || []).some(function(q){ return q.id === p.id; })) keep.push(p); });
-    var arr = (doc.profiles || []).concat(keep);
+    var arr = (doc.profiles || []).filter(function(p){ return p && !p.sample && p.name !== '김하늘'; });
     if (!arr.length) return 0;                          /* 빈 배열로 지우지 않는다 */
     var nextP = JSON.stringify(arr), nextM = JSON.stringify(doc.memo || {});
     var changed = 0;
