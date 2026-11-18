@@ -16932,7 +16932,7 @@ function openDetail(title, v1, v2, desc) {
     function forceLiveRefresh() {
       var syncTxt = document.getElementById('lastSyncTxt');
       if (syncTxt) {
-        syncTxt.innerText = '캐시 완전 삭제 및 최신 데이터 동기화 중... 🔄';
+        syncTxt.innerText = '관제탑 캐시만 정리 후 최신 데이터 동기화 중... 🔄';
         syncTxt.style.color = '#fbbf24';
       }
       if ('serviceWorker' in navigator) {
@@ -16941,8 +16941,13 @@ function openDetail(title, v1, v2, desc) {
         });
       }
       if ('caches' in window) {
+        // [11/18] 관제탑 전용 캐시(yeonolang-terminal-)만 삭제한다.
+        //  같은 오리진의 포켓몬 배틀월드·카드팩·TCG·eBook·사주·이차전지 오프라인 캐시는 보존.
         caches.keys().then(function(names) {
-          return Promise.all(names.map(function(name) { return caches.delete(name); }));
+          return Promise.all(
+            names.filter(function(name) { return name.indexOf('yeonolang-terminal-') === 0; })
+                 .map(function(name) { return caches.delete(name); })
+          );
         });
       }
       setTimeout(function() {
