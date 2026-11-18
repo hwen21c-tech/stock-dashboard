@@ -9342,7 +9342,8 @@ const GEN_ACTIONS = [
     var next;
     if (i >= 0 && j > i) next = cur.slice(0, i) + block + cur.slice(j + end.length);
     else next = block + (cur ? '\n\n' + cur : '');
-    setSrc(next, msg);
+    var cutNote = charLen(next) > 6000 ? ' · ⚠️ 6000자 한도로 뒤쪽 기존 자료가 생략됩니다' : '';
+    setSrc(next, (msg || '참고 자료에 넣었습니다') + cutNote);
   }
   async function loadBriefFeed(){
     if (!briefFeedBtn) return;
