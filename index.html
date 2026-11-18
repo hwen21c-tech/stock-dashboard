@@ -22311,9 +22311,35 @@ window.BijoongTab = {
     return { label: label, color: color, detail: parts.join(' · ') };
   }
 
+  // 수급 모달(openSupplyChart)에서는 캔들 UI 가 숨는다 → 오버레이 패널도 함께 숨긴다
+  function idxHidePanels() {
+    var ids = ['modalIdxOvBar', 'modalIdxBadges', 'modalIdxFlow', 'modalIdxCalc'];
+    for (var i = 0; i < ids.length; i += 1) {
+      var e = document.getElementById(ids[i]);
+      if (e) e.style.display = 'none';
+    }
+  }
+  window.IDXHidePanels = idxHidePanels;
+  (function () {
+    var orig = window.openSupplyChart;
+    if (typeof orig === 'function' && !orig.__idxWrapped) {
+      var wrapped = function () {
+        var r = orig.apply(this, arguments);
+        try { idxHidePanels(); } catch (e) {}
+        return r;
+      };
+      wrapped.__idxWrapped = true;
+      window.openSupplyChart = wrapped;
+    }
+  })();
+
   window.IDXOnDrawn = function () {
     // 토글 버튼 상태
     window.idxPaintToggles();
+    var ovBarEl = document.getElementById('modalIdxOvBar');
+    var badgeEl = document.getElementById('modalIdxBadges');
+    if (ovBarEl) ovBarEl.style.display = 'flex';
+    if (badgeEl) badgeEl.style.display = 'flex';
     var c = window.IDX_LAST_CALC;
     var panel = document.getElementById('modalIdxFlow');
     var calcBox = document.getElementById('modalIdxCalc');
