@@ -9002,6 +9002,13 @@ const GEN_ACTIONS = [
       if (url) payload.url = url;
     } else {
       if (!url){ toast('유튜브/쇼츠 링크를 넣어 주세요.'); return; }
+      if (!/(?:youtube\.com|youtu\.be)/i.test(url)){
+        $('#shPasteWrap').hidden = false;
+        var nn = $('#shMyNote');
+        if (nn){ nn.dataset.touched = '1'; nn.innerHTML = '🔗 유튜브·쇼츠 링크만 자동 분석할 수 있습니다. 다른 사이트(블로그·인스타 등)는 <b>대본/자막을 복사해 붙여넣어</b> 분석해 주세요.'; }
+        toast('유튜브 링크가 아닙니다 — 대본을 붙여넣어 주세요.');
+        return;
+      }
       payload.url = url;
       btn = $('#shAnalyzeBtn');
       if (IS_STATIC){
