@@ -223,7 +223,7 @@
     m.decksAt[profileId] = tsOf(ts) || Date.now();
     writeMeta(m);
   }
-  /* 🌫 덱·속도가 바뀌면 클라우드에 알린다 (cloud.js 의 디바운스 push) */
+  /* ☁️ 덱·속도가 바뀌면 클라우드에 알린다 (cloud.js 의 디바운스 push) */
   function touchCloud() { try { if (window.PKCCloud) window.PKCCloud.touch(); } catch (e) { /* */ } }
 
   function getSlots(profileId) {
@@ -1590,7 +1590,6 @@
   window.PKCDeckSync = {
     keys: { decks: DECKS_KEY, speed: SPEED_KEY, meta: META_KEY },
     slots: function (id) { return getSlots(id); },
-    hasContent: function (arr) { return Array.isArray(arr) && arr.some(x => Array.isArray(x) && x.length); },
     decksAt: function (id) { return decksAtOf(id); },
     barSpeed: function () { return barSpeed; },
     barSpeedAt: function () { return barSpeedAtOf(); },
