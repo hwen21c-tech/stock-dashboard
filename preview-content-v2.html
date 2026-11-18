@@ -115,7 +115,7 @@
 
   /* ---------- tabs ---------- */
   .tabs{
-    display:grid;grid-template-columns:1fr 1fr;gap:7px;
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
     background:#0a1220;border:1px solid var(--line);border-radius:13px;padding:5px;margin-bottom:13px;
   }
   .tab{
@@ -969,6 +969,66 @@
   .guide h3>span{white-space:nowrap}
   @media (max-width:430px){ .guide h3 .btn{width:100%;margin-left:0 !important;justify-content:center} }
   .mktpaste{width:100%;margin-top:8px;background:#08111d;border:1px solid rgba(148,163,184,.28);border-radius:9px;padding:8px 9px;font-size:11.8px;line-height:1.55;color:#e2e8f0;letter-spacing:0}
+
+  /* ---------- 📋 요약 탭 ---------- */
+  .sumseg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-bottom:11px}
+  .sums{
+    display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;
+    padding:9px 7px;border-radius:11px;border:1px solid var(--line);background:#0a1424;
+    color:#cbd5e1;font-size:12px;font-weight:900;letter-spacing:-.02em;cursor:pointer;
+  }
+  .sums span{font-size:9.4px;font-weight:800;color:#64748b;letter-spacing:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sums[aria-pressed="true"]{background:linear-gradient(135deg,rgba(56,189,248,.22),rgba(168,85,247,.16));border-color:rgba(56,189,248,.7);color:#f0f9ff}
+  .sums[aria-pressed="true"] span{color:#bae6fd}
+  .summodes{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .summ{
+    padding:9px 10px;border-radius:11px;border:1px solid var(--line);background:#0a1424;
+    color:#cbd5e1;font-size:11.8px;font-weight:900;letter-spacing:-.02em;text-align:left;
+    cursor:pointer;min-width:0;line-height:1.35;
+  }
+  .summ[aria-pressed="true"]{background:linear-gradient(135deg,rgba(250,204,21,.18),rgba(56,189,248,.14));border-color:rgba(250,204,21,.55);color:#fef9c3}
+  .sumfile{
+    display:flex;gap:9px;align-items:center;margin-top:8px;padding:9px 10px;min-width:0;
+    border:1px solid rgba(148,163,184,.24);border-radius:11px;background:#08111d;
+  }
+  .sumfile .ico{font-size:19px;flex:0 0 auto}
+  .sumfile .fi{min-width:0;display:grid;gap:2px}
+  .sumfile b{font-size:12px;font-weight:900;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sumfile span{font-size:10.6px;font-weight:700;color:#94a3b8;letter-spacing:0}
+  .summeta{display:flex;flex-wrap:wrap;gap:5px;margin:1px 0 9px}
+  .summeta .tag{
+    font-size:10.2px;font-weight:800;color:#7dd3fc;background:rgba(56,189,248,.12);
+    border:1px solid rgba(56,189,248,.32);border-radius:999px;padding:2px 8px;letter-spacing:0;
+    max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+  }
+  .summeta .tag.warn{color:#fcd34d;background:rgba(250,204,21,.1);border-color:rgba(250,204,21,.32)}
+  .sumhead{font-size:14.6px;font-weight:900;color:#fff;line-height:1.5;letter-spacing:-.02em;margin:2px 0 10px;overflow-wrap:anywhere}
+  .sumline{display:flex;gap:8px;padding:9px 10px;border-radius:11px;background:#0a1524;border:1px solid rgba(148,163,184,.2);margin-bottom:6px;min-width:0}
+  .sumline .n{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:rgba(56,189,248,.18);color:#7dd3fc;font-size:11px;font-weight:900;display:grid;place-items:center}
+  .sumline p{margin:0;font-size:12.6px;font-weight:650;color:#e2e8f0;line-height:1.58;letter-spacing:-.01em;overflow-wrap:anywhere;min-width:0}
+  .sumtl{display:grid;gap:6px}
+  .sumtl .row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:8px 9px;border-radius:10px;background:#0a1524;border:1px solid rgba(148,163,184,.18);min-width:0}
+  .sumtl .at{font-size:10.4px;font-weight:900;color:#fbbf24;letter-spacing:0;padding-top:2px;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .sumtl .bd{min-width:0}
+  .sumtl b{display:block;font-size:11.8px;font-weight:900;color:#f0f9ff;letter-spacing:-.01em;overflow-wrap:anywhere}
+  .sumtl span{display:block;font-size:12px;color:#cbd5e1;line-height:1.5;letter-spacing:-.01em;overflow-wrap:anywhere;margin-top:1px}
+  .sumfact{display:grid;gap:5px}
+  .sumfact .fr{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:8px;padding:7px 9px;border-radius:9px;background:#0a1524;border:1px solid rgba(148,163,184,.18);min-width:0}
+  .sumfact .fk{font-size:11.2px;font-weight:900;color:#94a3b8;letter-spacing:-.01em;overflow-wrap:anywhere}
+  .sumfact .fv{font-size:12px;font-weight:800;color:#e2e8f0;letter-spacing:-.01em;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+  .sumh{font-size:11px;font-weight:900;color:#7dd3fc;letter-spacing:.02em;margin:12px 0 6px}
+  .sumul{margin:0;padding-left:17px;display:grid;gap:4px}
+  .sumul li{font-size:12.2px;color:#e2e8f0;line-height:1.55;letter-spacing:-.01em;overflow-wrap:anywhere}
+  .sumseed{padding:10px;border-radius:11px;background:linear-gradient(135deg,rgba(168,85,247,.14),rgba(56,189,248,.1));border:1px solid rgba(168,85,247,.32);margin-bottom:8px;min-width:0}
+  .sumseed .sl{font-size:10.4px;font-weight:900;color:#d8b4fe;letter-spacing:0}
+  .sumseed b{display:block;font-size:12.6px;color:#f0f9ff;letter-spacing:-.01em;overflow-wrap:anywhere;margin-top:2px}
+  .sumseed span{display:block;font-size:11.4px;color:#cbd5e1;margin-top:3px;line-height:1.5;overflow-wrap:anywhere}
+  .sumacts{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+  .sumacts .btn{flex:1 1 130px;justify-content:center}
+  .stype.summary{color:#fde68a;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.34)}
+  @media (max-width:520px){
+    .tabs{grid-template-columns:1fr}
+  }
 </style>
 <body>
 
@@ -1022,6 +1082,7 @@
 <nav class="tabs" role="tablist" aria-label="모드 전환">
   <button class="tab on" id="tabVideo" role="tab" aria-selected="true" aria-controls="panelVideo">🎬 AI 영상 스튜디오</button>
   <button class="tab" id="tabBlog" role="tab" aria-selected="false" aria-controls="panelBlog">✍️ 블로그 자동 작성기</button>
+  <button class="tab" id="tabSum" role="tab" aria-selected="false" aria-controls="panelSum">📋 요약</button>
 </nav>
 
 <details class="shelf" id="routinePanel">
@@ -1635,6 +1696,112 @@
   </div><!-- /#shortsMain -->
 </section>
 
+<!-- ================= 📋 요약 ================= -->
+<section id="panelSum" role="tabpanel" aria-labelledby="tabSum" hidden>
+  <div class="card">
+    <div class="card-head">
+      <span class="num">1</span><h2>무엇을 요약할까요</h2>
+      <span class="bdg real">✓ 유튜브 · 문서 · 짧은 영상/음성</span>
+    </div>
+    <div class="sumseg" id="sumSrcSeg" role="group" aria-label="요약할 자료 종류">
+      <button type="button" class="sums on" data-sumsrc="youtube" aria-pressed="true">🎬 유튜브 <span>링크 → 자막</span></button>
+      <button type="button" class="sums" data-sumsrc="doc" aria-pressed="false">📄 문서 <span>PDF·TXT·MD·CSV</span></button>
+      <button type="button" class="sums" data-sumsrc="media" aria-pressed="false">🎥 영상·음성 <span>MP4·MP3 · 4MB</span></button>
+    </div>
+
+    <!-- 🎬 유튜브 -->
+    <div id="sumYt" class="sumpane">
+      <div class="field" style="margin-top:0">
+        <label class="flabel" for="sumYtUrl">유튜브 링크</label>
+        <div class="search-row">
+          <input type="text" id="sumYtUrl" placeholder="youtube.com/watch?v=… / youtu.be/… / /shorts/…" maxlength="200" autocomplete="off" spellcheck="false">
+          <button class="btn primary" id="sumYtBtn" type="button">자막 → 요약</button>
+        </div>
+        <p class="hint" id="sumYtHint" style="margin-top:6px">유튜브 자막을 서버가 직접 받아 요약합니다(한국어·영어 우선, 없으면 자동 자막 → 공개 미러).</p>
+      </div>
+      <div class="field">
+        <label class="flabel" for="sumYtPaste">자막이 안 받아질 때 — 유튜브 화면에서 자막 복사해 붙여넣기</label>
+        <textarea id="sumYtPaste" rows="4" maxlength="60000" placeholder="유튜브 영상 아래 「스크립트 표시」나 「…더보기 → 스크립트 표시」에서 자막을 복사해 붙여넣으세요. 붙여넣은 자막은 이 브라우저에 저장되지 않습니다."></textarea>
+        <div class="store-note">
+          <span id="sumYtPasteInfo">0자</span>
+          <button class="linkbtn" id="sumYtPasteBtn" type="button">이 자막으로 요약</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 📄 문서 -->
+    <div id="sumDoc" class="sumpane" hidden>
+      <div class="drop" id="sumDrop">
+        <div class="big-ico">📄</div>
+        <b>PDF · TXT · MD · CSV 파일을 고르거나 끌어다 놓으세요</b>
+        <p>TXT·MD·CSV는 브라우저에서 바로 읽고, PDF는 pdf.js로 글자를 뽑아 요약합니다. 파일은 서버에 저장되지 않습니다.</p>
+        <div class="row"><button class="btn primary" id="sumPickBtn" type="button">문서 선택</button></div>
+        <input type="file" id="sumFile" accept=".pdf,.txt,.md,.markdown,.csv,text/plain,text/markdown,text/csv,application/pdf" hidden>
+      </div>
+      <div class="sumfile" id="sumFileBox" hidden></div>
+      <div class="warnline" id="sumFileWarn" hidden></div>
+      <div class="field">
+        <label class="flabel" for="sumText">또는 텍스트 직접 붙여넣기</label>
+        <textarea id="sumText" rows="6" maxlength="120000" placeholder="기사 본문 · 회의록 · 강의 노트 · 계약서 조항 …"></textarea>
+        <div class="store-note"><span id="sumTextInfo">0자</span><span style="color:#64748b">· 파일을 고르면 여기에 채워집니다(고쳐도 됩니다)</span></div>
+      </div>
+      <div class="warnline" id="sumDocHint" hidden>📎 <b>HWP · HWPX</b>는 브라우저에서 글자를 못 뽑습니다 — 한글에서 <b>PDF로 저장</b>하거나 텍스트를 복사해 붙여넣어 주세요.</div>
+    </div>
+
+    <!-- 🎥 영상·음성 -->
+    <div id="sumMedia" class="sumpane" hidden>
+      <div class="drop" id="sumMediaDrop">
+        <div class="big-ico">🎥</div>
+        <b>짧은 영상·음성을 고르세요 (4MB 이하)</b>
+        <p>MP4 · WEBM · MP3 · M4A. Gemini가 파일을 직접 보고 들은 것만 씁니다.<br>전송은 base64라 원본의 약 1.33배로 커집니다 — <b>3MB 이하</b>를 권장합니다.</p>
+        <div class="row"><button class="btn primary" id="sumMediaPickBtn" type="button">영상·음성 선택</button></div>
+        <input type="file" id="sumMediaFile" accept="video/mp4,video/webm,audio/mpeg,audio/mp4,audio/x-m4a,.mp4,.webm,.mp3,.m4a" hidden>
+      </div>
+      <div class="sumfile" id="sumMediaBox" hidden></div>
+      <div class="warnline" id="sumMediaWarn" hidden></div>
+      <video id="sumMediaPrev" controls playsinline hidden style="width:100%;max-width:420px;border-radius:12px;margin-top:9px;background:#000"></video>
+      <p class="hint" style="margin-top:7px">긴 영상은 4MB를 넘습니다. 꼭 필요한 구간만 잘라 올리거나, 소리만 뽑은 MP3로 올려 주세요.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <span class="num">2</span><h2>어떤 양식으로 볼까요</h2>
+      <span class="bdg info" id="sumModeBadge">한 번 받고 칩으로 전환</span>
+    </div>
+    <div class="summodes" id="sumModeSeg" role="group" aria-label="요약 양식">
+      <button type="button" class="summ on" data-summode="three" aria-pressed="true">⚡ 3줄 핵심 결론</button>
+      <button type="button" class="summ" data-summode="timeline" aria-pressed="false">⏱️ 타임라인·섹션 정리</button>
+      <button type="button" class="summ" data-summode="table" aria-pressed="false">📊 표·수치·액션 아이템</button>
+      <button type="button" class="summ" data-summode="handoff" aria-pressed="false">✍️ 블로그·쇼츠 글감으로</button>
+    </div>
+    <div class="field">
+      <label class="flabel" for="sumFocus">특히 뽑고 싶은 것 <span class="bdg info">선택</span></label>
+      <input type="text" id="sumFocus" maxlength="80" placeholder="예) 전지 배터리 수치만 / 아이가 나오는 장면만">
+    </div>
+    <button class="btn primary big" id="sumGoBtn" type="button">📋 요약하기</button>
+    <p class="hint" style="margin-top:8px">Gemini는 <b>자료에 실제로 있는 내용만</b> 씁니다. 없는 숫자·이름은 만들지 않고 [확인 필요]로 남깁니다. 한 번 받은 요약은 위 칩으로 <b>다시 호출 없이</b> 바꿔 봅니다.</p>
+  </div>
+
+  <div class="card" id="sumOutCard" hidden>
+    <div class="card-head">
+      <span class="num">3</span><h2>요약 결과</h2>
+      <span class="bdg real" id="sumOutStat">—</span>
+      <button class="btn small ghost" id="sumClearBtn" type="button" style="margin-left:auto">지우기</button>
+    </div>
+    <div class="summeta" id="sumOutMeta"></div>
+    <div id="sumOut"></div>
+    <div class="warnline" id="sumWarn" hidden></div>
+    <div class="sumacts">
+      <button class="btn small primary" id="sumCopyBtn" type="button">📋 요약 복사</button>
+      <button class="btn small" id="sumShelfBtn" type="button">💾 보관함 저장</button>
+      <button class="btn small ghost" id="sumToBlogBtn" type="button">✍️ 블로그로</button>
+      <button class="btn small ghost" id="sumToShortsBtn" type="button">🎬 쇼츠로</button>
+    </div>
+  </div>
+</section>
+
+
 <footer>
   <b>정적 스튜디오 v2 안내(내 Gemini 키)</b> — 이 페이지는 GitHub Pages 정적 파일 하나로 돌아갑니다. <b>키는 화면에서 한 번만 입력</b>하면 이 브라우저(localStorage)에만 저장되고, 생성 요청은 브라우저가 <b>generativelanguage.googleapis.com</b> 으로 직접 보냅니다. 서버가 없으므로 <b>API 키를 페이지·저장소에 넣지 않습니다</b>. <b>테마 8종</b>(여행·도서3·주식·생활지혜·요리·육아)과 테마별 <b>🏆 블로거 양식 1·2·3·4번</b>(1·2·3번 = 테마별 실제 인기 블로그 3편에서 뽑은 서로 다른 프리셋 24종, 4번 = 내 글 붙여넣기로 뽑는 내 양식 · 테마별로 따로 저장), <b>🎬 쇼츠 대본 모드</b> — <b>쇼츠 전용 13테마</b>(아이돌·쇼핑·게임·드라마·스포츠·영화·경제/주식·요리·생활/IT·AI·여행/맛집·1분 지식·책/동기부여·육아/가족)와 테마별 <b>쇼츠 양식 1·2·3번 = 39종</b>(3초 훅·컷 리듬·자막 습관·말투·금지 규칙) + <b>4번 내 유튜버</b>(정적은 CORS 때문에 링크는 참고용 저장 · <b>대본/자막을 붙여넣으면</b> 내 Gemini 키로 훅·리듬·자막·말투 분석·저장), <b>🎬 쇼츠 대본 생성</b>(약 50초 · 훅→4~7컷→엔딩 · 자막 15~20자), <b>쇼츠 전용 ✨ 2차 검수</b>(3초 훅 강도·자막 길이·구어체·양식 리듬·과장 제거 + 고친 점 배지 + 원본 복원), <b>📋 피클 점검용 복사</b>, 블로그 완성 본문 생성(제목 3종·경쟁 글 빈틈 2개·표·도입 훅·솔직한 단점), <b>📷 내 사진 업로드(최대 4장 · 1024px JPEG) → Gemini 멀티모달이 사진을 보고 본문 자동 배치</b>, <b>📚 Google Books 실제 책 표지 검색·저장·본문 삽입</b>(한도 초과 시 Open Library 대체), <b>본문 사진 자리 자동 파싱 → Wikimedia Commons 실시간 검색 및 저장</b>(브라우저 직접), <b>Canvas 1200×630 대표 이미지 PNG 생성·저장</b>, 유튜브 빈틈 분석 + 50초 쇼츠 대본, 블로그→쇼츠 변환, <b>톤 변환 3종·AI 티 빼기·댓글 유도 질문+링크 안내 박스·인스타 3줄과 쇼츠 1타 3피</b>, <b>검색 유입 해시태그 10개</b>, <b>✨ 2차 검수·다듬기</b>(거짓 경험담·AI 문투·양식 누락·맞춤법 교정 + 고친 점 배지 + 원본 복원), <b>📋 피클 점검용 복사</b>(본문 + 테마·블로거 양식 정보를 한 덩어리로), 영상 컷 설계도, 제목 3종의 <b>네이버 모바일 30자 기준선 + 본문 첫 줄 미리보기</b>와 네이버 서식 복사(내 사진·표지 이미지 포함), 발행 전 체크리스트, 자막 프리셋 3종 미리보기, <b>주간 발행 체크·포스팅 URL 기록</b>, 양식·문체 샘플·금지 상투어·빈틈 메모·루틴표·보관함(localStorage) 저장, <b>오늘 관제탑 시황 1클릭</b>(관제탑 동적 API 값 그대로 · 실패하면 관제탑 링크와 붙여넣기 칸). <b style="color:#fbbf24">정적이라 안 되는 것</b>: <b>공식 홈페이지 URL 사진 자동 추출(서버 필요 — 대신 내 사진 업로드)</b>, 유튜브 자막 자동 추출(CORS — 제목만 확인), 유튜브 실시간 검색·조회수·댓글 수집, 블로그 자동 포스팅, 영상 픽셀 분석, ffmpeg.wasm 컷편집·자막 렌더·BGM 합성·MP4 저장, 15:45 자동 생성 연동. Gemini가 만든 글은 값·날짜·업체명이 [확인 필요]로 남을 수 있으니 발행 전에 직접 확인하세요. 무료 사진·공식 홈페이지 사진·책 표지는 사용 조건과 출처 표기를 확인하세요. 기존 콘텐츠 스튜디오·관제탑과는 별개 파일입니다.</footer>
 <!-- modal -->
@@ -2097,6 +2264,241 @@ const SCHEMA_SHORT_SCRIPT = {
   },
   required: ['title', 'hook', 'hookCaption', 'beats', 'ending'],
 };
+
+/* ---------------------------------------------------------------- 📋 요약 (유튜브 · 문서 · 짧은 영상/음성) */
+
+const SUMMARY_TEXT_MAX = 40000;                     // 요약에 넘기는 본문 상한(자)
+const SUMMARY_MEDIA_MAX_BYTES = 4 * 1024 * 1024;    // 원본 파일 기준 4MB (사용자 지정 한도)
+const SUMMARY_MEDIA_MIMES = [
+  'video/mp4', 'video/webm', 'video/quicktime',
+  'audio/mpeg', 'audio/mp3', 'audio/mp4', 'audio/m4a', 'audio/x-m4a', 'audio/aac',
+  'audio/wav', 'audio/x-wav', 'audio/webm', 'audio/ogg',
+];
+const SUMMARY_MODES = ['three', 'timeline', 'table', 'handoff'];
+
+const SCHEMA_SUMMARY = {
+  type: 'object',
+  properties: {
+    title: { type: 'string', description: '자료의 제목 — 원문·영상에 실제로 있는 제목만. 없으면 빈 문자열' },
+    headline: { type: 'string', description: '한 줄 결론 (30자 내외, 이 자료가 말하는 바)' },
+    three: {
+      type: 'array',
+      description: '3줄 핵심 결론 — 각 45자 내외, 결론→근거→그래서 무엇을 할지 순서',
+      items: { type: 'string' },
+    },
+    timeline: {
+      type: 'array',
+      description: '시간·섹션 순서 정리 — 처음부터 끝까지 6~10구간',
+      items: {
+        type: 'object',
+        properties: {
+          at: { type: 'string', description: '시각·위치 — "0:42" · "1부" · "서론" 처럼. 없으면 빈 문자열' },
+          label: { type: 'string', description: '이 구간의 이름 (12자 내외)' },
+          point: { type: 'string', description: '이 구간에서 실제로 말한·나온 내용 한 줄 (60자 내외)' },
+        },
+        required: ['at', 'label', 'point'],
+      },
+    },
+    facts: {
+      type: 'array',
+      description: '표로 정리할 수치·조건·고유명사 — 자료에 실제로 나온 값만, 단위와 기준을 붙인다',
+      items: {
+        type: 'object',
+        properties: {
+          label: { type: 'string', description: '항목 (예: 셀 에너지밀도)' },
+          value: { type: 'string', description: '값 (예: 350 Wh/kg — 자료 3:12)' },
+          where: { type: 'string', description: '자료 안 위치 (시각·페이지·섹션). 모르면 빈 문자열' },
+        },
+        required: ['label', 'value'],
+      },
+    },
+    actions: {
+      type: 'array',
+      description: '듣고/읽고 바로 할 일 — 실행 가능한 동작만 3~6개',
+      items: { type: 'string' },
+    },
+    blog: {
+      type: 'object',
+      description: '블로그 글감으로 넘길 재료',
+      properties: {
+        title: { type: 'string', description: '블로그 제목 후보 (네이버 모바일 30자 이내)' },
+        angle: { type: 'string', description: '이 자료로 쓸 때의 각도 — 무엇을 검증·비교·정리할지 2문장' },
+        outline: { type: 'array', description: '본문 뼈대 4~6개 소제목', items: { type: 'string' } },
+      },
+      required: ['title', 'outline'],
+    },
+    shorts: {
+      type: 'object',
+      description: '쇼츠 1편으로 넘길 재료',
+      properties: {
+        hook: { type: 'string', description: '첫 3초에 말할 문장 (20자 내외, 인사 금지)' },
+        beats: { type: 'array', description: '3~5개 컷의 말할 문장', items: { type: 'string' } },
+        ending: { type: 'string', description: '마지막 한 줄 (여운·저장 유도)' },
+      },
+      required: ['hook'],
+    },
+    warnings: { type: 'array', description: '확인하지 못한 값·사실 (지어내지 말고 여기에)', items: { type: 'string' } },
+    needsCheck: { type: 'array', description: '자료에서 [확인 필요]로 남긴 항목', items: { type: 'string' } },
+  },
+  required: ['headline', 'three'],
+};
+
+function promptSummary(b) {
+  const mode = SUMMARY_MODES.indexOf(b.mode) >= 0 ? b.mode : 'three';
+  const kind = b.kind === 'media' ? 'media' : b.kind === 'youtube' ? 'youtube' : 'doc';
+  const focus = s(b.focus, 160);
+  const title = s(b.title, 200);
+  const text = s(b.text, SUMMARY_TEXT_MAX);
+  const modeLine = {
+    three: '3줄 핵심 결론(three)이 가장 중요하다 — 결론 → 근거 → 그래서 무엇을 할지 순서. 각 줄은 한 문장.',
+    timeline: '흐름(timeline)이 가장 중요하다 — 처음부터 끝까지 끊김 없이 6~10구간, 각 구간에 시각(at)과 내용 한 줄(point).',
+    table: '숫자·조건(facts)이 가장 중요하다 — 금액·수치·기간·조건을 6~12개, 단위와 기준을 붙여서. actions 도 3~6개 채운다.',
+    handoff: '글감(blog·shorts)이 가장 중요하다 — 이 자료로 블로그 1편·쇼츠 1편을 바로 쓸 수 있게 제목·각도·뼈대·훅을 구체적으로.',
+  }[mode];
+
+  const srcLine =
+    kind === 'media'
+      ? '자료: 이 메시지에 실제로 첨부된 영상/음성 파일 1개' + (title ? ' (' + title + ')' : '') + '. 넌 이 파일을 직접 보고 들었다.'
+      : kind === 'youtube'
+        ? '자료: 유튜브 영상의 자막(스크립트)' + (title ? ' — 제목: ' + title : '')
+        : '자료: 문서 텍스트' + (title ? ' — 파일: ' + title : '');
+
+  const body =
+    kind === 'media'
+      ? `[첨부 파일 규칙 — 어기면 실패다]
+- 위 파일을 실제로 보고 들은 것만 쓴다. 보이지 않은 장면·들리지 않은 말을 지어내지 않는다.
+- 화면에 크게 뜬 글자(자막·자료 화면·제품명·숫자)는 본 대로 옮긴다. 흐릿해서 못 읽었으면 읽지 못했다고 쓴다.
+- 소리만 있는 파일이면 목소리·말버릇·핵심 주장 위주로 쓰고, 보이지 않는 화면을 상상해 쓰지 않는다.
+- 타임라인의 at 은 파일에서 실제로 그 내용이 나온 시각(mm:ss).`
+      : `[본문 — 이 안에 있는 내용만 근거로 쓴다. 이 밖의 지식으로 내용을 덧붙이지 않는다]
+"""
+${text}
+"""`;
+
+  const user = [
+    srcLine,
+    b.chars ? `본문 길이: ${b.chars}자` + (b.truncated ? ' (앞부분만 넣었음 — 뒤는 없음)' : '') : '',
+    b.author ? `채널·저자: ${s(b.author, 100)}` : '',
+    b.durationSec ? `영상 길이: ${Math.round(num(b.durationSec, 0) / 6) / 10}분` : '',
+    b.auto === true ? '자동 생성 자막이다 — 고유명사·숫자는 오인식이 있을 수 있으니 의심되면 warnings 에 적는다.' : '',
+    focus ? `\n[사용자가 특히 뽑고 싶은 것 — 이걸 우선]\n${focus}` : '',
+    `\n[이번에 가장 중요한 양식]\n${modeLine}`,
+    body,
+    '\n[요약 규칙]\n' +
+      '1) 이 자료가 말하지 않은 사실·수치·업체명·날짜를 만들지 않는다. 자료에 없으면 쓰지 않는다.\n' +
+      '2) 숫자는 자료에 나온 값 그대로, 단위와 기준을 붙인다. 계산이 필요하면 계산식도 함께 적는다.\n' +
+      '3) 자막·발화를 그대로 옮길 때는 인용으로 표시한다. 요약과 발화를 섞지 않는다.\n' +
+      '4) 확인이 필요한 값은 needsCheck 에 넣고 본문에서는 뒤에 "[확인 필요]"를 붙인다.\n' +
+      '5) three 는 정확히 3줄. 각 줄은 서로 다른 내용이어야 한다(같은 말 반복 금지).\n' +
+      '6) 자료가 짧아 타임라인·수치가 없으면 그 항목은 빈 배열로 두고 warnings 에 이유를 한 줄 적는다. 억지로 채우지 않는다.\n' +
+      banLine(b.banPhrases) +
+      '\n[출력] headline · three(3) · timeline · facts · actions · blog · shorts · warnings · needsCheck 만 JSON 으로.',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  return {
+    system:
+      '너는 자료를 정확히 요약하는 편집자다. 원문에 있는 것만 남기고, 없는 것은 만들지 않는다. ' +
+      '요약은 짧고 정보 밀도가 높아야 한다. ' +
+      HONESTY +
+      ' ' +
+      VOICE,
+    user,
+    schema: SCHEMA_SUMMARY,
+    maxTokens: 3600,
+    temperature: 0.3,
+    media: arr(b.media, 1),
+  };
+}
+
+function summaryMarkdown(r) {
+  const L = [];
+  const h = (t) => {
+    L.push('');
+    L.push(t);
+  };
+  if (r.title) L.push('# ' + r.title);
+  if (r.headline) L.push('> ' + r.headline);
+  if ((r.three || []).length) {
+    h('## ⚡ 3줄 핵심');
+    r.three.forEach((t, i) => L.push(i + 1 + '. ' + t));
+  }
+  if ((r.timeline || []).length) {
+    h('## ⏱️ 타임라인');
+    r.timeline.forEach((x) => L.push('- ' + (x.at ? x.at + ' · ' : '') + (x.label ? x.label + ' — ' : '') + x.point));
+  }
+  if ((r.facts || []).length) {
+    h('## 📊 수치·조건');
+    L.push('| 항목 | 값 | 위치 |');
+    L.push('| --- | --- | --- |');
+    r.facts.forEach((f) => L.push('| ' + f.label + ' | ' + f.value + ' | ' + (f.where || '—') + ' |'));
+  }
+  if ((r.actions || []).length) {
+    h('## ✅ 할 일');
+    r.actions.forEach((a) => L.push('- ' + a));
+  }
+  if (r.blog && (r.blog.title || (r.blog.outline || []).length)) {
+    h('## ✍️ 블로그 글감');
+    if (r.blog.title) L.push('제목: ' + r.blog.title);
+    if (r.blog.angle) L.push('각도: ' + r.blog.angle);
+    (r.blog.outline || []).forEach((o) => L.push('- ' + o));
+  }
+  if (r.shorts && (r.shorts.hook || (r.shorts.beats || []).length)) {
+    h('## 🎬 쇼츠 글감');
+    if (r.shorts.hook) L.push('훅: ' + r.shorts.hook);
+    (r.shorts.beats || []).forEach((x) => L.push('- ' + x));
+    if (r.shorts.ending) L.push('엔딩: ' + r.shorts.ending);
+  }
+  if ((r.needsCheck || []).length) {
+    h('## ⚠️ 확인 필요');
+    r.needsCheck.forEach((x) => L.push('- ' + x));
+  }
+  if ((r.warnings || []).length) {
+    h('## 메모');
+    r.warnings.forEach((x) => L.push('- ' + x));
+  }
+  return L.join('\n').trim();
+}
+
+function normSummary(data, meta) {
+  const d = data || {};
+  const m = meta || {};
+  const timeline = arr(d.timeline, 16)
+    .map((x) => ({ at: s(x && x.at, 24), label: s(x && x.label, 60), point: s(x && x.point, 400) }))
+    .filter((x) => x.point);
+  const facts = arr(d.facts, 16)
+    .map((x) => ({ label: s(x && x.label, 60), value: s(x && x.value, 200), where: s(x && x.where, 80) }))
+    .filter((x) => x.label && x.value);
+  const blog = {
+    title: s(d.blog && d.blog.title, 90),
+    angle: s(d.blog && d.blog.angle, 300),
+    outline: arr(d.blog && d.blog.outline, 8).map((x) => s(typeof x === 'string' ? x : x && x.text, 120)).filter(Boolean),
+  };
+  const shorts = {
+    hook: s(d.shorts && d.shorts.hook, 200),
+    beats: arr(d.shorts && d.shorts.beats, 6).map((x) => s(typeof x === 'string' ? x : x && x.text, 200)).filter(Boolean),
+    ending: s(d.shorts && d.shorts.ending, 200),
+  };
+  const out = {
+    title: s(m.title, 200) || s(d.title, 200),
+    headline: s(d.headline, 160),
+    three: arr(d.three, 5).map((x) => s(typeof x === 'string' ? x : x && x.text, 240)).filter(Boolean),
+    timeline,
+    facts,
+    actions: arr(d.actions, 8).map((x) => s(typeof x === 'string' ? x : x && x.text, 240)).filter(Boolean),
+    blog,
+    shorts,
+    warnings: arr(d.warnings, 10).map((x) => s(x, 240)).filter(Boolean),
+    needsCheck: arr(d.needsCheck, 10).map((x) => s(x, 160)).filter(Boolean),
+  };
+  if (out.title && !out.headline) out.headline = s(m.headline, 160);
+  if (!out.three.length) out.warnings.push('3줄 핵심이 비어 왔습니다. 다시 눌러 주세요.');
+  if (!timeline.length) out.warnings.push('타임라인·섹션 구간이 없습니다(자료가 짧거나 흐름이 없는 자료일 수 있습니다).');
+  if (!facts.length) out.warnings.push('수치·조건 항목이 없습니다 — 자료에 숫자가 없을 수 있습니다.');
+  out.markdown = summaryMarkdown(out);
+  return out;
+}
 
 /* ---------------------------------------------------------------- 공통 규칙 */
 
@@ -3013,6 +3415,7 @@ function normShortsScript(data) {
 
 const GEN_ACTIONS = [
   'blog',
+  'summarize',
   'video_plan',
   'youtube_analyze',
   'blog_to_shorts',
@@ -3049,7 +3452,15 @@ const GEN_ACTIONS = [
       .filter((im) => im && im.data && /^image\/(jpeg|png|webp)$/.test(String(im.mimeType || '')))
       .slice(0, MAX_INLINE_IMAGES)
       .map((im) => ({ inlineData: { mimeType: im.mimeType, data: im.data } }));
-    const userParts = imgParts.length ? imgParts.concat([{ text: prompt.user }]) : [{ text: prompt.user }];
+    const mediaParts = (Array.isArray(prompt.media) ? prompt.media : [])
+      .filter((m) => m && m.data && SUMMARY_MEDIA_MIMES.indexOf(String(m.mimeType || '').toLowerCase()) >= 0)
+      .slice(0, 1)
+      .map((m) => ({ inlineData: { mimeType: m.mimeType, data: m.data } }));
+    const userParts = mediaParts.length
+      ? imgParts.concat(mediaParts, [{ text: prompt.user }])
+      : imgParts.length
+        ? imgParts.concat([{ text: prompt.user }])
+        : [{ text: prompt.user }];
     const body = {
       systemInstruction: { parts: [{ text: prompt.system }] },
       contents: [{ role: 'user', parts: userParts }],
@@ -3247,6 +3658,7 @@ const GEN_ACTIONS = [
     const banPhrases = arr(body.banPhrases, 30).map((x) => s(x, 30)).filter(Boolean);
 
     let prompt;
+    let srcMeta = null;
     if (action === 'blog') {
       if (!s(body.topic, 200)) return { ok: false, reason: 'missing_topic', message: '주제(topic)가 필요합니다.' };
       prompt = promptBlog(Object.assign({}, body, { banPhrases: banPhrases, form: body.form || {} }));
@@ -3317,6 +3729,68 @@ const GEN_ACTIONS = [
     } else if (action === 'shorts_script') {
       if (!s(body.topic, 200)) return { ok: false, reason: 'missing_topic', message: '쇼츠 주제(topic)가 필요합니다.' };
       prompt = promptShortsScript(Object.assign({}, body, { banPhrases: banPhrases }));
+    } else if (action === 'summarize') {
+      const kind = ['youtube', 'doc', 'media'].indexOf(s(body.kind, 12)) >= 0 ? s(body.kind, 12) : 'doc';
+      const mode = SUMMARY_MODES.indexOf(s(body.mode, 12)) >= 0 ? s(body.mode, 12) : 'three';
+      const meta = { kind, mode, title: '', chars: 0, truncated: false, notes: [] };
+      let sourceText = s(body.text, SUMMARY_TEXT_MAX + 40000);
+      let mediaParts = [];
+
+      if (kind === 'doc') meta.title = s(body.title, 160);
+
+      if (kind === 'youtube' && !sourceText.trim()) {
+        /* 정적 페이지는 브라우저 CORS 때문에 유튜브 자막을 직접 받을 수 없다 → 붙여넣기로 받는다. */
+        return {
+          ok: false,
+          action: 'summarize',
+          reason: 'static_need_paste',
+          fallback: 'paste',
+          url: s(body.url, 300),
+          message: '정적 페이지(GitHub Pages)에는 유튜브 자막을 대신 받아 줄 서버가 없습니다(브라우저 CORS 차단). 유튜브 화면에서 자막(스크립트)을 복사해 [자막 붙여넣기]에 넣으면 같은 요약을 합니다.',
+        };
+      }
+
+      if (kind === 'media') {
+        const mime = s(body.media && body.media.mimeType, 60).toLowerCase().split(';')[0].trim();
+        const b64 = String((body.media && body.media.data) || '').replace(/^data:[^,]*,/, '').replace(/\s+/g, '');
+        if (!b64) {
+          return { ok: false, action: 'summarize', reason: 'missing_media', message: '첨부된 영상·음성 데이터가 비어 있습니다. 파일을 다시 골라 주세요.' };
+        }
+        if (SUMMARY_MEDIA_MIMES.indexOf(mime) < 0) {
+          return { ok: false, action: 'summarize', reason: 'unsupported_media_type', message: 'MP4 · WEBM · MP3 · M4A 만 요약할 수 있습니다(받은 형식: ' + (mime || '알 수 없음') + ').' };
+        }
+        const bytes = Math.floor((b64.length * 3) / 4);
+        if (bytes > SUMMARY_MEDIA_MAX_BYTES + 8192) {
+          return { ok: false, action: 'summarize', reason: 'media_too_large', message: '영상·음성은 4MB까지입니다(지금 ' + (bytes / 1048576).toFixed(1) + 'MB). 짧게 잘라 다시 올려 주세요.' };
+        }
+        mediaParts = [{ mimeType: mime, data: b64 }];
+        meta.bytes = bytes;
+        meta.title = s(body.media && body.media.name, 160);
+        meta.durationSec = num(body.media && body.media.durationSec, null);
+      }
+
+      if (!mediaParts.length && !sourceText.trim()) {
+        return { ok: false, action: 'summarize', reason: 'missing_source', message: '요약할 자료가 없습니다. 유튜브 링크 · 문서 파일 · 붙여넣은 텍스트 중 하나를 넣어 주세요.' };
+      }
+      if (sourceText.length > SUMMARY_TEXT_MAX) {
+        sourceText = sourceText.slice(0, SUMMARY_TEXT_MAX);
+        meta.truncated = true;
+        meta.notes.push('본문이 ' + SUMMARY_TEXT_MAX.toLocaleString('en-US') + '자를 넘어 앞부분만 넣었습니다.');
+      }
+      meta.chars = sourceText.length;
+      srcMeta = meta;
+      prompt = promptSummary({
+        kind: kind,
+        mode: mode,
+        text: sourceText,
+        media: mediaParts,
+        title: meta.title,
+        chars: meta.chars,
+        truncated: meta.truncated,
+        durationSec: meta.durationSec,
+        focus: body.focus,
+        banPhrases: banPhrases
+      });
     } else {
       const draft = s(body.body, 20000);
       if (draft.length < 80) return { ok: false, reason: 'missing_body', message: '쇼츠로 바꿀 블로그 본문이 필요합니다.' };
@@ -3372,6 +3846,7 @@ const GEN_ACTIONS = [
     else if (action === 'analyze_blogger_style') result = normStyle(data0);
     else if (action === 'analyze_shorts_style') result = normShortsStyle(data0);
     else if (action === 'shorts_script') result = normShortsScript(data0);
+    else if (action === 'summarize') result = normSummary(data0, srcMeta || {});
     else result = normShorts(data0);
 
     if (result.banHits && result.banHits.length) notes.push('금지 표현이 본문에 남아 있습니다: ' + result.banHits.join(', '));
@@ -3390,7 +3865,8 @@ const GEN_ACTIONS = [
       (action === 'proofread_draft' && !s(result.body, 10)) ||
       (action === 'analyze_shorts_style' && !s(result.hook, 3)) ||
       (action === 'shorts_script' && !(result.beats || []).length) ||
-      (action === 'analyze_blogger_style' && !(result.structure || []).length);
+      (action === 'analyze_blogger_style' && !(result.structure || []).length) ||
+      (action === 'summarize' && !((result.three || []).length || s(result.headline, 3)));
     if (truncated || emptyMain) {
       return {
         ok: false,
@@ -3421,6 +3897,7 @@ const GEN_ACTIONS = [
       notes: notes,
       tries: out.tries,
       data: result,
+      source: srcMeta || undefined,
       __raw: parsed ? undefined : out.text.slice(0, 20000)
     };
   }
@@ -3677,20 +4154,581 @@ const GEN_ACTIONS = [
   }
 
   /* ================= tabs + guide ================= */
-  var tabVideo = $('#tabVideo'), tabBlog = $('#tabBlog');
-  var panelVideo = $('#panelVideo'), panelBlog = $('#panelBlog');
+  var tabVideo = $('#tabVideo'), tabBlog = $('#tabBlog'), tabSum = $('#tabSum');
+  var panelVideo = $('#panelVideo'), panelBlog = $('#panelBlog'), panelSum = $('#panelSum');
   function setTab(which){
-    var v = which === 'video';
-    tabVideo.classList.toggle('on', v);
-    tabBlog.classList.toggle('on', !v);
-    tabVideo.setAttribute('aria-selected', v ? 'true' : 'false');
-    tabBlog.setAttribute('aria-selected', v ? 'false' : 'true');
-    panelVideo.hidden = !v;
-    panelBlog.hidden = v;
+    var v = which === 'video', b = which === 'blog', sm = which === 'sum';
+    if (!v && !b && !sm) b = true;
+    if (tabVideo){ tabVideo.classList.toggle('on', v); tabVideo.setAttribute('aria-selected', v ? 'true' : 'false'); }
+    if (tabBlog){ tabBlog.classList.toggle('on', b); tabBlog.setAttribute('aria-selected', b ? 'true' : 'false'); }
+    if (tabSum){ tabSum.classList.toggle('on', sm); tabSum.setAttribute('aria-selected', sm ? 'true' : 'false'); }
+    if (panelVideo) panelVideo.hidden = !v;
+    if (panelBlog) panelBlog.hidden = !b;
+    if (panelSum) panelSum.hidden = !sm;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   tabVideo.addEventListener('click', function(){ setTab('video'); });
   tabBlog.addEventListener('click', function(){ setTab('blog'); });
+
+  /* ================================================================
+     📋 요약 — 유튜브 자막 · 문서(PDF/TXT/MD/CSV) · 짧은 영상/음성
+     · 동적(content-v2): 서버 /api/content-ai 가 자막 추출까지 한 번에 한다.
+     · 정적(preview-content-v2): 서버가 없어 자막은 못 받는다(CORS) — 붙여넣기로 받고,
+       문서·영상은 브라우저가 Gemini(localStorage 키)를 직접 호출한다.
+     · 두 경우 모두 프롬프트·스키마·정규화는 서버 원문과 같다.
+     ================================================================ */
+  var SUM = {
+    server: !(window.CSAI && typeof window.CSAI.run === 'function'),
+    src: 'youtube',
+    mode: 'three',
+    fileName: '',
+    media: null,
+    last: null,
+    busy: false,
+    at: 0
+  };
+  var SUM_FILE_MAX = 4 * 1024 * 1024;
+  var SUM_PDFJS_VER = '3.11.174';
+  var SUM_PDFJS_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + SUM_PDFJS_VER + '/';
+
+  function sumFmt(bytes){
+    var b = Number(bytes) || 0;
+    if (b < 1024) return b + 'B';
+    if (b < 1048576) return (b / 1024).toFixed(0) + 'KB';
+    return (b / 1048576).toFixed(1) + 'MB';
+  }
+  function sumSec(s){
+    var n = Number(s);
+    if (!Number.isFinite(n) || n <= 0) return '';
+    var m = Math.floor(n / 60), r = Math.round(n % 60);
+    return m ? m + '분 ' + (r < 10 ? '0' + r : r) + '초' : r + '초';
+  }
+  function sumInfo(el, msg){
+    var n = el && el.value ? el.value.length : 0;
+    var box = document.getElementById(msg);
+    if (box) box.textContent = n.toLocaleString('en-US') + '자';
+  }
+  function sumWarn(id, html){
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (!html){ el.hidden = true; el.innerHTML = ''; return; }
+    el.hidden = false;
+    el.innerHTML = html;
+  }
+  function sumFileBox(id, ico, name, badge){
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.hidden = false;
+    el.innerHTML = '<span class="ico">' + ico + '</span><div class="fi"><b title="' + esc(name) + '">' + esc(name) + '</b><span>' + esc(badge || '') + '</span></div>';
+  }
+
+  /* ---------- source / mode 칩 ---------- */
+  function sumSetSrc(src){
+    SUM.src = ['youtube', 'doc', 'media'].indexOf(src) >= 0 ? src : 'youtube';
+    $$('#sumSrcSeg .sums').forEach(function(b){
+      var on = b.getAttribute('data-sumsrc') === SUM.src;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    [['sumYt', 'youtube'], ['sumDoc', 'doc'], ['sumMedia', 'media']].forEach(function(p){
+      var el = document.getElementById(p[0]);
+      if (el) el.hidden = p[1] !== SUM.src;
+    });
+  }
+  function sumSetMode(mode){
+    SUM.mode = ['three', 'timeline', 'table', 'handoff'].indexOf(mode) >= 0 ? mode : 'three';
+    $$('#sumModeSeg .summ').forEach(function(b){
+      var on = b.getAttribute('data-summode') === SUM.mode;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    if (SUM.last) sumRender();
+  }
+
+  /* ---------- 파일 읽기 ---------- */
+  function sumReadTextUtf8(file){
+    return new Promise(function(res, rej){
+      var fr = new FileReader();
+      fr.onerror = function(){ rej(new Error('파일을 읽지 못했습니다.')); };
+      fr.onload = function(){ res(String(fr.result || '')); };
+      fr.readAsText(file, 'utf-8');
+    });
+  }
+  function sumReadTextEuc(file){
+    return new Promise(function(res){
+      var fr = new FileReader();
+      fr.onerror = function(){ res(''); };
+      fr.onload = function(){ res(String(fr.result || '')); };
+      fr.readAsText(file, 'euc-kr');
+    });
+  }
+  function sumReadBase64(file){
+    return new Promise(function(res, rej){
+      var fr = new FileReader();
+      fr.onerror = function(){ rej(new Error('파일을 읽지 못했습니다.')); };
+      fr.onload = function(){
+        var s = String(fr.result || '');
+        res(s.indexOf(',') >= 0 ? s.slice(s.indexOf(',') + 1) : s);
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+  async function sumReadText(file){
+    var txt = await sumReadTextUtf8(file);
+    var bad = (txt.match(/\uFFFD/g) || []).length;
+    if (bad > 3 && bad / Math.max(1, txt.length) > 0.002){
+      var alt = await sumReadTextEuc(file);
+      if (alt && (alt.match(/\uFFFD/g) || []).length < bad) return alt;
+    }
+    return txt;
+  }
+  function sumLoadPdfJs(){
+    if (window.pdfjsLib){
+      try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = SUM_PDFJS_BASE + 'pdf.worker.min.js'; } catch(e){}
+      return Promise.resolve(window.pdfjsLib);
+    }
+    if (window.__sumPdfP) return window.__sumPdfP;
+    window.__sumPdfP = new Promise(function(res, rej){
+      var sc = document.createElement('script');
+      sc.src = SUM_PDFJS_BASE + 'pdf.min.js';
+      sc.async = true;
+      sc.onload = function(){
+        if (!window.pdfjsLib){ rej(new Error('pdfjs-missing')); return; }
+        try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = SUM_PDFJS_BASE + 'pdf.worker.min.js'; } catch(e){}
+        res(window.pdfjsLib);
+      };
+      sc.onerror = function(){ rej(new Error('pdfjs-load')); };
+      document.head.appendChild(sc);
+    }).catch(function(e){ window.__sumPdfP = null; throw e; });
+    return window.__sumPdfP;
+  }
+  function sumPageText(tc){
+    var lines = [], line = '', lastY = null;
+    (tc && tc.items ? tc.items : []).forEach(function(it){
+      if (!it || typeof it.str !== 'string') return;
+      var y = it.transform ? Math.round(it.transform[5]) : null;
+      if (lastY !== null && y !== null && Math.abs(y - lastY) > 2){
+        if (line.trim()) lines.push(line.replace(/\s+$/, ''));
+        line = '';
+      }
+      line += it.str;
+      if (it.hasEOL){
+        if (line.trim()) lines.push(line.replace(/\s+$/, ''));
+        line = '';
+      }
+      lastY = y;
+    });
+    if (line.trim()) lines.push(line.replace(/\s+$/, ''));
+    return lines.join('\n');
+  }
+  async function sumPdfText(file, onStep){
+    var lib = await sumLoadPdfJs();
+    var buf = await file.arrayBuffer();
+    var pdf = await lib.getDocument({ data: buf }).promise;
+    var total = Math.min(pdf.numPages, 120), out = [];
+    for (var i = 1; i <= total; i++){
+      if (onStep) onStep(i, total);
+      var page = await pdf.getPage(i);
+      var tc = await page.getTextContent();
+      out.push(sumPageText(tc));
+      if (out.join('\n').length > 160000) break;
+    }
+    return { text: out.join('\n\n'), pages: out.length, docPages: pdf.numPages };
+  }
+  function sumProbeMedia(url, isAudio){
+    return new Promise(function(res){
+      var el = document.createElement(isAudio ? 'audio' : 'video');
+      var done = false;
+      var t = setTimeout(function(){ if (!done){ done = true; res(null); } }, 4500);
+      el.preload = 'metadata';
+      el.onloadedmetadata = function(){ if (!done){ done = true; clearTimeout(t); res(Number(el.duration) || null); } };
+      el.onerror = function(){ if (!done){ done = true; clearTimeout(t); res(null); } };
+      el.src = url;
+    });
+  }
+
+  async function sumHandleDoc(file){
+    if (!file) return;
+    var name = file.name || 'document';
+    var ext = (String(name).split('.').pop() || '').toLowerCase();
+    sumWarn('sumFileWarn', '');
+    if (['hwp', 'hwpx', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'odt', 'rtf'].indexOf(ext) >= 0){
+      sumFileBox('sumFileBox', '⛔', name, '지원하지 않는 형식 — PDF로 저장하거나 텍스트를 복사해 주세요');
+      var hint = $('#sumDocHint');
+      if (hint) hint.hidden = false;
+      toast('HWP·워드·엑셀은 바로 못 읽습니다. PDF로 저장하거나 텍스트를 붙여넣어 주세요.', 4200);
+      return;
+    }
+    if (['pdf', 'txt', 'md', 'markdown', 'csv'].indexOf(ext) < 0){
+      sumFileBox('sumFileBox', '⛔', name, 'PDF · TXT · MD · CSV 만 읽습니다');
+      return;
+    }
+    SUM.fileName = name;
+    if (ext === 'pdf'){
+      sumFileBox('sumFileBox', '📄', name, 'PDF · ' + sumFmt(file.size) + ' — 글자 뽑는 중…');
+      try {
+        var r = await sumPdfText(file, function(i, n){ sumFileBox('sumFileBox', '📄', name, 'PDF ' + sumFmt(file.size) + ' · ' + i + '/' + n + '쪽 읽는 중…'); });
+        var txt = r.text || '';
+        if (txt.replace(/\s/g, '').length < 20){
+          sumFileBox('sumFileBox', '⚠️', name, 'PDF · ' + r.pages + '쪽 — 글자가 거의 없음(스캔본)');
+          sumWarn('sumFileWarn', '⚠️ 이 PDF는 글자가 거의 없습니다(스캔 이미지일 가능성). 브라우저에서 글자를 뽑을 수 없어 <b>텍스트를 복사해 붙여넣어</b> 주세요.');
+          return;
+        }
+        var ta = $('#sumText');
+        if (ta) ta.value = txt.slice(0, 120000);
+        sumInfo(ta, 'sumTextInfo');
+        sumFileBox('sumFileBox', '📄', name, '✓ ' + r.pages + '쪽 · ' + charLen(txt) + '자 읽음' + (r.docPages > r.pages ? ' (전체 ' + r.docPages + '쪽 중 앞 ' + r.pages + '쪽)' : ''));
+        if (r.docPages > r.pages) sumWarn('sumFileWarn', 'ℹ️ ' + r.docPages + '쪽짜리 PDF라 <b>앞 ' + r.pages + '쪽까지만</b> 넣었습니다.');
+      } catch(e){
+        var why = /pdfjs/.test(String(e && e.message)) ? 'pdf.js를 불러오지 못했습니다 — 인터넷 연결을 확인해 주세요.' : 'PDF를 열지 못했습니다(암호가 걸린 PDF인지 확인해 주세요).';
+        sumFileBox('sumFileBox', '⚠️', name, 'PDF 열기 실패');
+        sumWarn('sumFileWarn', '⚠️ ' + esc(why));
+      }
+      return;
+    }
+    try {
+      var t2 = await sumReadText(file);
+      var ta2 = $('#sumText');
+      if (ta2) ta2.value = String(t2 || '').slice(0, 120000);
+      sumInfo(ta2, 'sumTextInfo');
+      sumFileBox('sumFileBox', '📄', name, '✓ ' + sumFmt(file.size) + ' · ' + charLen(t2 || '') + '자 읽음');
+      if (!String(t2 || '').trim()) sumWarn('sumFileWarn', '⚠️ 파일이 비어 있습니다.');
+    } catch(e){
+      sumFileBox('sumFileBox', '⚠️', name, '읽지 못했습니다');
+    }
+  }
+
+  async function sumHandleMedia(file){
+    if (!file) return;
+    SUM.media = null;
+    sumWarn('sumMediaWarn', '');
+    var prev = $('#sumMediaPrev');
+    if (prev){ try { prev.pause(); } catch(e){} prev.hidden = true; prev.removeAttribute('src'); }
+    var box = $('#sumMediaBox');
+    if (box) box.hidden = true;
+    if (file.size > SUM_FILE_MAX){
+      sumWarn('sumMediaWarn', '⚠️ <b>' + sumFmt(file.size) + '</b> — 4MB를 넘습니다. 짧게 잘라 올리거나 소리만 뽑은 MP3로 올려 주세요.');
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024){
+      sumWarn('sumMediaWarn', 'ℹ️ ' + sumFmt(file.size) + ' — base64로 보내면 약 ' + sumFmt(Math.ceil(file.size * 1.34)) + '가 됩니다. 서버가 거절하면 <b>3MB 이하</b>로 줄여 주세요.');
+    }
+    var ext = (String(file.name || '').split('.').pop() || '').toLowerCase();
+    var mime = file.type || ({ mp4: 'video/mp4', webm: 'video/webm', mp3: 'audio/mpeg', m4a: 'audio/mp4' }[ext] || '');
+    if (!mime){
+      sumWarn('sumMediaWarn', '⚠️ 파일 형식을 알 수 없습니다. MP4 · WEBM · MP3 · M4A 로 올려 주세요.');
+      return;
+    }
+    var isAudio = /^audio\//.test(mime);
+    var url = URL.createObjectURL(file);
+    var dur = await sumProbeMedia(url, isAudio);
+    if (prev){ prev.src = url; prev.hidden = false; }
+    var data;
+    try { data = await sumReadBase64(file); }
+    catch(e){ sumWarn('sumMediaWarn', '⚠️ 파일을 읽지 못했습니다. 다시 골라 주세요.'); return; }
+    SUM.media = { name: file.name, mimeType: mime, data: data, durationSec: dur, bytes: file.size };
+    sumFileBox('sumMediaBox', isAudio ? '🎧' : '🎥', file.name, sumFmt(file.size) + (dur ? ' · ' + sumSec(dur) : '') + ' · ' + (isAudio ? '음성' : '영상') + ' · 전송 대기');
+  }
+
+  /* ---------- 호출 ---------- */
+  async function sumRequest(payload, btn, label){
+    var t0 = Date.now();
+    if (SUM.server){
+      try {
+        var j = await callAI('summarize', payload, btn, label);
+        if (j && j.elapsedMs == null) j.elapsedMs = Date.now() - t0;
+        return j;
+      } catch(e){
+        var p = (e && e.payload) || {};
+        return { ok: false, reason: p.reason || 'request_failed', message: p.message || (e && e.message) || '요청이 실패했습니다.', hint: p.hint || '', tries: p.tries || [], ms: Date.now() - t0 };
+      }
+    }
+    spinner(btn, true, label);
+    try {
+      var r = await window.CSAI.run('summarize', payload);
+      return r || { ok: false, message: '응답이 비어 있습니다.' };
+    } catch(e){
+      return { ok: false, reason: 'request_failed', message: String((e && e.message) || e) };
+    } finally {
+      spinner(btn, false);
+    }
+  }
+
+  function sumBusy(on, msg){
+    SUM.busy = !!on;
+    var b = $('#sumGoBtn');
+    if (b) b.disabled = !!on;
+    var card = $('#sumOutCard');
+    if (on && card){
+      card.hidden = false;
+      var stat = $('#sumOutStat');
+      if (stat){ stat.className = 'bdg wait'; stat.textContent = '요약 중…'; }
+      var meta = $('#sumOutMeta'); if (meta) meta.innerHTML = '';
+      var out = $('#sumOut');
+      if (out) out.innerHTML = '<div class="sempty"><span class="spin" aria-hidden="true"></span> ' + esc(msg || '요약하는 중…') + '</div>';
+      sumWarn('sumWarn', '');
+    }
+  }
+
+  async function sumRun(payload){
+    if (SUM.busy) return;
+    payload = Object.assign({ mode: SUM.mode, focus: ($('#sumFocus') && $('#sumFocus').value.trim()) || '' }, payload || {});
+    var label = payload.kind === 'media' ? '파일을 보고 요약하는 중…' : payload.kind === 'youtube' ? '자막 받고 요약하는 중…' : '문서를 요약하는 중…';
+    sumBusy(true, label + ' (보통 5~20초)');
+    var j = await sumRequest(payload, $('#sumGoBtn'), label);
+    sumBusy(false);
+    if (!j || j.ok === false){
+      SUM.last = null;
+      var stat = $('#sumOutStat');
+      if (stat){ stat.className = 'bdg wait'; stat.textContent = '실패'; }
+      var out = $('#sumOut');
+      var acts = $('.sumacts');
+      if (acts) acts.hidden = true;
+      var tries = (j && j.tries ? j.tries : []).map(function(t){ return t.model + ':' + (t.status || '—'); }).join(' · ');
+      var html = '<div class="errbox"><b>⚠️ 요약 실패 — 꾸며내지 않고 그대로 알립니다</b>' +
+        '<div class="em">' + esc((j && (j.message || j.reason)) || '알 수 없는 오류') + '</div>' +
+        (j && j.hint ? '<div class="em">' + esc(j.hint) + '</div>' : '') +
+        (tries ? '<div class="em mono">시도 기록: ' + esc(tries) + '</div>' : '');
+      if (j && j.fallback === 'paste'){
+        html += '<button type="button" class="btn small" id="sumGoPaste">자막 붙여넣기 칸으로</button>';
+      }
+      html += '</div>';
+      if (out) out.innerHTML = html;
+      var gp = $('#sumGoPaste');
+      if (gp) gp.addEventListener('click', function(){
+        sumSetSrc('youtube');
+        var p = $('#sumYtPaste');
+        if (p){ p.focus(); p.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      });
+      if (j && j.youtube && j.youtube.title){
+        var m = $('#sumOutMeta');
+        if (m) m.innerHTML = '<span class="tag">🎬 ' + esc(j.youtube.title) + '</span>' + (j.youtube.author ? '<span class="tag">' + esc(j.youtube.author) + '</span>' : '');
+      }
+      return;
+    }
+    SUM.last = j.data || {};
+    SUM.lastMeta = j.source || payload.source || { kind: payload.kind };
+    SUM.at = Date.now();
+    var st = $('#sumOutStat');
+    if (st){ st.className = 'bdg real'; st.textContent = '✓ ' + (j.model || 'Gemini'); }
+    sumRender();
+    var rc = $('#sumOutCard');
+    if (rc) setTimeout(function(){ rc.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 140);
+  }
+
+  function sumRender(){
+    var d = SUM.last || {};
+    var m = SUM.lastMeta || {};
+    var acts = $('.sumacts'); if (acts) acts.hidden = false;
+    var meta = $('#sumOutMeta');
+    if (meta){
+      var tags = [];
+      if (m.kind === 'youtube') tags.push('🎬 유튜브 자막');
+      else if (m.kind === 'media') tags.push('🎥 영상·음성');
+      else tags.push('📄 문서');
+      if (d.title) tags.push('「' + d.title + '」');
+      if (m.chars) tags.push(m.chars.toLocaleString('en-US') + '자');
+      if (m.bytes) tags.push(sumFmt(m.bytes));
+      if (m.durationSec) tags.push(sumSec(m.durationSec));
+      if (m.auto) tags.push('자동 자막(오인식 가능)');
+      if (m.truncated) tags.push('앞부분만 사용');
+      meta.innerHTML = tags.map(function(t){ return '<span class="tag">' + esc(t) + '</span>'; }).join('');
+    }
+    var H = '';
+    if (d.headline) H += '<div class="sumhead">' + esc(d.headline) + '</div>';
+    if (SUM.mode === 'three'){
+      var three = d.three || [];
+      if (!three.length) H += '<div class="sempty">3줄 핵심이 비어 왔습니다. 다시 눌러 주세요.</div>';
+      else H += three.map(function(t, i){ return '<div class="sumline"><span class="n">' + (i + 1) + '</span><p>' + esc(t) + '</p></div>'; }).join('');
+    } else if (SUM.mode === 'timeline'){
+      var tl = d.timeline || [];
+      if (!tl.length) H += '<div class="sempty">시간·섹션 흐름이 없습니다 — 자료가 짧거나 목록형일 수 있습니다. 다른 양식으로 보세요.</div>';
+      else H += '<div class="sumtl">' + tl.map(function(x){
+        return '<div class="row"><span class="at">' + esc(x.at || '·') + '</span><div class="bd"><b>' + esc(x.label || '') + '</b><span>' + esc(x.point || '') + '</span></div></div>';
+      }).join('') + '</div>';
+    } else if (SUM.mode === 'table'){
+      var facts = d.facts || [], actions = d.actions || [];
+      if (facts.length){
+        H += '<div class="sumh">📊 수치·조건</div><div class="sumfact">' + facts.map(function(f){
+          return '<div class="fr"><span class="fk">' + esc(f.label) + '</span><span class="fv">' + esc(f.value) + '</span></div>';
+        }).join('') + '</div>';
+      } else {
+        H += '<div class="sempty">수치·조건 항목이 없습니다 — 자료에 숫자가 없는 경우가 많습니다.</div>';
+      }
+      if (actions.length) H += '<div class="sumh">✅ 액션 아이템</div><ul class="sumul">' + actions.map(function(a){ return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>';
+    } else {
+      var blog = d.blog || {}, shorts = d.shorts || {};
+      H += '<div class="sumseed"><span class="sl">✍️ 블로그 글감</span><b>' + esc(blog.title || d.title || d.headline || '제목 없음') + '</b>' +
+        (blog.angle ? '<span>' + esc(blog.angle) + '</span>' : '') +
+        ((blog.outline || []).length ? '<span>' + esc((blog.outline || []).join(' → ')) + '</span>' : '') + '</div>';
+      H += '<div class="sumseed"><span class="sl">🎬 쇼츠 글감</span><b>' + esc(shorts.hook || '첫 3초 훅 없음') + '</b>' +
+        ((shorts.beats || []).length ? '<span>' + esc((shorts.beats || []).join(' / ')) + '</span>' : '') +
+        (shorts.ending ? '<span>엔딩: ' + esc(shorts.ending) + '</span>' : '') + '</div>';
+      H += '<p class="hint" style="margin-top:6px">아래 <b>[✍️ 블로그로]</b>·<b>[🎬 쇼츠로]</b>를 누르면 주제·참고자료 칸에 바로 들어갑니다.</p>';
+    }
+    var out = $('#sumOut'); if (out) out.innerHTML = H;
+    var w = [];
+    if ((d.needsCheck || []).length) w.push('확인 필요: ' + (d.needsCheck || []).join(' · '));
+    if ((d.warnings || []).length) w.push((d.warnings || []).join(' · '));
+    sumWarn('sumWarn', w.length ? '⚠️ ' + esc(w.join(' / ')) : '');
+  }
+
+  function sumCopy(){
+    var d = SUM.last;
+    if (!d){ toast('먼저 요약을 만들어 주세요.'); return; }
+    copyText(d.markdown || d.headline || '', '요약을 복사했습니다.');
+  }
+  function sumSaveShelf(){
+    var d = SUM.last;
+    if (!d){ toast('먼저 요약을 만들어 주세요.'); return; }
+    var m = SUM.lastMeta || {};
+    var rec = {
+      id: 's' + Date.now(),
+      type: 'summary',
+      title: (d.title || d.headline || '요약').slice(0, 80),
+      createdAt: Date.now(),
+      text: d.markdown || '',
+      data: d,
+      meta: m,
+      mode: SUM.mode,
+      srcKind: m.kind || SUM.src,
+      srcName: m.title || '',
+      chars: (d.markdown || '').length
+    };
+    var idx = -1;
+    (state.archive || []).forEach(function(x, k){ if (x.id === rec.id) idx = k; });
+    if (idx > -1) state.archive[idx] = rec; else state.archive.unshift(rec);
+    saveShelf();
+    renderShelf();
+    try { var sh = $('#shelf'); if (sh) sh.open = true; } catch(e){}
+    toast('보관함에 저장했습니다. (이 브라우저에 저장)');
+  }
+  function sumToBlog(){
+    var d = SUM.last;
+    if (!d){ toast('먼저 요약을 만들어 주세요.'); return; }
+    var t = $('#topic');
+    var titleGuess = (d.blog && d.blog.title) || d.headline || d.title || '';
+    if (t) t.value = String(titleGuess).slice(0, 80);
+    var src = $('#srcMaterial');
+    if (src){
+      var mat = (d.markdown || '').slice(0, 5950);
+      src.value = mat;
+      try { src.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
+    }
+    setTab('blog');
+    if (typeof shSetMode === 'function') shSetMode('blog');
+    toast('블로그 주제·참고 자료에 넣었습니다. 양식을 고르고 생성하세요.', 3600);
+  }
+  function sumToShorts(){
+    var d = SUM.last;
+    if (!d){ toast('먼저 요약을 만들어 주세요.'); return; }
+    var hook = (d.shorts && d.shorts.hook) || d.headline || d.title || '';
+    var st = $('#shTopic');
+    if (st) st.value = String(hook).slice(0, 80);
+    setTab('blog');
+    if (typeof shSetMode === 'function') shSetMode('shorts');
+    toast('쇼츠 주제 칸에 넣었습니다. 양식을 고르고 대본을 만드세요.', 3600);
+  }
+
+  /* ---------- 유튜브 ---------- */
+  function sumYoutubeRun(){
+    var urlEl = $('#sumYtUrl');
+    var url = urlEl ? urlEl.value.trim() : '';
+    var pasteEl = $('#sumYtPaste');
+    var pasted = pasteEl ? pasteEl.value.trim() : '';
+    if (!SUM.server){
+      toast('정적 페이지(GitHub Pages)에는 유튜브 자막을 대신 받아 줄 서버가 없습니다(브라우저 CORS 차단). 자막을 복사해 붙여넣어 주세요.', 5200);
+      if (!pasted && pasteEl){ pasteEl.focus(); pasteEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      return;
+    }
+    if (url){ sumRun({ kind: 'youtube', url: url }); return; }
+    if (pasted){ sumRun({ kind: 'youtube', text: pasted }); return; }
+    toast('유튜브 링크를 넣어 주세요.');
+    if (urlEl) urlEl.focus();
+  }
+  function sumPasteRun(){
+    var p = $('#sumYtPaste');
+    var txt = p ? p.value.trim() : '';
+    if (txt.length < 40){ toast('붙여넣은 자막이 너무 적습니다(40자 이상).'); if (p) p.focus(); return; }
+    sumRun({ kind: 'youtube', text: txt, title: '유튜브 자막 붙여넣기' });
+  }
+
+  /* ---------- 배선 ---------- */
+  var tabSumEl = $('#tabSum'), panelSum = $('#panelSum');
+  if (tabSumEl) tabSumEl.addEventListener('click', function(){ setTab('sum'); });
+  (function sumWire(){
+    $$('#sumSrcSeg .sums').forEach(function(b){
+      b.addEventListener('click', function(){ sumSetSrc(b.getAttribute('data-sumsrc')); });
+    });
+    $$('#sumModeSeg .summ').forEach(function(b){
+      b.addEventListener('click', function(){ sumSetMode(b.getAttribute('data-summode')); });
+    });
+    var hintEl = $('#sumYtHint');
+    if (hintEl && !SUM.server){
+      hintEl.innerHTML = '정적 페이지에는 유튜브 자막을 대신 받아 줄 서버가 없습니다(브라우저 CORS 차단). 유튜브 화면에서 <b>자막을 복사해 아래 칸에 붙여넣으면</b> 그 자막으로 요약합니다.';
+    }
+    var yb = $('#sumYtBtn'); if (yb) yb.addEventListener('click', sumYoutubeRun);
+    var pb = $('#sumYtPasteBtn'); if (pb) pb.addEventListener('click', sumPasteRun);
+    var yp = $('#sumYtPaste'); if (yp) yp.addEventListener('input', function(){ sumInfo(yp, 'sumYtPasteInfo'); });
+    var st = $('#sumText'); if (st) st.addEventListener('input', function(){ sumInfo(st, 'sumTextInfo'); });
+    var go = $('#sumGoBtn'); if (go) go.addEventListener('click', sumRunFromUi);
+    var pick = $('#sumPickBtn'), file = $('#sumFile');
+    if (pick && file) pick.addEventListener('click', function(){ file.click(); });
+    if (file) file.addEventListener('change', function(){ if (file.files && file.files[0]) sumHandleDoc(file.files[0]); file.value = ''; });
+    var drop = $('#sumDrop');
+    if (drop && file){
+      drop.addEventListener('click', function(e){ if (e.target === drop || e.target.closest('.big-ico') || e.target.tagName === 'B' || e.target.tagName === 'P') file.click(); });
+      ['dragenter', 'dragover'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add('hover'); }); });
+      ['dragleave', 'drop'].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove('hover'); }); });
+      drop.addEventListener('drop', function(e){
+        var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) sumHandleDoc(f);
+      });
+    }
+    var mpick = $('#sumMediaPickBtn'), mfile = $('#sumMediaFile');
+    if (mpick && mfile) mpick.addEventListener('click', function(){ mfile.click(); });
+    if (mfile) mfile.addEventListener('change', function(){ if (mfile.files && mfile.files[0]) sumHandleMedia(mfile.files[0]); mfile.value = ''; });
+    var mdrop = $('#sumMediaDrop');
+    if (mdrop && mfile){
+      mdrop.addEventListener('click', function(e){ if (e.target === mdrop || e.target.closest('.big-ico') || e.target.tagName === 'B' || e.target.tagName === 'P') mfile.click(); });
+      ['dragenter', 'dragover'].forEach(function(ev){ mdrop.addEventListener(ev, function(e){ e.preventDefault(); mdrop.classList.add('hover'); }); });
+      ['dragleave', 'drop'].forEach(function(ev){ mdrop.addEventListener(ev, function(e){ e.preventDefault(); mdrop.classList.remove('hover'); }); });
+      mdrop.addEventListener('drop', function(e){
+        var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if (f) sumHandleMedia(f);
+      });
+    }
+    var cb = $('#sumCopyBtn'); if (cb) cb.addEventListener('click', sumCopy);
+    var sb = $('#sumShelfBtn'); if (sb) sb.addEventListener('click', sumSaveShelf);
+    var bb = $('#sumToBlogBtn'); if (bb) bb.addEventListener('click', sumToBlog);
+    var shb = $('#sumToShortsBtn'); if (shb) shb.addEventListener('click', sumToShorts);
+    var cl = $('#sumClearBtn');
+    if (cl) cl.addEventListener('click', function(){
+      SUM.last = null;
+      var card = $('#sumOutCard'); if (card) card.hidden = true;
+      var out = $('#sumOut'); if (out) out.innerHTML = '';
+      sumWarn('sumWarn', '');
+    });
+    sumSetSrc('youtube');
+    sumSetMode('three');
+  })();
+
+  function sumRunFromUi(){
+    if (SUM.src === 'youtube'){ sumYoutubeRun(); return; }
+    if (SUM.src === 'doc'){
+      var ta = $('#sumText');
+      var txt = ta ? ta.value.trim() : '';
+      if (txt.length < 40){ toast('요약할 글자가 너무 적습니다(40자 이상). 파일을 고르거나 붙여넣어 주세요.'); if (ta) ta.focus(); return; }
+      sumRun({ kind: 'doc', text: txt, title: SUM.fileName || '' });
+      return;
+    }
+    if (!SUM.media || !SUM.media.data){
+      toast('영상·음성 파일을 먼저 골라 주세요.');
+      var mp = $('#sumMediaPickBtn'); if (mp) mp.click();
+      return;
+    }
+    sumRun({ kind: 'media', media: { name: SUM.media.name, mimeType: SUM.media.mimeType, data: SUM.media.data, durationSec: SUM.media.durationSec } });
+  }
 
   var guideBtn = $('#apiGuideBtn'), guide = $('#apiGuide');
   guideBtn.addEventListener('click', function(){
@@ -7366,7 +8404,7 @@ const GEN_ACTIONS = [
   var shelfBody = $('#shelfBody'), shelfCount = $('#shelfCount');
   function loadShelf(){
     var a = lsGet(LSK2.shelf, []);
-    state.archive = Array.isArray(a) ? a.filter(function(x){ return x && x.id && (x.type === 'blog' || x.type === 'video'); }) : [];
+    state.archive = Array.isArray(a) ? a.filter(function(x){ return x && x.id && (x.type === 'blog' || x.type === 'video' || x.type === 'summary'); }) : [];
   }
   function saveShelf(){ return lsSet(LSK2.shelf, state.archive); }
   function fmtWhen(ts){
@@ -7392,11 +8430,13 @@ const GEN_ACTIONS = [
     }
     var list = state.archive.slice().sort(function(a, b){ return b.createdAt - a.createdAt; });
     shelfBody.innerHTML = list.map(function(x){
-      var note = x.type === 'blog'
-        ? ((x.formName || '양식') + ' · 뼈대 ' + charLen(x.text || '') + '자')
-        : (x.ratio + ' · ' + presetName(x.preset) + ' · 클립 ' + ((x.clips || []).length) + '개 — 파일은 다시 골라야 합니다');
+      var note = x.type === 'summary'
+        ? ((x.srcKind === 'youtube' ? '유튜브' : x.srcKind === 'media' ? '영상·음성' : '문서') + (x.srcName ? ' · ' + x.srcName : '') + ' · ' + charLen(x.text || '') + '자')
+        : x.type === 'blog'
+          ? ((x.formName || '양식') + ' · 뼈대 ' + charLen(x.text || '') + '자')
+          : (x.ratio + ' · ' + presetName(x.preset) + ' · 클립 ' + ((x.clips || []).length) + '개 — 파일은 다시 골라야 합니다');
       return '<div class="sitem" data-id="' + esc(x.id) + '">' +
-        '<div class="sh"><span class="stype ' + x.type + '">' + (x.type === 'blog' ? '블로그' : '영상') + '</span>' +
+        '<div class="sh"><span class="stype ' + x.type + '">' + (x.type === 'summary' ? '요약' : x.type === 'blog' ? '블로그' : '영상') + '</span>' +
         '<span class="stit" title="' + esc(x.title) + '">' + esc(x.title) + '</span>' +
         '<span class="sdate">' + fmtWhen(x.createdAt) + '</span></div>' +
         '<div class="snote">' + esc(note) + '</div>' +
@@ -7430,6 +8470,20 @@ const GEN_ACTIONS = [
   function openArchive(id){
     var rec = state.archive.filter(function(x){ return x.id === id; })[0];
     if (!rec) return;
+    if (rec.type === 'summary'){
+      setTab('sum');
+      SUM.last = rec.data || { headline: '', three: [], timeline: [], facts: [], actions: [], blog: {}, shorts: {}, markdown: rec.text || '', title: rec.title || '' };
+      SUM.lastMeta = rec.meta || { kind: rec.srcKind || 'doc' };
+      sumSetMode(rec.mode || 'three');
+      var sc = $('#sumOutCard');
+      if (sc) sc.hidden = false;
+      var sst = $('#sumOutStat');
+      if (sst){ sst.className = 'bdg real'; sst.textContent = '불러옴'; }
+      sumRender();
+      setTimeout(function(){ if (sc) sc.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 150);
+      toast('보관함에서 요약을 불러왔습니다.');
+      return;
+    }
     if (rec.type === 'blog'){
       if (allForms().some(function(f){ return f.id === rec.formId; })) state.selectedFormId = rec.formId;
       setTab('blog');
@@ -7481,7 +8535,7 @@ const GEN_ACTIONS = [
     if (cp){
       var rec = state.archive.filter(function(x){ return x.id === cp.getAttribute('data-copy'); })[0];
       if (!rec) return;
-      copyText(rec.type === 'blog' ? (rec.text || '') : designText(rec), rec.type === 'blog' ? '블로그 초안을 복사했습니다.' : '영상 설계안을 복사했습니다.');
+      copyText(rec.type === 'video' ? designText(rec) : (rec.text || ''), rec.type === 'summary' ? '요약을 복사했습니다.' : rec.type === 'blog' ? '블로그 초안을 복사했습니다.' : '영상 설계안을 복사했습니다.');
       return;
     }
     var del = e.target.closest('[data-del]');
