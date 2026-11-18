@@ -447,7 +447,9 @@
       A.sfx.tap(); ui.fType = b.dataset.ftype; renderSetup(root);
     }));
     root.querySelectorAll('[data-fcost]').forEach(b => b.addEventListener('click', () => {
-      A.sfx.tap(); ui.fCost = b.dataset.fcost; renderSetup(root);
+      A.sfx.tap();
+      ui.fCost = b.dataset.fcost === 'all' ? 'all' : +b.dataset.fcost;   /* 숫자로 보관해야 칩 활성 표시가 맞는다 */
+      renderSetup(root);
     }));
     root.querySelectorAll('[data-fsort]').forEach(b => b.addEventListener('click', () => {
       A.sfx.tap(); ui.sort = b.dataset.fsort; renderSetup(root);
