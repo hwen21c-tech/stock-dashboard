@@ -888,6 +888,14 @@
   .proofbadge .prow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px}
   @media (max-width:400px){ .bpick{flex:1 1 calc(50% - 5px)} }
 
+  /* ---------- 좁은 화면: 결과 카드 머리(제목 + 버튼) 줄바꿈 정리 ---------- */
+  @media (max-width:460px){
+    .out-card .out-head{gap:6px}
+    .out-card .out-head h3{flex:1 1 100%}
+    .out-card .out-head .spacer{display:none}
+    .out-card .out-head .btn{flex:1 1 auto;justify-content:center;min-width:0}
+  }
+
   /* ---------- 🎬 콘텐츠 모드 세그먼트 (블로그 / 쇼츠) ---------- */
   .csmodeseg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:11px}
   .csm{
@@ -9119,8 +9127,8 @@ const GEN_ACTIONS = [
       if (!next.trim()) throw Object.assign(new Error('교정 대본이 비어 왔습니다. 다시 눌러 주세요.'), { status: 200, payload: {} });
       var before = String(text);
       SH.orig = before;
-      shShowOut(next, '✨ 2차 검수 · ' + ((j && j.model) || AI.model));
-      shShowProofNote(d.fixes || [], d, before.length);
+      shShowOut(next, '✨ 2차 검수 완료');
+      shShowProofNote(d.fixes || [], Object.assign({}, d, { model: (j && j.model) || AI.model }), before.length);
       toast('쇼츠 2차 검수를 마쳤습니다 — 고친 점은 대본 위 배지에 있습니다.');
     } catch(err){
       var el = $('#shProofNote');
