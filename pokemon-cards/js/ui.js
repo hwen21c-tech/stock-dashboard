@@ -87,6 +87,15 @@
     const on = P.state.settings.sfx;
     sb.textContent = on ? (P.state.settings.bgm ? '🔊' : '🔈') : '🔇';
     sb.classList.toggle('off', !on);
+    /* 📳 진동 상태 */
+    const vb = $('#vibBtn');
+    if (vb) {
+      const vib = P.vibOn();
+      vb.textContent = vib ? '📳' : '📴';
+      vb.classList.toggle('off', !vib);
+      vb.setAttribute('aria-label', vib ? '진동 끄기' : '진동 켜기');
+      vb.setAttribute('title', vib ? '진동 켜짐 — 눌러서 끄기' : '진동 꺼짐 — 눌러서 켜기');
+    }
   }
   function bumpCoins() {
     const c = $('#coinChip');

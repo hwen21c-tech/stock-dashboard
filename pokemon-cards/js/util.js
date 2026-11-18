@@ -22,7 +22,7 @@
     v: 1,
     active: 'arin',
     adminUntil: 0,
-    settings: { sfx: true, bgm: true, volume: 0.7 },
+    settings: { sfx: true, bgm: true, vibration: true, volume: 0.7 },
     profiles: {}
   };
 
@@ -31,8 +31,37 @@
       name: p.name, emoji: p.emoji, coins: 100,
       cards: {}, src: {}, fav: [], tickets: { normal: 0, high: 0 },
       opened: {}, badges: [], titles: ['start'], log: [],
-      deck: [], wins: 0, losses: 0, trades: [], seen: Date.now()
+      deck: [], wins: 0, losses: 0, trades: [], seen: Date.now(),
+      stardust: 0, at: 0, coinsAt: 0
     };
+  }
+
+  /* ---------- 바뀐 시각 기록 (클라우드에서 '누가 더 최근인지' 가리는 데 쓴다) ----------
+     코인은 coinsAt, 카드·티켓·별가루·교환함은 at. */
+  let coinSnap = null, profSnap = null;
+  function profSig(pr) {
+    return JSON.stringify([pr.name, pr.emoji, pr.cards, pr.src, pr.fav, pr.tickets,
+      pr.stardust || 0, pr.badges, pr.titles, pr.deck, pr.wins || 0, pr.losses || 0, pr.trades]);
+  }
+  function resetTrack() {
+    coinSnap = {}; profSnap = {};
+    PROFILES.forEach(p => {
+      const pr = state.profiles[p.id];
+      if (!pr) return;
+      coinSnap[p.id] = pr.coins;
+      profSnap[p.id] = profSig(pr);
+    });
+  }
+  function track() {
+    if (!coinSnap || !profSnap) { resetTrack(); return; }
+    const now = Date.now();
+    PROFILES.forEach(p => {
+      const pr = state.profiles[p.id];
+      if (!pr) return;
+      const sig = profSig(pr);
+      if (profSnap[p.id] !== sig) { pr.at = now; profSnap[p.id] = sig; }
+      if (coinSnap[p.id] !== pr.coins) { pr.coinsAt = now; coinSnap[p.id] = pr.coins; }
+    });
   }
 
   function load() {
@@ -52,17 +81,24 @@
       pr.opened = pr.opened || {}; pr.badges = pr.badges || [];
       pr.titles = pr.titles || ['start']; pr.deck = pr.deck || []; pr.trades = pr.trades || [];
       if (typeof pr.coins !== 'number') pr.coins = 100;
+      if (typeof pr.stardust !== 'number') pr.stardust = 0;
+      if (typeof pr.at !== 'number') pr.at = 0;
+      if (typeof pr.coinsAt !== 'number') pr.coinsAt = 0;
     });
     if (!state.profiles[state.active]) state.active = 'arin';
-    if (!state.settings) state.settings = { sfx: true, bgm: true, volume: 0.7 };
+    if (!state.settings) state.settings = { sfx: true, bgm: true, vibration: true, volume: 0.7 };
+    if (state.settings.vibration == null) state.settings.vibration = vibPref();
+    resetTrack();
     return state;
   }
 
   let saveTimer = null;
   function save() {
+    track();
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(() => {
       try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { }
+      try { if (window.PKCCloud) window.PKCCloud.touch(); } catch (e) { /* */ }
     }, 60);
   }
 
@@ -191,12 +227,28 @@
   }
 
   function haptic(ms) {
+    if (!vibOn()) return;                       /* 📴 무진동이면 아예 울리지 않는다 */
     if (navigator.vibrate) { try { navigator.vibrate(ms || 8); } catch (e) { } }
+  }
+
+  /* ---------- 📳 진동 설정 (기기 취향 — 클라우드로 보내지 않는다) ---------- */
+  const VIB_KEY = 'pkc_vibrate_v1';
+  function vibPref() {
+    try { const v = localStorage.getItem(VIB_KEY); return v == null ? true : v !== '0'; } catch (e) { return true; }
+  }
+  function vibOn() { return state.settings && state.settings.vibration === false ? false : vibPref(); }
+  function setVib(on) {
+    const v = !!on;
+    state.settings.vibration = v;
+    try { localStorage.setItem(VIB_KEY, v ? '1' : '0'); } catch (e) { /* */ }
+    save();
+    return v;
   }
 
   window.PKC = {
     KEY, PIN, PROFILES, TITLES,
     state, load, save, me, prof, profileMeta, isAdmin, setAdmin,
-    $, $$, el, esc, won, toast, modal, confirmBox, pinPrompt, haptic
+    $, $$, el, esc, won, toast, modal, confirmBox, pinPrompt, haptic,
+    vibOn, setVib, resetTrack
   };
 })();
