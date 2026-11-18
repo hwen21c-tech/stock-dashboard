@@ -3,6 +3,11 @@
    ─ 이 앱이 쓰는 키는 딱 두 개. 나머지 키(도감·마을·판수…)는 건드리지 않는다.
        pkm.coins.v1  🪙 코인 지갑 { arin·jian·guest }  ← 배틀 월드와 함께 씀
        pkm.cards.v1  🃏 이 앱의 카드·티켓·최애·별가루·트로피·교환함
+                        + 💾 나만의 덱 3칸(프로필별 decks · decksAt)
+                        + ⚙️ 타이밍 바 속도(루트 settings · 아빠 PIN)
+     ─ 덱은 프로필의 카드 기록과 따로 비교한다(decksAt). 그래서 덱을 고쳐도
+       그 프로필의 카드·티켓이 낡은 기록으로 덮이지 않는다. 덱·속도의 '바뀐 시각'은
+       기기 저장소 pkc_sync_meta_v1 에도 적어 두어 다음 비교에 쓴다.
    ─ 안전 규칙
        1) 올릴 때는 **서버 행을 먼저 읽어** 우리 키만 바꿔 쓴다 → 남의 키를 지우지 않는다
        2) 코인은 프로필마다 '마지막으로 바뀐 시각(at)'이 더 최근인 쪽을 쓴다
@@ -94,8 +99,15 @@
 
   /* ---------- 이 기기의 카드 기록 → 클라우드 모양 ---------- */
   function n(v) { const x = Number(v); return isFinite(x) ? x : 0; }
+  function dev() { return window.PKCDeckSync || null; }
+  function clampSpeed(v) { const x = Number(v); return isFinite(x) ? Math.min(2, Math.max(0.5, Math.round(x * 100) / 100)) : null; }
+  function normDecks(arr) {
+    return [0, 1, 2].map(i => (Array.isArray(arr) && Array.isArray(arr[i]) && arr[i].length) ? arr[i].slice(0, 5) : null);
+  }
+  function decksHas(arr) { return Array.isArray(arr) && arr.some(x => Array.isArray(x) && x.length); }
   function snapCards() {
     const out = { v: 1, at: {}, p: {} };
+    const DS = dev();
     IDS.forEach(id => {
       const pr = P.prof(id);
       if (!pr) return;
@@ -109,9 +121,24 @@
         deck: pr.deck || [], wins: n(pr.wins), losses: n(pr.losses),
         trades: pr.trades || []
       };
+      /* 💾 나만의 덱 3칸 — 이 프로필의 칸과 바뀐 시각 */
+      if (DS) {
+        const slots = DS.slots(id);
+        const at = n(DS.decksAt(id));
+        if (at > 0 || decksHas(slots)) {
+          out.p[id].decks = normDecks(slots);
+          out.p[id].decksAt = at;
+        }
+      }
       /* ⏪ 백업에서 되돌린 시각 — 있으면 다른 기기의 옛 카드가 되살아나지 않는다 */
       if (n(pr.resetAt) > 0) out.p[id].resetAt = n(pr.resetAt);
     });
+    /* ⚙️ 기기 설정 — 지금은 아빠가 정한 타이밍 바 속도 하나 (폰에서 바꾸면 태블릿도 같은 속도) */
+    if (DS) {
+      const at = n(DS.barSpeedAt());
+      const v = clampSpeed(DS.barSpeed());
+      if (at > 0 && v != null) out.settings = { barSpeed: v, at: at };
+    }
     return out;
   }
   function snapCoins() {
@@ -149,9 +176,50 @@
     });
     return out;
   }
+  /* 💾 덱 3칸 — 어느 쪽이 최신인가
+     ① 양쪽 다 시각이 있으면 늦은 쪽
+     ② 한쪽만 시각이 있으면 그쪽 (이번 업그레이드 전에 저장한 덱은 시각이 없다)
+     ③ 둘 다 시각이 없으면 비어 있지 않은 쪽 — 예전 기기의 덱이 조용히 지워지지 않게
+     칸을 하나 비우는 것도 '바꿈'이라 시각이 붙으므로, 지운 덱도 그대로 전해진다. */
+  function pickDecks(rp, lp) {
+    const rd = Array.isArray(rp.decks) ? rp.decks : null;
+    const ld = Array.isArray(lp.decks) ? lp.decks : null;
+    if (!rd && !ld) return null;
+    const rT = n(rp.decksAt), lT = n(lp.decksAt);
+    let pick, at;
+    if (!rd) { pick = ld; at = lT; }
+    else if (!ld) { pick = rd; at = rT; }
+    else if (rT > 0 && lT > 0) { if (lT >= rT) { pick = ld; at = lT; } else { pick = rd; at = rT; } }
+    else if (lT > 0) { pick = ld; at = lT; }
+    else if (rT > 0) { pick = rd; at = rT; }
+    else {
+      const rEmpty = !decksHas(rd), lEmpty = !decksHas(ld);
+      if (rEmpty && !lEmpty) { pick = ld; at = 0; }
+      else { pick = rd; at = 0; }
+    }
+    return { decks: normDecks(pick), at: at };
+  }
+  /* ⚙️ 기기 설정(타이밍 바 속도) — 루트에 하나뿐, at 이 더 최근인 쪽 */
+  function mergeSettings(rs, ls) {
+    const r = (rs && typeof rs === 'object') ? rs : null;
+    const l = (ls && typeof ls === 'object') ? ls : null;
+    if (!r && !l) return null;
+    const rt = n(r && r.at), lt = n(l && l.at);
+    const at = Math.max(rt, lt);
+    if (at <= 0) return null;                    /* 시각이 없는 설정은 옮기지 않는다 */
+    let pick;
+    if (!r) pick = l;
+    else if (!l) pick = r;
+    else pick = (lt >= rt) ? l : r;              /* 같은 시각이면 이 기기(로컬) 우선 */
+    const v = clampSpeed(pick.barSpeed);
+    if (v == null) return null;
+    return { barSpeed: v, at: at };
+  }
   function mergeCards(remote, local) {
     const r = remote || {}, l = local || {};
     const out = { v: 1, at: {}, p: {} };
+    const st = mergeSettings(r.settings, l.settings);
+    if (st) out.settings = st;
     IDS.forEach(id => {
       const rp = (r.p || {})[id], lp = (l.p || {})[id];
       if (!rp && !lp) return;
@@ -177,6 +245,10 @@
       const tr = (rec.trades || []).slice();
       (lose.trades || []).forEach(t => { if (!tr.some(x => x.cardId === t.cardId)) tr.push(t); });
       rec.trades = tr;
+      /* 💾 나만의 덱 3칸 — 카드·코인과 따로, 덱만의 바뀐 시각(decksAt)으로 가린다.
+         (덱을 고쳤다고 그 프로필의 카드·티켓 기록 전체가 덮이지 않게) */
+      const dk = pickDecks(rp, lp);
+      if (dk) { rec.decks = dk.decks; rec.decksAt = dk.at; }
       /* 상대에게만 있는 카드가 있으면 '가장 적게 잃는' 쪽으로 합친다.
          win 이 카드를 일부러 줄인 경우(교환·아빠 차감)도 있으므로
          win 에 아예 없던 카드만 가져온다.
@@ -196,6 +268,7 @@
 
   /* ---------- 클라우드 → 이 기기 ---------- */
   function applyMerged(coins, cards) {
+    const DS = dev();
     applying = true;
     try {
       IDS.forEach(id => {
@@ -221,8 +294,16 @@
         pr.trades = Array.isArray(c.trades) ? c.trades : pr.trades;
         pr.at = n((cards.at || {})[id]) || pr.at || 0;
         if (n(c.resetAt) > n(pr.resetAt)) pr.resetAt = n(c.resetAt);
+        /* 💾 나만의 덱 3칸 — 병합 결과를 이 기기 저장소에 그대로 반영 */
+        if (DS && Array.isArray(c.decks)) DS.applyDecks(id, c.decks, n(c.decksAt));
       });
     } finally { applying = false; }
+    /* ⚙️ 타이밍 바 속도 (아빠 PIN 설정) */
+    if (DS && cards && cards.settings) {
+      const v = clampSpeed(cards.settings.barSpeed);
+      const at = n(cards.settings.at);
+      if (v != null && at > 0) DS.applyBarSpeed(v, at);
+    }
     P.save();
     S.lastAt = Date.now();
     if (window.PKCUI) { try { window.PKCUI.refreshHeader(); } catch (e) { /* */ } }

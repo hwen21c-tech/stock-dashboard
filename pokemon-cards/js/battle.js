@@ -195,14 +195,37 @@
     return fillCheap(out, cards, profileId);
   }
 
-  /* ---------------- 나만의 덱 3칸 (프로필별 · 기기 저장) ---------------- */
+  /* ---------------- 나만의 덱 3칸 (프로필별 · 기기 저장 → ☁️ 가족 클라우드 동기화) ----------------
+     값은 지금처럼 이 기기 저장소에 두고, **언제 바뀌었는지**만 따로 적어 둔다.
+     폰에서 저장한 덱도, 태블릿에서 저장한 덱도 pkc_sync_meta_v1 의 시각을 비교해 최신 쪽이 남는다. */
   const DECKS_KEY = 'pkc_decks_v1';
+  const META_KEY = 'pkc_sync_meta_v1';        /* { decksAt: {arin·jian·guest}, barSpeedAt } */
   function readDecks() {
     try {
       const d = JSON.parse(localStorage.getItem(DECKS_KEY) || '{}');
       return (d && typeof d === 'object') ? d : {};
     } catch (e) { return {}; }
   }
+  function readMeta() {
+    try {
+      const m = JSON.parse(localStorage.getItem(META_KEY) || '{}');
+      return (m && typeof m === 'object') ? m : {};
+    } catch (e) { return {}; }
+  }
+  function writeMeta(m) {
+    try { localStorage.setItem(META_KEY, JSON.stringify((m && typeof m === 'object') ? m : {})); } catch (e) { /* */ }
+  }
+  function tsOf(v) { const x = Number(v); return (isFinite(x) && x > 0) ? x : 0; }
+  function decksAtOf(profileId) { return tsOf((readMeta().decksAt || {})[profileId]); }
+  function setDecksAt(profileId, ts) {
+    const m = readMeta();
+    m.decksAt = (m.decksAt && typeof m.decksAt === 'object') ? m.decksAt : {};
+    m.decksAt[profileId] = tsOf(ts) || Date.now();
+    writeMeta(m);
+  }
+  /* 🌫 덱·속도가 바뀌면 클라우드에 알린다 (cloud.js 의 디바운스 push) */
+  function touchCloud() { try { if (window.PKCCloud) window.PKCCloud.touch(); } catch (e) { /* */ } }
+
   function getSlots(profileId) {
     const all = readDecks();
     const arr = Array.isArray(all[profileId]) ? all[profileId] : [];
@@ -214,6 +237,8 @@
     arr[i] = (ids && ids.length) ? ids.slice(0, 5) : null;
     all[profileId] = arr;
     try { localStorage.setItem(DECKS_KEY, JSON.stringify(all)); } catch (e) { /* */ }
+    setDecksAt(profileId);                       /* ☁️ 이 기기가 마지막으로 바꿨다 */
+    touchCloud();                                /* ☁️ 태블릿에도 곧 반영 */
   }
   function slotCost(ids) {
     let n = 0;
@@ -238,6 +263,21 @@
       if (isFinite(n)) return Math.min(2, Math.max(0.5, n));
     } catch (e) { /* */ }
     return 1;
+  }
+  function barSpeedAtOf() { return tsOf(readMeta().barSpeedAt); }
+  function setBarSpeedAt(ts) {
+    const m = readMeta();
+    m.barSpeedAt = tsOf(ts) || Date.now();
+    writeMeta(m);
+  }
+  /* 아빠가 정한 속도를 저장 — 이 기기 + ☁️ 가족 클라우드(태블릿도 같은 속도) */
+  function saveBarSpeed(v) {
+    const x = Math.min(2, Math.max(0.5, Math.round((parseFloat(v) || 1) * 100) / 100));
+    try { localStorage.setItem(SPEED_KEY, String(x)); } catch (e) { /* */ }
+    barSpeed = x;
+    setBarSpeedAt();
+    touchCloud();
+    return x;
   }
   function speedText(v) {
     const n = Math.round(v * 100) / 100;
@@ -273,9 +313,7 @@
         { label: '✕ 나가기', kind: 'ghost' },
         {
           label: '확인', kind: 'primary', onClick: () => {
-            const v = Math.min(2, Math.max(0.5, Math.round(cur * 100) / 100));
-            try { localStorage.setItem(SPEED_KEY, String(v)); } catch (e) { /* */ }
-            barSpeed = v;
+            const v = saveBarSpeed(cur);
             A.sfx.sparkle(); P.haptic(12);
             P.toast('타이밍 바 속도 ' + speedText(v) + ' 저장!', true);
           }
@@ -531,7 +569,7 @@
       trayHtml +
       '<div class="h2">💾 나만의 덱 <span class="muted" style="font-size:11px">' + esc(pr.name) + ' 전용 3칸</span></div>' +
       '<div class="card-panel" style="padding:11px">' +
-        '<div class="dk-head"><span class="muted" style="font-size:11.5px;line-height:1.5">5장을 고른 뒤 저장하면 다음에 한 번에 불러와요.</span>' +
+        '<div class="dk-head"><span class="muted" style="font-size:11.5px;line-height:1.5">5장을 고른 뒤 저장하면 다음에 한 번에 불러와요.<br>☁️ 태블릿에도 같이 저장돼요.</span>' +
           '<button class="btn gold sm" id="saveDeck">💾 저장</button></div>' +
         '<div class="dk-grid">' + slotHtml + '</div>' +
       '</div>' +
@@ -1534,6 +1572,43 @@
     });
     U.refreshHeader();
   }
+
+  /* ---------------- ☁️ 클라우드 창구 — 덱 3칸 · 타이밍 바 속도 ----------------
+     cloud.js(snapCards·mergeCards·applyMerged)가 이 창구로만 읽고 쓴다.
+     건드리는 키는 pkc_decks_v1 · pkc_bar_speed_v1 · pkc_sync_meta_v1 셋뿐이다.
+     도감(pkm.shared.dex.v1.*)·마을(pkm.village.*)·판수 기록은 읽지도 쓰지도 않는다. */
+  function normSlots(v) {
+    return [0, 1, 2].map(i => (Array.isArray(v) && Array.isArray(v[i]) && v[i].length) ? v[i].slice(0, 5) : null);
+  }
+  function refreshDeckScreen(profileId) {
+    if (ui.step === 'arena') return;                        /* 배틀 중에는 건드리지 않는다 */
+    if (P.state.active !== profileId) return;               /* 지금 고른 프로필의 덱만 */
+    const scr = $('#screen-battle');
+    if (!scr || !scr.classList.contains('active')) return;   /* 배틀 화면을 보고 있을 때만 */
+    render();
+  }
+  window.PKCDeckSync = {
+    keys: { decks: DECKS_KEY, speed: SPEED_KEY, meta: META_KEY },
+    slots: function (id) { return getSlots(id); },
+    hasContent: function (arr) { return Array.isArray(arr) && arr.some(x => Array.isArray(x) && x.length); },
+    decksAt: function (id) { return decksAtOf(id); },
+    barSpeed: function () { return barSpeed; },
+    barSpeedAt: function () { return barSpeedAtOf(); },
+    applyDecks: function (id, arr, at) {
+      const all = readDecks();
+      all[id] = normSlots(arr);
+      try { localStorage.setItem(DECKS_KEY, JSON.stringify(all)); } catch (e) { /* */ }
+      if (tsOf(at) > 0) setDecksAt(id, tsOf(at));
+      refreshDeckScreen(id);
+    },
+    applyBarSpeed: function (v, at) {
+      const x = Number(v);
+      if (!isFinite(x)) return;
+      barSpeed = Math.min(2, Math.max(0.5, x));
+      try { localStorage.setItem(SPEED_KEY, String(barSpeed)); } catch (e) { /* */ }
+      if (tsOf(at) > 0) setBarSpeedAt(tsOf(at));
+    }
+  };
 
   window.PKBattle = { render, power, advantage };
 })();
