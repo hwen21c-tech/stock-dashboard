@@ -520,7 +520,6 @@
       if (fx) fx.innerHTML = '';
       if (dside) Array.prototype.slice.call(dside.querySelectorAll('.ko-tag,.dmg-pop')).forEach(x => x.remove());
     });
-    b.mult = [1, 1];
     paintDecks();
     paintPips();
     msg((b.round + 1) + '라운드 · 두 카드가 엎어진 채 대기 중!<span class="sub">' +
