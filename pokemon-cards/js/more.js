@@ -69,7 +69,9 @@
       '<div class="card-panel">' +
         '<div class="muted" style="font-size:12px;margin-bottom:10px">PIN으로 코인·팩 티켓 선물과 도감 카드 추가/삭제를 할 수 있어요. (3분 뒤 자동 잠금)</div>' +
         '<div class="btn-row"><button class="btn ' + (P.isAdmin() ? 'danger' : 'primary') + ' sm" id="adminBtn">' +
-          (P.isAdmin() ? '🔒 바로 잠그기' : '🔑 PIN 입력하고 열기') + '</button></div>' +
+          (P.isAdmin() ? '🔒 바로 잠그기' : '🔑 PIN 입력하고 열기') + '</button>' +
+          '<button class="btn ghost sm" id="backupBtn">⏪ 이전 백업 불러오기</button></div>' +
+        '<div class="muted" style="font-size:11px;line-height:1.6;margin-top:9px">매일 아침 10:02 · 오후 4:02 · 밤 11:55 에 자동 저장된 가족 클라우드 백업으로 <b>카드·코인만</b> 되돌려요. (도감·마을 기록은 그대로)</div>' +
       '</div>' +
 
       '<div class="muted" style="margin:18px 2px 8px;font-size:11px;line-height:1.7">' +
@@ -98,6 +100,12 @@
     root.querySelector('#adminBtn').addEventListener('click', () => {
       if (P.isAdmin()) { P.setAdmin(false); P.toast('잠갔어요'); render(); }
       else P.pinPrompt('🔒 아빠 확인', () => { P.toast('🔓 아빠 모드 열림 (3분)'); openAdmin(); });
+    });
+    const bkBtn = root.querySelector('#backupBtn');
+    if (bkBtn) bkBtn.addEventListener('click', () => {
+      A.sfx.tap();
+      if (P.isAdmin()) { openBackup(); return; }
+      P.pinPrompt('🔒 아빠 확인', openBackup);
     });
     root.querySelector('#regTrade').addEventListener('click', registerTrade);
     root.querySelector('#myTrades').addEventListener('click', myTrades);
@@ -319,5 +327,96 @@
     });
   }
 
-  window.PKMore = { render, openAdmin };
+  /* ---------------- ⏪ 이전 백업 불러오기 (아빠 PIN) ---------------- */
+  function pad2(v) { return (v < 10 ? '0' : '') + v; }
+  /* 11/18 10:02 (KST) */
+  function fmtSlotAt(t) {
+    if (!t) return '백업 없음';
+    const d = new Date(t);
+    if (!isFinite(d.getTime())) return '백업 없음';
+    const k = new Date(d.getTime() + 9 * 3600 * 1000);
+    return (k.getUTCMonth() + 1) + '/' + k.getUTCDate() + ' ' + pad2(k.getUTCHours()) + ':' + pad2(k.getUTCMinutes());
+  }
+
+  function slotCard(slot) {
+    const meta = slot.meta;
+    if (!meta) {
+      return '<div class="bk-slot" data-s="' + slot.s + '">' +
+        '<div class="bk-top"><b>' + slot.name + '</b><span class="bk-time">백업 없음</span></div>' +
+        '<div class="bk-none">' + (slot.error ? esc(slot.error) : '아직 이 시점의 백업이 없어요') + '</div>' +
+        '</div>';
+    }
+    const hasCards = meta.has.cards, hasCoins = meta.has.coins;
+    const head = meta.rows.map(r => '<span class="bk-h">' + r.emoji + ' ' + esc(r.name) + '</span>').join('');
+    const cardCells = meta.rows.map(r => '<span class="bk-v">' + (hasCards ? P.won(r.cards) + '장' : '—') + '</span>').join('');
+    const coinCells = meta.rows.map(r => '<span class="bk-v">' + (hasCoins && r.coins != null ? P.won(r.coins) : '—') + '</span>').join('');
+    const canRestore = hasCards || hasCoins;
+    return '<div class="bk-slot" data-s="' + slot.s + '">' +
+      '<div class="bk-top"><b>' + slot.name + '</b><span class="bk-time">' + fmtSlotAt(meta.at) + '</span></div>' +
+      '<div class="bk-grid">' +
+        '<span class="bk-l"></span>' + head +
+        '<span class="bk-l">카드</span>' + cardCells +
+        '<span class="bk-l">코인</span>' + coinCells +
+      '</div>' +
+      (canRestore
+        ? '<button class="btn primary sm" data-restore="' + slot.s + '">이 시점으로 복원</button>'
+        : '<button class="btn ghost sm" disabled>카드팩 기록 없음</button>') +
+      '</div>';
+  }
+
+  function openBackup() {
+    const body = P.el('div');
+    body.innerHTML =
+      '<div class="muted" style="font-size:12px;line-height:1.65;margin:0 0 11px">' +
+        '가족 클라우드에 자동 저장된 3개 시점이에요. <b>카드·코인만</b> 그 시점으로 되돌리고,' +
+        ' 도감·마을·배틀 기록은 그대로 둡니다.' +
+      '</div>' +
+      '<div class="list" id="slotList"><div class="loading"><div class="spinner"></div>백업을 불러오고 있어요…</div></div>';
+    const m = P.modal({
+      title: '⏪ 이전 백업 불러오기',
+      body: body,
+      buttons: [{ label: '✕ 나가기', kind: 'ghost' }, { label: '확인', kind: 'primary' }],
+      onClose: () => { U.refreshHeader(); render(); }
+    });
+    const host = body.querySelector('#slotList');
+    window.PKCCloud.loadSlots().then(list => {
+      if (!host.isConnected) return;
+      host.innerHTML = list.map(slotCard).join('');
+      host.querySelectorAll('[data-restore]').forEach(b => b.addEventListener('click', () => {
+        const slot = list.filter(x => x.s === b.dataset.restore)[0];
+        if (slot) askRestore(slot, m);
+      }));
+    });
+  }
+
+  async function askRestore(slot, m) {
+    const ok = await P.confirmBox('⏪ ' + slot.name + ' 시점으로',
+      '<b>' + esc(fmtSlotAt(slot.meta && slot.meta.at)) + '</b> 저장된 기록이에요.<br><br>' +
+      '카드와 코인이 그때로 돌아가요. 그 뒤에 뜯은 카드·쓴 코인은 사라져요.<br>' +
+      '도감·마을·배틀 기록은 그대로예요.<br><br>되돌릴까요?',
+      '확인 · 이 시점으로 복원');
+    if (!ok) return;
+    A.sfx.tap();
+    const r = await window.PKCCloud.restoreSlot(slot.suffix);
+    if (!r || !r.ok) {
+      P.toast((r && r.msg) ? r.msg : '되돌리지 못했어요');
+      return;
+    }
+    try { m.close(true); } catch (e) { /* */ }
+    U.refreshHeader();
+    const lines = P.PROFILES.map(p => {
+      const pr = P.prof(p.id);
+      return '<div class="kv"><span>' + p.emoji + ' ' + esc(pr.name) + '</span><b>카드 ' + P.won(U.totalCards(pr)) +
+        '장 · 🪙 ' + P.won(pr.coins) + '</b></div>';
+    }).join('');
+    P.modal({
+      title: '✅ 이전 백업으로 되돌렸어요',
+      body: '<div>' + lines + '</div>' +
+        '<p class="muted" style="font-size:11.5px;line-height:1.6;margin:10px 0 0">다른 기기도 이 시점으로 맞춰져요. 도감·마을 기록은 손대지 않았어요.</p>',
+      buttons: [{ label: '확인', kind: 'primary' }]
+    });
+    render();
+  }
+
+  window.PKMore = { render, openAdmin, openBackup };
 })();

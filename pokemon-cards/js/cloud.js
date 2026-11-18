@@ -29,6 +29,7 @@
   let applying = false;
   let pushing = false;
   let pulling = false;
+  let restoring = false;
   let tPush = null;
   let listeners = [];
 
@@ -108,6 +109,8 @@
         deck: pr.deck || [], wins: n(pr.wins), losses: n(pr.losses),
         trades: pr.trades || []
       };
+      /* ⏪ 백업에서 되돌린 시각 — 있으면 다른 기기의 옛 카드가 되살아나지 않는다 */
+      if (n(pr.resetAt) > 0) out.p[id].resetAt = n(pr.resetAt);
     });
     return out;
   }
@@ -158,6 +161,8 @@
       const win = lt >= rt ? lp : rp;
       const lose = lt >= rt ? rp : lp;
       const rec = Object.assign({}, win);
+      const resetAt = Math.max(n(rp.resetAt), n(lp.resetAt));
+      if (resetAt > 0) rec.resetAt = resetAt;
       /* 트로피는 합집합 — 딴 것은 사라지지 않는다 */
       rec.badges = union(rp.badges, lp.badges);
       rec.titles = union(rp.titles, lp.titles);
@@ -174,11 +179,15 @@
       rec.trades = tr;
       /* 상대에게만 있는 카드가 있으면 '가장 적게 잃는' 쪽으로 합친다.
          win 이 카드를 일부러 줄인 경우(교환·아빠 차감)도 있으므로
-         win 에 아예 없던 카드만 가져온다. */
+         win 에 아예 없던 카드만 가져온다.
+         단, 되돌림(resetAt)이 상대의 마지막 변경보다 뒤라면 그 옛 카드는 살리지 않는다
+         — 복원한 기록이 낡은 기기의 push 로 조용히 되살아나는 것을 막는다. */
       rec.cards = Object.assign({}, rec.cards || {});
-      Object.keys(lose.cards || {}).forEach(cid => {
-        if (!(cid in rec.cards)) rec.cards[cid] = lose.cards[cid];
-      });
+      if (!(resetAt > 0 && resetAt > n(lose.at))) {
+        Object.keys(lose.cards || {}).forEach(cid => {
+          if (!(cid in rec.cards)) rec.cards[cid] = lose.cards[cid];
+        });
+      }
       out.p[id] = rec;
       out.at[id] = Math.max(rt, lt);
     });
@@ -211,6 +220,7 @@
         pr.wins = n(c.wins); pr.losses = n(c.losses);
         pr.trades = Array.isArray(c.trades) ? c.trades : pr.trades;
         pr.at = n((cards.at || {})[id]) || pr.at || 0;
+        if (n(c.resetAt) > n(pr.resetAt)) pr.resetAt = n(c.resetAt);
       });
     } finally { applying = false; }
     P.save();
@@ -219,10 +229,182 @@
     try { document.dispatchEvent(new CustomEvent('pkccloud:applied')); } catch (e) { /* */ }
   }
 
+  /* ============================================================
+     ⏪ 이전 백업 불러오기 (3슬롯)
+     ─ 스케줄 액션(scheduled-actions/포켓몬-클라우드-3슬롯-자동백업)이 매일
+       아침 10:02 · 오후 16:02 · 밤 23:55 에 가족 코드 행(0623) 전체를
+       슬롯 행 `{code}_am` · `{code}_pm` · `{code}_night` 에 그대로 복사해 둔다.
+     ─ 되돌리는 범위는 이 앱의 두 키뿐이다.
+         pkm.cards.v1  🃏 카드·티켓·최애·별가루·트로피·교환함
+         pkm.coins.v1  🪙 코인 지갑
+       도감(pkm.shared.dex.v1.*)·마을·판수 같은 다른 키는 읽지도 쓰지도 않는다.
+     ─ push() 는 '합치기'라 되돌리기가 되지 않으므로, 현재 행을 먼저 읽어
+       두 키만 바꾼 data 를 서버 행에 직접 쓴다(나머지 키는 그대로 보존).
+     ============================================================ */
+  const SLOTS = [
+    { s: 'am', suffix: '_am', name: '🌅 아침 10시', at: '10:02' },
+    { s: 'pm', suffix: '_pm', name: '🌇 오후 4시', at: '16:02' },
+    { s: 'night', suffix: '_night', name: '🌙 밤 12시', at: '23:55' }
+  ];
+
+  function slotCodes() {
+    const c = cfg();
+    return SLOTS.map(s => c.code + s.suffix);
+  }
+  /* 슬롯 한 줄 요약 — 저장 시각 + 프로필별 카드 장수·코인 */
+  function summarize(row, code) {
+    if (!row) return null;
+    const data = row.data || {};
+    const keys = data.keys || {};
+    const cards = safeParse(keys[K_CARDS]);
+    const coins = safeParse(keys[K_COINS]);
+    const has = { cards: !!(cards && cards.p), coins: !!(coins && coins.coins) };
+    const rows = IDS.map(id => {
+      const meta = P.profileMeta(id);
+      const p = (cards && cards.p && cards.p[id]) || null;
+      let total = 0, kinds = 0;
+      if (p && p.cards) {
+        Object.keys(p.cards).forEach(cid => {
+          const v = n(p.cards[cid]);
+          if (v > 0) { total += v; kinds++; }
+        });
+      }
+      const cv = (coins && coins.coins && coins.coins[id] != null) ? Math.max(0, Math.round(n(coins.coins[id]))) : null;
+      return {
+        id: id,
+        emoji: (p && p.emoji) || meta.emoji,
+        name: (p && p.name) || meta.name,
+        cards: total, kinds: kinds, coins: cv
+      };
+    });
+    return { code: code, at: data.backedUpAt || row.updated_at || null, has: has, rows: rows };
+  }
+
+  /* 모달을 열 때 3슬롯을 읽는다 — 카드 장수·코인 미리보기까지. */
+  function loadSlots() {
+    const codes = slotCodes();
+    const list = codes.map(encodeURIComponent).join(',');
+    const url = api('?code=in.(' + list + ')&select=code,updated_at,data');
+    return fetch(url, { headers: headers(), cache: 'no-store' }).then(res => {
+      if (!res.ok) return res.text().then(t => { throw new Error('HTTP ' + res.status + ' ' + String(t).slice(0, 140)); });
+      return res.json();
+    }).then(arr => {
+      const byCode = {};
+      (Array.isArray(arr) ? arr : []).forEach(row => { if (row && row.code) byCode[row.code] = row; });
+      return SLOTS.map((slot, i) => {
+        const row = byCode[codes[i]] || null;
+        return {
+          s: slot.s, suffix: slot.suffix, name: slot.name, at: slot.at,
+          code: codes[i],
+          ready: !!row,
+          meta: summarize(row, codes[i])
+        };
+      });
+    }).catch(e => {
+      setState('error', errMsg(e));
+      return SLOTS.map(slot => ({
+        s: slot.s, suffix: slot.suffix, name: slot.name, at: slot.at,
+        code: cfg().code + slot.suffix, ready: false, meta: null, error: errMsg(e)
+      }));
+    });
+  }
+
+  /* 백업 값을 '지금' 시각으로 다시 찍는다 — 다른 기기도 이 값이 더 최근임을 알도록 */
+  function stampCoins(src, now) {
+    const out = { v: 1, coins: {}, at: {} };
+    IDS.forEach(id => {
+      const v = (src.coins || {})[id];
+      if (v == null) return;
+      out.coins[id] = Math.max(0, Math.round(n(v)));
+      out.at[id] = now;
+    });
+    return out;
+  }
+  function stampCards(src, now) {
+    const out = { v: 1, at: {}, p: {} };
+    IDS.forEach(id => {
+      const p = (src.p || {})[id];
+      if (!p) return;
+      const rec = Object.assign({}, p);
+      rec.cards = Object.assign({}, rec.cards || {});
+      rec.fav = (rec.fav || []).filter(x => rec.cards[x]);
+      rec.resetAt = now;          /* 이 시점 값이 낡은 기기의 옛 카드보다 우선한다 */
+      out.p[id] = rec;
+      out.at[id] = now;
+    });
+    return out;
+  }
+
+  let lastRestore = { code: '', msg: '', at: 0 };
+  /* slotSuffix: '_am' | '_pm' | '_night'
+     → { ok, code: 'restored'|'empty'|'error'|'nocode', msg, cards, coins } */
+  function restoreSlot(slotSuffix) {
+    const c = cfg();
+    if (!c.code) return Promise.resolve({ ok: false, code: 'nocode', msg: '가족 코드가 없어요' });
+    if (restoring) return Promise.resolve({ ok: false, code: 'busy', msg: '되돌리는 중이에요' });
+    const fromCode = c.code + slotSuffix;
+    restoring = true;
+    setState('syncing', '되돌리는 중…');
+    const url = api('?code=eq.' + encodeURIComponent(fromCode) + '&select=code,data,updated_at');
+    return fetch(url, { headers: headers(), cache: 'no-store' }).then(res => {
+      if (!res.ok) return res.text().then(t => { throw new Error('HTTP ' + res.status + ' ' + String(t).slice(0, 140)); });
+      return res.json();
+    }).then(arr => {
+      const row = (Array.isArray(arr) && arr.length) ? arr[0] : null;
+      const srcKeys = (row && row.data && row.data.keys) || {};
+      const srcCards = safeParse(srcKeys[K_CARDS]);
+      const srcCoins = safeParse(srcKeys[K_COINS]);
+      if (!srcCards && !srcCoins) {
+        const r = { ok: false, code: 'empty', msg: '이 슬롯에는 카드팩 기록이 없어요' };
+        lastRestore = { code: fromCode, msg: r.msg, at: Date.now() };
+        setState('ok', r.msg);
+        return r;
+      }
+      const now = Date.now();
+      const coins = srcCoins ? stampCoins(srcCoins, now) : null;
+      const cards = srcCards ? stampCards(srcCards, now) : null;
+      /* 현재 행을 먼저 읽는다 — 다른 키(도감·마을·판수 …)는 그대로 두고 두 키만 바꾼다 */
+      return getRow().then(cur => {
+        const curData = (cur && cur.data) || {};
+        const curKeys = (curData && curData.keys) || {};
+        const keys = Object.assign({}, curKeys);
+        if (coins) keys[K_COINS] = JSON.stringify(coins);
+        if (cards) keys[K_CARDS] = JSON.stringify(cards);
+        const nowIso = new Date(now).toISOString();
+        const payload = {
+          code: c.code,
+          data: Object.assign({}, curData, {
+            v: 1, keys: keys, pushedAt: nowIso, cardsApp: true,
+            restoredFrom: fromCode, restoredAt: nowIso
+          }),
+          updated_at: nowIso
+        };
+        return putRow(payload).then(() => {
+          applyMerged(coins, cards);      /* 이 기기 화면 즉시 갱신 */
+          S.lastAt = now;
+          const r = {
+            ok: true, code: 'restored',
+            msg: '이 시점으로 되돌렸어요',
+            cards: cards ? cards.p : null,
+            coins: coins ? coins.coins : null
+          };
+          lastRestore = { code: fromCode, msg: r.msg, at: now };
+          setState('ok', '되돌렸어요');
+          return r;
+        });
+      });
+    }).catch(e => {
+      const r = { ok: false, code: 'error', msg: errMsg(e) };
+      lastRestore = { code: fromCode, msg: r.msg, at: Date.now() };
+      setState('error', r.msg);
+      return r;
+    }).then(r => { restoring = false; return r; });
+  }
+
   /* ---------- 올리기 ---------- */
   function push(opts) {
     opts = opts || {};
-    if (pushing) return Promise.resolve('busy');
+    if (pushing || restoring) return Promise.resolve('busy');
     const c = cfg();
     if (!c.code) return Promise.resolve('nocode');
     pushing = true;
@@ -357,6 +539,8 @@
     K_COINS, K_CARDS, IDS,
     state: S, cfg, setCode, onState,
     push, pull, touch, flush,
-    mergeCoins, mergeCards, snapCards, snapCoins, boot
+    mergeCoins, mergeCards, snapCards, snapCoins, boot,
+    SLOTS, loadSlots, restoreSlot,
+    lastRestoreInfo: function () { return lastRestore; }
   };
 })();
