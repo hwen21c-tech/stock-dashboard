@@ -1878,16 +1878,17 @@ function styleBlock(st) {
 /** 내 사진 — 실제로 첨부된 사진만 번호를 매기고, Gemini 에 inlineData 로 함께 보낸다. */
 function blogPhotos(b) {
   const out = [];
+  let total = 0;
   arr(b.photos, MAX_INLINE_IMAGES).forEach((p) => {
     if (!p || typeof p !== 'object') return;
     const mime = s(p.mime, 40).toLowerCase();
     const data = String(p.data == null ? '' : p.data).replace(/^data:[^,]*,/, '').trim();
     if (!/^image\/(jpeg|png|webp)$/.test(mime)) return;
     if (!data || data.length > MAX_INLINE_ONE) return;
+    if (total + data.length > MAX_INLINE_TOTAL) return;
+    total += data.length;
     out.push({ n: out.length + 1, mime, data, name: s(p.name, 80) || 'photo' + (out.length + 1) + '.jpg', memo: s(p.memo, 200) });
   });
-  const total = out.reduce((a, p) => a + p.data.length, 0);
-  if (total > MAX_INLINE_TOTAL) return [];
   return out;
 }
 
