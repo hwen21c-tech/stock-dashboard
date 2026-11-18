@@ -1,4 +1,4 @@
-/* shop.js — 팩 상점 · 팩 뜯기 (중앙 확대 3D 플립 · 등급별 이펙트) */
+/* shop.js — 팩 상점 · 리얼 팩 뜯기(절취선 드래그) · 5장 카드 뭉치 넘기기 */
 (function () {
   'use strict';
   const P = window.PKC, D = window.PKData, U = window.PKUI, A = window.PKCAudio;
@@ -107,7 +107,14 @@
     });
   }
 
-  /* ---------- 팩 뜯기 ---------- */
+  /* =====================================================================
+     팩 뜯기 — ① 절취선 손가락 드래그로 윗뚜껑 벗겨내기
+                ② 열린 입구에서 빛이 터지며 카드 5장이 솟아오르기
+                ③ 카드 뭉치 1장씩 뒤집기 → 바닥 수집 트레이로 이동
+     ===================================================================== */
+  const RARE = r => r >= 4;
+  const STARS = { 1: '★', 2: '★★', 4: '★★★★', 5: '★★★★★' };
+
   async function openFlow(packId, o) {
     if (busy) return;
     const pr = P.me();
@@ -127,233 +134,422 @@
     try { packData = await D.loadPack(packId); }
     catch (e) { busy = false; P.toast('팩 데이터를 불러오지 못했어요'); return; }
 
-    if (o.ticket) pr.tickets[tkey] -= 1; else { pr.coins -= price; U.bumpCoins(); }
-    pr.opened[packId] = (pr.opened[packId] || 0) + 1;
-    P.state.profiles[P.state.active] = pr;
-    P.save();
-    U.refreshHeader();
-
-    const cards = D.pull(packData, !!o.boosted);
-    const isNew = cards.map(c => !pr.cards[c.id]);
-    cards.forEach(c => { U.addCard(P.state.active, c, packId, 1); });
-    U.refreshHeader();
+    /* ---------- 상태 ---------- */
+    let finished = false;   // 스테이지가 닫혔는가
+    let torn = false;       // 팩이 실제로 찢어졌는가 (차감·지급의 유일한 기준)
+    let cards = null, isNew = null;
 
     const stage = P.el('div', 'open-stage');
-    stage.innerHTML =
-      '<button class="btn ghost sm close" id="opClose">✕ 나가기</button>' +
-      '<div id="opArea" style="display:flex;flex-direction:column;align-items:center;width:100%;max-width:760px"></div>';
+    stage.innerHTML = '<button class="btn ghost sm close" id="opClose">✕ 나가기</button>' +
+      '<div class="op-area" id="opArea"></div>';
     document.body.appendChild(stage);
+    const area = stage.querySelector('#opArea');
 
-    let finished = false;
     function finish() {
       if (finished) return;
       finished = true;
       stage.style.transition = 'opacity .25s'; stage.style.opacity = '0';
       setTimeout(() => stage.remove(), 260);
       busy = false;
-      U.checkTrophies(P.state.active);
+      if (torn) {
+        P.save();
+        U.checkTrophies(P.state.active);
+      }
       if ($('#screen-shop').classList.contains('active')) render();
       if ($('#screen-home').classList.contains('active')) U.renderHome();
       U.refreshHeader();
     }
-    stage.querySelector('#opClose').addEventListener('click', () => {
-      if (!torn) {
-        if (o.ticket) pr.tickets[tkey] += 1; else pr.coins += price;
-        pr.opened[packId] = Math.max(0, (pr.opened[packId] || 1) - 1);
-        P.save(); U.refreshHeader();
-        finish();
-      } else finish();
-    });
+    /* ✕ 나가기 — 뜯기 전이면 아무 차감·지급 없이 그대로 닫는다 */
+    stage.querySelector('#opClose').addEventListener('click', () => { A.sfx.tap(); finish(); });
 
-    let torn = false;
-    const area = stage.querySelector('#opArea');
+    /* 팩이 찢어진 순간에만 코인/티켓 차감 · opened 증가 · 카드 도감 저장 */
+    function spend() {
+      const p = P.me();
+      if (o.ticket) {
+        if (!p.tickets[tkey]) { A.sfx.error(); P.toast('티켓이 없어요'); return false; }
+        p.tickets[tkey] -= 1;
+      } else {
+        if (p.coins < price) {
+          A.sfx.error(); P.toast('코인이 부족해요 · ' + (price - p.coins) + '코인 더 필요해요');
+          return false;
+        }
+        p.coins -= price;
+        U.bumpCoins();
+      }
+      p.opened[packId] = (p.opened[packId] || 0) + 1;
+      P.state.profiles[P.state.active] = p;
+      cards = D.pull(packData, !!o.boosted);
+      isNew = cards.map(c => !p.cards[c.id]);
+      cards.forEach(c => U.addCard(P.state.active, c, packId, 1));
+      P.save();
+      U.refreshHeader();
+      torn = true;
+      return true;
+    }
+
+    /* ---------- ① 밀봉 팩 ---------- */
+    const art = D.img(meta.cover);
     area.innerHTML =
-      '<div class="pack-visual" id="pv">' +
-        U.packArt(meta, {}) +
-        '<div class="tear-flap" id="flap" style="transform:rotateX(0deg)"></div>' +
-        '<div class="tear-line" id="tline"></div>' +
+      '<div class="rip-stage" id="ripWrap">' +
+        '<div class="pack-visual" id="pv">' +
+          '<img class="pv-art" src="' + art + '" alt="">' +
+          '<div class="pv-inside"></div>' +
+          '<div class="pv-open" id="pvOpen"></div>' +
+          '<div class="pv-lid" id="lid" data-dir="1">' +
+            '<div class="lid-part" id="lidFlat"><img src="' + art + '" alt=""><i class="lid-foil"></i></div>' +
+            '<div class="lid-curl" id="lidCurl"></div>' +
+            '<div class="lid-edge" id="lidEdge"></div>' +
+          '</div>' +
+          '<div class="tear-guide" id="tearGuide"><b>✂️</b><i class="tg-line"></i><b class="tg-arrow">→</b>' +
+            '<i class="tg-finger">👆</i></div>' +
+          '<div class="pv-glass"></div>' +
+          '<div class="pv-shine"></div>' +
+        '</div>' +
       '</div>' +
-      '<div class="open-hint" id="opHint"><b>' + esc(meta.name) + '</b><br>팩 위쪽을 드래그하거나 아래 버튼을 눌러 뜯어요!</div>' +
-      '<div class="btn-row" style="margin-top:16px;justify-content:center">' +
-        '<button class="btn gold" id="ripBtn" style="padding:15px 28px;font-size:15px">✂️ 팩 뜯기</button>' +
+      '<div class="open-hint" id="opHint"><b>' + esc(meta.name) + '</b><br>' +
+        '맨 위 점선을 <b>손가락으로 쓱—</b> 그어 뜯어요!</div>' +
+      '<div class="btn-row" id="ripBtns" style="margin-top:10px;justify-content:center">' +
+        '<button class="btn gold" id="ripBtn" style="padding:14px 26px;font-size:15px">✂️ 한 번에 뜯기</button>' +
       '</div>';
 
+    const wrap = area.querySelector('#ripWrap');
     const pv = area.querySelector('#pv');
-    const flap = area.querySelector('#flap');
-    const tline = area.querySelector('#tline');
+    const lid = area.querySelector('#lid');
+    const guide = area.querySelector('#tearGuide');
+    const hint = area.querySelector('#opHint');
+    const btns = area.querySelector('#ripBtns');
 
-    function doRip() {
+    let peelPct = 0, progress = 0, dir = 1, f0 = 0.05;
+    let dragging = false, tearing = false, lastTick = 0;
+
+    function applyPeel(pct) {
+      peelPct = Math.max(0, Math.min(100, pct));
+      lid.style.setProperty('--peel', peelPct.toFixed(2) + '%');
+      lid.classList.toggle('peeling', peelPct > 1.5);
+      guide.classList.toggle('gone', peelPct > 3);
+    }
+    function fracOf(x) {
+      const r = lid.getBoundingClientRect();
+      return Math.max(0, Math.min(1, (x - r.left) / Math.max(1, r.width)));
+    }
+    function pctOf(f) { return dir > 0 ? f * 100 : (1 - f) * 100; }
+
+    pv.addEventListener('pointerdown', e => {
+      if (torn || tearing || finished) return;
+      const f = fracOf(e.clientX);
+      dir = f < 0.5 ? 1 : -1;
+      f0 = f;
+      lid.dataset.dir = String(dir);
+      dragging = true;
+      lid.classList.add('dragging');
+      applyPeel(pctOf(f));
+      try { pv.setPointerCapture(e.pointerId); } catch (err) { /* */ }
+      A.unlock();
+    });
+
+    pv.addEventListener('pointermove', e => {
+      if (!dragging || torn) return;
+      const f = fracOf(e.clientX);
+      const denom = dir > 0 ? Math.max(0.12, 1 - f0) : Math.max(0.12, f0);
+      const d = dir > 0 ? f - f0 : f0 - f;
+      progress = Math.max(0, Math.min(1, d / denom));
+      applyPeel(pctOf(f));
+      const t = Date.now();
+      if (t - lastTick > 55) {
+        lastTick = t;
+        hotSpark(e.clientX, e.clientY, 2);
+        A.sfx.tearTick(progress);
+        hint.innerHTML = '<b>' + esc(meta.name) + '</b><br>' +
+          (progress >= 0.7 ? '🔥 끝까지 그었어요! 손을 떼면 뜯겨요' : '계속 그어 보세요 · ' + Math.round(progress * 100) + '%');
+      }
+    });
+
+    function endDrag(ok) {
+      if (!dragging || torn) return;
+      dragging = false;
+      lid.classList.remove('dragging');
+      if (ok) { complete(); return; }
+      if (progress < 0.05) { complete(); return; }   /* 톡 누르기 = 한 번에 뜯기 */
+      applyPeel(0); progress = 0;
+      hint.innerHTML = '<b>' + esc(meta.name) + '</b><br>70% 넘게 그어야 뜯겨요. 다시 쓱—!';
+      A.sfx.barMiss();
+    }
+    pv.addEventListener('pointerup', () => endDrag(progress >= 0.7 || peelPct >= 96));
+    pv.addEventListener('pointercancel', () => endDrag(false));
+
+    /* ✂️ 한 번에 뜯기 (자동 찢기 애니메이션) */
+    function autoTear() {
+      if (torn || tearing || finished) return;
+      tearing = true;
+      guide.classList.add('gone');
+      dir = 1; lid.dataset.dir = '1';
+      const t0 = performance.now(), dur = 620;
+      (function step(now) {
+        if (finished) return;
+        const p = Math.min(1, (now - t0) / dur);
+        applyPeel(p * 100);
+        progress = p;
+        if (p < 1) requestAnimationFrame(step);
+        else complete();
+      })(t0);
+      A.sfx.tearRipLong();
+    }
+    area.querySelector('#ripBtn').addEventListener('click', autoTear);
+
+    /* ---------- ② 윗뚜껑이 날아가고 → 빛 폭발 → 카드 솟아오르기 ---------- */
+    function complete() {
       if (torn) return;
-      torn = true;
-      A.sfx.rip(); P.haptic(18);
-      tline.classList.add('show');
-      flap.style.transition = 'transform .55s cubic-bezier(.3,.9,.3,1), opacity .55s';
-      flap.style.transform = 'rotateX(-135deg) translateY(-10px)';
-      flap.style.opacity = '0.2';
-      pv.style.transition = 'transform .5s ease';
-      pv.style.transform = 'scale(1.06)';
-      sparkle(area, 20);
+      if (!spend()) return;
+      tearing = true;
+      lid.classList.add('flung');
+      applyPeel(100);
+      guide.classList.add('gone');
+      hint.innerHTML = '<b>' + esc(meta.name) + '</b><br>뜯었다!';
+      A.sfx.rip(); P.haptic(26);
+      sparkle(pv, 26);
       setTimeout(() => {
+        if (finished) return;
         A.sfx.whoosh();
         const b = P.el('div', 'burst');
         document.body.appendChild(b);
-        setTimeout(() => b.remove(), 800);
-      }, 380);
-      setTimeout(() => showCards(), 780);
+        setTimeout(() => b.remove(), 820);
+      }, 170);
+      setTimeout(emerge, 430);
     }
-    area.querySelector('#ripBtn').addEventListener('click', doRip);
-    pv.addEventListener('click', doRip);
-    let sx = 0, sy = 0, dragging = false;
-    pv.addEventListener('pointerdown', e => { dragging = true; sx = e.clientX; sy = e.clientY; });
-    pv.addEventListener('pointerup', e => {
-      if (!dragging) return; dragging = false;
-      if (Math.abs(e.clientX - sx) > 42 || Math.abs(e.clientY - sy) > 42) doRip();
-    });
 
-    /* 카드 5장 — 실제 카드 뒷면 */
-    function showCards() {
-      area.innerHTML =
-        '<div class="muted" style="margin-bottom:10px;text-align:center">카드를 눌러 크게 뒤집어 보세요!</div>' +
-        '<div class="open-cards">' + cards.map((c, i) =>
-          '<div class="oc-card" data-i="' + i + '">' + (isNew[i] ? '<span class="new-tag">NEW</span>' : '') + '</div>').join('') + '</div>' +
-        '<div class="open-result" id="opResult"></div>' +
-        '<div class="btn-row" style="margin-top:14px;justify-content:center">' +
-          '<button class="btn ghost" id="allFlip">🔄 모두 뒤집기</button>' +
-          '<button class="btn primary" id="doneBtn" disabled>확인 (0/5)</button>' +
+    function emerge() {
+      if (finished) return;
+      wrap.classList.add('torn');
+      stage.classList.add('has-tray');
+      hint.style.display = 'none';
+      btns.style.display = 'none';
+      A.sfx.emerge();
+      buildStack();
+      setTimeout(() => { const o2 = area.querySelector('#pvOpen'); if (o2) o2.classList.add('fade'); }, 1500);
+    }
+
+    /* ---------- ③ 카드 뭉치 (뒷면 → 탭 뒤집기 → 바닥 트레이) ---------- */
+    function buildStack() {
+      const box = P.el('div', 'stack-wrap');
+      box.innerHTML =
+        '<div class="st-tip" id="stTip">카드를 <b>한 번 누르면</b> 뒤집혀요</div>' +
+        '<div class="stack" id="stackH">' +
+          cards.map((c, i) =>
+            '<div class="st-card" data-i="' + i + '">' +
+              '<div class="st-aura"></div>' +
+              '<div class="st-inner"><div class="st-tilt">' +
+                '<div class="st-face back"><img src="' + D.BACK + '" alt=""><span class="st-num">' + (i + 1) + '</span></div>' +
+                '<div class="st-face front"><img src="' + D.img(c.img) + '" alt="' + esc(c.name) + '"><div class="holo"></div></div>' +
+              '</div></div>' +
+            '</div>').join('') +
+        '</div>' +
+        '<div class="st-count" id="stCount">1 / 5</div>' +
+        '<div class="st-result" id="stResult"></div>' +
+        '<div class="st-btns">' +
+          '<button class="btn ghost" id="allFlip">🔄 한 번에 보기</button>' +
+          '<button class="btn primary" id="saveBtn" disabled>확인 (0/5)</button>' +
         '</div>';
+      area.appendChild(box);
 
-      const revealed = new Set();
-      const doneBtn = area.querySelector('#doneBtn');
-      const allBtn = area.querySelector('#allFlip');
-      let autoRunning = false;
+      const tray = P.el('div', 'st-tray');
+      tray.innerHTML = [0, 1, 2, 3, 4].map(i => '<div class="tray-slot" data-i="' + i + '"></div>').join('');
+      stage.appendChild(tray);
 
-      area.querySelectorAll('.oc-card').forEach(el => {
-        el.addEventListener('click', () => {
-          const i = +el.dataset.i;
-          if (revealed.has(i) || autoRunning) return;
-          zoomReveal(i, false);
+      const stackEl = box.querySelector('#stackH');
+      const countEl = box.querySelector('#stCount');
+      const tipEl = box.querySelector('#stTip');
+      const resEl = box.querySelector('#stResult');
+      const allBtn = box.querySelector('#allFlip');
+      const saveBtn = box.querySelector('#saveBtn');
+      const slots = Array.prototype.slice.call(tray.querySelectorAll('.tray-slot'));
+      const els = Array.prototype.slice.call(stackEl.querySelectorAll('.st-card'));
+
+      let cur = 0, auto = false, done = false;
+      const flipped = {};
+
+      function restack() {
+        els.forEach((el, i) => {
+          const k = i - cur;
+          el.style.setProperty('--k', String(k > 0 ? k : 0));
+          el.style.zIndex = String(k >= 0 ? 40 - k : 0);
+          el.classList.toggle('is-top', i === cur);
+          el.classList.toggle('gone', i < cur);
+          el.style.pointerEvents = 'none';
         });
-      });
-
-      function markSlot(i) {
-        const el = area.querySelector('.oc-card[data-i="' + i + '"]');
-        if (!el) return;
-        const c = cards[i];
-        el.classList.add('taken');
-        const img = document.createElement('img');
-        img.src = D.img(c.img);
-        img.alt = c.name;
-        img.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:5';
-        el.appendChild(img);
-        if (c.r >= 4) {
-          el.style.borderColor = c.r === 5 ? '#ffe9b0' : '#c3adff';
-          el.style.boxShadow = c.r === 5 ? '0 0 18px rgba(231,195,122,.65)' : '0 0 14px rgba(150,110,255,.5)';
-        }
-        revealed.add(i);
-        doneBtn.textContent = '확인 (' + revealed.size + '/5)';
-        if (revealed.size === 5) { doneBtn.disabled = false; renderResult(); }
+      }
+      function head() {
+        countEl.textContent = Math.min(cur + 1, 5) + ' / 5';
       }
 
-      function zoomReveal(i, auto) {
-        const c = cards[i];
-        const host = area.querySelector('.oc-card[data-i="' + i + '"]');
-        const from = host ? host.getBoundingClientRect() : null;
-        A.sfx.whoosh();
+      /* 무지개 예고 (r>=4) — 뒷면 테두리 아우라 + 두근거림 */
+      function peek() {
+        if (done || cur > 4) return;
+        const el = els[cur];
+        if (!el || flipped[cur]) return;
+        if (RARE(cards[cur].r)) {
+          el.classList.add('peek');
+          A.sfx.heartbeat();
+          P.haptic(14);
+          tipEl.innerHTML = '💫 뭔가 특별한 기운… <b>눌러서 확인!</b>';
+        } else {
+          el.classList.remove('peek');
+          tipEl.innerHTML = '카드를 <b>한 번 누르면</b> 뒤집혀요';
+        }
+      }
 
-        const z = P.el('div', 'zoom-stage');
-        z.innerHTML =
-          '<button class="btn ghost sm zclose" id="zclose">✕ 나가기</button>' +
-          '<div class="zoom-wrap">' +
-            '<div class="zoom-card" id="zc" style="transform:scale(.22);transition:transform .52s cubic-bezier(.2,.9,.2,1)">' +
-              '<div class="zoom-halo"></div><div class="zoom-rays"></div><div class="zoom-pop"></div>' +
-              '<div class="zi">' +
-                '<div class="zoom-face back"></div>' +
-                '<div class="zoom-face front"><img src="' + D.img(c.img) + '" alt="' + esc(c.name) + '"><div class="holo"></div></div>' +
-              '</div>' +
-            '</div>' +
-            '<div class="zoom-info" id="zi2">' +
-              '<b>' + esc(c.name) + '</b>' +
-              '<div class="zmeta">' + esc(c.t || '') + (c.hp ? ' · HP ' + c.hp : '') + ' · ' + esc(c.nn) + '</div>' +
-              '<div class="zrar">' + stars(c.r) + ' ' + esc(D.rarityKo(c.rr)) + (c.v ? '' : ' ·추정') + '</div>' +
-            '</div>' +
-            '<div class="zoom-btns" id="zbtns">' +
-              '<button class="btn ghost" id="zback">✕ 나가기</button>' +
-              '<button class="btn gold" id="zok">확인</button>' +
-            '</div>' +
-          '</div>';
-        document.body.appendChild(z);
-        const zc = z.querySelector('#zc');
-
-        // 확대 등장
-        requestAnimationFrame(() => { zc.style.transform = 'scale(1)'; });
-        // 뒤집기
+      function flipCur() {
+        if (done || cur > 4) return;
+        const i = cur, el = els[i], c = cards[i];
+        if (flipped[i]) return;
+        flipped[i] = 1;
+        el.classList.remove('peek');
+        el.classList.add('flipped');
+        head();
+        A.sfx.flip(); P.haptic(9);
         setTimeout(() => {
-          zc.classList.add('flipped');
-          A.sfx.flip();
-          P.haptic(c.r >= 4 ? 22 : 10);
-        }, 240);
-        // 이펙트
-        setTimeout(() => {
-          zc.classList.add('rev', 'r' + c.r);
-          if (c.r >= 5) zc.classList.add('rays5', 'holo5');
-          else if (c.r >= 4) zc.classList.add('rays4', 'holo4');
-          else if (c.r >= 2) zc.classList.add('holo2');
+          if (finished) return;
+          el.classList.add('rev', 'r' + c.r);
           A.sfx.reveal(c.r);
-          burst(zc, c.r === 5 ? 34 : c.r === 4 ? 20 : c.r === 2 ? 10 : 5);
-          if (c.r >= 5) { flash(); for (let k = 0; k < 3; k++) setTimeout(flash, 260 + k * 190); }
-          z.querySelector('#zi2').classList.add('show');
-          z.querySelector('#zbtns').classList.add('show');
-          if (auto) setTimeout(() => z.querySelector('#zok').click(), 1150);
-        }, 880);
+          burst(el, c.r === 5 ? 34 : c.r === 4 ? 20 : c.r === 2 ? 10 : 5);
+          if (c.r >= 5) { flash(); setTimeout(flash, 260); setTimeout(flash, 470); }
+          tipEl.innerHTML = RARE(c.r) ? '✨ <b>' + esc(c.name) + '</b> — 한 번 더 누르면 바닥으로!' : '한 번 더 누르면 <b>바닥으로</b> 내려가요';
+        }, 320);
+        /* 5번째 카드: 손대지 않아도 잠시 뒤 자동으로 바닥에 내려 결과로 이어진다 */
+        if (i === 4) setTimeout(() => { if (!done && finished === false && flipped[4] && !landed[4]) flyCard(); }, 2400);
+      }
+      const landed = {};
 
-        z.querySelector('#zclose').addEventListener('click', () => { close(); });
-        z.querySelector('#zback').addEventListener('click', () => { A.sfx.tap(); close(); markSlot(i); });
-        z.querySelector('#zok').addEventListener('click', () => {
-          A.sfx.slot();
-          close();
-          markSlot(i);
-        });
-        function close() {
-          z.style.transition = 'opacity .22s'; z.style.opacity = '0';
-          setTimeout(() => z.remove(), 230);
+      function flyCard() {
+        if (done || cur > 4) return;
+        const i = cur, el = els[i];
+        if (!flipped[i] || landed[i]) return;
+        landed[i] = 1;
+        const slot = slots[i];
+        const a = el.getBoundingClientRect(), b = slot.getBoundingClientRect();
+        const fly = P.el('div', 'st-fly');
+        fly.innerHTML = '<img src="' + D.img(cards[i].img) + '" alt="">';
+        fly.style.left = a.left + 'px';
+        fly.style.top = a.top + 'px';
+        fly.style.width = a.width + 'px';
+        fly.style.height = a.height + 'px';
+        fly.style.setProperty('--tx', (b.left - a.left).toFixed(1) + 'px');
+        fly.style.setProperty('--ty', (b.top - a.top).toFixed(1) + 'px');
+        fly.style.setProperty('--sc', (b.width / Math.max(1, a.width)).toFixed(3));
+        document.body.appendChild(fly);
+        el.classList.add('gone');
+        A.sfx.slot(); P.haptic(7);
+        setTimeout(() => {
+          fly.remove();
+          if (finished) return;
+          slot.classList.add('on');
+          if (RARE(cards[i].r)) slot.classList.add('rare');
+          slot.innerHTML = '<img src="' + D.img(cards[i].img) + '" alt="">' + (RARE(cards[i].r) ? '<i class="ts-star">★</i>' : '');
+        }, 470);
+        cur++;
+        head();
+        if (cur >= 5) {
+          setTimeout(showResult, 560);
+        } else {
+          restack();
+          setTimeout(peek, 430);
         }
-        window.__pkZoomOpen = true;
       }
 
-      function stars(t) {
-        return ({ 1: '★', 2: '★★', 4: '★★★★', 5: '★★★★★' })[t] || '★';
-      }
+      /* 탭/스와이프 — 뒤집기 ↔ 다음 카드 */
+      let gx = 0, gy = 0;
+      stackEl.addEventListener('pointerdown', e => { gx = e.clientX; gy = e.clientY; });
+      stackEl.addEventListener('pointerup', e => {
+        if (finished || done) return;
+        const sw = Math.abs(e.clientX - gx) > 26 || Math.abs(e.clientY - gy) > 26;
+        if (sw) P.haptic(6);
+        if (!flipped[cur]) flipCur(); else flyCard();
+      });
+      stackEl.addEventListener('pointercancel', () => { });
 
-      allBtn.addEventListener('click', () => {
-        if (autoRunning) return;
-        autoRunning = true;
-        allBtn.disabled = true;
-        const todo = [0, 1, 2, 3, 4].filter(i => !revealed.has(i));
-        (function next(k) {
-          if (k >= todo.length) { autoRunning = false; allBtn.disabled = false; return; }
-          zoomReveal(todo[k], true);
-          setTimeout(() => next(k + 1), 1750);
-        })(0);
+      /* 3D 틸트 홀로그램 */
+      stackEl.addEventListener('pointermove', e => {
+        const el = els[cur];
+        if (!el || !flipped[cur]) return;
+        const r = el.getBoundingClientRect();
+        const px = (e.clientX - r.left) / Math.max(1, r.width) - 0.5;
+        const py = (e.clientY - r.top) / Math.max(1, r.height) - 0.5;
+        el.style.setProperty('--ry', (px * 16).toFixed(1) + 'deg');
+        el.style.setProperty('--rx', (-py * 13).toFixed(1) + 'deg');
+        el.style.setProperty('--mx', ((px + 0.5) * 100).toFixed(1) + '%');
+        el.style.setProperty('--my', ((py + 0.5) * 100).toFixed(1) + '%');
+      });
+      stackEl.addEventListener('pointerleave', () => {
+        const el = els[cur];
+        if (!el) return;
+        el.style.setProperty('--rx', '0deg');
+        el.style.setProperty('--ry', '0deg');
       });
 
-      function renderResult() {
-        const box = area.querySelector('#opResult');
-        const best = cards.reduce((a, c) => c.r > a.r ? c : a, cards[0]);
-        box.innerHTML = '<div class="hr"></div>' +
-          '<div style="font-size:15px;font-weight:900;margin-bottom:8px">' + (best.r >= 4 ? '✨ 대박 카드 획득!' : '카드 5장을 도감에 담았어요!') + '</div>' +
+      /* 🔄 한 번에 보기 */
+      allBtn.addEventListener('click', () => {
+        if (auto || done || finished) return;
+        auto = true; allBtn.disabled = true;
+        A.unlock();
+        (function next() {
+          if (finished || done) { auto = false; return; }
+          if (cur > 4) { auto = false; return; }
+          if (!flipped[cur]) { flipCur(); setTimeout(next, 880); }
+          else { flyCard(); setTimeout(next, 600); }
+        })();
+      });
+
+      function showResult() {
+        if (done) return;
+        done = true;
+        auto = false;
+        countEl.textContent = '5 / 5';
+        tipEl.innerHTML = '5장 모두 확인 완료!';
+        stackEl.classList.add('done');
+        setTimeout(() => {
+          if (finished) return;
+          stackEl.style.display = 'none';
+          tipEl.style.display = 'none';
+          resEl.classList.add('show');
+          try { stage.scrollTo({ top: stage.scrollHeight, behavior: 'smooth' }); } catch (e) { /* */ }
+        }, 360);
+        const best = cards.reduce((a, c) => (c.r > a.r ? c : a), cards[0]);
+        resEl.innerHTML = '<div class="hr"></div>' +
+          '<div class="res-title">' + (best.r >= 4 ? '✨ 대박 카드 획득!' : '카드 5장을 도감에 담았어요!') + '</div>' +
           '<div class="list" style="text-align:left">' + cards.map((c, i) =>
             '<div class="row"><b style="color:' + (c.r === 5 ? '#ffe9bf' : c.r === 4 ? '#c9b6ff' : c.r === 2 ? '#8fe3ff' : '#cfd8ff') + '">' +
-            (c.r === 5 ? '★★★★★' : c.r === 4 ? '★★★★' : c.r === 2 ? '★★' : '★') + '</b>' +
+            (STARS[c.r] || '★') + '</b>' +
             '<div class="grow"><b>' + esc(c.name) + '</b><small>' + esc(c.t || '') + (c.hp ? ' · HP' + c.hp : '') + ' · ' + esc(c.nn) +
             (c.v ? '' : ' ·추정') + '</small></div>' +
             (isNew[i] ? '<span class="new-tag" style="position:static">NEW</span>' : '<span class="muted">×' + (P.me().cards[c.id] || 1) + '</span>') +
             '</div>').join('') + '</div>';
-        U.refreshHeader();
-        doneBtn.textContent = '✅ 확인 (도감에 저장됨)';
-        doneBtn.addEventListener('click', () => finish());
-        A.sfx.coin();
+        saveBtn.disabled = false;
+        saveBtn.textContent = '✅ 확인 (도감에 저장됨)';
         allBtn.style.display = 'none';
+        A.sfx.coin();
+        U.refreshHeader();
       }
+      saveBtn.addEventListener('click', () => { A.sfx.coin(); finish(); });
+
+      restack();
+      head();
+      setTimeout(peek, 520);
+    }
+
+    /* 팩 앞면 탭(드래그 없이)도 진행되도록: 터치 시작 시 기본 동작 막기 */
+    pv.addEventListener('touchstart', e => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+  }
+
+  /* 찢는 지점의 불꽃 */
+  function hotSpark(x, y, n) {
+    for (let i = 0; i < (n || 1); i++) {
+      const s = P.el('i', 'hot-spark');
+      s.style.left = x + 'px';
+      s.style.top = y + 'px';
+      s.style.setProperty('--dx', ((Math.random() - 0.5) * 90).toFixed(0) + 'px');
+      s.style.setProperty('--dy', ((Math.random() - 0.6) * 90).toFixed(0) + 'px');
+      s.style.background = ['#fff', '#ffe9a6', '#ffd27a', '#bff4ff'][i % 4];
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 620);
     }
   }
 
@@ -399,5 +595,5 @@
     setTimeout(() => f.remove(), 640);
   }
 
-  window.PKShop = { render, openFlow, sparkle, burst, flash };
+  window.PKShop = { render, openFlow, sparkle, burst, flash, hotSpark };
 })();

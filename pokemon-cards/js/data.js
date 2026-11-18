@@ -138,31 +138,46 @@
     return list[list.length - 1];
   }
 
-  /* 5장 뽑기. luck: 오늘의 팩 여부 */
+  /* 5장 뽑기. boosted: 오늘의 팩 여부
+     · 같은 팩 안에서 같은 카드(c.id)는 절대 두 번 나오지 않는다.
+     · 해당 티어 풀이 모자라면 아래/위 티어 → 팩 전체 순으로 미중복 카드를 고른다. */
   function pull(packData, boosted) {
-    const cards = packData.cards;
+    const cards = (packData && packData.cards) || [];
+    if (!cards.length) return [];
     const byTier = { 1: [], 2: [], 4: [], 5: [] };
     cards.forEach(c => {
       const t = byTier[c.r] ? c.r : 1;
       byTier[t].push(c);
     });
     const rng = Math.random;
+    const used = {};
     const out = [];
-    for (let i = 0; i < 5; i++) {
-      let tier = pickTier(rng, boosted, i);
-      let pool = byTier[tier];
-      let guard = 0;
-      while ((!pool || !pool.length) && guard++ < 6) {
-        tier = tier === 5 ? 4 : tier === 4 ? 2 : 1;
-        pool = byTier[tier];
-      }
-      if (!pool || !pool.length) pool = cards;
-      out.push(weightedPick(pool, rng));
+    const FALLBACK = { 1: [1, 2, 4, 5], 2: [2, 1, 4, 5], 4: [4, 2, 5, 1], 5: [5, 4, 2, 1] };
+
+    function takeFree(pool) {
+      if (!pool || !pool.length) return null;
+      const free = pool.filter(c => !used[c.id]);
+      if (!free.length) return null;
+      return weightedPick(free, rng);
     }
-    // 5장 모두 일반이면 마지막 1장을 레어 이상으로 승격
+
+    for (let i = 0; i < 5; i++) {
+      const tier = pickTier(rng, boosted, i);
+      let picked = null;
+      const order = FALLBACK[tier] || [1, 2, 4, 5];
+      for (let k = 0; k < order.length && !picked; k++) picked = takeFree(byTier[order[k]]);
+      if (!picked) picked = takeFree(cards);            // 팩에 남은 카드가 없을 때만
+      if (!picked) picked = weightedPick(cards, rng);   // 팩 카드 종류가 5종 미만인 극단적 경우
+      used[picked.id] = 1;
+      out.push(picked);
+    }
+    // 5장 모두 일반이면 마지막 1장을 레어 이상으로 승격 (중복 없는 카드가 있을 때만)
     if (out.every(c => c.r === 1)) {
-      const better = cards.filter(c => c.r >= 2);
-      if (better.length) out[4] = weightedPick(better, rng);
+      const better = cards.filter(c => c.r >= 2 && !used[c.id]);
+      if (better.length) {
+        out[4] = weightedPick(better, rng);
+        used[out[4].id] = 1;
+      }
     }
     return out;
   }

@@ -1,5 +1,5 @@
 /* sw.js — 오프라인 셸 + 데이터 캐시 */
-const V = 'pkc-v11';
+const V = 'pkc-v12';
 const SHELL = [
   './', './index.html', './app.css',
   './js/util.js', './js/cloud.js', './js/audio.js', './js/data.js', './js/ui.js',

@@ -179,6 +179,44 @@
       for (let i = 0; i < 10; i++) noiseBurst(t + 0.02 + i * 0.042, 0.05, 1800 + Math.random() * 2600, 900, 2.2, 0.15);
       tone(180, t, 0.22, 'sawtooth', 0.08, sfxBus, 88);
     },
+    /* 손가락으로 그을 때 — 짧은 결 속삭임 (p: 0~1 진행도) */
+    tearTick(p) {
+      init(); if (!ctx) return; const t = now();
+      const k = p == null ? 0.3 : p;
+      noiseBurst(t, 0.045, 1500 + Math.random() * 2200, 800, 2.4, 0.05 + 0.1 * k);
+      if (k > 0.62 && Math.random() < 0.4) tone(320 + k * 240, t, 0.06, 'triangle', 0.03, sfxBus, 520);
+    },
+    /* ✂️ 한 번에 뜯기 — 길게 쫙 찢기는 소리 */
+    tearRipLong() {
+      init(); if (!ctx) return; const t = now();
+      noiseBurst(t, 0.62, 480, 3800, 0.9, 0.28);
+      for (let i = 0; i < 16; i++) noiseBurst(t + i * 0.038, 0.055, 1600 + Math.random() * 2800, 800, 2.2, 0.12);
+      tone(150, t + 0.1, 0.5, 'sawtooth', 0.07, sfxBus, 74);
+    },
+    /* 레어 예고 — 두근거림 + 반짝임 */
+    heartbeat() {
+      init(); if (!ctx) return; const t = now();
+      tone(68, t, 0.2, 'sine', 0.24, sfxBus, 44);
+      tone(62, t + 0.19, 0.24, 'sine', 0.19, sfxBus, 40);
+      noiseBurst(t, 0.1, 240, 90, 0.9, 0.05, sfxBus, 'lowpass');
+      for (let i = 0; i < 4; i++) bell(t + 0.06 + i * 0.055, 2400 + Math.random() * 2200, 0.38, sfxBus, 0.028);
+    },
+    /* 팩 입구에서 빛이 터지며 카드가 솟아오르는 소리 */
+    emerge() {
+      init(); if (!ctx) return; const t = now();
+      const o = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(150, t);
+      o.frequency.exponentialRampToValueAtTime(880, t + 0.72);
+      f.type = 'bandpass'; f.Q.value = 1.1;
+      f.frequency.setValueAtTime(420, t); f.frequency.exponentialRampToValueAtTime(3400, t + 0.72);
+      o.connect(f); f.connect(g); g.connect(sfxBus);
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.11, t + 0.5);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.96);
+      o.start(t); o.stop(t + 1.0);
+      noiseBurst(t, 0.8, 300, 3600, 0.8, 0.12);
+      [1046, 1318, 1568, 2093].forEach((fr, i) => bell(t + 0.12 + i * 0.07, fr, 0.7, sfxBus, 0.05));
+    },
     whoosh() { init(); const t = now(); noiseBurst(t, 0.5, 280, 2800, 0.7, 0.2); },
     flip() {
       init(); const t = now();

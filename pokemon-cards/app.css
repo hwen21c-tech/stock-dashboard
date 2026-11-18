@@ -969,3 +969,241 @@ b,strong{font-weight:800}
   transform:translate(-50%,-50%);pointer-events:none;animation:burstW .72s ease-out forwards}
 @keyframes burstW{to{width:120vmax;height:120vmax;opacity:0}}
 .pick-card.dim{opacity:.32}
+
+/* ==================================================================
+   팩 뜯기 v2 — 절취선 드래그로 윗뚜껑 벗기기 · 빛 폭발 · 카드 뭉치
+   ================================================================== */
+.op-area{display:flex;flex-direction:column;align-items:center;width:100%;max-width:760px}
+.open-stage.has-tray{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
+
+/* --- 밀봉 팩 (상단 호일 절취선) --- */
+.rip-stage{position:relative;width:100%;height:min(86.6vw,335px);display:flex;justify-content:center;
+  transition:height .55s cubic-bezier(.2,.9,.2,1)}
+.rip-stage.torn{height:min(33vw,128px)}
+.pack-visual{position:absolute;top:0;left:50%;width:min(62vw,240px);aspect-ratio:63/88;border-radius:15px;
+  transform:translateX(-50%);transform-origin:top center;perspective:900px;touch-action:none;
+  -webkit-user-select:none;user-select:none;
+  box-shadow:0 26px 70px rgba(0,0,0,.75),0 0 0 1px rgba(231,195,122,.35);
+  transition:transform .55s cubic-bezier(.2,.9,.2,1),opacity .5s,box-shadow .5s}
+.rip-stage.torn .pack-visual{transform:translateX(-50%) scale(.4);opacity:.62;
+  box-shadow:0 8px 22px rgba(0,0,0,.55)}
+.rip-stage.torn .pv-inside{box-shadow:inset 0 -12px 26px rgba(255,196,96,.6),inset 0 8px 16px rgba(0,0,0,.9)}
+.pack-visual .pv-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:15px}
+.pv-glass{position:absolute;inset:0;border-radius:15px;pointer-events:none;
+  background:linear-gradient(115deg,rgba(255,255,255,.2),transparent 38%,rgba(190,220,255,.16) 58%,transparent 78%);
+  mix-blend-mode:screen}
+.pv-shine{position:absolute;inset:0;border-radius:15px;overflow:hidden;pointer-events:none}
+.pv-shine::after{content:"";position:absolute;top:-10%;left:-30%;width:34%;height:120%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);
+  filter:blur(3px);animation:pvShine 3.4s ease-in-out infinite}
+@keyframes pvShine{0%,42%{transform:translateX(0)}78%,100%{transform:translateX(430%)}}
+/* 호일이 벗겨진 자리 — 팩 안쪽(어두운 개봉부) */
+.pv-inside{position:absolute;left:0;right:0;top:0;height:18%;z-index:5;border-radius:15px 15px 0 0;overflow:hidden;
+  background:
+    linear-gradient(180deg,rgba(130,160,255,.12),transparent 44%),
+    repeating-linear-gradient(180deg,rgba(255,255,255,.11) 0 1px,rgba(255,255,255,0) 1px 5px) bottom/100% 30% no-repeat,
+    linear-gradient(180deg,#03020a,#0a0820 58%,#181233 100%);
+  box-shadow:inset 0 -9px 20px rgba(0,0,0,.95),inset 0 7px 14px rgba(0,0,0,.9)}
+.pv-inside::before{content:"";position:absolute;left:3%;right:3%;bottom:0;height:3px;border-radius:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,240,200,.75),transparent)}
+.pv-inside::after{content:"";position:absolute;inset:auto 6% 6px 6%;height:56%;
+  background:linear-gradient(180deg,rgba(140,170,255,.14),transparent 82%)}
+
+/* 상단 호일 뚜껑 — 찢긴 만큼 클립되고, 찢긴 쪽은 말려 올라간다 */
+.pv-lid{position:absolute;left:0;right:0;top:0;height:18%;z-index:8;pointer-events:none;
+  transform-origin:top center;transform-style:preserve-3d}
+.pv-lid .lid-part{position:absolute;inset:0;overflow:hidden;border-radius:15px 15px 0 0}
+.pv-lid .lid-part img{position:absolute;left:0;top:0;width:100%;height:555.56%;object-fit:cover;object-position:top center}
+.lid-foil{position:absolute;inset:0;mix-blend-mode:screen;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.2) 0 2px,rgba(255,255,255,0) 2px 5px),
+    linear-gradient(180deg,rgba(255,255,255,.62),rgba(255,255,255,.08) 52%,rgba(150,190,255,.18) 100%)}
+/* 손가락이 지나간 자리 — 찢긴 호일이 말려 올라간 두루마리 */
+.lid-curl{position:absolute;top:-1px;bottom:-1px;width:14px;margin-left:-7px;opacity:0;
+  transition:opacity .12s;pointer-events:none;border-radius:7px;
+  background:linear-gradient(90deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.96) 24%,
+    rgba(232,242,255,.99) 48%,rgba(158,182,226,.92) 72%,rgba(255,255,255,0) 100%);
+  box-shadow:0 0 13px 4px rgba(255,240,190,.75),0 0 3px 1px rgba(255,255,255,.9),
+    inset 0 0 6px rgba(255,255,255,.85)}
+.pv-lid.peeling .lid-curl{opacity:1}
+.pv-lid[data-dir="1"] .lid-curl{left:var(--peel,0%)}
+.pv-lid[data-dir="-1"] .lid-curl{right:var(--peel,0%);margin-left:0;margin-right:-7px}
+.pv-lid[data-dir="1"] #lidFlat{clip-path:inset(0 0 0 var(--peel,0%))}
+.pv-lid[data-dir="-1"] #lidFlat{clip-path:inset(0 var(--peel,0%) 0 0)}
+.lid-edge{position:absolute;top:0;bottom:0;width:10px;margin-left:-5px;opacity:0;transition:opacity .16s;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.98),transparent);
+  box-shadow:0 0 14px 5px rgba(255,238,190,.85),0 0 34px 12px rgba(255,190,90,.42);filter:blur(.4px)}
+.pv-lid.peeling .lid-edge{opacity:1}
+.pv-lid[data-dir="1"] .lid-edge{left:var(--peel,0%)}
+.pv-lid[data-dir="-1"] .lid-edge{right:var(--peel,0%);margin-left:0;margin-right:-5px}
+.pv-lid.flung{transition:transform .5s cubic-bezier(.3,.9,.3,1),opacity .45s;
+  transform:translateY(-52px) rotateX(-128deg) rotateZ(-8deg) scale(1.05);opacity:0}
+
+/* 점선 절취선 가이드 */
+.tear-guide{position:absolute;left:-5%;right:-5%;top:18%;z-index:9;pointer-events:none;
+  display:flex;align-items:center;gap:5px;margin-top:-1px;transition:opacity .22s}
+.tear-guide b{font-size:13px;line-height:1;filter:drop-shadow(0 0 6px rgba(255,240,190,.95))}
+.tear-guide .tg-line{flex:1;height:0;border-top:2px dashed rgba(255,255,255,.9);
+  filter:drop-shadow(0 0 5px rgba(255,240,200,.95));animation:tgPulse 1.5s ease-in-out infinite}
+.tear-guide .tg-arrow{font-size:12px;color:#ffe9bf;animation:tgSlide 1.4s ease-in-out infinite}
+.tear-guide .tg-finger{position:absolute;left:0;top:8px;font-size:15px;opacity:.95;
+  animation:tgFinger 1.8s ease-in-out infinite}
+@keyframes tgPulse{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes tgSlide{0%,100%{transform:translateX(-2px)}50%{transform:translateX(4px)}}
+@keyframes tgFinger{0%{left:2%;opacity:0}18%{opacity:1}
+  82%{left:88%;opacity:1}100%{left:90%;opacity:0}}
+.tear-guide.gone{opacity:0}
+
+/* 찢긴 입구에서 뿜어져 나오는 빛 */
+.pv-open{position:absolute;left:50%;top:18%;width:320%;height:250%;z-index:4;pointer-events:none;
+  transform:translate(-50%,-100%);opacity:0;mix-blend-mode:screen}
+.pv-open::before{content:"";position:absolute;inset:0;
+  background:repeating-conic-gradient(from 248deg at 50% 100%,
+    rgba(255,247,214,0) 0deg 5deg,rgba(255,247,214,.9) 6deg 7.5deg,
+    rgba(160,235,255,.6) 9deg 10.5deg,rgba(255,190,240,.55) 12deg 13deg,
+    rgba(255,247,214,0) 14.5deg 19deg);
+  -webkit-mask:radial-gradient(ellipse 46% 66% at 50% 100%,#000 6%,rgba(0,0,0,.55) 44%,transparent 74%);
+  mask:radial-gradient(ellipse 46% 66% at 50% 100%,#000 6%,rgba(0,0,0,.55) 44%,transparent 74%);
+  filter:blur(1.5px)}
+.pv-open::after{content:"";position:absolute;left:50%;bottom:0;width:86%;height:42%;
+  transform:translate(-50%,40%);border-radius:50%;
+  background:radial-gradient(circle,rgba(255,253,240,.98),rgba(255,214,130,.66) 40%,rgba(255,120,210,.24) 64%,transparent 78%);
+  filter:blur(5px)}
+.rip-stage.torn .pv-open{animation:openBeam 1.7s ease-out forwards}
+@keyframes openBeam{
+  0%{opacity:0;transform:translate(-50%,-100%) scale(.45)}
+  16%{opacity:1;transform:translate(-50%,-100%) scale(1)}
+  52%{opacity:.92;transform:translate(-50%,-100%) scale(1.04)}
+  100%{opacity:0;transform:translate(-50%,-100%) scale(1.14)}}
+
+/* --- 카드 뭉치 --- */
+.stack-wrap{position:relative;display:flex;flex-direction:column;align-items:center;width:100%;
+  max-width:min(92vw,420px);margin-top:4px;animation:stackIn .62s cubic-bezier(.16,.9,.24,1) both}
+@keyframes stackIn{0%{opacity:0;transform:translateY(112px) scale(.76)}
+  55%{opacity:1}100%{opacity:1;transform:none}}
+/* 카드가 빛 속에서 솟아오를 때 뒤에서 번지는 빛 */
+.stack-wrap::before{content:"";position:absolute;left:50%;top:6%;width:150%;height:78%;
+  transform:translateX(-50%);pointer-events:none;z-index:-1;border-radius:50%;
+  background:radial-gradient(ellipse at 50% 34%,rgba(255,246,214,.75),rgba(255,206,120,.4) 34%,
+    rgba(190,150,255,.22) 58%,transparent 74%);
+  filter:blur(14px);animation:emergeGlow 1.7s ease-out forwards}
+@keyframes emergeGlow{0%{opacity:0;transform:translateX(-50%) scale(.5)}
+  32%{opacity:.95}100%{opacity:0;transform:translateX(-50%) scale(1.15)}}
+.st-tip{font-size:12px;color:#c9d3ff;text-align:center;margin-bottom:12px;line-height:1.5;
+  min-height:18px;position:relative;z-index:12}
+.st-tip b{color:#ffe9bf}
+.stack{position:relative;width:min(64vw,262px);aspect-ratio:63/88;touch-action:none;
+  -webkit-user-select:none;user-select:none;transition:opacity .35s,transform .35s;margin-bottom:40px}
+.stack.done{opacity:0;transform:scale(.92);pointer-events:none}
+.st-card{position:absolute;inset:0;border-radius:16px;
+  transform-origin:50% 100%;
+  transform:translateY(calc(var(--k,0) * 9px)) translateX(calc(var(--k,0) * 5px))
+    scale(calc(1 - var(--k,0) * .013));
+  transition:transform .42s cubic-bezier(.2,.9,.2,1),opacity .28s;
+  box-shadow:0 18px 40px rgba(0,0,0,.55)}
+.st-card.gone{opacity:0}
+.st-card .st-num{position:absolute;right:6px;bottom:5px;z-index:3;font-size:10px;font-weight:900;
+  color:#ffe9bf;text-shadow:0 1px 3px #000;opacity:.85}
+.st-inner{position:absolute;inset:0;transform-style:preserve-3d;
+  transition:transform .62s cubic-bezier(.22,.9,.2,1)}
+.st-card.flipped .st-inner{transform:rotateY(180deg)}
+.st-tilt{position:absolute;inset:0;transform-style:preserve-3d;
+  transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .16s ease-out}
+.st-face{position:absolute;inset:0;border-radius:16px;overflow:hidden;backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;background:#0b1024}
+.st-face img{width:100%;height:100%;object-fit:cover;display:block}
+.st-face.back{border:2px solid rgba(231,195,122,.5)}
+.st-face.front{transform:rotateY(180deg);border:1px solid rgba(255,255,255,.25);background:#0a1024}
+.st-face .holo{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:0;
+  background:linear-gradient(115deg,transparent 18%,rgba(255,255,255,.62) 36%,rgba(140,255,255,.5) 47%,
+    rgba(255,140,255,.44) 57%,rgba(255,230,150,.38) 65%,transparent 80%);
+  background-size:260% 260%;background-position:var(--mx,50%) var(--my,50%);
+  transition:background-position .1s linear;filter:saturate(1.3)}
+.st-card.rev.r5 .st-face .holo{opacity:.55;animation:holoMove 3s linear infinite}
+.st-card.rev.r4 .st-face .holo{opacity:.4;animation:holoMove 4.2s linear infinite}
+.st-card.rev.r2 .st-face .holo{opacity:.22}
+.st-card.rev.r5 .st-face.front{border-color:#ffe9b0;
+  box-shadow:0 0 0 2px rgba(231,195,122,.6),0 0 60px rgba(231,195,122,.55)}
+.st-card.rev.r4 .st-face.front{border-color:#c3adff;
+  box-shadow:0 0 0 2px rgba(169,139,255,.55),0 0 46px rgba(140,100,255,.5)}
+
+/* 레어(ex) 예고 — 무지개 아우라 + 두근거림 */
+.st-aura{position:absolute;inset:-7px;border-radius:22px;opacity:0;pointer-events:none;z-index:-1;
+  background:conic-gradient(from 0deg,#ff5aa0,#ffd93d,#67e8ff,#b6a6ff,#ff5aa0);
+  -webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+  -webkit-mask-composite:xor;mask-composite:exclude;padding:7px;
+  filter:blur(4px) saturate(1.5);transform:scale(.99)}
+.st-card.peek .st-aura{opacity:1;
+  animation:peekAura 1.05s ease-in-out infinite,peekSpin 2.6s linear infinite}
+@keyframes peekSpin{from{filter:blur(4px) saturate(1.7) hue-rotate(0)}
+  to{filter:blur(4px) saturate(1.7) hue-rotate(360deg)}}
+.st-card.peek .st-face.back{border-color:rgba(255,255,255,.9);
+  box-shadow:0 0 0 2px rgba(255,255,255,.55),0 0 26px 6px rgba(180,230,255,.7),0 0 58px 18px rgba(255,120,220,.5);
+  animation:peekGlow 1s ease-in-out infinite}
+@keyframes peekAura{0%,100%{opacity:.55;transform:scale(.99)}50%{opacity:1;transform:scale(1.02)}}
+@keyframes peekGlow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.45)}}
+
+/* 진행 표시 */
+.st-count{align-self:center;margin-top:12px;font-size:12px;font-weight:900;letter-spacing:.6px;
+  color:#0a0e22;background:linear-gradient(180deg,#ffe9bf,#e7c37a);padding:3px 12px;border-radius:999px;
+  box-shadow:0 4px 14px rgba(231,195,122,.35)}
+.st-btns{display:flex;gap:9px;width:100%;max-width:340px;margin-top:12px}
+.st-btns .btn{flex:1;padding:13px 10px;font-size:13.5px}
+
+/* 바닥 5칸 수집 트레이 */
+.st-tray{position:fixed;left:0;right:0;bottom:0;z-index:14;
+  display:flex;gap:6px;justify-content:center;
+  padding:12px 10px calc(10px + env(safe-area-inset-bottom));pointer-events:none;
+  background:linear-gradient(0deg,rgba(3,5,14,.96),rgba(3,5,14,.6) 68%,transparent);
+  animation:trayIn .4s ease both}
+@keyframes trayIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.tray-slot{position:relative;width:min(15vw,56px);aspect-ratio:63/88;border-radius:8px;
+  border:1.5px dashed rgba(160,180,255,.32);background:rgba(255,255,255,.03);
+  transition:border-color .2s,box-shadow .2s}
+.tray-slot.on{border-style:solid;border-color:rgba(231,195,122,.7);background:#0b1024;
+  box-shadow:0 6px 16px rgba(0,0,0,.55);animation:slotPop .3s cubic-bezier(.2,1.4,.4,1) both}
+.tray-slot img{width:100%;height:100%;object-fit:cover;border-radius:7px;display:block}
+.tray-slot.rare{box-shadow:0 0 14px 3px rgba(255,214,140,.6)}
+.tray-slot .ts-star{position:absolute;right:-3px;top:-6px;font-size:11px;color:#ffe9bf;
+  text-shadow:0 0 8px rgba(255,200,90,.95)}
+@keyframes slotPop{0%{transform:scale(.82);opacity:.5}100%{transform:scale(1);opacity:1}}
+
+/* 카드가 바닥으로 날아가는 궤적 */
+.st-fly{position:fixed;z-index:190;border-radius:9px;overflow:hidden;pointer-events:none;
+  transform-origin:0 0;box-shadow:0 16px 38px rgba(0,0,0,.6);
+  animation:flyTray .56s cubic-bezier(.3,.7,.3,1) forwards}
+.st-fly img{width:100%;height:100%;object-fit:cover;display:block;border-radius:9px}
+@keyframes flyTray{
+  0%{transform:translate(0,0) scale(1) rotate(0);opacity:1}
+  52%{transform:translate(calc(var(--tx) * .58),calc(var(--ty) * .52 - 38px))
+      scale(calc(var(--sc) + (1 - var(--sc)) * .55)) rotate(-7deg);opacity:1}
+  100%{transform:translate(var(--tx),var(--ty)) scale(var(--sc)) rotate(0);opacity:.98}}
+
+/* 결과 리스트 */
+.st-result{width:100%;max-width:420px;margin-top:2px;text-align:center;display:none}
+.st-result.show{display:block;animation:fade .35s ease both}
+.st-result .res-title{font-size:15px;font-weight:900;margin-bottom:8px}
+
+/* 찢는 지점의 불꽃 */
+.hot-spark{position:fixed;width:4px;height:4px;border-radius:50%;pointer-events:none;z-index:188;
+  box-shadow:0 0 9px 3px rgba(255,240,190,.9);animation:hotSparkFly .6s ease-out forwards}
+@keyframes hotSparkFly{0%{opacity:1;transform:translate(0,0) scale(1)}
+  100%{opacity:0;transform:translate(var(--dx,0),var(--dy,0)) scale(.2)}}
+
+@media (max-height:760px){
+  .rip-stage{height:min(80vw,300px)}
+  .stack{width:min(56vw,224px)}
+  .st-tip{margin-bottom:6px}
+}
+
+@media (min-width:600px){
+  .stack{width:min(38vw,320px)}
+  .st-tip{font-size:13px}
+}
+
+/* 봉인선(호일 아랫단) — 남아 있는 호일 부분에만 그려진다 */
+#lidFlat::after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.42),rgba(0,0,0,0))}
+/* 봉인선 하이라이트 — 호일이 벗겨진 자리에서만 보인다 */
+.pv-inside{border-bottom:2px solid rgba(255,238,190,.35)}
+.open-stage.has-tray{justify-content:center}
