@@ -632,13 +632,56 @@
 
   /* ---------------- 타이밍 바 미니게임 ---------------- */
   function rollZones() {
-    const c = 0.22 + Math.random() * 0.56; /* 22%~78% 랜덤 중심 */
-    return {
-      c,
-      m3: [c - 0.0325, c + 0.0325], /* 폭 6.5% */
-      m2: [c - 0.065, c + 0.065],   /* 폭 13% */
-      m15: [c - 0.12, c + 0.12]     /* 폭 24% */
-    };
+    /* ×1.5(15%) · ×2(9.5%) · ×3(5.5%) 세 칸을 독립 랜덤 배치 (높은 배수 우선) */
+    const W = { m15: 0.15, m2: 0.095, m3: 0.055 };
+    const order = [
+      { k: 'm15', w: W.m15 },
+      { k: 'm2',  w: W.m2  },
+      { k: 'm3',  w: W.m3  }
+    ];
+    /* 1) 세 칸 순서 섞기 */
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const t = order[i]; order[i] = order[j]; order[j] = t;
+    }
+    /* 2) 운 좋으면 2~3개가 바짝 붙고, 평소엔 흩어져 배치 (0.06 ~ 0.94 범위) */
+    const pos = {};
+    const cluster = Math.random();
+    if (cluster < 0.15) {
+      /* 15% 확률: 세 칸 뭉침 보너스! */
+      const total = W.m15 + W.m2 + W.m3;
+      let cur = 0.08 + Math.random() * (0.84 - total);
+      order.forEach(o => { pos[o.k] = [cur, cur + o.w]; cur += o.w; });
+    } else if (cluster < 0.42) {
+      /* 27% 확률: 두 칸이 나란히 붙고 한 칸은 떨어짐 */
+      const pairW = order[0].w + order[1].w;
+      const gap = 0.06 + Math.random() * 0.22;
+      const leftFirst = Math.random() < 0.5;
+      const span = pairW + gap + order[2].w;
+      let cur = 0.07 + Math.random() * Math.max(0.05, 0.86 - span);
+      if (leftFirst) {
+        pos[order[0].k] = [cur, cur + order[0].w]; cur += order[0].w;
+        pos[order[1].k] = [cur, cur + order[1].w]; cur += order[1].w + gap;
+        pos[order[2].k] = [cur, cur + order[2].w];
+      } else {
+        pos[order[2].k] = [cur, cur + order[2].w]; cur += order[2].w + gap;
+        pos[order[0].k] = [cur, cur + order[0].w]; cur += order[0].w;
+        pos[order[1].k] = [cur, cur + order[1].w];
+      }
+    } else {
+      /* 58% 확률: 세 칸 모두 독립적으로 떨어져 배치 */
+      const sumW = W.m15 + W.m2 + W.m3;
+      const slack = Math.max(0.04, 0.86 - sumW);
+      const r1 = Math.random(), r2 = Math.random(), r3 = Math.random();
+      const s = r1 + r2 + r3 || 1;
+      const g1 = 0.04 + (slack - 0.08) * (r1 / s);
+      const g2 = 0.04 + (slack - 0.08) * (r2 / s);
+      let cur = 0.07 + (slack - 0.08) * (r3 / s) * 0.5;
+      pos[order[0].k] = [cur, cur + order[0].w]; cur += order[0].w + g1;
+      pos[order[1].k] = [cur, cur + order[1].w]; cur += order[1].w + g2;
+      pos[order[2].k] = [cur, cur + order[2].w];
+    }
+    return pos;
   }
   function zoneOf(zn, r) {
     if (r >= zn.m3[0] && r <= zn.m3[1]) return 3;
