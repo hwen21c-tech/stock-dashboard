@@ -1,6 +1,9 @@
-/* 포켓몬 카드 배틀 TCG — 오프라인 셸 + 카드 이미지 캐시 */
-const SHELL = 'tcg-shell-v3';
-const IMG = 'tcg-img-v1';
+/* 포켓몬 카드 배틀 TCG — 오프라인 셸 + 카드 이미지 캐시
+   2026-11-18: 캐시 정리를 'tcg-' 접두사로 한정. 이전에는 k !== SHELL && k !== IMG 필터로
+   같은 오리진의 다른 앱(관제탑·카드팩·배틀 월드·eBook·사주) 캐시까지 지웠다. */
+const PREFIX = 'tcg-';
+const SHELL = PREFIX + 'shell-v4';
+const IMG = PREFIX + 'img-v1';
 const ASSETS = [
   './', './index.html', './style.css', './app.js', './data.js', './sfx.js', './vfx.js',
   './pokemon-tcg.webmanifest', './icons/tcg-192.png', './icons/tcg-512.png'
@@ -14,7 +17,7 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(k => k !== SHELL && k !== IMG).map(k => caches.delete(k)));
+    await Promise.all(keys.filter(k => k.startsWith(PREFIX) && k !== SHELL && k !== IMG).map(k => caches.delete(k)));
     await self.clients.claim();
   })());
 });

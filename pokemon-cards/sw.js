@@ -1,5 +1,9 @@
-/* sw.js — 오프라인 셸 + 데이터 캐시 */
-const V = 'pkc-v16';
+/* sw.js — 오프라인 셸 + 데이터 캐시
+   2026-11-18: 캐시 정리를 'pkc-' 접두사로 한정. 이전에는 k !== V 필터로 같은 오리진의
+   다른 앱(관제탑·배틀 월드·eBook·사주) 캐시와 자기 카드 이미지 캐시까지 지웠다. */
+const PREFIX = 'pkc-';
+const V = PREFIX + 'v17';          /* 셸·팩 데이터 */
+const IMG = PREFIX + 'img-v1';     /* 카드 이미지 — 셸 버전과 분리해 업데이트 때 지우지 않는다 */
 const SHELL = [
   './', './index.html', './app.css',
   './js/util.js', './js/cloud.js', './js/audio.js', './js/data.js', './js/ui.js',
@@ -14,9 +18,27 @@ self.addEventListener('install', e => {
 });
 
 self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(
-    keys.filter(k => k !== V).map(k => caches.delete(k))
-  )).then(() => self.clients.claim()));
+  e.waitUntil((async () => {
+    const keys = await caches.keys();
+    // 구 이미지 캐시(pkc-v*-img)는 새 상수 이름(IMG)으로 1회 옮겨 담는다.
+    //  → 셸 버전이 올라가도 태블릿에 받아 둔 카드 그림이 사라지지 않는다.
+    try {
+      const dest = await caches.open(IMG);
+      for (const old of keys.filter(k => k !== IMG && /^pkc-v\d+-img$/.test(k))) {
+        const src = await caches.open(old);
+        for (const req of await src.keys()) {
+          if (!(await dest.match(req))) {
+            const res = await src.match(req);
+            if (res) await dest.put(req, res);
+          }
+        }
+      }
+    } catch (err) { /* 이관 실패해도 아래 정리는 진행 */ }
+    await Promise.all(
+      keys.filter(k => k.startsWith(PREFIX) && k !== V && k !== IMG).map(k => caches.delete(k))
+    );
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('fetch', e => {
@@ -26,7 +48,7 @@ self.addEventListener('fetch', e => {
 
   // 카드 이미지(외부) — 캐시 우선
   if (url.hostname.endsWith('pokemonkorea.co.kr')) {
-    e.respondWith(caches.open(V + '-img').then(async c => {
+    e.respondWith(caches.open(IMG).then(async c => {
       const hit = await c.match(req);
       if (hit) return hit;
       try {
