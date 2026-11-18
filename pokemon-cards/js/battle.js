@@ -539,11 +539,19 @@
       renderSetup(root);
     }
 
-    root.querySelectorAll('[data-slot-load]').forEach(el => el.addEventListener('click', ev => {
-      if (ev.target.closest('[data-slot-del]')) return;
+    function slotLoad(el) {
       A.sfx.tap();
       doLoad(+el.dataset.slotLoad);
-    }));
+    }
+    root.querySelectorAll('[data-slot-load]').forEach(el => {
+      el.addEventListener('click', ev => {
+        if (ev.target.closest('[data-slot-del]')) return;
+        slotLoad(el);
+      });
+      el.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); slotLoad(el); }
+      });
+    });
     root.querySelectorAll('[data-slot-del]').forEach(b => b.addEventListener('click', ev => {
       ev.stopPropagation();
       const i = +b.dataset.slotDel;
