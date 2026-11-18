@@ -391,6 +391,36 @@ b,strong{font-weight:800}
 .oslot.cur{border-color:#ffe8ad;animation:slotPulse 1.6s ease-in-out infinite}
 @keyframes slotPulse{0%,100%{box-shadow:0 0 0 0 rgba(231,195,122,.4)}50%{box-shadow:0 0 0 4px rgba(231,195,122,.14)}}
 .deck-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin-top:7px}
+
+/* ========== 🃏 내가 고른 카드 5칸 트레이 ========== */
+.tray-panel{padding:12px;margin-top:12px}
+.tray-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 1px 9px}
+.tray-head b{font-size:12.5px;font-weight:900;color:#ffe9bf;letter-spacing:-.2px}
+.tray-head span{font-size:11px;font-weight:900;color:var(--dim);white-space:nowrap}
+.tray{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.tslot{position:relative;display:grid;place-items:center;padding:0;aspect-ratio:63/88;min-width:0;
+  border-radius:10px;overflow:hidden;border:1px dashed rgba(196,166,108,.4);
+  background:rgba(255,255,255,.03);font-size:12px;font-weight:900;color:rgba(147,163,201,.55);
+  transition:transform .12s ease}
+.tslot .tnum{line-height:1;opacity:.85}
+.tslot.filled{border-style:solid;border-color:rgba(231,195,122,.62);background:#0a1024;
+  box-shadow:0 0 0 1px rgba(231,195,122,.2),0 6px 16px rgba(0,0,0,.45);
+  animation:trayPop .24s cubic-bezier(.2,1.3,.4,1)}
+@keyframes trayPop{from{transform:scale(.86);opacity:.35}to{transform:none;opacity:1}}
+.tslot.filled:active{transform:scale(.95)}
+.tslot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.tslot .ts{position:absolute;left:2px;top:2px;z-index:3;font-size:8.5px;font-weight:900;line-height:1.4;
+  padding:1px 4px;border-radius:6px;background:rgba(4,8,20,.86);color:#ffe9bf;
+  border:1px solid rgba(231,195,122,.4)}
+.tslot .tx{position:absolute;right:2px;top:2px;z-index:3;width:15px;height:15px;border-radius:50%;
+  display:grid;place-items:center;background:rgba(6,10,24,.88);border:1px solid rgba(255,255,255,.32);
+  font-size:8px;color:#fff;line-height:1}
+.tslot .tn{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:10px 2px 2px;font-size:8.5px;
+  font-weight:900;line-height:1.2;text-align:center;color:#fff;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;background:linear-gradient(180deg,rgba(3,6,16,0),rgba(3,6,16,.94) 60%)}
+.tray-tip{font-size:10.5px;color:var(--dim2);font-weight:800;margin:8px 2px 0;text-align:center}
+@media (min-width:640px){.tray{max-width:480px}}
+
 @media (min-width:640px){.deck-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
 .pick-card{position:relative;border-radius:10px;overflow:hidden;aspect-ratio:63/88;
   border:2px solid transparent;background:#0a1024;box-shadow:0 6px 14px rgba(0,0,0,.4)}
@@ -469,6 +499,41 @@ b,strong{font-weight:800}
 .arena-title{font-size:11px;font-weight:900;letter-spacing:2px;color:rgba(231,195,122,.85);text-transform:uppercase}
 .arena-close{width:34px;height:34px;border-radius:11px;background:rgba(10,15,32,.72);
   border:1px solid rgba(196,166,108,.35);display:grid;place-items:center;font-size:14px;color:#f0e6cf}
+.arena-top-btns{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.arena-gear{width:34px;height:34px;border-radius:11px;background:rgba(10,15,32,.72);
+  border:1px solid rgba(196,166,108,.35);display:grid;place-items:center;font-size:15px;line-height:1;color:#f0e6cf}
+.arena-gear:active{transform:scale(.94);background:rgba(24,34,66,.85)}
+/* 아레나 위에서 여는 팝업(아빠 PIN · 속도 설정)은 아레나보다 위에 */
+.arena-on .modal-back{z-index:210}
+
+/* ========== ⚙️ 타이밍 바 속도 설정 ========== */
+.spd-desc{font-size:12.5px;line-height:1.65;color:#d8e1ff;margin:0 0 6px}
+.spd-desc b{color:#ffe9bf}
+.spd-val{display:flex;align-items:baseline;justify-content:center;gap:8px;padding:8px 0 12px}
+.spd-val b{font-size:31px;font-weight:900;letter-spacing:-1.2px;
+  background:linear-gradient(180deg,#fff,#ffd88a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.spd-val span{font-size:12px;font-weight:900;color:#ffe9bf;opacity:.85}
+.spd-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.spd-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  padding:9px 4px;border-radius:12px;background:rgba(255,255,255,.045);
+  border:1px solid rgba(160,180,255,.2);color:#e9eeff;transition:transform .12s ease}
+.spd-btn b{font-size:14px;font-weight:900;letter-spacing:-.3px}
+.spd-btn span{font-size:9.5px;font-weight:800;color:var(--dim);letter-spacing:-.2px}
+.spd-btn:active{transform:scale(.96)}
+.spd-btn.active{background:linear-gradient(180deg,rgba(231,195,122,.24),rgba(20,28,58,.6));
+  border-color:rgba(231,195,122,.8);box-shadow:0 0 0 1px rgba(231,195,122,.32),0 6px 18px rgba(231,195,122,.18)}
+.spd-btn.active b{color:#ffe9bf}
+.spd-btn.active span{color:#ffe9bf;opacity:.8}
+.spd-slide{margin-top:15px}
+.spd-range{width:100%;height:30px;margin:0;background:transparent;-webkit-appearance:none;appearance:none;accent-color:#e7c37a}
+.spd-range::-webkit-slider-runnable-track{height:8px;border-radius:99px;
+  background:linear-gradient(90deg,rgba(103,232,255,.5),rgba(231,195,122,.7),rgba(255,138,222,.5))}
+.spd-range::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;margin-top:-8px;
+  border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#ffd88a 60%,#c9973c);
+  border:2px solid #fff8e3;box-shadow:0 3px 12px rgba(0,0,0,.55),0 0 14px rgba(231,195,122,.7)}
+.spd-range::-moz-range-track{height:8px;border-radius:99px;background:rgba(231,195,122,.55)}
+.spd-range::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:#ffd88a;border:2px solid #fff8e3}
+.spd-scale{display:flex;justify-content:space-between;font-size:9.5px;font-weight:800;color:var(--dim2);margin-top:1px}
 .hud{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:8px;margin-top:10px}
 .hud-side{display:flex;flex-direction:column;gap:5px;min-width:0}
 .hud-side.b{align-items:flex-end;text-align:right}

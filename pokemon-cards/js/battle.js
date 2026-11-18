@@ -221,6 +221,84 @@
     return n;
   }
 
+  /* ---------------- ⚙️ 타이밍 바 공 속도 (아빠 전용 · 기기 저장) ---------------- */
+  const SPEED_KEY = 'pkc_bar_speed_v1';
+  const SPEED_PRESETS = [
+    { v: 0.5, name: '매우 느림' },
+    { v: 0.75, name: '느림' },
+    { v: 1.0, name: '보통' },
+    { v: 1.25, name: '약간 빠름' },
+    { v: 1.5, name: '빠름' },
+    { v: 2.0, name: '매우 빠름' }
+  ];
+  function getBarSpeed() {
+    try {
+      const raw = localStorage.getItem(SPEED_KEY);
+      const n = raw == null ? NaN : parseFloat(raw);
+      if (isFinite(n)) return Math.min(2, Math.max(0.5, n));
+    } catch (e) { /* */ }
+    return 1;
+  }
+  function speedText(v) {
+    const n = Math.round(v * 100) / 100;
+    return (Math.round(n * 10) / 10 === n ? n.toFixed(1) : String(n)) + '×';
+  }
+  function speedName(v) {
+    const p2 = SPEED_PRESETS.find(x => Math.abs(x.v - v) < 0.001);
+    return p2 ? p2.name : '직접 설정';
+  }
+  let barSpeed = getBarSpeed();          /* 타이밍 바 배율 — 바가 도는 중에 바꿔도 즉시 반영 */
+
+  /* 아빠 PIN → 속도 설정 팝업 */
+  function openSpeedModal() {
+    document.body.classList.add('arena-on');
+    let cur = getBarSpeed();
+    const wrap = P.el('div');
+    wrap.innerHTML =
+      '<p class="spd-desc">타이밍 바에서 <b>공이 움직이는 속도</b>를 정해요.<br>느리게 하면 아이들이 맞히기 쉬워요.</p>' +
+      '<div class="spd-val"><b id="spdVal"></b><span id="spdName"></span></div>' +
+      '<div class="spd-presets" id="spdPresets">' +
+        SPEED_PRESETS.map(p2 => '<button class="spd-btn" data-spd="' + p2.v + '"><b>' + speedText(p2.v) + '</b><span>' +
+          p2.name + (p2.v === 1 ? ' · 기본' : '') + '</span></button>').join('') +
+      '</div>' +
+      '<div class="spd-slide">' +
+        '<input type="range" id="spdRange" class="spd-range" min="0.5" max="2" step="0.05" value="' + cur + '" aria-label="타이밍 바 속도">' +
+        '<div class="spd-scale"><span>0.5×</span><span>1.0× (보통)</span><span>2.0×</span></div>' +
+      '</div>';
+
+    P.modal({
+      title: '⚙️ 타이밍 바 속도',
+      body: wrap,
+      buttons: [
+        { label: '✕ 나가기', kind: 'ghost' },
+        {
+          label: '확인', kind: 'primary', onClick: () => {
+            const v = Math.min(2, Math.max(0.5, Math.round(cur * 100) / 100));
+            try { localStorage.setItem(SPEED_KEY, String(v)); } catch (e) { /* */ }
+            barSpeed = v;
+            A.sfx.sparkle(); P.haptic(12);
+            P.toast('타이밍 바 속도 ' + speedText(v) + ' 저장!', true);
+          }
+        }
+      ],
+      onMount: (body) => {
+        const valEl = body.querySelector('#spdVal');
+        const nameEl = body.querySelector('#spdName');
+        const range = body.querySelector('#spdRange');
+        const btns = Array.prototype.slice.call(body.querySelectorAll('[data-spd]'));
+        function paint() {
+          valEl.textContent = speedText(cur);
+          nameEl.textContent = speedName(cur);
+          range.value = String(cur);
+          btns.forEach(b => b.classList.toggle('active', Math.abs(+b.dataset.spd - cur) < 0.001));
+        }
+        btns.forEach(b => b.addEventListener('click', () => { cur = +b.dataset.spd; A.sfx.tap(); paint(); }));
+        range.addEventListener('input', () => { cur = parseFloat(range.value) || 1; paint(); });
+        paint();
+      }
+    });
+  }
+
   /* ---------------- 라우터 ---------------- */
   let renderSeq = 0;
 
@@ -365,6 +443,26 @@
         '</div>';
     }).join('');
 
+    /* ---- 🃏 내가 고른 카드 5칸 트레이 (항상 표시 · 고르는 즉시 채워짐) ---- */
+    const trayHtml =
+      '<div class="card-panel tray-panel">' +
+        '<div class="tray-head"><b>🃏 내가 고른 카드</b><span id="trayCount">' + selCards.length + '/5장' +
+          (stars > 0 ? ' · ★' + stars + '/' + BUDGET : '') + '</span></div>' +
+        '<div class="tray" id="selTray">' +
+          [0, 1, 2, 3, 4].map(i => {
+            const c = selCards[i];
+            if (!c) return '<div class="tslot"><span class="tnum">' + (i + 1) + '</span></div>';
+            return '<button class="tslot filled" data-tpop="' + i + '" aria-label="' + esc(c.name) + ' 덱에서 빼기">' +
+              '<img src="' + D.img(c.img) + '" alt="' + esc(c.name) + '">' +
+              '<span class="ts">★' + D.stars(c.r) + '</span>' +
+              '<span class="tx">✕</span>' +
+              '<span class="tn">' + esc(c.name) + '</span>' +
+            '</button>';
+          }).join('') +
+        '</div>' +
+        (selCards.length ? '<div class="tray-tip">카드를 누르면 덱에서 바로 빠져요</div>' : '') +
+      '</div>';
+
     const orderBox = okDeck ? (
       '<div class="h2">🎯 낼 카드 순서 정하기</div>' +
       '<div class="order-box">' +
@@ -430,6 +528,7 @@
         '</div>' +
         '<div class="muted" style="font-size:11px;margin-top:8px;line-height:1.6">카드를 누를 때마다 1장씩 추가돼요(보유 장수까지). 다시 누르면 빠져요.<br>남은 코스트로는 못 넣는 카드는 흐리게 + <b style="color:#ffb3c1">★부족</b> 표시!</div>' +
       '</div>' +
+      trayHtml +
       '<div class="h2">💾 나만의 덱 <span class="muted" style="font-size:11px">' + esc(pr.name) + ' 전용 3칸</span></div>' +
       '<div class="card-panel" style="padding:11px">' +
         '<div class="dk-head"><span class="muted" style="font-size:11.5px;line-height:1.5">5장을 고른 뒤 저장하면 다음에 한 번에 불러와요.</span>' +
@@ -481,6 +580,21 @@
       ui.noAuto = false;
       P.prof(meId).deck = ui.sel.slice();
       P.save();
+      renderSetup(root);
+    }));
+
+    /* 🃏 트레이 — 그 자리에서 바로 빼기 */
+    root.querySelectorAll('[data-tpop]').forEach(b => b.addEventListener('click', () => {
+      const i = +b.dataset.tpop;
+      const id = ui.sel[i];
+      if (id == null) return;
+      ui.sel.splice(i, 1);
+      ui.order = ui.order.filter(x => x !== id);
+      ui.noAuto = true;      /* 뺀 뒤 자동으로 다시 채우지 않는다 */
+      P.prof(meId).deck = ui.sel.slice();
+      P.save();
+      A.sfx.tap(); P.haptic(8);
+      P.toast('덱에서 뺐어요 (' + ui.sel.length + '/5장)');
       renderSetup(root);
     }));
 
@@ -794,6 +908,7 @@
   function closeArena() {
     if (ui.bt) ui.bt.dead = true;
     if (ui.arenaEl) { ui.arenaEl.remove(); ui.arenaEl = null; }
+    document.body.classList.remove('arena-on');
     A.setMode('home');
     ui.bt = null;
     ui.step = 'deck';
@@ -812,7 +927,10 @@
       '<div class="arena-inner">' +
         '<div class="arena-top">' +
           '<div class="arena-title">BATTLE ARENA</div>' +
-          '<button class="arena-close" id="arenaQuit">✕</button>' +
+          '<div class="arena-top-btns">' +
+            '<button class="arena-gear" id="arenaGear" aria-label="배틀 설정" title="설정">⚙️</button>' +
+            '<button class="arena-close" id="arenaQuit" aria-label="배틀 나가기">✕</button>' +
+          '</div>' +
         '</div>' +
         '<div class="hud">' +
           '<div class="hud-side a"><div class="hud-name">' + esc(b.me.name) + '</div><div class="pips a" id="pipsA"></div></div>' +
@@ -859,7 +977,13 @@
       '</div>';
     document.body.appendChild(el);
     ui.arenaEl = el;
+    document.body.classList.add('arena-on');
     A.setMode('battle');
+    el.querySelector('#arenaGear').addEventListener('click', () => {
+      A.sfx.tap();
+      if (P.isAdmin()) { openSpeedModal(); return; }
+      P.pinPrompt('🔒 아빠 확인', () => { openSpeedModal(); });
+    });
     el.querySelector('#arenaQuit').addEventListener('click', async () => {
       const ok = await P.confirmBox('배틀 종료', '지금 나가면 기록이 저장되지 않아요. 나갈까요?', '나가기');
       if (ok) closeArena();
@@ -1165,11 +1289,17 @@
       const BW = 14, PERIOD = 2300;
       let stopped = false, raf = 0, p = 0, lastZone = -1;
       const t0 = performance.now() + 90;
+      /* spd = ⚙️ 설정 배율(barSpeed) — 첫 프레임부터 곱해지고, 바가 도는 중에 바꿔도 다음 프레임에 바로 반영 */
+      let spd = barSpeed, phase = 0, prevT = t0;
 
       function place(now) {
         if (stopped || !alive()) return;
-        const t = Math.max(0, now - t0) / PERIOD * Math.PI * 2;
-        p = 0.5 + 0.5 * Math.sin(t - Math.PI / 2);
+        spd = barSpeed;
+        if (now > prevT) {
+          phase += ((now - prevT) / PERIOD) * Math.PI * 2 * spd;
+          prevT = now;
+        }
+        p = 0.5 + 0.5 * Math.sin(phase - Math.PI / 2);
         const W = track.clientWidth || 1;
         const cx = p * Math.max(1, W - BW) + BW / 2;
         mk.style.left = cx + 'px';
