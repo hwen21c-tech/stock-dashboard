@@ -7578,6 +7578,7 @@ function palmResultHtml(palm, p){
     + '<div class="card-h"><div class="card-t"><span class="h">手相</span>손금 리포트</div><div class="card-note">'
     + (main.model ? esc(main.model) : 'Gemini 비전') + ' · 신뢰도 ' + esc(main.confidence || '—') + '</div></div>'
     + (main.summary ? '<div class="sx-msg ok">' + esc(main.summary) + '</div>' : '')
+    + ((!main.personality && !main.wealth && !main.career && !main.love) ? '<div class="sx-note" style="margin-top:8px">이전 버전에서 저장한 분석입니다. <b>손금 분석 시작</b>을 다시 누르면 선마다 근거를 담은 심층 해설과 성격·재물·일·인연 조언까지 함께 나옵니다.</div>' : '')
     + '<div class="sx-hdr" style="margin-top:12px"><div class="t">5대 선</div><div class="s">' + (right ? '오른손(후천)' : '왼손(선천)') + ' 기준</div></div>'
     + lineRows
     + ages
@@ -7645,6 +7646,7 @@ function faceResultHtml(face, p){
     + '<div class="card-h"><div class="card-t"><span class="h">觀相</span>관상 리포트</div><div class="card-note">'
     + esc(face.model || 'Gemini 비전') + ' · 신뢰도 ' + esc(face.confidence || '—') + '</div></div>'
     + (face.summary ? '<div class="sx-msg ok">' + esc(face.summary) + '</div>' : '')
+    + ((!face.personality && !face.wealth && !face.career && !face.love) ? '<div class="sx-note" style="margin-top:8px">이전 버전에서 저장한 분석입니다. <b>관상 분석 시작</b>을 다시 누르면 삼정·오관 근거를 담은 심층 해설과 성격·재물·일·인연 조언까지 함께 나옵니다.</div>' : '')
     + '<div class="sx-cols" style="margin-top:12px">' + sam + '</div>'
     + (face.balance ? '<div class="tiny" style="margin-top:8px">삼정 균형 — ' + esc(face.balance) + '</div>' : '')
     + '<div class="sx-hdr" style="margin-top:12px"><div class="t">오관</div><div class="s">눈·코·입·이마·턱</div></div>'
