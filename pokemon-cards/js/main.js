@@ -33,6 +33,24 @@
     U.go(t);
   }
 
+  /* 화면을 다시 그리기 전에 스크롤 위치를 붙잡아 두고 되돌린다.
+     (다시 그리면 브라우저가 맨 위로 올려 버린다 — "동기화중 뜨면 새로고침처럼 위로 올라가서")
+     이미지가 늦게 붙어 높이가 바뀌는 경우까지 따라가도록 세 번 되돌린다. */
+  function holdScroll(fn) {
+    const y = window.scrollY || window.pageYOffset || 0;
+    const inner = P.$$('.open-stage, .modal-body')
+      .filter(e => e.scrollTop > 0)
+      .map(e => [e, e.scrollTop]);
+    fn();
+    const put = () => {
+      try { window.scrollTo({ top: y, left: 0, behavior: 'instant' }); } catch (e) { window.scrollTo(0, y); }
+      inner.forEach(pair => { try { pair[0].scrollTop = pair[1]; } catch (e) { /* */ } });
+    };
+    put();
+    requestAnimationFrame(put);
+    setTimeout(put, 140);
+  }
+
   function paintCloud(st) {
     const chip = $('#cloudChip');
     const txt = $('#cloudTxt');
@@ -99,7 +117,11 @@
           new Promise(r => setTimeout(r, 2500))
         ]);
       } catch (e) { /* 오프라인이어도 로컬로 동작 */ }
-      document.addEventListener('pkccloud:applied', () => { U.refreshHeader(); refreshScreen(); });
+      /* 다른 기기의 변경이 실제로 내려왔을 때만 온다 — 변경이 없으면 cloud.js 가 부르지 않는다.
+         다시 그리면서 맨 위로 올라가지 않도록 스크롤 위치를 붙잡고 그린다. */
+      document.addEventListener('pkccloud:applied', () => {
+        holdScroll(() => { U.refreshHeader(); refreshScreen(); });
+      });
     }
 
     U.checkTrophies(P.state.active, true);

@@ -37,6 +37,13 @@
   let restoring = false;
   let tPush = null;
   let listeners = [];
+  /* 🔇 배경 확인(20초) 상태
+       lastStamp  — 마지막으로 본 서버 행의 updated_at (바뀌었는지 싸게 확인하는 기준)
+       quickCount — 가벼운 확인 횟수 (가끔은 본문까지 확인해 안전하게)
+       muteTouch  — 적용한 값을 저장할 때 '내가 바꾼 것'처럼 되쏘지 않게 */
+  let lastStamp = '';
+  let quickCount = 0;
+  let muteTouch = false;
 
   function cfg() {
     let code = DEF.code;
@@ -75,6 +82,23 @@
       if (!res.ok) return res.text().then(t => { throw new Error('HTTP ' + res.status + ' ' + String(t).slice(0, 140)); });
       return res.json().then(arr => (Array.isArray(arr) && arr.length ? arr[0] : null));
     });
+  }
+  /* updated_at 한 칸(48바이트)만 읽어 행이 바뀌었는지 본다.
+     본문(data · 17KB)을 20초마다 받지 않으려는 것. */
+  function getStamp() {
+    const c = cfg();
+    const url = api('?code=eq.' + encodeURIComponent(c.code) + '&select=updated_at');
+    return fetch(url, { headers: headers(), cache: 'no-store' }).then(res => {
+      if (!res.ok) return res.text().then(t => { throw new Error('HTTP ' + res.status + ' ' + String(t).slice(0, 140)); });
+      return res.json().then(arr => (Array.isArray(arr) && arr.length && arr[0]) ? String(arr[0].updated_at || '') : '');
+    });
+  }
+  /* 서버가 주는 시각 표기(2026-11-18T09:09:17.762+00:00)와 우리가 쓰는 ISO(Z)를 같은 값으로 맞춘다 */
+  function stampKey(v) {
+    const s = String(v || '');
+    if (!s) return '';
+    const t = Date.parse(s);
+    return isFinite(t) ? String(t) : s;
   }
   function putRow(payload, keepalive) {
     const url = api('?on_conflict=code');
@@ -266,48 +290,76 @@
     return out;
   }
 
-  /* ---------- 클라우드 → 이 기기 ---------- */
+  /* ---------- 클라우드 → 이 기기 ----------
+     실제로 달라진 것만 쓴다. 하나도 안 달라졌으면 저장도, 다시 그리기도 하지 않는다
+     (20초마다 화면이 새로 그려지며 스크롤이 맨 위로 튀던 원인).
+     돌려주는 값 { dirty, visual } — dirty: 저장할 값이 바뀜 · visual: 화면에 보이는 게 바뀜 */
+  function canon(o) {
+    if (o === null || typeof o !== 'object') return JSON.stringify(o === undefined ? null : o);
+    if (Array.isArray(o)) return '[' + o.map(canon).join(',') + ']';
+    return '{' + Object.keys(o).sort().map(k => JSON.stringify(k) + ':' + canon(o[k])).join(',') + '}';
+  }
+  function eqv(a, b) { return canon(a) === canon(b); }
+
   function applyMerged(coins, cards) {
     const DS = dev();
+    let dirty = false, visual = false;
     applying = true;
     try {
       IDS.forEach(id => {
         const pr = P.prof(id);
         if (!pr) return;
         if (coins && coins.coins && coins.coins[id] != null) {
-          pr.coins = coins.coins[id];
-          pr.coinsAt = n((coins.at || {})[id]) || pr.coinsAt || 0;
+          const cv = Math.max(0, Math.round(n(coins.coins[id])));
+          const cat = n((coins.at || {})[id]);
+          if (pr.coins !== cv) { pr.coins = cv; dirty = true; visual = true; }
+          if (cat > 0 && pr.coinsAt !== cat) { pr.coinsAt = cat; dirty = true; }
         }
         const c = cards && cards.p && cards.p[id];
         if (!c) return;
-        pr.name = c.name || pr.name;
-        pr.emoji = c.emoji || pr.emoji;
-        if (c.cards && typeof c.cards === 'object') pr.cards = c.cards;
-        if (c.src && typeof c.src === 'object') pr.src = c.src;
-        pr.fav = Array.isArray(c.fav) ? c.fav : pr.fav;
-        pr.tickets = { normal: n((c.tickets || {}).normal), high: n((c.tickets || {}).high) };
-        pr.stardust = n(c.stardust);
-        pr.badges = Array.isArray(c.badges) ? c.badges : pr.badges;
-        pr.titles = Array.isArray(c.titles) && c.titles.length ? c.titles : pr.titles;
-        pr.deck = Array.isArray(c.deck) ? c.deck : pr.deck;
-        pr.wins = n(c.wins); pr.losses = n(c.losses);
-        pr.trades = Array.isArray(c.trades) ? c.trades : pr.trades;
-        pr.at = n((cards.at || {})[id]) || pr.at || 0;
-        if (n(c.resetAt) > n(pr.resetAt)) pr.resetAt = n(c.resetAt);
-        /* 💾 나만의 덱 3칸 — 병합 결과를 이 기기 저장소에 그대로 반영 */
-        if (DS && Array.isArray(c.decks)) DS.applyDecks(id, c.decks, n(c.decksAt));
+        if (c.name && c.name !== pr.name) { pr.name = c.name; dirty = true; visual = true; }
+        if (c.emoji && c.emoji !== pr.emoji) { pr.emoji = c.emoji; dirty = true; visual = true; }
+        if (c.cards && typeof c.cards === 'object' && !eqv(c.cards, pr.cards)) { pr.cards = c.cards; dirty = true; visual = true; }
+        if (c.src && typeof c.src === 'object' && !eqv(c.src, pr.src)) { pr.src = c.src; dirty = true; visual = true; }
+        if (Array.isArray(c.fav) && !eqv(c.fav, pr.fav)) { pr.fav = c.fav; dirty = true; visual = true; }
+        const tk = { normal: n((c.tickets || {}).normal), high: n((c.tickets || {}).high) };
+        if (!eqv(tk, pr.tickets)) { pr.tickets = tk; dirty = true; visual = true; }
+        if (pr.stardust !== n(c.stardust)) { pr.stardust = n(c.stardust); dirty = true; visual = true; }
+        if (Array.isArray(c.badges) && !eqv(c.badges, pr.badges)) { pr.badges = c.badges; dirty = true; visual = true; }
+        if (Array.isArray(c.titles) && c.titles.length && !eqv(c.titles, pr.titles)) { pr.titles = c.titles; dirty = true; visual = true; }
+        if (Array.isArray(c.deck) && !eqv(c.deck, pr.deck)) { pr.deck = c.deck; dirty = true; visual = true; }
+        if (pr.wins !== n(c.wins)) { pr.wins = n(c.wins); dirty = true; visual = true; }
+        if (pr.losses !== n(c.losses)) { pr.losses = n(c.losses); dirty = true; visual = true; }
+        if (Array.isArray(c.trades) && !eqv(c.trades, pr.trades)) { pr.trades = c.trades; dirty = true; visual = true; }
+        const at = n((cards.at || {})[id]);
+        if (at > 0 && pr.at !== at) { pr.at = at; dirty = true; }
+        if (n(c.resetAt) > n(pr.resetAt)) { pr.resetAt = n(c.resetAt); dirty = true; }
+        /* 💾 나만의 덱 3칸 — 병합 결과를 이 기기 저장소에 그대로 반영 (같으면 건드리지 않는다) */
+        if (DS && Array.isArray(c.decks) && !eqv(normDecks(c.decks), DS.slots(id))) {
+          DS.applyDecks(id, c.decks, n(c.decksAt));
+          dirty = true; visual = true;
+        }
       });
     } finally { applying = false; }
     /* ⚙️ 타이밍 바 속도 (아빠 PIN 설정) */
     if (DS && cards && cards.settings) {
       const v = clampSpeed(cards.settings.barSpeed);
       const at = n(cards.settings.at);
-      if (v != null && at > 0) DS.applyBarSpeed(v, at);
+      if (v != null && at > 0 && clampSpeed(DS.barSpeed()) !== v) {
+        DS.applyBarSpeed(v, at);
+        dirty = true; visual = true;
+      }
     }
-    P.save();
     S.lastAt = Date.now();
-    if (window.PKCUI) { try { window.PKCUI.refreshHeader(); } catch (e) { /* */ } }
-    try { document.dispatchEvent(new CustomEvent('pkccloud:applied')); } catch (e) { /* */ }
+    if (dirty) {
+      muteTouch = true;          /* 이 저장은 내가 바꾼 게 아니라 받은 것 — 되쏘지 않는다 */
+      P.save();
+    }
+    if (visual) {
+      if (window.PKCUI) { try { window.PKCUI.refreshHeader(); } catch (e) { /* */ } }
+      try { document.dispatchEvent(new CustomEvent('pkccloud:applied')); } catch (e) { /* */ }
+    }
+    return { dirty: dirty, visual: visual };
   }
 
   /* ============================================================
@@ -488,8 +540,9 @@
     if (pushing || restoring) return Promise.resolve('busy');
     const c = cfg();
     if (!c.code) return Promise.resolve('nocode');
+    const quiet = !!opts.silent;          /* 배경에서 오간 것이면 칩에 '동기화 중'을 띄우지 않는다 */
     pushing = true;
-    setState('syncing', '올리는 중…');
+    if (!quiet) setState('syncing', '올리는 중…');
     const localCoins = snapCoins();
     const localCards = snapCards();
     return getRow().then(row => {
@@ -518,7 +571,7 @@
       const sameCards = remoteCards && JSON.stringify(mergeCards(remoteCards, remoteCards)) === JSON.stringify(cards);
       if (row && sameCoins && sameCards) {
         applyMerged(coins, cards);
-        setState('ok', '이미 같아요');
+        if (!quiet) setState('ok', '이미 같아요');
         return 'same';
       }
       const nowIso = new Date().toISOString();
@@ -529,8 +582,9 @@
       };
       return putRow(payload, !!opts.keepalive).then(() => {
         applyMerged(coins, cards);
+        lastStamp = stampKey(nowIso);
         S.lastAt = Date.now();
-        setState('ok', '올렸어요');
+        if (!quiet) setState('ok', '올렸어요');
         return 'pushed';
       });
     }).catch(e => {
@@ -545,47 +599,88 @@
     try { const v = JSON.parse(raw); return v && typeof v === 'object' ? v : null; } catch (e) { return null; }
   }
 
-  /* ---------- 내려받기 ---------- */
+  /* ---------- 내려받기 ----------
+     opts.silent  — 배경 자동 확인(20초). 칩에 '받는 중…'을 띄우지 않고,
+                    바뀐 것이 없으면 저장도 다시 그리기도 하지 않는다.
+     opts.full    — 가벼운 확인을 건너뛰고 본문까지 받는다 */
   function pull(opts) {
     opts = opts || {};
     if (pulling) return Promise.resolve('busy');
+    const silent = !!opts.silent;
     pulling = true;
-    setState('syncing', '받는 중…');
-    return getRow().then(row => {
-      if (!row) {
+    if (!silent) setState('syncing', '받는 중…');
+
+    /* 가벼운 확인 — updated_at 만 보고 같으면 여기서 끝낸다.
+       5번에 1번은 본문까지 확인해, updated_at 이 안 바뀐 변경도 놓치지 않는다. */
+    let quick;
+    if (silent && !opts.full) {
+      quickCount++;
+      quick = (quickCount % 5 === 0) ? Promise.resolve(null) : getStamp().then(st => {
+        if (st && lastStamp && stampKey(st) === lastStamp) return 'same';
+        return null;
+      }).catch(() => null);
+    } else {
+      quick = Promise.resolve(null);
+    }
+
+    return quick.then(skip => {
+      if (skip === 'same') {
         pulling = false;
-        return push();                       /* 클라우드가 비었으면 이 기기 내용을 올린다 */
+        S.lastAt = Date.now();          /* 조용히 최신 시각만 적어 둔다 (칩·화면 변화 없음) */
+        return 'upToDate';
       }
-      const keys = (row.data && row.data.keys) || {};
-      const remoteCoins = keys[K_COINS] ? safeParse(keys[K_COINS]) : null;
-      const remoteCards = keys[K_CARDS] ? safeParse(keys[K_CARDS]) : null;
-      const coins = mergeCoins(remoteCoins, snapCoins());
-      const cards = mergeCards(remoteCards, snapCards());
-      const before = JSON.stringify([snapCoins(), snapCards()]);
-      applyMerged(coins, cards);
-      const after = JSON.stringify([snapCoins(), snapCards()]);
-      const changed = before !== after;
-      /* 내 쪽이 더 최신이면(로컬에만 있는 내용) 올려 준다 */
-      const remoteJson = JSON.stringify([normalize(remoteCoins), normalize(remoteCards)]);
-      const localJson = JSON.stringify([normalize(coins), normalize(cards)]);
-      S.lastAt = Date.now();
-      setState('ok', changed ? '받았어요' : '최신 상태예요');
-      pulling = false;
-      if (remoteJson !== localJson) {
-        return push({ stampBaseline: false }).then(() => (changed ? 'merged' : 'upOnly'));
-      }
-      return changed ? 'applied' : 'upToDate';
-    }).catch(e => {
-      pulling = false;
-      setState('error', errMsg(e));
-      return 'error';
+      return getRow().then(row => {
+        if (!row) {
+          pulling = false;
+          return push({ silent: silent });           /* 클라우드가 비었으면 이 기기 내용을 올린다 */
+        }
+        lastStamp = stampKey(row.updated_at);
+        const keys = (row.data && row.data.keys) || {};
+        const remoteCoins = keys[K_COINS] ? safeParse(keys[K_COINS]) : null;
+        const remoteCards = keys[K_CARDS] ? safeParse(keys[K_CARDS]) : null;
+        const coins = mergeCoins(remoteCoins, snapCoins());
+        const cards = mergeCards(remoteCards, snapCards());
+        const res = applyMerged(coins, cards);         /* 실제로 달라진 게 있을 때만 저장·재렌더 */
+        pulling = false;
+        const changed = res.visual;
+        /* 내 쪽에만 있는 내용이 있으면 올려 준다.
+           시각(at)만 다른 경우는 올리지 않는다 — 20초마다 헛되이 올리는 것을 막는다. */
+        if (!sameContent(remoteCoins, coins) || !sameContent(remoteCards, cards)) {
+          return push({ stampBaseline: false, silent: silent }).then(() => {
+            if (changed) setState('ok', '받았어요');
+            else if (!silent) setState('ok', '최신 상태예요');
+            return changed ? 'merged' : 'upOnly';
+          });
+        }
+        if (changed) setState('ok', '받았어요');
+        else if (!silent) setState('ok', '최신 상태예요');
+        return changed ? 'applied' : 'upToDate';
+      }).catch(e => {
+        pulling = false;
+        if (silent && S.state === 'error') return 'error';   /* 같은 오류를 20초마다 칩에 다시 쓰지 않는다 */
+        setState('error', errMsg(e));
+        return 'error';
+      });
     });
   }
   function normalize(o) { return o || null; }
+  /* 시각 필드(at · decksAt)를 뺀 '알맹이'만 견준다 — 값이 같으면 올릴 것도 없다 */
+  function stripTimes(o) {
+    if (o === null || typeof o !== 'object') return o === undefined ? null : o;
+    if (Array.isArray(o)) return o.map(stripTimes);
+    const out = {};
+    Object.keys(o).sort().forEach(k => {
+      if (k === 'at' || k === 'decksAt') return;
+      out[k] = stripTimes(o[k]);
+    });
+    return out;
+  }
+  function sameContent(a, b) { return JSON.stringify(stripTimes(a)) === JSON.stringify(stripTimes(b)); }
 
   /* ---------- 저장할 때마다 (디바운스) ---------- */
   function touch() {
     if (applying) return;
+    if (muteTouch) { muteTouch = false; return; }   /* 방금 받아서 저장한 것은 되쏘지 않는다 */
     if (tPush) clearTimeout(tPush);
     tPush = setTimeout(() => { tPush = null; push(); }, 1200);
   }
@@ -600,7 +695,7 @@
     if (document.hidden) return;
     if (Date.now() - lastAuto < (gap || 0)) return;
     lastAuto = Date.now();
-    pull();
+    pull({ silent: true });          /* 배경 확인은 조용히 — 칩 깜박임·스크롤 튐 없음 */
   }
   function boot() {
     S.code = cfg().code;
