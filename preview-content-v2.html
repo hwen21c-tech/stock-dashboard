@@ -4733,10 +4733,34 @@ const GEN_ACTIONS = [
     return h + '</div>';
   }
 
+  function mineGapHtml(){
+    if (!MINE.list.length) return '';
+    var src = (outText && outCard && !outCard.hidden) ? (outText.textContent || '') : '';
+    if (!src.trim()) return '';
+    var slots = photoSlotList(src);
+    if (slots.some(function(s){ return s.mine; })) return '';
+    return '<div class="extcard"><div class="exthead">📷 내 사진 <span class="src">본문에 자리 없음</span></div>' +
+      '<div class="extnote">올린 사진 ' + MINE.list.length + '장이 본문에 아직 들어가지 않았습니다. 아래 버튼을 누르면 사진 자리를 본문에 넣습니다(위치는 편집에서 옮기면 됩니다).</div>' +
+      '<div class="quick" style="margin-top:6px"><button type="button" class="btn small primary" data-mine="insert">내 사진 자리 넣기</button></div></div>';
+  }
+
+  function insertMineSlots(){
+    var src = photoSourceText();
+    if (!src || !String(src).trim()){ toast('먼저 본문을 생성해 주세요.'); return; }
+    var lines = MINE.list.map(function(p, i){
+      return '[📸 내 사진 ' + (i + 1) + ': ' + (p.memo || '내가 올린 사진') + ']';
+    });
+    var next = String(src).replace(/\s+$/, '') + '\n\n' + lines.join('\n') + '\n';
+    outText.textContent = next;
+    if (outEdit) outEdit.value = next;
+    refreshPhotoSlots(false);
+    toast('내 사진 ' + MINE.list.length + '장 자리를 본문 끝에 넣었습니다 — 편집에서 위치를 옮길 수 있습니다.');
+  }
+
   function renderExtras(){
-    var offH = offSectionHtml(), bookH = booksSectionHtml();
+    var offH = offSectionHtml(), bookH = booksSectionHtml(), gapH = mineGapHtml();
     var px = $('#photoExtra');
-    if (px) px.innerHTML = bookH + offH;
+    if (px) px.innerHTML = gapH + bookH + offH;
     var oo = $('#offOut');
     if (oo && MINE.off) oo.innerHTML = offH;
     var bo = $('#bookOut');
@@ -4877,6 +4901,10 @@ const GEN_ACTIONS = [
     bindExtras($('#photoExtra'));
     bindExtras($('#offOut'));
     bindExtras($('#bookOut'));
+    var px2 = $('#photoExtra');
+    if (px2) px2.addEventListener('click', function(e){
+      if (e.target.closest('[data-mine="insert"]')) insertMineSlots();
+    });
     mineRender();
   })();
 
