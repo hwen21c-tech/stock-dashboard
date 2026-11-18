@@ -5920,6 +5920,15 @@ const GEN_ACTIONS = [
   var MKT_BASE = 'https://stock-dashboard-live-6frm.vercel.app';
   var MKT_HOME = 'https://hwen21c-tech.github.io/stock-dashboard/';
 
+  function mktFailHtml(errs){
+    return '<div class="errbox"><b>⚠️ 시황을 불러오지 못했습니다 — 값을 지어내지 않습니다</b>' +
+      (errs && errs.length ? '<div class="em mono">' + esc(errs.join(' / ')) + '</div>' : '') +
+      '<div class="em">관제탑에서 직접 확인하고, 요약을 복사해 <b>붙여넣기 칸</b>에 넣으면 그 내용을 근거로 씁니다.</div>' +
+      '<div class="quick" style="margin-top:8px">' +
+      '<a class="btn small primary" href="' + MKT_HOME + '" target="_blank" rel="noopener noreferrer">📡 관제탑 열기</a>' +
+      '<button type="button" class="btn small" data-mkt="focuspad">붙여넣기 칸 열기</button></div></div>';
+  }
+
   function fetchJsonT(url, ms){
     var ctrl = new AbortController();
     var timer = setTimeout(function(){ ctrl.abort(); }, ms || 12000);
@@ -6033,6 +6042,12 @@ const GEN_ACTIONS = [
       var k0 = indices[0];
       MKT.topic = Array.from((k0 ? (k0.name + ' ' + idxTxt(k0.price) + '(' + pctTxt(k0.changePct) + ')') : '오늘 시장') + (themes[0] ? ' — ' + themes[0].name + ' 주도' : '') + ' 정리').slice(0, 80).join('');
 
+      if (!indices.length && !themes.length && !supply){
+        mktBox.innerHTML = mktFailHtml(errs);
+        if (mktCopyBtn) mktCopyBtn.hidden = true;
+        toast('시황을 불러오지 못했습니다 — 붙여넣기 칸으로 안내합니다.');
+        return;
+      }
       var rows = '';
       if (indices.length){
         rows += '<div class="mktrow"><b>지수</b><span>' + indices.map(function(x){
@@ -6057,12 +6072,7 @@ const GEN_ACTIONS = [
       if (mktCopyBtn) mktCopyBtn.hidden = false;
       toast('오늘 시황을 불러왔습니다.');
     } catch(err){
-      mktBox.innerHTML = '<div class="errbox"><b>⚠️ 시황을 불러오지 못했습니다 — 값을 지어내지 않습니다</b>' +
-        '<div class="em">' + esc(String((err && err.message) || err)) + '</div>' +
-        (errs.length ? '<div class="em mono">' + esc(errs.join(' / ')) + '</div>' : '') +
-        '<div class="em">관제탑에서 직접 확인하고, 요약을 복사해 아래 [참고 자료]에 붙여넣으면 그 내용을 근거로 씁니다.</div>' +
-        '<div class="quick" style="margin-top:8px"><a class="btn small primary" href="' + esc(MKT_HOME) + '" target="_blank" rel="noopener noreferrer">📡 관제탑 열기</a>' +
-        '<button type="button" class="btn small" data-mkt="focuspad">붙여넣기 칸 열기</button></div></div>';
+      mktBox.innerHTML = mktFailHtml(errs.concat(String((err && err.message) || err)));
       toast('시황을 불러오지 못했습니다.');
     } finally {
       spinner(mktBtn, false);
