@@ -179,7 +179,15 @@
           (c.r >= 4 ? '<span class="rar" style="color:' + (c.r === 5 ? '#ffe9bf' : '#c9b6ff') + '">' + (c.r === 5 ? '★5' : '★4') + '</span>' : '') +
           (own > 1 ? '<span class="cnt">×' + own + '</span>' : '') +
           (own ? '<span class="pk">' + esc(c.name) + '</span>' : '');
-        div.addEventListener('click', () => openCard(c.id));
+        div.addEventListener('click', () => {
+          if (!own && !P.isAdmin()) {
+            A.sfx.tap();
+            P.haptic(8);
+            P.toast('🔒 아직 없는 카드예요! 팩을 뜯어 모아 보세요');
+            return;
+          }
+          openCard(c.id);
+        });
         grid.appendChild(div);
       });
       shown += next.length;
