@@ -10665,8 +10665,11 @@ const GEN_ACTIONS = [
       if (!b || (!b.spoken && !b.caption)) return;
       cuts.push({ text: b.caption || b.spoken, tts_text: b.spoken || b.caption, bg_style: stl.bg, motion: (i % 2 ? 'out' : 'left'), duration: shEstDur(b.spoken || b.caption) });
     });
+    var loopLine = p.loopEnding || dd.loopEnding || '';
     if (end.spoken || end.caption){
-      cuts.push({ text: end.caption || end.spoken, tts_text: end.spoken || end.caption, bg_style: stl.bg, motion: 'in', duration: shEstDur(end.spoken || end.caption) });
+      var endSpeech = end.spoken || end.caption || '';
+      if (loopLine && endSpeech.indexOf(loopLine) < 0) endSpeech = endSpeech ? endSpeech + ' ' + loopLine : loopLine;
+      cuts.push({ text: end.caption || end.spoken, tts_text: endSpeech, bg_style: stl.bg, motion: 'in', duration: shEstDur(endSpeech) });
     }
     var badge = p.seriesBadge || dd.seriesBadge || meta.name;
     return {
