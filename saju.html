@@ -5314,6 +5314,10 @@ init();
 
   if (!isStandalone()) setTimeout(showBtn, 700);
 
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    navigator.serviceWorker.register('saju-sw.js', { scope: './saju.html' }).catch(function () {});
+  }
+
   window.__sajuInstall = {
     open: openSheet, close: closeSheet, isStandalone: isStandalone,
     browser: browserName, hasPrompt: function () { return !!deferred; }
