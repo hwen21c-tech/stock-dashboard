@@ -25,7 +25,11 @@
     p2Deck: [],
     p2Order: [],
     bt: null,
-    arenaEl: null
+    arenaEl: null,
+    noAuto: false,         // 지우기 후 자동 채움 금지
+    fType: 'all',          // 속성 필터
+    fCost: 'all',          // 코스트(★) 필터
+    sort: 'hp'             // 'hp' | 'fav' | 'pack'
   };
 
   function power(card) {
@@ -72,7 +76,154 @@
     return deck.slice(0, 5).map(c => c.id);
   }
 
+  /* ---------------- 자동 덱 3종 (최강·랜덤·최애) ---------------- */
+  /* 총 코스트 12 · 5장 안에서 '전투력 합계'가 가장 큰 조합 (0/1 배낭 DP) */
+  function knapsack(seed, cards, profileId, budget, maxN) {
+    const pr = P.prof(profileId);
+    const used = {};
+    seed.forEach(id => { used[id] = (used[id] || 0) + 1; });
+    const pool = [];
+    cards.forEach(c => {
+      const left = Math.min(5, pr.cards[c.id] || 0) - (used[c.id] || 0);
+      for (let i = 0; i < left; i++) pool.push(c);
+    });
+    if (!pool.length || budget <= 0 || maxN <= 0) return [];
+    const dp = [];
+    for (let cost = 0; cost <= budget; cost++) {
+      const row = [];
+      for (let n = 0; n <= maxN; n++) row.push(null);
+      dp.push(row);
+    }
+    dp[0][0] = { pow: 0, ids: [] };
+    pool.forEach(card => {
+      const st = D.stars(card.r), pw = power(card);
+      for (let cost = budget; cost >= st; cost--) {
+        for (let n = maxN; n >= 1; n--) {
+          const prev = dp[cost - st][n - 1];
+          if (!prev) continue;
+          const v = prev.pow + pw;
+          const cur = dp[cost][n];
+          if (!cur || v > cur.pow) dp[cost][n] = { pow: v, ids: prev.ids.concat(card.id) };
+        }
+      }
+    });
+    let best = null;
+    for (let cost = 0; cost <= budget; cost++) {
+      for (let n = 0; n <= maxN; n++) {
+        const s = dp[cost][n];
+        if (!s || !s.ids.length) continue;
+        if (!best || s.pow > best.pow || (s.pow === best.pow && s.ids.length > best.ids.length)) best = s;
+      }
+    }
+    return best ? best.ids.slice() : [];
+  }
+
+  /* 남은 자리를 싼 카드부터 채워 5장을 맞춘다 (배낭이 5장을 못 채웠을 때) */
+  function fillCheap(out, cards, profileId) {
+    const pr = P.prof(profileId);
+    const used = {};
+    let cost = 0;
+    out.forEach(id => {
+      used[id] = (used[id] || 0) + 1;
+      const c = window.PKDex.findCard(id);
+      if (c) cost += D.stars(c.r);
+    });
+    const pool = cards.slice().sort((a, b) => (D.stars(a.r) - D.stars(b.r)) || (power(b) - power(a)));
+    let guard = 0;
+    while (out.length < 5 && guard++ < 600) {
+      let added = false;
+      for (const c of pool) {
+        const st = D.stars(c.r);
+        if ((used[c.id] || 0) >= Math.min(5, pr.cards[c.id] || 0)) continue;
+        if (cost + st > BUDGET) continue;
+        out.push(c.id); used[c.id] = (used[c.id] || 0) + 1; cost += st; added = true; break;
+      }
+      if (!added) break;
+    }
+    return out;
+  }
+
+  function deckBest(cards, profileId) { return knapsack([], cards, profileId, BUDGET, 5); }
+
+  function deckRandom(cards, profileId) {
+    const pr = P.prof(profileId);
+    const pool = [];
+    cards.forEach(c => {
+      const n = Math.min(5, pr.cards[c.id] || 0);
+      for (let i = 0; i < n; i++) pool.push(c);
+    });
+    if (!pool.length) return [];
+    /* 예산 안에 드는 5장을 무작위로 뽑는다 (뽑힌 5장이 12를 넘으면 다시) */
+    for (let attempt = 0; attempt < 600; attempt++) {
+      const bag = pool.slice();
+      const picks = [];
+      let cost = 0;
+      for (let i = 0; i < 5 && bag.length; i++) {
+        const j = Math.floor(Math.random() * bag.length);
+        const c = bag.splice(j, 1)[0];
+        picks.push(c.id); cost += D.stars(c.r);
+      }
+      if (picks.length === 5 && cost <= BUDGET) return picks;
+    }
+    /* 5장을 못 맞추면 싼 카드부터 채운다 */
+    const out = [];
+    const pool2 = pool.slice().sort((a, b) => D.stars(a.r) - D.stars(b.r));
+    let cost = 0;
+    for (const c of pool2) {
+      if (out.length >= 5) break;
+      const st = D.stars(c.r);
+      if (cost + st > BUDGET) continue;
+      out.push(c.id); cost += st;
+    }
+    return out;
+  }
+
+  function deckFav(cards, profileId) {
+    const pr = P.prof(profileId);
+    const out = [];
+    let cost = 0;
+    (pr.fav || []).forEach(id => {
+      if (out.length >= 5) return;
+      const c = window.PKDex.findCard(id);
+      if (!c || !(pr.cards[id] > 0) || out.indexOf(id) >= 0) return;
+      const st = D.stars(c.r);
+      if (cost + st > BUDGET) return;
+      out.push(id); cost += st;
+    });
+    const rest = knapsack(out, cards, profileId, BUDGET - cost, 5 - out.length);
+    rest.forEach(id => out.push(id));
+    return fillCheap(out, cards, profileId);
+  }
+
+  /* ---------------- 나만의 덱 3칸 (프로필별 · 기기 저장) ---------------- */
+  const DECKS_KEY = 'pkc_decks_v1';
+  function readDecks() {
+    try {
+      const d = JSON.parse(localStorage.getItem(DECKS_KEY) || '{}');
+      return (d && typeof d === 'object') ? d : {};
+    } catch (e) { return {}; }
+  }
+  function getSlots(profileId) {
+    const all = readDecks();
+    const arr = Array.isArray(all[profileId]) ? all[profileId] : [];
+    return [0, 1, 2].map(i => (Array.isArray(arr[i]) && arr[i].length) ? arr[i].slice(0, 5) : null);
+  }
+  function setSlot(profileId, i, ids) {
+    const all = readDecks();
+    const arr = getSlots(profileId);
+    arr[i] = (ids && ids.length) ? ids.slice(0, 5) : null;
+    all[profileId] = arr;
+    try { localStorage.setItem(DECKS_KEY, JSON.stringify(all)); } catch (e) { /* */ }
+  }
+  function slotCost(ids) {
+    let n = 0;
+    ids.forEach(id => { const c = window.PKDex.findCard(id); if (c) n += D.stars(c.r); });
+    return n;
+  }
+
   /* ---------------- 라우터 ---------------- */
+  let renderSeq = 0;
+
   function render() {
     if (ui.step === 'arena' && ui.bt) return;      // 아레나는 자체 DOM
     const root = $('#screen-battle');
@@ -81,11 +232,15 @@
   }
 
   async function renderSetup(root) {
+    const seq = ++renderSeq;
+    const keepY = window.scrollY;
+    const battleOn = ($('#screen-battle') || {}).classList ? $('#screen-battle').classList.contains('active') : false;
     const meId = ui.turn === 0 ? P.state.active : ui.p2;
     const pr = P.prof(meId);
     root.innerHTML = '<div class="loading"><div class="spinner"></div>카드 불러오는 중…</div>';
     const cards = await ownedCardList(meId);
-    if (!ui.sel.length) {
+    if (seq !== renderSeq) return;
+    if (!ui.sel.length && !ui.noAuto) {
       const saved = (pr.deck || []).filter(id => pr.cards[id]).slice(0, 5);
       const sStars = saved.reduce((a, id) => { const c = window.PKDex.findCard(id); return a + (c ? D.stars(c.r) : 0); }, 0);
       ui.sel = (saved.length === 5 && sStars <= BUDGET) ? saved : autoDeck(cards, meId);
@@ -95,8 +250,120 @@
     ui.sel.forEach(id => { const c = window.PKDex.findCard(id); if (c) selCards.push(c); });
     const stars = selCards.reduce((a, c) => a + D.stars(c.r), 0);
     const okDeck = selCards.length === 5 && stars <= BUDGET;
+    const remain = Math.max(0, BUDGET - stars);
     const countIn = id => ui.sel.filter(x => x === id).length;
     const who = ui.turn === 0 ? P.me().name : P.prof(ui.p2).name;
+    const favOrder = {};
+    (pr.fav || []).forEach((id, i) => { if (!(id in favOrder)) favOrder[id] = i; });
+
+    /* ---- 속성 · 코스트 필터 (보유 카드에 있는 것만) ---- */
+    const TYPE_ORDER = ['불꽃', '물', '번개', '풀', '초', '격투', '악', '강철', '드래곤', '무색', '페어리'];
+    const typeCount = {}, costCount = {};
+    cards.forEach(c => {
+      const t = c.t || '무색';
+      typeCount[t] = (typeCount[t] || 0) + 1;
+      const st = D.stars(c.r);
+      costCount[st] = (costCount[st] || 0) + 1;
+    });
+    if (ui.fType !== 'all' && !typeCount[ui.fType]) ui.fType = 'all';
+    if (ui.fCost !== 'all' && !costCount[+ui.fCost]) ui.fCost = 'all';
+
+    const typeChips = '<button class="chip small' + (ui.fType === 'all' ? ' active' : '') + '" data-ftype="all">전체<b>' + cards.length + '</b></button>' +
+      TYPE_ORDER.filter(t => typeCount[t]).map(t =>
+        '<button class="chip small' + (ui.fType === t ? ' active' : '') + '" data-ftype="' + t + '">' +
+        D.typeEmoji(t) + ' ' + t + '<b>' + typeCount[t] + '</b></button>').join('');
+
+    const costKeys = Object.keys(costCount).map(Number).sort((a, b) => a - b);
+    const costChips = '<button class="chip small' + (ui.fCost === 'all' ? ' active' : '') + '" data-fcost="all">전체<b>' + cards.length + '</b></button>' +
+      costKeys.map(n =>
+        '<button class="chip small' + (ui.fCost === n ? ' active' : '') + '" data-fcost="' + n + '">★' + n + '<b>' + costCount[n] + '</b></button>').join('');
+
+    const sortChips =
+      '<button class="chip small' + (ui.sort === 'hp' ? ' active' : '') + '" data-fsort="hp">💪 강한 순</button>' +
+      '<button class="chip small' + (ui.sort === 'fav' ? ' active' : '') + '" data-fsort="fav">⭐ 최애 먼저</button>' +
+      '<button class="chip small' + (ui.sort === 'pack' ? ' active' : '') + '" data-fsort="pack">📦 팩별 묶음</button>';
+
+    /* ---- 카드 목록 (필터 · 정렬 · 팩 묶음) ---- */
+    const shownCards = cards.filter(c =>
+      (ui.fType === 'all' || (c.t || '무색') === ui.fType) &&
+      (ui.fCost === 'all' || D.stars(c.r) === +ui.fCost));
+    const byPower = (a, b) => (power(b) - power(a)) || ((b.hp || 0) - (a.hp || 0));
+    const byFav = (a, b) => {
+      const fa = a.id in favOrder ? favOrder[a.id] : 99;
+      const fb = b.id in favOrder ? favOrder[b.id] : 99;
+      return (fa - fb) || byPower(a, b);
+    };
+    function packOfCard(id) {
+      const src = pr.src[id];
+      if (src) { const m = D.packMeta(src); if (m) return m; }
+      const set = id.split('-')[0];
+      return D.allPacks().find(p => p.set === set) || null;
+    }
+
+    function tile(c) {
+      const n = countIn(c.id);
+      const on = n > 0;
+      const st = D.stars(c.r);
+      const short = n === 0 && st > remain;
+      return '<button class="pick-card' + (on ? ' sel' : '') + (short ? ' short' : '') +
+        (c.id in favOrder ? ' fav' : '') + '" data-pick="' + c.id + '"' +
+        (short ? ' title="남은 코스트가 부족해요"' : '') + '>' +
+        '<img loading="lazy" src="' + D.img(c.img) + '" alt="' + esc(c.name) + '">' +
+        '<span class="star">★' + st + '</span>' +
+        (short ? '<span class="shortb">★부족</span>' : '') +
+        (n > 1 ? '<span class="cnt">×' + n + '</span>' : '') +
+        '</button>';
+    }
+
+    let listHtml;
+    if (!cards.length) {
+      listHtml = '<div class="empty">카드팩을 먼저 뜯어 카드를 모아 보세요!</div>';
+    } else if (!shownCards.length) {
+      listHtml = '<div class="empty">조건에 맞는 카드가 없어요<br><span style="font-size:11.5px">필터를 ‘전체’로 바꿔 보세요</span></div>';
+    } else if (ui.sort === 'pack') {
+      const groups = {}, gorder = [];
+      shownCards.slice().sort(byPower).forEach(c => {
+        const m = packOfCard(c.id);
+        const key = m ? m.id : 'etc';
+        if (!groups[key]) { groups[key] = { name: m ? m.name : '기타 팩', cards: [] }; gorder.push(key); }
+        groups[key].cards.push(c);
+      });
+      const packIdx = {};
+      D.allPacks().forEach((p, i) => { packIdx[p.id] = i; });
+      gorder.sort((a, b) => (a === 'etc' ? 9999 : packIdx[a] == null ? 9998 : packIdx[a]) -
+        (b === 'etc' ? 9999 : packIdx[b] == null ? 9998 : packIdx[b]));
+      listHtml = gorder.map(k => {
+        const g = groups[k];
+        return '<div class="pack-group"><div class="pgh"><b>' + esc(g.name) + '</b><span>' + g.cards.length + '종</span></div>' +
+          '<div class="deck-grid">' + g.cards.map(tile).join('') + '</div></div>';
+      }).join('');
+    } else {
+      const arr = shownCards.slice().sort(ui.sort === 'fav' ? byFav : byPower);
+      listHtml = '<div class="deck-grid">' + arr.map(tile).join('') + '</div>';
+    }
+
+    /* ---- 나만의 덱 3칸 ---- */
+    const slots = getSlots(meId);
+    const slotHtml = [0, 1, 2].map(i => {
+      const ids = slots[i];
+      const nm = '덱' + (i + 1);
+      if (!ids) {
+        return '<button class="dkslot empty" data-slot-save="' + i + '">' +
+          '<span class="dk-n">' + nm + '</span>' +
+          '<span class="dk-e">비어 있음</span>' +
+          '<span class="dk-a">💾 저장</span></button>';
+      }
+      const cs = ids.map(id => window.PKDex.findCard(id));
+      const got = cs.filter(Boolean);
+      return '<div class="dkslot filled" data-slot-load="' + i + '" role="button" tabindex="0">' +
+        '<span class="dk-n">' + nm + '</span>' +
+        '<button class="dk-x" data-slot-del="' + i + '" aria-label="' + nm + ' 삭제">✕</button>' +
+        '<div class="dk-t">' + cs.map(c => c
+          ? '<img src="' + D.img(c.img) + '" alt="">'
+          : '<span class="dk-q">?</span>').join('') + '</div>' +
+        '<span class="dk-m">★' + slotCost(ids) + ' · ' + got.length + '장</span>' +
+        '</div>';
+    }).join('');
 
     const orderBox = okDeck ? (
       '<div class="h2">🎯 낼 카드 순서 정하기</div>' +
@@ -129,16 +396,6 @@
       '</div>'
     ) : '';
 
-    const grid = cards.length ? cards.map(c => {
-      const n = countIn(c.id);
-      const on = n > 0;
-      return '<button class="pick-card' + (on ? ' sel' : '') + '" data-pick="' + c.id + '">' +
-        '<img loading="lazy" src="' + D.img(c.img) + '" alt="' + esc(c.name) + '">' +
-        '<span class="star">★' + D.stars(c.r) + '</span>' +
-        (n > 1 ? '<span class="cnt" style="position:absolute;left:2px;bottom:2px;right:auto;font-size:9px;padding:1px 4px;border-radius:6px;background:rgba(4,8,20,.9)">×' + n + '</span>' : '') +
-        '</button>';
-    }).join('') : '<div class="empty" style="grid-column:1/-1">카드팩을 먼저 뜯어 카드를 모아 보세요!</div>';
-
     root.innerHTML =
       '<div class="h1">⚔️ 카드 배틀</div>' +
       (ui.mode === 'p2' && ui.turn === 1 ? '<div class="card-panel" style="margin-bottom:10px;text-align:center">' +
@@ -157,16 +414,44 @@
         '<div class="budget"><span>내 덱 코스트</span><div class="bar' + (stars > BUDGET ? '' : ' done') + '">' +
           '<i style="width:' + Math.min(100, stars / BUDGET * 100) + '%"></i></div><b>' + stars + ' / ' + BUDGET + '</b>' +
           '<span class="muted" style="font-size:11px">(' + selCards.length + '/5장)</span></div>' +
-        '<div class="btn-row" style="margin-top:10px">' +
-          '<button class="btn ghost sm" id="autoDeck">🎲 자동 구성</button>' +
+        '<div class="deck-filter">' +
+          '<div class="df-label">속성</div>' +
+          '<div class="filter-bar" id="typeRow">' + typeChips + '</div>' +
+          '<div class="df-label">코스트</div>' +
+          '<div class="filter-bar" id="costRow">' + costChips + '</div>' +
+          '<div class="df-label">정렬</div>' +
+          '<div class="filter-bar" id="sortRow">' + sortChips + '</div>' +
+        '</div>' +
+        '<div class="auto-row">' +
+          '<button class="btn gold sm" id="autoBest">⚡ 최강 자동</button>' +
+          '<button class="btn ghost sm" id="autoRandom">🎲 랜덤 5장</button>' +
+          '<button class="btn ghost sm" id="autoFav">⭐ 최애 우선</button>' +
           '<button class="btn ghost sm" id="clearDeck">지우기</button>' +
         '</div>' +
-        '<div class="muted" style="font-size:11px;margin-top:8px">카드를 누를 때마다 1장씩 추가돼요(보유 장수까지). 다시 누르면 빠져요.</div>' +
+        '<div class="muted" style="font-size:11px;margin-top:8px;line-height:1.6">카드를 누를 때마다 1장씩 추가돼요(보유 장수까지). 다시 누르면 빠져요.<br>남은 코스트로는 못 넣는 카드는 흐리게 + <b style="color:#ffb3c1">★부족</b> 표시!</div>' +
       '</div>' +
-      '<div class="h2">내 카드에서 5장 고르기 <span class="muted" style="font-size:11px">' + cards.length + '장 보유</span></div>' +
-      '<div class="deck-grid">' + grid + '</div>' +
+      '<div class="h2">💾 나만의 덱 <span class="muted" style="font-size:11px">' + esc(pr.name) + ' 전용 3칸</span></div>' +
+      '<div class="card-panel" style="padding:11px">' +
+        '<div class="dk-head"><span class="muted" style="font-size:11.5px;line-height:1.5">5장을 고른 뒤 저장하면 다음에 한 번에 불러와요.</span>' +
+          '<button class="btn gold sm" id="saveDeck">💾 저장</button></div>' +
+        '<div class="dk-grid">' + slotHtml + '</div>' +
+      '</div>' +
+      '<div class="h2">내 카드에서 5장 고르기 <span class="muted" style="font-size:11px">' +
+        cards.length + '종 보유' + (shownCards.length !== cards.length ? ' · ' + shownCards.length + '종 표시' : '') + '</span></div>' +
+      listHtml +
       orderBox +
       (okDeck ? '' : '<div class="muted" style="margin:14px 2px;color:#ffb3c1">5장을 고르고 코스트 12 이하로 맞춰 주세요. (현재 ' + selCards.length + '장)</div>');
+
+    /* ---- 이벤트 ---- */
+    root.querySelectorAll('[data-ftype]').forEach(b => b.addEventListener('click', () => {
+      A.sfx.tap(); ui.fType = b.dataset.ftype; renderSetup(root);
+    }));
+    root.querySelectorAll('[data-fcost]').forEach(b => b.addEventListener('click', () => {
+      A.sfx.tap(); ui.fCost = b.dataset.fcost; renderSetup(root);
+    }));
+    root.querySelectorAll('[data-fsort]').forEach(b => b.addEventListener('click', () => {
+      A.sfx.tap(); ui.sort = b.dataset.fsort; renderSetup(root);
+    }));
 
     root.querySelectorAll('[data-pick]').forEach(b => b.addEventListener('click', () => {
       const id = b.dataset.pick;
@@ -179,28 +464,129 @@
       if (n > 0) {
         ui.sel = ui.sel.filter(x => x !== id);
         ui.order = ui.order.filter(x => x !== id);
+      } else if (cur + D.stars(c.r) > BUDGET) {
+        A.sfx.error();
+        const left = Math.max(0, BUDGET - cur);
+        P.toast(left > 0 ? '남은 코스트가 부족해요! (★' + left + ' 남음)' : '남은 코스트가 없어요! 다른 카드를 빼 보세요');
+        return;
       } else if (n >= owned) {
         P.toast('이 카드는 ' + owned + '장 보유하고 있어요'); return;
       } else if (ui.sel.length >= 5) {
         P.toast('5장까지만 고를 수 있어요'); return;
-      } else if (cur + D.stars(c.r) > BUDGET) {
-        A.sfx.error(); P.toast('코스트 12를 넘었어요'); return;
       } else {
         ui.sel.push(id);
       }
+      ui.noAuto = false;
       P.prof(meId).deck = ui.sel.slice();
       P.save();
       renderSetup(root);
     }));
-    const ad = root.querySelector('#autoDeck');
-    if (ad) ad.addEventListener('click', () => {
-      ui.sel = autoDeck(cards, meId); ui.order = [];
-      P.prof(meId).deck = ui.sel.slice(); P.save(); A.sfx.sparkle();
+
+    function applyAuto(ids, label) {
+      if (!ids || !ids.length) { A.sfx.error(); P.toast('고를 수 있는 카드가 없어요'); return; }
+      ui.sel = ids.slice(0, 5);
+      ui.order = [];
+      ui.noAuto = false;
+      P.prof(meId).deck = ui.sel.slice();
+      P.save();
+      A.sfx.sparkle(); P.haptic(12);
+      if (ui.sel.length < 5) P.toast(label + ' · 코스트 12 안에서 ' + ui.sel.length + '장만 골랐어요');
+      else P.toast(label + ' 완료!', true);
       renderSetup(root);
-    });
+    }
+    const ab = root.querySelector('#autoBest');
+    if (ab) ab.addEventListener('click', () => applyAuto(deckBest(cards, meId), '⚡ 최강 자동'));
+    const ar = root.querySelector('#autoRandom');
+    if (ar) ar.addEventListener('click', () => applyAuto(deckRandom(cards, meId), '🎲 랜덤 5장'));
+    const af = root.querySelector('#autoFav');
+    if (af) af.addEventListener('click', () => applyAuto(deckFav(cards, meId), '⭐ 최애 우선'));
     const cd = root.querySelector('#clearDeck');
     if (cd) cd.addEventListener('click', () => {
-      ui.sel = []; ui.order = []; P.prof(meId).deck = []; P.save(); renderSetup(root);
+      ui.sel = []; ui.order = []; ui.noAuto = true; P.prof(meId).deck = []; P.save(); renderSetup(root);
+    });
+
+    /* ---- 덱 3칸 ---- */
+    function doSave(i) {
+      if (ui.sel.length !== 5) { A.sfx.error(); P.toast('5장을 먼저 골라 주세요'); return; }
+      const cost = ui.sel.reduce((a, id) => { const c = window.PKDex.findCard(id); return a + (c ? D.stars(c.r) : 0); }, 0);
+      if (cost > BUDGET) { A.sfx.error(); P.toast('코스트 12를 넘어 저장할 수 없어요'); return; }
+      setSlot(meId, i, ui.sel);
+      A.sfx.sparkle(); P.haptic(12);
+      P.toast('덱' + (i + 1) + '에 저장했어요!', true);
+      renderSetup(root);
+    }
+    function doLoad(i) {
+      const ids = getSlots(meId)[i];
+      if (!ids) return;
+      const out = [];
+      const used = {};
+      let cost = 0, lost = 0;
+      ids.forEach(id => {
+        const c = window.PKDex.findCard(id);
+        const own = pr.cards[id] || 0;
+        const st = c ? D.stars(c.r) : 0;
+        if (!c || (used[id] || 0) >= own || out.length >= 5 || cost + st > BUDGET) { lost++; return; }
+        used[id] = (used[id] || 0) + 1; cost += st; out.push(id);
+      });
+      ui.sel = out;
+      ui.noAuto = false;
+      ui.order = ui.order.filter(id => out.indexOf(id) >= 0);
+      pr.deck = out.slice();
+      P.save();
+      A.sfx.sparkle(); P.haptic(10);
+      if (lost) P.toast('덱' + (i + 1) + ' 불러옴 · 카드 ' + lost + '장은 없어서 못 넣었어요');
+      else P.toast('덱' + (i + 1) + ' 불러왔어요!', true);
+      renderSetup(root);
+    }
+
+    root.querySelectorAll('[data-slot-load]').forEach(el => el.addEventListener('click', ev => {
+      if (ev.target.closest('[data-slot-del]')) return;
+      A.sfx.tap();
+      doLoad(+el.dataset.slotLoad);
+    }));
+    root.querySelectorAll('[data-slot-del]').forEach(b => b.addEventListener('click', ev => {
+      ev.stopPropagation();
+      const i = +b.dataset.slotDel;
+      A.sfx.tap();
+      P.confirmBox('덱 삭제', '덱' + (i + 1) + '에 저장된 덱을 지울까요?', '🗑 지우기').then(ok => {
+        if (!ok) return;
+        setSlot(meId, i, null);
+        P.toast('덱' + (i + 1) + '을 지웠어요');
+        renderSetup(root);
+      });
+    }));
+    root.querySelectorAll('[data-slot-save]').forEach(b => b.addEventListener('click', () => {
+      const i = +b.dataset.slotSave;
+      A.sfx.tap();
+      doSave(i);
+    }));
+    const sd = root.querySelector('#saveDeck');
+    if (sd) sd.addEventListener('click', () => {
+      A.sfx.tap();
+      if (ui.sel.length !== 5) { A.sfx.error(); P.toast('5장을 먼저 골라 주세요'); return; }
+      const cur = getSlots(meId);
+      const body = P.el('div');
+      body.innerHTML = '<p class="muted" style="margin:0 0 10px">지금 고른 5장을 어느 칸에 저장할까요?</p>' +
+        '<div class="list">' + [0, 1, 2].map(i => {
+          const ids = cur[i];
+          const names = ids ? ids.map(id => { const c = window.PKDex.findCard(id); return c ? c.name : '?'; }) : [];
+          return '<button class="row" data-save="' + i + '"><div class="grow"><b>덱' + (i + 1) + '</b>' +
+            '<small>' + (ids ? '저장됨 · ★' + slotCost(ids) + ' · ' + names.length + '장 (덮어쓰기)' : '비어 있음') + '</small></div>' +
+            '<span class="btn sm ' + (ids ? 'ghost' : 'primary') + '">' + (ids ? '덮어쓰기' : '저장') + '</span></button>';
+        }).join('') + '</div>';
+      const m = P.modal({ title: '💾 덱 저장', body, buttons: [{ label: '✕ 닫기', kind: 'ghost' }] });
+      body.querySelectorAll('[data-save]').forEach(b => b.addEventListener('click', () => {
+        const i = +b.dataset.save;
+        A.sfx.tap();
+        if (cur[i]) {
+          P.confirmBox('덮어쓰기', '덱' + (i + 1) + '에 저장된 덱을 지우고 지금 덱으로 바꿀까요?', '💾 덮어쓰기').then(ok => {
+            if (!ok) return;
+            m.close(true); doSave(i);
+          });
+          return;
+        }
+        m.close(true); doSave(i);
+      }));
     });
 
     /* 순서 지정 */
@@ -245,6 +631,8 @@
       A.sfx.tap();
       pickP2(P.PROFILES.filter(p => p.id !== P.state.active), false);
     });
+
+    if (battleOn) requestAnimationFrame(() => { try { window.scrollTo(0, keepY); } catch (e) { /* */ } });
   }
 
   function pickP2(others, thenReady) {
@@ -275,6 +663,7 @@
       if (ui.mode === 'p2') {
         ui.turn = 1;
         ui.sel = [];
+        ui.noAuto = false;
         ui.order = [];
         ui.step = 'pass';
         render();
@@ -400,6 +789,7 @@
     ui.step = 'deck';
     ui.turn = 0;
     ui.sel = [];
+    ui.noAuto = false;
     ui.order = [];
     render();
   }
