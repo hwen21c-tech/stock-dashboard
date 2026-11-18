@@ -631,11 +631,19 @@
   }
 
   /* ---------------- 타이밍 바 미니게임 ---------------- */
-  const ZN = { m3: [.455, .545], m2: [.405, .595], m15: [.315, .685] };
-  function zoneOf(r) {
-    if (r >= ZN.m3[0] && r <= ZN.m3[1]) return 3;
-    if (r >= ZN.m2[0] && r <= ZN.m2[1]) return 2;
-    if (r >= ZN.m15[0] && r <= ZN.m15[1]) return 1.5;
+  function rollZones() {
+    const c = 0.22 + Math.random() * 0.56; /* 22%~78% 랜덤 중심 */
+    return {
+      c,
+      m3: [c - 0.0325, c + 0.0325], /* 폭 6.5% */
+      m2: [c - 0.065, c + 0.065],   /* 폭 13% */
+      m15: [c - 0.12, c + 0.12]     /* 폭 24% */
+    };
+  }
+  function zoneOf(zn, r) {
+    if (r >= zn.m3[0] && r <= zn.m3[1]) return 3;
+    if (r >= zn.m2[0] && r <= zn.m2[1]) return 2;
+    if (r >= zn.m15[0] && r <= zn.m15[1]) return 1.5;
     return 0;
   }
   function barHint(base, other) {
@@ -690,6 +698,8 @@
 
       const az = q('#actionZone');
       if (!az) { resolve({ mult: 1 }); return; }
+      const zn = rollZones();
+      const zStyle = (pair) => 'left:' + (pair[0] * 100).toFixed(2) + '%;width:' + ((pair[1] - pair[0]) * 100).toFixed(2) + '%;right:auto';
       az.innerHTML =
         '<div class="barbox' + (kind === 'def' ? ' def' : '') + '">' +
           '<div class="bar-head">' +
@@ -698,7 +708,9 @@
           '</div>' +
           '<div class="bar-hint">' + barHint(base, other) + '</div>' +
           '<div class="bar-track" id="barTrack">' +
-            '<div class="bz z15">×1.5</div><div class="bz z2">×2</div><div class="bz z3">×3</div>' +
+            '<div class="bz z15" style="' + zStyle(zn.m15) + '">×1.5</div>' +
+            '<div class="bz z2" style="' + zStyle(zn.m2) + '">×2</div>' +
+            '<div class="bz z3" style="' + zStyle(zn.m3) + '">×3</div>' +
             '<div class="mk" id="barMk"></div>' +
           '</div>' +
           '<button class="bar-btn' + (ai ? ' ai' : '') + '" id="barBtn"' + (ai ? ' disabled' : '') + '>' + (ai ? '🤖 컴퓨터가 조준 중…' : '⚡ 지금 터치!') + '</button>' +
@@ -718,7 +730,7 @@
         const W = track.clientWidth || 1;
         const cx = p * Math.max(1, W - BW) + BW / 2;
         mk.style.left = cx + 'px';
-        const z = zoneOf(cx / W);
+        const z = zoneOf(zn, cx / W);
         if (z !== lastZone) {
           lastZone = z;
           if (z) { A.sfx.barTick(z); P.haptic(6); }
@@ -734,7 +746,7 @@
         cancelAnimationFrame(raf);
         const W = track.clientWidth || 1;
         const cx = parseFloat(mk.style.left) || 0;
-        const mult = zoneOf(cx / W);
+        const mult = zoneOf(zn, cx / W);
         mk.classList.add(mult ? 'hit' : 'miss');
         track.classList.add('done');
         const badge = P.el('div', 'bar-res ' + (mult ? 'ok' : 'no'), mult ? '×' + mult + '!' : 'MISS');
