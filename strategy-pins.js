@@ -741,13 +741,23 @@
     var d = new Date(Date.now() + 9 * 3600 * 1000);
     return d.toISOString().slice(0, 10);
   }
+  /* 정규장 마감(15:30 KST) 뒤에는 오늘 봉이 이미 확정치다.
+     마감 전에만 '오늘 실시간 봉'을 기준일에서 빼야 한다 — 예전에는 시각과 무관하게
+     오늘 봉을 늘 제외해서, 18시에 봐도 기준일이 하루 전(11/17)으로 찍혔다. */
+  function todaySettled() {
+    var d = new Date(Date.now() + 9 * 3600 * 1000);
+    var wd = d.getUTCDay();                       // 0=일 … 6=토
+    var mins = d.getUTCHours() * 60 + d.getUTCMinutes();
+    return wd >= 1 && wd <= 5 && mins >= 15 * 60 + 30;
+  }
   function lastSettled(candles) {
     var arr = candles || [];
     var today = todayISO();
+    var done = todaySettled();
     for (var i = arr.length - 1; i >= 0; i -= 1) {
       var d = String(arr[i].date || '').replace(/[^0-9]/g, '');
       var iso = d.length === 8 ? d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6, 8) : String(arr[i].date);
-      if (iso !== today) return iso;
+      if (iso !== today || done) return iso;
     }
     return arr.length ? String(arr[arr.length - 1].date) : '';
   }
