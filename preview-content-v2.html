@@ -11019,9 +11019,16 @@ const GEN_ACTIONS = [
     return affilLinks().length > 0 || !!String(AFFIL.notice || '').trim();
   }
   function affilMark(){ return '## 💡 링크 · 안내'; }
+  function affilMarked(txt){ return String(txt == null ? '' : txt).indexOf(affilMark()) > -1; }
   function affilPresent(txt){
     var t = String(txt == null ? '' : txt);
     return t.indexOf(affilMark()) > -1 || t.indexOf('쿠팡 파트너스 활동의 일환') > -1;
+  }
+  function affilDropStray(txt){
+    var out = String(txt == null ? '' : txt).split('\n').filter(function(line){
+      return !/쿠팡 파트너스 활동의 일환|수수료를 제공받습니다|제휴 링크가 포함되어 있으며/.test(line);
+    }).join('\n');
+    return out.replace(/\n{3,}/g, '\n\n'). replace(/\s+$/, '');
   }
   function affilBlock(){
     if (!affilHas()) return '';
@@ -11039,7 +11046,7 @@ const GEN_ACTIONS = [
   function affilStrip(txt){
     var t = String(txt == null ? '' : txt);
     var i = t.indexOf(affilMark());
-    if (i < 0) return t;
+    if (i < 0) return affilPresent(t) ? affilDropStray(t) + '\n' : t;
     var head = t.slice(0, i).replace(/\n*---\s*$/, '\n');
     return head.replace(/[ \t]+$/gm, '').replace(/\n{3,}$/, '\n\n').replace(/\s+$/, '') + '\n';
   }
@@ -11051,12 +11058,17 @@ const GEN_ACTIONS = [
   function affilAuto(txt){
     var t = String(txt == null ? '' : txt);
     if (!AFFIL || !AFFIL.on || !affilHas()) return t;
-    if (affilPresent(t)) return t;
+    if (affilMarked(t)) return t;
+    t = affilDropStray(t);
     return t.replace(/\s+$/, '') + '\n' + affilBlock();
   }
   function affilRestore(before, after){
     var t = String(after == null ? '' : after);
-    if (affilPresent(t)) return t;
+    if (affilMarked(t)) return t;
+    if (!affilPresent(before)) return t;
+    /* 다시 쓴 본문이 기존 블록을 날렸다면 돌려붙인다. 고지 문구는 AI가 고치면 안 되므로
+       AI가 베껴 쓴 문구는 걷어내고, 저장된 프로필(또는 원래 블록) 문구만 남긴다. */
+    t = affilDropStray(t);
     if (AFFIL && AFFIL.on && affilHas()) return t.replace(/\s+$/, '') + '\n' + affilBlock();
     var blk = affilExtract(before);
     if (blk) return t.replace(/\s+$/, '') + '\n\n---\n\n' + blk + '\n';
