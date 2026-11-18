@@ -4,8 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#070c14">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%F0%9F%8E%AC%3C/text%3E%3C/svg%3E">
-<title>🎬✍️ AI 콘텐츠 스튜디오 v2 프리뷰</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AI 스튜디오">
+<meta name="application-name" content="AI 스튜디오">
+<link rel="manifest" href="preview-content-v2.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/content-v2-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/content-v2-512.png">
+<link rel="apple-touch-icon" sizes="192x192" href="icons/content-v2-192.png">
+<title>🎬✍️ AI 콘텐츠 스튜디오 v2 — 내 Gemini 키</title>
 <style>
   :root{
     --bg:#070c14; --panel:#0b1120; --panel2:#0e1729; --hover:#111a2e;
@@ -68,6 +76,24 @@
   .btn-guide:hover{filter:brightness(1.12)}
   .btn-guide .cv{transition:transform .18s;font-size:10px}
   .btn-guide[aria-expanded="true"] .cv{transform:rotate(180deg)}
+  .btn-install{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:12px;font-weight:900;color:#04231c;
+    background:linear-gradient(135deg,#34d399,#38bdf8);
+    border:1px solid rgba(56,189,248,.55);border-radius:9px;padding:6px 10px;white-space:nowrap;
+    box-shadow:0 2px 10px rgba(52,211,153,.18);
+  }
+  .btn-install:hover{filter:brightness(1.08)}
+  .btn-install:active{transform:translateY(1px)}
+  /* 단독 앱(standalone) 실행 시 노치·홈 인디케이터 여백 확보 */
+  @media (display-mode: standalone), (display-mode: fullscreen){
+    body{
+      padding-top:calc(14px + env(safe-area-inset-top));
+      padding-bottom:calc(40px + env(safe-area-inset-bottom));
+      padding-left:calc(14px + env(safe-area-inset-left));
+      padding-right:calc(14px + env(safe-area-inset-right));
+    }
+  }
 
   /* ---------- api guide ---------- */
   .guide{
@@ -200,12 +226,12 @@
   .field{margin-top:11px}
   .field:first-child{margin-top:0}
   .flabel{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#cbd5e1;margin-bottom:6px}
-  textarea,input[type=text],select{
+  textarea,input[type=text],input[type=url],input[type=search],select{
     width:100%;background:#081120;border:1px solid rgba(148,163,184,.24);border-radius:10px;
     padding:10px 11px;font-size:12.8px;font-weight:600;color:var(--text);outline:none;max-width:100%;
   }
   textarea{resize:vertical;min-height:76px;line-height:1.55}
-  textarea:focus,input[type=text]:focus,select:focus{border-color:rgba(56,189,248,.65);box-shadow:0 0 0 3px rgba(56,189,248,.10)}
+  textarea:focus,input[type=text]:focus,input[type=url]:focus,input[type=search]:focus,select:focus{border-color:rgba(56,189,248,.65);box-shadow:0 0 0 3px rgba(56,189,248,.10)}
   textarea::placeholder,input::placeholder{color:#4b5b70;font-weight:600}
   select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#7dd3fc 50%),linear-gradient(135deg,#7dd3fc 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:32px}
   .quick{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
@@ -548,6 +574,57 @@
   }
   .checkbar{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:9px;font-size:11.4px;font-weight:900;color:#7dd3fc}
 
+  /* ---------- 📸 본문 추천 사진 · 썸네일 ---------- */
+  .pslot{border:1px solid var(--line);border-radius:11px;background:#0a1424;padding:9px 10px;margin-top:9px;min-width:0}
+  .phead{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:7px;min-width:0}
+  .pnum{flex:0 0 auto;font-size:10px;font-weight:900;color:#0b1120;background:#7dd3fc;border-radius:5px;padding:1px 5px;letter-spacing:0}
+  .pdesc{font-size:11.4px;font-weight:800;color:#dbeafe;line-height:1.4;min-width:0;word-break:keep-all}
+  .pdesc.dim{color:var(--faint);font-weight:700}
+  .prow{display:flex;align-items:center;gap:6px;min-width:0}
+  .prow input, .padd input{
+    flex:1;min-width:0;font-size:12px;font-weight:700;padding:7px 9px;border-radius:8px;
+    border:1px solid var(--line);background:#070f1b;color:#e2e8f0;letter-spacing:0;
+  }
+  .prow input:focus, .padd input:focus{outline:none;border-color:rgba(56,189,248,.55)}
+  .psrc{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:10.4px;font-weight:900;color:#6ee7b7;margin:8px 0 6px}
+  .psrc .pnote{color:var(--faint);font-weight:700;letter-spacing:0;line-height:1.4}
+  .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(102px,1fr));gap:7px}
+  .pcell{min-width:0}
+  .pthumb{
+    position:relative;display:block;width:100%;padding:0;border:1px solid var(--line);border-radius:9px;
+    overflow:hidden;background:#070f1b;aspect-ratio:4/3;cursor:pointer;
+  }
+  .pthumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .pthumb .pdl{
+    position:absolute;right:4px;bottom:4px;font-size:9.6px;font-weight:900;color:#0b1120;
+    background:#7dd3fc;border-radius:5px;padding:2px 5px;opacity:.95;letter-spacing:0;
+  }
+  .pthumb:hover{border-color:rgba(56,189,248,.6)}
+  .pcell .pmeta{font-size:9.8px;font-weight:700;color:var(--faint);line-height:1.35;margin-top:3px;letter-spacing:0}
+  .pcell .pmeta b{
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    color:#cbd5e1;font-weight:800;font-size:10.2px;word-break:break-word;
+  }
+  .pcell .pmeta span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pcell .pmeta a{color:#7dd3fc;text-decoration:none;font-weight:800}
+  .pwait{font-size:11px;font-weight:700;color:var(--faint);padding:7px 2px;line-height:1.55}
+  .pempty{
+    font-size:11.3px;font-weight:700;color:#fcd34d;background:rgba(245,158,11,.07);
+    border:1px dashed rgba(245,158,11,.3);border-radius:9px;padding:8px 10px;margin-top:8px;line-height:1.55;
+  }
+  .padd{display:flex;gap:6px;margin-top:9px;min-width:0}
+  .ptoggle{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;font-weight:800;color:#cbd5e1;cursor:pointer}
+  .ptoggle input{flex:0 0 auto;width:15px;height:15px;accent-color:#38bdf8;margin:0}
+  .thumbcard{margin-top:12px;padding:10px;border:1px solid rgba(168,85,247,.28);border-radius:11px;background:rgba(168,85,247,.05);min-width:0}
+  .thumbcard .thlabel{display:block;font-size:10.4px;font-weight:900;color:#c4b5fd;margin:7px 0 4px}
+  .thumbcard input[type=text]{
+    width:100%;font-size:12px;font-weight:700;padding:7px 9px;border-radius:8px;
+    border:1px solid var(--line);background:#070f1b;color:#e2e8f0;letter-spacing:0;
+  }
+  .thumbcard input[type=text]:focus{outline:none;border-color:rgba(168,85,247,.6)}
+  #thumbCanvas{width:100%;height:auto;display:block;border-radius:9px;border:1px solid var(--line);background:#070c14;margin-top:7px}
+  .throw{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+
   /* ---------- v2 upgrade: subtitle presets ---------- */
   .preset3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
   .presh{
@@ -697,6 +774,96 @@
     .submodes{grid-template-columns:1fr}
     .two{grid-template-columns:1fr}
   }
+
+  /* ---------- v2 동적(Gemini) UI ---------- */
+  .spacer{flex:1}
+  .spin{display:inline-block;width:11px;height:11px;border-radius:50%;border:2px solid rgba(148,163,184,.35);border-top-color:#38bdf8;animation:v2sp .7s linear infinite;vertical-align:-1px}
+  @keyframes v2sp{to{transform:rotate(360deg)}}
+  .btn[data-busy]{opacity:.85;cursor:progress}
+  .status-badge.ok{color:#86efac;background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.42)}
+  .status-badge.ok .dot{background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.18)}
+  .status-badge.bad{color:#fda4af;background:rgba(244,63,94,.12);border-color:rgba(244,63,94,.42)}
+  .status-badge.bad .dot{background:#f43f5e;box-shadow:0 0 0 3px rgba(244,63,94,.18)}
+  .errbox{background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.36);border-radius:12px;padding:11px 12px;margin-top:10px}
+  .errbox>b{display:block;font-size:12.5px;font-weight:900;color:#fda4af;margin-bottom:5px}
+  .errbox .em{font-size:12.2px;line-height:1.62;color:#fecdd3;margin-top:3px}
+  .errbox .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:#fda4af}
+  .errbox .btn{margin-top:9px}
+  .aiwait{display:flex;align-items:center;gap:8px;font-size:12.4px;font-weight:700;color:#7dd3fc;background:rgba(56,189,248,.08);border:1px dashed rgba(56,189,248,.34);border-radius:11px;padding:10px 12px;margin-top:9px}
+  .ainote{font-size:11.9px;line-height:1.6;color:#cbd5e1;background:#0a1524;border:1px solid rgba(148,163,184,.18);border-radius:10px;padding:9px 10px;margin-top:8px}
+  .ainote b{color:#7dd3fc}
+  .ainote ul{margin:5px 0 0 15px;display:grid;gap:3px}
+  .ainote li{font-size:11.8px;color:#cbd5e1}
+  .aicutwrap{overflow-x:auto;border:1px solid rgba(148,163,184,.16);border-radius:11px;background:#0a1524;padding:4px 8px;margin-top:9px}
+  .cuttable{width:100%;min-width:470px;border-collapse:collapse;font-size:11.9px;table-layout:fixed}
+  .cuttable.gap{min-width:600px}
+  .thint{display:none;font-size:10.6px;color:#64748b;font-weight:700;margin-top:4px}
+  @media (max-width:560px){ .thint{display:block} }
+  .cuttable th,.cuttable td{border-bottom:1px solid rgba(148,163,184,.13);padding:6px 5px;text-align:left;vertical-align:top;overflow-wrap:anywhere}
+  .cuttable th{color:#94a3b8;font-size:10.8px;font-weight:800;white-space:nowrap}
+  .cuttable td.n{color:#7dd3fc;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .script{border-left:3px solid rgba(56,189,248,.5);padding-left:10px;margin-top:8px;display:grid;gap:6px}
+  .script .sl{display:flex;gap:7px;font-size:12.4px;color:#e2e8f0;line-height:1.55}
+  .script .sl .tm{color:#7dd3fc;font-weight:900;font-size:11.3px;white-space:nowrap;min-width:58px;font-variant-numeric:tabular-nums}
+  .pv-live{color:#86efac !important;border-color:rgba(34,197,94,.45) !important;background:rgba(34,197,94,.12) !important}
+  /* ---------- v2.1 신규: 재료·SEO·다듬기·발행 기록 ---------- */
+  .matsep{height:1px;background:var(--line);margin:12px 0}
+  .matpanel-row{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+  .matpanel-row .btn{flex:0 0 auto}
+  .ytres{margin-top:9px;background:#0a1524;border:1px solid rgba(56,189,248,.24);border-radius:11px;padding:10px 11px}
+  .ytres-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.5px;font-weight:900;color:#e2e8f0}
+  .ytres-meta{font-size:11px;font-weight:700;color:#94a3b8;margin-top:4px;letter-spacing:0}
+  .ytres-text{margin-top:8px;max-height:132px;overflow:auto;white-space:pre-wrap;font-size:11.6px;line-height:1.6;color:#cbd5e1;background:#08111d;border:1px solid rgba(148,163,184,.16);border-radius:8px;padding:8px 9px;font-family:inherit}
+  .ytres .quick{margin-top:8px}
+  .ytres .errbox{margin-top:8px}
+  .mktbox{margin-top:9px;background:#0a1524;border:1px solid rgba(34,197,94,.26);border-radius:11px;padding:10px 11px}
+  .mktrow{display:grid;grid-template-columns:64px 1fr;gap:4px 8px;font-size:11.8px;line-height:1.58;margin-top:5px}
+  .mktrow b{color:#7dd3fc;font-weight:900;letter-spacing:0}
+  .mktrow span{color:#cbd5e1;min-width:0}
+  .mktrow .up{color:#f87171;font-weight:800}
+  .mktrow .dn{color:#60a5fa;font-weight:800}
+  .mktnote{margin-top:8px;font-size:10.8px;font-weight:700;color:#94a3b8;line-height:1.5}
+  .seowrap{margin-top:12px;padding-top:11px;border-top:1px dashed var(--line)}
+  .seohead{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;font-weight:900;color:#e2e8f0}
+  .seotags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .seotag{font-size:11.4px;font-weight:800;padding:5px 9px;border-radius:999px;background:rgba(3,199,90,.12);border:1px solid rgba(3,199,90,.34);color:#4ade80;letter-spacing:0;word-break:keep-all}
+  .seotag.kw{background:rgba(56,189,248,.10);border-color:rgba(56,189,248,.30);color:#7dd3fc}
+  button.seotag:hover{filter:brightness(1.18)}
+  .naver .nbar{position:relative;height:5px;border-radius:3px;background:#e8eef3;margin-top:9px;overflow:visible}
+  .naver .nbar i{display:block;height:5px;border-radius:3px;background:linear-gradient(90deg,#03c75a,#38bdf8)}
+  .naver .nbar b{position:absolute;top:-3px;left:75%;width:2px;height:11px;background:#c2410c;border-radius:1px}
+  .naver .nbarfoot{display:flex;justify-content:space-between;font-size:9.4px;font-weight:800;color:#8a94a0;margin-top:3px;letter-spacing:0}
+  .naver .nbarfoot .mid{color:#c2410c}
+  .naver .nfirst{font-size:11px;color:#4e5968;font-weight:600;margin-top:6px;line-height:1.5;letter-spacing:0}
+  .polish-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+  .polish-row .plabel{flex:0 0 auto;font-size:10.8px;font-weight:900;color:#94a3b8;letter-spacing:0;min-width:56px}
+  .polish-row .btn{flex:0 0 auto}
+  .multi-lines{display:grid;gap:6px;margin-top:2px}
+  .multi-lines .ml{font-size:12.6px;line-height:1.55;color:#e2e8f0;background:#0a1524;border:1px solid rgba(148,163,184,.18);border-radius:9px;padding:7px 9px}
+  .rpub{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:2px}
+  .rpub label{display:inline-flex;align-items:center;gap:5px;font-size:10.8px;font-weight:800;color:#94a3b8;letter-spacing:0;flex:0 0 auto;cursor:pointer}
+  .rpub input[type=checkbox]{width:14px;height:14px;accent-color:#22c55e;flex:0 0 auto}
+  .rpub input[type=url]{flex:1 1 130px;min-width:0;padding:5px 8px;font-size:11px;border-radius:8px;letter-spacing:0}
+  .rpub.done label{color:#4ade80}
+  .rpub a{font-size:10.5px;font-weight:800;color:#7dd3fc;text-decoration:underline;letter-spacing:0}
+
+  /* ---------- 🔑 정적 키 입력 UI ---------- */
+  .keybar{
+    display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+    background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(56,189,248,.10));
+    border:1px solid rgba(245,158,11,.45);border-radius:12px;
+    padding:10px 12px;margin-bottom:12px;
+  }
+  .keybar-txt{flex:1 1 200px;min-width:0;display:grid;gap:2px}
+  .keybar-txt b{font-size:12.7px;font-weight:900;color:#fcd34d;letter-spacing:-.02em}
+  .keybar-txt span{font-size:11.4px;font-weight:650;color:#cbd5e1;line-height:1.5}
+  .keybar .btn{flex:0 0 auto}
+  .keyrow{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:9px}
+  .keyrow input{flex:1 1 190px;min-width:0;background:#08111d;border:1px solid rgba(56,189,248,.34);border-radius:9px;padding:8px 10px;font-size:12.5px;letter-spacing:0;color:#e2e8f0}
+  .keyrow input:focus{outline:2px solid rgba(56,189,248,.45);outline-offset:1px}
+  .keymask{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;color:#86efac;background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.32);border-radius:9px;padding:7px 10px;letter-spacing:1px}
+  .keyhint{font-size:11px;font-weight:700;color:#94a3b8;margin-top:7px;letter-spacing:0}
+  .mktpaste{width:100%;margin-top:8px;background:#08111d;border:1px solid rgba(148,163,184,.28);border-radius:9px;padding:8px 9px;font-size:11.8px;line-height:1.55;color:#e2e8f0;letter-spacing:0}
 </style>
 </head>
 <body>
@@ -705,24 +872,47 @@
   <div class="brand">
     <div class="brand-icon" aria-hidden="true">🎬✍️</div>
     <div style="min-width:0">
-      <h1>AI 콘텐츠 스튜디오 <span class="v2">v2</span> <span class="pv">프리뷰</span></h1>
-      <p class="brand-sub">영상 컷편집 · 블로그 자동 작성 — 한 화면에서</p>
+      <h1>AI 콘텐츠 스튜디오 <span class="v2">v2</span> <span class="pv">내 키</span></h1>
+      <p class="brand-sub">영상 컷편집 · 블로그 자동 작성 — 내 Gemini 키로 브라우저가 직접 씁니다</p>
     </div>
   </div>
   <div class="top-actions">
-    <span class="status-badge"><span class="dot"></span>정적 프리뷰 · Gemini API 연결 대기</span>
-    <button class="btn-guide" id="apiGuideBtn" aria-expanded="false" aria-controls="apiGuide">API 연결 안내 <span class="cv">▼</span></button>
+    <span class="status-badge" id="statusBadge"><span class="dot"></span>정적 스튜디오 · 내 Gemini 키 직접 호출</span>
+    <button class="btn-guide" id="apiGuideBtn" aria-expanded="false" aria-controls="apiGuide">🔑 Gemini 연결 <span class="cv">▼</span></button>
+    <button class="btn-install" id="pwaInstallBtn" type="button" title="AI 스튜디오를 홈 화면에 앱으로 설치" hidden>📲 앱 설치</button>
   </div>
 </header>
 
+<div class="keybar" id="keyBanner" hidden>
+  <div class="keybar-txt">
+    <b>🔑 Gemini 키 입력(1회 저장)</b>
+    <span>키를 한 번만 넣으면 이 브라우저에 저장되고, 이후 생성 버튼이 바로 동작합니다. 페이지 코드·GitHub 저장소에는 키가 없습니다.</span>
+  </div>
+  <button class="btn primary" id="keyOpenBtn" type="button">키 입력</button>
+</div>
+
 <div class="guide" id="apiGuide" hidden>
-  <h3>🔑 Gemini API 키 연결 방법 <span class="bdg wait">연결 전 · 안내만</span></h3>
+  <h3>🔑 Gemini API 키 <span class="bdg wait" id="guideState">확인 중…</span>
+    <button class="btn small ghost" id="pingBtn" style="margin-left:auto">연결 테스트</button>
+  </h3>
   <ol>
-    <li><b>Google AI Studio</b>(aistudio.google.com) → <code>Get API key</code>에서 키 발급 <span style="color:#fbbf24">(무료 티어 있음, 사용량 초과 시 종량제로 별도 결제 설정 필요)</span></li>
-    <li><b>Vercel 프로젝트</b>(sd_live) → Settings → Environment Variables → <code>GEMINI_API_KEY</code> 이름으로 값 저장, Production 체크</li>
-    <li>Redeploy 후 동적 웹에서 실시간 유튜브 검색 · AI 문장 생성 · Gemini 영상 타임코드 분석이 켜집니다.</li>
+    <li>키 발급 — <b>Google AI Studio</b>(aistudio.google.com) → <code>Get API key</code> <span style="color:#fbbf24">(무료 티어 있음 · 초과 시 종량제)</span></li>
+    <li>아래 칸에 키를 붙여넣고 <b>[저장]</b> — 이 브라우저 <code>localStorage</code>(<code>cs_gemini_api_key</code>)에만 남습니다. 페이지 코드·저장소에는 키가 한 글자도 없습니다.</li>
+    <li><b>[연결 테스트]</b>는 실제로 한 번 호출해 <b>답한 모델과 걸린 시간</b>을 보여 줍니다. 실패는 그대로 알립니다.</li>
+    <li>모델 — <code>gemini-flash-lite-latest</code> 우선, 429·503이면 <code>gemini-3-flash-preview</code> → <code>gemini-3.8-flash</code> 순으로 자동 폴백하고 <b>실제 답한 모델</b>을 결과에 표시합니다.</li>
+    <li>무료 티어는 <b>모델별 하루 요청 한도</b>가 있습니다. 다 쓰면 위 상태에 한도 안내가 뜨고, 다음 날 풀립니다.</li>
   </ol>
-  <div class="warn">⚠️ 키는 이 정적 페이지·GitHub 저장소에 넣지 않습니다. Vercel 서버리스 함수에서만 읽고, 이 프리뷰는 키를 요구하지도 저장하지도 않습니다.</div>
+  <div class="keyrow" id="keyInputRow">
+    <input type="password" id="keyInput" placeholder="AIza… (Gemini API 키 붙여넣기)" autocomplete="off" spellcheck="false" aria-label="Gemini API 키">
+    <button class="btn primary" id="keySaveBtn" type="button">저장</button>
+  </div>
+  <div class="keyrow" id="keySavedRow" hidden>
+    <span class="keymask" id="keyMask">••••••••</span>
+    <button class="btn small" id="keyChangeBtn" type="button">키 변경</button>
+    <button class="btn small ghost" id="keyDelBtn" type="button">삭제</button>
+  </div>
+  <div class="keyhint" id="keyHint">키는 이 브라우저에서 <b>generativelanguage.googleapis.com</b> 으로만 전송됩니다.</div>
+  <div class="warn">⚠️ 공용 기기에서는 [삭제]로 지우세요. 이 페이지 소스·GitHub 저장소에는 키가 한 글자도 들어 있지 않습니다.</div>
 </div>
 
 <nav class="tabs" role="tablist" aria-label="모드 전환">
@@ -737,7 +927,9 @@
     <div class="srow" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px">
       <button class="btn small primary" id="loadTodayBtn">오늘 테마 불러오기</button>
       <button class="btn small" id="routineReset">기본값으로</button>
+      <button class="btn small ghost" id="pubReset">이번 주 발행 기록 지우기</button>
     </div>
+    <div class="rnote" id="pubWeek">이번 주 기록 · 발행 0일 · 브라우저에 저장</div>
     <div class="rnote">🗓 요일별 테마는 이 브라우저에 저장됩니다. <b>15:45 자동 생성</b>에 이 루틴표를 연결하는 것은 <b>스케줄 연동 후</b> — 지금은 저장·불러오기까지만 실제 동작합니다.</div>
   </div>
 </details>
@@ -784,7 +976,7 @@
         <div class="card">
           <div class="card-head"><span class="num">2</span><h2>스토리 · 편집 방향</h2></div>
           <div class="field">
-            <label class="flabel" for="story">어떤 순서로, 어떤 느낌으로 이어 붙일까요? <span class="bdg wait">AI 분석은 연결 후</span></label>
+            <label class="flabel" for="story">어떤 순서로, 어떤 느낌으로 이어 붙일까요? <span class="bdg real">✓ Gemini가 분석</span></label>
             <textarea id="story" placeholder="예) 후렴 부분에서 두 영상을 교차하고, 마지막에 손인사 엔딩. 자막은 곡 제목과 멤버 이름만." maxlength="400"></textarea>
             <div class="quick" id="storyQuick">
               <button class="qchip" data-story="후렴에서 두 영상을 교차편집">후렴 교차편집</button>
@@ -804,8 +996,8 @@
 
         <div class="card">
           <div class="card-head"><span class="num">3</span><h2>편집 실행</h2></div>
-          <button class="btn primary big" id="runEdit">편집 실행</button>
-          <p class="hint" style="margin-top:8px">지금은 <b style="color:#fbbf24">파이프라인 준비 상태</b>를 단계별로 보여 줍니다. 실제 AI 분석·컷편집은 Gemini API 연결 후 켜집니다.</p>
+          <button class="btn primary big" id="runEdit">편집 실행 (Gemini 컷 설계)</button>
+          <p class="hint" style="margin-top:8px">누르면 Gemini가 <b>클립 구간 안에서</b> 컷 설계도 · 후킹 3종 · BGM 덕킹을 만듭니다(8~20초). 영상 파일은 서버로 올리지 않고 파일명·길이·In/Out만 보냅니다. 실제 MP4 합성은 아직 없습니다.</p>
         </div>
       </div>
     </div>
@@ -818,11 +1010,11 @@
         <button class="presh" data-preset="letter"><b>③ 3단 블랙 레터박스</b><span>제목·클립·포인트</span></button>
       </div>
       <div class="stage"><div class="phone pv1" id="subPhone"></div></div>
-      <p class="hint" style="margin-top:9px">미리보기는 <b>선택한 비율</b>로 그려집니다. 실제 자막 렌더링·폰트 합성은 ffmpeg 합성 단계에서 적용 — <b style="color:#fbbf24">API 연결 후</b>.</p>
+      <p class="hint" style="margin-top:9px">미리보기는 <b>선택한 비율</b>로 그려집니다. 실제 자막 렌더링·폰트 합성은 ffmpeg 단계 일 — <b style="color:#fbbf24">아직 없습니다</b>.</p>
     </div>
 
     <div class="card">
-      <div class="card-head"><span class="num">5</span><h2>첫 2초 후킹 · 음양</h2><span class="bdg wait">API 연결 후 실제 적용</span></div>
+      <div class="card-head"><span class="num">5</span><h2>첫 2초 후킹 · 음양</h2><span class="bdg real">✓ Gemini 후킹 3종</span></div>
       <div class="hooks" id="hookList"></div>
       <div class="mix">
         <div class="rangelabel">🎚 BGM 덕킹 — 목소리 <b id="mixVoiceTxt">100%</b> : BGM <b id="mixBgmTxt">15%</b></div>
@@ -837,19 +1029,20 @@
           <span class="mv" id="mixBgmV">15%</span>
         </div>
       </div>
-      <p class="hint" style="margin-top:9px">말하는 구간에서 BGM을 낮추는 덕킹 값입니다. 지금은 <b>값만 저장</b>되고, 합성 시 적용은 API 연결 후입니다.</p>
+      <p class="hint" style="margin-top:9px">지금 보이는 후킹 3종은 <b>템플릿</b>입니다. [편집 실행]을 누르면 Gemini가 클립에 맞춰 새로 씁니다. 덕킹 값(목소리:BGM)은 설계도 요청에 함께 들어갑니다 — 합성 단계는 아직 없습니다.</p>
     </div>
 
     <div class="card" id="pipeline" hidden>
       <div class="pipe-head">
         <h3>🧩 편집 파이프라인</h3>
         <span class="bdg info" id="pipeRatio">9:16</span>
-        <span class="bdg wait">API 연결 전 = 준비 상태</span>
+        <span class="bdg real" id="pipeAiBadge">Gemini 컷 설계</span>
         <button class="btn small ghost" id="saveVideoBtn" style="margin-left:auto">보관함에 저장</button>
       </div>
       <div class="steps" id="steps"></div>
+      <div id="aiPlan"></div>
       <div class="realbox" id="realBox"></div>
-      <div class="waitbox">🔒 <b>지금 실행되지 않은 것</b> — Gemini 영상 분석, 컷 설계, ffmpeg.wasm 컷편집, 자막·BGM 합성, MP4 저장. 이 프리뷰는 정적 페이지라 API도 편집 엔진도 싣지 않았습니다. 위에서 <b>실제로 확인된 값</b>만 표시하고, 나머지는 성공한 것처럼 꾸미지 않습니다.</div>
+      <div class="waitbox">🔒 <b>이 화면에서 실제로 하지 않는 것</b> — Gemini는 <b>영상 픽셀을 보지 않습니다</b>(파일명·길이·In/Out만 전달). ffmpeg.wasm 컷편집 · 자막 렌더 · BGM 합성 · MP4 저장도 이 사이트에 아직 없습니다. 위 설계도는 <b>편집 지시서</b>이고 완성 영상이 아닙니다.</div>
     </div>
   </div>
 
@@ -858,7 +1051,7 @@
     <div class="card">
       <div class="card-head">
         <span class="num">1</span><h2>유튜브 검색</h2>
-        <span class="bdg wait">실시간 검색 · API 연결 전</span>
+        <span class="bdg wait">유튜브 실시간 검색 미연동</span>
       </div>
       <div class="search-row">
         <input type="text" id="ytQuery" placeholder="검색어 (예: 동탄 아이랑 키즈카페)" maxlength="60">
@@ -869,7 +1062,7 @@
 
       <div id="ytResults" hidden>
         <div class="demo-banner">
-          <span class="bdg wait">API 연결 전 데모</span>
+          <span class="bdg wait">UI 예시 데이터</span>
           <span>아래 7개는 <b>UI 확인용 예시 데이터</b>입니다. 실제 유튜브 검색 결과가 아니며, 영상 링크도 없습니다.</span>
         </div>
         <div class="yt-bar">
@@ -883,19 +1076,32 @@
 
     <div class="card">
       <div class="card-head">
-        <span class="num">2</span><h2>스토리 구성안 미리보기</h2>
+        <span class="num">2</span><h2>AI 빈틈 분석 · 50초 대본</h2>
+        <span class="bdg real" id="ytAiBadge">✓ Gemini 호출</span>
+      </div>
+      <p class="hint">검색어(또는 주제)와 <b>고른 영상 제목</b>을 Gemini에 보내 <b>경쟁 빈틈 2가지</b>와 <b>50초 쇼츠 대본</b>을 받습니다. 영상 픽셀·조회수·댓글은 가져오지 않습니다 — 제목 문구 기준 분석입니다.</p>
+      <div class="search-row">
+        <input type="text" id="ytTopic" placeholder="주제·검색어 (예: 동탄 아이랑 실내 키즈카페)" maxlength="80">
+        <button class="btn primary" id="aiYtBtn">AI 분석 + 50초 대본</button>
+      </div>
+      <div id="ytAiOut" hidden></div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span class="num">3</span><h2>스토리 구성안 미리보기</h2>
         <span class="bdg violet">템플릿 자동 구성</span>
       </div>
       <div id="ytPlan"><div class="empty">영상을 <b>3개</b> 고르면 오프닝 → 본편 → 엔딩 구성안이 여기에 만들어집니다.</div></div>
       <div class="gapbox">
-        <div class="gaphead">🔍 경쟁 콘텐츠 빈틈(Gap) 포인트 <span class="bdg wait">API 연결 전 예시 · 연결 후 실시간 댓글/글 분석</span></div>
+        <div class="gaphead">🔍 경쟁 콘텐츠 빈틈(Gap) 포인트 <span class="bdg info">직접 추가 · 🤖 Gemini 제안</span></div>
         <div class="gaplist" id="gapYtList"></div>
         <div class="gapadd">
           <input type="text" id="gapYtAdd" placeholder="빈틈 메모 추가 (예: 초보자 실수 사례)" maxlength="60">
           <button class="btn small" id="gapYtAddBtn">추가</button>
         </div>
         <button class="btn small ghost" id="gapYtApply" style="margin-top:8px">스토리 방향에 반영</button>
-        <div class="gapnote">지금 보이는 2가지는 <b>선택한 데모/테마 기준 예시</b>입니다. 연결 후에는 실제 댓글·경쟁 글에서 빈틈을 찾아 제안합니다.</div>
+        <div class="gapnote">기본 2가지는 <b>테마 기준 예시</b>입니다. [AI 분석 + 50초 대본]을 누르면 🤖 표시가 붙은 <b>Gemini 제안</b>이 여기에 추가됩니다.</div>
       </div>
     </div>
   </div>
@@ -903,6 +1109,44 @@
 
 <!-- ================= BLOG ================= -->
 <section id="panelBlog" role="tabpanel" aria-labelledby="tabBlog" hidden>
+  <details class="shelf" id="materialPanel">
+    <summary><span>📥 재료 수집 — 유튜브 자막 · 오늘 관제탑 시황</span><span class="n" id="matState">대기</span><span class="arw">▾</span></summary>
+    <div class="shelfbody">
+      <div class="field" style="margin-top:0">
+        <label class="flabel" for="ytUrl">유튜브 링크 → 영상 확인 <span class="bdg info">정적: 제목 확인 · 자막은 붙여넣기</span></label>
+        <div class="search-row">
+          <input type="text" id="ytUrl" placeholder="youtube.com/watch?v=… / youtu.be/… / /shorts/…" maxlength="200" autocomplete="off" spellcheck="false">
+          <button class="btn primary" id="ytTrBtn">자막 추출</button>
+        </div>
+        <p class="hint" style="margin-top:6px">정적 페이지는 유튜브가 브라우저의 외부 접근을 막아(CORS) <b>자막을 직접 받아올 수 없습니다</b>. 링크를 넣으면 <b>제목·채널을 실제로 확인</b>해 주고, 자막은 유튜브에서 복사해 [참고 자료]에 붙여넣으면 AI가 그 내용을 근거로만 인용합니다. <b>없는 자막을 지어내지 않습니다.</b></p>
+      </div>
+      <div id="ytTrBox" hidden></div>
+      <div class="matsep"></div>
+      <div class="field" style="margin-top:0">
+        <div class="flabel">오늘 관제탑 시황 1클릭 <span class="bdg info">지수 · 수급 · 주도 테마 · 대장주</span></div>
+        <div class="matpanel-row">
+          <button class="btn small primary" id="mktBtn">📡 오늘 시황 불러오기</button>
+          <button class="btn small ghost" id="mktCopyBtn" hidden>요약 복사</button>
+          <span class="hint" id="mktHint">관제탑 동적 API(지수·주도테마)와 확정 수급 파일을 읽어 요약합니다. 실패하면 [관제탑 열기]와 붙여넣기 안내로 넘어갑니다.</span>
+        </div>
+        <div class="mktbox" id="mktBox" hidden></div>
+        <textarea class="mktpaste" id="mktPaste" rows="2" maxlength="2000" hidden placeholder="관제탑에서 복사한 시황을 여기에 붙여넣고 [참고 자료로] 를 누르세요."></textarea>
+        <div class="quick" id="mktPasteRow" hidden>
+          <button class="btn small primary" id="mktPasteGo" type="button">참고 자료로 넣기</button>
+          <span class="hint">숫자는 관제탑이 보여 준 값만 들어갑니다.</span>
+        </div>
+      </div>
+      <div class="matsep"></div>
+      <div class="field" style="margin-top:0">
+        <label class="flabel" for="srcMaterial">참고 자료 <span class="bdg wait">사실 근거로만 인용 · 내 경험 아님</span></label>
+        <textarea id="srcMaterial" rows="3" maxlength="6000" placeholder="유튜브 자막 · 시황 요약 · 기사 인용을 여기에. AI는 이 자료를 근거로만 인용하고, 내가 겪은 일처럼 쓰지 않습니다."></textarea>
+        <div class="store-note">
+          <span id="srcInfo">0자 · 이 브라우저에 저장 · 6000자까지</span>
+          <button class="linkbtn" id="srcClear">지우기</button>
+        </div>
+      </div>
+    </div>
+  </details>
   <div class="blog-cols">
     <div>
       <div class="card">
@@ -949,14 +1193,25 @@
             <button class="qchip" data-topic="겨울 제주 가족여행 항공+숙소 최저가 정리">제주 특가</button>
           </div>
         </div>
-        <button class="btn primary big" id="genBtn" style="margin-top:11px">양식 뼈대 생성</button>
-        <p class="hint" style="margin-top:8px">이모지 · 말투 · 섹션 순서 · 강조 포인트를 그대로 반영해 <b>마크다운 초안 틀</b>을 만듭니다. 문장 채우기는 동적 웹 연결 후 자동입니다.</p>
+        <div class="field" style="margin-top:12px">
+          <label class="flabel" for="expNote">내 경험 메모 (선택) <span class="bdg info">1인칭 경험은 이 칸만</span></label>
+          <textarea id="expNote" rows="2" placeholder="직접 가본 곳·직접 써본 물건만 적으세요. 비우면 경험담 없이 조건·핵심 포인트만 담백하게 정리합니다. (예) 11/15 토 11시 방문, 주차 2시간 무료, 대기 20분" maxlength="2000"></textarea>
+          <div class="store-note">
+            <span id="expInfo">0자 · 이 브라우저에 저장 · AI가 지어낸 경험담은 쓰지 않습니다</span>
+            <button class="linkbtn" id="expClear">지우기</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:11px">
+          <button class="btn primary big" id="genBtn" style="flex:1 1 150px">🤖 AI 본문 생성</button>
+          <button class="btn small ghost" id="genLocalBtn">오프라인 뼈대만</button>
+        </div>
+        <p class="hint" style="margin-top:8px">Gemini가 섹션 순서 · 말투 · 내 문체 샘플 · 금지 상투어 · 빈틈 메모를 모두 넣어 <b>완성 본문</b>(표 · 도입 3줄 훅 · [📸 사진: 묘사 | search: 영문검색어] · 솔직한 단점)을 씁니다. 보통 10~25초.</p>
       </div>
 
       <div class="card">
         <div class="card-head"><span class="num">5</span><h2>내 문체 · 금지 상투어</h2><span class="bdg real">✓ localStorage 저장</span></div>
         <div class="field" style="margin-top:0">
-          <label class="flabel" for="toneSample">내 문체 샘플 붙여넣기 (선택) <span class="bdg wait">문체 복제는 API 연결 후</span></label>
+          <label class="flabel" for="toneSample">내 문체 샘플 붙여넣기 (선택) <span class="bdg real">✓ Gemini가 문체 반영</span></label>
           <textarea id="toneSample" rows="4" placeholder="내가 쓴 글, 또는 마음에 드는 블로그 글 1~2문단을 그대로 붙여넣으세요.&#10;(예) 솔직히 처음엔 반신반의했는데, 막상 열어보니…" maxlength="4000"></textarea>
           <div class="store-note">
             <span id="sampleInfo">0자 · 선택한 양식에 저장</span>
@@ -975,24 +1230,34 @@
       </div>
 
       <div class="card">
-        <div class="card-head"><span class="num">6</span><h2>경쟁 콘텐츠 빈틈(Gap)</h2><span class="bdg wait">API 연결 전 예시</span></div>
+        <div class="card-head"><span class="num">6</span><h2>경쟁 콘텐츠 빈틈(Gap)</h2><span class="bdg info">직접 추가 · 🤖 Gemini 제안</span></div>
         <p class="hint">같은 테마의 인기 글이 <b>비워 둔 부분</b>을 골라 두면 뼈대에 그대로 반영됩니다.</p>
         <div id="gapBlog"></div>
         <div class="gapadd">
           <input type="text" id="gapBlogAdd" placeholder="빈틈 메모 추가 (예: 초보자 실수 사례)" maxlength="60">
           <button class="btn small" id="gapBlogAddBtn">추가</button>
         </div>
-        <div class="gapnote">고른 빈틈은 <b>[양식 뼈대 생성]</b> 때 초안에 “경쟁 글 빈틈 메우기” 섹션으로 들어갑니다. 2가지는 <b>선택한 테마 기준 예시</b>이고, 연결 후에는 실제 인기 글·댓글에서 빈틈을 찾아 제안할 예정입니다.</div>
+        <div class="gapnote">고른 빈틈은 <b>[AI 본문 생성]</b> 때 본문에 반영됩니다. [AI 본문 생성]을 누르면 Gemini가 찾은 빈틈 2개가 🤖 표시로 추가됩니다.</div>
       </div>
     </div>
 
     <div>
+      <div id="aiNoteBlog"></div>
       <div class="card" id="titleCard" hidden>
         <div class="card-head"><span class="num">7</span><h2>제목 3종 세트</h2><span class="bdg real">✓ 이 화면에서 생성</span></div>
         <div class="titlelist" id="titleList"></div>
         <div class="naver" id="naverPrev"></div>
         <button class="btn small ghost" id="copyTitleBtn" style="margin-top:8px">선택한 제목 복사</button>
-        <p class="hint" style="margin-top:8px">제목을 누르면 미리보기가 바뀝니다. 네이버 <b>모바일 검색 결과 제목</b>은 <b>32자</b>에서 잘립니다.</p>
+        <p class="hint" style="margin-top:8px">제목을 누르면 미리보기가 바뀝니다. 네이버 <b>모바일 검색 결과 제목</b>은 <b>30자</b>부터 줄어들고, PC 검색은 <b>32자</b>에서 잘립니다. 아래 막대의 <b style="color:#fb923c">주황 기준선</b>이 30자 위치입니다.</p>
+        <div class="seowrap">
+          <div class="seohead">🔍 검색 유입 해시태그 10개 <span class="bdg info" id="seoBadge">본문 기반</span></div>
+          <div class="seotags" id="seoTags"><span class="hint">본문을 만들고 [해시태그 10개 뽑기]를 누르면 검색어·해시태그 10개를 뽑습니다. 칩을 누르면 하나만 복사됩니다.</span></div>
+          <div class="quick" style="margin-top:9px">
+            <button class="btn small" id="seoBtn">🔍 해시태그 10개 뽑기</button>
+            <button class="btn small naver" id="seoCopyBtn" hidden>10개 복사</button>
+          </div>
+          <div id="seoNote"></div>
+        </div>
       </div>
       <div class="card" id="outCard" hidden style="padding:0;background:none;border:none">
         <div class="out-card">
@@ -1007,20 +1272,96 @@
           </div>
           <pre class="out" id="outText"></pre>
           <textarea class="outedit" id="outEdit" hidden aria-label="초안 직접 편집"></textarea>
-          <div class="out-foot"><b>이 틀은 양식 구조만으로 만든 초안입니다.</b> 동적 웹(Gemini 연결)에서는 각 섹션에 검색·요약·문장이 자동으로 채워지고, 여기서는 직접 채워 넣으면 됩니다.</div>
+          <div class="out-foot"><b>[AI 본문 생성]은 Gemini가 쓴 완성 본문입니다.</b> 값·날짜·업체명은 [확인 필요]로 남아 있을 수 있으니 발행 전에 직접 확인하세요. 여기서 고쳐 쓰면 그대로 보관함에 저장됩니다.</div>
+        </div>
+      </div>
+      <div class="card" id="polishCard" hidden>
+        <div class="card-head">
+          <span class="num">✦</span><h2>초안 다듬기 · 1타 3피</h2>
+          <span class="bdg real" id="polishStat">Gemini 재작성</span>
+        </div>
+        <p class="hint" style="margin-bottom:2px">지금 초안을 <b>같은 구조(소제목·표·사진 자리)로 다시 씁니다.</b> 사실·수치·[확인 필요]는 그대로 두고 문장만 바꿉니다.</p>
+        <div class="polish-row">
+          <span class="plabel">톤 바꾸기</span>
+          <button class="btn small" id="toneHonest">솔직 후기형</button>
+          <button class="btn small" id="toneExpert">전문가 분석형</button>
+          <button class="btn small" id="toneWarm">따뜻한 에세이형</button>
+        </div>
+        <div class="polish-row">
+          <span class="plabel">문장 다듬기</span>
+          <button class="btn small ghost" id="humanizeBtn">🪄 AI 티 빼기</button>
+          <button class="btn small ghost" id="closingBtn">💬 댓글 유도 + 링크 박스</button>
+        </div>
+        <div class="polish-row">
+          <span class="plabel">1타 3피</span>
+          <button class="btn small primary" id="multiUseBtn">📱 인스타 3줄 + 🎬 쇼츠 대본</button>
+        </div>
+        <div id="polishNote"></div>
+        <div class="store-note" style="margin-top:7px">
+          <span>톤 변환·AI 티 빼기는 본문을 덮어씁니다. 결과가 마음에 안 들면 [되돌리기]로 직전 초안을 복구하세요.</span>
+          <button class="linkbtn" id="undoPolish" hidden>↩ 직전 초안으로 되돌리기</button>
+        </div>
+      </div>
+      <div class="card" id="multiCard" hidden>
+        <div class="card-head">
+          <span class="num">✦</span><h2>📱 인스타·스레드 3줄 요약</h2>
+          <span class="bdg real" id="multiBadge">Gemini</span>
+          <span class="spacer"></span>
+          <button class="btn small naver" id="copyMultiBtn">복사</button>
+        </div>
+        <div class="multi-lines" id="multiLines"></div>
+        <div class="seotags" id="multiTags"></div>
+        <p class="hint" style="margin-top:8px">3줄 + 해시태그는 그대로 붙여넣으면 되고, 쇼츠 대본은 아래 <b>50초 쇼츠 대본</b> 카드에 같이 채워집니다.</p>
+      </div>
+      <div class="card" id="photoCard" hidden>
+        <div class="card-head">
+          <span class="num">8</span><h2>📸 본문 추천 사진 & 썸네일</h2>
+          <span class="bdg real" id="photoStat">사진 0곳</span>
+          <span class="spacer"></span>
+          <button class="btn small ghost" id="photoFindAll">🔄 사진 전체 다시 찾기</button>
+        </div>
+        <p class="hint" id="photoHint">본문의 <b>[📸 사진: 묘사 | search: 영문검색어]</b> 자리를 자동으로 찾아 <b>Wikimedia Commons</b>에서 무료 사진을 검색합니다(브라우저가 직접 · 키 없음). 사진을 누르면 <b>원클릭 저장</b>. 사진마다 라이선스가 다르니 카드의 표기를 확인하고 출처를 남기세요.</p>
+        <div id="photoSlots"></div>
+        <div class="pempty" id="photoNone" hidden>본문에서 사진 자리를 찾지 못했습니다. 아래 <b>사진 직접 검색</b>으로 찾거나, 본문에 <b>[📸 사진: 묘사 | search: english keywords]</b> 를 넣어 주세요.</div>
+        <div class="padd">
+          <input type="text" id="photoAddQ" placeholder="사진 직접 검색 (영문 권장 · 예: hanok village autumn)" maxlength="60">
+          <button class="btn small" id="photoAddBtn">검색</button>
+        </div>
+        <label class="ptoggle"><input type="checkbox" id="photoInCopy" checked> 네이버 서식 복사에 '📸 사진 자리' 안내 박스 포함 (해제하면 복사본에서 사진 자리를 뺍니다)</label>
+        <div class="thumbcard">
+          <div class="flabel">블로그 대표 이미지(썸네일) · 1200×630 PNG <span class="bdg info">API·키 없이 100% 동작</span></div>
+          <label class="thlabel" for="thumbTitle">제목 — 비우면 [제목 3종]에서 고른 제목을 그대로 씁니다</label>
+          <input type="text" id="thumbTitle" maxlength="70" placeholder="대표 이미지에 넣을 제목">
+          <canvas id="thumbCanvas" width="1200" height="630" role="img" aria-label="대표 이미지 1200×630 미리보기"></canvas>
+          <div class="throw">
+            <button class="btn small primary" id="thumbDlBtn">⬇ 썸네일 PNG 저장</button>
+            <button class="btn small ghost" id="thumbStyleBtn">🎲 다른 스타일</button>
+          </div>
+          <p class="hint" style="margin-top:7px">글 제목 + 카테고리 배지 + 키워드로 <b>1200×630</b> 대표 이미지를 브라우저에서 직접 그립니다(네이버·티스토리 대표 이미지 규격).</p>
         </div>
       </div>
       <div class="card" id="checkCard" hidden>
-        <div class="card-head"><span class="num">8</span><h2>발행 전 5초 체크리스트</h2><span class="bdg real" id="checkCount">0 / 4</span></div>
+        <div class="card-head"><span class="num">9</span><h2>발행 전 5초 체크리스트</h2><span class="bdg real" id="checkCount">0 / 4</span></div>
         <div class="checks" id="checkList"></div>
         <div class="checkbar" id="checkBar"></div>
         <button class="btn primary big" id="toShortsBtn" style="margin-top:11px">🎬 이 글로 50초 쇼츠 대본 넘기기</button>
         <p class="hint" style="margin-top:8px">주제와 핵심 3줄을 <b>영상 탭 스토리 방향</b>으로 넘깁니다. 남의 영상 컷편집이 아니라 <b>내 클립·스톡으로 새로 만드는 50초 대본</b>입니다.</p>
       </div>
+      <div class="card" id="shortsCard" hidden>
+        <div class="card-head">
+          <span class="num">10</span><h2>🎬 50초 쇼츠 대본</h2>
+          <span class="bdg real" id="shortsBadge">Gemini</span>
+          <span class="spacer"></span>
+          <button class="btn small" id="copyShortsBtn">복사</button>
+          <button class="btn small primary" id="toVideoBtn">영상 탭으로 보내기</button>
+        </div>
+        <div id="shortsOut"></div>
+        <p class="hint" style="margin-top:8px">0~2초 후킹 → 3~40초 핵심 3컷 → 41~50초 엔딩. 대본은 말하는 문장이고, 합성(MP4)은 아직 이 사이트에 없습니다.</p>
+      </div>
       <div class="card" id="outEmpty">
         <div class="empty">
           <b>아직 생성된 뼈대가 없습니다.</b><br>
-          양식을 고르고 주제를 입력한 뒤 <b>[양식 뼈대 생성]</b>을 눌러 주세요.<br>
+          양식을 고르고 주제를 입력한 뒤 <b>[AI 본문 생성]</b>을 눌러 주세요.<br>
           생성된 마크다운은 <b>[복사]</b>로 바로 블로그에 붙여 넣을 수 있습니다.
         </div>
       </div>
@@ -1029,9 +1370,7 @@
 </section>
 
 <footer>
-  <b>정적 프리뷰 안내</b> — 이 페이지는 UI·동선을 먼저 눌러 보기 위한 독립 미리보기입니다. 실제 동작: 영상 파일 메타·길이·미리보기, 클립별 In/Out 구간 슬라이더(재생 위치 이동·구간 합산), 자막 스타일 미리보기, 양식 추가/수정/삭제 저장, 내 문체 샘플·금지 상투어 저장, 양식 기반 마크다운 뼈대 생성·편집·복사(네이버 서식 HTML 복사 포함), 제목 3종·네이버 32자 잘림 미리보기, 발행 전 체크리스트, 경쟁 콘텐츠 빈틈 메모, 주간 발행 루틴표, 내 작업 보관함(localStorage), 블로그→쇼츠 대본 넘기기. 연결 대기: 유튜브 실시간 검색·경쟁 콘텐츠 자동 분석, AI 문장 생성·문체 복제, 제목 AI 추천, Gemini 영상 타임코드 분석, ffmpeg.wasm 컷편집·자막·BGM 합성. 기존 콘텐츠 스튜디오·관제탑과는 별개 파일이며 서로 영향을 주지 않습니다.
-</footer>
-
+  <b>정적 스튜디오 v2 안내(내 Gemini 키)</b> — 이 페이지는 GitHub Pages 정적 파일 하나로 돌아갑니다. <b>키는 화면에서 한 번만 입력</b>하면 이 브라우저(localStorage)에만 저장되고, 생성 요청은 브라우저가 <b>generativelanguage.googleapis.com</b> 으로 직접 보냅니다. 서버가 없으므로 <b>API 키를 페이지·저장소에 넣지 않습니다</b>. <b>실제로 동작</b>: 영상 파일 메타·길이·미리보기와 클립별 In/Out 슬라이더, 블로그 완성 본문 생성(제목 3종·경쟁 글 빈틈 2개·표·도입 훅·[📸 사진: 묘사 | search: 영문검색어]·솔직한 단점), <b>본문 사진 자리 자동 파싱 → Wikimedia Commons 실시간 검색 및 저장</b>(브라우저 직접), <b>Canvas 1200×630 대표 이미지 PNG 생성·저장</b>, 유튜브 빈틈 분석 + 50초 쇼츠 대본, 블로그→쇼츠 변환, <b>톤 변환 3종·AI 티 빼기·댓글 유도 질문+링크 안내 박스·인스타 3줄과 쇼츠 1타 3피</b>, <b>검색 유입 해시태그 10개</b>, 영상 컷 설계도(구간·자막·전환·BGM 덕킹), 제목 3종의 <b>네이버 모바일 30자 기준선 + 본문 첫 줄 미리보기</b>와 네이버 서식 복사, 발행 전 체크리스트, 자막 프리셋 3종 미리보기, <b>주간 발행 체크·포스팅 URL 기록</b>, 양식·문체 샘플·금지 상투어·빈틈 메모·루틴표·보관함(localStorage) 저장, <b>오늘 관제탑 시황 1클릭</b>(관제탑 동적 API 값 그대로 · 실패하면 관제탑 링크와 붙여넣기 칸). <b style="color:#fbbf24">정적이라 안 되는 것</b>: 유튜브 자막 자동 추출(CORS — 제목만 확인, 자막은 붙여넣기), 유튜브 실시간 검색·조회수·댓글 수집, 블로그 자동 포스팅, 영상 픽셀 분석, ffmpeg.wasm 컷편집·자막 렌더·BGM 합성·MP4 저장, 15:45 자동 생성 연동. Gemini가 만든 글은 값·날짜·업체명이 [확인 필요]로 남을 수 있으니 발행 전에 직접 확인하세요. 무료 사진은 사진마다 라이선스가 다르니 카드의 라이선스를 확인하고 출처를 표기하세요. 기존 콘텐츠 스튜디오·관제탑과는 별개 파일입니다.</footer>
 <!-- modal -->
 <div class="overlay" id="formModal" hidden>
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
@@ -1074,7 +1413,7 @@
       </div>
 
       <div class="field">
-        <label class="flabel" for="mSample">내 문체 샘플 붙여넣기 (선택) <span class="bdg wait">문체 복제는 API 연결 후</span></label>
+        <label class="flabel" for="mSample">내 문체 샘플 붙여넣기 (선택) <span class="bdg real">✓ Gemini가 문체 반영</span></label>
         <textarea id="mSample" rows="3" placeholder="이 양식으로 쓸 때 참고할 내 글·좋아하는 글 1~2문단" maxlength="4000"></textarea>
         <p class="hint" style="margin-top:5px">양식별로 저장되고, 작성 화면의 <b>내 문체 샘플</b> 칸과 같은 값입니다.</p>
       </div>
@@ -1092,12 +1431,1488 @@
 
 <div id="toast" role="status" aria-live="polite"></div>
 
+
+<script id="cs-ai-engine">
+/* ============================================================
+   🔑 정적 Gemini 직접 호출 엔진 — window.CSAI
+   ------------------------------------------------------------
+   - 서버리스 함수(/api/content-ai) 대신 브라우저가
+     generativelanguage.googleapis.com 을 직접 호출한다.
+   - 키는 오직 localStorage['cs_gemini_api_key'] 에서만 읽는다.
+     이 파일·저장소·HTML 어디에도 키 문자열을 쓰지 않는다.
+   - 프롬프트·JSON 스키마·결과 정규화는 sd_live/api/content-ai.js 의
+     원문을 그대로 옮겨 왔다(같은 문장·같은 규칙·같은 금지 표현).
+   - 실패는 꾸며내지 않는다: 시도한 모델과 상태 코드를 tries 에 그대로 남긴다.
+   ============================================================ */
+window.CSAI = (function () {
+  'use strict';
+
+  var KEY_LS = 'cs_gemini_api_key';
+  var API_ROOT = 'https://generativelanguage.googleapis.com/v1beta/models/';
+  /* 1순위 flash-lite-latest(무료 티어 한도가 넉넉하고 3초대 응답) → 3 Flash → 3.8 Flash */
+  var MODEL_ORDER = ['gemini-flash-lite-latest', 'gemini-3-flash-preview', 'gemini-3.8-flash'];
+  /* thinkingConfig 를 400 INVALID_ARGUMENT 로 거절하는 모델 (실측 2026-11-18) */
+  var THINKING_UNSUPPORTED = ['gemini-flash-lite-latest'];
+  var THINKING_OFF = { thinkingBudget: 0 };
+  var FIRST_TOKEN_MS = 16000;
+  var DEADLINE_MS = 76000;
+  var PRIMARY_COOLDOWN_MS = 90000;
+  var primaryDownUntil = 0;
+
+  var memKey = '';   /* localStorage 가 막힌 브라우저(시크릿 모드)에서만 쓰는 이번 창 한정 키 */
+  function getKey() {
+    var v = '';
+    try { v = localStorage.getItem(KEY_LS) || ''; } catch (e) { v = ''; }
+    return String(v || memKey || '').trim();
+  }
+  function setKey(v) {
+    var k = String(v == null ? '' : v).trim();
+    memKey = k;
+    try {
+      if (k) localStorage.setItem(KEY_LS, k);
+      else localStorage.removeItem(KEY_LS);
+    } catch (e) { return false; }
+    return true;
+  }
+  function clearKey() {
+    memKey = '';
+    try { localStorage.removeItem(KEY_LS); } catch (e) {}
+  }
+  function maskKey(k) {
+    var s = String(k || '');
+    if (s.length <= 8) return s ? '••••••••' : '';
+    return '••••••••' + s.slice(-4);
+  }
+
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function noKeyErr() {
+    var e = new Error('Gemini API 키가 없습니다. 위 [🔑 키 입력]에서 한 번만 넣어 주세요.');
+    e.status = 401;
+    e.code = 'missing_gemini_key';
+    e.retryable = false;
+    return e;
+  }
+
+const BAN_DEFAULT = [
+  '알아보겠습니다',
+  '결론적으로',
+  '무엇보다도',
+  '이번 포스팅에서는',
+  '살펴보도록 하겠습니다',
+  '~하는 것이 중요합니다',
+  '그렇기 때문에',
+  '정리해 보겠습니다',
+];
+
+const s = (v, max) => String(v == null ? '' : v).replace(/\r/g, '').trim().slice(0, max || 4000);
+
+const arr = (v, max) => (Array.isArray(v) ? v : []).slice(0, max || 12);
+const num = (v, fb) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : fb;
+};
+const round1 = (n) => Math.round(n * 10) / 10;
+
+/* ---------------- 프롬프트 · 스키마 (content-ai.js 원문 그대로) ---------------- */
+const SCHEMA_BLOG = {
+  type: 'object',
+  properties: {
+    titles: {
+      type: 'array',
+      description: '제목 3종 — 궁금증형 / 숫자비교형 / 솔직후기형 순서, 각 32자 이내',
+      items: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', enum: ['궁금증형', '숫자비교형', '솔직후기형'] },
+          text: { type: 'string' },
+        },
+        required: ['type', 'text'],
+      },
+    },
+    gaps: {
+      type: 'array',
+      description: '경쟁 인기 글이 비워 둔 빈틈 2개 — 각 1~2문장',
+      items: { type: 'string' },
+    },
+    body: { type: 'string', description: '완성된 마크다운 본문 (표·도입 3줄 훅·[📸 사진: 묘사 | search: 영문검색어] 2~3곳·솔직한 단점 포함)' },
+    warnings: {
+      type: 'array',
+      description: '내가 확인하지 못해 [확인 필요]로 남긴 값·사실 목록',
+      items: { type: 'string' },
+    },
+  },
+  required: ['titles', 'gaps', 'body'],
+};
+
+const SCHEMA_VIDEO = {
+  type: 'object',
+  properties: {
+    hooks: {
+      type: 'array',
+      description: '첫 2초 후킹 멘트 3종',
+      items: {
+        type: 'object',
+        properties: {
+          tag: { type: 'string', description: '질문형 · 숫자형 · 반전형 같은 짧은 유형명' },
+          text: { type: 'string', description: '실제로 말할 문장 (25자 내외)' },
+        },
+        required: ['tag', 'text'],
+      },
+    },
+    cuts: {
+      type: 'array',
+      description: '컷 설계도 — 편집 순서대로',
+      items: {
+        type: 'object',
+        properties: {
+          clipIndex: { type: 'integer', description: 'clips 배열의 0부터 시작하는 인덱스' },
+          startSec: { type: 'number', description: '해당 클립의 in~out 안에서 잘라 쓸 시작 초' },
+          endSec: { type: 'number', description: '해당 클립의 in~out 안에서 잘라 쓸 끝 초' },
+          caption: { type: 'string', description: '이 컷에 깔 자막 한 줄' },
+          transition: { type: 'string', enum: ['cut', 'fade', 'slide', 'zoom'] },
+        },
+        required: ['clipIndex', 'startSec', 'endSec', 'caption', 'transition'],
+      },
+    },
+    bgm: {
+      type: 'object',
+      properties: {
+        ducking: { type: 'string', description: '덕링 타이밍·세기 한 줄 지시' },
+        notes: { type: 'array', items: { type: 'string' } },
+      },
+      required: ['ducking'],
+    },
+    warnings: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['hooks', 'cuts', 'bgm'],
+};
+
+const SCHEMA_YT = {
+  type: 'object',
+  properties: {
+    gaps: {
+      type: 'array',
+      description: '경쟁 영상이 비워 둔 빈틈 2가지',
+      items: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', description: '빈틈 한 줄 제목 (20자 내외)' },
+          why: { type: 'string', description: '왜 비어 있는지 (1문장)' },
+          how: { type: 'string', description: '내가 채우는 방법 (1문장)' },
+        },
+        required: ['title', 'why', 'how'],
+      },
+    },
+    shorts: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: '쇼츠 제목 (32자 이내)' },
+        hook: { type: 'string', description: '첫 2초 후킹 멘트' },
+        scenes: {
+          type: 'array',
+          description: '0~2초 후킹 → 3~40초 핵심 3컷 → 41~50초 엔딩',
+          items: {
+            type: 'object',
+            properties: {
+              time: { type: 'string', description: '예: 0-2초' },
+              line: { type: 'string', description: '말할 문장 + 화면 지시' },
+            },
+            required: ['time', 'line'],
+          },
+        },
+        cta: { type: 'string' },
+      },
+      required: ['title', 'hook', 'scenes'],
+    },
+    warnings: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['gaps', 'shorts'],
+};
+
+const SCHEMA_SHORTS = {
+  type: 'object',
+  properties: {
+    title: { type: 'string', description: '쇼츠 제목 (32자 이내)' },
+    hook: { type: 'string', description: '0~2초 후킹 멘트' },
+    scenes: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          time: { type: 'string', description: '예: 3-13초' },
+          line: { type: 'string', description: '대사 + 자막/화면 지시' },
+        },
+        required: ['time', 'line'],
+      },
+    },
+    ending: { type: 'string', description: '41~50초 엔딩 한 줄' },
+    captionGuide: { type: 'string', description: '자막 스타일 권장 1줄' },
+    warnings: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['title', 'hook', 'scenes', 'ending'],
+};
+
+/* ---------------- 톤 변환 · AI 티 빼기 · 1타 3피 · SEO 태그 · 마무리 박스 스키마 */
+
+const SCHEMA_REWRITE = {
+  type: 'object',
+  properties: {
+    body: { type: 'string', description: '톤을 바꾼 완성 본문 (마크다운)' },
+    changed: { type: 'array', description: '실제로 바꾼 점 2~4개 — 한 줄씩', items: { type: 'string' } },
+    warnings: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['body'],
+};
+
+const SCHEMA_HUMANIZE = {
+  type: 'object',
+  properties: {
+    body: { type: 'string', description: '사람 말투로 다듬은 완성 본문 (마크다운)' },
+    removed: {
+      type: 'array',
+      description: '본문에서 실제로 걷어낸 기계적 상투어·수식어 (지운 것만, 없으면 빈 배열)',
+      items: { type: 'string' },
+    },
+    warnings: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['body'],
+};
+
+const SCHEMA_MULTI = {
+  type: 'object',
+  properties: {
+    insta: {
+      type: 'object',
+      properties: {
+        lines: { type: 'array', description: '인스타·스레드용 3줄 요약 — 각 45자 이내, 첫 줄이 훅', items: { type: 'string' } },
+        hashtags: { type: 'array', description: '본문 소재 해시태그 10개 (# 없이)', items: { type: 'string' } },
+      },
+      required: ['lines', 'hashtags'],
+    },
+    shorts: SCHEMA_SHORTS,
+    warnings: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['insta', 'shorts'],
+};
+
+const SCHEMA_SEO = {
+  type: 'object',
+  properties: {
+    keywords: {
+      type: 'array',
+      description: '네이버 검색 유입 키워드 10개 — 실제로 검색될 법한 한국어 명사 조합(띄어쓰기 포함, # 없이)',
+      items: { type: 'string' },
+    },
+    hashtags: { type: 'array', description: '본문 기반 해시태그 10개 (# 없이, 공백 없는 형태)', items: { type: 'string' } },
+    warnings: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['keywords', 'hashtags'],
+};
+
+const SCHEMA_CLOSING = {
+  type: 'object',
+  properties: {
+    question: { type: 'string', description: '본문 말미에 붙일 댓글 유도 질문 한 문장 (상투적인 "어떠셨나요?" 금지)' },
+    boxTitle: { type: 'string', description: '링크 안내 박스 제목 (예: 🔗 이 글에서 나온 링크)' },
+    items: {
+      type: 'array',
+      description: '박스에 넣을 안내 항목 2~3개 — label 은 무엇을 넣을지, hint 는 독자에게 필요한 이유',
+      items: {
+        type: 'object',
+        properties: {
+          label: { type: 'string', description: '예: 예약·특가 링크' },
+          hint: { type: 'string', description: '예: 요금은 날짜마다 다르니 예약 화면에서 확인' },
+        },
+        required: ['label', 'hint'],
+      },
+    },
+    warnings: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['question', 'items'],
+};
+
+/* ---------------------------------------------------------------- 공통 규칙 */
+
+const HONESTY = [
+  '확인하지 못한 가격·수치·통계·영업시간·고유 업체명을 절대 지어내지 않는다.',
+  '사용자가 준 정보에 없는 고유명사·금액·날짜는 "[확인 필요]"로 남기고 warnings 에 적는다.',
+  '실제로 방문·구매하지 않은 대상을 "다녀왔다·먹어봤다·내돈내산·써봤다" 같은 1인칭 경험담으로 쓰지 않는다.',
+  '추측과 사실을 섞지 않는다. 추측이면 "내 추정"이라고 밝힌다.',
+  '과장·보장 표현("무조건", "100%", "역대급")을 쓰지 않는다.',
+].join(' ');
+
+const VOICE = [
+  '사람이 직접 쓴 글처럼 쓴다. 짧은 문장과 구어체 어미를 섞고, 접속사·수식어를 남발하지 않는다.',
+  'AI 상투어를 쓰지 않는다. 예: 알아보겠습니다 / 결론적으로 / 무엇보다도 / 이번 포스팅에서는 / 살펴보도록 하겠습니다 / ~하는 것이 중요합니다 / 그렇기 때문에 / 정리해 보겠습니다.',
+  '같은 문장 구조를 반복하지 않는다. "~하시죠?" 같은 상투적 공감 질문을 붙이지 않는다.',
+].join(' ');
+
+function banLine(banPhrases) {
+  const list = (banPhrases && banPhrases.length ? banPhrases : BAN_DEFAULT).slice(0, 30);
+  if (!list.length) return '';
+  return `\n[금지 표현 — 이 문자열이 결과에 그대로 나오면 실패다]\n- ${list.join('\n- ')}`;
+}
+
+/* ---------------------------------------------------------------- 프롬프트 */
+
+function promptBlog(b) {
+  const form = b.form || {};
+  const sections = arr(form.sections, 8).map((x, i) => `${i + 1}) ${s(x, 80)}`).join('\n');
+  const sample = s(b.toneSample, 4000);
+  const note = s(b.experienceNote, 2000);
+  const src = s(b.sourceMaterial, 8000);
+  const gaps = arr(b.gaps, 6).map((x) => `- ${s(x, 120)}`).join('\n');
+  const user = [
+    `주제: ${s(b.topic, 200)}`,
+    form.name ? `양식: ${s(form.name, 40)} / 말투: ${s(form.tone, 40)}` : `말투: ${s(form.tone, 40) || '친근한 리뷰형'}`,
+    sections ? `\n[반드시 이 순서로 섹션을 구성]\n${sections}` : '',
+    form.highlight ? `\n[강조 포인트 — 이걸 지켜야 통과]\n${s(form.highlight, 400)}` : '',
+    sample ? `\n[내 문체 샘플 — 문장 길이·어미·말버릇을 이 사람처럼]\n"""${sample}"""` : '',
+    note ? `\n[내 경험 메모 — 사용자가 직접 적은 사실. 1인칭 경험은 여기 있는 내용만 쓴다]\n"""${note}"""` : '',
+    src ? `\n[참고 자료 — 남이 말한 내용(유튜브 자막·기사·시황 요약). 사실 근거로만 인용하고 내 경험으로 쓰지 않는다]\n"""${src}"""` : '',
+    gaps ? `\n[경쟁 글 빈틈 메모 — 본문에서 실제로 메꿔라]\n${gaps}` : '',
+    b.theme ? `\n참고 카테고리: ${s(b.theme, 40)}` : '',
+    banLine(b.banPhrases),
+    `
+[경험·사실 규칙 — 이걸 어기면 실패다]
+- 위 [내 경험 메모]에 없는 1인칭 경험(다녀왔다·가보니·먹어봤다·내돈내산·써봤다)을 절대 쓰지 않는다. 실제로 방문·구매한 적이 없다.
+- [참고 자료]는 남의 영상·기사다. 그 내용을 내가 직접 겪은 일처럼 쓰지 않는다.
+- [참고 자료]를 인용할 때는 "영상에서 말한 ~", "자료에 따르면 ~" 처럼 근거를 밝힌다. 자료에 없는 수치·사례를 덧붙이지 않는다.
+- 경험 메모가 비어 있으면 '담백한 큐레이터' 어조로 쓴다. 확인된 조건·핵심 포인트·주의사항 중심으로. ("조건을 보면", "확인해야 할 것은", "~로 알려져 있다")
+- 경험 메모가 있으면 그 내용만 1인칭으로 살린다. 메모에 없는 디테일을 덧붙이지 않는다.
+- 사용자가 준 정보에 없는 업체·장소·상품·브랜드 이름을 지어내지 않는다. 예시가 필요하면 "A 업체", "B 숙소" 같은 자리표시자를 쓴다.
+- "내돈내산", "협찬 없음", "직접 써본" 표현은 경험 메모가 있을 때만 쓴다.
+
+[본문 작성 규칙]
+1) 첫 3줄이 훅이다. 인사말("안녕하세요") 없이 결론·숫자·상황으로 바로 시작한다.
+2) 위 섹션 순서를 그대로 쓰고 각 섹션 제목은 "## " 마크다운 소제목으로 단다.
+3) 조건 비교용 마크다운 표를 최소 1개 넣는다. ( | 구분 | A | B | 형식, 헤더 구분선 포함)
+4) 사진이 들어가면 글이 자연스러워지는 지점 2~3곳에 정확히 "[📸 사진: 구체적 묘사 | search: 영문검색어]" 형식으로 넣는다.
+   - 묘사는 한국어 20자 내외(무엇이 보여야 하는지), search 는 무료 사진 DB에서 실제로 검색될 영어 명사 2~4단어.
+   - search 에 브랜드·상호·사람 이름·연도·한글을 넣지 않는다(그런 사진은 무료 DB에 없다). "street food", "autumn park", "hotel lobby" 처럼 보편 명사만.
+   - 사진 태그는 그 줄 하나로 끝낸다(같은 줄에 다른 문장을 붙이지 않는다). 표 안에는 넣지 않는다.
+5) 솔직한 단점을 최소 1줄 쓴다. ("아쉬운 점:" 으로 시작)
+6) 분량 900~1300자. 이 길이를 넘기면 출력이 잘려 실패한다 — 짧고 밀도 있게.
+7) 확인 못 한 값은 "[확인 필요]"로 남긴다. (지어내면 안 된다)
+8) 제목 3종은 각각 32자 이내 — 네이버 모바일 검색 결과에서 잘리지 않게.
+9) gaps 에는 "같은 주제 인기 글들이 비워 둔 지점" 2개를, 각각 왜 비었는지 + 내가 무엇으로 채울지 1~2문장으로.
+[출력] titles(3개) · gaps(2개) · body(마크다운) · warnings(확인 필요 목록) 만 JSON 으로.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return {
+    system: `너는 한국어 블로그를 직접 운영하는 사람이다. 검색 상위 글을 베끼지 않고, 내 경험과 실측값으로 쓴다. ${VOICE} ${HONESTY}`,
+    user,
+    schema: SCHEMA_BLOG,
+    maxTokens: 3600,
+    temperature: 0.95,
+  };
+}
+
+function promptVideo(b) {
+  const clips = arr(b.clips, 6).map((c, i) => {
+    const dur = round1(num(c.dur, 0));
+    const cin = round1(num(c.in, 0));
+    const cout = round1(num(c.out, dur || cin + 1));
+    return `${i}) ${s(c.name, 80)} — 길이 ${dur}s / 해상도 ${num(c.w, 0)}x${num(c.h, 0)} / 쓸 구간 ${cin}s~${round1(Math.min(cout, dur || cout))}s`;
+  }).join('\n');
+  const presetMap = {
+    info: '① 깔끔 정보형 — 흰 반투명 하단 카드, 자막 20자 이내, 정보 전달 톤',
+    variety: '② 예능 노랑 강조 — 화면 중앙 큰 자막, 핵심 단어만 노랑, 자막 14자 이내',
+    letter: '③ 3단 블랙 레터박스 — 위: 제목(16자), 가운데: 클립, 아래: 포인트·출처, 자막 18자 이내',
+  };
+  const user = [
+    clips ? `[업로드한 클립]\n${clips}` : '[업로드한 클립 없음 — 스토리 방향만으로 설계]',
+    b.story ? `\n[스토리 · 편집 방향]\n${s(b.story, 600)}` : '',
+    `\n출력 비율: ${b.ratio === '16:9' ? '16:9 가로(1920×1080)' : '9:16 세로 쇼츠(1080×1920)'}`,
+    `자막 프리셋: ${presetMap[b.preset] || presetMap.info}`,
+    `BGM 덕킹: 목소리 ${num(b.voice, 100)}% / BGM ${num(b.bgm, 15)}%`,
+    banLine(b.banPhrases),
+    `
+[컷 설계 규칙]
+1) clipIndex 는 클립 목록의 0부터 시작하는 번호. 목록에 없는 번호를 쓰지 않는다.
+2) startSec/endSec 는 반드시 그 클립의 "쓸 구간" 안에서 고른다. (초 단위, 소수 1자리)
+3) 총 길이 20~45초, 컷은 최소 4개. 2초짜리 자투리 컷을 남발하지 말고 한 컷을 5~12초로 잡는다.
+   (쓸 구간이 짧은 클립은 짧게, 긴 클립은 여러 컷으로 나눠 쓴다 — 쓸 구간을 최대한 활용한다)
+4) 첫 컷은 2초 이내 후킹 — 훅 멘트가 실제로 들리는 구간이어야 한다.
+5) caption 은 화면에 실제로 띄울 말이다(설명문·지시문 금지). 자막 프리셋 글자수 제한을 지키고,
+   스토리 방향에서 사용자가 말한 것(교차편집·손인사 엔딩 등)을 반영한다.
+   곡명·멤버 이름처럼 모르는 고유명사만 "[확인 필요]"로 남긴다.
+6) 파일명·길이만 보고 장면 내용을 단정하지 않는다. 근거가 없으면 caption 을 장면 중립적으로 쓰고 warnings 에 적는다.
+7) hooks 3종은 실제로 입으로 말할 문장. 질문형 / 숫자형 / 반전형.
+8) bgm.ducking 은 "말 시작 0.1초 전 -12dB, 문장 끝 0.4초 뒤 복귀" 처럼 구체적으로.
+[출력] hooks(3) · cuts(배열) · bgm · warnings JSON.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return {
+    system: `너는 50초 세로 쇼츠를 만드는 편집 감독이다. 컷 설계도는 실제 클립 구간 안에서 떨어져야 하고, 없는 장면을 상상해서 쓰지 않는다. ${VOICE} ${HONESTY}`,
+    user,
+    schema: SCHEMA_VIDEO,
+    maxTokens: 2600,
+    temperature: 0.8,
+  };
+}
+
+function promptYt(b) {
+  const vids = arr(b.videos, 5).map((v, i) => `${i + 1}) ${s(v.title, 120)} / ${s(v.channel || v.ch, 60)} / ${s(v.dur, 20)}`).join('\n');
+  const user = [
+    `검색어(주제): ${s(b.query || b.topic, 120)}`,
+    vids ? `\n[내가 고른/참고한 영상]\n${vids}` : '\n[참고 영상 없음 — 검색어만으로 판단]',
+    b.source === 'demo'
+      ? '\n주의: 위 영상은 실제 검색 결과가 아니라 UI 예시(데모) 목록이다. 제목 문구만 근거로 쓰고, 조회수·댓글 내용은 절대 지어내지 않는다.'
+      : '',
+    arr(b.notes, 6).length ? `\n[내 메모]\n${arr(b.notes, 6).map((x) => '- ' + s(x, 100)).join('\n')}` : '',
+    banLine(b.banPhrases),
+    `
+[해야 할 일]
+1) 이 주제에서 경쟁 영상들이 비워 둔 빈틈(Gap) 2가지를 찾는다. 각각 title(20자 내외) / why(왜 비었나 1문장) / how(내가 채우는 법 1문장).
+2) 같은 주제로 50초 쇼츠 대본을 만든다. 0~2초 후킹 → 3~40초 핵심 3컷 → 41~50초 엔딩.
+3) scenes 의 time 은 "0-2초", "3-13초" 처럼 실제 초 구간. line 은 말할 문장 + (화면 지시).
+4) 영상 제목 32자 이내, 실제로 검색될 만한 단어 조합.
+5) 모르는 사실은 [확인 필요]로 남기고 warnings 에 적는다.
+[출력] gaps(2) · shorts{title, hook, scenes, cta} · warnings JSON.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return {
+    system: `너는 유튜브 쇼츠 기획자다. 남의 영상을 베끼지 않고, 빈틈을 찾아 내 각도로 다시 만든다. ${VOICE} ${HONESTY}`,
+    user,
+    schema: SCHEMA_YT,
+    maxTokens: 2400,
+    temperature: 0.9,
+  };
+}
+
+function promptShorts(b) {
+  const body = s(b.body, 9000);
+  const user = [
+    b.topic ? `블로그 주제: ${s(b.topic, 160)}` : '',
+    `\n[완성된 블로그 본문]\n"""${body}"""`,
+    banLine(b.banPhrases),
+    `
+[해야 할 일]
+위 글을 50초 쇼츠 대본으로 바꾼다.
+1) 0~2초 후킹: 본문에서 가장 강한 숫자·결론 하나만. 인사 없이 바로.
+2) 3~40초: 핵심 3컷. 한 컷당 10~13초, 말하는 문장 2줄 이내 + (화면 지시).
+3) 41~50초: 엔딩 — 여운 한 줄 + 저장/구독 유도(노골적이지 않게).
+4) 본문에 없는 수치·사실을 새로 만들지 않는다.
+5) 자막 스타일 권장 1줄(captionGuide) — 정보형/예능형/레터박스 중 어느 쪽이 맞는지 이유와 함께.
+[출력] title · hook · scenes · ending · captionGuide · warnings JSON.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return {
+    system: `너는 블로그 글을 쇼츠 대본으로 바꾸는 작가다. 원문에 있는 내용만 쓴다. ${VOICE} ${HONESTY}`,
+    user,
+    schema: SCHEMA_SHORTS,
+    maxTokens: 2200,
+    temperature: 0.9,
+  };
+}
+
+/* ---------------------------------------------------------------- 다듬기 프롬프트 */
+
+const TONES = {
+  honest: {
+    label: '솔직 후기형',
+    guide:
+      '짧게 끊어 말하고, 좋았던 점과 아쉬웠던 점을 같이 말한다. "~더라고요", "~긴 하더라", "솔직히" 같은 구어체를 쓰되 과장·보장은 쓰지 않는다. 이미 있는 판단만 솔직하게 말한다.',
+  },
+  expert: {
+    label: '전문가 분석형',
+    guide:
+      '근거·조건·수치 중심으로 쓴다. "~로 판단된다", "조건을 보면", "확인해야 할 것은" 같은 표현을 쓰고, 단정 대신 근거를 먼저 둔다. 형용사보다 비교와 기준을 세운다.',
+  },
+  warm: {
+    label: '따뜻한 에세이형',
+    guide:
+      '부드러운 서술로 상대를 배려한다. 사실은 그대로 두고 문장만 느리게 풀어 쓴다. 감정 표현은 원문에 있는 범위 안에서만 쓰고, 새로운 일화·기억을 만들지 않는다.',
+  },
+};
+
+const KEEP_STRUCTURE = [
+  '섹션 구조를 유지한다 — "## " 소제목의 개수·순서·의미를 그대로 둔다.',
+  '표는 같은 행·열 구조로 두고 셀 값만 다듬는다. 수치·날짜·업체명·고유명사는 절대 바꾸거나 새로 만들지 않는다.',
+  '"[📸 사진: ... | search: ...]" 태그는 글자 그대로 복사한다(위치·검색어 변경 금지).',
+  '"[확인 필요]" 표시를 지우지 않는다.',
+  '1인칭 경험(다녀왔다·먹어봤다·써봤다·내돈내산)은 원문에 있을 때만 유지하고 새로 만들지 않는다.',
+  '마크다운 본문만 출력한다. 머리말·설명·인사 없이.',
+].join(' ');
+
+function promptRewrite(b) {
+  const tone = TONES[b.tone] || TONES.honest;
+  const user = [
+    b.topic ? `글 주제: ${s(b.topic, 200)}` : '',
+    `\n[바꿀 어조] ${tone.label} — ${tone.guide}`,
+    `\n[현재 초안 — 이 글의 내용과 사실은 그대로 두고 어조만 바꾼다]\n"""${s(b.body, 14000)}"""`,
+    banLine(b.banPhrases),
+    `
+[규칙]
+1) ${KEEP_STRUCTURE}
+2) 분량은 원문의 85~115%로 맞춘다. 잘라서 끝내지 않는다.
+3) 어조만 바꾼다. 원문에 없는 사실·사례·수치를 추가하면 실패다.
+4) changed 에는 실제로 바꾼 점을 2~4개 적는다(예: "문장 길이를 8~15자로 끊음").
+[출력] body · changed · warnings JSON.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return {
+    system: `너는 한국어 블로그 편집자다. 같은 글을 다른 어조로 다시 쓴다. 내용·사실은 손대지 않고 문장만 바꾼다. ${VOICE} ${HONESTY}`,
+    user,
+    schema: SCHEMA_REWRITE,
+    maxTokens: 3600,
+    temperature: 0.75,
+  };
+}
+
+const AI_TICS = [
+  '~에 대해 알아보겠습니다', '알아보겠습니다', '결론적으로', '다양한 측면에서', '여러 측면에서',
+  '살펴보겠습니다', '살펴보도록 하겠습니다', '정리해 보겠습니다', '정리해보자면', '무엇보다도',
+  '이번 포스팅에서는', '이번 글에서는', '~하는 것이 중요합니다', '매우 중요합니다', '그렇기 때문에',
+  '이와 같이', '위와 같이', '다음과 같습니다', '도움이 되셨길 바랍니다', '참고하시기 바랍니다',
+  '시사하는 바가 큽니다', '긍정적인 영향을 미칩니다', '중요한 역할을 합니다', '다양한 방법이 있습니다',
+];
+
+function promptHumanize(b) {
+  const user = [
+    b.topic ? `글 주제: ${s(b.topic, 200)}` : '',
+    `\n[현재 초안]\n"""${s(b.body, 14000)}"""`,
+    banLine(b.banPhrases),
+    `
+[해야 할 일 — AI 티 빼기]
+위 초안에서 기계적인 상투어를 걷어내고 사람이 쓴 것처럼 다시 쓴다.
+1) 다음 같은 표현은 반드시 지운다: ${AI_TICS.join(' / ')}
+2) 문장을 8~22자 단위로 끊고, 한 문단은 2~4문장으로 줄인다. 접속사("또한", "따라서", "즉")를 줄인다.
+3) "~습니다"와 "~요/~더라고요"를 섞어 리듬을 만든다. 같은 어미를 연속 3번 쓰지 않는다.
+4) 수식어 남발(매우·정말·굉장히·다양한·효과적인)을 덜어낸다. 구체적인 숫자·상황으로 대신한다.
+5) ${KEEP_STRUCTURE}
+6) 분량은 원문의 90~110%. 사실을 새로 만들지 않는다.
+7) removed 에는 실제로 지운 표현만 적는다(최대 10개).
+[출력] body · removed · warnings JSON.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return {
+    system: `너는 사람이 쓴 글을 고치는 교정자다. AI가 쓴 티가 나는 문장을 걷어내고 짧고 담백한 한국어로 다시 쓴다. ${VOICE} ${HONESTY}`,
+    user,
+    schema: SCHEMA_HUMANIZE,
+    maxTokens: 3600,
+    temperature: 0.7,
+  };
+}
+
+function promptMulti(b) {
+  const user = [
+    b.topic ? `글 주제: ${s(b.topic, 200)}` : '',
+    `\n[완성된 블로그 본문]\n"""${s(b.body, 12000)}"""`,
+    banLine(b.banPhrases),
+    `
+[해야 할 일 — 1타 3피]
+A) insta: 인스타그램·스레드에 바로 붙여넣을 3줄 요약. 각 45자 이내, 첫 줄이 훅(숫자·결론·반전). 줄바꿈은 lines 배열로. 이모지는 1~2개만.
+   hashtags: 본문에 실제로 나온 소재로 10개(# 없이, 공백 없이, 12자 이내). 없는 브랜드·지역을 만들지 않는다.
+B) shorts: 같은 글을 50초 쇼츠 대본으로. 0~2초 후킹 → 3~40초 핵심 3컷(각 10~13초) → 41~50초 엔딩.
+   scenes[].line 은 실제로 말할 문장 + (화면 지시). title 은 32자 이내. captionGuide 는 자막 스타일 권장 1줄.
+C) 본문에 없는 수치·사실을 새로 만들지 않는다. 확인 못 한 값은 "[확인 필요]"로 남긴다.
+[출력] insta{lines, hashtags} · shorts{title, hook, scenes, ending, captionGuide, warnings} · warnings JSON.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return {
+    system: `너는 한 편의 글을 여러 채널로 나눠 쓰는 콘텐츠 편집자다. 원문에 있는 내용만 쓴다. ${VOICE} ${HONESTY}`,
+    user,
+    schema: SCHEMA_MULTI,
+    maxTokens: 3000,
+    temperature: 0.9,
+  };
+}
+
+function promptSeo(b) {
+  const user = [
+    b.title ? `제목: ${s(b.title, 120)}` : '',
+    b.topic ? `주제: ${s(b.topic, 160)}` : '',
+    `\n[본문]\n"""${s(b.body, 9000)}"""`,
+    `
+[해야 할 일 — 검색 유입 태그]
+1) keywords: 이 글을 찾을 사람이 네이버에 실제로 칩 것 같은 검색어 10개. 2~4단어 한국어 명사 조합.
+   - 본문에 있는 지역·대상·상황만 쓴다. 본문에 없는 브랜드·지역·연도를 만들지 않는다.
+   - 너무 넓은 단어("여행", "주식")만 쓰지 말고 글의 각도를 살린다("동탄 실내 키즈카페", "코스피 마감 정리").
+   - 10개는 서로 겹치지 않게. 중복 단어만 다른 검색어는 빼고 다른 각도로 채운다.
+2) hashtags: 같은 기준으로 10개. # 없이, 공백 없이, 12자 이내.
+3) 확신이 없는 고유명사는 넣지 않는다.
+[출력] keywords(10) · hashtags(10) · warnings JSON.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return {
+    system: `너는 한국 블로그 검색 유입(SEO)을 다루는 편집자다. 본문에 실제로 있는 내용에서만 키워드를 뽑는다. ${HONESTY}`,
+    user,
+    schema: SCHEMA_SEO,
+    maxTokens: 900,
+    temperature: 0.6,
+  };
+}
+
+function promptClosing(b) {
+  const user = [
+    b.topic ? `글 주제: ${s(b.topic, 160)}` : '',
+    `\n[본문 마지막 부분]\n"""${s(b.body, 6000)}"""`,
+    banLine(b.banPhrases),
+    `
+[해야 할 일 — 마무리]
+1) question: 이 글을 읽은 사람이 댓글을 달고 싶어지는 질문 한 문장. 본문의 갈림길(선택·경험·판단)을 묻는다.
+   - 상투적인 "어떠셨나요?", "여러분의 생각은?" 금지. 본문에 나온 구체적인 대상·조건을 언급한다.
+   - 광고성 유도("구독 부탁") 금지. 60자 이내.
+2) boxTitle: 링크 안내 박스 제목. 본문 성격에 맞게(특가·예약 / 지도·경로 / 도서·자료). 20자 이내.
+3) items: 박스에 넣을 안내 2~3개. label 은 무엇을 넣을 자리인지(예: "예약·최저가 링크"), hint 는 왜 필요한지 한 줄.
+   - 실제 URL·가격을 만들지 않는다. 사용자가 직접 넣을 자리만 안내한다.
+[출력] question · boxTitle · items · warnings JSON.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return {
+    system: `너는 블로그 글 끝을 정리하는 편집자다. 독자가 댓글을 달 자연스러운 질문 하나와, 링크를 넣을 안내 박스를 만든다. ${VOICE} ${HONESTY}`,
+    user,
+    schema: SCHEMA_CLOSING,
+    maxTokens: 800,
+    temperature: 0.9,
+  };
+}
+
+/* ---------------- 응답 파싱 ---------------- */
+function extractJson(text) {
+  let t = String(text || '').trim();
+  if (t.startsWith('```')) {
+    t = t.replace(/^```(?:json)?\s*/i, '').replace(/```$/, '').trim();
+  }
+  try {
+    return JSON.parse(t);
+  } catch (_) {}
+  const first = t.indexOf('{');
+  const last = t.lastIndexOf('}');
+  if (first >= 0 && last > first) {
+    const slice = t.slice(first, last + 1);
+    try {
+      return JSON.parse(slice);
+    } catch (_) {}
+    try {
+      return JSON.parse(slice.replace(/,\s*([}\]])/g, '$1'));
+    } catch (_) {}
+  }
+  return null;
+}
+
+function normBlog(data, banPhrases) {
+  const titles = arr(data.titles, 3)
+    .map((t) => (typeof t === 'string' ? { type: '제목', text: t } : { type: s(t && t.type, 20) || '제목', text: s(t && t.text, 80) }))
+    .filter((t) => t.text);
+  const gaps = arr(data.gaps, 3).map((g) => (typeof g === 'string' ? g : JSON.stringify(g))).map((g) => s(g, 300)).filter(Boolean);
+  const body = s(data.body, 20000);
+  const warnings = arr(data.warnings, 10).map((w) => s(w, 200)).filter(Boolean);
+  const banHits = scanBans(body, banPhrases);
+  if (!body) warnings.push('본문이 비어 있습니다. 다시 생성해 주세요.');
+  const photoSlots = (body.match(/\[(?:📸|📷)\s*사진[^\]]*\]/g) || []).length;
+  return { titles, gaps, body, warnings, banHits, needsCheck: (body.match(/\[확인 필요\]/g) || []).length, photoSlots };
+}
+
+function scanBans(text, banPhrases) {
+  const list = (banPhrases && banPhrases.length ? banPhrases : BAN_DEFAULT).filter(Boolean);
+  const t = String(text || '');
+  return list.filter((p) => t.indexOf(p) > -1);
+}
+
+function normVideo(data, clips) {
+  const hooks = arr(data.hooks, 4)
+    .map((h) => (typeof h === 'string' ? { tag: '후킹', text: h } : { tag: s(h && h.tag, 20) || '후킹', text: s(h && h.text, 80) }))
+    .filter((h) => h.text);
+  const warnings = arr(data.warnings, 10).map((w) => s(w, 200)).filter(Boolean);
+  const cuts = [];
+  arr(data.cuts, 20).forEach((c) => {
+    const idx = Math.trunc(num(c && c.clipIndex, -1));
+    if (idx < 0) return;
+    const clip = Array.isArray(clips) ? clips[idx] : null;
+    let start = round1(num(c.startSec, 0));
+    let end = round1(num(c.endSec, start + 2));
+    if (clip) {
+      const dur = round1(num(clip.dur, 0)) || end;
+      const cin = Math.max(0, round1(num(clip.in, 0)));
+      const cout = Math.min(round1(num(clip.out, dur)), dur) || dur;
+      start = Math.min(Math.max(start, cin), cout);
+      end = Math.min(Math.max(end, start + 0.5), cout);
+      if (end - start < 0.4) {
+        warnings.push(`컷 ${cuts.length + 1}: ${s(clip.name, 40)} 구간이 0.4초 미만이라 조정했습니다.`);
+        end = Math.min(start + 1, cout);
+      }
+    }
+    const trans = ['cut', 'fade', 'slide', 'zoom'].indexOf(s(c && c.transition, 10)) > -1 ? c.transition : 'cut';
+    cuts.push({
+      clipIndex: idx,
+      clipName: clip ? s(clip.name, 80) : `클립 ${idx}`,
+      startSec: round1(start),
+      endSec: round1(end),
+      durSec: round1(Math.max(0, end - start)),
+      caption: s(c && c.caption, 120),
+      transition: trans,
+    });
+  });
+  const total = round1(cuts.reduce((a, c) => a + c.durSec, 0));
+  if (cuts.length && total < 15) {
+    warnings.push(`컷 총 길이가 ${total}초로 짧습니다(권장 20~45초). [편집 실행]을 한 번 더 누르면 다르게 설계됩니다.`);
+  }
+  const bgm = data.bgm || {};
+  return {
+    hooks,
+    cuts,
+    totalSec: total,
+    bgm: {
+      ducking: s(bgm.ducking, 200) || '말 시작 전 -12dB, 문장 끝 0.4초 뒤 복귀',
+      notes: arr(bgm.notes, 6).map((x) => s(x, 160)).filter(Boolean),
+    },
+    warnings,
+  };
+}
+
+function normYt(data) {
+  const gaps = arr(data.gaps, 3)
+    .map((g) => (typeof g === 'string' ? { title: g, why: '', how: '' } : { title: s(g && g.title, 80), why: s(g && g.why, 200), how: s(g && g.how, 200) }))
+    .filter((g) => g.title);
+  const sh = data.shorts || {};
+  return {
+    gaps,
+    shorts: {
+      title: s(sh.title, 80),
+      hook: s(sh.hook, 120),
+      scenes: arr(sh.scenes, 8).map((x) => ({ time: s(x && x.time, 20), line: s(x && x.line, 240) })).filter((x) => x.line),
+      cta: s(sh.cta, 120),
+    },
+    warnings: arr(data.warnings, 10).map((w) => s(w, 200)).filter(Boolean),
+  };
+}
+
+function normShorts(data) {
+  return {
+    title: s(data.title, 80),
+    hook: s(data.hook, 120),
+    scenes: arr(data.scenes, 8).map((x) => ({ time: s(x && x.time, 20), line: s(x && x.line, 240) })).filter((x) => x.line),
+    ending: s(data.ending, 160),
+    captionGuide: s(data.captionGuide, 160),
+    warnings: arr(data.warnings, 10).map((w) => s(w, 200)).filter(Boolean),
+  };
+}
+
+function normRewrite(data, banPhrases) {
+  const body = s(data && data.body, 24000);
+  const changed = arr(data && data.changed, 6).map((x) => s(x, 140)).filter(Boolean);
+  const warnings = arr(data && data.warnings, 8).map((x) => s(x, 200)).filter(Boolean);
+  const banHits = scanBans(body, banPhrases);
+  if (!body) warnings.push('본문이 비어 있습니다. 다시 시도해 주세요.');
+  return {
+    body,
+    changed,
+    warnings,
+    banHits,
+    chars: body.length,
+    needsCheck: (body.match(/\[확인 필요\]/g) || []).length,
+    photoSlots: (body.match(/\[(?:📸|📷)\s*사진[^\]]*\]/g) || []).length,
+    headings: (body.match(/^##\s+/gm) || []).length,
+    tables: (body.match(/^\|[^\n]*\|\s*$/gm) || []).length,
+  };
+}
+
+function normHumanize(data, banPhrases) {
+  const body = s(data && data.body, 24000);
+  const removed = arr(data && data.removed, 12).map((x) => s(x, 80)).filter(Boolean);
+  const warnings = arr(data && data.warnings, 8).map((x) => s(x, 200)).filter(Boolean);
+  const banHits = scanBans(body, banPhrases);
+  if (!body) warnings.push('본문이 비어 있습니다. 다시 시도해 주세요.');
+  return {
+    body,
+    removed,
+    warnings,
+    banHits,
+    chars: body.length,
+    sentences: (body.match(/[.!?。](\s|$)/g) || []).length,
+    needsCheck: (body.match(/\[확인 필요\]/g) || []).length,
+    photoSlots: (body.match(/\[(?:📸|📷)\s*사진[^\]]*\]/g) || []).length,
+  };
+}
+
+function normTags(list, max) {
+  return arr(list, max)
+    .map((x) => s(x, 40).replace(/^#+/, '').replace(/[\s#]+/g, ''))
+    .filter(Boolean)
+    .filter((x, i, a) => a.indexOf(x) === i);
+}
+
+function normMulti(data, banPhrases) {
+  const insta = (data && data.insta) || {};
+  const lines = arr(insta.lines, 5).map((x) => s(x, 120)).filter(Boolean).slice(0, 3);
+  const hashtags = normTags(insta.hashtags, 12).slice(0, 10);
+  const sh = normShorts((data && data.shorts) || {});
+  const warnings = arr(data && data.warnings, 8).map((x) => s(x, 200)).filter(Boolean);
+  if (!lines.length) warnings.push('인스타 3줄 요약이 비어 왔습니다. 한 번 더 눌러 주세요.');
+  const banHits = scanBans(lines.join(' ') + ' ' + sh.hook + ' ' + sh.scenes.map((x) => x.line).join(' '), banPhrases);
+  return {
+    insta: {
+      lines,
+      hashtags,
+      text: lines.join('\n') + (hashtags.length ? '\n\n' + hashtags.map((t) => '#' + t).join(' ') : ''),
+    },
+    shorts: sh,
+    warnings,
+    banHits,
+  };
+}
+
+function normSeo(data) {
+  const keywords = arr(data && data.keywords, 12).map((x) => s(x, 40)).filter(Boolean).slice(0, 10);
+  const hashtags = normTags(data && data.hashtags, 12).slice(0, 10);
+  const warnings = arr(data && data.warnings, 8).map((x) => s(x, 200)).filter(Boolean);
+  if (!keywords.length) warnings.push('키워드가 비어 왔습니다. 한 번 더 눌러 주세요.');
+  return { keywords, hashtags, warnings };
+}
+
+/** 마무리 박스 → 본문에 붙일 마크다운(인용구 박스 + 질문). 네이버 서식 복사에서도 박스로 살아난다. */
+function closingMarkdown(d) {
+  const q = s(d && d.question, 200);
+  const title = s(d && d.boxTitle, 40) || '🔗 링크 안내';
+  const items = arr(d && d.items, 4)
+    .map((x) => ({ label: s(x && x.label, 40), hint: s(x && x.hint, 120) }))
+    .filter((x) => x.label);
+  const L = [];
+  L.push('> **' + title + '**');
+  if (items.length) {
+    items.forEach((it) => {
+      L.push('> · **' + it.label + '** — ' + it.hint + ' : [확인 필요]');
+    });
+  } else {
+    L.push('> · 링크: [확인 필요]');
+  }
+  if (q) {
+    L.push('');
+    L.push(q);
+  }
+  return L.join('\n');
+}
+
+function normClosing(data) {
+  const question = s(data && data.question, 200);
+  const boxTitle = s(data && data.boxTitle, 40) || '🔗 링크 안내';
+  const items = arr(data && data.items, 4)
+    .map((x) => ({ label: s(x && x.label, 40), hint: s(x && x.hint, 120) }))
+    .filter((x) => x.label);
+  const warnings = arr(data && data.warnings, 8).map((x) => s(x, 200)).filter(Boolean);
+  if (!question) warnings.push('댓글 유도 질문이 비어 왔습니다. 다시 시도해 주세요.');
+  const markdown = closingMarkdown({ question, boxTitle, items });
+  return { question, boxTitle, items, markdown, warnings };
+}
+
+/* ---------------------------------------------------------------- 핸들러 */
+
+const GEN_ACTIONS = [
+  'blog',
+  'video_plan',
+  'youtube_analyze',
+  'blog_to_shorts',
+  'rewrite_tone',
+  'humanize',
+  'multi_use',
+  'seo_tags',
+  'closing_box',
+];
+
+  /* ================================================================
+     Gemini 호출 — streamGenerateContent(SSE) 를 브라우저 fetch 로 직접 읽는다.
+     · 첫 토큰이 FIRST_TOKEN_MS 안에 오지 않으면 그 모델은 죽은 것으로 보고 다음 모델로.
+     · 400 INVALID_ARGUMENT 에 thinkingConfig 가 걸린 모델이면 그 옵션만 빼고 한 번 더.
+     ================================================================ */
+  async function callModel(model, prompt, attemptDeadline, thinkingOff) {
+    const key = getKey();
+    if (!key) throw noKeyErr();
+    const url = API_ROOT + model + ':streamGenerateContent?alt=sse&key=' + encodeURIComponent(key);
+    const gen = {
+      temperature: prompt.temperature,
+      maxOutputTokens: prompt.maxTokens,
+      responseMimeType: 'application/json',
+      responseSchema: prompt.schema
+    };
+    const wantThinkingOff = thinkingOff !== false && THINKING_UNSUPPORTED.indexOf(model) < 0;
+    if (wantThinkingOff) gen.thinkingConfig = THINKING_OFF;
+    const body = {
+      systemInstruction: { parts: [{ text: prompt.system }] },
+      contents: [{ role: 'user', parts: [{ text: prompt.user }] }],
+      generationConfig: gen
+    };
+    const ctrl = new AbortController();
+    let timer = null;
+    const t0 = Date.now();
+    const armFirst = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => ctrl.abort(), Math.max(2500, Math.min(FIRST_TOKEN_MS, attemptDeadline - Date.now())));
+    };
+    const armBody = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => ctrl.abort(), Math.max(2500, attemptDeadline - Date.now()));
+    };
+    armFirst();
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        signal: ctrl.signal
+      });
+      if (!res.ok) {
+        const raw = await res.text().catch(() => '');
+        let json = null;
+        try { json = JSON.parse(raw); } catch (_) {}
+        const status = res.status;
+        const msg = (json && json.error && json.error.message) || String(raw).slice(0, 300);
+        // thinkingConfig 미지원 모델이면 그 옵션만 빼고 다시
+        if (status === 400 && wantThinkingOff && /invalid argument/i.test(msg)) {
+          clearTimeout(timer);
+          return callModel(model, prompt, attemptDeadline, false);
+        }
+        const e = new Error(msg || ('HTTP ' + status));
+        e.status = status;
+        e.retryable = status === 503 || status === 429 || status === 500 || status === 504;
+        e.geminiStatus = (json && json.error && json.error.status) || '';
+        if (status === 400 || status === 401 || status === 403) {
+          if (/api key|api_key|permission|unauthenticated|credential/i.test(msg + ' ' + e.geminiStatus)) {
+            e.code = 'bad_key';
+            e.retryable = false;
+          }
+        }
+        const det = (json && json.error && Array.isArray(json.error.details)) ? json.error.details : [];
+        det.forEach((d) => {
+          if (d && /RetryInfo/.test(String(d['@type'] || '')) && d.retryDelay) {
+            const n = parseInt(String(d.retryDelay), 10);
+            if (Number.isFinite(n)) e.retryDelaySec = n;
+          }
+          (d && Array.isArray(d.violations) ? d.violations : []).forEach((v) => {
+            if (v && v.quotaId) e.quotaId = v.quotaId;
+          });
+        });
+        throw e;
+      }
+
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '';
+      let text = '';
+      let finish = '';
+      let usage = null;
+      let firstAt = 0;
+      while (true) {
+        const step = await reader.read();
+        if (step.done) break;
+        if (!firstAt) { firstAt = Date.now(); armBody(); }
+        buf += dec.decode(step.value, { stream: true });
+        let nl;
+        while ((nl = buf.indexOf('\n')) >= 0) {
+          const line = buf.slice(0, nl).trim();
+          buf = buf.slice(nl + 1);
+          if (!line || line.charAt(0) === ':') continue;
+          if (line.indexOf('data:') !== 0) continue;
+          const payload = line.slice(5).trim();
+          if (!payload || payload === '[DONE]') continue;
+          let j = null;
+          try { j = JSON.parse(payload); } catch (_) { continue; }
+          if (j.error) {
+            const e = new Error(j.error.message || 'stream error');
+            e.status = j.error.code === 429 ? 429 : 503;
+            e.retryable = true;
+            e.geminiStatus = j.error.status || '';
+            throw e;
+          }
+          const cand = (j.candidates && j.candidates[0]) || null;
+          if (cand) {
+            if (cand.finishReason) finish = cand.finishReason;
+            const parts = (cand.content && cand.content.parts) || [];
+            parts.forEach((p) => { if (p && p.text) text += p.text; });
+          }
+          if (j.usageMetadata) usage = j.usageMetadata;
+        }
+      }
+      if (!text.trim()) {
+        const e = new Error('빈 응답(토큰 없음)');
+        e.status = 503;
+        e.retryable = true;
+        e.geminiStatus = 'EMPTY';
+        throw e;
+      }
+      clearTimeout(timer);
+      return { model: model, text: text.trim(), finish: finish, usage: usage || {}, firstMs: firstAt ? firstAt - t0 : 0, elapsed: Date.now() - t0 };
+    } catch (err) {
+      if (err && err.name === 'AbortError') {
+        const e = new Error('첫 토큰 ' + (FIRST_TOKEN_MS / 1000) + '초 안에 응답이 없어 다음 모델로 넘어갑니다.');
+        e.status = 504;
+        e.retryable = true;
+        e.geminiStatus = 'NO_FIRST_TOKEN';
+        e.noFirstToken = true;
+        throw e;
+      }
+      throw err;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  function modelOrder() {
+    if (Date.now() < primaryDownUntil) return MODEL_ORDER.slice(1).concat([MODEL_ORDER[0]]);
+    return MODEL_ORDER.slice();
+  }
+
+  /** 순서대로 시도하고, 실제로 답한 모델을 model 에 정직하게 담는다. */
+  async function generate(prompt, deadline) {
+    const order = modelOrder();
+    const tries = [];
+    for (let pass = 0; pass < 2; pass++) {
+      for (let i = 0; i < order.length; i++) {
+        const model = order[i];
+        const remaining = deadline - Date.now();
+        if (remaining < 6000) {
+          if (pass === 0) tries.push({ model: model, status: 0, message: '건너뜀(남은 시간 부족)' });
+          break;
+        }
+        const isLast = i === order.length - 1;
+        const cap = isLast ? remaining : Math.min(30000, Math.max(8000, remaining - 12000));
+        const attemptDeadline = Date.now() + Math.max(8000, cap);
+        try {
+          const out = await callModel(model, prompt, attemptDeadline);
+          if (model === MODEL_ORDER[0]) primaryDownUntil = 0;
+          return Object.assign({}, out, { tries: tries, fellBack: model !== MODEL_ORDER[0] });
+        } catch (err) {
+          const downish = err.status === 503 || err.status === 429 || err.noFirstToken;
+          tries.push({
+            model: model,
+            pass: pass + 1,
+            status: err.status || 0,
+            message: String(err.message || '').slice(0, 200),
+            quotaId: err.quotaId || undefined,
+            retryDelaySec: err.retryDelaySec || undefined
+          });
+          if (err.retryable === false) { err.tries = tries; throw err; }
+          if (model === MODEL_ORDER[0] && downish) primaryDownUntil = Date.now() + PRIMARY_COOLDOWN_MS;
+          if (i < order.length - 1) await sleep(120);
+        }
+      }
+      const transient = tries.some((t) => t.status === 503 || t.status === 504 || t.status === 0);
+      const quotaOnly = tries.length > 0 && tries.every((t) => t.status === 429);
+      if (pass === 0 && transient && !quotaOnly && deadline - Date.now() > 16000) {
+        await sleep(700);
+        continue;
+      }
+      break;
+    }
+    const quotaHit = tries.length > 0 && tries.every((t) => t.status === 429);
+    const e = new Error(quotaHit ? '무료 티어 하루 요청 한도를 다 썼습니다.' : '모든 모델이 응답하지 않았습니다.');
+    e.status = quotaHit ? 429 : 503;
+    e.code = quotaHit ? 'quota_exceeded' : 'all_models_busy';
+    e.tries = tries;
+    e.retryDelaySec = tries.reduce((a, t) => (t.retryDelaySec ? Math.min(a || 1e9, t.retryDelaySec) : a), null);
+    e.quotaId = (tries.find((t) => t.quotaId) || {}).quotaId || null;
+    throw e;
+  }
+
+  /* ================================================================
+     run(action, body) → 서버 /api/content-ai 와 같은 모양의 JSON
+     { ok, action, model, notes[], tries[], elapsedMs, data } / 실패 시 { ok:false, reason, message, tries[] }
+     ================================================================ */
+  async function run(action, body) {
+    body = body || {};
+    if (GEN_ACTIONS.indexOf(action) < 0) {
+      return { ok: false, reason: 'unknown_action', message: 'action 은 ' + GEN_ACTIONS.join(' / ') + ' 중 하나여야 합니다.' };
+    }
+    if (!getKey()) {
+      return {
+        ok: false,
+        reason: 'missing_gemini_key',
+        message: 'Gemini API 키가 없습니다. 위 [🔑 키 입력]에서 한 번만 넣어 주세요.',
+        keyConfigured: false
+      };
+    }
+    const banPhrases = arr(body.banPhrases, 30).map((x) => s(x, 30)).filter(Boolean);
+
+    let prompt;
+    if (action === 'blog') {
+      if (!s(body.topic, 200)) return { ok: false, reason: 'missing_topic', message: '주제(topic)가 필요합니다.' };
+      prompt = promptBlog(Object.assign({}, body, { banPhrases: banPhrases, form: body.form || {} }));
+    } else if (action === 'video_plan') {
+      const clips = arr(body.clips, 6);
+      if (!clips.length && !s(body.story, 600)) {
+        return { ok: false, reason: 'missing_input', message: '영상 클립이나 스토리 방향 중 하나는 필요합니다.' };
+      }
+      prompt = promptVideo(Object.assign({}, body, { banPhrases: banPhrases, clips: clips }));
+    } else if (action === 'youtube_analyze') {
+      if (!s(body.query || body.topic, 120)) {
+        return { ok: false, reason: 'missing_query', message: '검색어(query)가 필요합니다.' };
+      }
+      prompt = promptYt(Object.assign({}, body, { banPhrases: banPhrases }));
+    } else if (action === 'rewrite_tone') {
+      const draft = s(body.body, 16000);
+      if (draft.length < 80) return { ok: false, reason: 'missing_body', message: '어조를 바꿀 초안이 필요합니다(80자 이상).' };
+      const tone = s(body.tone, 20) || 'honest';
+      if (!TONES[tone]) return { ok: false, reason: 'unknown_tone', message: 'tone 은 honest / expert / warm 중 하나입니다.' };
+      prompt = promptRewrite(Object.assign({}, body, { banPhrases: banPhrases, body: draft, tone: tone }));
+    } else if (action === 'humanize') {
+      const draft = s(body.body, 16000);
+      if (draft.length < 80) return { ok: false, reason: 'missing_body', message: '다듬을 초안이 필요합니다(80자 이상).' };
+      prompt = promptHumanize(Object.assign({}, body, { banPhrases: banPhrases, body: draft }));
+    } else if (action === 'multi_use') {
+      const draft = s(body.body, 16000);
+      if (draft.length < 120) return { ok: false, reason: 'missing_body', message: '1타 3피로 바꿀 완성 본문이 필요합니다(120자 이상).' };
+      prompt = promptMulti(Object.assign({}, body, { banPhrases: banPhrases, body: draft }));
+    } else if (action === 'seo_tags') {
+      if (!s(body.body, 200) && !s(body.title, 120)) {
+        return { ok: false, reason: 'missing_body', message: '태그를 뽑을 본문이나 제목이 필요합니다.' };
+      }
+      prompt = promptSeo(Object.assign({}, body, { title: s(body.title, 120), body: s(body.body, 12000) }));
+    } else if (action === 'closing_box') {
+      if (!s(body.body, 200)) return { ok: false, reason: 'missing_body', message: '마무리 박스를 붙일 본문이 필요합니다.' };
+      prompt = promptClosing(Object.assign({}, body, { banPhrases: banPhrases, body: s(body.body, 12000) }));
+    } else {
+      const draft = s(body.body, 20000);
+      if (draft.length < 80) return { ok: false, reason: 'missing_body', message: '쇼츠로 바꿀 블로그 본문이 필요합니다.' };
+      prompt = promptShorts(Object.assign({}, body, { banPhrases: banPhrases, body: draft.slice(0, 9000) }));
+    }
+
+    const started = Date.now();
+    let out;
+    try {
+      out = await generate(prompt, started + DEADLINE_MS);
+    } catch (err) {
+      const hours = err.retryDelaySec ? Math.round(err.retryDelaySec / 360) / 10 : null;
+      const message =
+        err.code === 'bad_key'
+          ? 'API 키가 거부되었습니다(' + String(err.message || '').slice(0, 120) + '). 키를 다시 확인해 [키 변경]으로 넣어 주세요.'
+          : err.code === 'quota_exceeded'
+            ? '무료 티어의 모델별 하루 요청 한도를 다 썼습니다. ' +
+              (hours ? '약 ' + hours + '시간 뒤에 자동으로 풀립니다. ' : '') +
+              '급하면 Google AI Studio에서 결제(종량제)를 켜면 바로 늘어납니다. 지금은 [오프라인 뼈대]로 틀만 만들 수 있습니다.'
+            : err.status === 504
+              ? 'Gemini 응답이 시간 안에 오지 않았습니다. 잠시 뒤 다시 눌러 주세요(긴 글은 한 번 더 걸릴 수 있습니다).'
+              : err.code === 'all_models_busy'
+                ? 'Gemini 모델이 지금 몰려 응답하지 않았습니다(lite-latest → 3 Flash → 3.8 Flash 순으로 시도). 1~2분 뒤 다시 눌러 주세요.'
+                : 'Gemini 호출 실패: ' + String(err.message || '').slice(0, 200);
+      return {
+        ok: false,
+        reason: err.code || (err.status === 504 ? 'timeout' : 'gemini_unavailable'),
+        message: message,
+        keyConfigured: true,
+        model: MODEL_ORDER[0],
+        quota: err.code === 'quota_exceeded' ? { quotaId: err.quotaId, retryDelaySec: err.retryDelaySec } : undefined,
+        tries: err.tries || []
+      };
+    }
+
+    const parsed = extractJson(out.text);
+    const notes = [];
+    if (!parsed) notes.push('모델이 JSON 형식을 어겼습니다. 원문(__raw)을 그대로 돌려줍니다.');
+    if (out.finish === 'MAX_TOKENS') notes.push('출력이 토큰 한도에 걸려 잘렸습니다. 다시 생성하면 더 짧게 나옵니다.');
+    if (out.fellBack) notes.push(MODEL_ORDER[0] + ' 이 응답하지 않아 ' + out.model + ' 이 대신 작성했습니다.');
+
+    const data0 = parsed || {};
+    let result;
+    if (action === 'blog') result = normBlog(data0, banPhrases);
+    else if (action === 'video_plan') result = normVideo(data0, arr(body.clips, 6));
+    else if (action === 'youtube_analyze') result = normYt(data0);
+    else if (action === 'rewrite_tone') result = normRewrite(data0, banPhrases);
+    else if (action === 'humanize') result = normHumanize(data0, banPhrases);
+    else if (action === 'multi_use') result = normMulti(data0, banPhrases);
+    else if (action === 'seo_tags') result = normSeo(data0);
+    else if (action === 'closing_box') result = normClosing(data0);
+    else result = normShorts(data0);
+
+    if (result.banHits && result.banHits.length) notes.push('금지 표현이 본문에 남아 있습니다: ' + result.banHits.join(', '));
+
+    const truncated = !parsed && out.finish === 'MAX_TOKENS';
+    const emptyMain =
+      (action === 'blog' && !s(result.body, 10)) ||
+      (action === 'video_plan' && !(result.cuts || []).length) ||
+      (action === 'blog_to_shorts' && !(result.scenes || []).length) ||
+      (action === 'youtube_analyze' && !((result.shorts || {}).scenes || []).length) ||
+      (action === 'rewrite_tone' && !s(result.body, 10)) ||
+      (action === 'humanize' && !s(result.body, 10)) ||
+      (action === 'multi_use' && !(((result.insta || {}).lines) || []).length) ||
+      (action === 'seo_tags' && !((result.hashtags || []).length || (result.keywords || []).length)) ||
+      (action === 'closing_box' && !s(result.question, 3));
+    if (truncated || emptyMain) {
+      return {
+        ok: false,
+        reason: truncated ? 'truncated' : 'empty_result',
+        message: truncated
+          ? '출력이 토큰 한도에서 잘려 본문이 완성되지 않았습니다. 다시 누르면 조금 더 짧게 다시 씁니다.'
+          : '답이 비어 왔습니다. 한 번 더 눌러 주세요.',
+        keyConfigured: true,
+        model: out.model,
+        finishReason: out.finish,
+        notes: notes,
+        tries: out.tries,
+        partial: parsed ? result : undefined,
+        __raw: parsed ? undefined : out.text.slice(0, 8000)
+      };
+    }
+
+    return {
+      ok: true,
+      action: action,
+      parsed: !!parsed,
+      model: out.model,
+      primaryModel: MODEL_ORDER[0],
+      fellBack: !!out.fellBack,
+      elapsedMs: Date.now() - started,
+      usage: out.usage,
+      finishReason: out.finish,
+      notes: notes,
+      tries: out.tries,
+      data: result,
+      __raw: parsed ? undefined : out.text.slice(0, 20000)
+    };
+  }
+
+  /** 연결 테스트 — 실제로 한 번 생성해 보고, 답한 모델과 걸린 시간을 돌려준다. */
+  async function ping() {
+    const key = getKey();
+    if (!key) return { ok: false, reason: 'missing_gemini_key', message: '키가 없습니다.' };
+    const model = MODEL_ORDER[0];
+    const url = API_ROOT + model + ':generateContent?key=' + encodeURIComponent(key);
+    const body = {
+      contents: [{ role: 'user', parts: [{ text: '연결 확인입니다. "OK" 한 단어로만 답하세요.' }] }],
+      generationConfig: { maxOutputTokens: 24, temperature: 0 }
+    };
+    const t0 = Date.now();
+    try {
+      const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const raw = await res.text();
+      let j = null;
+      try { j = JSON.parse(raw); } catch (_) {}
+      if (!res.ok) {
+        const msg = (j && j.error && j.error.message) || String(raw).slice(0, 200) || ('HTTP ' + res.status);
+        return { ok: false, status: res.status, message: msg };
+      }
+      return { ok: true, model: (j && j.modelVersion) || model, ms: Date.now() - t0 };
+    } catch (e) {
+      return { ok: false, message: String((e && e.message) || 'network') };
+    }
+  }
+
+  return {
+    run: run,
+    ping: ping,
+    getKey: getKey,
+    setKey: setKey,
+    clearKey: clearKey,
+    maskKey: maskKey,
+    models: MODEL_ORDER.slice(),
+    primary: MODEL_ORDER[0]
+  };
+})();
+</script>
+
 <script>
 (function(){
   'use strict';
   var $ = function(s,r){ return (r||document).querySelector(s); };
   var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
   var ESC = { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' };
+
+  /* ================================================================
+     정적 Gemini 직접 호출 (window.CSAI) 연결
+     - 모든 생성 버튼은 이 callAI() 하나를 거친다.
+     - 키는 이 브라우저 localStorage(cs_gemini_api_key)에서만 읽는다. 코드에 키 문자열 없음.
+     - 실패는 꾸며내지 않는다: CSAI 가 돌려준 reason/message/tries 를 그대로 보여준다.
+     ================================================================ */
+  var AI = { model: (window.CSAI && CSAI.primary) || 'gemini-flash-lite-latest', last: null };
+
+  function spinner(btn, on, label){
+    if (!btn) return;
+    if (on){
+      if (!btn.dataset.orig) btn.dataset.orig = btn.innerHTML;
+      btn.dataset.busy = '1';
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spin" aria-hidden="true"></span> ' + esc(label || 'Gemini가 쓰는 중…');
+    } else {
+      btn.disabled = false;
+      if (btn.dataset.orig){ btn.innerHTML = btn.dataset.orig; delete btn.dataset.orig; }
+      delete btn.dataset.busy;
+    }
+  }
+
+  function setStatus(kind, text){
+    var b = $('#statusBadge');
+    if (!b) return;
+    b.className = 'status-badge' + (kind === 'ok' ? ' ok' : kind === 'bad' ? ' bad' : '');
+    b.innerHTML = '<span class="dot"></span>' + esc(text);
+  }
+
+  /* ---------------- 🔑 키 관리 ---------------- */
+  function getKey(){ return window.CSAI ? CSAI.getKey() : ''; }
+
+  function renderKeyUI(){
+    var k = getKey();
+    var banner = $('#keyBanner'), inRow = $('#keyInputRow'), svRow = $('#keySavedRow'), mask = $('#keyMask');
+    if (banner) banner.hidden = !!k;
+    if (inRow) inRow.hidden = !!k;
+    if (svRow) svRow.hidden = !k;
+    if (mask) mask.textContent = k ? CSAI.maskKey(k) : '';
+  }
+
+  function openKeyPanel(focus){
+    var g = $('#apiGuide');
+    if (g) g.hidden = false;
+    var b = $('#apiGuideBtn');
+    if (b) b.setAttribute('aria-expanded', 'true');
+    renderKeyUI();
+    if (focus && !getKey()){
+      var el = $('#keyInput');
+      if (el){ try { el.focus(); } catch(e){} }
+    }
+  }
+
+  function saveKeyFromInput(){
+    var el = $('#keyInput');
+    var v = String((el && el.value) || '').trim();
+    if (!v){ toast('키를 붙여넣어 주세요.'); if (el) el.focus(); return; }
+    if (v.length < 20){ toast('키가 너무 짧습니다 — AIza… 로 시작하는 긴 문자열입니다.'); if (el) el.focus(); return; }
+    var stored = CSAI.setKey(v);
+    if (el) el.value = '';
+    renderKeyUI();
+    if (!stored){
+      toast('브라우저 저장이 막혀 있어 이번 창에서만 씁니다(시크릿 모드).');
+    } else {
+      toast('키를 이 브라우저에 저장했습니다. 이제 생성 버튼이 동작합니다.');
+    }
+    setStatus('ok', '정적 스튜디오 · 키 저장됨 · 확인 중…');
+    pingAI();
+  }
+
+  function deleteKey(){
+    CSAI.clearKey();
+    renderKeyUI();
+    AI.last = null;
+    setStatus('bad', '정적 스튜디오 · Gemini 키 없음');
+    var gb = $('#guideState');
+    if (gb){ gb.className = 'bdg wait'; gb.textContent = '키 없음 — 아래에 붙여넣고 [저장]'; }
+    toast('저장한 키를 이 브라우저에서 지웠습니다.');
+    openKeyPanel(false);
+  }
+
+  async function callAI(action, payload, btn, label){
+    if (!window.CSAI){
+      throw Object.assign(new Error('AI 엔진을 불러오지 못했습니다. 페이지를 새로 고쳐 주세요.'), { status: 0, payload: {} });
+    }
+    spinner(btn, true, label);
+    try {
+      if (!getKey()){
+        openKeyPanel(true);
+        var e0 = new Error('Gemini API 키가 없습니다. 위 [🔑 Gemini 키 입력]에서 한 번만 넣어 주세요.');
+        e0.status = 401;
+        e0.payload = { reason: 'missing_gemini_key', keyConfigured: false };
+        throw e0;
+      }
+      var j = await CSAI.run(action, payload || {});
+      if (j && j.model) AI.model = j.model;
+      if (!j || j.ok === false){
+        var er = new Error((j && (j.message || j.reason)) || '생성에 실패했습니다.');
+        er.status = (j && j.reason === 'quota_exceeded') ? 429 : ((j && j.reason === 'all_models_busy') ? 503 : 200);
+        er.payload = j || {};
+        if (er.payload.reason === 'bad_key' || er.payload.reason === 'missing_gemini_key') openKeyPanel(true);
+        throw er;
+      }
+      AI.last = j;
+      return j;
+    } finally {
+      spinner(btn, false);
+    }
+  }
+
+  function aiErrBox(err, opts){
+    opts = opts || {};
+    var p = (err && err.payload) || {};
+    var msg;
+    if (p.reason === 'missing_gemini_key'){
+      msg = '<b>Gemini API 키가 없습니다.</b> 위 <b>[🔑 Gemini 키 입력]</b>에 한 번만 붙여넣고 [저장]하면 바로 켜집니다.';
+    } else if (p.reason === 'bad_key'){
+      msg = '<b>API 키가 거부되었습니다.</b> 키를 다시 복사해 [키 변경]으로 넣어 주세요. ' + esc(String(p.message || '').slice(0, 120));
+    } else if (p.reason === 'all_models_busy' || err.status === 503){
+      msg = 'Gemini 모델이 지금 몰려 있습니다(lite-latest → 3 Flash → 3.8 Flash 순으로 시도). 1~2분 뒤 다시 눌러 주세요.';
+    } else if (p.reason === 'quota_exceeded' || err.status === 429){
+      var hrs = p.quota && p.quota.retryDelaySec ? Math.round(p.quota.retryDelaySec / 360) / 10 : null;
+      msg = '무료 티어의 <b>모델별 하루 요청 한도</b>를 다 썼습니다.' +
+        (hrs ? ' 약 ' + hrs + '시간 뒤 자동으로 풀립니다.' : '') +
+        ' Google AI Studio에서 결제(종량제)를 켜면 바로 늘어납니다. 지금은 [오프라인 뼈대]로 틀만 만들 수 있습니다.';
+    } else if (p.reason === 'truncated'){
+      msg = '출력이 토큰 한도에서 잘려 본문이 완성되지 않았습니다. 다시 누르면 더 짧게 다시 씁니다.';
+    } else if (p.reason === 'empty_result'){
+      msg = '답이 비어 왔습니다. 한 번 더 눌러 주세요.';
+    } else if (p.reason === 'timeout' || err.status === 504){
+      msg = 'Gemini가 시간 안에 답하지 않았습니다. 긴 글은 한 번 더 걸릴 수 있습니다.';
+    } else {
+      msg = esc(err && err.message ? err.message : '알 수 없는 오류');
+    }
+    var tries = (p.tries || []).map(function(t){ return t.model + ':' + (t.status || '—'); }).join(' · ');
+    var h = '<div class="errbox"><b>⚠️ 생성 실패 — 꾸며내지 않고 그대로 알립니다</b>' +
+      '<div class="em">' + msg + '</div>' +
+      (tries ? '<div class="em mono">시도 기록: ' + esc(tries) + '</div>' : '') +
+      (opts.hint ? '<div class="em">' + opts.hint + '</div>' : '');
+    if (opts.offline){
+      h += '<button type="button" class="btn small" data-offline="' + esc(opts.offline) + '">' +
+        esc(opts.offlineLabel || '대신 오프라인 초안 만들기') + '</button>';
+    }
+    return h + '</div>';
+  }
+
+  async function pingAI(){
+    var gb = $('#guideState');
+    renderKeyUI();
+    if (!getKey()){
+      setStatus('bad', '정적 스튜디오 · Gemini 키 없음');
+      if (gb){ gb.className = 'bdg wait'; gb.textContent = '키 없음 — 아래에 붙여넣고 [저장]'; }
+      return;
+    }
+    if (gb){ gb.className = 'bdg wait'; gb.textContent = '확인 중…'; }
+    var r = null;
+    try { r = await CSAI.ping(); } catch(e){ r = { ok: false, message: String((e && e.message) || e) }; }
+    if (r && r.ok){
+      if (r.model) AI.model = r.model;
+      setStatus('ok', '정적 스튜디오 · ' + AI.model + ' 연결됨');
+      if (gb){ gb.className = 'bdg real'; gb.textContent = '✓ 연결됨 · ' + r.model + ' · ' + (Math.round((r.ms || 0) / 100) / 10) + '초'; }
+    } else {
+      setStatus('bad', '정적 스튜디오 · 연결 실패');
+      if (gb){ gb.className = 'bdg wait'; gb.textContent = '실패 — ' + String((r && r.message) || '알 수 없음').slice(0, 90); }
+    }
+  }
+
+  /* 키 UI 배선 */
+  (function(){
+    var openBtn = $('#keyOpenBtn'), saveBtn = $('#keySaveBtn'), chgBtn = $('#keyChangeBtn'), delBtn = $('#keyDelBtn'), inp = $('#keyInput');
+    if (openBtn) openBtn.addEventListener('click', function(){ openKeyPanel(true); });
+    if (saveBtn) saveBtn.addEventListener('click', saveKeyFromInput);
+    if (inp) inp.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); saveKeyFromInput(); } });
+    if (chgBtn) chgBtn.addEventListener('click', function(){
+      var row = $('#keyInputRow');
+      if (row) row.hidden = false;
+      if (inp){ inp.value = ''; try { inp.focus(); } catch(e){} }
+      toast('새 키를 붙여넣고 [저장]을 누르면 이전 키를 덮어씁니다.');
+    });
+    if (delBtn) delBtn.addEventListener('click', function(){
+      if (delBtn.dataset.armed === '1'){
+        delete delBtn.dataset.armed;
+        delBtn.textContent = '삭제';
+        deleteKey();
+        return;
+      }
+      delBtn.dataset.armed = '1';
+      delBtn.textContent = '정말 삭제';
+      setTimeout(function(){
+        if (delBtn.dataset.armed === '1'){ delete delBtn.dataset.armed; delBtn.textContent = '삭제'; }
+      }, 4000);
+    });
+    renderKeyUI();
+  })();
+
   function esc(v){ return String(v==null?'':v).replace(/[&<>"']/g, function(c){ return ESC[c]; }); }
 
   var toastEl = $('#toast'), toastTimer = null;
@@ -1129,6 +2944,7 @@
     var open = guide.hidden;
     guide.hidden = !open;
     guideBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) renderKeyUI();
   });
 
   /* ================= sub modes ================= */
@@ -1162,7 +2978,11 @@
     lastDraft: null,
     titles: [],
     titleIdx: 0,
-    shortsTopic: ''
+    shortsTopic: '',
+    aiHooks: null,      // Gemini가 만든 후킹 3종
+    aiCuts: null,       // Gemini 컷 설계도
+    aiBgm: null,
+    shorts: null        // 블로그→쇼츠 대본
   };
 
   function fmtSize(bytes){
@@ -1385,6 +3205,8 @@
       : '해상도 확인 중';
     var story = ($('#story').value || '').trim();
 
+    var aiDone = !!(state.aiCuts && state.aiCuts.length);
+    var aiTotal = aiDone ? Math.round(state.aiCuts.reduce(function(a, c){ return a + (c.durSec || 0); }, 0) * 10) / 10 : 0;
     pipeRatio.textContent = state.ratio + ' · ' + targetRes(state.ratio);
     stepsEl.innerHTML = '';
 
@@ -1395,24 +3217,21 @@
         d: state.files.length + '개 · 원본 ' + fmtDur(total) + ' → 선택 구간 ' + fmtDur(picked) + ' · 원본 ' + resTxt + ' → 출력 ' + targetRes(state.ratio) + (story ? ' · 방향 입력됨' : ' · 방향 미입력')
       },
       {
-        done: false,
-        t: 'Gemini 영상 타임코드 분석',
-        d: '영상 전체를 보고 하이라이트 구간·가림 구간·전환 지점을 초 단위로 뽑아냅니다. (연결 후 10~20초 예상)'
-      },
-      {
-        done: false,
-        t: '컷 설계도(JSON) 만들기',
-        d: '분석 결과 + 스토리 방향 + 빈틈 메모로 in/out 컷 목록과 자막 위치를 정리합니다. 지금은 위에서 고른 In/Out이 초기값이 됩니다.'
+        done: aiDone,
+        t: 'Gemini 컷 설계도(JSON)',
+        d: aiDone
+          ? '컷 ' + state.aiCuts.length + '개 · 총 ' + aiTotal + '초 — 아래 설계도 표에 정리했습니다.'
+          : '편집 실행을 누르면 Gemini가 클립 구간·자막·전환을 설계합니다(8~20초). 영상 픽셀을 보는 게 아니라 파일명·길이·In/Out 기준입니다.'
       },
       {
         done: false,
         t: 'ffmpeg.wasm 브라우저 컷편집',
-        d: '폰 브라우저 안에서 자르고 붙입니다. 서버 업로드가 없어 Vercel 4.5MB 제한과 무관합니다. 이 프리뷰에는 엔진을 싣지 않았습니다.'
+        d: '폰 브라우저 안에서 자르고 붙이는 단계 — 이 사이트에는 아직 엔진이 없습니다. 지금 설계도는 편집 지시서로만 씁니다.'
       },
       {
         done: false,
         t: '자막 · BGM · 전환 합성',
-        d: '자막 ' + presetName(state.preset) + ' · 첫 2초 후킹 "' + hookLine() + '" · 목소리 ' + state.mix.voice + '% : BGM ' + state.mix.bgm + '% 덕킹. (합성은 연결 후)'
+        d: '자막 ' + presetName(state.preset) + ' · 첫 2초 후킹 "' + hookLine() + '" · 목소리 ' + state.mix.voice + '% : BGM ' + state.mix.bgm + '% 덕킹. (합성 단계 없음)'
       },
       {
         done: false,
@@ -1427,7 +3246,7 @@
       el.innerHTML =
         '<span class="ico">' + (s.done ? '✓' : '!') + '</span>' +
         '<div class="body">' +
-          '<div class="t">' + esc(s.t) + (s.done ? '<span class="bdg real">지금 확인됨</span>' : '<span class="bdg wait">API 연결 전 · 준비 상태</span>') + '</div>' +
+          '<div class="t">' + esc(s.t) + (s.done ? '<span class="bdg real">지금 확인됨</span>' : '<span class="bdg wait">아직 미구현</span>') + '</div>' +
           '<div class="d">' + esc(s.d) + '</div>' +
         '</div>';
       stepsEl.appendChild(el);
@@ -1440,20 +3259,101 @@
         ' · 출력 ' + state.ratio + '(' + targetRes(state.ratio) + ')' +
         ' · 자막 ' + presetName(state.preset) +
         (failed ? ' · <span style="color:#fbbf24">일부 영상 메타를 못 읽었습니다(코덱 확인 필요)</span>' : '') +
-        '. 컷 편집 결과물은 아직 없습니다.'
+        '. 위 설계도는 편집 지시서이고, 합성된 MP4는 아직 없습니다.'
       : '✅ 위에서 영상을 고르면 파일명·용량·길이·해상도와 구간 합계를 실제로 읽어 여기에 표시합니다.';
   }
 
-  $('#runEdit').addEventListener('click', function(){
-    if (!state.files.length){
-      toast('먼저 영상 파일을 2~3개 골라 주세요.');
+  $('#runEdit').addEventListener('click', function(){ runVideoAI(); });
+
+  function videoPayload(){
+    return {
+      clips: state.files.map(function(f){
+        return { name: f.name, dur: f.dur || 0, w: f.w || 0, h: f.h || 0, in: f.in || 0, out: (f.out == null ? (f.dur || 0) : f.out) };
+      }),
+      story: ($('#story').value || '').trim(),
+      preset: state.preset,
+      ratio: state.ratio,
+      voice: state.mix.voice,
+      bgm: state.mix.bgm,
+      banPhrases: banAll()
+    };
+  }
+
+  async function runVideoAI(){
+    var story = ($('#story').value || '').trim();
+    if (!state.files.length && !story){
+      toast('먼저 영상 파일을 2~3개 고르거나 스토리 방향을 입력해 주세요.');
       pickBtn.focus();
       return;
     }
-    renderPipeline();
     pipeline.hidden = false;
+    renderPipeline();
     pipeline.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+    var host = $('#aiPlan');
+    host.innerHTML = '<div class="aiwait"><span class="spin"></span> Gemini가 클립 구간·자막·후킹을 설계하는 중… (보통 8~20초)</div>';
+    try {
+      var j = await callAI('video_plan', videoPayload(), $('#runEdit'), '컷 설계 중…');
+      var d = j.data || {};
+      state.aiCuts = d.cuts || [];
+      state.aiBgm = d.bgm || null;
+      if ((d.hooks || []).length){
+        state.aiHooks = d.hooks.map(function(h){ return { tag: h.tag || '후킹', text: h.text || '' }; }).filter(function(h){ return h.text; });
+        state.hookStyle = 0;
+      }
+      renderHooks();
+      renderSubStage();
+      renderPipeline();
+      renderAiPlan(j);
+      toast('컷 설계도 ' + state.aiCuts.length + '개 · 후킹 ' + (state.aiHooks || []).length + '종을 만들었습니다.');
+    } catch(err){
+      host.innerHTML = aiErrBox(err, { hint: '스토리 방향을 한 줄이라도 적으면 설계 정확도가 올라갑니다.' });
+      toast('컷 설계에 실패했습니다. 아래 안내를 확인해 주세요.');
+    }
+  }
+
+  function renderAiPlan(j){
+    var host = $('#aiPlan');
+    var d = (j && j.data) || {};
+    var cuts = d.cuts || [];
+    if (!cuts.length){
+      host.innerHTML = '<div class="ainote">설계도가 비어 왔습니다. 다시 한 번 [편집 실행]을 눌러 주세요.</div>';
+      return;
+    }
+    var h = '<div class="ainote"><b>Gemini 컷 설계도</b> · ' + esc(j.model || AI.model) + ' · 컷 ' + cuts.length + '개 / 총 ' +
+      (d.totalSec || 0) + '초';
+    if (j.fellBack) h += ' <span style="color:#fbbf24">(3.8 Flash가 밀려 대체 모델이 설계)</span>';
+    h += '</div>';
+    h += '<div class="aicutwrap"><table class="cuttable"><thead><tr>' +
+      '<th style="width:26px">#</th><th>클립</th><th style="width:92px">구간</th><th style="width:40px">길이</th><th>자막</th><th style="width:48px">전환</th>' +
+      '</tr></thead><tbody>';
+    cuts.forEach(function(c, i){
+      h += '<tr>' +
+        '<td class="n">' + (i + 1) + '</td>' +
+        '<td>' + esc(trunc(c.clipName || ('클립 ' + (c.clipIndex + 1)), 20)) + '</td>' +
+        '<td class="n">' + c.startSec + '~' + c.endSec + 's</td>' +
+        '<td class="n">' + c.durSec + 's</td>' +
+        '<td>' + esc(c.caption || '—') + '</td>' +
+        '<td>' + esc(c.transition) + '</td>' +
+        '</tr>';
+    });
+    h += '</tbody></table></div><div class="thint">↔ 표는 옆으로 넘겨서 보세요</div>';
+    var bgm = d.bgm || {};
+    if (bgm.ducking || (bgm.notes || []).length){
+      h += '<div class="ainote"><b>BGM 덕킹</b> — ' + esc(bgm.ducking || '') +
+        ' <span style="color:#94a3b8">(목소리 ' + state.mix.voice + '% : BGM ' + state.mix.bgm + '%)</span>';
+      if ((bgm.notes || []).length){
+        h += '<ul>' + bgm.notes.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+      }
+      h += '</div>';
+    }
+    var notes = (j.notes || []).concat(d.warnings || []);
+    if (notes.length){
+      h += '<div class="ainote"><b>확인 필요</b><ul>' +
+        notes.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+    }
+    h += '<div class="ainote">이건 <b>설계도</b>입니다. 실제 컷편집·자막 렌더·BGM 합성·MP4 저장은 이 사이트에 아직 없습니다.</div>';
+    host.innerHTML = h;
+  }
 
   /* ================= youtube demo ================= */
   var YT = [
@@ -1477,7 +3377,7 @@
   });
   $('#ytSearchBtn').addEventListener('click', function(){
     ytNotice.hidden = false;
-    ytNotice.textContent = '실시간 유튜브 검색은 Gemini API 키 연결 후 작동합니다. 지금은 아래 [데모 예시 보기]로 UI·선택 동선만 확인할 수 있습니다.';
+    ytNotice.textContent = '유튜브 실시간 검색·조회수·댓글 수집은 이 사이트에 연동되어 있지 않습니다(YouTube Data API 키 없음). [데모 예시 보기]로 선택 동선을 확인하고, 아래 [AI 분석 + 50초 대본]은 Gemini가 주제·제목 기준으로 실제 분석합니다.';
     if (ytResults.hidden) $('#ytDemoBtn').scrollIntoView({ behavior:'smooth', block:'center' });
   });
   $('#ytQuery').addEventListener('keydown', function(e){
@@ -1554,9 +3454,77 @@
     html += '</div>';
     html += '<p class="hint" style="margin-top:8px">' + (picks.length < 3
       ? '지금 ' + picks.length + '/3 선택 — 3개를 채우면 오프닝·본편·엔딩 구성이 완성됩니다.'
-      : '3개 선택 완료 — 위 구성안은 <b>선택 순서와 길이</b>로 만든 템플릿입니다. 실제 대사·장면 분석과 문장 생성은 Gemini 연결 후입니다.') + '</p>';
+      : '3개 선택 완료 — 위 구성안은 <b>선택 순서와 길이</b>로 만든 템플릿입니다. 실제 빈틈·50초 대본은 아래 [AI 빈틈 분석 + 50초 대본]에서 Gemini가 씁니다.') + '</p>';
     ytPlan.innerHTML = html;
   }
+
+  /* ================= youtube: Gemini 빈틈 분석 + 50초 대본 ================= */
+  function scriptHtml(sh){
+    sh = sh || {};
+    var h = '<div class="ainote"><b>' + esc(sh.title || '쇼츠 제목 없음') + '</b>';
+    if (sh.hook) h += '<div style="margin-top:5px;color:#7dd3fc">0~2초 후킹: ' + esc(sh.hook) + '</div>';
+    h += '</div><div class="script">';
+    (sh.scenes || []).forEach(function(sc){
+      h += '<div class="sl"><span class="tm">' + esc(sc.time) + '</span><span>' + esc(sc.line) + '</span></div>';
+    });
+    if (sh.ending) h += '<div class="sl"><span class="tm">엔딩</span><span>' + esc(sh.ending) + '</span></div>';
+    if (sh.cta) h += '<div class="sl"><span class="tm">CTA</span><span>' + esc(sh.cta) + '</span></div>';
+    h += '</div>';
+    if (sh.captionGuide) h += '<div class="ainote"><b>자막 권장</b> — ' + esc(sh.captionGuide) + '</div>';
+    return h;
+  }
+
+  async function runYtAI(){
+    var q = (($('#ytTopic') && $('#ytTopic').value) || '').trim() || (($('#ytQuery') && $('#ytQuery').value) || '').trim();
+    if (!q){
+      toast('주제나 검색어를 먼저 입력해 주세요.');
+      if ($('#ytTopic')) $('#ytTopic').focus();
+      return;
+    }
+    var picks = state.ytSelected.map(function(i){
+      return { title: YT[i] ? YT[i].title : '', channel: YT[i] ? YT[i].ch : '', dur: YT[i] ? YT[i].dur : '' };
+    });
+    var host = $('#ytAiOut');
+    host.hidden = false;
+    host.innerHTML = '<div class="aiwait"><span class="spin"></span> Gemini가 경쟁 빈틈과 50초 대본을 만드는 중… (보통 10~20초)</div>';
+    try {
+      var j = await callAI('youtube_analyze', {
+        query: q,
+        videos: picks,
+        source: $('#ytResults').hidden ? 'user' : 'demo',
+        notes: activeGapTexts('yt'),
+        banPhrases: banAll()
+      }, $('#aiYtBtn'), '빈틈 분석 중…');
+      var d = j.data || {};
+      var h = '<div class="ainote"><b>Gemini 빈틈 분석</b> · ' + esc(j.model || AI.model) + ' · ' +
+        (Math.round((j.elapsedMs || 0) / 100) / 10) + '초' +
+        (j.fellBack ? ' <span style="color:#fbbf24">(대체 모델)</span>' : '') + '</div>';
+      if ((d.gaps || []).length){
+        h += '<div class="aicutwrap"><table class="cuttable gap"><thead><tr><th>빈틈</th><th>왜 비었나</th><th>내가 채우는 법</th></tr></thead><tbody>';
+        d.gaps.forEach(function(g){
+          h += '<tr><td><b>' + esc(g.title) + '</b></td><td>' + esc(g.why || '—') + '</td><td>' + esc(g.how || '—') + '</td></tr>';
+        });
+        h += '</tbody></table></div><div class="thint">↔ 표는 옆으로 넘겨서 보세요</div>';
+        setAiGaps('yt', d.gaps.map(function(g){ return g.title + (g.how ? ' — ' + g.how : ''); }));
+      } else {
+        h += '<div class="ainote">빈틈이 비어 왔습니다. 주제를 조금 더 구체적으로 적고 다시 시도해 보세요.</div>';
+      }
+      h += scriptHtml(d.shorts);
+      var notes = (j.notes || []).concat(d.warnings || []);
+      if (notes.length) h += '<div class="ainote"><b>확인 필요</b><ul>' + notes.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+      h += '<div class="ainote">유튜브 실제 검색·조회수·댓글은 이 사이트에 연동되어 있지 않습니다. 위 분석은 <b>주제와 고른 영상 제목</b> 기준입니다.</div>';
+      host.innerHTML = h;
+      host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast('빈틈 ' + (d.gaps || []).length + '개와 50초 대본을 만들었습니다.');
+    } catch(err){
+      host.innerHTML = aiErrBox(err, { hint: '유튜브 실제 검색 결과는 가져오지 않습니다 — 제목·주제 기준 분석입니다.' });
+    }
+  }
+
+  $('#aiYtBtn').addEventListener('click', function(){ runYtAI(); });
+  $('#ytTopic').addEventListener('keydown', function(e){
+    if (e.key === 'Enter'){ e.preventDefault(); runYtAI(); }
+  });
 
   /* ================= blog forms ================= */
   var DEFAULT_FORMS = [
@@ -1796,9 +3764,9 @@
     L.push('> ' + (form.emoji || '📝') + ' ' + form.name + ' 양식 · 말투: ' + form.tone);
     L.push('> 뼈대 생성: ' + todayKr() + '');
     var smp = getSample(form.id);
-    if (smp) L.push('> 내 문체 샘플 ' + charLen(smp) + '자 저장됨 · 문체 복제는 동적 웹(Gemini) 연결 후 적용');
+    if (smp) L.push('> 내 문체 샘플 ' + charLen(smp) + '자 저장됨 · 문체 복제는 [AI 본문 생성]에서 적용');
     L.push('');
-    L.push('*정적 프리뷰에서 양식 구조만으로 만든 초안 틀입니다. 동적 웹(Gemini 연결)에서는 각 섹션에 검색·요약·문장이 자동으로 채워집니다.*');
+    L.push('*오프라인 뼈대입니다. AI 문장 없이 양식 구조만 채운 틀 — [AI 본문 생성]을 쓰면 이 틀이 아니라 완성 글이 나옵니다.*');
     L.push('');
     L.push('---');
     L.push('');
@@ -1855,13 +3823,130 @@
     L.push('- [ ] 링크·이미지 저작권 확인');
     L.push('');
     L.push('---');
-    L.push('*이 뼈대는 정적 프리뷰 산출물입니다. AI가 쓴 문장이 아니라 틀만 채운 상태입니다.*');
+    L.push('*이 뼈대는 오프라인 산출물입니다. AI가 쓴 문장이 아니라 틀만 채운 상태입니다.*');
     return L.join('\n');
   }
 
   var outCard = $('#outCard'), outEmpty = $('#outEmpty'), outText = $('#outText'), outStat = $('#outStat');
 
-  $('#genBtn').addEventListener('click', function(){
+  function expNoteText(){
+    var el = $('#expNote');
+    return el ? String(el.value || '').trim() : '';
+  }
+  function saveExpNote(){
+    var el = $('#expNote');
+    if (!el) return;
+    try { localStorage.setItem('cs2_exp_note_v1', el.value || ''); } catch(e) {}
+    var info = $('#expInfo');
+    if (info) info.textContent = charLen(el.value || '') + '자 · 이 브라우저에 저장 · AI가 지어낸 경험담은 쓰지 않습니다';
+  }
+
+  function blogPayload(topic, f){
+    return {
+      topic: topic,
+      theme: guessTheme(f),
+      form: { name: f.name, tone: f.tone, sections: f.sections, highlight: f.highlight },
+      toneSample: getSample(f.id),
+      experienceNote: expNoteText(),
+      sourceMaterial: srcText(),
+      banPhrases: banAll(),
+      gaps: activeGapTexts('blog:' + f.id)
+    };
+  }
+
+  function setAiGaps(ctx, texts){
+    var b = gapBucket(ctx);
+    b.custom = b.custom.filter(function(t){ return t.indexOf('🤖 ') !== 0; });
+    (texts || []).forEach(function(t){
+      var v = '🤖 ' + String(t == null ? '' : t).trim();
+      if (v.length < 5) return;
+      if (b.custom.indexOf(v) < 0) b.custom.push(v);
+      var oi = b.off.indexOf(v);
+      if (oi > -1) b.off.splice(oi, 1);
+    });
+    lsSet(LSK2.gaps, gapsStore);
+    refreshGaps();
+  }
+
+  function renderAiNotes(host, j, d){
+    if (!host) return;
+    var li = [];
+    (j.notes || []).forEach(function(x){ li.push(x); });
+    (d.warnings || []).forEach(function(x){ li.push(x); });
+    if ((d.banHits || []).length) li.push('금지 상투어가 남았습니다: ' + d.banHits.join(', ') + ' — [내 문체·금지 상투어] 게이지를 보세요.');
+    if (d.needsCheck) li.push('[확인 필요] ' + d.needsCheck + '곳 — 가격·날짜·업체명은 직접 확인해서 채우세요.');
+    if (!li.length && !j.fellBack){ host.innerHTML = ''; return; }
+    var h = '<div class="ainote"><b>이 글은 ' + esc(j.model || AI.model) + '이(가) 썼습니다</b> · ' +
+      (Math.round((j.elapsedMs || 0) / 100) / 10) + '초';
+    if (j.fellBack) h += ' <span style="color:#fbbf24">(3.8 Flash가 밀려 대체 모델이 작성)</span>';
+    if (li.length) h += '<ul>' + li.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+    host.innerHTML = h + '</div>';
+  }
+
+  function fillBlogOutput(topic, f, text, badge){
+    outText.textContent = text;
+    outEdit.value = text;
+    setEditMode(false);
+    outCard.hidden = false;
+    outEmpty.hidden = true;
+    outStat.textContent = badge;
+    state.archiveId = null;
+    state.lastDraft = { topic: topic, formId: f.id, text: text };
+    resetChecks();
+    renderChecks(text);
+    $('#checkCard').hidden = false;
+    scanBans(text);
+    var ttEl = $('#thumbTitle');
+    if (ttEl) ttEl.value = '';
+    refreshPhotoSlots(true);
+    resetPolishState();
+    $('#polishCard').hidden = false;
+    renderSeo(null);
+  }
+
+  async function runBlogAI(){
+    var topic = topicEl.value.trim();
+    if (!topic){
+      toast('주제나 키워드를 먼저 입력해 주세요.');
+      topicEl.focus();
+      return;
+    }
+    var f = getForm(state.selectedFormId);
+    var note = $('#aiNoteBlog');
+    note.innerHTML = '';
+    try {
+      var j = await callAI('blog', blogPayload(topic, f), $('#genBtn'), 'Gemini가 본문 쓰는 중…');
+      var d = j.data || {};
+      var text = String(d.body == null ? '' : d.body);
+      if (!text.trim()) throw Object.assign(new Error('본문이 비어 왔습니다. 다시 눌러 주세요.'), { status: 200, payload: {} });
+      fillBlogOutput(topic, f, text, 'Gemini · ' + (j.model || AI.model));
+      state.lastDraft.model = j.model || AI.model;
+      state.titles = (d.titles || []).map(function(t){
+        return { tag: (t && t.type) || '제목', text: (t && t.text) || '' };
+      }).filter(function(t){ return t.text; });
+      if (!state.titles.length) state.titles = makeTitles(topic, f);
+      state.titleIdx = 0;
+      renderTitles();
+      $('#titleCard').hidden = false;
+      if ((d.gaps || []).length) setAiGaps('blog:' + f.id, d.gaps);
+      renderAiNotes(note, j, d);
+      $('#titleCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast('AI 본문 · 제목 3종 · 빈틈 ' + (d.gaps || []).length + '개를 만들었습니다.');
+    } catch(err){
+      note.innerHTML = aiErrBox(err, {
+        offline: 'blog',
+        offlineLabel: '대신 양식 뼈대만 만들기(오프라인)',
+        hint: '오프라인 뼈대는 AI 문장 없이 섹션 틀만 채웁니다.'
+      });
+      if (err && err.payload && err.payload.reason === 'missing_gemini_key'){
+        var g = $('#apiGuide');
+        if (g) g.hidden = false;
+      }
+      toast('AI 생성에 실패했습니다. 아래 안내를 확인해 주세요.');
+    }
+  }
+
+  function runBlogLocal(){
     var topic = topicEl.value.trim();
     if (!topic){
       toast('주제나 키워드를 먼저 입력해 주세요.');
@@ -1870,26 +3955,584 @@
     }
     var f = getForm(state.selectedFormId);
     var text = buildSkeleton(f, topic);
-    outText.textContent = text;
-    outEdit.value = text;
-    setEditMode(false);
-    outCard.hidden = false;
-    outEmpty.hidden = true;
-    outStat.textContent = f.name + ' · ' + f.sections.length + '섹션';
-    state.archiveId = null;
-    state.lastDraft = { topic: topic, formId: f.id, text: text };
+    fillBlogOutput(topic, f, text, f.name + ' · ' + f.sections.length + '섹션 · 오프라인');
     state.titles = makeTitles(topic, f);
     state.titleIdx = 0;
     renderTitles();
     $('#titleCard').hidden = false;
-    resetChecks();
-    renderChecks(text);
-    $('#checkCard').hidden = false;
-    scanBans(text);
+    $('#aiNoteBlog').innerHTML = '<div class="ainote">오프라인 뼈대입니다 — AI가 쓴 문장이 아니라 섹션 틀만 채운 상태입니다.</div>';
     $('#titleCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    toast('뼈대 · 제목 3종 · 체크리스트를 만들었습니다.');
+    toast('뼈대 · 제목 3종 · 체크리스트를 만들었습니다. (오프라인)');
+  }
+
+  $('#genBtn').addEventListener('click', function(){ runBlogAI(); });
+  $('#genLocalBtn').addEventListener('click', function(){ runBlogLocal(); });
+  $('#aiNoteBlog').addEventListener('click', function(e){
+    if (e.target.closest('[data-offline]')) runBlogLocal();
   });
+
   topicEl.addEventListener('keydown', function(e){ if (e.key === 'Enter') $('#genBtn').click(); });
+
+  /* ================================================================
+     📸 본문 추천 사진 · 썸네일
+     - 본문의 [📸 사진: 묘사 | search: 영문검색어] 자리를 파싱해 카드로 띄운다.
+     - 사진 검색: Wikimedia Commons API 를 브라우저가 직접 친다(origin=* · 키 불필요).
+     - 저장: ① 브라우저 직접 fetch(파일명 지정) → ② 새 탭 안내. 서버 프록시 없음.
+     - 썸네일: Canvas 1200×630 PNG. 외부 API·키 없이 100% 동작.
+     ================================================================ */
+  var PHOTO = { slots: [], cache: {}, includeInRich: true, style: 0 };
+  var PHOTO_TAG_RE = /\[(?:📸|📷)\s*사진[^\]]{0,200}\]/g;
+  var PHOTO_LINE_RE = /^[\s>*\-]*\[(?:📸|📷)\s*사진[^\]]*\]\s*$/;
+  var THUMB_STYLES = [
+    { bg: ['#071019', '#0d2033'], accent: '#38bdf8', glow: 'rgba(56,189,248,.22)', chip: 'rgba(56,189,248,.16)', chipText: '#bae6fd' },
+    { bg: ['#0b1512', '#123024'], accent: '#22c55e', glow: 'rgba(34,197,94,.20)', chip: 'rgba(34,197,94,.16)', chipText: '#bbf7d0' },
+    { bg: ['#150e22', '#241234'], accent: '#c084fc', glow: 'rgba(192,132,252,.22)', chip: 'rgba(192,132,252,.16)', chipText: '#e9d5ff' }
+  ];
+  var THUMB_FONT = '"Pretendard","Malgun Gothic","Apple SD Gothic Neo",-apple-system,"Noto Sans KR",sans-serif';
+
+  function parsePhotoTag(raw){
+    var inner = String(raw == null ? '' : raw)
+      .replace(/^\[/, '').replace(/\]$/, '')
+      .replace(/^(📸|📷)/, '')
+      .replace(/^\s*사진/, '')
+      .replace(/^[\s:：\-–—]*/, '');
+    var q = '';
+    var sm = /search\s*[:：]\s*([^|\]]+)/i.exec(inner);
+    if (sm){
+      q = sm[1].replace(/[\s.]+$/, '').trim();
+      inner = inner.replace(sm[0], '');
+    }
+    inner = inner.replace(/[|/]+\s*$/, '').replace(/\s{2,}/g, ' ').trim();
+    var legacy = !inner || /^자리/.test(inner);
+    return { desc: legacy ? '' : inner.slice(0, 120), q: q.slice(0, 80), legacy: legacy };
+  }
+
+  function photoSlotList(text){
+    var src = String(text || ''), out = [], m;
+    PHOTO_TAG_RE.lastIndex = 0;
+    while ((m = PHOTO_TAG_RE.exec(src))){
+      // 그 줄이 체크리스트 항목(- [ ] …)이나 표 행이면 사진 자리로 세지 않는다
+      var ls = src.lastIndexOf('\n', m.index - 1) + 1;
+      var le = src.indexOf('\n', m.index);
+      var line = src.slice(ls, le < 0 ? src.length : le).trim();
+      if (/^[-*]\s*\[[ xX]\]/.test(line) || line.charAt(0) === '|') continue;
+      var p = parsePhotoTag(m[0]);
+      out.push({ raw: m[0], desc: p.desc, q: p.q, legacy: p.legacy });
+      if (out.length >= 8) break;
+    }
+    return out;
+  }
+
+  function stripPhotoSlots(text){
+    return String(text || '').split('\n').filter(function(line){
+      return !PHOTO_LINE_RE.test(line.trim());
+    }).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+
+  function photoSourceText(){
+    var ed = $('#outEdit');
+    if (ed && !ed.hidden) return ed.value || '';
+    return outText ? (outText.textContent || '') : '';
+  }
+
+  function photoDefaultQuery(slot){
+    if (slot && slot.q) return slot.q;
+    var t = (state.lastDraft && state.lastDraft.topic) || (topicEl ? topicEl.value : '') || '';
+    return String(t).replace(/[^\w가-힣\s]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 60);
+  }
+
+  function photoCardHtml(slot, i){
+    var q = photoDefaultQuery(slot);
+    return '<div class="pslot" data-i="' + i + '">' +
+      '<div class="phead"><span class="pnum">사진 ' + (i + 1) + '</span>' +
+        (slot.desc ? '<span class="pdesc">' + esc(slot.desc) + '</span>'
+          : '<span class="pdesc dim">' + (slot.manual ? '직접 검색' : '본문에 묘사 없음 — 검색어로 찾습니다') + '</span>') +
+      '</div>' +
+      '<div class="prow">' +
+        '<input type="text" class="pquery" value="' + esc(q) + '" placeholder="영문 검색어 (예: hanok village autumn)" maxlength="60" aria-label="사진 ' + (i + 1) + ' 검색어">' +
+        '<button type="button" class="btn small" data-act="find">🔍 찾기</button>' +
+      '</div>' +
+      '<div class="presult" data-role="result"><div class="pwait">사진을 찾는 중…</div></div>' +
+    '</div>';
+  }
+
+  function photoKnownSources(j){
+    if (!j) return '';
+    if (j.source === 'pixabay') return 'Pixabay';
+    if (j.source === 'wikimedia') return 'Wikimedia Commons';
+    return '';
+  }
+
+  function photoResultHtml(j){
+    var photos = (j && j.photos) || [];
+    if (!photos.length){
+      return '<div class="pwait">' + esc((j && j.message) || '결과가 없습니다. 영어 명사로 바꿔 다시 찾아보세요.') + '</div>';
+    }
+    var src = photoKnownSources(j) || '무료 사진';
+    var h = '<div class="psrc">' + esc(src) + ' · ' + photos.length + '장' +
+      (j.note ? ' <span class="pnote">' + esc(j.note) + '</span>' : '') + '</div><div class="pgrid">';
+    photos.forEach(function(p, k){
+      h += '<div class="pcell">' +
+        '<button type="button" class="pthumb" data-k="' + k + '" title="눌러서 바로 저장">' +
+          '<img src="' + esc(p.thumb || p.preview) + '" alt="' + esc(p.title || '사진') + '" loading="lazy" referrerpolicy="no-referrer">' +
+          '<span class="pdl">⬇ 저장</span>' +
+        '</button>' +
+        '<div class="pmeta"><b>' + esc(trunc(p.title || '무료 사진', 44)) + '</b>' +
+          '<span>' + esc(trunc(p.license || '무료', 34)) + (p.author ? ' · ' + esc(trunc(p.author, 22)) : '') + '</span>' +
+          (p.page ? ' <a href="' + esc(p.page) + '" target="_blank" rel="noopener noreferrer">원본</a>' : '') +
+        '</div>' +
+      '</div>';
+    });
+    return h + '</div>';
+  }
+
+  /* 브라우저가 Wikimedia Commons 를 직접 검색(서버 함수가 없거나 실패했을 때) */
+  async function photoSearchCommonsDirect(q, n){
+    var url = 'https://commons.wikimedia.org/w/api.php?action=query&format=json&formatversion=2&origin=*' +
+      '&generator=search&gsrnamespace=6&gsrlimit=' + Math.max(3, Math.min(20, n || 6)) +
+      '&gsrsearch=' + encodeURIComponent('filetype:bitmap ' + q) +
+      '&prop=imageinfo&iiprop=url|size|mime|extmetadata&iiurlwidth=960';
+    var res = await fetch(url, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var j = await res.json();
+    var pages = (j && j.query && j.query.pages) || [];
+    var photos = [];
+    (Array.isArray(pages) ? pages : []).forEach(function(p){
+      var ii = (p.imageinfo && p.imageinfo[0]) || null;
+      if (!ii || !ii.url) return;
+      if (!/^image\/(jpeg|png|webp)$/.test(String(ii.mime || ''))) return;
+      if ((ii.width || 0) < 600 || (ii.height || 0) < 380) return;
+      var meta = ii.extmetadata || {};
+      function mt(k){ var v = meta[k] && meta[k].value; return v ? String(v).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : ''; }
+      photos.push({
+        id: 'wc' + p.pageid,
+        source: 'wikimedia',
+        title: String(p.title || '').replace(/^File:/, '').replace(/\.[a-z0-9]{3,4}$/i, '').slice(0, 120),
+        thumb: ii.thumburl || ii.url,
+        preview: ii.thumburl || ii.url,
+        full: ii.url,
+        save: ii.thumburl || ii.url,
+        page: ii.descriptionurl || '',
+        author: mt('Artist').slice(0, 60),
+        license: mt('LicenseShortName').slice(0, 40) || 'Wikimedia Commons'
+      });
+    });
+    return { ok: true, source: 'wikimedia', query: q, photos: photos, note: '사진마다 라이선스가 다릅니다 — 표기된 라이선스를 확인하세요.' };
+  }
+
+  async function photoSearch(q, n){
+    var key = String(q || '').toLowerCase();
+    if (PHOTO.cache[key]) return PHOTO.cache[key];
+    var j = null;
+    /* 정적 페이지: 서버가 없으므로 Wikimedia Commons API 를 브라우저가 직접 친다(origin=*). */
+    try { j = await photoSearchCommonsDirect(q, n || 6); }
+    catch(e){
+      j = { ok: false, source: '', photos: [], message: '사진 검색에 실패했습니다(' + String((e && e.message) || 'network') + '). 잠시 뒤 다시 시도해 주세요.' };
+    }
+    // 두 단어로 줄여 한 번 더 (Commons 는 긴 문장 검색에 약하다)
+    if (j && j.ok && !(j.photos || []).length){
+      var shortQ = String(q).split(/\s+/).slice(0, 2).join(' ');
+      if (shortQ && shortQ !== q){
+        try {
+          var j2 = await photoSearchCommonsDirect(shortQ, n || 6);
+          if (j2 && (j2.photos || []).length) j = j2;
+        } catch(e2){}
+      }
+    }
+    PHOTO.cache[key] = j;
+    return j;
+  }
+
+  async function searchPhotoSlot(i){
+    var slot = PHOTO.slots[i];
+    if (!slot) return;
+    var card = $('.pslot[data-i="' + i + '"]');
+    if (!card) return;
+    var input = card.querySelector('.pquery');
+    var q = String((input && input.value) || '').trim() || photoDefaultQuery(slot);
+    var res = card.querySelector('[data-role="result"]');
+    if (!q){
+      if (res) res.innerHTML = '<div class="pwait">검색어를 입력하고 [찾기]를 눌러 주세요.</div>';
+      return;
+    }
+    if (res) res.innerHTML = '<div class="pwait">' + esc(q) + ' 로 사진을 찾는 중…</div>';
+    slot.query = q;
+    var j = await photoSearch(q, 6);
+    slot.result = j;
+    var card2 = $('.pslot[data-i="' + i + '"]');
+    var res2 = card2 && card2.querySelector('[data-role="result"]');
+    if (res2) res2.innerHTML = photoResultHtml(j);
+  }
+
+  function photoExt(p){
+    var m = /\.(jpe?g|png|webp|gif)(?:[?#]|$)/i.exec(String((p && (p.full || p.thumb)) || ''));
+    return m ? m[1].toLowerCase().replace('jpeg', 'jpg') : 'jpg';
+  }
+  function photoFileName(q, k, p){
+    var base = String(q || 'photo').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+    return (base || 'photo') + '-' + (k + 1) + '.' + photoExt(p);
+  }
+
+  function triggerDownload(href, name){
+    var a = document.createElement('a');
+    a.href = href;
+    a.download = name || 'download';
+    a.rel = 'noopener';
+    a.style.cssText = 'position:fixed;left:-9999px;top:0';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){
+      try { if (href.indexOf('blob:') === 0) URL.revokeObjectURL(href); } catch(e){}
+      if (a.parentNode) a.parentNode.removeChild(a);
+    }, 15000);
+  }
+
+  function photoBlobSave(blob, name){
+    if (!blob || !blob.size) return false;
+    triggerDownload(URL.createObjectURL(blob), name);
+    return true;
+  }
+
+  /* 원클릭 저장: ① 서버 프록시(저장용 960~1280px) → ② 더 작은 미리보기 → ③ 브라우저 직접 → ④ 새 탭 안내 */
+  async function savePhotoItem(p, name){
+    var tries = [];
+    [p.full, p.save, p.preview, p.thumb].forEach(function(u){ if (u && tries.indexOf(u) < 0) tries.push(u); });
+    if (!tries.length){ toast('저장할 이미지 주소가 없습니다.'); return false; }
+    /* 정적 페이지: 서버 프록시가 없으므로 브라우저가 이미지 주소를 직접 받아 저장한다. */
+    for (var i = 0; i < tries.length; i++){
+      try {
+        var r = await fetch(tries[i], { mode: 'cors', cache: 'no-store' });
+        var ct = String(r.headers.get('content-type') || '').toLowerCase();
+        if (r.ok && ct.indexOf('image/') === 0){
+          var b = await r.blob();
+          if (photoBlobSave(b, name)){ toast('사진을 저장했습니다 · ' + name); return true; }
+        }
+      } catch(e){}
+    }
+    var direct = p.full || p.save || p.thumb;
+    try {
+      var r2 = await fetch(direct, { mode: 'cors' });
+      if (r2.ok){
+        var b2 = await r2.blob();
+        if (photoBlobSave(b2, name)){ toast('사진을 저장했습니다 · ' + name); return true; }
+      }
+    } catch(e){}
+    var w = null;
+    try { w = window.open(direct, '_blank', 'noopener'); } catch(e){ w = null; }
+    toast(w ? '새 탭의 이미지를 길게 눌러 저장해 주세요.' : '자동 저장이 막혔습니다. 사진을 길게 눌러 저장해 주세요.');
+    return false;
+  }
+
+  function refreshPhotoSlots(autoSearch){
+    var card = $('#photoCard');
+    if (!card) return;
+    PHOTO.slots = photoSlotList(photoSourceText());
+    var host = $('#photoSlots');
+    if (host) host.innerHTML = PHOTO.slots.map(photoCardHtml).join('');
+    var none = $('#photoNone');
+    if (none) none.hidden = PHOTO.slots.length > 0;
+    var stat = $('#photoStat');
+    if (stat) stat.textContent = PHOTO.slots.length ? '사진 ' + PHOTO.slots.length + '곳' : '사진 자리 없음';
+    card.hidden = false;
+    drawThumb();
+    if (autoSearch) PHOTO.slots.forEach(function(_s, i){ searchPhotoSlot(i); });
+  }
+
+  function addPhotoSearch(){
+    var el = $('#photoAddQ');
+    var q = String((el && el.value) || '').trim();
+    if (!q){ toast('검색어를 입력해 주세요. (영문 권장)'); if (el) el.focus(); return; }
+    var i = PHOTO.slots.length;
+    PHOTO.slots.push({ raw: '', desc: '', q: q, legacy: false, manual: true });
+    var host = $('#photoSlots');
+    if (host){
+      var wrap = document.createElement('div');
+      wrap.innerHTML = photoCardHtml(PHOTO.slots[i], i);
+      host.appendChild(wrap.firstChild);
+    }
+    if (el) el.value = '';
+    var stat = $('#photoStat');
+    if (stat) stat.textContent = '사진 ' + PHOTO.slots.length + '곳';
+    var none = $('#photoNone');
+    if (none) none.hidden = true;
+    searchPhotoSlot(i);
+  }
+
+  /* ---------- 대표 이미지(썸네일) 1200×630 ---------- */
+  function thumbTitleText(){
+    var el = $('#thumbTitle');
+    var v = String((el && el.value) || '').trim();
+    if (v) return v;
+    var t = (state.titles || [])[state.titleIdx];
+    if (t && t.text) return t.text;
+    if (state.lastDraft && state.lastDraft.topic) return state.lastDraft.topic;
+    return (topicEl && topicEl.value ? topicEl.value : '') || '블로그 제목';
+  }
+  function thumbCategory(){
+    var f = getForm(state.selectedFormId);
+    var th = (f && f.name) ? f.name : '블로그';
+    var t = (state.titles || [])[state.titleIdx];
+    return (t && t.tag) ? (th + ' · ' + t.tag) : th;
+  }
+  function thumbKeywords(){
+    var base = (state.lastDraft && state.lastDraft.topic) || (topicEl && topicEl.value) || '';
+    var words = String(base).replace(/[^\w가-힣\s]/g, ' ').split(/\s+/).filter(function(w){ return charLen(w) > 1; });
+    var out = [];
+    words.forEach(function(w){ if (out.length < 3 && out.indexOf(w) < 0) out.push(w); });
+    PHOTO.slots.forEach(function(sl){
+      if (out.length >= 3) return;
+      var w0 = String(sl.query || sl.q || '').split(/\s+/)[0];
+      if (w0 && w0.length > 1 && out.indexOf(w0) < 0) out.push(w0);
+    });
+    return out.slice(0, 3);
+  }
+
+  function roundRectPath(ctx, x, y, w, h, r){
+    var rr = Math.min(r, h / 2, w / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + rr, y);
+    ctx.lineTo(x + w - rr, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + rr);
+    ctx.lineTo(x + w, y + h - rr);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - rr, y + h);
+    ctx.lineTo(x + rr, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - rr);
+    ctx.lineTo(x, y + rr);
+    ctx.quadraticCurveTo(x, y, x + rr, y);
+    ctx.closePath();
+  }
+
+  function wrapCanvasText(ctx, text, maxW, maxLines){
+    var words = String(text || '').split(/\s+/).filter(Boolean);
+    var lines = [], cur = '';
+    var truncated = false;
+    function pushLine(s){ lines.push(s); }
+    for (var i = 0; i < words.length; i++){
+      var w = words[i];
+      var test = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(test).width <= maxW){ cur = test; continue; }
+      if (cur){ pushLine(cur); cur = ''; }
+      if (lines.length >= maxLines){ truncated = true; break; }
+      if (ctx.measureText(w).width <= maxW){ cur = w; continue; }
+      // 한 단어가 한 줄을 넘으면 글자 단위로 자른다
+      var chars = Array.from(w), part = '';
+      for (var c = 0; c < chars.length; c++){
+        var t2 = part + chars[c];
+        if (ctx.measureText(t2).width > maxW && part){
+          pushLine(part); part = chars[c];
+          if (lines.length >= maxLines){ truncated = true; break; }
+        } else part = t2;
+      }
+      if (truncated) break;
+      cur = part;
+    }
+    if (!truncated && cur && lines.length < maxLines) pushLine(cur);
+    if (truncated && lines.length){
+      var last = lines[lines.length - 1];
+      while (last.length > 1 && ctx.measureText(last + '…').width > maxW) last = last.slice(0, -1);
+      lines[lines.length - 1] = last + '…';
+    }
+    return lines;
+  }
+
+  function drawThumb(){
+    var cv = $('#thumbCanvas');
+    if (!cv || !cv.getContext) return;
+    var ctx = cv.getContext('2d');
+    var W = cv.width, H = cv.height;
+    var st = THUMB_STYLES[PHOTO.style % THUMB_STYLES.length];
+    ctx.clearRect(0, 0, W, H);
+
+    var g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, st.bg[0]);
+    g.addColorStop(1, st.bg[1]);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = 'rgba(255,255,255,.05)';
+    for (var x = 48; x < W; x += 42){
+      for (var y = 42; y < H; y += 42) ctx.fillRect(x, y, 2, 2);
+    }
+    var rg = ctx.createRadialGradient(W - 110, H - 60, 12, W - 110, H - 60, 230);
+    rg.addColorStop(0, st.glow);
+    rg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.beginPath();
+    ctx.arc(W - 110, H - 60, 230, 0, Math.PI * 2);
+    ctx.fillStyle = rg;
+    ctx.fill();
+
+    // 카테고리 배지
+    var cat = thumbCategory();
+    ctx.font = '900 22px ' + THUMB_FONT;
+    var cw = ctx.measureText(cat).width + 40;
+    ctx.fillStyle = st.chip;
+    roundRectPath(ctx, 72, 84, Math.min(cw, 560), 48, 24);
+    ctx.fill();
+    ctx.strokeStyle = st.accent;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = st.chipText;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(cat, 92, 109);
+
+    // 제목(최대 3줄, 길면 폰트 축소)
+    var title = thumbTitleText();
+    var maxW = W - 104 - 96;
+    var sizes = [62, 56, 50, 44];
+    var lines = [], size = sizes[0];
+    for (var si = 0; si < sizes.length; si++){
+      size = sizes[si];
+      ctx.font = '900 ' + size + 'px ' + THUMB_FONT;
+      lines = wrapCanvasText(ctx, title, maxW, 3);
+      if (lines.length <= 3 && ctx.measureText(lines.join(' ')).width <= maxW * 3) break;
+    }
+    ctx.fillStyle = st.accent;
+    ctx.fillRect(72, 178, 8, Math.max(72, lines.length * (size + 18) - 12));
+    ctx.fillStyle = '#ffffff';
+    ctx.textBaseline = 'top';
+    var ty = 176;
+    lines.forEach(function(line){
+      ctx.fillText(line, 104, ty);
+      ty += size + 18;
+    });
+
+    // 키워드 칩 — 제목이 짧으면 위로 당긴다
+    var kws = thumbKeywords();
+    var ky = Math.min(500, Math.max(436, ty + 34));
+    var kx = 104;
+    ctx.textBaseline = 'middle';
+    kws.forEach(function(kw){
+      ctx.font = '800 20px ' + THUMB_FONT;
+      var w = ctx.measureText(kw).width + 34;
+      if (kx + w > W - 90) return;
+      ctx.fillStyle = 'rgba(255,255,255,.08)';
+      roundRectPath(ctx, kx, ky, w, 42, 21);
+      ctx.fill();
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText(kw, kx + 17, ky + 21);
+      kx += w + 10;
+    });
+
+    // 하단
+    ctx.strokeStyle = 'rgba(255,255,255,.14)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(72, 548);
+    ctx.lineTo(W - 72, 548);
+    ctx.stroke();
+    var d = new Date();
+    var ds = d.getFullYear() + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + ('0' + d.getDate()).slice(-2);
+    ctx.font = '700 20px ' + THUMB_FONT;
+    ctx.fillStyle = 'rgba(226,232,240,.72)';
+    ctx.fillText('블로그 대표 이미지 · ' + ds, 72, 584);
+    ctx.fillStyle = st.accent;
+    ctx.beginPath();
+    ctx.arc(W - 88, 584, 7, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'rgba(226,232,240,.72)';
+    ctx.font = '800 20px ' + THUMB_FONT;
+    ctx.textAlign = 'right';
+    ctx.fillText('1200×630', W - 104, 584);
+    ctx.textAlign = 'left';
+  }
+
+  function thumbFileName(){
+    var t = thumbTitleText();
+    var base = String(t).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 36);
+    if (base.replace(/-/g, '').length < 3) base = '';
+    return (base || 'blog') + '-thumb-1200x630.png';
+  }
+
+  function downloadThumb(){
+    var cv = $('#thumbCanvas');
+    if (!cv) return;
+    var name = thumbFileName();
+    function ok(){ toast('대표 이미지 PNG를 저장했습니다 · ' + name); }
+    function fail(){ toast('PNG를 만들지 못했습니다. 다시 한 번 눌러 주세요.'); }
+    try {
+      if (cv.toBlob){
+        cv.toBlob(function(b){ if (photoBlobSave(b, name)) ok(); else fail(); }, 'image/png');
+        return;
+      }
+      var data = cv.toDataURL('image/png');
+      triggerDownload(data, name);
+      ok();
+    } catch(e){ fail(); }
+  }
+
+  /* ---------- 사진 UI 이벤트 ---------- */
+  (function bindPhotoUI(){
+    var host = $('#photoSlots');
+    if (!host) return;
+    host.addEventListener('click', function(e){
+      var btn = e.target.closest('button');
+      if (!btn) return;
+      var card = btn.closest('.pslot');
+      if (!card) return;
+      var i = Number(card.getAttribute('data-i')) || 0;
+      if (btn.getAttribute('data-act') === 'find'){
+        var iv = card.querySelector('.pquery');
+        var q = String((iv && iv.value) || '').trim();
+        if (!q){ toast('검색어를 입력해 주세요.'); if (iv) iv.focus(); return; }
+        searchPhotoSlot(i);
+        return;
+      }
+      if (btn.classList.contains('pthumb')){
+        var slot = PHOTO.slots[i];
+        var k = Number(btn.getAttribute('data-k')) || 0;
+        var p = slot && slot.result && slot.result.photos && slot.result.photos[k];
+        if (!p) return;
+        btn.disabled = true;
+        var nm = photoFileName(slot.query || 'photo', k, p);
+        savePhotoItem(p, nm).then(function(){ btn.disabled = false; });
+      }
+    });
+    host.addEventListener('keydown', function(e){
+      if (e.key !== 'Enter') return;
+      if (!e.target.classList || !e.target.classList.contains('pquery')) return;
+      e.preventDefault();
+      var card = e.target.closest('.pslot');
+      var i = card ? (Number(card.getAttribute('data-i')) || 0) : 0;
+      searchPhotoSlot(i);
+    });
+
+    var fa = $('#photoFindAll');
+    if (fa) fa.addEventListener('click', function(){
+      if (!PHOTO.slots.length){ toast('본문에서 사진 자리를 찾지 못했습니다.'); return; }
+      toast('사진 ' + PHOTO.slots.length + '곳을 다시 찾습니다.');
+      PHOTO.slots.forEach(function(_s, i){ searchPhotoSlot(i); });
+    });
+    var ab = $('#photoAddBtn');
+    if (ab) ab.addEventListener('click', addPhotoSearch);
+    var aq = $('#photoAddQ');
+    if (aq) aq.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); addPhotoSearch(); } });
+
+    var cb = $('#photoInCopy');
+    if (cb) cb.addEventListener('change', function(){
+      PHOTO.includeInRich = !!cb.checked;
+      toast(PHOTO.includeInRich ? '복사본에 사진 자리 안내 박스를 포함합니다.' : '복사본에서 사진 자리를 뺍니다.');
+    });
+
+    var tt = $('#thumbTitle');
+    if (tt){
+      tt.addEventListener('input', drawThumb);
+      tt.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); drawThumb(); } });
+    }
+    var sb = $('#thumbStyleBtn');
+    if (sb) sb.addEventListener('click', function(){
+      PHOTO.style = (PHOTO.style + 1) % THUMB_STYLES.length;
+      drawThumb();
+      toast('대표 이미지 스타일 ' + (PHOTO.style + 1) + ' / ' + THUMB_STYLES.length);
+    });
+    var db = $('#thumbDlBtn');
+    if (db) db.addEventListener('click', downloadThumb);
+  })();
+  try {
+    window.CS2_PHOTO = {
+      refresh: refreshPhotoSlots, parse: parsePhotoTag, list: photoSlotList,
+      strip: stripPhotoSlots, draw: drawThumb, state: PHOTO, thumbTitle: thumbTitleText
+    };
+  } catch(e){}
 
   /* ================================================================
      네이버 서식 복사 — Markdown → Rich HTML
@@ -1978,6 +4621,13 @@
       while (i < lines.length){
         var t = lines[i].trim();
         if (!t){ i++; continue; }
+        if (PHOTO_LINE_RE.test(t)){
+          var pslot = parsePhotoTag(t);
+          out.push('<div style="margin:16px 0;padding:12px 14px;border:1px dashed #94a3b8;border-radius:9px;background-color:#f8fafc;color:#475569;font-size:13px;line-height:1.65">' +
+            '<b style="color:#0f172a">📸 사진 자리</b>' + (pslot.desc ? ' — ' + inline(pslot.desc) : ' — 이 위치에 사진을 넣으세요') +
+            (pslot.q ? '<br><span style="color:#64748b;font-size:12px">검색어: ' + inline(pslot.q) + '</span>' : '') + '</div>');
+          i++; continue;
+        }
         if (/^([-*_])\1{2,}$/.test(t)){
           out.push('<hr style="border:0;border-top:1px solid #e2e8f0;margin:20px 0">');
           i++; continue;
@@ -2022,6 +4672,7 @@
           if (isTableRow(tt)) break;
           if (/^#{1,4}\s+/.test(tt)) break;
           if (tt.charAt(0) === '>') break;
+          if (PHOTO_LINE_RE.test(tt)) break;
           if (listMatch(lines[i])) break;
           buf.push(tt); i++;
         }
@@ -2035,6 +4686,10 @@
       var body = lines.map(function(raw){
         var t = raw.trim();
         if (!t) return '';
+        if (PHOTO_LINE_RE.test(t)){
+          var ps = parsePhotoTag(t);
+          return '📸 사진 자리' + (ps.desc ? ' — ' + ps.desc : '') + (ps.q ? ' (검색: ' + ps.q + ')' : '');
+        }
         if (/^([-*_])\1{2,}$/.test(t)) return '';
         if (isTableRow(t)){
           var cs = splitRow(t);
@@ -2111,6 +4766,7 @@
   $('#copyHtmlBtn').addEventListener('click', function(){
     var txt = currentDraftText();
     if (!txt || !txt.trim()){ toast('복사할 내용이 없습니다. 먼저 뼈대를 생성해 주세요.'); return; }
+    if (!PHOTO.includeInRich) txt = stripPhotoSlots(txt);
     RICH.copyRich(txt, '네이버 서식(HTML)으로 복사했습니다. 스마트에디터에 바로 붙여넣으세요.');
     outStat.textContent = '서식 복사됨';
   });
@@ -2383,19 +5039,43 @@
       list.appendChild(b);
     });
     renderNaver();
+    drawThumb();
+  }
+  function draftFirstLine(){
+    var t = String(currentDraftText() || '').replace(/\r/g, '');
+    var lines = t.split('\n');
+    for (var i = 0; i < lines.length; i++){
+      var s = lines[i].trim();
+      if (!s) continue;
+      if (/^#{1,6}\s/.test(s)) continue;
+      if (/^([-*_])\1{2,}$/.test(s)) continue;
+      if (s.charAt(0) === '>' || s.charAt(0) === '|') continue;
+      if (PHOTO_LINE_RE.test(s)) continue;
+      return s.replace(/^[-*]\s+/, '').replace(/\*\*([^*]+)\*\*/g, '$1').slice(0, 90);
+    }
+    return '';
   }
   function renderNaver(){
     var el = $('#naverPrev');
     var t = (state.titles || [])[state.titleIdx];
     if (!el) return;
-    if (!t){ el.innerHTML = ''; return; }
-    var n = charLen(t.text), cut = n > 32;
+    if (!t && topicEl.value.trim()) t = { tag: '입력한 주제', text: topicEl.value.trim() };
+    if (!t || !t.text){ el.innerHTML = ''; return; }
+    var n = charLen(t.text);
+    var over30 = n > 30;
+    var shown = over30 ? (Array.from(t.text).slice(0, 30).join('') + '…') : t.text;
+    var first = draftFirstLine();
+    var pct = Math.max(4, Math.min(100, Math.round(n / 40 * 100)));
     el.innerHTML =
       '<div class="nhead"><span class="nlogo">N</span> 블로그 · 네이버 모바일 검색 결과</div>' +
-      '<div class="ntitle">' + esc(cut32(t.text)) + '</div>' +
-      '<div class="ndesc">' + esc(t.tag + ' 제목 예시 — 첫 문단이 이 자리에 붙습니다.') + '</div>' +
-      '<div class="nfoot"><span>32자 기준 · 현재 ' + n + '자</span>' +
-      (cut ? '<span class="warnc">32자에서 잘림 (' + (n - 32) + '자 손실)</span>' : '<span>잘림 없음</span>') + '</div>';
+      '<div class="ntitle">' + esc(shown) + '</div>' +
+      '<div class="ndesc">' + esc(first || (t.tag + ' 제목 예시 — 첫 문단이 이 자리에 붙습니다.')) + '</div>' +
+      '<div class="nbar" aria-hidden="true"><i style="width:' + pct + '%"></i><b></b></div>' +
+      '<div class="nbarfoot"><span>0</span><span class="mid">30자 모바일 기준선</span><span>40자</span></div>' +
+      '<div class="nfoot"><span' + (over30 ? ' class="warnc"' : '') + '>현재 ' + n + '자' +
+        (over30 ? ' · 30자 넘김(' + (n - 30) + '자 손실)' : ' · 잘림 없음') + '</span>' +
+        '<span>PC 검색 32자 기준' + (n > 32 ? ' (넘김)' : '') + '</span></div>' +
+      (first ? '<div class="nfirst">본문 첫 줄: ' + esc(first) + '</div>' : '');
   }
   function cut32(s){
     var a = Array.from(String(s == null ? '' : s));
@@ -2417,7 +5097,7 @@
   var CHECKS = [
     { id:'hook', t:'도입 3줄 훅 — 인사말 없이 결론·숫자로 시작' },
     { id:'table', t:'비교표 1개 — 조건을 표로 비교' },
-    { id:'photo', t:'[📷 사진 자리] 표시 — 촬영·캡처 위치' },
+    { id:'photo', t:'[📸 사진] 자리 2~3곳 — 사진이 들어갈 위치' },
     { id:'weak', t:'솔직한 단점 1줄 — 신뢰를 만드는 문장' }
   ];
   var checkState = {};
@@ -2426,7 +5106,7 @@
     var t = String(text || '');
     return {
       table: /\|\s*구분\s*\|/.test(t),
-      photo: t.indexOf('[📷 사진 자리]') > -1,
+      photo: /\[(?:📸|📷)\s*사진[^\]]*\]/.test(t),
       weak: t.indexOf('솔직한 단점') > -1
     };
   }
@@ -2608,9 +5288,16 @@
         forms.map(function(f){
           return '<option value="' + esc(f.id) + '"' + (routine[k] === f.id ? ' selected' : '') + '>' + esc((f.emoji || '📝') + ' ' + f.name) + '</option>';
         }).join('');
+      var p = pubGet(k);
+      var link = /^https?:\/\//i.test(p.url || '') ? '<a href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">열기</a>' : '';
       row.innerHTML = '<span class="rd">' + ROUTINE_LABEL[k] + '</span>' +
         '<select data-day="' + k + '" aria-label="' + ROUTINE_LABEL[k] + '요일 테마">' + opts + '</select>' +
-        (k === tk ? '<span class="todayTag">오늘</span>' : '<span></span>');
+        (k === tk ? '<span class="todayTag">오늘</span>' : '<span></span>') +
+        '<div class="rpub' + (p.done ? ' done' : '') + '">' +
+          '<label><input type="checkbox" data-pubchk="' + k + '"' + (p.done ? ' checked' : '') + '> 발행 완료</label>' +
+          '<input type="url" data-puburl="' + k + '" value="' + esc(p.url || '') + '" placeholder="포스팅 URL 또는 메모" maxlength="200" aria-label="' + ROUTINE_LABEL[k] + '요일 포스팅 URL">' +
+          link +
+        '</div>';
       host.appendChild(row);
     });
     host.querySelectorAll('select').forEach(function(sel){
@@ -2621,9 +5308,37 @@
         toast('주간 루틴을 저장했습니다.');
       });
     });
+    host.querySelectorAll('[data-pubchk]').forEach(function(cb){
+      cb.addEventListener('change', function(){
+        var k = cb.getAttribute('data-pubchk');
+        pubSet(k, { done: !!cb.checked });
+        renderRoutine();
+        toast(cb.checked ? ROUTINE_LABEL[k] + '요일을 발행 완료로 기록했습니다.' : ROUTINE_LABEL[k] + '요일 발행 체크를 풀었습니다.');
+      });
+    });
+    host.querySelectorAll('[data-puburl]').forEach(function(inp){
+      inp.addEventListener('change', function(){
+        var k = inp.getAttribute('data-puburl');
+        pubSet(k, { url: inp.value.trim() });
+        renderRoutine();
+        if (inp.value.trim()) toast(ROUTINE_LABEL[k] + '요일 링크·메모를 저장했습니다.');
+      });
+      inp.addEventListener('keydown', function(e){
+        if (e.key === 'Enter'){ e.preventDefault(); inp.blur(); }
+      });
+    });
     var tid = routine[tk];
     var has = tid && tid !== 'none' && allForms().some(function(f){ return f.id === tid; });
-    $('#routineToday').textContent = has ? ('오늘 ' + ROUTINE_LABEL[tk] + ' · ' + getForm(tid).name) : ('오늘 ' + ROUTINE_LABEL[tk] + ' · 쉬는 날');
+    var done = 0, links = 0;
+    ROUTINE_KEYS.forEach(function(k){
+      var p = pubGet(k);
+      if (p.done) done += 1;
+      if (p.url) links += 1;
+    });
+    var head = has ? ('오늘 ' + ROUTINE_LABEL[tk] + ' · ' + getForm(tid).name) : ('오늘 ' + ROUTINE_LABEL[tk] + ' · 쉬는 날');
+    $('#routineToday').textContent = head + ' · 발행 ' + done + '/' + ROUTINE_KEYS.length + (links ? ' · 링크 ' + links : '');
+    var note = $('#pubWeek');
+    if (note) note.textContent = '이번 주(' + pubWeekLabel() + ') 기록 · 발행 ' + done + '일 · 링크 ' + links + '개 · 브라우저에 저장';
   }
   $('#loadTodayBtn').addEventListener('click', function(){
     var tk = todayRoutineKey();
@@ -2735,6 +5450,9 @@
       renderChecks(rec.text || '');
       $('#checkCard').hidden = false;
       scanBans(rec.text || '');
+      var ttRec = $('#thumbTitle');
+      if (ttRec) ttRec.value = '';
+      refreshPhotoSlots(true);
       setTimeout(function(){ outCard.scrollIntoView({ behavior:'smooth', block:'start' }); }, 150);
       toast('보관함에서 불러왔습니다. 고쳐서 다시 저장할 수 있습니다.');
       return;
@@ -2805,6 +5523,8 @@
     renderChecks(txt);
     scanBans(txt);
     outStat.textContent = '편집됨';
+    refreshPhotoSlots(true);
+    renderNaver();
     toast('수정 내용을 반영했습니다. 보관함 저장을 누르면 덮어씁니다.');
   });
   $('#saveBlogBtn').addEventListener('click', function(){
@@ -2841,6 +5561,9 @@
     return trunc(String(s).trim(), 40) || '내 영상 주제';
   }
   function makeHooks(topic){
+    if (state.aiHooks && state.aiHooks.length){
+      return state.aiHooks.map(function(h){ return { tag: h.tag || '후킹', text: h.text || '' }; });
+    }
     var t = String(topic == null ? '' : topic).trim() || '내 영상 주제';
     return [
       { tag:'질문형', text: t + ', 3초만 보세요. 답부터 말합니다.' },
@@ -2951,36 +5674,688 @@
   });
 
   /* ---------- 블로그 → 쇼츠 대본 넘기기 ---------- */
-  $('#toShortsBtn').addEventListener('click', function(){
-    var topic = (state.lastDraft && state.lastDraft.topic) || topicEl.value.trim();
-    if (!topic){ toast('먼저 주제를 입력하고 뼈대를 생성해 주세요.'); return; }
-    var f = getForm(state.selectedFormId);
-    var secs = f.sections.slice(0, 3);
-    var gaps = activeGapTexts('blog:' + f.id).slice(0, 2);
-    var L = [];
-    L.push('50초 쇼츠 대본 요청 — 주제: ' + topic);
-    L.push('1) ' + (secs[0] || '도입'));
-    L.push('2) ' + (secs[1] || secs[0] || '본론'));
-    L.push('3) ' + (secs[2] || secs[secs.length - 1] || '마무리'));
-    L.push('구성: 0~2초 후킹 → 3~40초 핵심 3줄 → 41~50초 정리·CTA');
-    if (gaps.length) L.push('빈틈 채우기: ' + gaps.join(' / '));
-    var block = L.join('\n');
-    var t = $('#story');
-    if (t.value.trim() && t.value.indexOf('50초 쇼츠 대본 요청') < 0){
-      t.value = t.value.replace(/\s+$/, '') + '\n\n' + block;
-    } else {
-      t.value = block;
+  /* ---------- 블로그 → 50초 쇼츠 대본 (Gemini) ---------- */
+  async function runShortsAI(){
+    var body = String(currentDraftText() || '').trim();
+    if (body.length < 80){
+      toast('먼저 블로그 본문을 만들거나, 편집에서 붙여넣어 주세요.');
+      return;
     }
-    state.shortsTopic = topic;
+    var topic = (state.lastDraft && state.lastDraft.topic) || topicEl.value.trim();
+    try {
+      var j = await callAI('blog_to_shorts', { topic: topic, body: body, banPhrases: banAll() }, $('#toShortsBtn'), '50초 대본 쓰는 중…');
+      var d = j.data || {};
+      state.shorts = d;
+      $('#shortsCard').hidden = false;
+      $('#shortsBadge').textContent = 'Gemini · ' + (j.model || AI.model);
+      var notes = (j.notes || []).concat(d.warnings || []);
+      $('#shortsOut').innerHTML = scriptHtml(d) +
+        (notes.length ? '<div class="ainote"><b>메모</b><ul>' + notes.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' : '');
+      $('#shortsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast('50초 쇼츠 대본을 만들었습니다.');
+    } catch(err){
+      $('#shortsCard').hidden = false;
+      $('#shortsBadge').textContent = '실패';
+      $('#shortsOut').innerHTML = aiErrBox(err, { hint: '본문이 길면 [편집]에서 핵심만 남기고 다시 시도해 보세요.' });
+    }
+  }
+
+  $('#toShortsBtn').addEventListener('click', function(){ runShortsAI(); });
+
+  $('#copyShortsBtn').addEventListener('click', function(){
+    var d = state.shorts || {};
+    if (!d.title && !(d.scenes || []).length){
+      toast('먼저 쇼츠 대본을 만들어 주세요.');
+      return;
+    }
+    var L = [];
+    L.push(d.title || '');
+    if (d.hook) L.push('0~2초: ' + d.hook);
+    (d.scenes || []).forEach(function(sc){ L.push(sc.time + ': ' + sc.line); });
+    if (d.ending) L.push('엔딩: ' + d.ending);
+    if (d.cta) L.push('CTA: ' + d.cta);
+    copyText(L.join('\n'), '쇼츠 대본을 복사했습니다.');
+  });
+
+  $('#toVideoBtn').addEventListener('click', function(){
+    var d = state.shorts || {};
+    if (!d.title && !(d.scenes || []).length){
+      toast('먼저 쇼츠 대본을 만들어 주세요.');
+      return;
+    }
+    var L = [];
+    L.push('50초 쇼츠 대본 요청 — 주제: ' + (d.title || (state.lastDraft && state.lastDraft.topic) || ''));
+    if (d.hook) L.push('0~2초 후킹: ' + d.hook);
+    (d.scenes || []).forEach(function(sc){ L.push(sc.time + ': ' + sc.line); });
+    if (d.ending) L.push('엔딩: ' + d.ending);
+    var t = $('#story');
+    t.value = L.join('\n');
+    state.shortsTopic = d.title || '';
+    if (d.hook) state.aiHooks = [{ tag: '쇼츠 후킹', text: d.hook }];
     setTab('video');
     setSub('merge');
-    renderHooks(); renderSubStage();
+    renderHooks();
+    renderSubStage();
     if (!pipeline.hidden) renderPipeline();
     setTimeout(function(){
-      t.scrollIntoView({ behavior:'smooth', block:'center' });
+      t.scrollIntoView({ behavior: 'smooth', block: 'center' });
       t.focus();
     }, 160);
-    toast('주제와 핵심 3줄을 영상 탭 스토리로 넘겼습니다.');
+    toast('쇼츠 대본을 영상 탭 스토리로 넘겼습니다.');
+  });
+
+  /* ================================================================
+     v2.1 업그레이드 8종
+       ① 유튜브 링크 → 자막   ② 오늘 관제탑 시황 1클릭   ③ 네이버 미리보기+SEO 태그
+       ④ 톤 변환   ⑤ 마무리 댓글·링크 박스   ⑥ 주간 발행 체크·링크 기록
+       ⑧ 1타 3피(인스타 3줄+쇼츠)   ⑨ AI 티 빼기
+     원칙: 숫자·사실은 서버/API가 준 값만 옮기고, 확인 못 한 것은 [확인 필요]로 남긴다.
+     ================================================================ */
+  var LSK3 = { src: 'cs2_src_material_v1', pub: 'cs2_routine_pub_v1' };
+
+  /* ---------- 0. 참고 자료 칸 ---------- */
+  var srcEl = $('#srcMaterial');
+  function srcText(){ return srcEl ? String(srcEl.value || '').trim() : ''; }
+  function saveSrc(){
+    if (!srcEl) return;
+    try { localStorage.setItem(LSK3.src, srcEl.value || ''); } catch(e){}
+    var info = $('#srcInfo'), st = $('#matState');
+    if (info) info.textContent = charLen(srcEl.value || '') + '자 · 이 브라우저에 저장 · 6000자까지';
+    if (st) st.textContent = srcText() ? ('재료 ' + charLen(srcEl.value || '') + '자') : '대기';
+  }
+  function setSrc(txt, msg){
+    if (!srcEl) return;
+    var t = String(txt == null ? '' : txt);
+    var tooLong = charLen(t) > 6000;
+    if (tooLong) t = Array.from(t).slice(0, 5900).join('') + '\n…(6000자 한도로 뒤 생략)';
+    srcEl.value = t;
+    saveSrc();
+    var p = $('#materialPanel'); if (p) p.open = true;
+    try { srcEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
+    toast(msg || ('참고 자료에 넣었습니다 · ' + charLen(t) + '자' + (tooLong ? ' (뒤 생략)' : '')));
+  }
+  if (srcEl){
+    try { srcEl.value = localStorage.getItem(LSK3.src) || ''; } catch(e){}
+    srcEl.addEventListener('input', saveSrc);
+    $('#srcClear').addEventListener('click', function(){
+      srcEl.value = '';
+      saveSrc();
+      toast('참고 자료를 지웠습니다.');
+    });
+    saveSrc();
+  }
+
+  /* ---------- ① 유튜브 링크 → 자막 ---------- */
+  var ytUrlEl = $('#ytUrl'), ytTrBtn = $('#ytTrBtn'), ytTrBox = $('#ytTrBox');
+  var YTTR = { last: null };
+  function ytDurText(sec){
+    var n = Number(sec);
+    if (!isFinite(n) || n <= 0) return '';
+    var m = Math.floor(n / 60), s = Math.round(n % 60);
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+  function ytTrHtml(j){
+    j = j || {};
+    var ok = !!j.ok;
+    var badges = ok
+      ? '<span class="bdg real">자막 ' + Number(j.chars || 0).toLocaleString('en-US') + '자</span>' +
+        '<span class="bdg ' + (j.auto ? 'wait' : 'info') + '">' + esc(j.langLabel || '자막') + (j.auto ? ' · 자동' : '') + '</span>'
+      : '<span class="bdg wait">자막 못 받음</span>';
+    var metaBits = [];
+    if (j.author) metaBits.push(j.author);
+    if (j.lengthSec) metaBits.push(ytDurText(j.lengthSec));
+    if (j.route) metaBits.push('경로 ' + j.route);
+    var h = '<div class="ytres"><div class="ytres-head">' + esc(j.title || '(제목 없음)') + badges + '</div>';
+    if (metaBits.length) h += '<div class="ytres-meta">' + esc(metaBits.join(' · ')) + '</div>';
+    if (ok){
+      var txt = String(j.text || '');
+      h += '<pre class="ytres-text">' + esc(txt.slice(0, 1400)) + (txt.length > 1400 ? '\n…' : '') + '</pre>';
+      h += '<div class="quick">' +
+        '<button type="button" class="btn small primary" data-yt="src">참고 자료에 넣기</button>' +
+        '<button type="button" class="btn small" data-yt="topic">주제 칸에 제목</button>' +
+        '<button type="button" class="btn small ghost" data-yt="copy">자막 복사</button>' +
+        '</div>';
+    } else {
+      h += '<div class="errbox"><b>⚠️ 자막을 받지 못했습니다</b><div class="em">' + esc(j.message || '이 영상의 자막을 가져오지 못했습니다.') + '</div>' +
+        (j.description ? '<div class="em">설명: ' + esc(String(j.description).slice(0, 320)) + (String(j.description).length > 320 ? '…' : '') + '</div>' : '') +
+        '</div>';
+      h += '<div class="quick">' +
+        (j.title ? '<button type="button" class="btn small primary" data-yt="topic">제목을 주제로</button>' : '') +
+        (j.description ? '<button type="button" class="btn small" data-yt="desc">설명을 참고 자료로</button>' : '') +
+        '</div>';
+      var errs = (j.errors || []).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('');
+      if (errs) h += '<details style="margin-top:7px"><summary class="ytres-meta" style="cursor:pointer">시도 기록 보기 (' + (j.errors || []).length + '건)</summary><ul style="margin:6px 0 0 16px;display:grid;gap:3px;font-size:11px;color:#94a3b8">' + errs + '</ul></details>';
+    }
+    return h + '</div>';
+  }
+  function ytVideoId(raw){
+    var u = String(raw || '').trim();
+    var m = /(?:v=|youtu\.be\/|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{11})/.exec(u);
+    if (m) return m[1];
+    if (/^[A-Za-z0-9_-]{11}$/.test(u)) return u;
+    return '';
+  }
+
+  /* 정적 페이지: 유튜브는 브라우저의 외부 접근을 막습니다(CORS). 그래서
+     · 제목·채널은 noembed(공개 oEmbed)로 실제 확인하고
+     · 자막은 사용자가 붙여넣도록 안내한다. 없는 자막을 지어내지 않는다. */
+  async function ytMeta(url){
+    var vid = ytVideoId(url);
+    var meta = null;
+    try {
+      var r = await fetch('https://noembed.com/embed?url=' + encodeURIComponent(url), { cache: 'no-store' });
+      if (r.ok) meta = await r.json();
+    } catch(e){ meta = null; }
+    var title = String((meta && meta.title) || '').slice(0, 160);
+    var author = String((meta && meta.author_name) || '').slice(0, 80);
+    return {
+      ok: false,
+      reason: 'static_no_captions',
+      videoId: vid,
+      url: url,
+      title: title,
+      author: author,
+      thumbnail: (meta && meta.thumbnail_url) || (vid ? ('https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg') : ''),
+      message: '정적 페이지에서는 유튜브 자막을 브라우저가 직접 받아올 수 없습니다(유튜브가 외부 접근을 막습니다). 유튜브 화면에서 자막을 복사해 아래 [참고 자료]에 붙여넣으면 AI가 그 내용을 근거로만 인용합니다.',
+      description: title
+        ? '제목은 자동으로 확인했습니다. [제목을 주제로]를 누르면 주제 칸에 들어갑니다. 자막(또는 영상 설명)은 유튜브에서 복사해 붙여넣어 주세요.'
+        : '링크가 맞는지 확인해 주세요. 자막·설명을 [참고 자료]에 붙여넣으면 그 내용을 근거로 씁니다.'
+    };
+  }
+
+  async function runYtTranscript(){
+    var url = String((ytUrlEl && ytUrlEl.value) || '').trim();
+    if (!url){ toast('유튜브 링크를 넣어 주세요.'); if (ytUrlEl) ytUrlEl.focus(); return; }
+    ytTrBox.hidden = false;
+    ytTrBox.innerHTML = '<div class="aiwait"><span class="spin" aria-hidden="true"></span> 영상 정보를 확인하고 있습니다…</div>';
+    var p = $('#materialPanel'); if (p) p.open = true;
+    spinner(ytTrBtn, true, '확인 중…');
+    try {
+      var j = await ytMeta(url);
+      YTTR.last = j;
+      ytTrBox.innerHTML = ytTrHtml(j);
+      var st = $('#matState');
+      if (st) st.textContent = j.title ? ('영상 확인 · 자막은 붙여넣기') : '자막 붙여넣기 필요';
+      toast(j.title ? '영상 제목을 확인했습니다 — 자막은 복사해 붙여넣어 주세요.' : '영상 정보를 확인하지 못했습니다. 자막을 붙여넣어 주세요.');
+    } catch(err){
+      YTTR.last = null;
+      ytTrBox.innerHTML = aiErrBox(err, { hint: '링크가 맞는지 확인하고, 자막을 복사해 [참고 자료]에 붙여넣어 주세요.' });
+      toast('영상 정보를 확인하지 못했습니다.');
+    } finally {
+      spinner(ytTrBtn, false);
+    }
+  }
+  if (ytTrBtn){
+    ytTrBtn.addEventListener('click', runYtTranscript);
+    ytUrlEl.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); runYtTranscript(); } });
+    ytTrBox.addEventListener('click', function(e){
+      var b = e.target.closest('[data-yt]');
+      if (!b) return;
+      var act = b.getAttribute('data-yt'), j = YTTR.last;
+      if (!j) return;
+      if (act === 'src'){
+        var head = '[유튜브 자막] ' + (j.title || '') + ' — ' + (j.url || '') + (j.auto ? ' (자동 생성 자막)' : '');
+        setSrc((srcText() ? srcText() + '\n\n' : '') + head + '\n' + String(j.text || ''), '참고 자료에 넣었습니다 · AI는 이걸 근거로만 인용합니다(내 경험 아님)');
+      } else if (act === 'topic'){
+        topicEl.value = Array.from(String(j.title || '')).slice(0, 80).join('');
+        topicEl.focus();
+        toast('주제 칸에 제목을 넣었습니다.');
+      } else if (act === 'desc'){
+        setSrc((srcText() ? srcText() + '\n\n' : '') + '[유튜브 설명] ' + (j.title || '') + '\n' + String(j.description || ''));
+      } else if (act === 'copy'){
+        copyText(String(j.text || ''), '자막을 복사했습니다.');
+      }
+    });
+  }
+
+  /* ---------- ② 오늘 관제탑 시황 1클릭 ---------- */
+  var mktBtn = $('#mktBtn'), mktBox = $('#mktBox'), mktCopyBtn = $('#mktCopyBtn');
+  var MKT = { text: '', topic: '', at: 0 };
+  /* 관제탑 동적 오리진 — 정적 페이지에는 /api 함수가 없어서 실시간 값은 이쪽 API 를 읽는다.
+     응답 헤더가 access-control-allow-origin:* 라 브라우저에서 직접 읽을 수 있다(실측).
+     실패하면 값을 지어내지 않고 [관제탑 열기] 링크와 붙여넣기 안내로 넘어간다. */
+  var MKT_BASE = 'https://stock-dashboard-live-6frm.vercel.app';
+  var MKT_HOME = 'https://hwen21c-tech.github.io/stock-dashboard/';
+
+  function fetchJsonT(url, ms){
+    var ctrl = new AbortController();
+    var timer = setTimeout(function(){ ctrl.abort(); }, ms || 12000);
+    return fetch(url, { cache: 'no-store', signal: ctrl.signal }).then(function(r){
+      clearTimeout(timer);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }, function(e){ clearTimeout(timer); throw e; });
+  }
+  function nss(v){ var n = Number(v); return isFinite(n) ? n : null; }
+  function pctTxt(v){ var n = nss(v); return n == null ? '—' : ((n > 0 ? '+' : '') + n.toFixed(2) + '%'); }
+  function pctCls(v){ var n = nss(v); return n == null ? '' : (n > 0 ? 'up' : n < 0 ? 'dn' : ''); }
+  function idxTxt(v){ var n = nss(v); return n == null ? '—' : n.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function eokTxt(v){ var n = nss(v); return n == null ? '' : ((n > 0 ? '+' : '') + Math.round(n).toLocaleString('ko-KR') + '억'); }
+  function kstStamp(d){
+    var days = ['일','월','화','수','목','금','토'];
+    function p2(x){ return (x < 10 ? '0' : '') + x; }
+    return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()) + '(' + days[d.getDay()] + ') ' + p2(d.getHours()) + ':' + p2(d.getMinutes()) + ' KST';
+  }
+  function themePct(t){ return nss(t && (t.avgPctCalc != null ? t.avgPctCalc : (t.avgPct != null ? t.avgPct : t.top4Avg))); }
+  function themeVal(t){
+    if (!t) return '';
+    if (t.sumValueText) return t.sumValueText;
+    var n = nss(t.sumValue != null ? t.sumValue : t.top4Sum);
+    return n == null ? '' : Math.round(n / 1e8).toLocaleString('ko-KR') + '억';
+  }
+  function themeLead(t){
+    var st = (t && t.stocks) || [];
+    for (var i = 0; i < st.length; i++){ if (/대장/.test(String(st[i].role || ''))) return st[i]; }
+    return st[0] || null;
+  }
+  function stockPct(x){ return x ? pctTxt(x.changePct != null ? x.changePct : x.chg) : '—'; }
+  async function runMarketBrief(){
+    if (!mktBtn) return;
+    spinner(mktBtn, true, '관제탑 읽는 중…');
+    mktBox.hidden = false;
+    if (mktCopyBtn) mktCopyBtn.hidden = true;
+    mktBox.innerHTML = '<div class="mktnote">지수·주도테마(관제탑 동적 API) · 수급(확정 파일)을 동시에 읽고 있습니다…</div>';
+    var errs = [];
+    try {
+      var settled = await Promise.allSettled([
+        fetchJsonT(MKT_BASE + '/api/stock-live', 10000),
+        fetchJsonT(MKT_BASE + '/api/tabs-live', 12000),
+        fetchJsonT(MKT_BASE + '/data/supply-latest.json', 8000)
+      ]);
+      function why(x){ return String((x && x.reason && (x.reason.message || x.reason)) || '').slice(0, 120); }
+      var stock = settled[0].status === 'fulfilled' ? settled[0].value : null;
+      if (!stock) errs.push('stock-live 실패(' + why(settled[0]) + ')');
+      var tabs = settled[1].status === 'fulfilled' ? settled[1].value : null;
+      if (!tabs) errs.push('tabs-live 실패(' + why(settled[1]) + ')');
+      var supply = settled[2].status === 'fulfilled' ? settled[2].value : null;
+      if (!supply) errs.push('supply 실패(' + why(settled[2]) + ')');
+
+      var indices = (stock && Array.isArray(stock.indices)) ? stock.indices : [];
+      var themes = [], themeBasis = '';
+      if (tabs && Array.isArray(tabs.themes) && tabs.themes.length){
+        themes = tabs.themes.slice(0, 3);
+        themeBasis = tabs.themePrevLabel ? ('기준 ' + tabs.themePrevLabel + ' 마감')
+          : (tabs.themeSource === 'naver-theme' ? '오늘 실시간 테마 랭킹'
+          : tabs.themeSource === 'prev-day-dynamic' ? '직전 마감 스냅샷'
+          : '테마 저장분');
+      }
+      if (!themes.length){
+        try {
+          var ld = await fetchJsonT(MKT_BASE + '/data/last-dynamic-themes.json', 7000);
+          if (ld && Array.isArray(ld.themes) && ld.themes.length){
+            themes = ld.themes.slice(0, 3);
+            themeBasis = '기준 ' + (ld.basisLong || ld.shortLabel || '직전 마감') + ' (저장 스냅샷)';
+          }
+        } catch(e){ errs.push('last-dynamic-themes 실패'); }
+      }
+      if (!themes.length){
+        try {
+          var se = await fetchJsonT(MKT_BASE + '/data/stockeasy_live_themes.json', 7000);
+          if (se && Array.isArray(se.themes) && se.themes.length){
+            themes = se.themes.slice(0, 3).map(function(t){
+              return { name: t.name, avgPct: null, stocks: (t.stocks || []).map(function(s){ return { name: s.name, changePct: s.chg, role: '' }; }) };
+            });
+            themeBasis = '스탁이지 테마(15분 갱신 · ' + String(se.updatedAt || '').slice(11, 16) + ') — 등락률은 미제공';
+          }
+        } catch(e){ errs.push('stockeasy 테마 실패'); }
+      }
+
+      var now = new Date();
+      var lines = [];
+      lines.push('[오늘 관제탑 시황 — ' + kstStamp(now) + ']');
+      lines.push('지수: ' + (indices.length ? indices.map(function(x){ return x.name + ' ' + idxTxt(x.price) + ' (' + pctTxt(x.changePct) + ')'; }).join(' · ') + ' — 네이버 폴링(장 마감 뒤에는 직전 마감값)' : '값을 받지 못했습니다'));
+      var supplyLine = '값을 받지 못했습니다';
+      if (supply && supply.groups){
+        var fb = (supply.groups.foreignBuy || []).slice(0, 2).map(function(x){ return x.name + ' ' + eokTxt(x.foreignEok); }).join(', ');
+        var ob = (supply.groups.organBuy || []).slice(0, 2).map(function(x){ return x.name + ' ' + eokTxt(x.organEok); }).join(', ');
+        var db = (supply.groups.dualBuy || []).slice(0, 2).map(function(x){ return x.name; }).join(', ');
+        supplyLine = (supply.basisLabel || supply.basisDate || '기준일 미상') + ' 확정 — 외국인 순매수 ' + (fb || '—') + ' / 기관 순매수 ' + (ob || '—') + (db ? ' / 동반 매수 ' + db : '');
+      }
+      lines.push('수급: ' + supplyLine);
+      lines.push('주도 테마' + (themeBasis ? '(' + themeBasis + ')' : '') + ': ' + (themes.length ? themes.map(function(t, i){
+        var lead = themeLead(t);
+        return (i + 1) + ') ' + t.name + ' ' + pctTxt(themePct(t)) + (themeVal(t) ? '·' + themeVal(t) : '') + (lead && lead.name ? ' — ' + lead.name + ' ' + stockPct(lead) : '');
+      }).join(' / ') : '값을 받지 못했습니다'));
+      var leaders = [], seenLead = {};
+      themes.forEach(function(t){
+        var l = themeLead(t);
+        if (l && l.name && !seenLead[l.name]){ seenLead[l.name] = 1; leaders.push(l.name + ' ' + stockPct(l)); }
+      });
+      if (supply && supply.groups && (supply.groups.foreignBuy || [])[0]) leaders.push('외인 1위 ' + supply.groups.foreignBuy[0].name);
+      if (leaders.length) lines.push('핵심 대장주: ' + leaders.slice(0, 4).join(', '));
+      lines.push('※ 숫자는 관제탑 API가 준 값 그대로입니다. 지수는 실시간, 수급·테마는 각 기준일이 다르니 위 표기를 확인하세요. 확인되지 않은 종목·전망은 넣지 않았습니다.');
+      if (errs.length) lines.push('※ 일부 소스 실패: ' + errs.join(' / '));
+      MKT.text = lines.join('\n');
+      MKT.at = Date.now();
+      var k0 = indices[0];
+      MKT.topic = Array.from((k0 ? (k0.name + ' ' + idxTxt(k0.price) + '(' + pctTxt(k0.changePct) + ')') : '오늘 시장') + (themes[0] ? ' — ' + themes[0].name + ' 주도' : '') + ' 정리').slice(0, 80).join('');
+
+      var rows = '';
+      if (indices.length){
+        rows += '<div class="mktrow"><b>지수</b><span>' + indices.map(function(x){
+          return esc(x.name) + ' ' + esc(idxTxt(x.price)) + ' <span class="' + pctCls(x.changePct) + '">' + esc(pctTxt(x.changePct)) + '</span>';
+        }).join(' · ') + '</span></div>';
+      } else {
+        rows += '<div class="mktrow"><b>지수</b><span>값을 받지 못했습니다 — stock-live 응답을 확인하세요.</span></div>';
+      }
+      rows += '<div class="mktrow"><b>수급</b><span>' + esc(supplyLine) + '</span></div>';
+      rows += '<div class="mktrow"><b>주도 테마</b><span>' + (themes.length ? themes.map(function(t, i){
+        var lead = themeLead(t);
+        return '<b style="color:#e2e8f0">' + (i + 1) + '</b> ' + esc(t.name) + ' <span class="' + pctCls(themePct(t)) + '">' + esc(pctTxt(themePct(t))) + '</span>' + (themeVal(t) ? ' · ' + esc(themeVal(t)) : '') + (lead && lead.name ? ' — ' + esc(lead.name) + ' ' + esc(stockPct(lead)) : '');
+      }).join('<br>') : '값을 받지 못했습니다') + '<div class="mktnote" style="margin-top:3px">' + esc(themeBasis) + '</div></span></div>';
+      if (leaders.length) rows += '<div class="mktrow"><b>대장주</b><span>' + esc(leaders.slice(0, 4).join(' · ')) + '</span></div>';
+      rows += '<div class="mktnote">숫자는 관제탑 API 응답 그대로입니다. 지수는 실시간, 수급·테마는 기준일이 다를 수 있습니다.</div>';
+      if (errs.length) rows += '<div class="mktnote" style="color:#fbbf24">일부 소스 실패: ' + esc(errs.join(' / ')) + '</div>';
+      rows += '<div class="quick" style="margin-top:9px">' +
+        '<button type="button" class="btn small primary" data-mkt="topic">주제 칸에 넣기</button>' +
+        '<button type="button" class="btn small" data-mkt="src">참고 자료에 넣기</button>' +
+        '</div>';
+      mktBox.innerHTML = rows;
+      if (mktCopyBtn) mktCopyBtn.hidden = false;
+      toast('오늘 시황을 불러왔습니다.');
+    } catch(err){
+      mktBox.innerHTML = '<div class="errbox"><b>⚠️ 시황을 불러오지 못했습니다 — 값을 지어내지 않습니다</b>' +
+        '<div class="em">' + esc(String((err && err.message) || err)) + '</div>' +
+        (errs.length ? '<div class="em mono">' + esc(errs.join(' / ')) + '</div>' : '') +
+        '<div class="em">관제탑에서 직접 확인하고, 요약을 복사해 아래 [참고 자료]에 붙여넣으면 그 내용을 근거로 씁니다.</div>' +
+        '<div class="quick" style="margin-top:8px"><a class="btn small primary" href="' + esc(MKT_HOME) + '" target="_blank" rel="noopener noreferrer">📡 관제탑 열기</a>' +
+        '<button type="button" class="btn small" data-mkt="focuspad">붙여넣기 칸 열기</button></div></div>';
+      toast('시황을 불러오지 못했습니다.');
+    } finally {
+      spinner(mktBtn, false);
+    }
+  }
+  var mktPasteEl = $('#mktPaste'), mktPasteRow = $('#mktPasteRow'), mktPasteGo = $('#mktPasteGo');
+  function showMktPaste(){
+    if (mktPasteEl) mktPasteEl.hidden = false;
+    if (mktPasteRow) mktPasteRow.hidden = false;
+  }
+  if (mktPasteGo){
+    mktPasteGo.addEventListener('click', function(){
+      var v = String((mktPasteEl && mktPasteEl.value) || '').trim();
+      if (!v){ toast('붙여넣은 내용이 없습니다.'); if (mktPasteEl) mktPasteEl.focus(); return; }
+      setSrc((srcText() ? srcText() + '\n\n' : '') + '[관제탑 시황 붙여넣기]\n' + v, '참고 자료에 넣었습니다 — AI는 이 내용을 근거로만 인용합니다');
+      MKT.text = (MKT.text ? MKT.text + '\n\n' : '') + v;
+      if (mktPasteEl) mktPasteEl.value = '';
+      toast('참고 자료에 넣었습니다.');
+    });
+  }
+  if (mktBtn){
+    mktBtn.addEventListener('click', function(){ showMktPaste(); runMarketBrief(); });
+    mktBox.addEventListener('click', function(e){
+      var b = e.target.closest('[data-mkt]');
+      if (!b) return;
+      var act = b.getAttribute('data-mkt');
+      if (act === 'focuspad'){
+        var pad = $('#mktPaste');
+        if (pad){ try { pad.focus(); pad.scrollIntoView({ behavior:'smooth', block:'center' }); } catch(e){} }
+        toast('관제탑 요약을 복사해 이 칸에 붙여넣으면 [참고 자료]로 들어갑니다.');
+        return;
+      }
+      if (act === 'topic'){
+        topicEl.value = MKT.topic || '';
+        topicEl.focus();
+        toast('주제 칸에 오늘 시황 요약 주제를 넣었습니다.');
+      } else if (act === 'src'){
+        setSrc((srcText() ? srcText() + '\n\n' : '') + MKT.text);
+      }
+    });
+  }
+  if (mktCopyBtn) mktCopyBtn.addEventListener('click', function(){ copyText(MKT.text || '', '오늘 시황 요약을 복사했습니다.'); });
+
+  /* ---------- ③ SEO 태그 10개 ---------- */
+  var seoBtn = $('#seoBtn'), seoCopyBtn = $('#seoCopyBtn'), seoBadge = $('#seoBadge'), seoTagsEl = $('#seoTags');
+  var SEO = { keywords: [], hashtags: [] };
+  function renderSeo(d, badge){
+    if (!seoTagsEl) return;
+    if (!d){
+      SEO = { keywords: [], hashtags: [] };
+      seoTagsEl.innerHTML = '<span class="hint">본문을 만들고 [해시태그 10개 뽑기]를 누르면 검색어·해시태그 10개를 뽑습니다. 칩을 누르면 하나만 복사됩니다.</span>';
+      if (seoCopyBtn) seoCopyBtn.hidden = true;
+      if (seoBadge) seoBadge.textContent = '본문 기반';
+      return;
+    }
+    SEO = { keywords: d.keywords || [], hashtags: d.hashtags || [] };
+    var tags = SEO.hashtags.length ? SEO.hashtags : SEO.keywords;
+    var hash = SEO.hashtags.length > 0;
+    seoTagsEl.innerHTML = tags.length
+      ? tags.map(function(t){
+          return '<button type="button" class="seotag' + (hash ? '' : ' kw') + '" data-tag="' + esc(t) + '" title="누르면 복사">' + (hash ? '#' : '') + esc(t) + '</button>';
+        }).join('')
+      : '<span class="hint">태그가 비어 왔습니다. 다시 뽑아 보세요.</span>';
+    if (seoCopyBtn) seoCopyBtn.hidden = !tags.length;
+    if (seoBadge) seoBadge.textContent = (badge || '본문 기반') + ' · ' + tags.length + '개';
+  }
+  function seoClip(){
+    var t = SEO.hashtags.length ? SEO.hashtags.map(function(x){ return '#' + x; }) : SEO.keywords;
+    return t.join(' ');
+  }
+  function seoLocal(){
+    var title = ((state.titles || [])[state.titleIdx] || {}).text || topicEl.value.trim() || '';
+    var body = currentDraftText();
+    var f = getForm(state.selectedFormId);
+    var stop = { '그리고':1,'하지만':1,'그래서':1,'이것':1,'저것':1,'때문에':1,'합니다':1,'있습니다':1,'없습니다':1,'정리':1,'경우':1,'정도':1,'위해':1,'대한':1,'에서':1,'으로':1,'하는':1,'있는':1,'같은':1,'이런':1,'저런':1,'여러':1,'보다':1,'부터':1,'까지':1 };
+    var tokens = String(title).replace(/[—\-–|:·,."'!?()\[\]]/g, ' ').split(/\s+/).filter(function(w){ return w.length > 1 && !stop[w]; });
+    var cands = [];
+    for (var i = 0; i < tokens.length - 1 && cands.length < 6; i++) cands.push(tokens[i] + ' ' + tokens[i + 1]);
+    tokens.slice(0, 4).forEach(function(w){ cands.push(w); });
+    if (f && f.name) cands.push(f.name);
+    var freq = {};
+    String(body).replace(/[^가-힣A-Za-z0-9\s]/g, ' ').split(/\s+/).forEach(function(w){
+      if (w.length < 2 || w.length > 6 || stop[w]) return;
+      freq[w] = (freq[w] || 0) + 1;
+    });
+    Object.keys(freq).sort(function(a, b){ return freq[b] - freq[a]; }).slice(0, 8).forEach(function(w){ cands.push(w); });
+    var seen = {}, out = [];
+    cands.forEach(function(w){ var k = String(w).replace(/\s+/g, ''); if (!k || seen[k]) return; seen[k] = 1; out.push(String(w).trim()); });
+    out = out.slice(0, 10);
+    return { keywords: out, hashtags: out.map(function(w){ return w.replace(/\s+/g, ''); }) };
+  }
+  async function runSeo(){
+    var body = String(currentDraftText() || '').trim();
+    if (body.length < 80){ toast('먼저 본문을 만들어 주세요.'); return; }
+    var title = ((state.titles || [])[state.titleIdx] || {}).text || topicEl.value.trim();
+    var note = $('#seoNote'); if (note) note.innerHTML = '';
+    try {
+      var j = await callAI('seo_tags', { title: title, topic: draftTopic(), body: body }, seoBtn, '태그 뽑는 중…');
+      renderSeo(j.data, 'Gemini · ' + (j.model || AI.model));
+      toast('검색 유입 태그 10개를 뽑았습니다.');
+    } catch(err){
+      renderSeo(seoLocal(), '간이 추출(Gemini 실패)');
+      if (note) note.innerHTML = aiErrBox(err, { hint: 'Gemini 없이 제목·본문 단어로만 만든 간이 태그입니다. 한 번 더 누르면 다시 시도합니다.' });
+      toast('Gemini가 실패해 간이 추출로 대체했습니다.');
+    }
+  }
+  if (seoBtn){
+    seoBtn.addEventListener('click', runSeo);
+    seoCopyBtn.addEventListener('click', function(){
+      var t = seoClip();
+      if (!t){ toast('복사할 태그가 없습니다.'); return; }
+      copyText(t, '해시태그 ' + (SEO.hashtags.length || SEO.keywords.length) + '개를 복사했습니다. 네이버 태그 칸에 붙여넣으세요.');
+    });
+    seoTagsEl.addEventListener('click', function(e){
+      var b = e.target.closest('[data-tag]');
+      if (!b) return;
+      var t = b.getAttribute('data-tag');
+      copyText(SEO.hashtags.length ? '#' + t : t, '“' + t + '” 복사했습니다.');
+    });
+  }
+
+  /* ---------- ④⑧⑨ 다듬기 · 1타 3피 · AI 티 빼기 ---------- */
+  var polishNote = $('#polishNote'), undoBtn = $('#undoPolish');
+  var undoStack = [];
+  function draftTopic(){ return (state.lastDraft && state.lastDraft.topic) || topicEl.value.trim() || ''; }
+  function resetPolishState(){
+    undoStack.length = 0;
+    if (undoBtn) undoBtn.hidden = true;
+    if (polishNote) polishNote.innerHTML = '';
+    var mc = $('#multiCard'); if (mc) mc.hidden = true;
+  }
+  function pushUndo(txt){
+    undoStack.push(String(txt == null ? '' : txt));
+    if (undoStack.length > 5) undoStack.shift();
+    if (undoBtn) undoBtn.hidden = false;
+  }
+  function applyDraft(txt, badge){
+    var t = String(txt == null ? '' : txt);
+    outText.textContent = t;
+    outEdit.value = t;
+    state.lastDraft = state.lastDraft || {};
+    state.lastDraft.text = t;
+    outStat.textContent = badge || '다듬음';
+    outCard.hidden = false;
+    outEmpty.hidden = true;
+    renderChecks(t);
+    scanBans(t);
+    refreshPhotoSlots(true);
+    renderNaver();
+  }
+  function polishNoteHtml(head, items, warn){
+    var li = (items || []).filter(Boolean).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('');
+    return '<div class="ainote"' + (warn ? ' style="border-color:rgba(245,158,11,.45)"' : '') + '><b>' + esc(head) + '</b>' + (li ? '<ul>' + li + '</ul>' : '') + '</div>';
+  }
+  async function runPolish(action, payload, btn, label, badge){
+    var body = String(currentDraftText() || '').trim();
+    if (body.length < 80){ toast('먼저 본문을 만들거나 [편집]에서 붙여넣어 주세요.'); return; }
+    if (polishNote) polishNote.innerHTML = '';
+    try {
+      var j = await callAI(action, Object.assign({ topic: draftTopic(), body: body }, payload || {}), btn, label);
+      var d = j.data || {};
+      if (!d.body) throw Object.assign(new Error('빈 응답이 왔습니다.'), { payload: {} });
+      pushUndo(body);
+      applyDraft(d.body, badge + ' · ' + (j.model || AI.model));
+      var items = [];
+      (j.notes || []).forEach(function(x){ items.push(x); });
+      if ((d.changed || []).length) items.push('바꾼 점: ' + d.changed.join(' · '));
+      if ((d.removed || []).length) items.push('걷어낸 표현: ' + d.removed.join(', '));
+      if ((d.banHits || []).length) items.push('금지 표현이 남았습니다: ' + d.banHits.join(', '));
+      if (d.needsCheck) items.push('[확인 필요] ' + d.needsCheck + '곳 — 발행 전에 직접 확인하세요.');
+      if (d.photoSlots === 0) items.push('사진 자리 태그가 0곳입니다 — 필요하면 [📸 사진: 묘사 | search: 영문]을 다시 넣으세요.');
+      if (polishNote) polishNote.innerHTML = polishNoteHtml((j.model || AI.model) + ' · ' + charLen(d.body) + '자', items, (d.banHits || []).length > 0);
+      toast('초안을 다시 썼습니다. [되돌리기]로 복구할 수 있습니다.');
+    } catch(err){
+      if (polishNote) polishNote.innerHTML = aiErrBox(err, { hint: '한 번 더 누르면 다시 시도합니다. 초안은 그대로 남아 있습니다.' });
+      toast('다듬기에 실패했습니다 — 초안은 바뀌지 않았습니다.');
+    }
+  }
+  async function runClosing(btn){
+    var body = String(currentDraftText() || '').trim();
+    if (body.length < 80){ toast('먼저 본문을 만들어 주세요.'); return; }
+    if (polishNote) polishNote.innerHTML = '';
+    try {
+      var j = await callAI('closing_box', { topic: draftTopic(), body: body }, btn, '마무리 쓰는 중…');
+      var d = j.data || {};
+      if (!d.markdown) throw new Error('빈 응답이 왔습니다.');
+      pushUndo(body);
+      applyDraft(body.replace(/\s+$/, '') + '\n\n' + d.markdown + '\n', '마무리 박스 · ' + (j.model || AI.model));
+      if (polishNote) polishNote.innerHTML = polishNoteHtml('마무리 박스 추가 — ' + (j.model || AI.model), [
+        '댓글 유도 질문: ' + (d.question || ''),
+        '박스 항목 ' + (d.items || []).length + '개 — 링크의 [확인 필요]를 실제 링크로 바꾸세요.',
+        '[📋 네이버 서식 복사]로 붙이면 초록 안내 박스로 살아납니다.'
+      ].concat(d.warnings || []));
+      toast('본문 끝에 댓글 유도 질문과 링크 안내 박스를 붙였습니다.');
+    } catch(err){
+      if (polishNote) polishNote.innerHTML = aiErrBox(err, { hint: '한 번 더 누르면 다시 시도합니다.' });
+      toast('마무리 박스를 붙이지 못했습니다.');
+    }
+  }
+  async function runMulti(btn){
+    var body = String(currentDraftText() || '').trim();
+    if (body.length < 120){ toast('먼저 본문을 만들어 주세요(120자 이상).'); return; }
+    if (polishNote) polishNote.innerHTML = '';
+    try {
+      var j = await callAI('multi_use', { topic: draftTopic(), body: body }, btn, '3줄·쇼츠 만드는 중…');
+      var d = j.data || {};
+      var insta = d.insta || {};
+      if (!(insta.lines || []).length) throw new Error('3줄 요약이 비어 왔습니다.');
+      var modelTxt = j.model || AI.model;
+      $('#multiLines').innerHTML = (insta.lines || []).map(function(l, i){
+        return '<div class="ml"><b style="color:#7dd3fc">' + (i + 1) + '</b> ' + esc(l) + '</div>';
+      }).join('');
+      $('#multiTags').innerHTML = (insta.hashtags || []).map(function(t){
+        return '<button type="button" class="seotag" data-mtag="' + esc(t) + '" title="누르면 복사">#' + esc(t) + '</button>';
+      }).join('');
+      $('#multiBadge').textContent = 'Gemini · ' + modelTxt;
+      $('#multiCard').hidden = false;
+      state.multi = insta;
+      if (d.shorts){
+        state.shorts = d.shorts;
+        $('#shortsCard').hidden = false;
+        $('#shortsBadge').textContent = '1타 3피 · ' + modelTxt;
+        var notes = (j.notes || []).concat(d.warnings || []);
+        $('#shortsOut').innerHTML = scriptHtml(d.shorts) + (notes.length ? '<div class="ainote"><b>메모</b><ul>' + notes.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' : '');
+      }
+      $('#multiCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast('인스타 3줄 + 쇼츠 대본을 만들었습니다.');
+    } catch(err){
+      if (polishNote) polishNote.innerHTML = aiErrBox(err, { hint: '한 번 더 누르면 다시 시도합니다.' });
+      toast('1타 3피 변환에 실패했습니다.');
+    }
+  }
+  if ($('#toneHonest')){
+    $('#toneHonest').addEventListener('click', function(){ runPolish('rewrite_tone', { tone: 'honest' }, this, '솔직 후기형으로 쓰는 중…', '톤: 솔직 후기형'); });
+    $('#toneExpert').addEventListener('click', function(){ runPolish('rewrite_tone', { tone: 'expert' }, this, '전문가 분석형으로 쓰는 중…', '톤: 전문가 분석형'); });
+    $('#toneWarm').addEventListener('click', function(){ runPolish('rewrite_tone', { tone: 'warm' }, this, '따뜻한 에세이형으로 쓰는 중…', '톤: 따뜻한 에세이형'); });
+    $('#humanizeBtn').addEventListener('click', function(){ runPolish('humanize', {}, this, 'AI 티 걷어내는 중…', 'AI 티 빼기'); });
+    $('#closingBtn').addEventListener('click', function(){ runClosing(this); });
+    $('#multiUseBtn').addEventListener('click', function(){ runMulti(this); });
+  }
+  if (undoBtn) undoBtn.addEventListener('click', function(){
+    if (!undoStack.length){ toast('되돌릴 초안이 없습니다.'); return; }
+    var prev = undoStack.pop();
+    applyDraft(prev, '되돌림');
+    undoBtn.hidden = !undoStack.length;
+    toast('직전 초안으로 되돌렸습니다.');
+  });
+  if ($('#copyMultiBtn')) $('#copyMultiBtn').addEventListener('click', function(){
+    var m = state.multi;
+    if (!m || !(m.lines || []).length){ toast('먼저 1타 3피로 변환해 주세요.'); return; }
+    copyText(m.text || ((m.lines || []).join('\n')), '인스타 3줄 + 해시태그를 복사했습니다.');
+  });
+  if ($('#multiTags')) $('#multiTags').addEventListener('click', function(e){
+    var b = e.target.closest('[data-mtag]');
+    if (!b) return;
+    var t = b.getAttribute('data-mtag');
+    copyText('#' + t, '“' + t + '” 복사했습니다.');
+  });
+
+  /* ---------- ⑥ 주간 발행 체크 · 링크 기록 ---------- */
+  var routinePub = lsGet(LSK3.pub, {}) || {};
+  function isoWeekKey(d){
+    var t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    var day = t.getUTCDay() || 7;
+    t.setUTCDate(t.getUTCDate() + 4 - day);
+    var y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1));
+    var wk = Math.ceil((((t - y0) / 86400000) + 1) / 7);
+    return t.getUTCFullYear() + '-W' + (wk < 10 ? '0' : '') + wk;
+  }
+  function pubWeek(){ return isoWeekKey(new Date()); }
+  function pubWeekLabel(){
+    var d = new Date();
+    var back = (d.getDay() + 6) % 7;
+    var mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - back);
+    var sun = new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + 6);
+    function md(x){ return (x.getMonth() + 1) + '/' + x.getDate(); }
+    return md(mon) + '~' + md(sun);
+  }
+  function pubGet(k){
+    var v = routinePub[pubWeek() + ':' + k];
+    return (v && typeof v === 'object') ? { done: !!v.done, url: String(v.url || '') } : { done: false, url: '' };
+  }
+  function pubSet(k, patch){
+    var cur = pubGet(k);
+    routinePub[pubWeek() + ':' + k] = {
+      done: patch.done === undefined ? cur.done : !!patch.done,
+      url: patch.url === undefined ? cur.url : String(patch.url || '').slice(0, 300)
+    };
+    return lsSet(LSK3.pub, routinePub);
+  }
+  if ($('#pubReset')) $('#pubReset').addEventListener('click', function(){
+    var wk = pubWeek();
+    Object.keys(routinePub).forEach(function(k){ if (k.indexOf(wk + ':') === 0) delete routinePub[k]; });
+    lsSet(LSK3.pub, routinePub);
+    renderRoutine();
+    toast('이번 주 발행 기록을 지웠습니다. 루틴 테마는 그대로입니다.');
   });
 
   /* ================= init ================= */
@@ -2997,7 +6372,121 @@
   renderHooks();
   renderSubStage();
   renderTitles();
+  try { $('#expNote').value = localStorage.getItem('cs2_exp_note_v1') || ''; } catch(e){}
+  saveExpNote();
+  $('#expNote').addEventListener('input', saveExpNote);
+  $('#expClear').addEventListener('click', function(){
+    $('#expNote').value = '';
+    saveExpNote();
+    toast('경험 메모를 지웠습니다. 이제 경험담 없이 정리합니다.');
+  });
+  $('#pingBtn').addEventListener('click', function(){ pingAI(); toast('연동 상태를 다시 확인합니다.'); });
+  pingAI();
 
+})();
+</script>
+
+<script>
+/* ============ PWA 설치 버튼 (단독 앱: AI 스튜디오) ============ */
+(function(){
+  var btn = document.getElementById('pwaInstallBtn');
+  if (!btn) return;
+  var deferred = null;
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null, toastToken = null, toastObserver = null;
+
+  function isStandalone(){
+    try{
+      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+      if (window.matchMedia && window.matchMedia('(display-mode: fullscreen)').matches) return true;
+    }catch(e){}
+    return window.navigator.standalone === true;
+  }
+
+  function hideBtn(){ btn.hidden = true; }
+  function showBtn(){ btn.hidden = isStandalone(); }
+
+  /* 페이지 본문의 toast()와 같은 #toast 요소를 쓰되, 안내 문구는 더 오래 보여 준다.
+     다른 문구가 뜨면(페이지 toast) 이 타이머는 스스로 물러난다. */
+  function pwaToast(msg, ms){
+    if (!toastEl) return;
+    if (toastObserver) { toastObserver.disconnect(); toastObserver = null; }
+    clearTimeout(toastTimer);
+    toastToken = String(Date.now()) + Math.random();
+    toastEl.setAttribute('data-pwa', toastToken);
+    toastEl.textContent = msg;
+    toastEl.classList.add('on');
+    if (window.MutationObserver){
+      toastObserver = new MutationObserver(function(){
+        if (toastEl.getAttribute('data-pwa') !== toastToken || toastEl.textContent !== msg){
+          clearTimeout(toastTimer);
+          if (toastEl.getAttribute('data-pwa') === toastToken) toastEl.removeAttribute('data-pwa');
+          toastObserver.disconnect();
+          toastObserver = null;
+        }
+      });
+      toastObserver.observe(toastEl, { childList: true, characterData: true, subtree: true });
+    }
+    toastTimer = setTimeout(function(){
+      toastEl.classList.remove('on');
+      if (toastEl.getAttribute('data-pwa') === toastToken) toastEl.removeAttribute('data-pwa');
+      if (toastObserver) { toastObserver.disconnect(); toastObserver = null; }
+    }, ms || 6000);
+  }
+
+  function manualGuide(){
+    var ua = navigator.userAgent || '';
+    if (/SamsungBrowser/i.test(ua)) return '📲 삼성 인터넷 — 하단 ≡ 메뉴 → 「홈 화면에 추가」를 누르면 AI 스튜디오가 앱처럼 설치됩니다.';
+    if (/iPhone|iPad|iPod/i.test(ua)) return '📲 Safari — 하단 공유 버튼 → 「홈 화면에 추가」를 누르면 AI 스튜디오가 앱처럼 설치됩니다.';
+    if (/Chrome/i.test(ua)) return '📲 Chrome — 우측 상단 ⋮ → 「앱 설치」(또는 「홈 화면에 추가」)를 누르면 설치됩니다.';
+    return '📲 브라우저 메뉴에서 「앱 설치」 또는 「홈 화면에 추가」를 선택하면 설치됩니다.';
+  }
+
+  window.addEventListener('beforeinstallprompt', function(e){
+    e.preventDefault();
+    deferred = e;
+    showBtn();
+  });
+
+  window.addEventListener('appinstalled', function(){
+    deferred = null;
+    hideBtn();
+    pwaToast('설치 완료 — 홈 화면의 「AI 스튜디오」 아이콘으로 바로 열립니다.', 4500);
+  });
+
+  btn.addEventListener('click', function(){
+    if (deferred && typeof deferred.prompt === 'function'){
+      var ev = deferred;
+      deferred = null;
+      try{
+        ev.prompt();
+        var choice = ev.userChoice;
+        if (choice && typeof choice.then === 'function'){
+          choice.then(function(res){
+            if (res && res.outcome === 'accepted'){
+              hideBtn();
+              pwaToast('설치를 시작했습니다. 홈 화면에 「AI 스튜디오」가 생깁니다.', 4000);
+            } else {
+              pwaToast('설치를 취소했습니다. 나중에 헤더의 📲 앱 설치로 다시 시도할 수 있어요.', 4500);
+            }
+          }).catch(function(){ pwaToast(manualGuide(), 7000); });
+        }
+      }catch(err){
+        pwaToast(manualGuide(), 7000);
+      }
+      return;
+    }
+    pwaToast(manualGuide(), 7000);
+  });
+
+  /* 설치된 앱 창으로 열렸는지에 따라 버튼 상태 유지 */
+  try{
+    var mq = window.matchMedia('(display-mode: standalone)');
+    if (mq && mq.addEventListener) mq.addEventListener('change', showBtn);
+    else if (mq && mq.addListener) mq.addListener(showBtn);
+  }catch(e){}
+  window.addEventListener('pageshow', showBtn);
+  showBtn();
 })();
 </script>
 </body>
