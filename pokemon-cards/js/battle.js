@@ -378,6 +378,16 @@
   }
 
   const wait = ms => new Promise(r => setTimeout(r, ms));
+  function preload(src) {
+    return new Promise(res => {
+      let done = false;
+      const fin = () => { if (!done) { done = true; res(); } };
+      const im = new Image();
+      im.onload = fin; im.onerror = fin;
+      im.src = src;
+      setTimeout(fin, 260);
+    });
+  }
   function alive() { return !!(ui.bt && !ui.bt.dead && ui.arenaEl); }
   function msg(html) { if (alive()) ui.arenaEl.querySelector('#arenaMsg').innerHTML = html; }
   function q(sel) { return ui.arenaEl ? ui.arenaEl.querySelector(sel) : null; }
@@ -527,6 +537,8 @@
     const dc = q('#card' + s);
     const img = q('#img' + s);
     if (!dside || !dc || !img) return;
+    img.removeAttribute('src');
+    void img.offsetWidth;
     img.src = D.img(card.img);
     img.alt = card.name;
     dc.className = 'dcard' + (card.r === 5 ? ' r5' : card.r === 4 ? ' r4' : '');
@@ -578,6 +590,9 @@
     busyRound = true;
     b.phase = 'flip';
     clearCta();
+
+    await Promise.all([preload(D.img(a.img)), preload(D.img(c.img))]);
+    if (!alive()) { busyRound = false; return; }
 
     flyIn(0, a);
     flyIn(1, c);
