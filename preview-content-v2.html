@@ -1299,6 +1299,11 @@
           <button class="btn small ghost" id="mktCopyBtn" hidden>요약 복사</button>
           <span class="hint" id="mktHint">관제탑 동적 API(지수·주도테마)와 확정 수급 파일을 읽어 요약합니다. 실패하면 [관제탑 열기]와 붙여넣기 안내로 넘어갑니다.</span>
         </div>
+        <div class="matpanel-row" style="margin-top:6px">
+          <button class="btn small" id="briefFeedBtn" type="button" title="관제탑 최신 브리핑 파일을 읽어 요약을 보여주고 [참고 자료]에 넣습니다">📰 최신 브리핑 불러오기</button>
+          <button class="btn small" id="dealFeedBtn" type="button" title="패밀리 특가 레이더의 30%↑ 특가를 읽어 [참고 자료]에 넣습니다">✈️ 오늘 특가 불러오기</button>
+          <span class="hint" id="feedHint">브리핑·특가 파일(<b>./data/latest-briefing.json · latest-deals.json</b>)을 읽습니다. 파일이 없으면 값을 지어내지 않고 안내합니다.</span>
+        </div>
         <div class="mktbox" id="mktBox" hidden></div>
         <textarea class="mktpaste" id="mktPaste" rows="2" maxlength="2000" hidden placeholder="관제탑에서 복사한 시황을 여기에 붙여넣고 [참고 자료로] 를 누르세요."></textarea>
         <div class="quick" id="mktPasteRow" hidden>
@@ -1678,6 +1683,7 @@
             <div class="outact" style="padding:0 11px 9px;border-bottom:1px solid var(--line)">
               <button class="btn small primary" id="shProofBtn" type="button" title="쇼츠 전용 5기준으로 다시 점검합니다: 3초 훅 강도·자막 15~20자·구어체·양식 리듬·과장 제거">✨ 2차 검수·다듬기</button>
               <button class="btn small" id="shPickleBtn" type="button" title="쇼츠 테마·1~4번 양식·대본 전체·점검 포인트를 복사합니다">📋 피클 점검용 복사</button>
+              <button class="btn small" id="shMp4Btn" type="button" title="make_shorts_mp4.py 스펙 JSON(AB 훅·고정 댓글·릴스/클립 문구·컷)을 클립보드에 복사합니다">📦 고퀄리티 MP4용 JSON 복사</button>
             </div>
             <div class="proofbadge" id="shProofNote" hidden></div>
             <pre class="out" id="shOutText"></pre>
@@ -2261,6 +2267,26 @@ const SCHEMA_SHORT_SCRIPT = {
       required: ['spoken'],
     },
     captionGuide: { type: 'string', description: '자막 스타일 권장 1줄 — 어떤 폰트·위치·강조가 맞는지와 이유' },
+    seriesBadge: { type: 'string', description: 'MP4 상단 칩용 시리즈 뱃지 (12자 이내 · 영문 2~3단어 대문자 또는 한글 8자)' },
+    ttsVoice: { type: 'string', description: '나레이션 톤 지시 1줄 (예: "차분한 남성 · 또박또박 · 숫자는 또렷하게")' },
+    hookAB: {
+      type: 'object',
+      description: '첫 3초 훅 A/B 2버전 — 같은 사실을 경고형·기회형 두 심리 축으로',
+      properties: {
+        warning: { type: 'string', description: 'A 경고형: 손해·실수·위험을 먼저 던지는 첫 문장 (20자 내외)' },
+        warningCaption: { type: 'string', description: 'A 경고형 화면 자막 (15~20자)' },
+        opportunity: { type: 'string', description: 'B 기회형: 이득·숫자·반전을 먼저 던지는 첫 문장 (20자 내외)' },
+        opportunityCaption: { type: 'string', description: 'B 기회형 화면 자막 (15~20자)' },
+      },
+      required: ['warning', 'opportunity'],
+    },
+    loopEnding: { type: 'string', description: '무한 루프 엔딩 문구 — 마지막 문장이 첫 훅으로 자연스럽게 이어지는 한 문장 (30자 내외)' },
+    commentQuestion: { type: 'string', description: '댓글 유도 질문 1개 — 이지선다/경험형으로 답하기 쉽게' },
+    pinnedComment: { type: 'string', description: '고정 댓글 문구 — 질문 재확인 + 추가 정보 1줄 + 저장 유도 (광고·링크 금지)' },
+    reelsCaption: { type: 'string', description: '인스타 릴스 캡션 2~3줄 (첫 줄이 후킹, 마지막에 저장 유도)' },
+    reelsHashtags: { type: 'array', description: '인스타 릴스 해시태그 8~12개 (# 없이)', items: { type: 'string' } },
+    clipCaption: { type: 'string', description: '네이버 클립용 캡션 한 줄 (40자 내외)' },
+    clipHashtags: { type: 'array', description: '네이버 클립 해시태그 5~8개 (# 없이)', items: { type: 'string' } },
     warnings: { type: 'array', description: '확인하지 못해 [확인 필요]로 남긴 값·사실', items: { type: 'string' } },
   },
   required: ['title', 'hook', 'hookCaption', 'beats', 'ending'],
@@ -3026,7 +3052,18 @@ function promptShortsScript(b) {
 6) 마지막 자막(captionGuide)은 어떤 자막 스타일이 맞는지 이유와 함께 1줄.
 7) 자료에 없는 수치·가격·고유명사·방송 시간을 새로 만들지 않는다. 모르면 "[확인 필요]"로 두고 warnings 에 적는다.
 8) 양식의 금지 규칙을 어기면 실패다.
-[출력] title · hook · beats · ending · captionGuide · warnings JSON.`,
+9) 첫 3초 훅 A/B 2버전(hookAB): 같은 사실을 두 심리 축으로 만든다.
+   - A 경고형(warning): 손해·실수·위험·놓치면 생기는 일을 먼저 던진다. 겁주기 과장 금지, 사실 기반.
+   - B 기회형(opportunity): 이득·숫자·반전·이 기회를 먼저 던진다. 낚시성 숫자 조작 금지.
+   각각 말할 문장(warning/opportunity, 20자 내외)과 화면 자막(warningCaption/opportunityCaption, 15~20자). 두 버전은 첫 문장만 다르고 본문은 같은 대본을 쓴다.
+10) 무한 루프 엔딩(loopEnding): 마지막 문장을 읽고 바로 첫 훅으로 돌아가도 말이 이어지게 쓴다. 억지 말장난·같은 문장 복사 금지. 엔딩의 spoken 은 이 루프 문구로 끝낸다.
+11) 댓글 유도(commentQuestion): 시청자가 3초에 답할 수 있는 이지선다·경험형 질문 1개. 논쟁·정답 맞히기 유도 금지.
+    고정 댓글(pinnedComment): 질문을 한 번 더 확인 + 자료에 있는 추가 정보 1줄 + 저장 유도. 링크·광고·연락처 금지.
+12) 배포 문구: reelsCaption(인스타 릴스 2~3줄, 첫 줄 후킹·마지막 저장 유도) + reelsHashtags(8~12개, # 없이, #shorts 포함),
+    clipCaption(네이버 클립 한 줄 40자 내외) + clipHashtags(5~8개, # 없이). 자료에 없는 브랜드·지역명을 해시태그로 만들지 않는다.
+13) seriesBadge: 이 시리즈를 한눈에 알아볼 MP4 상단 칩 (영문 2~3단어 대문자 또는 한글 8자 이내, 예: MARKET CLOSE·동탄 주말 코스).
+14) ttsVoice: 나레이션 톤 1줄 (예: "차분한 남성 · 또박또박 · 숫자는 또렷하게").
+[출력] title · hook · hookCaption · beats · ending · captionGuide · seriesBadge · ttsVoice · hookAB · loopEnding · commentQuestion · pinnedComment · reelsCaption · reelsHashtags · clipCaption · clipHashtags · warnings JSON.`,
   ]
     .filter(Boolean)
     .join('\n');
@@ -3402,15 +3439,34 @@ function normShortsScript(data) {
     caption: s(data && data.ending && data.ending.caption, 120),
   };
   const captionGuide = s(data && data.captionGuide, 300);
+  const seriesBadge = s(data && data.seriesBadge, 24);
+  const ttsVoice = s(data && data.ttsVoice, 80);
+  const abRaw = (data && data.hookAB) || {};
+  const hookAB = {
+    warning: s(abRaw.warning, 200),
+    warningCaption: s(abRaw.warningCaption, 120),
+    opportunity: s(abRaw.opportunity, 200),
+    opportunityCaption: s(abRaw.opportunityCaption, 120),
+  };
+  const loopEnding = s(data && data.loopEnding, 160);
+  const commentQuestion = s(data && data.commentQuestion, 200);
+  const pinnedComment = s(data && data.pinnedComment, 300);
+  const reelsCaption = s(data && data.reelsCaption, 400);
+  const reelsHashtags = arr(data && data.reelsHashtags, 14).map((x) => s(x, 30).replace(/^#/, '')).filter(Boolean);
+  const clipCaption = s(data && data.clipCaption, 120);
+  const clipHashtags = arr(data && data.clipHashtags, 10).map((x) => s(x, 30).replace(/^#/, '')).filter(Boolean);
   const warnings = arr(data && data.warnings, 10).map((x) => s(x, 200)).filter(Boolean);
   if (!hook) warnings.push('첫 3초 훅이 비어 왔습니다. 다시 눌러 주세요.');
   if (beats.length < 3) warnings.push('본문 컷이 3개 미만입니다 — 다시 생성하면 더 촘촘하게 나옵니다.');
+  if (!hookAB.warning || !hookAB.opportunity) warnings.push('첫 3초 A/B 훅이 비어 왔습니다 — MP4 JSON에는 A/B 모두 필요합니다.');
+  if (!loopEnding) warnings.push('무한 루프 엔딩 문구가 비어 왔습니다 — 다시 생성해 주세요.');
+  if (!pinnedComment) warnings.push('고정 댓글 문구가 비어 왔습니다.');
   const longCaps = beats.concat([{ caption: ending.caption }]).filter((x) => {
     const n = Array.from(String(x.caption || '')).length;
     return n > 24;
   }).length;
   if (longCaps) warnings.push('자막 ' + longCaps + '줄이 24자를 넘습니다 — 2차 검수로 15~20자에 맞춰 주세요.');
-  return { title, hook, hookCaption, beats, ending, captionGuide, warnings, beatsNum: beats.length };
+  return { title, hook, hookCaption, beats, ending, captionGuide, seriesBadge, ttsVoice, hookAB, loopEnding, commentQuestion, pinnedComment, reelsCaption, reelsHashtags, clipCaption, clipHashtags, warnings, beatsNum: beats.length };
 }
 
 /* ---------------------------------------------------------------- 핸들러 */
@@ -9215,6 +9271,176 @@ const GEN_ACTIONS = [
   }
   if (mktCopyBtn) mktCopyBtn.addEventListener('click', function(){ copyText(MKT.text || '', '오늘 시황 요약을 복사했습니다.'); });
 
+  /* ---------- ④ 스튜디오 피드 — 최신 브리핑 · 오늘 특가 (1클릭) ----------
+     같은 저장소의 ./data/latest-briefing.json · ./data/latest-deals.json 을 읽는다.
+     정적 Pages·Vercel 모두 상대경로라 그대로 동작하고, 파일이 없으면 값을 지어내지 않고 안내한다. */
+  var FEED = { brief: null, deals: null, briefText: '', dealText: '', briefTopic: '' };
+  var briefFeedBtn = $('#briefFeedBtn'), dealFeedBtn = $('#dealFeedBtn');
+  function feedFailHtml(what, err){
+    return '<div class="errbox"><b>⚠️ ' + esc(what) + ' 파일을 읽지 못했습니다 — 값을 지어내지 않습니다</b>' +
+      '<div class="em mono">' + esc(String((err && err.message) || err || '')) + '</div>' +
+      '<div class="em">아직 배포 전이거나 <b>./data/</b> 경로에 파일이 없습니다. 잠시 뒤 다시 누르거나 관제탑에서 직접 확인하세요.</div>' +
+      '<div class="quick" style="margin-top:8px"><a class="btn small primary" href="' + MKT_HOME + '" target="_blank" rel="noopener noreferrer">📡 관제탑 열기</a></div></div>';
+  }
+  function feedStamp(v){
+    var s = String(v || '').replace('T', ' ').replace(/\+09:00$/, '');
+    return s ? s.slice(0, 16) : '';
+  }
+  function idxLine(list){
+    return (list || []).map(function(x){
+      return x.name + ' ' + x.value + (x.change ? ' (' + x.change + ')' : '');
+    }).join(' · ');
+  }
+  function flowLine(list){
+    return (list || []).map(function(x){
+      return x.market + ' 개인 ' + x.personal + ' / 외국인 ' + x.foreign + ' / 기관 ' + x.organ;
+    }).join(' · ');
+  }
+  function pickLine(list){
+    return (list || []).map(function(p){
+      return p.name + (p.code ? '(' + p.code + ')' : '') + ' ' + p.price + (p.change ? ' ' + p.change : '');
+    }).join(' · ');
+  }
+  function briefToText(d){
+    var L = [];
+    L.push('[' + '관제탑 최신 브리핑] ' + [d.dateLabel || '', d.slotLabel || d.title || ''].join(' ').trim());
+    if (d.updatedAt || d.sourceFile) L.push('자료 갱신: ' + feedStamp(d.updatedAt) + (d.sourceFile ? ' · ' + d.sourceFile : ''));
+    if (d.summaryLine) L.push('한줄 요약: ' + d.summaryLine);
+    if ((d.indices || []).length) L.push('지수: ' + idxLine(d.indices));
+    if ((d.flow || []).length) L.push('수급: ' + flowLine(d.flow));
+    if ((d.themes || []).length) L.push('주도 테마: ' + d.themes.join(' / '));
+    if ((d.picks || []).length) L.push('핵심 종목: ' + pickLine(d.picks));
+    if (d.bodyExcerpt) L.push('본문 발췌: ' + d.bodyExcerpt);
+    L.push('※ 위 숫자는 브리핑 파일에 적힌 값 그대로입니다. 파일에 없는 값은 넣지 않았습니다.');
+    return L.join('\n');
+  }
+  function renderBriefFeed(d){
+    var rows = '';
+    rows += '<div class="mktrow"><b>브리핑</b><span>' + esc([d.dateLabel || '', d.slotLabel || ''].join(' ').trim()) +
+      '<div class="mktnote">자료 갱신 ' + esc(feedStamp(d.updatedAt) || '—') + (d.sourceFile ? ' · ' + esc(d.sourceFile) : '') + '</div></span></div>';
+    if (d.summaryLine) rows += '<div class="mktrow"><b>한줄 요약</b><span>' + esc(d.summaryLine) + '</span></div>';
+    rows += '<div class="mktrow"><b>지수</b><span>' + ((d.indices || []).length ? (d.indices || []).map(function(x){
+      return esc(x.name) + ' ' + esc(x.value) + ' <span class="' + pctCls(x.change) + '">' + esc(x.change || '—') + '</span>';
+    }).join(' · ') : '파일에 지수 값이 없습니다') + '</span></div>';
+    if ((d.flow || []).length) rows += '<div class="mktrow"><b>수급</b><span>' + esc(flowLine(d.flow)) + '</span></div>';
+    if ((d.themes || []).length) rows += '<div class="mktrow"><b>주도 테마</b><span>' + esc(d.themes.join(' · ')) + '</span></div>';
+    if ((d.picks || []).length) rows += '<div class="mktrow"><b>핵심 종목</b><span>' + esc(pickLine(d.picks)) + '</span></div>';
+    if (d.bodyExcerpt) rows += '<div class="mktnote" style="line-height:1.55">' + esc(d.bodyExcerpt) + '</div>';
+    rows += '<div class="mktnote">브리핑 파일에 적힌 값 그대로 · 확인되지 않은 종목·전망은 넣지 않았습니다.</div>';
+    rows += '<div class="quick" style="margin-top:9px">' +
+      '<button type="button" class="btn small primary" data-feed="brief-src">참고 자료에 다시 넣기</button>' +
+      '<button type="button" class="btn small" data-feed="brief-topic">주제 칸에 넣기</button>' +
+      '<button type="button" class="btn small" data-feed="brief-copy">요약 복사</button>' +
+      '</div>';
+    return rows;
+  }
+  function upsertSrcBlock(tag, body, msg){
+    var cur = srcText();
+    var start = '[' + tag + ']', end = '[/' + tag + ']';
+    var block = start + '\n' + body + '\n' + end;
+    var i = cur.indexOf(start), j = cur.indexOf(end);
+    var next;
+    if (i >= 0 && j > i) next = cur.slice(0, i) + block + cur.slice(j + end.length);
+    else next = block + (cur ? '\n\n' + cur : '');
+    setSrc(next, msg);
+  }
+  async function loadBriefFeed(){
+    if (!briefFeedBtn) return;
+    spinner(briefFeedBtn, true, '브리핑 읽는 중…');
+    mktBox.hidden = false;
+    if (mktCopyBtn) mktCopyBtn.hidden = true;
+    mktBox.innerHTML = '<div class="mktnote">최신 브리핑 파일(./data/latest-briefing.json)을 읽고 있습니다…</div>';
+    try {
+      var d = await fetchJsonT('./data/latest-briefing.json', 9000);
+      if (!d || (!d.slotLabel && !d.summaryLine && !(d.indices || []).length)) throw new Error('브리핑 파일이 비어 있습니다');
+      FEED.brief = d;
+      FEED.briefText = briefToText(d);
+      var k0 = (d.indices || [])[0];
+      FEED.briefTopic = Array.from(((k0 ? (k0.name + ' ' + k0.value + '(' + (k0.change || '') + ')') : '오늘 시장') +
+        ((d.themes || [])[0] ? ' — ' + d.themes[0] + ' 주도' : '') + ' 정리')).slice(0, 80).join('');
+      mktBox.innerHTML = renderBriefFeed(d);
+      upsertSrcBlock('관제탑 최신 브리핑', FEED.briefText, '최신 브리핑을 참고 자료 맨 위에 넣었습니다 · AI는 이 내용을 근거로만 인용합니다');
+      toast('최신 브리핑을 불러왔습니다 — 참고 자료에 넣었습니다.');
+    } catch(err){
+      mktBox.innerHTML = feedFailHtml('최신 브리핑', err);
+      toast('최신 브리핑 파일을 읽지 못했습니다.');
+    } finally {
+      spinner(briefFeedBtn, false);
+    }
+  }
+  function dealToText(d){
+    var items = (d.items || []).slice(0, 12);
+    var L = [];
+    L.push('[' + '패밀리 특가 레이더] ' + (d.dataStamp ? d.dataStamp + ' 스캔' : '최신') +
+      ' · 30%↑ ' + (d.hotCount || 0) + '건 / 전체 ' + (d.total || 0) + '건');
+    items.forEach(function(x, i){
+      L.push((i + 1) + ') ' + x.title + ' — ' + (x.discountPct != null ? x.discountPct + '%' : '할인율 미표기') +
+        ' · ' + (x.price || '가격 미표기') + (x.origPrice ? ' (정상 ' + x.origPrice + ')' : '') +
+        (x.place ? ' · ' + x.place : ''));
+      if (x.url) L.push('   링크: ' + x.url);
+    });
+    if ((d.items || []).length > items.length) L.push('…앞 ' + items.length + '건만 넣었습니다(전체 ' + (d.items || []).length + '건).');
+    L.push('※ 할인율은 정상가·판매가가 모두 있는 상품만 계산했습니다. 예약 전 인원 추가요금·총액을 확인하세요.');
+    return L.join('\n');
+  }
+  function renderDealsFeed(d){
+    var items = (d.items || []).slice(0, 15);
+    var rows = '';
+    rows += '<div class="mktrow"><b>특가</b><span>' + esc(d.dataStamp ? d.dataStamp + ' 스캔' : '최신') +
+      ' · 30%↑ <b>' + esc(String(d.hotCount || 0)) + '</b>건 / 전체 ' + esc(String(d.total || 0)) + '건' +
+      '<div class="mktnote">파일 갱신 ' + esc(feedStamp(d.updatedAt) || '—') + ' · 할인율 내림차순</div></span></div>';
+    if (!items.length){
+      rows += '<div class="mktrow"><b>결과</b><span>조건에 맞는 특가가 파일에 없습니다.</span></div>';
+    }
+    items.forEach(function(x, i){
+      rows += '<div class="mktrow"><b>' + (i + 1) + ' · ' + esc(x.discountPct != null ? x.discountPct + '%' : '—') + '</b><span>' +
+        esc(x.title) + '<br><span style="color:#94a3b8">' + esc(x.category || '') + ' · ' + esc(x.price || '가격 미표기') +
+        (x.origPrice ? ' (정상 ' + esc(x.origPrice) + ')' : '') + (x.place ? ' · ' + esc(x.place) : '') + '</span>' +
+        (x.image ? '<img src="' + esc(x.image) + '" alt="" loading="lazy" style="display:block;width:150px;max-width:100%;border-radius:8px;margin-top:6px">' : '') +
+        (x.url ? ' <a href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;font-weight:800">열기 ↗</a>' : '') +
+        '</span></div>';
+    });
+    rows += '<div class="mktnote">30%↑ 핫딜 우선 · 할인율은 정상가·판매가가 모두 있는 상품만 계산했습니다. 예약 전 총액을 확인하세요.</div>';
+    rows += '<div class="quick" style="margin-top:9px">' +
+      '<button type="button" class="btn small primary" data-feed="deal-src">참고 자료에 다시 넣기</button>' +
+      '<button type="button" class="btn small" data-feed="deal-copy">특가 목록 복사</button>' +
+      '</div>';
+    return rows;
+  }
+  async function loadDealFeed(){
+    if (!dealFeedBtn) return;
+    spinner(dealFeedBtn, true, '특가 읽는 중…');
+    mktBox.hidden = false;
+    if (mktCopyBtn) mktCopyBtn.hidden = true;
+    mktBox.innerHTML = '<div class="mktnote">특가 파일(./data/latest-deals.json)을 읽고 있습니다…</div>';
+    try {
+      var d = await fetchJsonT('./data/latest-deals.json', 9000);
+      if (!d || !Array.isArray(d.items)) throw new Error('특가 파일에 items 배열이 없습니다');
+      FEED.deals = d;
+      FEED.dealText = dealToText(d);
+      mktBox.innerHTML = renderDealsFeed(d);
+      upsertSrcBlock('패밀리 특가 레이더', FEED.dealText, '오늘 특가를 참고 자료 맨 위에 넣었습니다 · 가격·링크는 파일 값 그대로입니다');
+      toast('오늘 특가를 불러왔습니다 — 참고 자료에 넣었습니다.');
+    } catch(err){
+      mktBox.innerHTML = feedFailHtml('특가', err);
+      toast('특가 파일을 읽지 못했습니다.');
+    } finally {
+      spinner(dealFeedBtn, false);
+    }
+  }
+  if (briefFeedBtn) briefFeedBtn.addEventListener('click', function(){ loadBriefFeed(); });
+  if (dealFeedBtn) dealFeedBtn.addEventListener('click', function(){ loadDealFeed(); });
+  if (mktBox) mktBox.addEventListener('click', function(e){
+    var b = e.target.closest('[data-feed]');
+    if (!b) return;
+    var act = b.getAttribute('data-feed');
+    if (act === 'brief-src'){ if (FEED.briefText) upsertSrcBlock('관제탑 최신 브리핑', FEED.briefText, '최신 브리핑을 참고 자료 맨 위에 다시 넣었습니다'); }
+    else if (act === 'brief-topic'){ if (FEED.briefTopic){ topicEl.value = FEED.briefTopic; topicEl.focus(); toast('주제 칸에 최신 브리핑 요약을 넣었습니다.'); } }
+    else if (act === 'brief-copy'){ copyText(FEED.briefText || '', '최신 브리핑 요약을 복사했습니다.'); }
+    else if (act === 'deal-src'){ if (FEED.dealText) upsertSrcBlock('패밀리 특가 레이더', FEED.dealText, '오늘 특가를 참고 자료 맨 위에 다시 넣었습니다'); }
+    else if (act === 'deal-copy'){ copyText(FEED.dealText || '', '특가 목록을 복사했습니다.'); }
+  });
+
   /* ---------- ③ SEO 태그 10개 ---------- */
   var seoBtn = $('#seoBtn'), seoCopyBtn = $('#seoCopyBtn'), seoBadge = $('#seoBadge'), seoTagsEl = $('#seoTags');
   var SEO = { keywords: [], hashtags: [] };
@@ -10079,6 +10305,38 @@ const GEN_ACTIONS = [
     L.push('말: ' + (e.spoken || ''));
     L.push('자막: ' + (e.caption || ''));
     L.push('');
+    if (d.loopEnding){ L.push('[무한 루프]'); L.push('루프 문구: ' + d.loopEnding); L.push(''); }
+    var ab = d.hookAB || {};
+    if (ab.warning || ab.opportunity){
+      L.push('[첫 3초 A/B]');
+      L.push('A 경고형: ' + (ab.warning || ''));
+      L.push('A 자막: ' + (ab.warningCaption || ''));
+      L.push('B 기회형: ' + (ab.opportunity || ''));
+      L.push('B 자막: ' + (ab.opportunityCaption || ''));
+      L.push('');
+    }
+    if (d.commentQuestion || d.pinnedComment){
+      L.push('[댓글]');
+      L.push('질문: ' + (d.commentQuestion || ''));
+      L.push('고정 댓글: ' + (d.pinnedComment || ''));
+      L.push('');
+    }
+    var rh = (d.reelsHashtags || []).map(function(x){ return '#' + x; }).join(' ');
+    var ch = (d.clipHashtags || []).map(function(x){ return '#' + x; }).join(' ');
+    if (d.reelsCaption || rh || d.clipCaption || ch){
+      L.push('[배포 문구]');
+      L.push('릴스 캡션: ' + String(d.reelsCaption || '').replace(/\n+/g, ' / '));
+      L.push('릴스 해시태그: ' + rh);
+      L.push('클립 캡션: ' + String(d.clipCaption || '').replace(/\n+/g, ' '));
+      L.push('클립 해시태그: ' + ch);
+      L.push('');
+    }
+    if (d.seriesBadge || d.ttsVoice){
+      L.push('[MP4 메타]');
+      if (d.seriesBadge) L.push('시리즈 뱃지: ' + d.seriesBadge);
+      if (d.ttsVoice) L.push('나레이션 톤: ' + d.ttsVoice);
+      L.push('');
+    }
     if (d.captionGuide) L.push('자막 가이드: ' + d.captionGuide);
     if ((d.warnings || []).length) L.push('확인 필요: ' + d.warnings.join(' / '));
     return L.join('\n');
@@ -10232,7 +10490,7 @@ const GEN_ACTIONS = [
       SH.last = {
         topic: topic, theme: theme, themeName: meta.name, pick: pick,
         styleName: st ? st.name : '', styleOn: on, model: (j && j.model) || AI.model,
-        title: d.title || '', warnings: d.warnings || []
+        title: d.title || '', warnings: d.warnings || [], data: d
       };
       SH.orig = '';
       shShowOut(text, 'Gemini · ' + ((j && j.model) || AI.model));
@@ -10305,6 +10563,155 @@ const GEN_ACTIONS = [
     L.push('');
     L.push('점검 부탁: ① 첫 3초 훅이 스크롤을 멈출 만큼 날카로운지 ② 자막 한 줄이 15~20자로 모바일에서 읽히는지 ③ 입으로 읽기 편한 구어체인지 ④ 1~4번 양식 리듬(훅·컷·자막·말투)이 살아 있는지 ⑤ 과장·거짓 사실. 고친 대본과 무엇을 고쳤는지 2~3줄로 알려줘.');
     return L.join('\n');
+  }
+
+  /* ---------- 📦 고퀄리티 MP4 스펙 JSON (make_shorts_mp4.py) ----------
+     대본 화면(shOutText)은 편집·2차 검수로 바뀔 수 있으므로, 복사 시점의
+     텍스트를 다시 구조로 읽는다. 못 읽은 항목만 생성 당시 데이터(SH.last.data)로 채운다. */
+  var SH_MP4_STYLE = {
+    idol:      { bg: 'gradient', accent: '#A78BFA' },
+    shopping:  { bg: 'grid',     accent: '#22D3EE' },
+    game:      { bg: 'gradient', accent: '#818CF8' },
+    drama:     { bg: 'gradient', accent: '#F472B6' },
+    sports:    { bg: 'market',   accent: '#34D399' },
+    movie:     { bg: 'gradient', accent: '#F59E0B' },
+    economy:   { bg: 'market',   accent: '#FFC53D' },
+    cooking:   { bg: 'coral',    accent: '#FB7185' },
+    living:    { bg: 'grid',     accent: '#34D399' },
+    travel:    { bg: 'gradient', accent: '#38BDF8' },
+    knowledge: { bg: 'gradient', accent: '#C084FC' },
+    book:      { bg: 'gradient', accent: '#FBBF24' },
+    parenting: { bg: 'coral',    accent: '#FB923C' },
+    hottem:    { bg: 'grid',     accent: '#22D3EE' }
+  };
+  function shTagList(v){
+    return String(v || '').split(/[\s,]+/).map(function(x){ return x.replace(/^#/, '').trim(); }).filter(Boolean);
+  }
+  function shEstDur(t){
+    var n = Array.from(String(t || '').replace(/\s/g, '')).length;
+    return Math.max(2.2, Math.min(9.5, Math.round((n / 4.5 + 0.8) * 10) / 10));
+  }
+  function shParseDraft(text){
+    var out = {
+      title: '', hook: '', hookCaption: '', beats: [], ending: { spoken: '', caption: '' },
+      seriesBadge: '', ttsVoice: '', loopEnding: '',
+      ab: { warning: '', warningCaption: '', opportunity: '', opportunityCaption: '' },
+      commentQuestion: '', pinnedComment: '', reelsCaption: '', reelsHashtags: [],
+      clipCaption: '', clipHashtags: [], captionGuide: '', warnings: []
+    };
+    var lines = String(text || '').split('\n');
+    var cur = '', beat = null;
+    for (var i = 0; i < lines.length; i++){
+      var ln = lines[i].trim();
+      if (!ln) continue;
+      if (i === 0 && ln.indexOf('🎬') === 0){ out.title = ln.replace(/^🎬\s*/, '').trim(); continue; }
+      if (/^테마:/.test(ln)) continue;
+      if (/^\[엔딩\]/.test(ln)){ cur = 'ending'; beat = null; continue; }
+      if (/^\[무한 루프\]/.test(ln)){ cur = 'loop'; continue; }
+      if (/^\[첫 3초 A\/B\]/.test(ln)){ cur = 'ab'; continue; }
+      if (/^\[댓글\]/.test(ln)){ cur = 'comment'; continue; }
+      if (/^\[배포 문구\]/.test(ln)){ cur = 'platform'; continue; }
+      if (/^\[MP4 메타\]/.test(ln)){ cur = 'meta'; continue; }
+      var mb = ln.match(/^\[([^\]]+)\]\s*(.*)$/);
+      if (mb){
+        var label = mb[1], rest = mb[2] || '';
+        if (/훅/.test(label) || /훅/.test(rest)){ cur = 'hook'; beat = null; }
+        else if (/^\d{1,2}:\d{2}/.test(label)){ beat = { at: label, spoken: '', caption: '', shot: '' }; out.beats.push(beat); cur = 'beat'; }
+        continue;
+      }
+      var kv = ln.match(/^([^:]{1,14}):\s*(.*)$/);
+      if (!kv) continue;
+      var k = kv[1].trim(), v = kv[2].trim();
+      if (k === '자막 가이드'){ out.captionGuide = v; continue; }
+      if (k === '확인 필요'){ out.warnings = v.split(' / ').filter(Boolean); continue; }
+      if (cur === 'hook'){ if (k === '말') out.hook = v; else if (k === '자막') out.hookCaption = v; }
+      else if (cur === 'beat' && beat){ if (k === '말') beat.spoken = v; else if (k === '자막') beat.caption = v; else if (k === '화면') beat.shot = v; }
+      else if (cur === 'ending'){ if (k === '말') out.ending.spoken = v; else if (k === '자막') out.ending.caption = v; }
+      else if (cur === 'loop'){ if (k === '루프 문구') out.loopEnding = v; }
+      else if (cur === 'ab'){
+        if (k === 'A 경고형') out.ab.warning = v;
+        else if (k === 'A 자막') out.ab.warningCaption = v;
+        else if (k === 'B 기회형') out.ab.opportunity = v;
+        else if (k === 'B 자막') out.ab.opportunityCaption = v;
+      }
+      else if (cur === 'comment'){ if (k === '질문') out.commentQuestion = v; else if (k === '고정 댓글') out.pinnedComment = v; }
+      else if (cur === 'platform'){
+        if (k === '릴스 캡션') out.reelsCaption = v;
+        else if (k === '릴스 해시태그') out.reelsHashtags = shTagList(v);
+        else if (k === '클립 캡션') out.clipCaption = v;
+        else if (k === '클립 해시태그') out.clipHashtags = shTagList(v);
+      }
+      else if (cur === 'meta'){ if (k === '시리즈 뱃지') out.seriesBadge = v; else if (k === '나레이션 톤') out.ttsVoice = v; }
+    }
+    return out;
+  }
+  function shMp4Spec(){
+    var p = shParseDraft(shCurrentText());
+    var dd = (SH.last && SH.last.data) || {};
+    var meta = shThemeMeta(SH.theme);
+    var stl = SH_MP4_STYLE[SH.theme] || { bg: 'gradient', accent: '#A78BFA' };
+    var topic = (SH.last && SH.last.topic) || ($('#shTopic') && $('#shTopic').value || '').trim();
+    var hookSpoken = p.hook || dd.hook || '';
+    var hookCap = p.hookCaption || dd.hookCaption || '';
+    var beats = p.beats.length ? p.beats : (dd.beats || []);
+    var end = (p.ending.spoken || p.ending.caption) ? p.ending : (dd.ending || {});
+    var ab = (p.ab.warning || p.ab.opportunity) ? p.ab : (dd.hookAB || {});
+    var cuts = [];
+    if (hookSpoken || hookCap){
+      cuts.push({ text: hookCap || hookSpoken, tts_text: hookSpoken || hookCap, bg_style: stl.bg, motion: 'in', duration: shEstDur(hookSpoken || hookCap) });
+    }
+    beats.forEach(function(b, i){
+      if (!b || (!b.spoken && !b.caption)) return;
+      cuts.push({ text: b.caption || b.spoken, tts_text: b.spoken || b.caption, bg_style: stl.bg, motion: (i % 2 ? 'out' : 'left'), duration: shEstDur(b.spoken || b.caption) });
+    });
+    if (end.spoken || end.caption){
+      cuts.push({ text: end.caption || end.spoken, tts_text: end.spoken || end.caption, bg_style: stl.bg, motion: 'in', duration: shEstDur(end.spoken || end.caption) });
+    }
+    var badge = p.seriesBadge || dd.seriesBadge || meta.name;
+    return {
+      title: p.title || dd.title || topic || '쇼츠',
+      series_badge: Array.from(badge).slice(0, 16).join(''),
+      kicker: Array.from(badge).slice(0, 16).join(''),
+      accent: stl.accent,
+      layout: 'card',
+      bgm_volume: 0.12,
+      tts_speed: 1.12,
+      tts_voice: {
+        lang: 'ko',
+        speed: 1.12,
+        tone: p.ttsVoice || dd.ttsVoice || (SH.last && SH.last.styleName) || '차분한 구어체 나레이션'
+      },
+      ab_hooks: [
+        { id: 'A', style: '경고형', text: ab.warning || hookSpoken, caption: ab.warningCaption || hookCap },
+        { id: 'B', style: '기회형', text: ab.opportunity || hookSpoken, caption: ab.opportunityCaption || hookCap }
+      ],
+      loop_ending: p.loopEnding || dd.loopEnding || '',
+      pinned_comment: {
+        question: p.commentQuestion || dd.commentQuestion || '',
+        text: p.pinnedComment || dd.pinnedComment || ''
+      },
+      platform_captions: {
+        instagram_reels: { caption: p.reelsCaption || dd.reelsCaption || '', hashtags: p.reelsHashtags.length ? p.reelsHashtags : (dd.reelsHashtags || []) },
+        naver_clip: { caption: p.clipCaption || dd.clipCaption || '', hashtags: p.clipHashtags.length ? p.clipHashtags : (dd.clipHashtags || []) }
+      },
+      cuts: cuts,
+      _note: 'scripts/make_shorts_mp4.py --spec <이 JSON을 저장한 파일> --out <파일>.mp4 로 렌더합니다. series_badge는 상단 칩(kicker)으로, tts_voice.lang/speed는 나레이션 언어·속도로 쓰입니다. ab_hooks는 첫 컷을 바꿔 두 번 렌더해 A/B 비교용, pinned_comment·platform_captions는 업로드용 문구입니다.',
+      _source: {
+        theme: meta.name, themeId: SH.theme,
+        styleNo: (SH.last && SH.last.pick) || null,
+        styleName: (SH.last && SH.last.styleName) || '',
+        topic: topic, model: (SH.last && SH.last.model) || '',
+        generatedAt: new Date().toISOString()
+      }
+    };
+  }
+  function shCopyMp4(){
+    if (!String(shCurrentText() || '').trim()){ toast('먼저 쇼츠 대본을 생성해 주세요.'); return; }
+    var spec;
+    try { spec = shMp4Spec(); } catch(e){ toast('MP4 스펙을 만들지 못했습니다 — 대본 형식을 확인해 주세요.'); return; }
+    if (!spec.cuts.length){ toast('대본에서 컷을 읽지 못했습니다 — [✎ 편집]에서 [0:00–0:03] 훅 형식을 확인해 주세요.'); return; }
+    var json = JSON.stringify(spec, null, 2);
+    copyText(json, 'MP4 스펙 JSON을 복사했습니다 · cuts ' + spec.cuts.length + '개 · A/B 훅·고정 댓글·릴스/클립 문구 포함');
   }
 
   /* ---------- events ---------- */
@@ -10417,6 +10824,8 @@ const GEN_ACTIONS = [
       if (!String(shCurrentText() || '').trim()){ toast('먼저 쇼츠 대본을 생성해 주세요.'); return; }
       copyText(shPickleText(), '피클 채팅에 붙여넣기만 하세요!');
     });
+    var mp = $('#shMp4Btn');
+    if (mp) mp.addEventListener('click', shCopyMp4);
     var ra = $('#shRefAll');
     if (ra) ra.addEventListener('click', function(){ SH.refAll = !SH.refAll; shRenderRefs(); });
   }
