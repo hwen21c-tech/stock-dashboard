@@ -644,16 +644,16 @@
       const j = Math.floor(Math.random() * (i + 1));
       const t = order[i]; order[i] = order[j]; order[j] = t;
     }
-    /* 2) 운 좋으면 2~3개가 바짝 붙고, 평소엔 흩어져 배치 (0.06 ~ 0.94 범위) */
+    /* 2) 평소 78% 각자 따로, 16% 2칸 붙음, 6% 3칸 연달아 뭉침 보너스! */
     const pos = {};
     const cluster = Math.random();
-    if (cluster < 0.15) {
-      /* 15% 확률: 세 칸 뭉침 보너스! */
+    if (cluster < 0.06) {
+      /* 6% 확률: 세 칸 연달아 뭉침 보너스! */
       const total = W.m15 + W.m2 + W.m3;
       let cur = 0.08 + Math.random() * (0.84 - total);
       order.forEach(o => { pos[o.k] = [cur, cur + o.w]; cur += o.w; });
-    } else if (cluster < 0.42) {
-      /* 27% 확률: 두 칸이 나란히 붙고 한 칸은 떨어짐 */
+    } else if (cluster < 0.22) {
+      /* 16% 확률: 두 칸이 나란히 붙고 한 칸은 떨어짐 */
       const pairW = order[0].w + order[1].w;
       const gap = 0.06 + Math.random() * 0.22;
       const leftFirst = Math.random() < 0.5;
