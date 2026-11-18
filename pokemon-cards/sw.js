@@ -3,7 +3,7 @@
    다른 앱(관제탑·배틀 월드·eBook·사주) 캐시와 자기 카드 이미지 캐시까지 지웠다.
    2026-11-18 v18: 배경 자동 동기화가 화면을 다시 그리지 않게(스크롤 튐·칩 깜빡임) 고친 셸. */
 const PREFIX = 'pkc-';
-const V = PREFIX + 'v18';          /* 셸·팩 데이터 */
+const V = PREFIX + 'v19';          /* 셸·팩 데이터 */
 const IMG = PREFIX + 'img-v1';     /* 카드 이미지 — 셸 버전과 분리해 업데이트 때 지우지 않는다 */
 const SHELL = [
   './', './index.html', './app.css',

@@ -354,6 +354,7 @@
     if (dirty) {
       muteTouch = true;          /* 이 저장은 내가 바꾼 게 아니라 받은 것 — 되쏘지 않는다 */
       P.save();
+      setTimeout(() => { muteTouch = false; }, 400);   /* 오래 남아 남의 push 를 막지 않게 */
     }
     if (visual) {
       if (window.PKCUI) { try { window.PKCUI.refreshHeader(); } catch (e) { /* */ } }
