@@ -3,7 +3,7 @@
    · HTML/내비게이션: 항상 네트워크 우선(신선한 내용), 오프라인일 때만 마지막 사본
    · 매니페스트/아이콘: 네트워크 우선 + 캐시 폴백
 */
-const CACHE = 'saju-pwa-v3';
+const CACHE = 'saju-pwa-v4';
 
 self.addEventListener('install', function () {
   self.skipWaiting();

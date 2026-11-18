@@ -7429,9 +7429,10 @@ function palmHtml(st, p){
       + (has ? '<img src="' + VIS.photos[k] + '" alt="' + esc(label) + ' 사진">' : '')
       + '<div class="lb">' + esc(label) + '</div>'
       + '<div class="hint">' + esc(hint) + '</div>'
-      + '<button class="pickbtn" type="button" data-sx-pick="' + k + '">📷 사진 선택</button>'
+      + '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;position:relative;z-index:2"><button class="pickbtn" type="button" data-sx-pick="' + k + '">🖼️ 사진 선택</button><button class="pickbtn" type="button" data-sx-cam="' + k + '">📸 바로 찍기</button></div>'
       + (has ? '<button class="clear" type="button" data-sx-clear="' + k + '">✕</button>' : '')
       + '<input type="file" accept="image/*" data-sx-file="' + k + '">'
+      + '<input type="file" accept="image/*" capture="environment" data-sx-camfile="' + k + '">'
       + '</div>';
   };
   var busyTxt = VIS.busy ? ' <span class="sx-spin"></span> 분석 중…' : '';
@@ -7514,9 +7515,10 @@ function faceHtml(st, p){
     + '<div class="guide">' + FACE_GUIDE + '</div>'
     + (has ? '<img src="' + VIS.photos.face + '" alt="관상 사진">' : '')
     + '<div class="lb">정면 얼굴</div><div class="hint">정면 · 무표정 · 밝은 곳</div>'
-    + '<button class="pickbtn" type="button" data-sx-pick="face">📷 사진 선택</button>'
+    + '<div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;position:relative;z-index:2"><button class="pickbtn" type="button" data-sx-pick="face">🖼️ 사진 선택</button><button class="pickbtn" type="button" data-sx-cam="face">📸 바로 찍기</button></div>'
     + (has ? '<button class="clear" type="button" data-sx-clear="face">✕</button>' : '')
     + '<input type="file" accept="image/*" data-sx-file="face">'
+    + '<input type="file" accept="image/*" capture="user" data-sx-camfile="face">'
     + '</div><div class="sx-note">초년은 이마(상정), 중년·재물은 눈과 코(중정), 말년은 입과 턱(하정)으로 봅니다. 사진은 분석에만 쓰고 저장하지 않습니다.</div></div>'
     + '<div class="sx-row" style="margin-top:10px"><button class="sx-btn solid" type="button" data-sx-analyze="face"' + (VIS.busy ? ' disabled' : '') + '>관상 분석 시작</button>'
     + '<span class="tiny">' + (VIS.msg ? esc(VIS.msg) : '') + busyTxt + '</span></div>'
@@ -7661,6 +7663,12 @@ function bindVision(){
       if (inp) inp.click();
       return;
     }
+    if (t.hasAttribute('data-sx-cam')){
+      var kc = t.getAttribute('data-sx-cam');
+      var cinp = box.querySelector('[data-sx-camfile="' + kc + '"]');
+      if (cinp) cinp.click();
+      return;
+    }
     if (t.hasAttribute('data-sx-clear')){
       var k2 = t.getAttribute('data-sx-clear');
       VIS.photos[k2] = '';
@@ -7698,8 +7706,8 @@ function bindVision(){
   });
   box.addEventListener('change', function(e){
     var f = e.target;
-    if (!f || !f.getAttribute || !f.getAttribute('data-sx-file')) return;
-    var k = f.getAttribute('data-sx-file');
+    var k = f && f.getAttribute ? (f.getAttribute('data-sx-file') || f.getAttribute('data-sx-camfile')) : '';
+    if (!k) return;
     var file = f.files && f.files[0];
     if (!file) return;
     readPhoto(file, 1024, function(data){
