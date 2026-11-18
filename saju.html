@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#070a12">
+<link rel="manifest" href="./saju.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="가족 사주">
+<link rel="apple-touch-icon" sizes="192x192" href="./saju-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="./saju-512.png">
 <meta name="description" content="만세력(양력·음력·24절기)으로 계산한 사주팔자와 오늘의 운세, 가족 궁합. 1984-06-23 → 甲子年 庚午月 戊子日.">
 <title>萬歲曆 · 사주 · 오늘의 운세</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23080b12'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle' fill='%23d9b45c' font-family='serif'%3E%E8%B3%88%3C/text%3E%3C/svg%3E">
@@ -625,6 +632,37 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
 .code-acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .code-acts .btn{flex:1 1 40%;padding:8px 10px;font-size:11.5px}
 .code-acts .btn[disabled]{opacity:.45}
+
+/* ============ 앱 설치(PWA) ============ */
+.inst-btn{display:none;align-items:center;gap:5px;flex:0 0 auto;
+  padding:7px 11px;border-radius:999px;border:1px solid var(--line2);
+  background:rgba(217,180,92,.16);color:var(--gold2);font-size:12px;font-weight:600;
+  white-space:nowrap;line-height:1.2}
+.inst-btn.on{display:inline-flex}
+.inst-btn:active{transform:scale(.96)}
+.inst-btn .ib-i{font-size:13px;line-height:1}
+@media(max-width:480px){.inst-btn{padding:0;width:34px;height:32px;justify-content:center}.inst-btn .ib-t{display:none}}
+@media(max-width:430px){.pselect{max-width:37vw}}
+html.inst-lock,html.inst-lock body{overflow:hidden}
+.inst-prev{display:flex;align-items:center;gap:11px;margin:2px 0 14px;padding:10px 12px;
+  border:1px solid var(--line);border-radius:13px;background:var(--panel)}
+.inst-prev img{width:52px;height:52px;border-radius:12px;flex:0 0 auto;display:block}
+.inst-prev b{display:block;font-family:var(--serif);font-size:14px;color:var(--gold2);line-height:1.35}
+.inst-prev span{display:block;font-size:11px;color:var(--dim);margin-top:2px}
+.inst-steps{margin:0 0 14px;padding-left:19px;font-size:12.5px;line-height:1.8;color:var(--ink)}
+.inst-steps li{margin:4px 0}
+.inst-steps b{color:var(--gold2);font-weight:600}
+.inst-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.inst-acts .btn{flex:1 1 40%;justify-content:center;padding:11px 12px;font-size:12.5px}
+.inst-acts .btn[hidden]{display:none}
+.inst-acts .inst-go{background:linear-gradient(180deg,var(--gold2),var(--gold));border-color:var(--gold);color:#20180a;font-weight:700}
+.inst-toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translate(-50%,10px);
+  z-index:120;max-width:min(92vw,420px);padding:10px 14px;border-radius:12px;
+  background:rgba(10,14,24,.96);border:1px solid var(--line2);color:var(--ink);
+  font-size:12px;line-height:1.5;text-align:center;box-shadow:var(--shadow);
+  opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+[data-theme="day"] .inst-toast{background:rgba(255,253,247,.98);color:var(--ink)}
+.inst-toast.on{opacity:1;transform:translate(-50%,0)}
 </style>
 </head>
 <body>
@@ -642,6 +680,9 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
         <label class="sr-only" for="profileSelect">프로필 선택</label>
         <select id="profileSelect"></select>
       </div>
+      <button class="inst-btn" id="installBtn" type="button" aria-label="이 앱을 홈 화면에 설치">
+        <span class="ib-i" aria-hidden="true">📲</span><span class="ib-t">앱 설치</span>
+      </button>
       <button class="icon-btn" id="themeBtn" type="button" aria-label="테마 전환">
         <span class="ico" id="themeIcon">☾</span><span id="themeLabel">야경</span>
       </button>
@@ -842,6 +883,30 @@ html.narr-lock,html.narr-lock body{overflow:hidden}
     </div>
   </div>
 </div>
+
+<div class="narr-modal" id="installSheet" hidden>
+  <div class="narr-back" data-inst-close aria-hidden="true"></div>
+  <div class="narr-sheet" role="dialog" aria-modal="true" aria-labelledby="instTitle">
+    <div class="narr-top">
+      <div class="narr-tt" id="instTitle">📲 앱 설치 — 가족 사주</div>
+      <button class="narr-x" type="button" id="instClose" aria-label="앱 설치 안내 닫기">✕</button>
+    </div>
+    <div class="narr-body">
+      <p class="narr-p" id="instMsg">홈 화면에 추가하면 주소창 없이 <b>전체 화면 앱</b>으로 열립니다.</p>
+      <div class="inst-prev">
+        <img src="./saju-192.png" alt="가족 사주 앱 아이콘" width="52" height="52">
+        <div><b>가족 사주</b><span>연오랑 가족 사주·만세력</span></div>
+      </div>
+      <ol class="inst-steps" id="instSteps"></ol>
+      <div class="inst-acts">
+        <button class="btn inst-go" type="button" id="instGo" hidden>지금 설치</button>
+        <button class="btn ghost" type="button" id="instCancel">✕ 나가기</button>
+      </div>
+      <div class="narr-note" id="instNote">설치해도 이 기기에 저장된 프로필·비밀코드는 그대로 이어집니다. 홈 화면 아이콘은 인터넷만 되면 언제든 열립니다.</div>
+    </div>
+  </div>
+</div>
+<div class="inst-toast" id="instToast" role="status" aria-live="polite"></div>
 
 <div class="narr-modal" id="narrModal" hidden>
   <div class="narr-back" data-narr-close aria-hidden="true"></div>
@@ -5084,6 +5149,176 @@ function init(){
   };
 }
 init();
+})();
+</script>
+
+<script>
+/* ============================================================
+   PWA — 단독 앱 설치(홈 화면에 별도 추가)
+   · Android Chrome/Edge: beforeinstallprompt → 네이티브 설치 팝업
+   · 삼성 인터넷·iOS Safari·인앱 브라우저: 브라우저별 수동 추가 안내
+   · 이미 standalone으로 열렸으면 버튼 미노출
+   ============================================================ */
+(function () {
+  var btn = document.getElementById('installBtn');
+  var sheet = document.getElementById('installSheet');
+  var msg = document.getElementById('instMsg');
+  var go = document.getElementById('instGo');
+  var cancelBtn = document.getElementById('instCancel');
+  var topX = document.getElementById('instClose');
+  var stepsEl = document.getElementById('instSteps');
+  var toastEl = document.getElementById('instToast');
+  var deferred = null, installed = false, lastFocus = null, toastTimer = 0;
+
+  if (!btn || !sheet) return;
+
+  function isStandalone() {
+    var mm = window.matchMedia, u = navigator.userAgent || '';
+    var m = (mm && (mm('(display-mode: standalone)').matches ||
+                     mm('(display-mode: fullscreen)').matches ||
+                     mm('(display-mode: minimal-ui)').matches));
+    return !!m || navigator.standalone === true ||
+      (document.referrer || '').indexOf('android-app://') === 0 ||
+      /[?&]installed=1/.test(location.search);
+  }
+
+  function toast(text, ms) {
+    if (!toastEl) return;
+    toastEl.textContent = text;
+    toastEl.classList.add('on');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('on'); }, ms || 3400);
+  }
+
+  function showBtn() {
+    if (installed || isStandalone()) { btn.classList.remove('on'); return; }
+    btn.classList.add('on');
+  }
+  function hideBtn() { btn.classList.remove('on'); }
+
+  function browserName() {
+    var u = navigator.userAgent || '';
+    if (/SamsungBrowser/i.test(u)) return 'samsung';
+    if (/KAKAOTALK/i.test(u)) return 'kakao';
+    if (/NAVER\(inapp/i.test(u)) return 'naver';
+    if (/Instagram|FBAN|FBAV|Line\//i.test(u)) return 'sns';
+    if (/EdgA|EdgiOS|Edg\//i.test(u)) return 'edge';
+    if (/CriOS|Chrome/i.test(u)) return 'chrome';
+    if (/Firefox|FxiOS/i.test(u)) return 'firefox';
+    if (/iPhone|iPad|iPod/i.test(u)) return 'ios';
+    return 'etc';
+  }
+
+  function guide(b) {
+    if (b === 'samsung') return [
+      '삼성 인터넷 <b>메뉴</b>(가로줄 세 개)를 엽니다. 보통 화면 오른쪽 아래에 있습니다.',
+      '<b>홈 화면에 추가</b>를 누릅니다.',
+      '이름이 <b>가족 사주</b>인지 확인하고 <b>추가</b>를 누릅니다.'
+    ];
+    if (b === 'chrome' || b === 'edge') return [
+      '주소창 오른쪽의 <b>더보기</b>(점 세 개)를 누릅니다.',
+      '<b>앱 설치</b> 또는 <b>홈 화면에 추가</b>를 고릅니다.',
+      '<b>설치</b>를 누르면 홈 화면·앱 서랍에 <b>가족 사주</b> 아이콘이 생깁니다.'
+    ];
+    if (b === 'ios') return [
+      'Safari 하단(또는 상단) <b>공유</b> 버튼을 누릅니다.',
+      '목록에서 <b>홈 화면에 추가</b>를 고릅니다.',
+      '오른쪽 위 <b>추가</b>를 누릅니다.'
+    ];
+    if (b === 'kakao' || b === 'naver' || b === 'sns') return [
+      '지금은 앱 안의 브라우저로 열려 있어 설치가 제한됩니다.',
+      '오른쪽 위 <b>더보기</b> → <b>다른 브라우저로 열기</b>(Safari·크롬·삼성 인터넷)를 누릅니다.',
+      '넘어간 브라우저에서 다시 <b>📲 앱 설치</b>를 눌러 주세요.'
+    ];
+    if (b === 'firefox') return [
+      '파이어폭스 <b>메뉴</b>를 엽니다.',
+      '<b>홈 화면에 추가</b>(또는 <b>설치</b>)를 고릅니다.',
+      '<b>추가</b>를 누릅니다.'
+    ];
+    return [
+      '브라우저 메뉴를 엽니다.',
+      '<b>홈 화면에 추가</b> 또는 <b>앱 설치</b>를 고릅니다.',
+      '홈 화면에 <b>가족 사주</b> 아이콘이 생깁니다.'
+    ];
+  }
+
+  function openSheet() {
+    var canPrompt = !!deferred;
+    var b = browserName();
+    lastFocus = document.activeElement;
+    if (canPrompt) {
+      msg.innerHTML = '이 브라우저는 <b>설치 버튼 한 번</b>으로 홈 화면에 앱을 만들 수 있습니다.';
+      stepsEl.innerHTML = '<li><b>지금 설치</b>를 누릅니다.</li><li>확인 창에서 <b>설치</b>를 누릅니다.</li><li>홈 화면·앱 서랍에 <b>가족 사주</b> 아이콘이 생깁니다.</li>';
+    } else {
+      msg.innerHTML = '이 브라우저에서는 아래 순서로 <b>홈 화면에 추가</b>하면 됩니다.';
+      stepsEl.innerHTML = guide(b).map(function (t) { return '<li>' + t + '</li>'; }).join('');
+    }
+    go.hidden = !canPrompt;
+    document.documentElement.classList.add('inst-lock');
+    sheet.hidden = false;
+    sheet.setAttribute('aria-hidden', 'false');
+    setTimeout(function () { (canPrompt ? go : cancelBtn).focus({ preventScroll: true }); }, 40);
+  }
+
+  function closeSheet() {
+    sheet.hidden = true;
+    sheet.setAttribute('aria-hidden', 'true');
+    document.documentElement.classList.remove('inst-lock');
+    if (lastFocus && lastFocus.focus) { try { lastFocus.focus({ preventScroll: true }); } catch (e) {} }
+  }
+
+  function runPrompt() {
+    if (!deferred) { closeSheet(); return; }
+    var p = deferred;
+    deferred = null;
+    go.hidden = true;
+    try { p.prompt(); } catch (e) { openSheet(); return; }
+    p.userChoice.then(function (r) {
+      if (r && r.outcome === 'accepted') {
+        installed = true; hideBtn(); closeSheet();
+        toast('홈 화면에 추가되었습니다 · 📲 가족 사주 아이콘으로 열 수 있어요', 4200);
+      } else {
+        closeSheet();
+        toast('설치를 취소했습니다 · 헤더의 📲 버튼으로 언제든 다시 할 수 있어요', 4200);
+      }
+    }).catch(function () { closeSheet(); });
+  }
+
+  btn.addEventListener('click', openSheet);
+  go.addEventListener('click', runPrompt);
+  cancelBtn.addEventListener('click', closeSheet);
+  topX.addEventListener('click', closeSheet);
+  sheet.addEventListener('click', function (e) {
+    if (e.target === sheet || e.target.getAttribute('data-inst-close') !== null) closeSheet();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !sheet.hidden) closeSheet();
+  });
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferred = e;
+    if (!installed) showBtn();
+  });
+  window.addEventListener('appinstalled', function () {
+    installed = true; deferred = null; hideBtn();
+    if (!sheet.hidden) closeSheet();
+    toast('앱으로 설치되었습니다 · 📲 가족 사주');
+  });
+
+  try {
+    var mq = window.matchMedia('(display-mode: standalone)');
+    var onMode = function () { isStandalone() ? hideBtn() : showBtn(); };
+    if (mq.addEventListener) mq.addEventListener('change', onMode);
+    else if (mq.addListener) mq.addListener(onMode);
+  } catch (e) {}
+
+  if (!isStandalone()) setTimeout(showBtn, 700);
+
+  window.__sajuInstall = {
+    open: openSheet, close: closeSheet, isStandalone: isStandalone,
+    browser: browserName, hasPrompt: function () { return !!deferred; }
+  };
 })();
 </script>
 </body>
