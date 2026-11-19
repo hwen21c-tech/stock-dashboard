@@ -466,6 +466,11 @@
   .wvth figcaption{font-size:9.6px;color:var(--faint);font-weight:800;margin-top:2px}
   #wvVideo{width:100%;max-width:240px;border-radius:12px;background:#000;border:1px solid var(--line)}
   footer .shelf{background:#0a1424;margin:0;font-size:10.9px;font-weight:600;line-height:1.66;color:var(--faint)}
+  @media (max-width:430px){
+    #wvCanvas{width:126px}
+    .wvside{flex:1 1 150px}
+    .wvrow select,.wvrow input[type=text]{flex:1 1 100px}
+  }
   footer .shelf>summary{font-size:11.6px;color:#cbd5e1}
 
   footer{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:10.8px;font-weight:600;color:var(--faint);line-height:1.65}
@@ -13583,10 +13588,15 @@ const GEN_ACTIONS = [
     var sh = img.width / r; return [0, (img.height - sh) / 2, img.width, sh];
   }
 
+  var CTX = null;
+  function ctxOf(cv) {
+    if (!CTX || CTX.canvas !== cv) CTX = cv.getContext('2d', { alpha: false });
+    return CTX;
+  }
   function drawFrame(t) {
     var cv = $('#wvCanvas');
     if (!cv) return;
-    var ctx = cv.getContext('2d');
+    var ctx = ctxOf(cv);
     var spec = S.spec, cuts = S.cuts;
     if (!spec || !cuts.length) return;
     var idx = 0;
@@ -13762,8 +13772,10 @@ const GEN_ACTIONS = [
 
   /* ---------- render ---------- */
   function pickMime() {
-    var c = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1.4D401E,mp4a.40.2', 'video/mp4;codecs=h264,aac', 'video/mp4',
-      'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+    /* MP4는 H.264/AAC일 때만 고른다 — VP9이 들어간 MP4는 유튜브·일부 플레이어가 거부한다.
+       H.264가 없는 브라우저는 WebM(VP9/Opus)으로 간다. */
+    var c = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1.4D401E,mp4a.40.2', 'video/mp4;codecs=avc1.64001E,mp4a.40.2',
+      'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
     for (var i = 0; i < c.length; i++) {
       try { if (W.MediaRecorder && MediaRecorder.isTypeSupported(c[i])) return c[i]; } catch (e) {}
     }
@@ -14033,7 +14045,7 @@ const GEN_ACTIONS = [
   function $$(sel) { return Array.prototype.slice.call(D.querySelectorAll(sel)); }
   function drawIdle() {
     var cv = $('#wvCanvas'); if (!cv) return;
-    var ctx = cv.getContext('2d');
+    var ctx = ctxOf(cv);
     var g = ctx.createLinearGradient(0, 0, 0, CH);
     g.addColorStop(0, '#0a1424'); g.addColorStop(1, '#060a12');
     ctx.fillStyle = g; ctx.fillRect(0, 0, CW, CH);
