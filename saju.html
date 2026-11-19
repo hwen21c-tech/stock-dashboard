@@ -7095,6 +7095,16 @@ function bestHj(syl, need, isSurname){
 function defaultPicks(sur, given, chart){
   return autoPicks(sur, given, chart);
 }
+/* 한자 선택 유지 — 같은 음절에 실제로 있는 한자면 사용자가 고른 글자를 그대로 두고, 새 음절·빈 칸만 자동 선택 */
+function fillPicks(given, old, chart){
+  var need = needEls(chart);
+  return (given || []).map(function(syl, i){
+    var ch = (old && old[i]) ? String(old[i]) : '';
+    if (ch && hjOf(syl, ch)) return ch;
+    var h = bestHj(syl, need, false);
+    return h ? h.c : '';
+  });
+}
 
 /* ----- 한자 고르기 UI ----- */
 function sylRowsHtml(st, chart){
@@ -7227,7 +7237,7 @@ function renderName(){
   var chart = activeChart();
   var parts = splitName(st.name || p.name || '');
   if (parts.given.length && (st.picks || []).length !== parts.given.length){
-    st.picks = defaultPicks(parts.sur, parts.given, chart);
+    st.picks = fillPicks(parts.given, (st.picks || []).slice(), chart);   /* 음절이 같은 자리의 한자는 유지 */
     if (!st.surCh) st.surCh = surCharOf(parts.sur);
     saveNameState();
   }
@@ -7434,7 +7444,7 @@ function bindName(){
       return;
     }
     if (t.hasAttribute('data-sx-name-apply')){
-      applyNameInput(); return;
+      applyNameInput(true); return;
     }
     if (t.hasAttribute('data-sx-hj')){
       var p = activeProfile(); if (!p) return;
@@ -7510,22 +7520,28 @@ function bindName(){
     if (e.target && e.target.id === 'nmName') applyNameInput();
   });
   box.addEventListener('keydown', function(e){
-    if (e.key === 'Enter' && e.target && e.target.id === 'nmName'){ e.preventDefault(); applyNameInput(); }
+    if (e.key === 'Enter' && e.target && e.target.id === 'nmName'){ e.preventDefault(); applyNameInput(true); }
   });
 }
-function applyNameInput(){
+function applyNameInput(explicit){
   var p = activeProfile(); if (!p) return;
   var inp = document.getElementById('nmName');
   var v = String(inp ? inp.value : '').replace(/\s+/g, '');
   if (!v){ sxToast('이름을 입력해 주세요'); return; }
   var st = nameStateFor(p);
-  st.name = v;
+  var prevName = st.name || p.name || '';
+  var prevParts = splitName(prevName);
   var parts = splitName(v);
-  st.picks = defaultPicks(parts.sur, parts.given, activeChart());
-  st.surCh = surCharOf(parts.sur);
+  var chart = activeChart();
+  var sameName = (prevParts.sur === parts.sur) && (prevParts.given.join('|') === parts.given.join('|'));
+  st.name = v;
+  /* 풀이를 다시 눌러도 골라 둔 한자는 그대로 — 같은 음절에 있는 한자면 유지하고, 새로 넣은 음절만 자동 선택 */
+  st.picks = fillPicks(parts.given, (st.picks || []).slice(), chart);
+  if (!st.surCh || prevParts.sur !== parts.sur) st.surCh = surCharOf(parts.sur);
   saveNameState();
   renderName();
   try { if (typeof renderTabSummary === 'function') renderTabSummary('name'); } catch(e){}
+  if (explicit && sameName) sxToast('골라 둔 한자를 그대로 두고 다시 풀이했습니다');
 }
 function rerenderNameParts(){
   var p = activeProfile(); if (!p) return;
