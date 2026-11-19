@@ -2894,6 +2894,31 @@
     font-size: 10px; font-weight: 700; color: #b6c2d3; line-height: 1.5;
   }
 #tabHonginki .taj-link b { color: #fcd34d; }
+
+/* ===== 11/19 신설: 홍인기 접이식 (D+0 5단 타점 · 당일포착 D+0 · 기존카드) ===== */
+#tabHonginki .hi-fold-h { cursor: pointer; align-items: center; }
+#tabHonginki .hi-fold.folded .hi-fold-b { display: none; }
+#tabHonginki .hi-fold .fold-t { font-size: 11px; font-weight: 900; color: #fcd34d; }
+#tabHonginki .hi-fold .fold-s { font-size: 9.5px; font-weight: 700; color: #94a3b8; }
+#tabHonginki .hi-fold .hi-fold-btn {
+    margin-left: auto; padding: 2px 8px; border-radius: 4px; white-space: nowrap;
+    font-family: inherit; font-size: 10px; font-weight: 900;
+    background: rgba(252,211,77,0.14); color: #fde68a; border: 1px solid rgba(252,211,77,0.55);
+  }
+#tabHonginki .hi-grp { grid-column: 1 / -1; min-width: 0; }
+#tabHonginki .hi-grp-h {
+    width: 100%; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    margin: 3px 0 1px; padding: 6px 9px; border-radius: 8px; cursor: pointer;
+    background: #0d1728; border: 1px solid #273549; font-family: inherit; text-align: left; color: #f1f5f9;
+  }
+#tabHonginki .hi-grp.q-d0 .hi-grp-h { border-color: rgba(244,63,94,0.55); background: linear-gradient(90deg, rgba(76,29,42,0.5), #0d1728 62%); }
+#tabHonginki .hi-grp.q-old .hi-grp-h { border-color: rgba(168,85,247,0.45); }
+#tabHonginki .hi-grp.folded .hi-grp-b { display: none; }
+#tabHonginki .hi-grp .fold-car { font-size: 11px; font-weight: 900; color: #fcd34d; }
+#tabHonginki .hi-grp .fold-t { font-size: 11.5px; font-weight: 900; color: #f1f5f9; }
+#tabHonginki .hi-grp .fold-s { font-size: 9.5px; font-weight: 700; color: #94a3b8; }
+#tabHonginki .hi-grp .fold-c { margin-left: auto; font-size: 10px; font-weight: 900; color: #7dd3fc; white-space: nowrap; }
+#tabHonginki .hi-grp-b { margin-top: 6px; }
 @media (max-width: 430px) {
 #tabHonginki .tl3 { grid-template-columns: 1fr; }
 #tabHonginki .tl3 .t3 { border-top-width: 0; border-left: 3px solid #334155; }
@@ -15315,11 +15340,19 @@
         <span class="pipe-arrow">→</span>
         <span class="pipe-step hot">장대양봉 = D+0 성립 <b id="hiPipe5">0</b></span>
       </div>
-      <div class="taj-h">📌 D+0 1분봉 5단 타점 <span>09:30 이후 · 지지·저항 확인 후 분할</span></div>
+      <div class="hi-fold" data-fold="taj5" aria-expanded="true">
+        <div class="taj-h hi-fold-h" role="button" tabindex="0">
+          <span class="fold-t">📌 D+0 1분봉 5단 타점</span>
+          <span class="fold-s">09:30 이후 · 지지·저항 확인 후 분할</span>
+          <span class="hi-fold-btn">▾ 접기</span>
+        </div>
+        <div class="hi-fold-b">
       <div class="ladder" id="hiLadder"></div>
       <div class="taj-link">D+1 · D+2는 이 5단을 <b>매일 갱신되는 전일 종가</b>에 다시 얹는 것 — 1차(시초가) 대신 <b>2차 전일 종가 눌림</b>이 기본 자리, 종가 <b>−3%</b>면 손절.</div>
       <div class="tl-next" style="margin-top:7px">
         ※ 익절 <b>5% · 10% · 1분봉/주월봉 전고점</b> 분할, 손절은 <b>분봉 고점 대비 절반 이상 밀리면 매수 X</b>, 시간외(대체거래소) <b>−1%면 잔량 정리</b>. 지지선 아래 추가 매수는 섹터·수급·시장·관점 4개가 모두 우호적일 때만(물타기 아님).
+      </div>
+        </div>
       </div>
       <div class="cafe-line">
         📕 <b>카페 통계 규칙</b>(불개미홍인기주식No.1 · 56717·38802): <b>전일 기준봉 +2%↑</b>인 날만 <b>D+1~D+5</b> 눌림 매수 유효 · 전일 종가 <b>−3%</b>면 손절선 · <b>NXT 선상승 · 갭하락 · 기준봉 +2% 미달</b>은 매수 제외(<b>G</b>)
@@ -20662,36 +20695,105 @@ function planBox(c) {
 }
 
 /* ===== 카드 렌더 ===== */
+/* ===== 11/19 신설: 홍인기 3구역 접이식 =====
+   · D+0 5단 타점 박스(data-fold="taj5") · 당일포착 D+0 · 기존카드(D+1·D+2)
+   · 접힘 상태는 localStorage('honginki_fold_v1')에 남겨 날이 바뀌어도 유지한다. */
+var FOLD_KEY = 'honginki_fold_v1';
+var FOLD = (function () {
+  try { return JSON.parse(localStorage.getItem(FOLD_KEY) || '{}') || {}; } catch (e) { return {}; }
+})();
+function foldSave() { try { localStorage.setItem(FOLD_KEY, JSON.stringify(FOLD)); } catch (e) {} }
+function applyFold() {
+  var els = document.querySelectorAll('#tabHonginki [data-fold]');
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i], k = el.getAttribute('data-fold'), f = !!FOLD[k];
+    el.classList.toggle('folded', f);
+    el.setAttribute('aria-expanded', f ? 'false' : 'true');
+    var car = el.querySelector('.fold-car'); if (car) car.textContent = f ? '▸' : '▾';
+    var btn = el.querySelector('.hi-fold-btn'); if (btn) btn.textContent = f ? '▸ 펼치기' : '▾ 접기';
+  }
+  window.__HONGINKI.fold = FOLD;
+}
+function fold(key) {
+  if (!key) return;
+  FOLD[key] = !FOLD[key];
+  foldSave();
+  applyFold();
+}
+/* 헤더는 통째로 누를 수 있게 한다(카드 클릭은 그대로 차트 열기) */
+document.addEventListener('click', function (ev) {
+  var t = ev.target;
+  if (!t || !t.closest) return;
+  var h = t.closest('#tabHonginki .hi-grp > .hi-grp-h, #tabHonginki .hi-fold > .hi-fold-h');
+  if (!h) return;
+  ev.preventDefault();
+  fold(h.parentNode.getAttribute('data-fold'));
+});
+document.addEventListener('keydown', function (ev) {
+  if (ev.key !== 'Enter' && ev.key !== ' ') return;
+  var t = ev.target;
+  if (!t || t.tagName === 'BUTTON' || !t.closest) return;
+  var h = t.closest('#tabHonginki .hi-fold > .hi-fold-h');
+  if (!h) return;
+  ev.preventDefault();
+  fold(h.parentNode.getAttribute('data-fold'));
+});
+
+function cardHtml(c) {
+  return '<button class="hi-stock-card" type="button" data-kind="' + c.kind + '" data-code="' + c.code + '" data-name="' + c.name + '" onclick="HonginkiTab.openChart(\'' + c.code + '\')" aria-label="' + c.name + ' 200일 실측 차트 열기">' +
+    '<div class="sc-top"><div class="sc-name"><span class="nm">' + c.name + '</span><span class="sc-market">' + c.market + ' ' + c.code + '</span></div>' + stageBadge(c) + '</div>' +
+    '<div class="sc-sector">' + (c.theme ? c.theme + ' · 테마 ' + sign(c.themeRate.toFixed(2)) + '% · 5%↑ 동반 ' + c.companions + '종목' : '개별 재료') + ' · 6단계 ' + c.tier + '</div>' +
+    strip3(c) +
+    '<div class="sc-price-row"><div class="sc-price">' + nf(c.close) + '<small>원</small></div><div class="sc-pct ' + pctCls(c.pct) + '">' + sign(c.pct.toFixed(2)) + '%</div></div>' +
+    liveCardHtml(c) +
+    miniChartHtml(c) +
+    '<div class="sc-meta">' +
+      '<span class="chip blue" title="기준: 정규장(KRX) 종가×거래량 · 순위: 코스피+코스닥 통합 정규장 거래대금">대금 ' + fmtEok(c.valueEok) + ' · 통합 ' + c.rank + '위</span>' +
+      (c.levels && c.levels.baseMid ? '<span class="chip ' + (c.close >= c.levels.baseMid ? 'blue' : 'purple') + '" title="직전 거래일 기준봉의 (시가+종가)/2 — 당일 종가가 이 선을 이탈하면 D+1 후보에서 자동 제외">기준봉 중심선 ' + nf(c.levels.baseMid) + (c.close >= c.levels.baseMid ? ' 유지' : ' 이탈') + '</span>' : '') +
+      '<span class="chip ' + (c.kki.limitUp > 0 ? 'purple' : '') + '">끼 상한가 ' + c.kki.limitUp + '회</span>' +
+      '<span class="chip">120일 전고점 ' + nf(c.hi120) + '</span>' +
+      '<span class="chip">5일 ' + sign(c.chg5.toFixed(1)) + '%</span>' +
+    '</div>' +
+    stepDots(c) + sparkSvg(c) + planBox(c) +
+    '<div class="sc-reasons">' + c.reasons.map(function (r) { return '<div class="reason"><i>·</i><span>' + r + '</span></div>'; }).join('') + '</div>' +
+    (c.flags.length ? '<div class="sc-flags">' + c.flags.map(function (f) { return '<div class="flag">⚠️ ' + f + '</div>'; }).join('') + '</div>' : '') +
+    '<div class="sc-foot"><span>일봉 캔들 · 120일 전고점 ' + nf(c.hi120) + '원</span><span class="open">실측 차트 →</span></div>' +
+    '</button>';
+}
+
+/* 접이식 카드 그룹 — 헤더는 항상 남고 카드만 깔끔히 접힌다 */
+function foldGroup(key, cls, title, sub, arr) {
+  var f = !!FOLD[key];
+  var body = arr.length
+    ? '<div class="stock-grid">' + arr.map(cardHtml).join('') + '</div>'
+    : '<div class="empty-note">이 단계에 해당하는 종목이 <b>0건</b>입니다 — ' + L2 + ' 실측 기준으로 이 단계 성립 종목이 없습니다.</div>';
+  return '<div class="hi-grp ' + cls + (f ? ' folded' : '') + '" data-fold="' + key + '" aria-expanded="' + (!f) + '">' +
+    '<button type="button" class="hi-grp-h" aria-expanded="' + (!f) + '">' +
+      '<span class="fold-car">' + (f ? '▸' : '▾') + '</span>' +
+      '<span class="fold-t">' + title + '</span>' +
+      '<span class="fold-s">' + sub + '</span>' +
+      '<span class="fold-c">' + arr.length + '종목</span>' +
+    '</button>' +
+    '<div class="hi-grp-b">' + body + '</div>' +
+  '</div>';
+}
+
 function renderCards() {
   const grid = $('hiStockGrid');
   const list = DATA.cards.filter(function (c) { return stageFilter === 'ALL' || c.kind === stageFilter; });
   if (!list.length) {
-    grid.innerHTML = '<div class="empty-note">이 단계에 해당하는 종목이 <b>0건</b>입니다 — ' + L2 + ' 실측 기준으로 이 단계 성립 종목이 없습니다.</div>';
+    grid.innerHTML = '<div class="empty-note" style="grid-column:1/-1">이 단계에 해당하는 종목이 <b>0건</b>입니다 — ' + L2 + ' 실측 기준으로 이 단계 성립 종목이 없습니다.</div>';
   } else {
-    grid.innerHTML = list.map(function (c) {
-      return '<button class="hi-stock-card" type="button" data-kind="' + c.kind + '" data-code="' + c.code + '" data-name="' + c.name + '" onclick="HonginkiTab.openChart(\'' + c.code + '\')" aria-label="' + c.name + ' 200일 실측 차트 열기">' +
-        '<div class="sc-top"><div class="sc-name"><span class="nm">' + c.name + '</span><span class="sc-market">' + c.market + ' ' + c.code + '</span></div>' + stageBadge(c) + '</div>' +
-        '<div class="sc-sector">' + (c.theme ? c.theme + ' · 테마 ' + sign(c.themeRate.toFixed(2)) + '% · 5%↑ 동반 ' + c.companions + '종목' : '개별 재료') + ' · 6단계 ' + c.tier + '</div>' +
-        strip3(c) +
-        '<div class="sc-price-row"><div class="sc-price">' + nf(c.close) + '<small>원</small></div><div class="sc-pct ' + pctCls(c.pct) + '">' + sign(c.pct.toFixed(2)) + '%</div></div>' +
-        liveCardHtml(c) +
-        miniChartHtml(c) +
-        '<div class="sc-meta">' +
-          '<span class="chip blue" title="기준: 정규장(KRX) 종가×거래량 · 순위: 코스피+코스닥 통합 정규장 거래대금">대금 ' + fmtEok(c.valueEok) + ' · 통합 ' + c.rank + '위</span>' +
-          (c.levels && c.levels.baseMid ? '<span class="chip ' + (c.close >= c.levels.baseMid ? 'blue' : 'purple') + '" title="직전 거래일 기준봉의 (시가+종가)/2 — 당일 종가가 이 선을 이탈하면 D+1 후보에서 자동 제외">기준봉 중심선 ' + nf(c.levels.baseMid) + (c.close >= c.levels.baseMid ? ' 유지' : ' 이탈') + '</span>' : '') +
-          '<span class="chip ' + (c.kki.limitUp > 0 ? 'purple' : '') + '">끼 상한가 ' + c.kki.limitUp + '회</span>' +
-          '<span class="chip">120일 전고점 ' + nf(c.hi120) + '</span>' +
-          '<span class="chip">5일 ' + sign(c.chg5.toFixed(1)) + '%</span>' +
-        '</div>' +
-        stepDots(c) + sparkSvg(c) + planBox(c) +
-        '<div class="sc-reasons">' + c.reasons.map(function (r) { return '<div class="reason"><i>·</i><span>' + r + '</span></div>'; }).join('') + '</div>' +
-        (c.flags.length ? '<div class="sc-flags">' + c.flags.map(function (f) { return '<div class="flag">⚠️ ' + f + '</div>'; }).join('') + '</div>' : '') +
-        '<div class="sc-foot"><span>일봉 캔들 · 120일 전고점 ' + nf(c.hi120) + '원</span><span class="open">실측 차트 →</span></div>' +
-        '</button>';
-    }).join('');
+    const d0 = list.filter(function (c) { return c.kind === 'D0'; });
+    const rest = list.filter(function (c) { return c.kind !== 'D0'; });
+    const nearN = rest.filter(function (c) { return c.kind !== 'D1' && c.kind !== 'D2'; }).length;
+    grid.innerHTML =
+      (d0.length ? foldGroup('hiFoldD0', 'q-d0', '🎯 당일포착 D+0', '기준봉 당일 · 눌림 매수 유효', d0) : '') +
+      (rest.length ? foldGroup('hiFoldOld', 'q-old', '📚 기존카드 D+1 · D+2', (nearN ? '근접 ' + nearN + ' 포함 · 추적·관리' : '추적·관리 카드'), rest) : '');
   }
   window.__HONGINKI.cards = DATA.cards.length;
   window.__HONGINKI.shown = list.length;
+  try { applyFold(); } catch (e) {}
     try { paintLive(); } catch (e) {}
     /* 카드가 새로 그려질 때마다(최초 렌더·Hot-Swap·단계 필터) 미니 차트도 다시 그린다 */
     try { hiDrawMinis(); } catch (e) { console.error('Honginki mini chart:', e); }
@@ -21748,6 +21850,7 @@ window.__HONGINKI.ready = true;
     openReject: openReject, closeReject: closeReject,
     openGuide: openGuide, closeGuide: closeGuide, toggleZoom: toggleZoom,
     scrollTo: scrollToId,
+    fold: fold, applyFold: applyFold,
     stateFor: function (code, price) { var c = cardOf(code); return c ? liveStateOf(c, price) : null; },
     state: function () {
       return {
