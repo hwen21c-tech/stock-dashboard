@@ -2049,6 +2049,92 @@
 
 <style id="pmFlowBlocksCss">
 /* ===== 11/17 신규: 프리마켓 접기 · 스탁이지 스냅샷 · 시간별 수급 이동 ===== */
+
+/* ===== 11/19 신규: 🌅 오늘 시초가 공략 후보 · 🆕 신규상장주(공모주) ===== */
+.op-box{margin:12px 0 4px; border:1px solid #f59e0b; border-radius:10px; padding:10px 11px;
+  background:linear-gradient(135deg,rgba(69,26,3,0.55) 0%,rgba(15,23,42,0.96) 55%,rgba(15,23,42,0.98) 100%);}
+.op-head{display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex-wrap:wrap;}
+.op-title{font-size:13px; font-weight:900; color:#fef3c7; line-height:1.35;}
+.op-title .op-sub{font-size:10.5px; font-weight:800; color:#fcd34d; margin-left:2px;}
+.op-badges{display:flex; align-items:center; gap:5px; flex-wrap:wrap;}
+.op-badge{font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; white-space:nowrap;
+  background:rgba(245,158,11,0.18); color:#fcd34d; border:1px solid rgba(245,158,11,0.6);}
+.op-badge.closed{background:rgba(100,116,139,0.22); color:#cbd5e1; border-color:#475569;}
+.op-toggle{font-size:10px; font-weight:900; padding:2px 8px; border-radius:4px; cursor:pointer;
+  background:rgba(245,158,11,0.16); color:#fde68a; border:1px solid rgba(245,158,11,0.6); font-family:inherit; white-space:nowrap;}
+.op-toggle:active{transform:scale(0.97);}
+.op-note{font-size:10px; color:#cbd5e1; line-height:1.55; margin:7px 0 2px;}
+.op-grid{display:grid; grid-template-columns:1fr; gap:7px; margin-top:7px;}
+@media (min-width:620px){ .op-grid{grid-template-columns:repeat(2,minmax(0,1fr));} }
+.op-card{background:rgba(15,23,42,0.85); border:1px solid rgba(245,158,11,0.32); border-radius:8px;
+  padding:8px 9px; cursor:pointer;}
+.op-card:hover{border-color:rgba(245,158,11,0.8); background:rgba(41,37,36,0.85);}
+.op-card-top{display:flex; align-items:baseline; gap:6px; flex-wrap:wrap;}
+.op-rank{font-size:9.5px; font-weight:900; color:#0f172a; background:#fcd34d; border-radius:3px; padding:0 4px;}
+.op-name{font-size:12.5px; font-weight:900; color:#fff;}
+.op-price{font-size:11.5px; font-weight:900; color:#fef3c7; font-feature-settings:'tnum'; margin-left:auto; white-space:nowrap;}
+.op-chg{font-size:10.5px; font-weight:900; font-feature-settings:'tnum'; white-space:nowrap;}
+.op-meta{font-size:9.5px; color:#94a3b8; margin-top:2px;}
+.op-why{font-size:10.5px; color:#e2e8f0; line-height:1.5; margin-top:4px; word-break:keep-all;}
+.op-why b{color:#fde68a; font-weight:900;}
+.op-tags{display:flex; gap:4px; flex-wrap:wrap; margin-top:5px;}
+.op-tag{font-size:9px; font-weight:800; border-radius:3px; padding:1px 5px; background:rgba(56,189,248,0.14);
+  color:#7dd3fc; border:1px solid rgba(56,189,248,0.4);}
+.op-tag.hot{background:rgba(244,63,94,0.14); color:#fda4af; border-color:rgba(244,63,94,0.45);}
+.op-tag.amber{background:rgba(245,158,11,0.16); color:#fcd34d; border-color:rgba(245,158,11,0.5);}
+.op-foot{font-size:9.5px; color:#94a3b8; margin-top:8px; line-height:1.55;}
+.op-live{font-size:10px; color:#cbd5e1; margin-top:3px; font-feature-settings:'tnum';}
+.op-box.collapsed .op-grid,.op-box.collapsed .op-note,.op-box.collapsed .op-foot{display:none;}
+#opLine{display:none; font-size:10px; color:#fde68a; line-height:1.5; margin:5px 0 0;}
+.op-box.collapsed #opLine{display:block;}
+
+/* 🆕 신규상장주 탭 */
+#tabIpo .ipo-sum{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; margin-top:6px;}
+@media (min-width:620px){ #tabIpo .ipo-sum{grid-template-columns:repeat(4,minmax(0,1fr));} }
+.ipo-stat{background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:7px 9px;}
+.ipo-stat .n{font-size:17px; font-weight:900; color:#67e8f9; font-feature-settings:'tnum';}
+.ipo-stat .l{font-size:10px; color:#94a3b8; margin-top:1px;}
+.ipo-dday{display:flex; gap:5px; flex-wrap:wrap; margin-top:7px;}
+.ipo-dday span{font-size:9.5px; font-weight:800; border-radius:4px; padding:2px 6px;
+  background:rgba(2,6,23,0.7); border:1px solid #334155; color:#cbd5e1;}
+.ipo-dday span b{color:#fcd34d;}
+.ipo-filters{display:flex; gap:5px; flex-wrap:wrap; margin:10px 0 8px;}
+.ipo-chip{font-size:10.5px; font-weight:800; padding:4px 9px; border-radius:14px; cursor:pointer; font-family:inherit;
+  background:rgba(2,6,23,0.7); border:1px solid #334155; color:#cbd5e1;}
+.ipo-chip.on{background:#0e7490; border-color:#22d3ee; color:#ecfeff;}
+.ipo-cards{display:grid; grid-template-columns:1fr; gap:8px;}
+@media (min-width:620px){ .ipo-cards{grid-template-columns:repeat(2,minmax(0,1fr));} }
+.ipo-card{background:rgba(15,23,42,0.88); border:1px solid #1e293b; border-left:3px solid #38bdf8;
+  border-radius:8px; padding:9px 10px;}
+.ipo-card.hot{border-left-color:#f43f5e;}
+.ipo-card.past{opacity:0.72;}
+.ipo-hd{display:flex; justify-content:space-between; gap:6px; flex-wrap:wrap; align-items:baseline;}
+.ipo-nm{font-size:13px; font-weight:900; color:#fff;}
+.ipo-score{font-size:11.5px; font-weight:900; color:#fcd34d; white-space:nowrap; font-feature-settings:'tnum';}
+.ipo-score.wait{color:#94a3b8; font-size:10px; font-weight:800;}
+.ipo-badges{display:flex; gap:4px; flex-wrap:wrap; margin-top:3px;}
+.ipo-badge{font-size:9px; font-weight:800; padding:1px 5px; border-radius:3px;
+  background:rgba(56,189,248,0.16); color:#7dd3fc; border:1px solid rgba(56,189,248,0.4);}
+.ipo-badge.spac{background:rgba(148,163,184,0.16); color:#cbd5e1; border-color:#475569;}
+.ipo-badge.hot{background:rgba(244,63,94,0.16); color:#fda4af; border-color:rgba(244,63,94,0.45);}
+.ipo-badge.mute{background:rgba(100,116,139,0.18); color:#cbd5e1; border-color:#475569;}
+.ipo-rows{margin-top:6px; display:grid; grid-template-columns:1fr; gap:2px;}
+@media (min-width:430px){ .ipo-rows{grid-template-columns:repeat(2,minmax(0,1fr)); gap:2px 10px;} }
+.ipo-row{display:flex; justify-content:space-between; gap:6px; font-size:10.5px;
+  border-bottom:1px dashed rgba(51,65,85,0.65); padding:2px 0;}
+.ipo-row .k{color:#94a3b8; white-space:nowrap;}
+.ipo-row .v{color:#e2e8f0; font-weight:800; font-feature-settings:'tnum'; text-align:right;}
+.ipo-bars{display:flex; gap:3px; margin-top:7px;}
+.ipo-bar{flex:1; height:6px; border-radius:3px; background:#1e293b; overflow:hidden; position:relative;}
+.ipo-bar i{display:block; height:100%; background:linear-gradient(90deg,#0ea5e9,#22d3ee);}
+.ipo-bar.lock i{background:linear-gradient(90deg,#8b5cf6,#c4b5fd);}
+.ipo-bar.float i{background:linear-gradient(90deg,#10b981,#6ee7b7);}
+.ipo-bar.band i{background:linear-gradient(90deg,#f59e0b,#fcd34d);}
+.ipo-legend{font-size:9px; color:#64748b; margin-top:4px; line-height:1.5;}
+.ipo-src{font-size:9px; color:#475569; margin-top:6px; line-height:1.45; word-break:break-all;}
+.ipo-part{font-size:9px; color:#67e8f9; margin-top:3px; word-break:keep-all;}
+.ipo-foot{font-size:9.5px; color:#94a3b8; margin-top:10px; line-height:1.6;}
+
 .premarket-radar-box > div:first-child{flex-wrap:wrap !important; gap:6px !important;}
 .pm-toggle{font-size:10px; font-weight:900; padding:2px 8px; border-radius:4px; cursor:pointer;
   background:rgba(99,102,241,0.18); color:#c7d2fe; border:1px solid rgba(99,102,241,0.6); font-family:inherit; white-space:nowrap;}
@@ -3279,6 +3365,7 @@
     <button class="tab-btn" data-view="manju" onclick="switchView('manju', this)" style="border-color:#10b981; color:#34d399;">🎯 만쥬 종가베팅 (4대기준·타임라인)</button>
     <button class="tab-btn" data-view="jongbe" onclick="switchView('jongbe', this)" style="border-color:#f59e0b; color:#fbbf24;">🏆 종가베팅 마스터 (강창권·신정재)</button>
     <button class="tab-btn" data-view="calendar" onclick="switchView('calendar', this)">📅 증시 일정 (월간 달력 & 주간 확대)</button>
+    <button class="tab-btn" data-view="ipo" onclick="switchView('ipo', this)" style="border-color:#22d3ee; color:#67e8f9;">🆕 신규상장주 (공모주 일정·점수)</button>
   </div>
 
     <!-- TICKER BAR (ALL 9 CORE INDICES CLICKABLE WITH CHART POPUPS) -->
@@ -3443,6 +3530,157 @@
     <div class="se-foot" id="seFoot">👆 테마 카드를 누르면 테마 상세, 종목을 누르면 실측 차트 팝업이 열립니다.</div>
   </div>
 
+
+  <!-- 🌅 오늘 시초가 공략 후보 — 11/19 신설 · 08:50 브리핑 실측 근거 · 손절선 없음(사용자 요청) -->
+  <div class="op-box" id="openingPicksBox">
+    <div class="op-head">
+      <div class="op-title">🌅 오늘 시초가 공략 후보 <span class="op-sub">(08:50 브리핑 실측 · 기준가는 직전 정규장 종가)</span></div>
+      <div class="op-badges">
+        <span class="op-badge" id="opBadge">⏱ 로딩 중</span>
+        <button type="button" class="op-toggle" id="opToggleBtn" aria-expanded="true">접기</button>
+      </div>
+    </div>
+    <div id="opLine"></div>
+    <div class="op-note" id="opNote"></div>
+    <div class="op-grid" id="opBody"></div>
+    <div class="op-foot" id="opFoot"></div>
+    <!-- OPENING_PICKS_START -->
+    <script>window.OPENING_PICKS = {"date":"2026-11-19","stamp":"08:50","openTime":"10:00","updatedAt":"2026-11-19T09:55:00+09:00","source":"08:50 장전 & 10:00 시초가 타점 브리핑(2026-11-19) 5-④·6번 · 유진투자증권 08:54 리포트","note":"08:50 브리핑에서 뽑은 오늘 시초가 관찰 후보입니다. 기준가는 11/18 정규장(KRX 15:30) 종가이고, 현재가는 열리면 실시간 시세로 덧씌웁니다. 손절선은 넣지 않았습니다.","picks":[{"rank":1,"name":"원익IPS","code":"240810","price":70800,"priceText":"70,800원","chg":3.66,"chgText":"+3.66%","basis":"11/18 정규장 종가","reasons":["08:54 유진투자증권 '반도체 장비주, 2028년까지 달린다' 신규 리포트 — WFE 2027년 2,000억달러 돌파 전망","전일 정규장 +3.66%로 같은 테마(원익홀딩스 +9.95%·네오셈 +9.32%)보다 재료 반영이 덜 된 자리"],"tags":[{"label":"신규 재료","cls":"hot"},{"label":"반도체 장비"},{"label":"재료 대비 미반영","cls":"amber"}]},{"rank":2,"name":"주성엔지니어링","code":"036930","price":150500,"priceText":"150,500원","chg":1.01,"chgText":"+1.01%","basis":"11/18 정규장 종가","reasons":["ALD 증착 장비 — 유진證 장비 사이클 리포트의 직접 수혜군","전일 정규장 상승폭 +1.01%로 장비군 안에서 가장 재료가 덜 반영된 종목"],"tags":[{"label":"신규 재료","cls":"hot"},{"label":"반도체 장비"},{"label":"저반영","cls":"amber"}]},{"rank":3,"name":"피에스케이","code":"319660","price":83900,"priceText":"83,900원","chg":null,"chgText":"전일 종가","basis":"11/18 정규장 종가","reasons":["세정·스트립 장비 — 유진證 '2028년까지 장기 업사이클' 재료의 동일 수혜군","08:50 브리핑 5-④ 반도체 장비 후보군에 실측 종가로 포함"],"tags":[{"label":"신규 재료","cls":"hot"},{"label":"반도체 장비"}]},{"rank":4,"name":"HD현대일렉트릭","code":"267260","price":382500,"priceText":"382,500원","chg":1.59,"chgText":"+1.59%","basis":"11/18 정규장 종가","reasons":["AI 전력 인프라 — 앤트로픽 데이터센터 수요 논리와 'AI보다 전력이 돈 된다' 재료 유지","전일 +1.59%로 전력군(두산 +9.91%·효성중공업 +3.07%) 대비 과열되지 않은 자리"],"tags":[{"label":"AI 전력"},{"label":"과열 아님","cls":"amber"}]},{"rank":5,"name":"이오테크닉스","code":"039030","price":319500,"priceText":"319,500원","chg":null,"chgText":"전일 종가","basis":"11/18 정규장 종가","reasons":["레이저 장비 — 유진證 장비 사이클 재료의 동일 수혜군","08:50 브리핑 5-④ 반도체 장비 후보군에 실측 종가로 포함"],"tags":[{"label":"신규 재료","cls":"hot"},{"label":"반도체 장비"}]}]};</script>
+    <!-- OPENING_PICKS_END -->
+    <!-- OPENING_PICKS_ENGINE_START -->
+    <script>
+    /* 🌅 오늘 시초가 공략 후보 — window.OPENING_PICKS 만 그린다.
+       · 카드 클릭 → 기존 관제탑 종목 상세 차트 모달(openDetail) 연결. 정적 페이지는 /api/stock-chart 로 일봉을 받아 같은 모달에 그린다.
+       · 손절선은 넣지 않는다(사용자 요청). 근거 문장은 08:50 브리핑 실측값만 옮긴다. */
+    (function(){
+      'use strict';
+      var collapsed = false, touched = false;
+      function D(){ return window.OPENING_PICKS || {}; }
+      function esc(v){ return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, function(c){
+        return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+      function $(id){ return document.getElementById(id); }
+      function mins(){ var n = new Date(); return n.getHours() * 60 + n.getMinutes(); }
+      function openMin(){ var t = String(D().openTime || '09:00').split(':'); return (parseInt(t[0], 10) || 9) * 60 + (parseInt(t[1], 10) || 0); }
+      function clsOf(v){ return v > 0 ? 'up' : v < 0 ? 'down' : ''; }
+      function pctf(v){ return (v > 0 ? '+' : '') + Number(v).toFixed(2) + '%'; }
+
+      function render(){
+        var d = D(), picks = d.picks || [];
+        var body = $('opBody'), note = $('opNote'), foot = $('opFoot'), badge = $('opBadge'), line = $('opLine');
+        if (!body) return;
+        if (badge) {
+          badge.className = 'op-badge' + (collapsed ? ' closed' : '');
+          badge.textContent = d.stamp ? ('⏱ ' + d.date + ' ' + d.stamp + ' 기준') : '⏱ 기준 시각 없음';
+        }
+        if (note) note.innerHTML = d.note ? esc(d.note) : '08:50 장전 브리핑에서 뽑은 후보입니다. 기준가는 직전 정규장 종가이며, 손절선은 넣지 않았습니다.';
+        body.innerHTML = picks.map(function(p, i){
+          return '<div class="op-card" data-op-idx="' + i + '" role="button" tabindex="0">' +
+            '<div class="op-card-top"><span class="op-rank">' + (p.rank || i + 1) + '</span>' +
+            '<span class="op-name">' + esc(p.name) + '</span>' +
+            '<span class="op-price">' + esc(p.priceText || '') + '</span>' +
+            '<span class="op-chg ' + clsOf(p.chg) + '" style="color:' + (p.chg > 0 ? '#f43f5e' : p.chg < 0 ? '#38bdf8' : '#cbd5e1') + ';">' + (typeof p.chg === 'number' ? pctf(p.chg) : esc(p.chgText || '')) + '</span></div>' +
+            '<div class="op-meta">' + esc(p.basis || '기준가') + (p.vol ? ' · ' + esc(p.vol) : '') + '</div>' +
+            '<div class="op-live" data-op-live>현재가 조회 중…</div>' +
+            '<div class="op-why">' + (p.reasons || []).map(function(r){ return '· ' + esc(r); }).join('<br>') + '</div>' +
+            '<div class="op-tags">' + (p.tags || []).map(function(t){ return '<span class="op-tag ' + esc(t.cls || '') + '">' + esc(t.label || t) + '</span>'; }).join('') + '</div>' +
+            '</div>';
+        }).join('') || '<div style="font-size:11.5px; color:#94a3b8; padding:8px;">오늘 후보 데이터가 없습니다.</div>';
+        if (foot) foot.innerHTML = (d.source ? '출처: ' + esc(d.source) + ' · ' : '') +
+          '카드를 누르면 이 종목의 상세 차트(일봉)가 열립니다. <b style="color:#fcd34d;">손절선은 표시하지 않습니다.</b>' +
+          (d.updatedAt ? '<br>갱신 ' + esc(String(d.updatedAt).replace('T', ' ').slice(0, 16)) : '');
+        if (line) {
+          var t0 = picks[0];
+          line.innerHTML = t0 ? ('<b>접힘 요약</b> · 1순위 ' + esc(t0.name) + ' ' + esc(t0.priceText || '') +
+            ' · 후보 ' + picks.length + '종목 · ' + esc(d.stamp || '')) : '';
+        }
+        Array.prototype.forEach.call(body.querySelectorAll('[data-op-idx]'), function(el){
+          el.addEventListener('click', function(){ openPick(parseInt(el.getAttribute('data-op-idx'), 10)); });
+          el.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openPick(parseInt(el.getAttribute('data-op-idx'), 10)); } });
+        });
+      }
+
+      function staticChart(code){
+        if (!code || !window.fetch) return;
+        fetch('/api/stock-chart?q=' + encodeURIComponent(code) + '&count=250', { cache: 'no-store' })
+          .then(function(r){ return r.json(); })
+          .then(function(d){
+            if (!d || d.ok !== true || !d.candles || !d.candles.length) return;
+            window.modalAllCandles = d.candles.map(function(c){ return { date: c.date, open: c.o, high: c.h, low: c.l, close: c.c, vol: c.v }; });
+            window.modalViewCount = Math.min(60, window.modalAllCandles.length);
+            window.modalViewOffset = 0;
+            var notice = $('modalChartNotice'); if (notice) notice.style.display = 'none';
+            var meta = $('modalChartMeta'); if (meta) meta.style.display = 'flex';
+            var bar = $('modalPeriodBar'); if (bar) bar.style.display = 'flex';
+            var tt = $('modalChartTitleTxt'); if (tt) tt.textContent = '📊 실시간 일봉 ' + window.modalAllCandles.length + '봉 (동적 API)';
+            var tr = $('modalChartTrend'); var cs = window.modalAllCandles, last = cs[cs.length - 1];
+            if (tr) tr.textContent = last.date + ' 종가 ' + Math.round(last.close).toLocaleString('ko-KR') + '원 · ' + cs.length + '봉';
+            try { if (window.setModalValueUnit) window.setModalValueUnit('원', 0); } catch(e){}
+            try { if (window.setupModalCanvasInteraction) window.setupModalCanvasInteraction(); } catch(e){}
+            try { if (window.drawModalCandles) window.drawModalCandles(); } catch(e){}
+          }).catch(function(){});
+      }
+
+      function refreshLive(){
+        var codes = (D().picks || []).map(function(p){ return p.code; }).filter(Boolean);
+        if (!codes.length || !window.fetch) return;
+        fetch('/api/stock-live?codes=' + codes.join(','), { cache: 'no-store' })
+          .then(function(r){ return r.json(); })
+          .then(function(j){
+            if (!j || j.ok !== true || !j.stocks) return;
+            var map = {};
+            j.stocks.forEach(function(s){ if (s && s.code) map[s.code] = s; });
+            Array.prototype.forEach.call(document.querySelectorAll('#opBody [data-op-idx]'), function(el){
+              var p = (D().picks || [])[parseInt(el.getAttribute('data-op-idx'), 10)];
+              if (!p) return;
+              var s = map[p.code];
+              var host = el.querySelector('[data-op-live]');
+              if (!s || typeof s.price !== 'number' || !host) return;
+              var pct = (typeof s.changePct === 'number') ? ((s.changePct > 0 ? '+' : '') + s.changePct.toFixed(2) + '%') : '';
+              var col = s.changePct > 0 ? '#f43f5e' : s.changePct < 0 ? '#38bdf8' : '#cbd5e1';
+              host.innerHTML = '현재 <b style="color:#fff;">' + Math.round(s.price).toLocaleString('ko-KR') + '원</b> ' +
+                '<span style="color:' + col + '; font-weight:900;">' + pct + '</span>' +
+                (s.valueIntegText || s.valueText ? ' · 대금 ' + esc(s.valueIntegText || s.valueText) : '') +
+                (s.tradedAtKst ? ' <span style="color:#475569;">' + esc(s.tradedAtKst) + '</span>' : '');
+              host.setAttribute('data-live', '1');
+            });
+          }).catch(function(){});
+      }
+
+      function openPick(i){
+        var p = (D().picks || [])[i];
+        if (!p) return;
+        var meta = (p.basis || '기준가') + ' ' + (p.priceText || '') + (p.vol ? ' · ' + p.vol : '');
+        var desc = (p.reasons || []).map(function(r){ return '· ' + esc(r); }).join('<br>') +
+          '<br><span style="color:#94a3b8; font-size:10px;">출처: ' + esc(p.source || D().source || '08:50 브리핑') + '</span>';
+        if (typeof window.openDetail === 'function') window.openDetail(p.name, p.chgText || p.priceText || '', meta, desc);
+        var db = window.DAILY_500_CANDLES || {};
+        if (p.code && !db[p.code] && window.__STATIC_PAGE) staticChart(p.code);
+      }
+
+      function state(){
+        var box = $('openingPicksBox'), btn = $('opToggleBtn');
+        if (!box || !btn) return;
+        box.classList.toggle('collapsed', !!collapsed);
+        btn.textContent = collapsed ? '펼치기' : '접기';
+        btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      }
+      window.openPicksToggle = function(){ touched = true; collapsed = !collapsed; state(); render(); };
+
+      function boot(){
+        var btn = $('opToggleBtn');
+        if (btn) btn.addEventListener('click', window.openPicksToggle);
+        if (!touched) collapsed = mins() >= openMin();
+        render(); state(); refreshLive();
+        setInterval(function(){ if (!document.hidden) refreshLive(); }, 120000);
+      }
+      window.OpenPicks = { render: render, toggle: window.openPicksToggle };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+      else boot();
+    })();
+    </script>
+    <!-- OPENING_PICKS_ENGINE_END -->
+  </div>
+
   <!-- 🧭 시간별 수급 이동 타임라인 (08:50 → 16:00 · 실측만 · 장중 상시 펼침) -->
   <div class="tl-box" id="tlBox">
     <div class="tl-head">
@@ -3537,7 +3775,7 @@
 
 
     <!-- SE_SNAP_DATA_START -->
-    <script>window.SE_SNAP = {"date":"2026-11-17","stamp":"08:40","source":"스탁이지(주식회사 인텔리오) 장전 테마, 11/17 08:40 실측","themes":[{"rank":1,"name":"온디바이스 AI","chg":10.3,"value":"484억","stocks":[{"code":"399720","name":"가온칩스","value":"405억","chg":11.4},{"code":"394280","name":"오픈엣지테크놀로지","value":"74억","chg":4.8},{"code":"033640","name":"네패스","value":"6억","chg":1.2}]},{"rank":2,"name":"PCB","chg":-1.8,"value":"5억","stocks":[{"code":"178920","name":"PI첨단소재","value":"0억","chg":-1.9},{"code":"020150","name":"롯데에너지머티리얼즈","value":"4억","chg":-1.8},{"code":"089980","name":"상아프론테크","value":"0억","chg":-0.1}]},{"rank":3,"name":"ESS","chg":-0.8,"value":"484억","stocks":[{"code":"373220","name":"LG에너지솔루션","value":"24억","chg":-1.6},{"code":"416180","name":"신성에스티","value":"0억","chg":-1.5},{"code":"006400","name":"삼성SDI","value":"460억","chg":-0.8}]},{"rank":4,"name":"CXL","chg":-3.0,"value":"3,431억","stocks":[{"code":"394280","name":"오픈엣지테크놀로지","value":"74억","chg":4.8},{"code":"005930","name":"삼성전자","value":"3,261억","chg":-3.2},{"code":"356860","name":"티엘비","value":"96억","chg":-2.8}]}]};</script>
+    <script>window.SE_SNAP = {"date":"2026-11-19","stamp":"미운영","source":"수능일 — NXT 프리마켓(08:00~08:50) 미운영 · 한국거래소·넥스트레이드 공지","themes":[],"note":"2026-11-19(수능일)은 NXT 프리마켓이 운영되지 않아 장전 테마 스냅샷이 없습니다. 옛 스냅샷을 대신 보여주지 않습니다."};</script>
     <!-- SE_SNAP_DATA_END -->
     <!-- FLOW_TIMELINE_START -->
     <script>window.FLOW_TIMELINE = {"date": "2026-11-19", "day": "목", "updated": "04:11", "slots": [{"t": "08:50", "tag": "프리마켓", "state": "wait", "waitLabel": "08:50 브리핑 대기"}, {"t": "09:30", "tag": "", "state": "wait", "waitLabel": "자동동기화 대기"}, {"t": "10:00", "tag": "", "state": "wait", "waitLabel": "브리핑 대기"}, {"t": "11:00", "tag": "", "state": "wait", "waitLabel": "브리핑 대기"}, {"t": "12:00", "tag": "", "state": "wait", "waitLabel": "자동동기화 대기"}, {"t": "13:00", "tag": "", "state": "wait", "waitLabel": "브리핑 대기"}, {"t": "14:00", "tag": "", "state": "wait", "waitLabel": "브리핑 대기"}, {"t": "15:00", "tag": "", "state": "wait", "waitLabel": "브리핑 대기"}, {"t": "16:00", "tag": "", "state": "wait", "waitLabel": "브리핑 대기"}]};</script>
@@ -13847,6 +14085,192 @@
   </div>
 
 <!-- TAB 7: CALENDAR (2026년 11월 월간 달력 & 주간 확대 줌인 뷰) -->
+
+  <!-- 🆕 신규상장주(공모주) — 11/19 신설 · scripts/fetch_ipo_data.py 실측 -->
+  <div id="tabIpo" style="display: none; padding-top: 10px;">
+    <div class="sec-head" style="border-bottom-color:#0e7490; color:#67e8f9;">
+      <span>🆕 신규상장주(공모주) — 청약 일정 · 매력도 점수</span>
+      <span class="sub" id="ipoSub">실측 데이터 로딩 중…</span>
+    </div>
+    <div class="ipo-sum" id="ipoSummary"></div>
+    <div class="ipo-dday" id="ipoDday"></div>
+    <div class="ipo-filters">
+      <button type="button" class="ipo-chip on" data-ipo-sort="score" onclick="IpoTab.setSort('score')">🏆 점수순</button>
+      <button type="button" class="ipo-chip" data-ipo-sort="date" onclick="IpoTab.setSort('date')">📅 일정순</button>
+      <button type="button" class="ipo-chip" data-ipo-spac="0" onclick="IpoTab.toggleSpac()">🧾 스팩 포함</button>
+      <button type="button" class="ipo-chip" data-ipo-past="0" onclick="IpoTab.togglePast()">🕘 지난 일정 포함</button>
+    </div>
+    <div class="ipo-cards" id="ipoCards"></div>
+    <div class="ipo-foot" id="ipoFoot"></div>
+    <!-- IPO_DATA_START -->
+<script>window.IPO_DATA = {"updatedAt":"2026-11-19T10:17:08+09:00","basisDate":"2026-11-19","scope":"2026-11-01 ~ 2026-12-31 청약·상장 공모주","scoring":{"instCompetition":{"label":"① 기관경쟁률","max":30,"steps":[[1500,30],[1000,26],[700,22],[400,17],[200,12],[100,8],[50,4],[0,0]],"note":"1500:1↑30 · 1000↑26 · 700↑22 · 400↑17 · 200↑12 · 100↑8 · 50↑4 · 그 미만 0"},"lockup":{"label":"② 의무보유확약","max":25,"steps":[[20,25],[10,20],[5,15],[2,10],[1,6],[0.01,3],[-1,0]],"note":"20%↑25 · 10%↑20 · 5%↑15 · 2%↑10 · 1%↑6 · 0%초과 3 · 0% 0"},"float":{"label":"③ 유통물량 가벼움","max":25,"ratioSteps":[[15,12.5],[25,9],[35,6],[50,3],[999,0]],"amountSteps":[[100,12.5],[300,9],[500,6],[1000,3],[1000000000,0]],"note":"상장일 유통비율 15%↓12.5·25%↓9·35%↓6·50%↓3 / 유통금액 100억↓12.5·300억↓9·500억↓6·1000억↓3"},"band":{"label":"④ 공모가 밴드 위치","max":20,"steps":[["over",20],["top",17],["upper",13],["lower",9],["low",6],["below",2]],"note":"밴드 상단 초과 20 · 상단 17 · 상단 50% 이내 13 · 하단 50% 이내 9 · 하단 6 · 하단 미만 2"}},"summary":{"weekStart":"2026-11-16","weekEnd":"2026-11-22","subThisWeek":["유캐스트"],"listingThisWeek":["영광와이케이엠씨","옵토닉스","에이엘로봇","하나에어로다이내믹스"],"subThisMonth":["동원파츠","바로팜","넥스아이","영광와이케이엠씨","옵토닉스","에이엘로봇","하나에어로다이내믹스","엠비디","유캐스트","아델","케이엠에프","에이엔에이치스트럭쳐"],"listingThisMonth":["영광","이에스티","래블업","동원파츠","바로팜","넥스아이","영광와이케이엠씨","옵토닉스","에이엘로봇","하나에어로다이내믹스","엠비디","유캐스트"]},"items":[{"name":"영광","rawName":"영광(구.영광공작소)","code":"359410","market":"KOSDAQ","bandLow":14000,"bandHigh":17000,"fixedPrice":17000,"offerShares":2260000,"amountEok":384.2,"demandStart":"2026-10-13","demandEnd":"2026-10-19","subStart":"2026-10-22","subEnd":"2026-10-23","refundDate":"2026-10-27","listingDate":"2026-11-02","instCompetition":1000.07,"lockupPct":0.87,"retailCompetition":"684.73:1","managers":"한국투자증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":31.8,"floatShares":2870800,"floatAmountEok":488.0,"totalShares":null,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2333","ipokorea.kr 종목상세"],"no38":"2333","floatAmountBasis":"확정공모가","totalSharesEst":9027673,"mcapFixedEok":1534.7,"bandPosition":"밴드 상단","score":58.0,"scoreParts":{"inst":26,"lockup":3,"float":12,"band":17},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"10/13(화)","demandStartDday":-37,"demandEndLabel":"10/19(월)","demandEndDday":-31,"subStartLabel":"10/22(목)","subStartDday":-28,"subEndLabel":"10/23(금)","subEndDday":-27,"refundDateLabel":"10/27(화)","refundDateDday":-23,"listingDateLabel":"11/2(월)","listingDateDday":-17,"demandPeriodLabel":"10/13(화) ~ 10/19(월)","subPeriodLabel":"10/22(목) ~ 10/23(금)","bandLabel":"14,000~17,000원"},{"name":"이에스티","rawName":"이에스티","code":"495910","market":"KOSDAQ","bandLow":10600,"bandHigh":12400,"fixedPrice":12400,"offerShares":2200000,"amountEok":272.8,"demandStart":"2026-10-14","demandEnd":"2026-10-20","subStart":"2026-10-22","subEnd":"2026-10-23","refundDate":"2026-10-27","listingDate":"2026-11-04","instCompetition":630.1,"lockupPct":0.24,"retailCompetition":"28.95:1","managers":"대신증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":34.0,"floatShares":5243400,"floatAmountEok":650.2,"totalShares":null,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2332","ipokorea.kr 종목상세"],"no38":"2332","floatAmountBasis":"확정공모가","totalSharesEst":15421765,"mcapFixedEok":1912.3,"bandPosition":"밴드 상단","score":46.0,"scoreParts":{"inst":17,"lockup":3,"float":9,"band":17},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"10/14(수)","demandStartDday":-36,"demandEndLabel":"10/20(화)","demandEndDday":-30,"subStartLabel":"10/22(목)","subStartDday":-28,"subEndLabel":"10/23(금)","subEndDday":-27,"refundDateLabel":"10/27(화)","refundDateDday":-23,"listingDateLabel":"11/4(수)","listingDateDday":-15,"demandPeriodLabel":"10/14(수) ~ 10/20(화)","subPeriodLabel":"10/22(목) ~ 10/23(금)","bandLabel":"10,600~12,400원"},{"name":"래블업","rawName":"래블업","code":"0147B0","market":"KOSDAQ","bandLow":19000,"bandHigh":22000,"fixedPrice":19000,"offerShares":2180000,"amountEok":414.2,"demandStart":"2026-10-13","demandEnd":"2026-10-19","subStart":"2026-10-22","subEnd":"2026-10-23","refundDate":"2026-10-27","listingDate":"2026-11-03","instCompetition":284.53,"lockupPct":2.09,"retailCompetition":"3.55:1","managers":"NH투자증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":35.6,"floatShares":5172746,"floatAmountEok":982.8,"totalShares":null,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2335","ipokorea.kr 종목상세"],"no38":"2335","floatAmountBasis":"확정공모가","totalSharesEst":14530185,"mcapFixedEok":2760.7,"bandPosition":"밴드 하단","score":34.0,"scoreParts":{"inst":12,"lockup":10,"float":6,"band":6},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"10/13(화)","demandStartDday":-37,"demandEndLabel":"10/19(월)","demandEndDday":-31,"subStartLabel":"10/22(목)","subStartDday":-28,"subEndLabel":"10/23(금)","subEndDday":-27,"refundDateLabel":"10/27(화)","refundDateDday":-23,"listingDateLabel":"11/3(화)","listingDateDday":-16,"demandPeriodLabel":"10/13(화) ~ 10/19(월)","subPeriodLabel":"10/22(목) ~ 10/23(금)","bandLabel":"19,000~22,000원"},{"name":"동원파츠","rawName":"동원파츠","code":"0162D0","market":"KOSDAQ","bandLow":23000,"bandHigh":26500,"fixedPrice":26500,"offerShares":2030000,"amountEok":538.0,"demandStart":"2026-10-22","demandEnd":"2026-10-28","subStart":"2026-11-02","subEnd":"2026-11-03","refundDate":"2026-11-05","listingDate":"2026-11-10","instCompetition":840.86,"lockupPct":16.61,"retailCompetition":"1219.37:1","managers":"삼성증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":29.5,"floatShares":2734201,"floatAmountEok":724.6,"totalShares":null,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2339","ipokorea.kr 종목상세"],"no38":"2339","floatAmountBasis":"확정공모가","totalSharesEst":9268478,"mcapFixedEok":2456.1,"bandPosition":"밴드 상단","score":68.0,"scoreParts":{"inst":22,"lockup":20,"float":9,"band":17},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"10/22(목)","demandStartDday":-28,"demandEndLabel":"10/28(수)","demandEndDday":-22,"subStartLabel":"11/2(월)","subStartDday":-17,"subEndLabel":"11/3(화)","subEndDday":-16,"refundDateLabel":"11/5(목)","refundDateDday":-14,"listingDateLabel":"11/10(화)","listingDateDday":-9,"demandPeriodLabel":"10/22(목) ~ 10/28(수)","subPeriodLabel":"11/2(월) ~ 11/3(화)","bandLabel":"23,000~26,500원"},{"name":"바로팜","rawName":"바로팜","code":"952366","market":"KOSDAQ","bandLow":16400,"bandHigh":20200,"fixedPrice":16400,"offerShares":1780000,"amountEok":291.9,"demandStart":"2026-10-22","demandEnd":"2026-10-28","subStart":"2026-11-02","subEnd":"2026-11-03","refundDate":"2026-11-05","listingDate":"2026-11-11","instCompetition":152.36,"lockupPct":0.03,"retailCompetition":"19.27:1","managers":"미래에셋증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":30.4,"floatShares":3629716,"floatAmountEok":595.3,"totalShares":null,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2325","ipokorea.kr 종목상세"],"no38":"2325","floatAmountBasis":"확정공모가","totalSharesEst":11939855,"mcapFixedEok":1958.1,"bandPosition":"밴드 하단","score":26.0,"scoreParts":{"inst":8,"lockup":3,"float":9,"band":6},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"10/22(목)","demandStartDday":-28,"demandEndLabel":"10/28(수)","demandEndDday":-22,"subStartLabel":"11/2(월)","subStartDday":-17,"subEndLabel":"11/3(화)","subEndDday":-16,"refundDateLabel":"11/5(목)","refundDateDday":-14,"listingDateLabel":"11/11(수)","listingDateDday":-8,"demandPeriodLabel":"10/22(목) ~ 10/28(수)","subPeriodLabel":"11/2(월) ~ 11/3(화)","bandLabel":"16,400~20,200원"},{"name":"넥스아이","rawName":"넥스아이","code":"493410","market":"KOSDAQ","bandLow":10500,"bandHigh":13000,"fixedPrice":8000,"offerShares":5000000,"amountEok":400.0,"demandStart":"2026-10-22","demandEnd":"2026-10-28","subStart":"2026-11-03","subEnd":"2026-11-04","refundDate":"2026-11-06","listingDate":"2026-11-12","instCompetition":66.58,"lockupPct":0.06,"retailCompetition":"13.26:1","managers":"한국투자증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":37.0,"floatShares":16947525,"floatAmountEok":1355.8,"totalShares":null,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2336","ipokorea.kr 종목상세"],"no38":"2336","floatAmountBasis":"확정공모가","totalSharesEst":45804122,"mcapFixedEok":3664.3,"bandPosition":"하단 미만","score":12.0,"scoreParts":{"inst":4,"lockup":3,"float":3,"band":2},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"10/22(목)","demandStartDday":-28,"demandEndLabel":"10/28(수)","demandEndDday":-22,"subStartLabel":"11/3(화)","subStartDday":-16,"subEndLabel":"11/4(수)","subEndDday":-15,"refundDateLabel":"11/6(금)","refundDateDday":-13,"listingDateLabel":"11/12(목)","listingDateDday":-7,"demandPeriodLabel":"10/22(목) ~ 10/28(수)","subPeriodLabel":"11/3(화) ~ 11/4(수)","bandLabel":"10,500~13,000원"},{"name":"영광와이케이엠씨","rawName":"영광와이케이엠씨","code":"345290","market":"KOSDAQ","bandLow":9400,"bandHigh":11000,"fixedPrice":11000,"offerShares":2300000,"amountEok":253.0,"demandStart":"2026-10-27","demandEnd":"2026-11-02","subStart":"2026-11-04","subEnd":"2026-11-05","refundDate":"2026-11-09","listingDate":"2026-11-16","instCompetition":1163.35,"lockupPct":7.21,"retailCompetition":"1342.66:1","managers":"대신증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":34.9,"floatShares":5041041,"floatAmountEok":554.5,"totalShares":null,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2342","ipokorea.kr 종목상세"],"no38":"2342","floatAmountBasis":"확정공모가","totalSharesEst":14444244,"mcapFixedEok":1588.9,"bandPosition":"밴드 상단","score":67.0,"scoreParts":{"inst":26,"lockup":15,"float":9,"band":17},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"10/27(화)","demandStartDday":-23,"demandEndLabel":"11/2(월)","demandEndDday":-17,"subStartLabel":"11/4(수)","subStartDday":-15,"subEndLabel":"11/5(목)","subEndDday":-14,"refundDateLabel":"11/9(월)","refundDateDday":-10,"listingDateLabel":"11/16(월)","listingDateDday":-3,"demandPeriodLabel":"10/27(화) ~ 11/2(월)","subPeriodLabel":"11/4(수) ~ 11/5(목)","bandLabel":"9,400~11,000원"},{"name":"옵토닉스","rawName":"옵토닉스","code":"493260","market":"KOSDAQ","bandLow":10000,"bandHigh":12000,"fixedPrice":12000,"offerShares":2200000,"amountEok":264.0,"demandStart":"2026-10-21","demandEnd":"2026-10-27","subStart":"2026-11-05","subEnd":"2026-11-06","refundDate":"2026-11-10","listingDate":"2026-11-17","instCompetition":1201.81,"lockupPct":5.62,"retailCompetition":"1343.32:1","managers":"한국투자증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":22.7,"floatShares":2172890,"floatAmountEok":260.7,"totalShares":9500000,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2338","ipokorea.kr 종목상세"],"no38":"2338","floatAmountBasis":"확정공모가","mcapFixedEok":1140.0,"bandPosition":"밴드 상단","score":76.0,"scoreParts":{"inst":26,"lockup":15,"float":18,"band":17},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"10/21(수)","demandStartDday":-29,"demandEndLabel":"10/27(화)","demandEndDday":-23,"subStartLabel":"11/5(목)","subStartDday":-14,"subEndLabel":"11/6(금)","subEndDday":-13,"refundDateLabel":"11/10(화)","refundDateDday":-9,"listingDateLabel":"11/17(화)","listingDateDday":-2,"demandPeriodLabel":"10/21(수) ~ 10/27(화)","subPeriodLabel":"11/5(목) ~ 11/6(금)","bandLabel":"10,000~12,000원"},{"name":"에이엘로봇","rawName":"에이엘로봇","code":"471800","market":"KOSDAQ","bandLow":15700,"bandHigh":17600,"fixedPrice":17600,"offerShares":2400000,"amountEok":422.4,"demandStart":"2026-10-28","demandEnd":"2026-11-03","subStart":"2026-11-06","subEnd":"2026-11-09","refundDate":"2026-11-11","listingDate":"2026-11-18","instCompetition":871.74,"lockupPct":1.13,"retailCompetition":"834.73:1","managers":"대신증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":35.0,"floatShares":4218360,"floatAmountEok":742.4,"totalShares":11980000,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2331","ipokorea.kr 종목상세"],"no38":"2331","floatAmountBasis":"확정공모가","mcapFixedEok":2108.5,"bandPosition":"밴드 상단","score":54.0,"scoreParts":{"inst":22,"lockup":6,"float":9,"band":17},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"10/28(수)","demandStartDday":-22,"demandEndLabel":"11/3(화)","demandEndDday":-16,"subStartLabel":"11/6(금)","subStartDday":-13,"subEndLabel":"11/9(월)","subEndDday":-10,"refundDateLabel":"11/11(수)","refundDateDday":-8,"listingDateLabel":"11/18(수)","listingDateDday":-1,"demandPeriodLabel":"10/28(수) ~ 11/3(화)","subPeriodLabel":"11/6(금) ~ 11/9(월)","bandLabel":"15,700~17,600원"},{"name":"하나에어로다이내믹스","rawName":"하나에어로다이내믹스","code":"271160","market":"KOSDAQ","bandLow":4700,"bandHigh":5700,"fixedPrice":5700,"offerShares":4400000,"amountEok":250.8,"demandStart":"2026-11-02","demandEnd":"2026-11-06","subStart":"2026-11-10","subEnd":"2026-11-11","refundDate":"2026-11-13","listingDate":"2026-11-20","instCompetition":1051.38,"lockupPct":4.16,"retailCompetition":"1851.14:1","managers":"IBK투자증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":30.8,"floatShares":5465381,"floatAmountEok":311.5,"totalShares":17600000,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2334","ipokorea.kr 종목상세"],"no38":"2334","floatAmountBasis":"확정공모가","mcapFixedEok":1003.2,"bandPosition":"밴드 상단","score":65.0,"scoreParts":{"inst":26,"lockup":10,"float":12,"band":17},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"11/2(월)","demandStartDday":-17,"demandEndLabel":"11/6(금)","demandEndDday":-13,"subStartLabel":"11/10(화)","subStartDday":-9,"subEndLabel":"11/11(수)","subEndDday":-8,"refundDateLabel":"11/13(금)","refundDateDday":-6,"listingDateLabel":"11/20(금)","listingDateDday":1,"demandPeriodLabel":"11/2(월) ~ 11/6(금)","subPeriodLabel":"11/10(화) ~ 11/11(수)","bandLabel":"4,700~5,700원"},{"name":"엠비디","rawName":"엠비디","code":"498150","market":"KOSDAQ","bandLow":9600,"bandHigh":11700,"fixedPrice":7000,"offerShares":2000000,"amountEok":140.0,"demandStart":"2026-11-02","demandEnd":"2026-11-06","subStart":"2026-11-12","subEnd":"2026-11-13","refundDate":"2026-11-17","listingDate":"2026-11-24","instCompetition":187.1,"lockupPct":0.0,"retailCompetition":"172:1","managers":"하나증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":32.9,"floatShares":4880000,"floatAmountEok":341.6,"totalShares":14260000,"products":null,"demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2321","ipokorea.kr 종목상세"],"no38":"2321","floatAmountBasis":"확정공모가","mcapFixedEok":998.2,"bandPosition":"하단 미만","score":22.0,"scoreParts":{"inst":8,"lockup":0,"float":12,"band":2},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"11/2(월)","demandStartDday":-17,"demandEndLabel":"11/6(금)","demandEndDday":-13,"subStartLabel":"11/12(목)","subStartDday":-7,"subEndLabel":"11/13(금)","subEndDday":-6,"refundDateLabel":"11/17(화)","refundDateDday":-2,"listingDateLabel":"11/24(화)","listingDateDday":5,"demandPeriodLabel":"11/2(월) ~ 11/6(금)","subPeriodLabel":"11/12(목) ~ 11/13(금)","bandLabel":"9,600~11,700원"},{"name":"유캐스트","rawName":"유캐스트","code":"0175C0","market":"KOSDAQ","bandLow":19000,"bandHigh":23000,"fixedPrice":19000,"offerShares":800000,"amountEok":152.0,"demandStart":"2026-11-09","demandEnd":"2026-11-13","subStart":"2026-11-18","subEnd":"2026-11-19","refundDate":"2026-11-23","listingDate":"2026-11-30","instCompetition":173.42,"lockupPct":0.57,"retailCompetition":null,"managers":"유진투자증권,신영증권","mcapLowEok":1232,"mcapHighEok":1525,"floatRatioPct":36.8,"floatShares":2170000,"floatAmountEok":412.3,"totalShares":5860000,"products":": LTE 및 5G 통신장비 유캐스트 자주 묻는 질문 (FAQ) 유캐스트 공모가는 얼마인가요? 유캐스트의 희망공모가 밴드는 21,000~26,000원이며, 수요예측 결과에 따라 확","demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 수요예측결과","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2352","ipokorea.kr 종목상세"],"no38":"2352","floatAmountBasis":"확정공모가","mcapFixedEok":1113.4,"bandPosition":"밴드 하단","score":26.0,"scoreParts":{"inst":8,"lockup":3,"float":9,"band":6},"scoreBasis":"4항목","scoreComplete":true,"demandStartLabel":"11/9(월)","demandStartDday":-10,"demandEndLabel":"11/13(금)","demandEndDday":-6,"subStartLabel":"11/18(수)","subStartDday":-1,"subEndLabel":"11/19(목)","subEndDday":0,"refundDateLabel":"11/23(월)","refundDateDday":4,"listingDateLabel":"11/30(월)","listingDateDday":11,"demandPeriodLabel":"11/9(월) ~ 11/13(금)","subPeriodLabel":"11/18(수) ~ 11/19(목)","bandLabel":"19,000~23,000원"},{"name":"아델","rawName":"아델","code":"0181E0","market":"KOSDAQ","bandLow":18000,"bandHigh":25000,"fixedPrice":null,"offerShares":2170000,"amountEok":390.6,"demandStart":"2026-11-12","demandEnd":"2026-11-18","subStart":"2026-11-23","subEnd":"2026-11-24","refundDate":"2026-11-26","listingDate":"2026-12-02","instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"삼성증권,미래에셋증권","mcapLowEok":3889,"mcapHighEok":5401,"floatRatioPct":null,"floatShares":null,"floatAmountEok":null,"totalShares":21610000,"products":": 신경퇴행성 질환 치료제 개발 아델 자주 묻는 질문 (FAQ) 아델 공모가는 얼마인가요? 아델의 희망공모가 밴드는 18,000~25,000원이며, 수요예측 결과에 따라 확정공모가","demandStage":"수요예측 완료","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2345","ipokorea.kr 종목상세"],"no38":"2345","bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/12(목)","demandStartDday":-7,"demandEndLabel":"11/18(수)","demandEndDday":-1,"subStartLabel":"11/23(월)","subStartDday":4,"subEndLabel":"11/24(화)","subEndDday":5,"refundDateLabel":"11/26(목)","refundDateDday":7,"listingDateLabel":"12/2(수)","listingDateDday":13,"demandPeriodLabel":"11/12(목) ~ 11/18(수)","subPeriodLabel":"11/23(월) ~ 11/24(화)","bandLabel":"18,000~25,000원"},{"name":"신영스팩12호","rawName":"신영스팩12호","code":"0231Y0","market":"KOSDAQ","bandLow":2000,"bandHigh":2000,"fixedPrice":null,"offerShares":6250000,"amountEok":125.0,"demandStart":"2026-11-19","demandEnd":"2026-11-20","subStart":"2026-11-24","subEnd":"2026-11-25","refundDate":"2026-11-27","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"신영증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":null,"floatShares":null,"floatAmountEok":null,"totalShares":null,"products":null,"demandStage":null,"isSpac":true,"sources":["38co.kr 공모주청약일정","38co.kr 종목상세 no=2357"],"no38":"2357","bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/19(목)","demandStartDday":0,"demandEndLabel":"11/20(금)","demandEndDday":1,"subStartLabel":"11/24(화)","subStartDday":5,"subEndLabel":"11/25(수)","subEndDday":6,"refundDateLabel":"11/27(금)","refundDateDday":8,"demandPeriodLabel":"11/19(목) ~ 11/20(금)","subPeriodLabel":"11/24(화) ~ 11/25(수)","bandLabel":"2,000~2,000원"},{"name":"케이엠에프","rawName":"케이엠에프","code":"0103V0","market":"KOSDAQ","bandLow":15000,"bandHigh":17800,"fixedPrice":null,"offerShares":2000000,"amountEok":300.0,"demandStart":"2026-11-16","demandEnd":"2026-11-20","subStart":"2026-11-24","subEnd":"2026-11-25","refundDate":"2026-11-27","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"IBK투자증권","mcapLowEok":1263,"mcapHighEok":1499,"floatRatioPct":38.3,"floatShares":3250000,"floatAmountEok":578.5,"totalShares":8420000,"products":": 기능성 식품 소재 (효소 소재, 콤부차 베이스, 사과초모식초분말 등) 케이엠에프 자주 묻는 질문 (FAQ) 케이엠에프 공모가는 얼마인가요? 케이엠에프의 희망공모가 밴드는 15,","demandStage":"수요예측 진행","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2340","ipokorea.kr 종목상세"],"no38":"2340","floatAmountBasis":"밴드 상단 기준","totalSharesEst":8485640,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/16(월)","demandStartDday":-3,"demandEndLabel":"11/20(금)","demandEndDday":1,"subStartLabel":"11/24(화)","subStartDday":5,"subEndLabel":"11/25(수)","subEndDday":6,"refundDateLabel":"11/27(금)","refundDateDday":8,"demandPeriodLabel":"11/16(월) ~ 11/20(금)","subPeriodLabel":"11/24(화) ~ 11/25(수)","bandLabel":"15,000~17,800원"},{"name":"에이엔에이치스트럭쳐","rawName":"에이엔에이치스트럭쳐","code":"0111R0","market":"KOSDAQ","bandLow":11200,"bandHigh":13600,"fixedPrice":null,"offerShares":2100000,"amountEok":235.2,"demandStart":"2026-11-19","demandEnd":"2026-11-25","subStart":"2026-11-27","subEnd":"2026-11-30","refundDate":"2026-12-02","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"NH투자증권","mcapLowEok":1150,"mcapHighEok":1396,"floatRatioPct":29.5,"floatShares":3050000,"floatAmountEok":414.8,"totalShares":10270000,"products":": 항공기체 엔지니어링, 무인기 제조, 캐빈 솔루션 등 에이엔에이치스트럭쳐 자주 묻는 질문 (FAQ) 에이엔에이치스트럭쳐 공모가는 얼마인가요? 에이엔에이치스트럭쳐의 희망공모가 밴드","demandStage":"수요예측 진행","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/11","38co.kr 종목상세 no=2350","ipokorea.kr 종목상세"],"no38":"2350","floatAmountBasis":"밴드 상단 기준","totalSharesEst":10338983,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/19(목)","demandStartDday":0,"demandEndLabel":"11/25(수)","demandEndDday":6,"subStartLabel":"11/27(금)","subStartDday":8,"subEndLabel":"11/30(월)","subEndDday":11,"refundDateLabel":"12/2(수)","refundDateDday":13,"demandPeriodLabel":"11/19(목) ~ 11/25(수)","subPeriodLabel":"11/27(금) ~ 11/30(월)","bandLabel":"11,200~13,600원"},{"name":"엔키화이트햇","rawName":"엔키화이트햇","code":"0091L0","market":"KOSDAQ","bandLow":13000,"bandHigh":16500,"fixedPrice":null,"offerShares":1700000,"amountEok":221.0,"demandStart":"2026-11-20","demandEnd":"2026-11-26","subStart":"2026-12-01","subEnd":"2026-12-02","refundDate":"2026-12-04","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"신영증권","mcapLowEok":1371,"mcapHighEok":1740,"floatRatioPct":38.0,"floatShares":4020000,"floatAmountEok":663.3,"totalShares":10550000,"products":": OFFen(올인원 오펜시브 보안 제품) 엔키화이트햇 자주 묻는 질문 (FAQ) 엔키화이트햇 공모가는 얼마인가요? 엔키화이트햇의 희망공모가 밴드는 13,000~16,500원이며,","demandStage":"수요예측 예정","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/11","https://ipokorea.kr/ipo-calendar/2026/12","38co.kr 종목상세 no=2343","ipokorea.kr 종목상세"],"no38":"2343","floatAmountBasis":"밴드 상단 기준","totalSharesEst":10578947,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/20(금)","demandStartDday":1,"demandEndLabel":"11/26(목)","demandEndDday":7,"subStartLabel":"12/1(화)","subStartDday":12,"subEndLabel":"12/2(수)","subEndDday":13,"refundDateLabel":"12/4(금)","refundDateDday":15,"demandPeriodLabel":"11/20(금) ~ 11/26(목)","subPeriodLabel":"12/1(화) ~ 12/2(수)","bandLabel":"13,000~16,500원"},{"name":"우리투자스팩1호","rawName":"우리투자스팩1호","code":"0227D0","market":"KOSDAQ","bandLow":2000,"bandHigh":2000,"fixedPrice":null,"offerShares":6500000,"amountEok":130.0,"demandStart":"2026-11-25","demandEnd":"2026-11-26","subStart":"2026-12-02","subEnd":"2026-12-03","refundDate":"2026-12-07","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"우리투자증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":null,"floatShares":null,"floatAmountEok":null,"totalShares":null,"products":null,"demandStage":null,"isSpac":true,"sources":["38co.kr 공모주청약일정","38co.kr 종목상세 no=2354"],"no38":"2354","bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/25(수)","demandStartDday":6,"demandEndLabel":"11/26(목)","demandEndDday":7,"subStartLabel":"12/2(수)","subStartDday":13,"subEndLabel":"12/3(목)","subEndDday":14,"refundDateLabel":"12/7(월)","refundDateDday":18,"demandPeriodLabel":"11/25(수) ~ 11/26(목)","subPeriodLabel":"12/2(수) ~ 12/3(목)","bandLabel":"2,000~2,000원"},{"name":"이노보테라퓨틱스","rawName":"이노보테라퓨틱스","code":"464570","market":"KOSDAQ","bandLow":20000,"bandHigh":24000,"fixedPrice":null,"offerShares":2200000,"amountEok":440.0,"demandStart":"2026-11-26","demandEnd":"2026-12-02","subStart":"2026-12-07","subEnd":"2026-12-08","refundDate":"2026-12-10","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"한국투자증권","mcapLowEok":2819,"mcapHighEok":3382,"floatRatioPct":25.5,"floatShares":3600000,"floatAmountEok":864.0,"totalShares":14090000,"products":": AI 플랫폼 Deepzema를 이용한 신약개발 : 궤양성대장염 치료제 (INV-008, INV-101), 흉터 치료제(INV-001) 이노보테라퓨틱스 자주 묻는 질문 (FAQ)","demandStage":"수요예측 예정","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/11","https://ipokorea.kr/ipo-calendar/2026/12","38co.kr 종목상세 no=2351","ipokorea.kr 종목상세"],"no38":"2351","floatAmountBasis":"밴드 상단 기준","totalSharesEst":14117647,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/26(목)","demandStartDday":7,"demandEndLabel":"12/2(수)","demandEndDday":13,"subStartLabel":"12/7(월)","subStartDday":18,"subEndLabel":"12/8(화)","subEndDday":19,"refundDateLabel":"12/10(목)","refundDateDday":21,"demandPeriodLabel":"11/26(목) ~ 12/2(수)","subPeriodLabel":"12/7(월) ~ 12/8(화)","bandLabel":"20,000~24,000원"},{"name":"마더스제약","rawName":"마더스제약","code":"363170","market":"KOSDAQ","bandLow":11000,"bandHigh":14500,"fixedPrice":null,"offerShares":2400000,"amountEok":264.0,"demandStart":"2026-11-27","demandEnd":"2026-12-03","subStart":"2026-12-08","subEnd":"2026-12-09","refundDate":"2026-12-11","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"KB증권,NH투자증권","mcapLowEok":1679,"mcapHighEok":2214,"floatRatioPct":46.5,"floatShares":6910000,"floatAmountEok":1002.0,"totalShares":15270000,"products":": 전문의약품 마더스제약 자주 묻는 질문 (FAQ) 마더스제약 공모가는 얼마인가요? 마더스제약의 희망공모가 밴드는 11,000~14,500원이며, 수요예측 결과에 따라 확정공모가가","demandStage":"수요예측 예정","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/11","https://ipokorea.kr/ipo-calendar/2026/12","38co.kr 종목상세 no=2359","ipokorea.kr 종목상세"],"no38":"2359","floatAmountBasis":"밴드 상단 기준","totalSharesEst":14860215,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/27(금)","demandStartDday":8,"demandEndLabel":"12/3(목)","demandEndDday":14,"subStartLabel":"12/8(화)","subStartDday":19,"subEndLabel":"12/9(수)","subEndDday":20,"refundDateLabel":"12/11(금)","refundDateDday":22,"demandPeriodLabel":"11/27(금) ~ 12/3(목)","subPeriodLabel":"12/8(화) ~ 12/9(수)","bandLabel":"11,000~14,500원"},{"name":"다비오","rawName":"다비오","code":"0012G0","market":"KOSDAQ","bandLow":12300,"bandHigh":16600,"fixedPrice":null,"offerShares":1000000,"amountEok":123.0,"demandStart":"2026-11-30","demandEnd":"2026-12-04","subStart":"2026-12-09","subEnd":"2026-12-10","refundDate":"2026-12-14","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"대신증권","mcapLowEok":1048,"mcapHighEok":1414,"floatRatioPct":37.5,"floatShares":3320000,"floatAmountEok":551.1,"totalShares":8520000,"products":": 공간정보소프트웨어 개발 공급 다비오 자주 묻는 질문 (FAQ) 다비오 공모가는 얼마인가요? 다비오의 희망공모가 밴드는 12,300~16,600원이며, 수요예측 결과에 따라 확정","demandStage":"수요예측 예정","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/11","https://ipokorea.kr/ipo-calendar/2026/12","38co.kr 종목상세 no=2358","ipokorea.kr 종목상세"],"no38":"2358","floatAmountBasis":"밴드 상단 기준","totalSharesEst":8853333,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/30(월)","demandStartDday":11,"demandEndLabel":"12/4(금)","demandEndDday":15,"subStartLabel":"12/9(수)","subStartDday":20,"subEndLabel":"12/10(목)","subEndDday":21,"refundDateLabel":"12/14(월)","refundDateDday":25,"demandPeriodLabel":"11/30(월) ~ 12/4(금)","subPeriodLabel":"12/9(수) ~ 12/10(목)","bandLabel":"12,300~16,600원"},{"name":"인터엑스","rawName":"인터엑스","code":"480200","market":"KOSDAQ","bandLow":10000,"bandHigh":13000,"fixedPrice":null,"offerShares":3000000,"amountEok":300.0,"demandStart":"2026-11-30","demandEnd":"2026-12-04","subStart":"2026-12-09","subEnd":"2026-12-10","refundDate":"2026-12-14","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"한국투자증권,BNK투자증권","mcapLowEok":1451,"mcapHighEok":1886,"floatRatioPct":37.5,"floatShares":5470000,"floatAmountEok":711.1,"totalShares":14510000,"products":": 1)AX솔루션, 2)AX컨설팅, 3)AX제품 인터엑스 자주 묻는 질문 (FAQ) 인터엑스 공모가는 얼마인가요? 인터엑스의 희망공모가 밴드는 10,000~13,000원이며, 수요","demandStage":"수요예측 예정","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/11","https://ipokorea.kr/ipo-calendar/2026/12","38co.kr 종목상세 no=2353","ipokorea.kr 종목상세"],"no38":"2353","floatAmountBasis":"밴드 상단 기준","totalSharesEst":14586667,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/30(월)","demandStartDday":11,"demandEndLabel":"12/4(금)","demandEndDday":15,"subStartLabel":"12/9(수)","subStartDday":20,"subEndLabel":"12/10(목)","subEndDday":21,"refundDateLabel":"12/14(월)","refundDateDday":25,"demandPeriodLabel":"11/30(월) ~ 12/4(금)","subPeriodLabel":"12/9(수) ~ 12/10(목)","bandLabel":"10,000~13,000원"},{"name":"씨아이에스케미칼","rawName":"씨아이에스케미칼","code":"459650","market":"KOSDAQ","bandLow":5400,"bandHigh":6800,"fixedPrice":null,"offerShares":4000000,"amountEok":216.0,"demandStart":"2026-11-30","demandEnd":"2026-12-04","subStart":"2026-12-10","subEnd":"2026-12-11","refundDate":"2026-12-15","listingDate":"2026-12-22","instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"KB증권","mcapLowEok":1663,"mcapHighEok":2094,"floatRatioPct":37.7,"floatShares":11658971,"floatAmountEok":792.8,"totalShares":30800000,"products":": 양극재 원료 소재(탄산리튬, MHP 등) 등 씨아이에스케미칼 자주 묻는 질문 (FAQ) 씨아이에스케미칼 공모가는 얼마인가요? 씨아이에스케미칼의 희망공모가 밴드는 5,400~6,","demandStage":"수요예측 예정","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/11","https://ipokorea.kr/ipo-calendar/2026/12","38co.kr 종목상세 no=2348","ipokorea.kr 종목상세"],"no38":"2348","floatAmountBasis":"밴드 상단 기준","totalSharesEst":30925653,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"11/30(월)","demandStartDday":11,"demandEndLabel":"12/4(금)","demandEndDday":15,"subStartLabel":"12/10(목)","subStartDday":21,"subEndLabel":"12/11(금)","subEndDday":22,"refundDateLabel":"12/15(화)","refundDateDday":26,"listingDateLabel":"12/22(화)","listingDateDday":33,"demandPeriodLabel":"11/30(월) ~ 12/4(금)","subPeriodLabel":"12/10(목) ~ 12/11(금)","bandLabel":"5,400~6,800원"},{"name":"데스틴파워","rawName":"데스틴파워","code":"273940","market":"KOSDAQ","bandLow":8000,"bandHigh":11000,"fixedPrice":null,"offerShares":2200000,"amountEok":176.0,"demandStart":"2026-12-02","demandEnd":"2026-12-08","subStart":"2026-12-11","subEnd":"2026-12-14","refundDate":"2026-12-16","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"한국투자증권","mcapLowEok":1159,"mcapHighEok":1594,"floatRatioPct":40.1,"floatShares":5840000,"floatAmountEok":642.4,"totalShares":14490000,"products":": 발전용 연료전지 인버터, ESS용 PCS, 수전해 정류기 데스틴파워 자주 묻는 질문 (FAQ) 데스틴파워 공모가는 얼마인가요? 데스틴파워의 희망공모가 밴드는 8,000~11,0","demandStage":"수요예측 예정","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/12","38co.kr 종목상세 no=2356","ipokorea.kr 종목상세"],"no38":"2356","floatAmountBasis":"밴드 상단 기준","totalSharesEst":14563591,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"12/2(수)","demandStartDday":13,"demandEndLabel":"12/8(화)","demandEndDday":19,"subStartLabel":"12/11(금)","subStartDday":22,"subEndLabel":"12/14(월)","subEndDday":25,"refundDateLabel":"12/16(수)","refundDateDday":27,"demandPeriodLabel":"12/2(수) ~ 12/8(화)","subPeriodLabel":"12/11(금) ~ 12/14(월)","bandLabel":"8,000~11,000원"},{"name":"KTE","rawName":"KTE","code":"103060","market":"KOSDAQ","bandLow":19000,"bandHigh":23000,"fixedPrice":null,"offerShares":2816000,"amountEok":535.0,"demandStart":"2026-12-02","demandEnd":"2026-12-08","subStart":"2026-12-14","subEnd":"2026-12-15","refundDate":"2026-12-17","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"NH투자증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":null,"floatShares":null,"floatAmountEok":null,"totalShares":null,"products":null,"demandStage":null,"isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 종목상세 no=2355"],"no38":"2355","bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"12/2(수)","demandStartDday":13,"demandEndLabel":"12/8(화)","demandEndDday":19,"subStartLabel":"12/14(월)","subStartDday":25,"subEndLabel":"12/15(화)","subEndDday":26,"refundDateLabel":"12/17(목)","refundDateDday":28,"demandPeriodLabel":"12/2(수) ~ 12/8(화)","subPeriodLabel":"12/14(월) ~ 12/15(화)","bandLabel":"19,000~23,000원"},{"name":"엠디에스코리아","rawName":"엠디에스코리아","code":"0159M0","market":"KOSDAQ","bandLow":9500,"bandHigh":11500,"fixedPrice":null,"offerShares":2250000,"amountEok":213.8,"demandStart":"2026-12-03","demandEnd":"2026-12-09","subStart":"2026-12-14","subEnd":"2026-12-15","refundDate":"2026-12-17","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"미래에셋증권","mcapLowEok":689,"mcapHighEok":834,"floatRatioPct":31.8,"floatShares":2250000,"floatAmountEok":258.8,"totalShares":7250000,"products":": 샐러드류(샐러드미인), 간편식류, 젤리류(젤리블리), 기타류(소스 등) 엠디에스코리아 자주 묻는 질문 (FAQ) 엠디에스코리아 공모가는 얼마인가요? 엠디에스코리아의 희망공모가 ","demandStage":"수요예측 예정","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/12","38co.kr 종목상세 no=2362","ipokorea.kr 종목상세"],"no38":"2362","floatAmountBasis":"밴드 상단 기준","totalSharesEst":7075472,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"12/3(목)","demandStartDday":14,"demandEndLabel":"12/9(수)","demandEndDday":20,"subStartLabel":"12/14(월)","subStartDday":25,"subEndLabel":"12/15(화)","subEndDday":26,"refundDateLabel":"12/17(목)","refundDateDday":28,"demandPeriodLabel":"12/3(목) ~ 12/9(수)","subPeriodLabel":"12/14(월) ~ 12/15(화)","bandLabel":"9,500~11,500원"},{"name":"제논","rawName":"제논","code":"0158J0","market":"KOSDAQ","bandLow":9700,"bandHigh":12200,"fixedPrice":null,"offerShares":2200000,"amountEok":213.4,"demandStart":"2026-12-03","demandEnd":"2026-12-09","subStart":"2026-12-14","subEnd":"2026-12-15","refundDate":"2026-12-17","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"삼성증권","mcapLowEok":1384,"mcapHighEok":1741,"floatRatioPct":29.1,"floatShares":4170000,"floatAmountEok":508.7,"totalShares":14270000,"products":": AI 통합 플랫폼 GenOS, AI 컨설팅 제논 자주 묻는 질문 (FAQ) 제논 공모가는 얼마인가요? 제논의 희망공모가 밴드는 9,700~12,200원이며, 수요예측 결과에 따","demandStage":"수요예측 예정","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/12","38co.kr 종목상세 no=2341","ipokorea.kr 종목상세"],"no38":"2341","floatAmountBasis":"밴드 상단 기준","totalSharesEst":14329897,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"12/3(목)","demandStartDday":14,"demandEndLabel":"12/9(수)","demandEndDday":20,"subStartLabel":"12/14(월)","subStartDday":25,"subEndLabel":"12/15(화)","subEndDday":26,"refundDateLabel":"12/17(목)","refundDateDday":28,"demandPeriodLabel":"12/3(목) ~ 12/9(수)","subPeriodLabel":"12/14(월) ~ 12/15(화)","bandLabel":"9,700~12,200원"},{"name":"태석광학","rawName":"태석광학","code":"0221D0","market":"KOSDAQ","bandLow":17500,"bandHigh":20200,"fixedPrice":null,"offerShares":2478000,"amountEok":433.6,"demandStart":"2026-12-03","demandEnd":"2026-12-09","subStart":"2026-12-14","subEnd":"2026-12-15","refundDate":"2026-12-17","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"신한투자증권,대신증권","mcapLowEok":null,"mcapHighEok":null,"floatRatioPct":null,"floatShares":null,"floatAmountEok":null,"totalShares":null,"products":null,"demandStage":null,"isSpac":false,"sources":["38co.kr 공모주청약일정","38co.kr 종목상세 no=2360"],"no38":"2360","bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"12/3(목)","demandStartDday":14,"demandEndLabel":"12/9(수)","demandEndDday":20,"subStartLabel":"12/14(월)","subStartDday":25,"subEndLabel":"12/15(화)","subEndDday":26,"refundDateLabel":"12/17(목)","refundDateDday":28,"demandPeriodLabel":"12/3(목) ~ 12/9(수)","subPeriodLabel":"12/14(월) ~ 12/15(화)","bandLabel":"17,500~20,200원"},{"name":"이나인페이","rawName":"이나인페이","code":"0013H0","market":"KOSDAQ","bandLow":7500,"bandHigh":10500,"fixedPrice":null,"offerShares":6400000,"amountEok":480.0,"demandStart":"2026-12-07","demandEnd":"2026-12-11","subStart":"2026-12-16","subEnd":"2026-12-17","refundDate":"2026-12-21","listingDate":null,"instCompetition":null,"lockupPct":null,"retailCompetition":null,"managers":"한국투자증권","mcapLowEok":2017,"mcapHighEok":2823,"floatRatioPct":28.7,"floatShares":6930000,"floatAmountEok":727.6,"totalShares":26890000,"products":": 디지털송금서비스, 편의서비스, 선불카드서비스 이나인페이 자주 묻는 질문 (FAQ) 이나인페이 공모가는 얼마인가요? 이나인페이의 희망공모가 밴드는 7,500~10,500원이며, ","demandStage":"수요예측 예정","isSpac":false,"sources":["38co.kr 공모주청약일정","https://ipokorea.kr/ipo-calendar/2026/12","38co.kr 종목상세 no=2361","ipokorea.kr 종목상세"],"no38":"2361","floatAmountBasis":"밴드 상단 기준","totalSharesEst":24146341,"bandPosition":null,"score":null,"scoreParts":null,"scoreBasis":null,"scoreState":"집계 대기","scoreComplete":false,"demandStartLabel":"12/7(월)","demandStartDday":18,"demandEndLabel":"12/11(금)","demandEndDday":22,"subStartLabel":"12/16(수)","subStartDday":27,"subEndLabel":"12/17(목)","subEndDday":28,"refundDateLabel":"12/21(월)","refundDateDday":32,"demandPeriodLabel":"12/7(월) ~ 12/11(금)","subPeriodLabel":"12/16(수) ~ 12/17(목)","bandLabel":"7,500~10,500원"}],"warnings":["ipokorea 상세 실패 태석광학: https://ipokorea.kr/ipo/%ED%83%9C%EC%84%9D%EA%B4%91%ED%95%99 → HTTP Error 404: Not Found","ipokorea 상세 실패 KTE: https://ipokorea.kr/ipo/KTE → HTTP Error 404: Not Found"],"notes":["확정공모가·기관경쟁률·의무보유확약은 수요예측 종료 뒤에만 값이 생깁니다(없으면 null → 화면 '집계 대기').","유통금액은 ipokorea 상장일 유통주식수 × (확정공모가, 없으면 밴드 상단)으로 계산한 값입니다.","예상 시총(mcapFixedEok)은 상장예정주식수 × 확정공모가 계산값이며, 확정 전에는 null 입니다.","상장일 유통물량 공개 전이면 점수는 확인된 3개 항목을 100점으로 환산한 값입니다(scoreBasis 표기).","스팩(SPAC)은 변별력이 없어 기본 목록에서 숨기고 '스팩 포함' 칩으로만 봅니다."]};</script>
+<!-- IPO_DATA_END -->
+
+    <!-- IPO_ENGINE_START -->
+    <script>
+    /* 🆕 신규상장주(공모주) 탭 렌더러 — window.IPO_DATA(scripts/fetch_ipo_data.py 산출)만 그린다.
+       · 값이 null 이면 '—' 또는 '집계 대기'. 없는 수치를 만들어 넣지 않는다.
+       · 38커뮤니케이션·ipokorea 공개 화면에서 수집한 실측값이며, 계산값(시총·유통금액)은 basis 를 함께 표기한다. */
+    (function(){
+      'use strict';
+      var S = { sort: 'score', spac: false, past: false };
+      function D(){ return window.IPO_DATA || {}; }
+      function list(){ var d = D(); return Array.isArray(d.items) ? d.items : []; }
+      function esc(v){ return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, function(c){
+        return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]; }); }
+      function num(v){ return (typeof v === 'number' && isFinite(v)) ? v : null; }
+      function won(v){ var n = num(v); return n === null ? '—' : Math.round(n).toLocaleString('ko-KR') + '원'; }
+      function eok(v){ var n = num(v); return n === null ? '—' : (Math.round(n * 10) / 10).toLocaleString('ko-KR') + '억'; }
+      function pctf(v){ var n = num(v); return n === null ? '—' : n.toFixed(1) + '%'; }
+      function compf(v){ var n = num(v); return n === null ? '—' : (Math.round(n * 100) / 100).toLocaleString('ko-KR') + ':1'; }
+      function mkt(m){ return m === 'KOSPI' ? '코스피' : m === 'KOSDAQ' ? '코스닥' : m === 'KONEX' ? '코넥스' : (m || '—'); }
+      function dlab(v){ if (v === null || v === undefined) return ''; if (v === 0) return 'D-DAY'; return v > 0 ? 'D-' + v : 'D+' + Math.abs(v); }
+      function $(id){ return document.getElementById(id); }
+
+      function row(k, v){ return '<div class="ipo-row"><span class="k">' + esc(k) + '</span><span class="v">' + v + '</span></div>'; }
+
+      function visible(){
+        var out = list().filter(function(it){ return S.spac || !it.isSpac; });
+        if (!S.past) {
+          out = out.filter(function(it){
+            var sub = num(it.subEndDday), lst = num(it.listingDday);
+            var subPast = (sub !== null && sub < 0);
+            var lstPast = (lst !== null && lst < 0);
+            var listed = it.listingDate ? lstPast : false;
+            return !(subPast && (listed || lst === null && !it.listingDate));
+          });
+        }
+        out.sort(function(a, b){
+          if (S.sort === 'date') {
+            var ka = a.subStart || a.demandStart || '9999', kb = b.subStart || b.demandStart || '9999';
+            return ka < kb ? -1 : ka > kb ? 1 : 0;
+          }
+          var sa = num(a.score), sb = num(b.score);
+          if (sa === null && sb === null) return (a.subStart || '') < (b.subStart || '') ? -1 : 1;
+          if (sa === null) return 1;
+          if (sb === null) return -1;
+          return sb - sa;
+        });
+        return out;
+      }
+
+      function card(it){
+        var sc = num(it.score);
+        var cls = 'ipo-card' + (sc !== null && sc >= 70 ? ' hot' : '') + (it.listingDateDday !== null && it.listingDateDday !== undefined && it.listingDateDday < 0 ? ' past' : '');
+        var badges = '';
+        if (it.isSpac) badges += '<span class="ipo-badge spac">🧾 스팩</span>';
+        badges += '<span class="ipo-badge">' + esc(mkt(it.market)) + '</span>';
+        if (it.code) badges += '<span class="ipo-badge mute">' + esc(it.code) + '</span>';
+        if (it.listingDateDday !== null && it.listingDateDday !== undefined && it.listingDateDday < 0) badges += '<span class="ipo-badge mute">상장 완료</span>';
+        else if (it.listingDateDday !== null && it.listingDateDday !== undefined) badges += '<span class="ipo-badge hot">상장 ' + esc(dlab(it.listingDateDday)) + '</span>';
+        if (it.subStartDday !== null && it.subStartDday !== undefined && it.subStartDday >= 0 && it.subEndDday !== null && it.subEndDday !== undefined && it.subEndDday >= 0)
+          badges += '<span class="ipo-badge hot">청약 ' + esc(dlab(it.subStartDday)) + '</span>';
+
+        var price = it.fixedPrice ? won(it.fixedPrice) + (it.bandPosition ? ' <span style="font-size:9px; color:#94a3b8;">(' + esc(it.bandPosition) + ')</span>' : '')
+                                  : (it.bandLabel ? '밴드 ' + esc(it.bandLabel) : '—');
+
+        var rows = '';
+        rows += row('수요예측', esc(it.demandPeriodLabel || '—'));
+        rows += row('청약', esc(it.subPeriodLabel || '—'));
+        rows += row('환불·납입', esc(it.refundDateLabel || '—'));
+        rows += row('상장일', esc(it.listingDateLabel || '미정'));
+        rows += row('공모가', price);
+        rows += row('공모금액', eok(it.amountEok));
+        rows += row('예상 시총', it.mcapFixedEok ? eok(it.mcapFixedEok) : (it.mcapLowEok && it.mcapHighEok ? eok(it.mcapLowEok) + '~' + eok(it.mcapHighEok) : '—'));
+        rows += row('기관경쟁률', compf(it.instCompetition));
+        rows += row('의무보유확약', it.lockupPct === null || it.lockupPct === undefined ? '집계 대기' : pctf(it.lockupPct));
+        rows += row('유통물량', (it.floatRatioPct === null || it.floatRatioPct === undefined ? '—' : pctf(it.floatRatioPct)) +
+                    (it.floatAmountEok ? ' · ' + eok(it.floatAmountEok) : ''));
+        rows += row('청약경쟁률', esc(it.retailCompetition || '—'));
+
+        var bars = '', legend = '';
+        if (it.scoreParts) {
+          var p = it.scoreParts;
+          function bar(cls2, val, max, title){ var w = val === null || val === undefined ? 0 : Math.max(0, Math.min(100, val / max * 100));
+            return '<div class="ipo-bar ' + cls2 + '" title="' + esc(title) + '"><i style="width:' + w.toFixed(1) + '%"></i></div>'; }
+          bars = bar('', p.inst, 30, '기관경쟁률 ' + p.inst + '/30') + bar('lock', p.lockup, 25, '의무보유확약 ' + p.lockup + '/25') +
+                 bar('float', p.float, 25, '유통물량 ' + (p.float === null ? '미확인' : p.float) + '/25') + bar('band', p.band, 20, '공모가 밴드 ' + p.band + '/20');
+          legend = '<div class="ipo-legend">경쟁률 ' + p.inst + ' · 확약 ' + p.lockup + ' · 유통 ' + (p.float === null ? '미확인' : p.float) + ' · 밴드 ' + p.band +
+                   '<span style="color:#475569;"> /30·25·25·20</span></div>' +
+                   (it.scoreBasis && it.scoreBasis !== '4항목' ? '<div class="ipo-part">※ ' + esc(it.scoreBasis) + '</div>' : '');
+        }
+
+        var scoreTxt = sc === null ? '<span class="ipo-score wait">' + esc(it.scoreState || '집계 대기') + '</span>'
+                                   : '<span class="ipo-score">' + sc.toFixed(1) + '점</span>';
+
+        return '<div class="' + cls + '">' +
+          '<div class="ipo-hd"><span class="ipo-nm">' + esc(it.name) + '</span>' + scoreTxt + '</div>' +
+          '<div class="ipo-badges">' + badges + '</div>' +
+          '<div class="ipo-rows">' + rows + '</div>' +
+          (bars ? '<div class="ipo-bars">' + bars + '</div>' + legend : '') +
+          '<div class="ipo-src">주간사 ' + esc(it.managers || '—') + (it.products ? ' · ' + esc(it.products) : '') + '</div>' +
+          '</div>';
+      }
+
+      function renderSummary(){
+        var d = D(), sm = d.summary || {};
+        var cells = [
+          ['이번 주 청약', (sm.subThisWeek || []).length],
+          ['이번 주 상장', (sm.listingThisWeek || []).length],
+          ['이달 청약', (sm.subThisMonth || []).length],
+          ['이달 상장', (sm.listingThisMonth || []).length]
+        ];
+        var host = $('ipoSummary');
+        if (host) host.innerHTML = cells.map(function(c){
+          return '<div class="ipo-stat"><div class="n">' + c[1] + '건</div><div class="l">' + c[0] + '</div></div>'; }).join('');
+
+        var dd = [], today = list().filter(function(it){ return !it.isSpac; });
+        today.forEach(function(it){
+          if (it.subEndDday !== null && it.subEndDday !== undefined && it.subEndDday >= 0)
+            dd.push([it.subEndDday, '청약마감 ' + it.name + ' ' + it.subEndLabel]);
+          if (it.listingDateDday !== null && it.listingDateDday !== undefined && it.listingDateDday >= 0)
+            dd.push([it.listingDateDday, '상장 ' + it.name + ' ' + it.listingDateLabel]);
+          if (it.refundDateDday !== null && it.refundDateDday !== undefined && it.refundDateDday >= 0)
+            dd.push([it.refundDateDday, '환불 ' + it.name + ' ' + it.refundDateLabel]);
+        });
+        dd.sort(function(a, b){ return a[0] - b[0]; });
+        var host2 = $('ipoDday');
+        if (host2) host2.innerHTML = dd.slice(0, 6).map(function(x){
+          return '<span><b>' + esc(dlab(x[0])) + '</b> ' + esc(x[1]) + '</span>'; }).join('') ||
+          '<span>이번 주 남은 청약·상장 일정이 없습니다</span>';
+
+        var sub = $('ipoSub');
+        if (sub) sub.textContent = d.updatedAt ? ('실측 ' + String(d.updatedAt).slice(0, 16).replace('T', ' ') + ' 갱신 · 38커뮤니케이션·ipokorea') : '실측 데이터 없음';
+        var foot = $('ipoFoot');
+        if (foot) {
+          var notes = (d.notes || []).map(function(n){ return '· ' + esc(n); }).join('<br>');
+          foot.innerHTML = (notes ? notes + '<br>' : '') +
+            '<span style="color:#475569;">출처: ' + esc((d.sources || []).join(' / ')) + ' · 수집기 scripts/fetch_ipo_data.py</span>' +
+            ((d.warnings && d.warnings.length) ? '<br><span style="color:#fbbf24;">⚠ ' + esc(d.warnings.join(' · ')) + '</span>' : '');
+        }
+      }
+
+      function render(){
+        renderSummary();
+        var items = visible();
+        var host = $('ipoCards');
+        if (!host) return;
+        host.innerHTML = items.length ? items.map(card).join('') :
+          '<div style="font-size:11.5px; color:#94a3b8; padding:12px; text-align:center;">조건에 맞는 공모주가 없습니다 — 필터를 풀어 보세요.</div>';
+        document.querySelectorAll('[data-ipo-sort]').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-ipo-sort') === S.sort); });
+        var bx = document.querySelector('[data-ipo-spac]'); if (bx) bx.classList.toggle('on', S.spac);
+        var bp = document.querySelector('[data-ipo-past]'); if (bp) bp.classList.toggle('on', S.past);
+      }
+
+      window.IpoTab = {
+        setSort: function(k){ S.sort = k; render(); },
+        toggleSpac: function(){ S.spac = !S.spac; render(); },
+        togglePast: function(){ S.past = !S.past; render(); },
+        render: render,
+        onShow: render
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render);
+      else render();
+    })();
+    </script>
+    <!-- IPO_ENGINE_END -->
+  </div>
+
   <div id="tabCalendar" style="display: none;">
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               <!-- UPGRADED MACRO IMPACT & SECTOR EVENT PANEL FOR TAB 9 -->
       <div style="background: linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.8)); border: 1px solid rgba(56,189,248,0.3); border-radius: 8px; padding: 14px; margin-bottom: 14px;">
@@ -14805,6 +15229,7 @@
         var tHi = document.getElementById('tabHonginki');
         var tBj = document.getElementById('tabBijoong');
         var tKk = document.getElementById('tabKkangto');
+        var tIp = document.getElementById('tabIpo');
 
         if (tO) tO.style.display = (view === 'overview') ? 'block' : 'none';
         if (tS) tS.style.display = (view === 'supply') ? 'block' : 'none';
@@ -14818,6 +15243,7 @@
         if (tHi) tHi.style.display = (view === 'honginki') ? 'block' : 'none';
         if (tBj) tBj.style.display = (view === 'bijoong') ? 'block' : 'none';
         if (tKk) tKk.style.display = (view === 'kkangto') ? 'block' : 'none';
+        if (tIp) tIp.style.display = (view === 'ipo') ? 'block' : 'none';
 
         if (view === 'rnzone' && window.RnZone) {
           if (!window.rnZoneInited) {
@@ -22367,6 +22793,17 @@ window.BijoongTab = {
     var d=window.SE_SNAP||{}; var body=document.getElementById('seBody'); if(!body) return;
     var themes=d.themes||[];
     var stale = d.date && d.date !== todayStr();
+    if(!themes.length){
+      /* 오늘 스냅샷이 없으면(휴장·미운영) 옛 테마를 그대로 두지 않는다 — 없는 값을 만들지 않는다. */
+      var b0=document.getElementById('seSnapBadge');
+      if(b0){ b0.className = stale ? 'se-badge warn' : 'se-badge closed';
+              b0.textContent = '⛔ 오늘 스냅샷 없음 · ' + (d.date||'') + ' ' + (d.stamp||''); }
+      var l0=document.getElementById('seSnapLine'); if(l0) l0.innerHTML='';
+      body.innerHTML='<div style="font-size:10.5px; color:#cbd5e1; line-height:1.55; padding:2px 0;">' +
+        esc(d.note || '오늘 장전 스냅샷이 없습니다(휴장·미운영).') + '</div>';
+      var f0=document.getElementById('seFoot'); if(f0&&d.source) f0.textContent='출처: '+d.source;
+      return;
+    }
     var badge=document.getElementById('seSnapBadge');
     if(badge){
       if(stale){
