@@ -465,6 +465,14 @@
   .wvth img{width:62px;height:62px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block}
   .wvth figcaption{font-size:9.6px;color:var(--faint);font-weight:800;margin-top:2px}
   #wvVideo{width:100%;max-width:240px;border-radius:12px;background:#000;border:1px solid var(--line)}
+  .wvtplrow{display:flex;flex-wrap:wrap;gap:7px}
+  .wvtpl{flex:1 1 132px;min-width:0;display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:#0a1424;text-align:left;cursor:pointer}
+  .wvtpl b{font-size:11.4px;font-weight:900;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wvtpl span{font-size:9.8px;font-weight:700;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wvtpl.on{border-color:rgba(56,189,248,.55);background:linear-gradient(135deg,rgba(56,189,248,.14),rgba(168,85,247,.08))}
+  .wvtpl.on b{color:#e0f2fe}
+  .wvtpl.on span{color:#7dd3fc}
+  .wvbody textarea{width:100%;min-width:0;max-width:100%;background:#08111f;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:11.4px;font-weight:700;color:#e2e8f0;resize:vertical;font-family:inherit}
   footer .shelf{background:#0a1424;margin:0;font-size:10.9px;font-weight:600;line-height:1.66;color:var(--faint)}
   @media (max-width:430px){
     #wvCanvas{width:126px}
@@ -2184,10 +2192,17 @@
   <div class="shelfbody">
     <div class="wvhead">
       <span class="wvchip" id="wvSrc">대본 없음</span>
+      <span class="wvchip" id="wvTplTag">📊 카드형</span>
       <span class="wvchip" id="wvMusic">BGM —</span>
       <span class="spacer"></span>
       <button class="btn small ghost" id="wvSetBtn" type="button">⚙ 옵션</button>
     </div>
+    <div class="wvtplrow" role="group" aria-label="영상 양식 선택 — 3종 모두 세이프 존·자동 줄바꿈·3단 그리드 동일">
+      <button class="wvtpl on" type="button" data-wvtpl="card" aria-pressed="true"><b>📊 정보/시황 카드형</b><span>훅 + 핵심 포인트 카드 + 자막</span></button>
+      <button class="wvtpl" type="button" data-wvtpl="chart" aria-pressed="false"><b>📈 모션 차트/비교표형</b><span>수치를 움직이는 바·좌우 비교로</span></button>
+      <button class="wvtpl" type="button" data-wvtpl="photo" aria-pressed="false"><b>🖼️ 사진 줌인/캡처형</b><span>내 사진 Ken Burns + 배지·자막</span></button>
+    </div>
+    <div class="hint">쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.</div>
     <details class="wvopt" id="wvOpt">
       <summary>⚙ 채널 프리셋 · 성우 · 자막색 · BGM · 내 사진</summary>
       <div class="wvbody">
@@ -2221,6 +2236,9 @@
           <label class="flabel" for="wvWm" style="flex:0 0 auto">워터마크</label>
           <input type="text" id="wvWm" maxlength="30" placeholder="예) 연오랑의 3분 시황" aria-label="워터마크 문구">
         </div>
+        <div class="flabel">📈 차트 데이터 (선택 · 모션 차트형에서만 사용)</div>
+        <textarea id="wvChartData" rows="3" placeholder="코스피, 5092&#10;코스닥, 671" aria-label="모션 차트 데이터 수동 입력"></textarea>
+        <div class="hint">한 줄에 <b>이름, 값</b> (예: <b>코스피, 5092</b>). 입력하면 대본 자동 파싱보다 우선하며 모든 컷에 같은 비교표를 씁니다. 비우면 컷의 숫자를 읽고, 수치가 없는 컷은 카드형으로 대체합니다.</div>
         <div class="flabel">📷 컷 배경 사진 (최대 3장 · 컷 순서대로 돌아가며 Ken Burns 줌인)</div>
         <div class="wvrow">
           <button class="btn small" id="wvPhotoBtn" type="button">사진 고르기</button>
@@ -2254,6 +2272,7 @@
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.5 — 🎬 웹 영상 생성기 <b>쇼츠 세이프 존 잠금</b>(상단 180·하단 380·좌 60·우 120 · 안전 영역 x 60~960 · y 180~1540) · <b>글자 폭 실측 자동 줄바꿈·자동 축소</b>(칸 밖 이탈 0) · <b>3단 고정 그리드</b>(훅 → 메인 → 자막, gap 28) · <b>영상 양식 3종</b>(📊 정보 카드형 · 📈 모션 차트/비교표형 · 🖼️ 사진 줌인형)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.4 — 🔍 쇼츠 탐색기 50초 대본 → 🎬 웹 영상 생성기 / ✍️ 쇼츠 스튜디오 <b>원클릭 전송</b> · 🖼️ 블로그 <b>1:1 대표 썸네일(1080×1080)</b> PNG(제목+배지+워터마크 · 스타일 3종) · 🎬 영상 편집기 ↔ 웹 쇼츠 생성기 연결 · 웹 영상 제작 이력(<b>제목·생성일·컷 수</b>)을 보관함에 자동 기록</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.3 — 🎬 웹 영상 생성기(Canvas 1080×1920 + MediaRecorder · 크레딧 0 · ElevenLabs 성우 · BGM 3종 + 효과음 · 내 사진 Ken Burns · MP4/WebM 저장) · 채널 프리셋 2종 · 📋 업로드 세트 복사 · 보관함 [🔄 복제해 새 버전] · 💾 백업/복원 · 이 안내는 접이식으로 정리</div>
   <b>정적 스튜디오 v2 안내(내 Gemini 키)</b> — 이 페이지는 GitHub Pages 정적 파일 하나로 돌아갑니다. <b>키는 화면에서 한 번만 입력</b>하면 이 브라우저(localStorage)에만 저장되고, 생성 요청은 브라우저가 <b>generativelanguage.googleapis.com</b> 으로 직접 보냅니다. 서버가 없으므로 <b>API 키를 페이지·저장소에 넣지 않습니다</b>. <b>테마 9종</b>(여행·도서3·주식·생활지혜·요리·육아·SNS 핫템 가격비교)과 테마별 <b>🏆 블로거 양식 1·2·3·4번</b>(1·2·3번 = 테마별 실제 인기 블로그 3편에서 뽑은 서로 다른 프리셋 27종, 4번 = 내 글 붙여넣기로 뽑는 내 양식 · 테마별로 따로 저장), <b>🎬 쇼츠 대본 모드</b> — <b>쇼츠 전용 14테마</b>(아이돌·쇼핑·게임·드라마·스포츠·영화·경제/주식·요리·생활/IT·AI·여행/맛집·1분 지식·책/동기부여·육아/가족·SNS 핫템 가격비교)와 테마별 <b>쇼츠 양식 1·2·3번 = 42종</b>(3초 훅·컷 리듬·자막 습관·말투·금지 규칙) + <b>4번 내 유튜버</b>(정적은 CORS 때문에 링크는 참고용 저장 · <b>대본/자막을 붙여넣으면</b> 내 Gemini 키로 훅·리듬·자막·말투 분석·저장), <b>🎬 쇼츠 대본 생성</b>(약 50초 · 훅→4~7컷→엔딩 · 자막 15~20자), <b>쇼츠 전용 ✨ 2차 검수</b>(3초 훅 강도·자막 길이·구어체·양식 리듬·과장 제거 + 고친 점 배지 + 원본 복원), <b>📋 피클 점검용 복사</b>, 블로그 완성 본문 생성(제목 3종·경쟁 글 빈틈 2개·표·도입 훅·솔직한 단점), <b>📷 내 사진 업로드(최대 4장 · 1024px JPEG) → Gemini 멀티모달이 사진을 보고 본문 자동 배치</b>, <b>📚 Google Books 실제 책 표지 검색·저장·본문 삽입</b>(한도 초과 시 Open Library 대체), <b>본문 사진 자리 자동 파싱 → Wikimedia Commons 실시간 검색 및 저장</b>(브라우저 직접), <b>Canvas 1200×630 대표 이미지 PNG 생성·저장</b>, 유튜브 빈틈 분석 + 50초 쇼츠 대본, 블로그→쇼츠 변환, <b>톤 변환 3종·AI 티 빼기·댓글 유도 질문+링크 안내 박스·인스타 3줄과 쇼츠 1타 3피</b>, <b>검색 유입 해시태그 10개</b>, <b>✨ 2차 검수·다듬기</b>(거짓 경험담·AI 문투·양식 누락·맞춤법 교정 + 고친 점 배지 + 원본 복원), <b>📋 피클 점검용 복사</b>(본문 + 테마·블로거 양식 정보를 한 덩어리로), 영상 컷 설계도, 제목 3종의 <b>네이버 모바일 30자 기준선 + 본문 첫 줄 미리보기</b>와 네이버 서식 복사(내 사진·표지 이미지 포함), 발행 전 체크리스트, 자막 프리셋 3종 미리보기, <b>주간 발행 체크·포스팅 URL 기록</b>, 양식·문체 샘플·금지 상투어·빈틈 메모·루틴표·보관함(localStorage) 저장, <b>오늘 관제탑 시황 1클릭</b>(관제탑 동적 API 값 그대로 · 실패하면 관제탑 링크와 붙여넣기 칸). <b style="color:#fbbf24">정적이라 안 되는 것</b>: <b>공식 홈페이지 URL 사진 자동 추출(서버 필요 — 대신 내 사진 업로드)</b>, 유튜브 자막 자동 추출(CORS — 제목만 확인), 유튜브 실시간 검색·조회수·댓글 수집, 블로그 자동 포스팅, 영상 픽셀 분석, ffmpeg.wasm 컷편집·자막 렌더·BGM 합성·MP4 저장, 15:45 자동 생성 연동. Gemini가 만든 글은 값·날짜·업체명이 [확인 필요]로 남을 수 있으니 발행 전에 직접 확인하세요. 무료 사진·공식 홈페이지 사진·책 표지는 사용 조건과 출처 표기를 확인하세요. 기존 콘텐츠 스튜디오·관제탑과는 별개 파일입니다.<div style="margin-top:9px">🆕 <b>v2.2 업그레이드</b> — 🎙 ElevenLabs 성우 미리듣기·MP3 저장 / 📊 블로그용 차트 PNG 3종(지수·수급 · 주도테마 · 종목 일봉+20일선+피보나치) + 워터마크 / 🎬 블로그 글 하나로 쇼츠 v3 JSON·추천 차트 원클릭 / v3 구어체·대형 훅 타이틀·카라오케 강조·숫자 발음 변환 / 🔍 네이버 SEO 검색어 5~7개 자동 배치 / 제목 3안(호기심형 · 숫자 직격형 · 비교형).</div>
@@ -13719,8 +13738,12 @@ const GEN_ACTIONS = [
 </script>
 <script>
 /* ============================================================
-   🎬 WVID — 웹 쇼츠 영상 생성기 (크레딧 0)
+   🎬 WVID — 웹 쇼츠 영상 생성기 (크레딧 0) · v3
    Canvas 1080×1920 · Web Audio API · MediaRecorder · ElevenLabs TTS
+   v3 추가: 쇼츠 세이프 존 잠금(상단 180·하단 380·좌 60·우 120)
+            · 글자 폭 실측(ctx.measureText) 자동 줄바꿈 + 자동 축소
+            · 3단 고정 그리드 슬롯(훅 320 · 메인 672 · 자막 312, gap 28)
+            · 영상 양식 3종(정보 카드형 / 모션 차트형 / 사진 줌인형)
    모든 합성은 이 브라우저 안에서 끝난다. 서버·유료 크레딧 없음.
    ============================================================ */
 (function () {
@@ -13729,6 +13752,18 @@ const GEN_ACTIONS = [
   var CFG_KEY = 'cs_wvid_cfg_v1', PRE_KEY = 'cs_wvid_presets_v1', EL_KEY = 'cs_elevenlabs_api_key';
   var CW = 1080, CH = 1920, GAP = 0.16;
   var FF = "'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif";
+
+  /* ---------- 쇼츠 세이프 존 · 3단 고정 그리드 ---------- */
+  var SAFE = { x: 60, y: 180, w: 900, h: 1360 };  /* x 60~960 · y 180~1540 */
+  SAFE.r = SAFE.x + SAFE.w;
+  SAFE.b = SAFE.y + SAFE.h;
+  var SLOT_GAP = 28;
+  var SLOTS = {
+    hook: { x: 60, y: 180, w: 900, h: 320 },   /* 배지 행 + 훅/시리즈 타이틀 */
+    main: { x: 60, y: 528, w: 900, h: 672 },   /* 핵심 카드 · 차트 · 비교표 */
+    cap:  { x: 60, y: 1228, w: 900, h: 312 }   /* 하단 자막 */
+  };
+  var TPL_NAME = { card: '📊 카드형', chart: '📈 차트형', photo: '🖼️ 사진형' };
 
   var VOICES = [
     { id: 'IKne3meq5aSn9XLyUdCD', n: 'Charlie · 깊고 자신감 있는 남성' },
@@ -13742,13 +13777,14 @@ const GEN_ACTIONS = [
     stock: { name: '📈 주식 채널', accent: '#38bdf8', cap: '#fde047', bgm: 'news', voice: 'IKne3meq5aSn9XLyUdCD', wm: '연오랑의 3분 시황' },
     deal: { name: '🏷️ 특가·핫템 채널', accent: '#f472b6', cap: '#fbbf24', bgm: 'bright', voice: 'cgSgspJ2msm6clMCkdW9', wm: '연오랑의 특가 레이더' }
   };
-  var DEF = { preset: '', accent: '#38bdf8', cap: '#fde047', bgm: 'news', sfx: true, voice: VOICES[0].id, wm: '연오랑의 3분 시황', numNorm: true };
+  var DEF = { preset: '', tpl: 'card', chartData: '', accent: '#38bdf8', cap: '#fde047', bgm: 'news', sfx: true, voice: VOICES[0].id, wm: '연오랑의 3분 시황', numNorm: true };
 
   var S = { cfg: null, spec: null, cuts: [], total: 0, running: false, abort: false, rec: null,
-    chunks: [], url: '', blob: null, photos: [], t0: 0, timer: null, actx: null, dest: null, mime: '' };
+    chunks: [], url: '', blob: null, photos: [], t0: 0, timer: null, actx: null, dest: null, mime: '', tplForce: null };
 
   /* ---------- utils ---------- */
   function $(s) { return D.querySelector(s); }
+  function $$(s) { return Array.prototype.slice.call(D.querySelectorAll(s)); }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
     return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
   function ls(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
@@ -13767,6 +13803,7 @@ const GEN_ACTIONS = [
     var d = new Date();
     return '' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes());
   }
+  function ease(p) { p = Math.max(0, Math.min(1, p)); return 1 - Math.pow(1 - p, 3); }
   function say(msg, kind) {
     var el = $('#wvMsg');
     if (el) { el.innerHTML = msg; el.style.color = kind === 'bad' ? '#fda4af' : kind === 'good' ? '#86efac' : ''; }
@@ -13833,6 +13870,7 @@ const GEN_ACTIONS = [
     var c = {};
     try { c = JSON.parse(ls(CFG_KEY, '{}')) || {}; } catch (e) { c = {}; }
     for (var k in DEF) if (Object.prototype.hasOwnProperty.call(DEF, k) && c[k] === undefined) c[k] = DEF[k];
+    if (!TPL_NAME[c.tpl]) c.tpl = 'card';
     return c;
   }
   function saveCfg() { lsSet(CFG_KEY, JSON.stringify(S.cfg)); }
@@ -13855,10 +13893,138 @@ const GEN_ACTIONS = [
     if (next.wm) S.cfg.wm = next.wm;
     saveCfg(); syncUi();
     if (S.spec) { S.spec.accent = S.cfg.accent; S.spec.capColor = S.cfg.cap; S.spec.watermark = S.cfg.wm; }
+    redraw();
     flash((p.name || name) + ' 프리셋을 적용했습니다 — 성우·색·BGM·워터마크 자동 세팅');
   }
 
+  /* ---------- 글자 폭 실측 · 자동 줄바꿈 · 자동 축소 ---------- */
+  function fontPx(f) { var m = /([\d.]+)px/.exec(String(f || '')); return m ? +m[1] : 32; }
+  function toChars(s) {
+    var str = String(s == null ? '' : s);
+    try { return Array.from(str); } catch (e) { return str.split(''); }
+  }
+  /* 한 단어가 칸보다 넓으면 글자 단위로 쪼갠다 (한글·영문·숫자 혼합 대응) */
+  function tokBreak(ctx, token, maxW) {
+    var out = [], cur = '', cs = toChars(token);
+    for (var i = 0; i < cs.length; i++) {
+      var t = cur + cs[i];
+      if (ctx.measureText(t).width <= maxW || !cur) cur = t;
+      else { out.push(cur); cur = cs[i]; }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+  function wrapLines(ctx, text, maxW) {
+    var src = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
+    if (!src) return [];
+    var words = src.split(' '), out = [], cur = '';
+    for (var i = 0; i < words.length; i++) {
+      var w = words[i];
+      var t = cur ? cur + ' ' + w : w;
+      if (ctx.measureText(t).width <= maxW) { cur = t; continue; }
+      if (cur) { out.push(cur); cur = ''; }
+      if (ctx.measureText(w).width <= maxW) { cur = w; continue; }
+      var parts = tokBreak(ctx, w, maxW);
+      for (var j = 0; j < parts.length - 1; j++) out.push(parts[j]);
+      cur = parts.length ? parts[parts.length - 1] : '';
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+  function trimTo(ctx, text, maxW) {
+    var s = String(text == null ? '' : text);
+    if (ctx.measureText(s).width <= maxW) return s;
+    var out = s;
+    while (out.length > 1 && ctx.measureText(out + '…').width > maxW) out = out.slice(0, -1);
+    return out + '…';
+  }
+  /* opt: {w,h,base,min,weight,lh} — 칸(h)을 넘으면 글자 크기를 한 단계씩 줄이고,
+     최소 크기에서도 넘치면 줄을 잘라 말줄임한다(박스 밖 이탈 0). */
+  function fitText(ctx, text, opt) {
+    var maxW = Math.max(40, opt.w), maxH = Math.max(20, opt.h);
+    var weight = opt.weight || 900, base = opt.base || 80;
+    var min = opt.min || Math.round(base * 0.52), lh = opt.lh || 1.24;
+    for (var size = base; size >= min; size -= 2) {
+      var font = weight + ' ' + size + 'px ' + FF;
+      ctx.font = font;
+      var lines = wrapLines(ctx, text, maxW);
+      var lineH = Math.round(size * lh);
+      var maxLines = Math.max(1, Math.floor(maxH / lineH));
+      if (lines.length <= maxLines) return { size: size, font: font, lines: lines, lineH: lineH, height: lines.length * lineH, truncated: false };
+    }
+    var s2 = min, f2 = weight + ' ' + s2 + 'px ' + FF;
+    ctx.font = f2;
+    var l2 = wrapLines(ctx, text, maxW), lh2 = Math.round(s2 * lh);
+    var ml = Math.max(1, Math.floor(maxH / lh2));
+    var cut = l2.slice(0, ml), tr = l2.length > ml;
+    if (tr && cut.length) cut[cut.length - 1] = trimTo(ctx, cut[cut.length - 1], maxW);
+    return { size: s2, font: f2, lines: cut, lineH: lh2, height: cut.length * lh2, truncated: tr };
+  }
+
+  /* ---------- 그리기 + 박스 계측(세이프 존 감사용) ---------- */
+  var AUDIT = null;
+  function rec(x, y, w, h, label) {
+    if (!AUDIT) return;
+    AUDIT.push({ x: +(+x).toFixed(2), y: +(+y).toFixed(2), w: +(+w).toFixed(2), h: +(+h).toFixed(2), label: String(label || '') });
+  }
+  function rr(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function panel(ctx, x, y, w, h, r, fill, stroke, lw, label) {
+    if (fill) { ctx.fillStyle = fill; rr(ctx, x, y, w, h, r); ctx.fill(); }
+    if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw || 2; rr(ctx, x, y, w, h, r); ctx.stroke(); }
+    rec(x, y, w, h, label || 'panel');
+  }
+  /* 한 줄 텍스트(가운데 baseline) — 실제 그린 폭·높이를 그대로 기록 */
+  function txLine(ctx, text, x, yMid, font, color, align, label, alpha) {
+    var s = String(text == null ? '' : text);
+    if (!s) return 0;
+    ctx.font = font; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    var w = ctx.measureText(s).width;
+    var x0 = align === 'right' ? x - w : align === 'center' ? x - w / 2 : x;
+    if (alpha != null) ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.fillText(s, x0, yMid);
+    if (alpha != null) ctx.globalAlpha = 1;
+    var sz = fontPx(font);
+    rec(x0, yMid - sz * 0.62, w, sz * 1.24, label || s.slice(0, 14));
+    return w;
+  }
+  /* 단어별 색(숫자·키워드 하이라이트)을 섞어 한 줄을 그린다 */
+  function txWords(ctx, line, x, yMid, font, colorFn, label, alpha, align) {
+    var s = String(line == null ? '' : line);
+    if (!s) return 0;
+    ctx.font = font; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    var parts = s.split(' '), sp = ctx.measureText(' ').width, ws = [], total = 0, i, w;
+    for (i = 0; i < parts.length; i++) { w = ctx.measureText(parts[i]).width; ws.push(w); total += w + (i ? sp : 0); }
+    var x0 = align === 'center' ? x - total / 2 : align === 'right' ? x - total : x;
+    var cx = x0;
+    if (alpha != null) ctx.globalAlpha = alpha;
+    for (i = 0; i < parts.length; i++) {
+      ctx.fillStyle = colorFn(parts[i], i) || '#f1f5f9';
+      ctx.fillText(parts[i], cx, yMid);
+      cx += ws[i] + sp;
+    }
+    if (alpha != null) ctx.globalAlpha = 1;
+    var sz = fontPx(font);
+    rec(x0, yMid - sz * 0.62, total, sz * 1.24, label || 'text');
+    return total;
+  }
+
   /* ---------- UI sync ---------- */
+  function tplOf() {
+    var t = S.tplForce || S.cfg.tpl || 'card';
+    if (!TPL_NAME[t]) t = 'card';
+    if (t === 'photo' && !S.photos.length) t = 'card';
+    return t;
+  }
   function syncUi() {
     var c = S.cfg;
     var v = $('#wvVoice'); if (v) { if (!v.options.length) VOICES.forEach(function (o) { var op = D.createElement('option'); op.value = o.id; op.textContent = o.n; v.appendChild(op); }); v.value = c.voice; }
@@ -13868,6 +14034,13 @@ const GEN_ACTIONS = [
     var cp = $('#wvCap'); if (cp) cp.value = /^#[0-9a-f]{6}$/i.test(c.cap) ? c.cap : '#fde047';
     var wm = $('#wvWm'); if (wm) wm.value = c.wm || '';
     var nn = $('#wvNum'); if (nn) nn.checked = c.numNorm !== false;
+    var cd = $('#wvChartData'); if (cd && cd.value !== (c.chartData || '')) cd.value = c.chartData || '';
+    $$('#wvPanel [data-wvtpl]').forEach(function (btn) {
+      var on = btn.getAttribute('data-wvtpl') === (c.tpl || 'card');
+      btn.classList.toggle('on', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    var tg = $('#wvTplTag'); if (tg) tg.textContent = TPL_NAME[c.tpl || 'card'] || TPL_NAME.card;
     var tag = $('#wvMusic');
     if (tag) tag.textContent = (c.bgm === 'news' ? 'BGM 차분한 뉴스' : c.bgm === 'tense' ? 'BGM 긴장감 비트' : c.bgm === 'bright' ? 'BGM 밝은 리뷰' : 'BGM 없음') + (elKey() ? ' · 성우 ElevenLabs' : ' · 무음(키 없음)');
     $$('#wvPreStock,#wvPreDeal').forEach(function (btn) {
@@ -13916,6 +14089,22 @@ const GEN_ACTIONS = [
       cuts: cuts
     };
   }
+  /* 미리보기용 컷 타임라인 — 녹화 전에도 슬롯 배치를 그대로 보여 준다 */
+  function previewCuts(spec) {
+    var cuts = [], t = 0;
+    spec.cuts.forEach(function (c, i) {
+      var d = Math.max(1.6, c.d || estDur(c.text));
+      cuts.push({ text: c.text, tts: c.tts, hook: c.hook, dur: d, start: t, end: t + d,
+        img: S.photos.length ? S.photos[i % S.photos.length] : null, idx: i });
+      t += d + GAP;
+    });
+    return { cuts: cuts, total: Math.max(2, t - GAP) };
+  }
+  function applyPhotos() {
+    S.cuts.forEach(function (c) {
+      c.img = S.photos.length ? S.photos[Math.max(0, c.idx || 0) % S.photos.length] : null;
+    });
+  }
 
   /* ---------- photos ---------- */
   function addPhotos(files) {
@@ -13927,7 +14116,7 @@ const GEN_ACTIONS = [
       fr.onload = function () {
         var im = new Image();
         im.onload = function () {
-          if (S.photos.length < 3) { S.photos.push(im); syncUi(); }
+          if (S.photos.length < 3) { S.photos.push(im); syncUi(); applyPhotos(); redraw(); }
         };
         im.src = fr.result;
       };
@@ -13991,43 +14180,290 @@ const GEN_ACTIONS = [
     o.connect(e); e.connect(out); o.start(at); o.stop(at + 0.2);
   }
 
-  /* ---------- drawing ---------- */
-  function rr(ctx, x, y, w, h, r) {
-    r = Math.min(r, w / 2, h / 2);
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.arcTo(x + w, y, x + w, y + h, r);
-    ctx.arcTo(x + w, y + h, x, y + h, r);
-    ctx.arcTo(x, y + h, x, y, r);
-    ctx.arcTo(x, y, x + w, y, r);
-    ctx.closePath();
-  }
-  function lines(ctx, text, maxW, font) {
-    ctx.font = font;
-    var words = String(text || '').replace(/\s+/g, ' ').trim().split(' ');
-    var out = [], cur = '';
-    for (var i = 0; i < words.length; i++) {
-      var t = cur ? cur + ' ' + words[i] : words[i];
-      if (ctx.measureText(t).width <= maxW || !cur) cur = t;
-      else { out.push(cur); cur = words[i]; }
-    }
-    if (cur) out.push(cur);
-    return out;
-  }
-  function fit(ctx, text, maxW, maxLines, base, weight) {
-    var w = weight || 900;
-    for (var size = base; size >= Math.round(base * 0.55); size -= 4) {
-      var f = w + ' ' + size + 'px ' + FF;
-      var ls = lines(ctx, text, maxW, f);
-      if (ls.length <= maxLines) return { font: f, size: size, lines: ls };
-    }
-    var f2 = w + ' ' + Math.round(base * 0.55) + 'px ' + FF;
-    return { font: f2, size: Math.round(base * 0.55), lines: lines(ctx, text, maxW, f2).slice(0, maxLines + 1) };
-  }
   function cover(img, W0, H0) {
     var ir = img.width / img.height, r = W0 / H0;
     if (ir > r) { var sw = img.height * r; return [(img.width - sw) / 2, 0, sw, img.height]; }
     var sh = img.width / r; return [0, (img.height - sh) / 2, img.width, sh];
+  }
+
+  /* ---------- 수치 파싱 (모션 차트/비교표형) ---------- */
+  var UNIT = { '조': 1e12, '억': 1e8, '만': 1e4, '천': 1e3 };
+  function fmtNum(s) {
+    var p = String(s).split('.');
+    var n = p[0].replace(/[^\d-]/g, '');
+    var sign = n.charAt(0) === '-' ? '-' : '';
+    n = n.replace('-', '');
+    return sign + n.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (p[1] ? '.' + p[1] : '');
+  }
+  function parseNums(text) {
+    var src = String(text || '').replace(/(\d),(?=\d{3})/g, '$1\u2060');
+    /* 문장·항목 단위로 끊고, 조각마다 대표 수치 1개를 뽑는다 — 라벨은 수치 앞 말 */
+    var segs = src.split(/[,·;:\n\/|]/);
+    var out = [];
+    for (var si = 0; si < segs.length; si++) {
+      var seg = segs[si];
+      var m = /([+-]?\d(?:[\d\u2060]*\d)?(?:\.\d+)?)\s*(만원|조|억|만|천)?\s*(원|퍼센트|%|pt|배|건|명|개|위|주)?/.exec(seg);
+      if (!m) continue;
+      var num = parseFloat(m[1].replace(/\u2060/g, ''));
+      if (!isFinite(num)) continue;
+      var u = m[2] || '', suf = m[3] || '';
+      if (u === '만원') suf = '원';
+      var pre = seg.slice(0, m.index).replace(/[0-9+\-.,()%]/g, ' ').replace(/\s+/g, ' ').trim();
+      var words = pre.split(' ').filter(Boolean);
+      var label = words.slice(-2).join(' ').replace(/^[·,\-]+|[·,\-]+$/g, '').trim();
+      out.push({
+        label: label || ('항목 ' + (out.length + 1)),
+        value: num * (UNIT[u === '만원' ? '만' : u] || 1),
+        disp: fmtNum(m[1].replace(/\u2060/g, '')) + (u === '만원' ? '만' : u) + suf,
+        unit: (u === '만원' ? '만' : u) + suf
+      });
+      if (out.length >= 6) break;
+    }
+    return out;
+  }
+  function parseManual(txt) {
+    var out = [];
+    String(txt || '').split(/\n+/).forEach(function (line) {
+      var s = line.trim();
+      if (!s) return;
+      var m = /^(.+?)\s*[,:\t=]\s*([+-]?\d[\d,]*(?:\.\d+)?)\s*(만원|조|억|만|천)?\s*(원|퍼센트|%|pt|배|건|명|개|위|주)?$/.exec(s);
+      if (!m) return;
+      var u = m[3] || '', suf = m[4] || '';
+      if (u === '만원') suf = '원';
+      out.push({
+        label: m[1].trim().slice(0, 20),
+        value: parseFloat(m[2].replace(/,/g, '')) * (UNIT[u === '만원' ? '만' : u] || 1),
+        disp: fmtNum(m[2]) + (u === '만원' ? '만' : u) + suf,
+        unit: (u === '만원' ? '만' : u) + suf
+      });
+    });
+    return out;
+  }
+  function chartItems(cut) {
+    if (cut._items) return cut._items;
+    /* 직접 입력한 비교 데이터가 있으면 그것을 우선한다(명시 입력 > 자동 파싱) */
+    var man = parseManual(S.cfg.chartData);
+    if (man.length >= 2) { cut._items = man.slice(0, 5); return cut._items; }
+    var it = parseNums(cut.text), seen = {}, uniq = [];
+    it.forEach(function (x) {
+      var k = x.value + '|' + x.unit;
+      if (seen[k]) return;
+      seen[k] = 1; uniq.push(x);
+    });
+    cut._items = uniq.length ? uniq.slice(0, 5) : null;
+    return cut._items;
+  }
+
+  /* ---------- 템플릿 3종 ---------- */
+  function drawTopRow(ctx, spec, idx, n, ac) {
+    var slot = SLOTS.hook, cy = slot.y + 26, pillH = 52;
+    var counter = (idx + 1) + ' / ' + n;
+    var fC = '700 24px ' + FF, fW = '700 21px ' + FF;
+    ctx.font = fC;
+    var wC = ctx.measureText(counter).width;
+    var wm = String(spec.watermark || '').trim();
+    ctx.font = fW;
+    var wW = wm ? ctx.measureText(wm).width : 0;
+    var rightW = wC + (wm ? wW + 20 : 0);
+    var badgeMax = slot.w - rightW - 24;
+    var label = String(spec.badge || 'AI 스튜디오');
+    var fs = 26, fB = '800 ' + fs + 'px ' + FF;
+    ctx.font = fB;
+    while (fs > 18 && ctx.measureText(label).width + 44 > badgeMax) { fs -= 2; fB = '800 ' + fs + 'px ' + FF; ctx.font = fB; }
+    var tw = ctx.measureText(label).width;
+    if (tw + 44 > badgeMax) { label = trimTo(ctx, label, Math.max(40, badgeMax - 44)); tw = ctx.measureText(label).width; }
+    var pw = Math.min(badgeMax, Math.max(fs + 40, tw + 44));
+    panel(ctx, slot.x, cy - pillH / 2, pw, pillH, pillH / 2, hexA(ac, .16), hexA(ac, .55), 2, 'badge');
+    txLine(ctx, label, slot.x + 22, cy + 1, fB, ac, 'left', 'badge-text');
+    txLine(ctx, counter, SAFE.r, cy, fC, 'rgba(226,232,240,.66)', 'right', 'counter');
+    if (wm) txLine(ctx, wm, SAFE.r - wC - 20, cy, fW, 'rgba(148,163,184,.62)', 'right', 'wm');
+  }
+  function drawHook(ctx, spec, cut, idx, ac) {
+    var slot = SLOTS.hook;
+    var top = slot.y + 52 + 26;
+    var h = slot.y + slot.h - top - 8 - 20;
+    if (h < 60) return;
+    var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (cut.hook || spec.hookTitle || '');
+    if (!title) return;
+    var fit = fitText(ctx, title, { w: slot.w, h: h, base: idx === 0 ? 82 : 54, min: idx === 0 ? 44 : 34, weight: 900, lh: 1.22 });
+    var y0 = top + (h - fit.height) / 2;
+    for (var i = 0; i < fit.lines.length; i++) {
+      txWords(ctx, fit.lines[i], slot.x + slot.w / 2, y0 + i * fit.lineH + fit.lineH / 2, fit.font,
+        function (tok) { return /\d/.test(tok) ? ac : (idx === 0 ? '#f8fafc' : 'rgba(226,232,240,.86)'); },
+        'hook', null, 'center');
+    }
+    var uy = y0 + fit.height + 10;
+    if (uy + 8 <= slot.y + slot.h) {
+      var uw = Math.min(180, slot.w * 0.28);
+      panel(ctx, slot.x + (slot.w - uw) / 2, uy, uw, 8, 4, hexA(ac, .9), null, 0, 'hook-line');
+    }
+  }
+  function cardColorFn(ac, capColor, words) {
+    return function (tok) {
+      var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
+      if (/\d/.test(tok)) return ac;
+      if (words && words.indexOf(clean) >= 0) return capColor;
+      return '#f1f5f9';
+    };
+  }
+  /* 1) 📊 정보/시황 카드형 — 훅 + 중앙 핵심 포인트 카드(숫자 하이라이트) + 자막 */
+  function drawCardMain(ctx, cut, p, spec, ac) {
+    var slot = SLOTS.main, pad = 52, innerW = slot.w - pad * 2;
+    var labelH = 40, labelGap = 22, footGap = 30, footH = 8;
+    var textH = slot.h - pad * 2 - labelH - labelGap - footGap - footH;
+    var fit = fitText(ctx, cut.text, { w: innerW, h: textH, base: 88, min: 44, weight: 900, lh: 1.26 });
+    var cardH = pad * 2 + labelH + labelGap + fit.height + footGap + footH;
+    var cy = slot.y + Math.max(0, (slot.h - cardH) / 2);
+    panel(ctx, slot.x, cy, slot.w, cardH, 34, 'rgba(9,16,30,.90)', hexA(ac, .38), 2, 'card');
+    panel(ctx, slot.x + 6, cy + 26, 8, Math.max(24, cardH - 52), 4, hexA(ac, .85), null, 0, 'card-bar');
+    var ix = slot.x + pad, iy = cy + pad;
+    txLine(ctx, 'POINT ' + ('0' + ((cut.idx || 0) + 1)).slice(-2), ix, iy + labelH / 2, '900 26px ' + FF, ac, 'left', 'card-label');
+    var ty = iy + labelH + labelGap;
+    var cf = cardColorFn(ac, spec.capColor, spec.words);
+    for (var i = 0; i < fit.lines.length; i++) {
+      txWords(ctx, fit.lines[i], ix, ty + i * fit.lineH + fit.lineH / 2, fit.font, cf, 'card-text');
+    }
+    panel(ctx, ix, cy + cardH - pad - footH, 96, footH, 4, hexA(ac, .9), null, 0, 'card-foot');
+  }
+  /* 2) 📈 모션 차트/비교표형 — 대본 수치 파싱 또는 수동 입력 */
+  function drawChartMain(ctx, cut, p, spec, ac) {
+    var slot = SLOTS.main;
+    var items = chartItems(cut);
+    if (!items || items.length < 1) return drawCardMain(ctx, cut, p, spec, ac);
+    var anim = ease(p);
+    var same = items.every(function (it) { return it.unit === items[0].unit; });
+    var kind = items.length === 2 ? (same ? '가격 비교' : '수치 요약') : '수치 비교';
+    txLine(ctx, 'DATA · ' + kind, slot.x, slot.y + 26, '900 28px ' + FF, ac, 'left', 'chart-label');
+    if (items.length === 1) {
+      var only = items[0];
+      var kTop = slot.y + 78, kH = Math.min(420, slot.h - 90);
+      panel(ctx, slot.x, kTop, slot.w, kH, 34, 'rgba(9,16,30,.90)', hexA(ac, .42), 2, 'kpi-card');
+      panel(ctx, slot.x + 6, kTop + 26, 8, Math.max(24, kH - 52), 4, hexA(ac, .85), null, 0, 'kpi-bar');
+      var klf = fitText(ctx, only.label, { w: slot.w - 120, h: 56, base: 38, min: 24, weight: 800, lh: 1.15 });
+      txLine(ctx, klf.lines[0] || '', slot.x + 50, kTop + 66, klf.font, 'rgba(226,232,240,.80)', 'left', 'kpi-label');
+      var kvf = fitText(ctx, only.disp, { w: slot.w - 120, h: kH - 190, base: 150, min: 70, weight: 900, lh: 1.08 });
+      txLine(ctx, kvf.lines[0] || '', slot.x + 50, kTop + 178, kvf.font, ac, 'left', 'kpi-value');
+      panel(ctx, slot.x + 50, kTop + kH - 58, 120, 10, 5, hexA(ac, .9), null, 0, 'kpi-line');
+      return;
+    }
+    if (items.length === 2 && same) {
+      var cTop = slot.y + 70, cH = Math.min(340, slot.h - 70 - 96);
+      var w = (slot.w - 36) / 2;
+      var maxV = Math.max(Math.abs(items[0].value), Math.abs(items[1].value), 1);
+      items.forEach(function (it, i) {
+        var x = slot.x + i * (w + 36);
+        var hi = Math.abs(it.value) >= maxV - 1e-9;
+        panel(ctx, x, cTop, w, cH, 28, 'rgba(9,16,30,.90)', hexA(ac, hi ? .58 : .26), 2, 'cmp-card');
+        var lf = fitText(ctx, it.label, { w: w - 52, h: 64, base: 34, min: 22, weight: 800, lh: 1.2 });
+        for (var li = 0; li < lf.lines.length; li++) {
+          txLine(ctx, lf.lines[li], x + 26, cTop + 44 + li * lf.lineH, lf.font, 'rgba(226,232,240,.78)', 'left', 'cmp-label');
+        }
+        var vf = fitText(ctx, it.disp, { w: w - 52, h: 150, base: 84, min: 42, weight: 900, lh: 1.12 });
+        for (var vi = 0; vi < vf.lines.length; vi++) {
+          txLine(ctx, vf.lines[vi], x + 26, cTop + 118 + vi * vf.lineH, vf.font, hi ? ac : '#f1f5f9', 'left', 'cmp-value');
+        }
+        var bw = Math.max(6, (w - 52) * (Math.abs(it.value) / maxV) * anim);
+        panel(ctx, x + 26, cTop + cH - 54, w - 52, 14, 7, 'rgba(148,163,184,.18)', null, 0, 'cmp-track');
+        panel(ctx, x + 26, cTop + cH - 54, bw, 14, 7, hi ? hexA(ac, .95) : hexA(ac, .55), null, 0, 'cmp-bar');
+      });
+      var d = items[0].value - items[1].value;
+      var dTxt = '차이 ' + (d > 0 ? '+' : '') + fmtNum(String(Math.abs(d) < 1 ? d.toFixed(2) : Math.round(d))) + (items[0].unit || '');
+      txLine(ctx, dTxt, SAFE.x + SAFE.w / 2, cTop + cH + 46, '900 34px ' + FF, 'rgba(226,232,240,.85)', 'center', 'cmp-diff');
+      return;
+    }
+    if (items.length === 2) {
+      /* 단위가 다른 두 수치 — 공통 막대로 비교하면 왜곡되므로 값 카드 2단으로 쌓는다 */
+      var top = slot.y + 78, avail = slot.h - 78 - 6, vg = 26;
+      var rh = Math.min(246, Math.floor((avail - vg) / 2));
+      items.forEach(function (it, i) {
+        var y = top + i * (rh + vg);
+        panel(ctx, slot.x, y, slot.w, rh, 30, 'rgba(9,16,30,.90)', hexA(ac, i === 0 ? .50 : .24), 2, 'val-card');
+        panel(ctx, slot.x + 6, y + 22, 8, Math.max(20, rh - 44), 4, hexA(ac, .85), null, 0, 'val-bar');
+        var lf = fitText(ctx, it.label, { w: slot.w - 120, h: 50, base: 36, min: 22, weight: 800, lh: 1.15 });
+        txLine(ctx, lf.lines[0] || '', slot.x + 46, y + 52, lf.font, 'rgba(226,232,240,.78)', 'left', 'val-label');
+        var vf = fitText(ctx, it.disp, { w: slot.w - 120, h: Math.max(70, rh - 110), base: 84, min: 44, weight: 900, lh: 1.1 });
+        txLine(ctx, vf.lines[0] || '', slot.x + 46, y + Math.min(rh - 58, 148), vf.font, i === 0 ? ac : '#f1f5f9', 'left', 'val-value');
+      });
+      return;
+    }
+    /* 3개 이상 — 단위가 같으면 한 축, 다르면 같은 단위끼리 각자의 최대값으로 스케일 */
+    var n = items.length;
+    var maxBy = {};
+    items.forEach(function (it) { var k = it.unit || ''; maxBy[k] = Math.max(maxBy[k] || 1, Math.abs(it.value)); });
+    var rowTop0 = slot.y + 62, avail2 = slot.h - 62 - 6;
+    var rowH = Math.min(140, Math.floor(avail2 / n));
+    var off = Math.max(0, Math.floor((avail2 - rowH * n) / 2));
+    items.forEach(function (it, i) {
+      var y = rowTop0 + off + i * rowH;
+      var lf = fitText(ctx, it.label, { w: 520, h: 44, base: 38, min: 22, weight: 800, lh: 1.14 });
+      txLine(ctx, lf.lines[0] || '', SAFE.x, y + 22, lf.font, 'rgba(226,232,240,.84)', 'left', 'bar-label');
+      var vf = fitText(ctx, it.disp, { w: 360, h: 44, base: 42, min: 24, weight: 900, lh: 1.14 });
+      txLine(ctx, vf.lines[0] || '', SAFE.r, y + 22, vf.font, i === 0 ? ac : '#e2e8f0', 'right', 'bar-value');
+      var by = y + 52;
+      panel(ctx, SAFE.x, by, SAFE.w, 24, 12, 'rgba(148,163,184,.16)', null, 0, 'bar-track');
+      var fw = Math.max(10, SAFE.w * (Math.abs(it.value) / maxBy[it.unit || '']) * anim);
+      panel(ctx, SAFE.x, by, fw, 24, 12, i === 0 ? hexA(ac, .95) : hexA(ac, .55), null, 0, 'bar');
+    });
+  }
+  /* 3) 🖼️ 사진 줌인/캡처형 — 풀스크린 Ken Burns + 상단 배지·하단 자막 */
+  function drawPhotoBackdrop(ctx, cut, idx, p) {
+    var img = cut.img || S.photos[0] || null;
+    if (!img) return false;
+    var z = 1.05 + 0.14 * ease(p);
+    var dw = CW * z, dh = CH * z;
+    var dx = (CW - dw) / 2 + (idx % 2 ? 1 : -1) * 18 * p;
+    var dy = (CH - dh) / 2 - 14 * p;
+    var cr = cover(img, CW, CH);
+    ctx.drawImage(img, cr[0], cr[1], cr[2], cr[3], dx, dy, dw, dh);
+    var g1 = ctx.createLinearGradient(0, 0, 0, 620);
+    g1.addColorStop(0, 'rgba(6,10,18,.90)'); g1.addColorStop(1, 'rgba(6,10,18,0)');
+    ctx.fillStyle = g1; ctx.fillRect(0, 0, CW, 620);
+    var g2 = ctx.createLinearGradient(0, 1060, 0, CH);
+    g2.addColorStop(0, 'rgba(6,10,18,0)'); g2.addColorStop(.5, 'rgba(6,10,18,.84)'); g2.addColorStop(1, 'rgba(6,10,18,.96)');
+    ctx.fillStyle = g2; ctx.fillRect(0, 1060, CW, CH - 1060);
+    return true;
+  }
+  function drawPhotoHook(ctx, spec, cut, idx) {
+    var slot = SLOTS.hook;
+    var title = (cut.hook || spec.hookTitle || '');
+    if (!title) return;
+    var h = slot.h - 52 - 34 - 16;
+    var fit = fitText(ctx, title, { w: slot.w, h: h, base: 56, min: 34, weight: 900, lh: 1.2 });
+    var y0 = slot.y + 52 + 25 + (h - fit.height) / 2;
+    for (var i = 0; i < fit.lines.length; i++) {
+      txLine(ctx, fit.lines[i], SAFE.x + SAFE.w / 2, y0 + i * fit.lineH + fit.lineH / 2, fit.font,
+        idx === 0 ? '#f8fafc' : 'rgba(226,232,240,.9)', 'center', 'phook');
+    }
+  }
+  function drawCaption(ctx, cut, p, spec, soft) {
+    var slot = SLOTS.cap, pad = 26;
+    var fit = fitText(ctx, cut.text, { w: slot.w - pad * 2, h: slot.h - pad * 2 - 10, base: 74, min: 38, weight: 900, lh: 1.26 });
+    var boxH = Math.min(slot.h, fit.height + pad * 2);
+    var y = slot.y + slot.h - boxH;
+    panel(ctx, slot.x, y, slot.w, boxH, 26, soft ? 'rgba(6,10,18,.46)' : 'rgba(6,10,18,.62)', null, 0, 'cap-panel');
+    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
+    var capC = spec.capColor || '#fde047', words = spec.words || [], ac = spec.accent || '#38bdf8';
+    for (var i = 0; i < fit.lines.length; i++) {
+      var yMid = y + pad + i * fit.lineH + fit.lineH / 2;
+      txWords(ctx, fit.lines[i], SAFE.x + SAFE.w / 2, yMid, fit.font, function (tok) {
+        var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
+        var on = (seen / total) <= p + 0.0001;
+        seen += String(tok).length;
+        if (on && words.indexOf(clean) >= 0) return ac;
+        return on ? capC : 'rgba(241,245,249,.62)';
+      }, 'cap', null, 'center');
+    }
+  }
+  function drawProgress(ctx, t, ac) {
+    var y = 1206, h = 6;
+    panel(ctx, SAFE.x, y, SAFE.w, h, 3, 'rgba(255,255,255,.12)', null, 0, 'prog-track');
+    var f = Math.min(1, t / Math.max(.1, S.total));
+    panel(ctx, SAFE.x, y, Math.max(6, SAFE.w * f), h, 3, ac, null, 0, 'prog');
+    S.cuts.forEach(function (c) {
+      if (c.start <= 0) return;
+      var cx = SAFE.x + SAFE.w * (c.start / Math.max(.1, S.total));
+      panel(ctx, cx - 2, y - 3, 4, h + 6, 2, 'rgba(6,10,18,.75)', null, 0, 'prog-tick');
+    });
   }
 
   var CTX = null;
@@ -14035,6 +14471,7 @@ const GEN_ACTIONS = [
     if (!CTX || CTX.canvas !== cv) CTX = cv.getContext('2d', { alpha: false });
     return CTX;
   }
+
   function drawFrame(t) {
     var cv = $('#wvCanvas');
     if (!cv) return;
@@ -14047,169 +14484,126 @@ const GEN_ACTIONS = [
     var tIn = Math.max(0, t - cut.start);
     var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
     var ac = spec.accent || '#38bdf8';
+    var tpl = tplOf();
+    var ein = Math.min(1, tIn / .32);
+    var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
 
-    /* 배경 */
+    /* 배경 — 사진형은 풀스크린 Ken Burns */
+    ctx.save();
     var bg = ctx.createLinearGradient(0, 0, 0, CH);
     bg.addColorStop(0, '#070d18'); bg.addColorStop(.45, '#0b1424'); bg.addColorStop(1, '#060a12');
     ctx.fillStyle = bg; ctx.fillRect(0, 0, CW, CH);
-    var glow = ctx.createRadialGradient(CW * .5, CH * .2, 40, CW * .5, CH * .2, 820);
-    glow.addColorStop(0, hexA(ac, .28)); glow.addColorStop(1, hexA(ac, 0));
-    ctx.fillStyle = glow; ctx.fillRect(0, 0, CW, CH);
-
-    /* 컷 사진 (Ken Burns) */
-    if (cut.img) {
-      var z = 1.06 + 0.13 * p;
-      var dw = CW * z, dh = CH * z;
-      var dx = (CW - dw) / 2 + (idx % 2 ? 20 : -20) * p;
-      var dy = (CH - dh) / 2 - 18 * p;
-      var cr = cover(cut.img, CW, CH);
-      ctx.save();
-      ctx.globalAlpha = .92;
-      ctx.drawImage(cut.img, cr[0], cr[1], cr[2], cr[3], dx, dy, dw, dh);
-      ctx.restore();
-      var ov = ctx.createLinearGradient(0, 0, 0, CH);
-      ov.addColorStop(0, 'rgba(6,10,18,.58)');
-      ov.addColorStop(.42, 'rgba(6,10,18,.40)');
-      ov.addColorStop(1, 'rgba(6,10,18,.93)');
-      ctx.fillStyle = ov; ctx.fillRect(0, 0, CW, CH);
-    }
-
-    /* 컷 전환 슬라이드 */
-    var ein = Math.min(1, tIn / .34);
-    var eout = Math.min(1, Math.max(0, cut.dur - tIn) / .2);
-    ctx.save();
-    ctx.globalAlpha = Math.min(1, ein) * (.55 + .45 * Math.min(1, eout + .35));
-    ctx.translate((1 - ein) * (idx % 2 ? 46 : -46), 0);
-
-    /* 상단 배지 · 컷 카운터 */
-    ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
-    var badge = spec.badge || 'AI 스튜디오';
-    var bwMax = CW - 300;
-    ctx.font = '800 30px ' + FF;
-    if (ctx.measureText(badge).width + 46 > bwMax) ctx.font = '800 24px ' + FF;
-    var bw = Math.min(bwMax, ctx.measureText(badge).width + 46);
-    ctx.fillStyle = hexA(ac, .16); rr(ctx, 64, 118, bw, 58, 29); ctx.fill();
-    ctx.strokeStyle = hexA(ac, .55); ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = ac; ctx.fillText(badge, 64 + 24, 148);
-    ctx.textAlign = 'right'; ctx.font = '700 28px ' + FF;
-    ctx.fillStyle = 'rgba(226,232,240,.62)';
-    ctx.fillText((idx + 1) + ' / ' + cuts.length, CW - 64, 148);
-
-    /* 오프닝 대형 훅 타이틀 */
-    if (idx === 0 && spec.hookTitle) {
-      var hp = Math.min(1, tIn / .55);
-      var hf = fit(ctx, spec.hookTitle, CW - 150, 3, 118, 900);
-      ctx.save();
-      ctx.globalAlpha = Math.min(1, hp * 1.2);
-      var sc = .92 + .08 * Math.min(1, hp);
-      ctx.translate(CW / 2, 640); ctx.scale(sc, sc); ctx.translate(-CW / 2, -640);
-      ctx.font = hf.font; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
-      ctx.shadowColor = hexA(ac, .55); ctx.shadowBlur = 34;
-      var hy = 640 - (hf.lines.length - 1) * (hf.size * .58);
-      hf.lines.forEach(function (ln, i) {
-        ctx.fillText(ln, CW / 2, hy + i * hf.size * 1.16);
-      });
-      ctx.shadowBlur = 0;
-      var uw = Math.min(CW - 220, 520 * Math.min(1, tIn / .7));
-      ctx.fillStyle = ac; rr(ctx, (CW - uw) / 2, hy + (hf.lines.length - 1) * hf.size * 1.16 + hf.size * .72, uw, 12, 6); ctx.fill();
-      ctx.restore();
-    }
-
-    /* 이후 컷 — 훅 라인을 작게 유지해 문맥을 잇는다 */
-    if (idx > 0 && (cut.hook || spec.hookTitle)) {
-      var hk = cut.hook || spec.hookTitle;
-      var hf2 = fit(ctx, hk, CW - 210, 2, 66, 800);
-      ctx.font = hf2.font; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(226,232,240,.84)';
-      var hy2 = 560 - (hf2.lines.length - 1) * hf2.size * .6;
-      hf2.lines.forEach(function (ln, i) { ctx.fillText(ln, CW / 2, hy2 + i * hf2.size * 1.16); });
-      ctx.fillStyle = hexA(ac, .8);
-      rr(ctx, CW / 2 - 60, hy2 + (hf2.lines.length - 1) * hf2.size * 1.16 + hf2.size * .74, 120, 9, 5); ctx.fill();
-    }
-
-    /* 키워드 카드 + 장식 차트 모티프 */
-    var kwY = idx === 0 && spec.hookTitle ? 1120 : 880;
-    var kws = spec.words.length ? spec.words.slice(0, 3) : [];
-    if (!kws.length) {
-      kws = cut.text.split(/[\s,.!?·]/).filter(function (w) { return w.length >= 2; }).slice(0, 3);
-    }
-    if (kws.length) {
-      ctx.textAlign = 'left'; ctx.font = '800 30px ' + FF;
-      var kx = 64, kw = 0;
-      kws.forEach(function (k, i) {
-        var label = String(k).slice(0, 14);
-        var w0 = ctx.measureText(label).width + 44;
-        if (kx + w0 > CW - 64) return;
-        var ka = Math.min(1, Math.max(0, (tIn - i * .12) / .3));
-        ctx.save();
-        ctx.globalAlpha = ka * .95;
-        ctx.translate(0, (1 - ka) * 18);
-        ctx.fillStyle = hexA('#0b1424', .82); rr(ctx, kx, kwY, w0, 54, 27); ctx.fill();
-        ctx.strokeStyle = hexA(ac, .45); ctx.lineWidth = 2; ctx.stroke();
-        ctx.fillStyle = 'rgba(226,232,240,.92)'; ctx.fillText(label, kx + 22, kwY + 29);
-        ctx.restore();
-        kx += w0 + 12; kw++;
-      });
-    }
-    /* 움직이는 장식 막대(수치 없음 — 그래프 느낌만) */
-    ctx.save();
-    ctx.globalAlpha = .17;
-    var barBase = kwY + 66;
-    for (var b = 0; b < 9; b++) {
-      var hgt = 20 + 66 * Math.abs(Math.sin((t * 1.6) + b * .7));
-      ctx.fillStyle = hexA(ac, .85);
-      rr(ctx, 64 + b * 46, barBase, 30, hgt, 8); ctx.fill();
+    var photoOn = false;
+    if (tpl === 'photo') photoOn = drawPhotoBackdrop(ctx, cut, idx, p);
+    if (!photoOn) {
+      var glow = ctx.createRadialGradient(CW * .5, CH * .22, 40, CW * .5, CH * .22, 860);
+      glow.addColorStop(0, hexA(ac, .26)); glow.addColorStop(1, hexA(ac, 0));
+      ctx.fillStyle = glow; ctx.fillRect(0, 0, CW, CH);
     }
     ctx.restore();
 
-    /* 발성에 맞춘 하이라이트 자막 */
-    var capFont = fit(ctx, cut.text, CW - 150, 4, 76, 900);
-    ctx.font = capFont.font;
-    ctx.textAlign = 'left';
-    var capTop = 1330 - (capFont.lines.length - 1) * capFont.size * .62 - 40;
-    var boxH = capFont.lines.length * capFont.size * 1.24 + 56;
-    ctx.fillStyle = 'rgba(6,10,18,.5)';
-    rr(ctx, 52, capTop - 26, CW - 104, boxH, 26); ctx.fill();
-    var chars = cut.text.replace(/\s/g, '').length || 1, seen = 0;
-    for (var li = 0; li < capFont.lines.length; li++) {
-      var ln = capFont.lines[li];
-      var lw = ctx.measureText(ln).width;
-      var x = (CW - lw) / 2;
-      var y = capTop + li * capFont.size * 1.24 + capFont.size * .55;
-      var words2 = ln.split(' ');
-      var sp = ctx.measureText(' ').width;
-      for (var wi = 0; wi < words2.length; wi++) {
-        var word = words2[wi];
-        var ww = ctx.measureText(word).width;
-        var frac = seen / chars;
-        var on = p >= frac;
-        ctx.fillStyle = on ? (spec.capColor || '#fde047') : 'rgba(241,245,249,.70)';
-        if (on && spec.words.length && spec.words.indexOf(word.replace(/[^\w가-힣]/g, '')) >= 0) ctx.fillStyle = ac;
-        ctx.fillText(word, x, y);
-        x += ww + sp;
-        seen += word.length;
-      }
+    ctx.save();
+    ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
+    drawTopRow(ctx, spec, idx, cuts.length, ac);
+    if (tpl === 'photo') {
+      drawPhotoHook(ctx, spec, cut, idx);
+    } else {
+      drawHook(ctx, spec, cut, idx, ac);
+      if (tpl === 'chart') drawChartMain(ctx, cut, p, spec, ac);
+      else drawCardMain(ctx, cut, p, spec, ac);
     }
+    drawCaption(ctx, cut, p, spec, tpl === 'photo');
+    drawProgress(ctx, t, ac);
+    ctx.restore();
+  }
 
-    /* 진행 바 */
-    var bx = 64, bwid = CW - 128, by = 1698;
-    ctx.fillStyle = 'rgba(255,255,255,.13)'; rr(ctx, bx, by, bwid, 14, 7); ctx.fill();
-    ctx.fillStyle = ac; rr(ctx, bx, by, Math.max(6, bwid * Math.min(1, t / Math.max(.1, S.total))), 14, 7); ctx.fill();
-    cuts.forEach(function (c) {
-      if (c.start <= 0) return;
-      var cx = bx + bwid * (c.start / Math.max(.1, S.total));
-      ctx.fillStyle = 'rgba(6,10,18,.65)'; ctx.fillRect(cx - 2, by, 4, 14);
+  function previewTime() {
+    if (!S.cuts.length) return 0;
+    var c = S.cuts[0];
+    return c.start + c.dur * 0.55;
+  }
+  function redraw() {
+    if (!S.spec || !S.cuts.length) { try { drawIdle(); } catch (e) {} return; }
+    S.cuts.forEach(function (c) { c._items = null; });
+    try { drawFrame(previewTime()); } catch (e) {}
+  }
+
+  /* ---------- 세이프 존 감사 (0px 이탈 검증) ---------- */
+  function violationsOf(list) {
+    var v = [];
+    list.forEach(function (b) {
+      var bad = [];
+      if (b.x < SAFE.x - 0.5) bad.push('left ' + (b.x - SAFE.x).toFixed(1));
+      if (b.y < SAFE.y - 0.5) bad.push('top ' + (b.y - SAFE.y).toFixed(1));
+      if (b.x + b.w > SAFE.r + 0.5) bad.push('right +' + (b.x + b.w - SAFE.r).toFixed(1));
+      if (b.y + b.h > SAFE.b + 0.5) bad.push('bottom +' + (b.y + b.h - SAFE.b).toFixed(1));
+      if (bad.length) v.push({ label: b.label, box: b, why: bad.join(', ') });
     });
-
-    /* 워터마크 */
-    ctx.textAlign = 'left'; ctx.font = '800 27px ' + FF;
-    ctx.fillStyle = 'rgba(226,232,240,.66)';
-    ctx.fillText('🎬 ' + (spec.watermark || 'AI 스튜디오'), 64, 1806);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = 'rgba(148,163,184,.55)';
-    ctx.font = '700 24px ' + FF;
-    ctx.fillText(Math.floor(t) + 's / ' + Math.round(S.total) + 's', CW - 64, 1806);
-
-    ctx.restore();
+    return v;
+  }
+  function loadPhotos(urls) {
+    return Promise.all(urls.map(function (u) {
+      return new Promise(function (res) {
+        var im = new Image();
+        im.onload = function () { res(im); };
+        im.onerror = function () { res(null); };
+        im.src = u;
+      });
+    })).then(function (list) { return list.filter(Boolean); });
+  }
+  function runAudit(opt) {
+    var raw = opt.spec || (W.WVID_SRC && W.WVID_SRC.shorts ? W.WVID_SRC.shorts() : null);
+    var spec = normSpec(raw);
+    if (!spec) return { error: 'no-spec' };
+    var prev = { spec: S.spec, cuts: S.cuts, total: S.total, force: S.tplForce, cd: S.cfg.chartData };
+    var pv = previewCuts(spec);
+    S.spec = spec; S.cuts = pv.cuts; S.total = pv.total;
+    S.tplForce = opt.tpl || null;
+    if (opt.chartData != null) S.cfg.chartData = String(opt.chartData);
+    pv.cuts.forEach(function (c) { c._items = null; });
+    var frames = [], viol = [], boxCount = 0;
+    var bnd = { minX: 1e9, minY: 1e9, maxR: -1e9, maxB: -1e9 };
+    var fr = opt.fractions || [0.2, 0.6, 0.97];
+    pv.cuts.forEach(function (c, i) {
+      fr.forEach(function (f) {
+        var at = c.start + c.dur * f;
+        AUDIT = [];
+        drawFrame(at);
+        var boxes = AUDIT.slice();
+        AUDIT = null;
+        boxCount += boxes.length;
+        boxes.forEach(function (b) {
+          if (b.x < bnd.minX) bnd.minX = b.x;
+          if (b.y < bnd.minY) bnd.minY = b.y;
+          if (b.x + b.w > bnd.maxR) bnd.maxR = b.x + b.w;
+          if (b.y + b.h > bnd.maxB) bnd.maxB = b.y + b.h;
+        });
+        var v = violationsOf(boxes);
+        v.forEach(function (x) { viol.push({ cut: i + 1, at: +at.toFixed(2), label: x.label, why: x.why, box: x.box }); });
+        frames.push({ cut: i + 1, at: +at.toFixed(2), boxes: boxes.length, violations: v.length });
+      });
+    });
+    S.spec = prev.spec; S.cuts = prev.cuts; S.total = prev.total; S.tplForce = prev.force; S.cfg.chartData = prev.cd;
+    return {
+      tpl: opt.tpl || S.cfg.tpl, cuts: pv.cuts.length, frames: frames.length,
+      boxes: boxCount, violations: viol.length, detail: viol.slice(0, 10),
+      bounds: { minX: +bnd.minX.toFixed(1), minY: +bnd.minY.toFixed(1), maxR: +bnd.maxR.toFixed(1), maxB: +bnd.maxB.toFixed(1) },
+      safe: { x: SAFE.x, y: SAFE.y, r: SAFE.r, b: SAFE.b }
+    };
+  }
+  function audit(opt) {
+    opt = opt || {};
+    return new Promise(function (resolve) {
+      var prevPhotos = S.photos;
+      var prep = opt.photos && opt.photos.length ? loadPhotos(opt.photos) : Promise.resolve(null);
+      prep.then(function (loaded) {
+        if (loaded && loaded.length) S.photos = loaded;
+        var res;
+        try { res = runAudit(opt); } catch (e) { res = { error: String((e && e.message) || e) }; }
+        S.photos = prevPhotos;
+        resolve(res);
+      });
+    });
   }
 
   /* ---------- render ---------- */
@@ -14246,6 +14640,9 @@ const GEN_ACTIONS = [
     var spec = S.spec || (W.WVID_SRC && W.WVID_SRC.shorts ? normSpec(W.WVID_SRC.shorts()) : null);
     if (!spec) { say('먼저 쇼츠 대본을 만들어 주세요. 쇼츠 카드의 <b>[🎬 웹에서 바로 영상 생성]</b> 버튼으로 시작할 수 있습니다.', 'bad'); return; }
     S.spec = spec;
+    if (S.cfg.tpl === 'photo' && !S.photos.length) {
+      say('⚠️ 사진 줌인형은 옵션의 <b>내 사진</b>이 필요합니다 — 지금은 카드형으로 그립니다.', 'bad');
+    }
     if (!W.MediaRecorder) { fail('이 브라우저는 MediaRecorder를 지원하지 않습니다 — Chrome·삼성 인터넷 최신 버전에서 열어 주세요.'); return; }
     var cv = $('#wvCanvas');
     if (!cv || !cv.captureStream) { fail('이 브라우저는 canvas.captureStream을 지원하지 않습니다.'); return; }
@@ -14384,7 +14781,7 @@ const GEN_ACTIONS = [
     if (dl) { dl.hidden = false; dl.href = S.url; dl.download = 'shorts_' + stamp() + '.' + ext; dl.textContent = '⬇ 영상 저장 (' + ext.toUpperCase() + ')'; }
     var mb = (blob.size / 1048576).toFixed(1);
     setBar(1); setState('완성', true);
-    say('✅ 완성 — ' + Math.round(S.total) + '초 · ' + mb + 'MB · ' + ext.toUpperCase() +
+    say('✅ 완성 — ' + Math.round(S.total) + '초 · ' + mb + 'MB · ' + ext.toUpperCase() + ' · ' + (TPL_NAME[tplOf()] || '') +
       (S.photos.length ? ' · 사진 ' + S.photos.length + '장' : '') +
       (elKey() ? ' · 성우 음성' : (' · 성우 없음(ElevenLabs 키 없음' + (S.cfg.bgm !== 'none' ? ' · BGM 포함' : '') + ')')) +
       '. 아래 [⬇ 영상 저장]으로 내려받으세요.', 'good');
@@ -14415,7 +14812,8 @@ const GEN_ACTIONS = [
         highlight_words: spec.words,
         pinned_comment: spec.pinned,
         platform_captions: spec.captions,
-        loop_ending: spec.loop
+        loop_ending: spec.loop,
+        template: S.cfg.tpl
       }
     });
   }
@@ -14478,8 +14876,12 @@ const GEN_ACTIONS = [
       return null;
     }
     S.spec = spec;
+    var pv = previewCuts(spec);
+    S.cuts = pv.cuts; S.total = pv.total;
+    applyPhotos();
     syncUi();
     setSrcTag(spec, label || '');
+    redraw();
     return spec;
   }
   function launch(kind) {
@@ -14493,28 +14895,46 @@ const GEN_ACTIONS = [
   }
   function loadSpec(raw, label) {
     var spec = adoptSpec(raw, label || '보관함');
-    if (spec) { try { drawFrame(0); } catch (e) {} }
+    if (spec) redraw();
     return spec;
+  }
+
+  /* ---------- 템플릿 선택 ---------- */
+  function setTpl(name) {
+    S.cfg.tpl = TPL_NAME[name] ? name : 'card';
+    saveCfg();
+    syncUi();
+    if (S.cfg.tpl === 'photo' && !S.photos.length) {
+      say('🖼️ <b>사진 줌인형</b>은 옵션의 <b>내 사진</b>이 필요합니다 — 사진을 넣는 즉시 그 사진으로 그립니다. (지금은 카드형으로 보여 줍니다)');
+    } else {
+      var d = { card: '📊 카드형 — 훅 + 핵심 포인트 카드 + 자막', chart: '📈 차트형 — 컷의 수치를 움직이는 바로 (수치 없으면 카드형)' + (parseManual(S.cfg.chartData).length >= 2 ? ' · 직접 입력한 비교 데이터 사용 중' : ''), photo: '🖼️ 사진형 — 내 사진 Ken Burns + 배지·자막' }[S.cfg.tpl];
+      if (d) say('양식을 바꿨습니다 · ' + d + ' · 세이프 존은 3종 모두 동일합니다.');
+    }
+    redraw();
   }
 
   /* ---------- bind ---------- */
   function bind() {
     var go = $('#wvStart'); if (go) go.addEventListener('click', start);
     var st = $('#wvStop'); if (st) st.addEventListener('click', function () { S.abort = true; if (S.rec && S.rec.state !== 'inactive') S.rec.stop(); else reset(); });
+    $$('#wvPanel [data-wvtpl]').forEach(function (b) {
+      b.addEventListener('click', function () { setTpl(b.getAttribute('data-wvtpl')); });
+    });
     $$('#wvPreStock,#wvPreDeal').forEach(function (b) {
       b.addEventListener('click', function () { applyPreset(b.getAttribute('data-wvpre')); });
     });
-    var v = $('#wvVoice'); if (v) v.addEventListener('change', function () { if (!S.cfg.preset) S.cfg.voice = v.value; else { S.cfg.voice = v.value; saveCfg(); } saveCfg(); syncUi(); });
+    var v = $('#wvVoice'); if (v) v.addEventListener('change', function () { S.cfg.voice = v.value; saveCfg(); syncUi(); });
     var b2 = $('#wvBgm'); if (b2) b2.addEventListener('change', function () { S.cfg.bgm = b2.value; saveCfg(); syncUi(); });
     var s2 = $('#wvSfx'); if (s2) s2.addEventListener('change', function () { S.cfg.sfx = !!s2.checked; saveCfg(); });
-    var a2 = $('#wvAccent'); if (a2) a2.addEventListener('input', function () { S.cfg.accent = a2.value; saveCfg(); if (S.spec) S.spec.accent = a2.value; });
-    var c2 = $('#wvCap'); if (c2) c2.addEventListener('input', function () { S.cfg.cap = c2.value; saveCfg(); if (S.spec) S.spec.capColor = c2.value; });
-    var w2 = $('#wvWm'); if (w2) w2.addEventListener('input', function () { S.cfg.wm = w2.value; saveCfg(); if (S.spec) S.spec.watermark = w2.value; });
+    var a2 = $('#wvAccent'); if (a2) a2.addEventListener('input', function () { S.cfg.accent = a2.value; saveCfg(); if (S.spec) S.spec.accent = a2.value; redraw(); });
+    var c2 = $('#wvCap'); if (c2) c2.addEventListener('input', function () { S.cfg.cap = c2.value; saveCfg(); if (S.spec) S.spec.capColor = c2.value; redraw(); });
+    var w2 = $('#wvWm'); if (w2) w2.addEventListener('input', function () { S.cfg.wm = w2.value; saveCfg(); if (S.spec) S.spec.watermark = w2.value; redraw(); });
     var n2 = $('#wvNum'); if (n2) n2.addEventListener('change', function () { S.cfg.numNorm = !!n2.checked; saveCfg(); });
+    var cd = $('#wvChartData'); if (cd) cd.addEventListener('input', function () { S.cfg.chartData = cd.value; saveCfg(); redraw(); });
     var ph = $('#wvPhotoBtn'); var pin = $('#wvPhotoInput');
     if (ph && pin) ph.addEventListener('click', function () { pin.click(); });
     if (pin) pin.addEventListener('change', function () { addPhotos(pin.files); pin.value = ''; });
-    var pc = $('#wvPhotoClear'); if (pc) pc.addEventListener('click', function () { S.photos = []; syncUi(); flash('컷 사진을 비웠습니다.'); });
+    var pc = $('#wvPhotoClear'); if (pc) pc.addEventListener('click', function () { S.photos = []; applyPhotos(); syncUi(); redraw(); flash('컷 사진을 비웠습니다.'); });
     var up = $('#wvUpBtn'); if (up) up.addEventListener('click', function () {
       var txt = uploadSetText();
       if (!txt) { say('먼저 쇼츠 대본이 필요합니다.', 'bad'); return; }
@@ -14529,7 +14949,6 @@ const GEN_ACTIONS = [
       if (S.running) { e.preventDefault(); e.returnValue = ''; }
     });
   }
-  function $$(sel) { return Array.prototype.slice.call(D.querySelectorAll(sel)); }
   function drawIdle() {
     var cv = $('#wvCanvas'); if (!cv) return;
     var ctx = ctxOf(cv);
@@ -14537,12 +14956,18 @@ const GEN_ACTIONS = [
     g.addColorStop(0, '#0a1424'); g.addColorStop(1, '#060a12');
     ctx.fillStyle = g; ctx.fillRect(0, 0, CW, CH);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(148,163,184,.8)'; ctx.font = '900 54px ' + FF;
-    ctx.fillText('🎬', CW / 2, CH / 2 - 70);
+    ctx.fillStyle = 'rgba(148,163,184,.75)'; ctx.font = '900 54px ' + FF;
+    ctx.fillText('🎬', CW / 2, CH / 2 - 150);
     ctx.fillStyle = 'rgba(226,232,240,.92)'; ctx.font = '900 46px ' + FF;
-    ctx.fillText('1080 × 1920', CW / 2, CH / 2 + 10);
-    ctx.fillStyle = 'rgba(148,163,184,.7)'; ctx.font = '700 34px ' + FF;
-    ctx.fillText('쇼츠 카드에서 [영상 생성]을 누르세요', CW / 2, CH / 2 + 80);
+    ctx.fillText('1080 × 1920', CW / 2, CH / 2 - 70);
+    ctx.fillStyle = 'rgba(125,211,252,.9)'; ctx.font = '900 30px ' + FF;
+    ctx.fillText('세이프 존 · 3단 고정 그리드', CW / 2, CH / 2 - 12);
+    ctx.fillStyle = 'rgba(148,163,184,.7)'; ctx.font = '700 28px ' + FF;
+    ctx.fillText('상단 180 · 하단 380 · 좌 60 · 우 120 비움', CW / 2, CH / 2 + 40);
+    ctx.fillStyle = 'rgba(148,163,184,.55)'; ctx.font = '700 26px ' + FF;
+    ctx.fillText('쇼츠 카드에서 [영상 생성]을 누르세요', CW / 2, CH / 2 + 110);
+    ctx.fillStyle = 'rgba(148,163,184,.4)'; ctx.font = '700 24px ' + FF;
+    ctx.fillText('📊 카드형 · 📈 차트형 · 🖼️ 사진형', CW / 2, CH / 2 + 220);
   }
 
   function init() {
@@ -14565,7 +14990,22 @@ const GEN_ACTIONS = [
     spec: function () { return S.spec; },
     norm: koNumNormalize,
     uploadSet: uploadSetText,
-    preset: applyPreset
+    preset: applyPreset,
+    setTpl: setTpl,
+    tpl: function () { return tplOf(); },
+    render: function (t) { if (t == null) redraw(); else { try { drawFrame(t); } catch (e) {} } },
+    audit: audit,
+    auditAll: function (opt) {
+      var o = opt || {}, out = {}, seq = Promise.resolve();
+      ['card', 'chart', 'photo'].forEach(function (t) {
+        seq = seq.then(function () {
+          return audit({ tpl: t, spec: o.spec, photos: o.photos, chartData: o.chartData, fractions: o.fractions }).then(function (r) { out[t] = r; });
+        });
+      });
+      return seq.then(function () { return out; });
+    },
+    layout: function () { return { safe: SAFE, slots: SLOTS, gap: SLOT_GAP, cw: CW, ch: CH }; },
+    parseNums: parseNums
   };
 })();
 </script>
