@@ -17777,7 +17777,7 @@
       <div class="modal-body">
         <div style="background:#0f172a; border-radius:8px; padding:10px 12px; margin-bottom:12px; border:1px solid #334155; font-size:11.5px; color:#cbd5e1; line-height:1.45;">
           <strong style="color:#fef08a;">💾 영구 보관 & 히스토리 조회 안내:</strong><br>
-          매일 장마감 시점의 대시보드 상태(지표, 수급 추이, 테마맵, 시간외, 브리핑)가 브라우저에 자동 누적 저장됩니다. 아래 저장된 날짜를 터치하면 해당 일자의 대시보드를 언제든 즉시 불러와 복기하실 수 있습니다.
+          매일 자정 23:59 브리핑이 끝나면 서버가 그날 마감 데이터(지수·야간선물·수급·주도테마 Top3·만쥬 픽·브리핑 타임라인)를 <strong style="color:#a7f3d0;">🤖 자정 자동저장</strong>으로 남기고, <strong style="color:#7dd3fc;">💾 수동 저장</strong>은 지금 화면 값을 브라우저에 따로 보관합니다. 날짜를 터치하면 상세가 펼쳐집니다.
         </div>
 
         <div style="font-weight:800; font-size:12px; color:#38bdf8; margin-bottom:6px;">저장된 날짜 목록 (아카이브):</div>
@@ -19583,39 +19583,216 @@ function openDetail(title, v1, v2, desc) {
     }
 
 
-    function openHistoryModal() {
-      let historyData = {};
-      try {
-        const stored = localStorage.getItem('yeonolang_stock_history');
-        if (stored) historyData = JSON.parse(stored);
-      } catch (e) {
-        historyData = {};
-      }
-      /* 예전에는 '오늘 기록'이 없으면 11/12 스냅샷을 오늘 것으로 지어 넣었다.
-         이제는 지어내지 않는다 — 저장된 기록만 보여 주고, 없으면 안내 문구만 띄운다. */
+    /* ==========================================================
+       📁 보관함 — 🤖 자정 자동저장(서버 아카이브) + 💾 수동 저장 병합
+       · 서버: ./data/archives/index.json  (정적 Pages·동적 Vercel 공통 상대경로)
+       · 브라우저: localStorage('yeonolang_stock_history')
+       · 날짜 역순으로 합치고, 같은 날짜에 둘 다 있으면 배지를 둘 다 단다.
+       · 카드를 누르면 상세(지수·야간선물·수급·테마·만쥬·브리핑 타임라인)가 펼쳐진다.
+       ========================================================== */
+    var HIST_ARCHIVE_DIRS = ['./data/archives/', 'data/archives/', '../data/archives/',
+      '../../data/archives/', '/data/archives/',
+      'https://hwen21c-tech.github.io/stock-dashboard/data/archives/'];
+    var histArchiveIndex = null;
+    var histArchiveDetail = {};
+    var histArchiveTried = false;
 
-      let html = '';
-      Object.keys(historyData).reverse().forEach(date => {
-        const item = historyData[date];
-        html += `<div style="background:#111827; border:1px solid #334155; border-radius:8px; padding:10px 12px; cursor:pointer;" onclick="alert('${item.date} 저장된 기록입니다.')">
-          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-            <span style="font-weight:800; color:#fef08a; font-size:12.5px;">📅 ${item.date} (${item.savedAt})</span>
-            <span style="font-size:10px; background:#0c4a6e; color:#38bdf8; padding:2px 6px; border-radius:4px; font-weight:700;">기록 보관 완료</span>
-          </div>
-          <div style="font-size:11.5px; color:#fff; font-weight:700; margin-bottom:3px;">${item.title}</div>
-          <div style="font-size:10.5px; color:#94a3b8;">
-            지수: <span style="color:#f87171;">코스피 ${item.kospi} / 코스닥 ${item.kosdaq}</span> | 
-            수급: <span style="color:#38bdf8;">외인 ${item.foreignKospi} / 기관 ${item.instKosdaq}</span>
-          </div>
-          <div style="font-size:10.5px; color:#cbd5e1; margin-top:2px;">
-            주도: <strong style="color:#fef08a;">${item.topStock}</strong>
-          </div>
-        </div>`;
+    function histEsc(v) {
+      return String(v === null || v === undefined || v === '' ? '—' : v).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
       });
+    }
 
-      document.getElementById('historyListContainer').innerHTML = html ||
-        '<div style="font-size:11.5px; color:#94a3b8; border:1px dashed #334155; border-radius:8px; padding:12px; line-height:1.6;">저장된 기록이 없습니다 — <strong style="color:#34d399;">💾 오늘 저장</strong>을 누르면 지금 화면에 표시된 지수·수급 값이 이 날짜로 기록됩니다.</div>';
+    function histFetchJSON(name) {
+      var i = 0;
+      function next() {
+        if (i >= HIST_ARCHIVE_DIRS.length) return Promise.resolve(null);
+        var url = HIST_ARCHIVE_DIRS[i++] + name + '?t=' + Date.now();
+        return fetch(url, { cache: 'no-store' }).then(function (r) {
+          if (!r.ok) return next();
+          return r.text().then(function (txt) {
+            try { return JSON.parse(txt); } catch (e) { return next(); }
+          });
+        }).catch(function () { return next(); });
+      }
+      return next();
+    }
+
+    function histLocalData() {
+      try { return JSON.parse(localStorage.getItem('yeonolang_stock_history') || '{}') || {}; }
+      catch (e) { return {}; }
+    }
+
+    function histIdxText(o) {
+      if (!o) return '—';
+      return (o.value || '—') + (o.pct ? ' (' + o.pct + ')' : '');
+    }
+
+    function histBadge(label, fg, bg) {
+      return '<span style="font-size:9.5px; font-weight:800; background:' + bg + '; color:' + fg +
+        '; padding:2px 6px; border-radius:4px; margin-left:3px; white-space:nowrap;">' + label + '</span>';
+    }
+
+    function histCard(date, auto, manual) {
+      var t = auto || manual || {};
+      var idx = (auto && auto.kospi)
+        ? ('코스피 ' + histIdxText(auto.kospi) + ' / 코스닥 ' + histIdxText(auto.kosdaq))
+        : (manual ? ('코스피 ' + histEsc(manual.kospi) + ' / 코스닥 ' + histEsc(manual.kosdaq)) : '—');
+      var sup = (auto && auto.supply && auto.supply.text)
+        ? histEsc(auto.supply.text)
+        : (manual ? ('외인 ' + histEsc(manual.foreignKospi) + ' / 기관 ' + histEsc(manual.instKosdaq)) : '—');
+      var badges = '';
+      if (auto) badges += histBadge('🤖 자정 자동저장', '#bbf7d0', '#065f46');
+      if (manual) badges += histBadge('💾 수동 저장', '#7dd3fc', '#0c4a6e');
+      var themeLine = '';
+      if (auto && auto.themes && auto.themes.length) {
+        themeLine = '<div style="font-size:10.5px; color:#93c5fd; margin-top:2px;">주도 테마: ' +
+          auto.themes.slice(0, 3).map(function (x) { return histEsc(x.name); }).join(' · ') + '</div>';
+      }
+      var manjuLine = '';
+      if (auto && auto.manjuPicks && auto.manjuPicks.length) {
+        manjuLine = '<div style="font-size:10.5px; color:#fcd34d; margin-top:2px;">만쥬 픽: ' +
+          auto.manjuPicks.slice(0, 3).map(function (p) { return histEsc(p.rank + ' ' + p.name); }).join(' · ') + '</div>';
+      }
+      var saved = '';
+      if (auto && auto.savedAt) saved = ' <span style="font-weight:600; color:#94a3b8; font-size:10px;">자동 ' + histEsc(String(auto.savedAt).slice(11, 16)) + '</span>';
+      else if (manual && manual.savedAt) saved = ' <span style="font-weight:600; color:#94a3b8; font-size:10px;">' + histEsc(manual.savedAt) + '</span>';
+      return '<div style="background:#111827; border:1px solid ' + (auto ? '#0f766e' : '#334155') +
+        '; border-radius:8px; padding:10px 12px; cursor:pointer;" onclick="toggleHistDetail(\'' + date + '\')">' +
+        '<div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-start; gap:4px; margin-bottom:4px;">' +
+          '<span style="font-weight:800; color:#fef08a; font-size:12.5px; white-space:nowrap;">📅 ' + date + saved + '</span>' +
+          '<span style="display:inline-block; text-align:right;">' + badges + '</span>' +
+        '</div>' +
+        '<div style="font-size:11.5px; color:#fff; font-weight:700; margin-bottom:3px;">' + histEsc(t.title) + '</div>' +
+        '<div style="font-size:10.5px; color:#94a3b8;">지수: <span style="color:#f87171;">' + idx + '</span></div>' +
+        '<div style="font-size:10.5px; color:#94a3b8;">수급: <span style="color:#38bdf8;">' + sup + '</span></div>' +
+        themeLine + manjuLine +
+        '<div id="histDet_' + date + '" style="display:none; margin-top:8px; border-top:1px dashed #334155; padding-top:8px;" onclick="event.stopPropagation()"></div>' +
+        '</div>';
+    }
+
+    function histDetailHTML(date, full) {
+      var manual = histLocalData()[date] || null;
+      var auto = full || ((histArchiveIndex && histArchiveIndex.entries) || []).filter(function (e) {
+        return e && e.date === date;
+      })[0] || null;
+      function row(k, v) {
+        return v ? '<div style="font-size:10.5px; color:#cbd5e1; line-height:1.55;"><span style="color:#94a3b8;">' + k + '</span> ' + v + '</div>' : '';
+      }
+      function block(title, body) {
+        return body ? '<div style="margin-bottom:8px;"><div style="font-size:10px; font-weight:800; color:#38bdf8; margin-bottom:2px;">' + title + '</div>' + body + '</div>' : '';
+      }
+      var out = '';
+      if (auto) {
+        var i = auto.indices || {};
+        var kp = i.kospi || auto.kospi, kq = i.kosdaq || auto.kosdaq;
+        out += block('📊 지수',
+          row('코스피', histEsc(histIdxText(kp)) + (kp && kp.status === 'CLOSE' ? ' <span style="color:#34d399;">정규장 마감 확정</span>' : '')) +
+          row('코스닥', histEsc(histIdxText(kq)) + (kq && kq.status === 'CLOSE' ? ' <span style="color:#34d399;">정규장 마감 확정</span>' : '')));
+
+        var nf = auto.nightFutures, nq = auto.nasdaqFutures, fx = auto.fx;
+        out += block('🌙 야간선물 · 미 지수선물 · 환율',
+          row('야간선물', nf ? (histEsc(nf.value) + (nf.pct ? ' (' + histEsc(nf.pct) + ')' : '') +
+            (nf.label ? ' <span style="color:#64748b;">· ' + histEsc(nf.label) + '</span>' : '')) : '—') +
+          row('나스닥100선물', nq ? (histEsc(nq.value) + (nq.pct ? ' (' + histEsc(nq.pct) + ')' : '') +
+            (nq.asOf ? ' <span style="color:#64748b;">· ' + histEsc(nq.asOf) + '</span>' : '')) : '') +
+          row('원/달러', fx ? (histEsc(fx.value) + (fx.pct ? ' (' + histEsc(fx.pct) + ')' : '')) : ''));
+
+        var sup = auto.supply || {};
+        out += block('💰 외인·기관 수급',
+          row('확정', histEsc(sup.text)) + (sup.basis ? row('기준일', histEsc(sup.basis)) : ''));
+
+        var th = (auto.themes || []).slice(0, 3).map(function (t) {
+          return '<div style="font-size:10.5px; color:#e2e8f0; line-height:1.5;">' + histEsc(t.rank) + '위 <strong style="color:#fef08a;">' + histEsc(t.name) + '</strong>' +
+            (t.top4Avg === null || t.top4Avg === undefined ? '' : ' <span style="color:#f87171;">상위4 평균 ' + histEsc(t.top4Avg + '%') + '</span>') +
+            (t.sumValueText ? ' <span style="color:#94a3b8;">· 대금 ' + histEsc(t.sumValueText) + '</span>' : '') + '</div>';
+        }).join('');
+        out += block('🔥 주도 테마 Top 3' + (auto.themeBasis ? ' <span style="color:#64748b; font-weight:600;">(' + histEsc(auto.themeBasis) + ')</span>' : ''), th);
+
+        var mp = (auto.manjuPicks || []).slice(0, 3).map(function (p) {
+          return '<div style="font-size:10.5px; color:#e2e8f0; line-height:1.5;">' + histEsc(p.rank) + ' <strong style="color:#fcd34d;">' + histEsc(p.name) + '</strong>' +
+            (p.price ? ' <span style="color:#f87171;">' + histEsc(p.price) + '</span>' : '') +
+            (p.plan ? '<div style="color:#94a3b8; font-size:10px; line-height:1.45;">' + histEsc(p.plan) + '</div>' : '') + '</div>';
+        }).join('');
+        out += block('👑 만쥬 픽' + (auto.manjuNote ? ' <span style="color:#64748b; font-weight:600;">(' + histEsc(auto.manjuNote) + ')</span>' : ''), mp);
+
+        var bf = auto.briefings || [];
+        var bfb = bf.length
+          ? bf.map(function (b) {
+              return '<div style="font-size:10px; color:#cbd5e1; line-height:1.5;"><strong style="color:#38bdf8;">' + histEsc(b.time) + '</strong> ' + histEsc(b.title) + '</div>';
+            }).join('')
+          : (auto.briefingCount ? row('브리핑', histEsc(auto.briefingCount + '회 (타임라인 상세는 아카이브 파일에서)')) : '');
+        out += block('📄 브리핑 타임라인' + (auto.briefingCount ? ' <span style="color:#64748b; font-weight:600;">(' + auto.briefingCount + '회)</span>' : ''), bfb);
+
+        if (auto.missing && auto.missing.length) {
+          out += block('⚠️ 미확인', '<div style="font-size:10px; color:#fbbf24; line-height:1.5;">' +
+            auto.missing.map(function (m) { return histEsc(m); }).join('<br>') + '</div>');
+        }
+        out += '<div style="font-size:9.5px; color:#64748b;">🤖 자정 자동저장 · ' +
+          histEsc(String(auto.savedAt || '').replace('T', ' ').slice(0, 19)) + '</div>';
+      }
+      if (manual) {
+        out += block('💾 브라우저 수동 저장',
+          row('저장 시각', histEsc(manual.savedAt)) + row('코스피', histEsc(manual.kospi)) +
+          row('코스닥', histEsc(manual.kosdaq)) + row('외인(코스피)', histEsc(manual.foreignKospi)) +
+          row('기관(코스닥)', histEsc(manual.instKosdaq)) + row('기준', histEsc(manual.basis)));
+      }
+      return out || '<div style="font-size:10.5px; color:#94a3b8;">상세 기록을 불러오지 못했습니다.</div>';
+    }
+
+    function toggleHistDetail(date) {
+      var el = document.getElementById('histDet_' + date);
+      if (!el) return;
+      if (el.style.display === 'block') { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      el.innerHTML = histDetailHTML(date, histArchiveDetail[date] || null);
+      if (!histArchiveDetail[date]) {
+        histFetchJSON(date + '.json').then(function (d) {
+          if (!d) return;
+          histArchiveDetail[date] = d;
+          if (el.style.display === 'block') el.innerHTML = histDetailHTML(date, d);
+        });
+      }
+    }
+
+    function renderHistoryList() {
+      var container = document.getElementById('historyListContainer');
+      if (!container) return;
+      var local = histLocalData();
+      var auto = {};
+      ((histArchiveIndex && histArchiveIndex.entries) || []).forEach(function (e) {
+        if (e && e.date) auto[e.date] = e;
+      });
+      var dates = {};
+      Object.keys(local).forEach(function (d) { dates[d] = 1; });
+      Object.keys(auto).forEach(function (d) { dates[d] = 1; });
+      var list = Object.keys(dates).sort().reverse();
+      var status = histArchiveIndex
+        ? '🤖 자정 자동저장 ' + ((histArchiveIndex.entries || []).length) + '일치 · 최신 ' + histEsc(histArchiveIndex.latest) +
+          ' <span style="color:#64748b;">· 서버 아카이브 data/archives/index.json</span>'
+        : '⚠️ 서버 자동저장 아카이브를 불러오지 못해 브라우저 저장분만 표시합니다 (./data/archives/index.json)';
+      var head = '<div style="font-size:10.5px; color:' + (histArchiveIndex ? '#34d399' : '#fbbf24') +
+        '; padding:2px 2px 0; line-height:1.5;">' + status + '</div>';
+      container.innerHTML = head + (list.length
+        ? list.map(function (d) { return histCard(d, auto[d], local[d]); }).join('')
+        : '<div style="font-size:11.5px; color:#94a3b8; border:1px dashed #334155; border-radius:8px; padding:12px; line-height:1.6;">저장된 기록이 없습니다 — <strong style="color:#34d399;">💾 오늘 저장</strong>을 누르면 지금 화면에 표시된 지수·수급 값이 이 날짜로 기록되고, 자정이 지나면 <strong style="color:#a7f3d0;">🤖 자정 자동저장</strong>이 서버에 남습니다.</div>');
+    }
+
+    function openHistoryModal() {
       document.getElementById('historyModalOverlay').style.display = 'flex';
+      var container = document.getElementById('historyListContainer');
+      if (container && !histArchiveTried) {
+        container.innerHTML = '<div style="font-size:11px; color:#94a3b8; padding:6px 2px;">🤖 서버 자정 아카이브와 브라우저 저장 기록을 불러오는 중…</div>';
+      }
+      if (histArchiveTried) { renderHistoryList(); return; }
+      histFetchJSON('index.json').then(function (idx) {
+        histArchiveTried = true;
+        if (idx && idx.entries) histArchiveIndex = idx;
+        renderHistoryList();
+      }).catch(function () {
+        histArchiveTried = true;
+        renderHistoryList();
+      });
     }
 
     function closeHistoryModal() {
