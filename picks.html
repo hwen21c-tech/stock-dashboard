@@ -239,6 +239,8 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
 .btn.sm{padding:7px 10px; font-size:11.5px; border-radius:9px}
 .btn:active{transform:translateY(1px)}
 .alist{display:flex; flex-direction:column; gap:6px; max-height:260px; overflow:auto}
+#adminList{max-height:420px}
+#repList{max-height:240px}
 .arow{display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:10px; padding:8px 9px; min-width:0}
 .arow .an{flex:1 1 auto; min-width:0; font-size:12px; font-weight:800; line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .arow .ac{font-size:10.5px; color:var(--accent); font-weight:800; white-space:nowrap}
@@ -708,8 +710,9 @@ function openMall4(name, popFallbackMsg){
   var links = mallLinks(q), blocked = 0;
   links.forEach(function(l){
     var w = null;
-    try { w = window.open(l.url, '_blank', 'noopener'); } catch(e){}
-    if (!w) blocked++;
+    try { w = window.open(l.url, '_blank'); } catch(e){}
+    if (w){ try { w.opener = null; } catch(e){} }
+    else blocked++;
   });
   if (blocked){
     toast((popFallbackMsg || '팝업이 차단됐습니다') + ' — 아래 몰별 버튼을 하나씩 눌러 주세요', 3600);
@@ -1167,11 +1170,13 @@ function roundRect(g, x, y, w, h, r){
 function wrapLines(g, text, maxW, maxLines){
   var out = [], cur = '';
   var chars = String(text || '').replace(/\s+/g, ' ').trim().split('');
+  var CLOSERS = ")]}>,.·-~!?%’”';";
   for (var i=0;i<chars.length;i++){
-    var t = cur + chars[i];
-    if (g.measureText(t).width > maxW && cur){
+    var ch = chars[i];
+    var t = cur + ch;
+    if (g.measureText(t).width > maxW && cur && CLOSERS.indexOf(ch) < 0){
       out.push(cur.replace(/\s+$/, ''));
-      cur = chars[i] === ' ' ? '' : chars[i];
+      cur = ch === ' ' ? '' : ch;
       if (out.length === maxLines) return out;
     } else cur = t;
   }
@@ -1223,10 +1228,11 @@ function makeCardPng(it){
   // 상단 브랜드
   g.fillStyle = INK; g.font = cFont(900, 44); g.textBaseline = 'top';
   g.fillText('연오랑 PICK', M, 66);
+  var brandW = g.measureText('연오랑 PICK').width;
   g.fillStyle = '#ff5a3c'; g.font = cFont(800, 30);
-  g.fillText('최저가 비교', M + g.measureText('연오랑 PICK').width + 150, 78);
+  g.fillText('최저가 비교', M + brandW + 26, 78);
   g.fillStyle = 'rgba(27,24,20,.55)'; g.font = cFont(700, 30);
-  g.textAlign = 'right'; g.fillText('SCROLL & SAVE', W - M, 80); g.textAlign = 'left';
+  g.textAlign = 'right'; g.fillText('STORY · REELS', W - M, 80); g.textAlign = 'left';
 
   // 이미지 / 이모지 영역
   var ix = M, iy = 160, iw = W - M*2, ih = 700;
@@ -1282,6 +1288,12 @@ function makeCardPng(it){
   }
   g.fillStyle = INK; g.font = cFont(900, 116);
   var priceTxt = price ? won(price) + '원' : '가격 확인';
+  var btwM = 0;
+  if (save){ g.font = cFont(900, 40); btwM = g.measureText('-' + pct + '% · ' + won(save) + '원 절약').width + 48; g.font = cFont(900, 116); }
+  var psize = 116;
+  while (psize > 66 && g.measureText(priceTxt).width > (W - M*2 - (save ? btwM + 26 : 0))){
+    psize -= 6; g.font = cFont(900, psize);
+  }
   g.fillText(priceTxt, M, y);
   if (save){
     var pw = g.measureText(priceTxt).width;
@@ -1289,8 +1301,9 @@ function makeCardPng(it){
     g.font = cFont(900, 40);
     var btw = g.measureText(bt).width + 48;
     var bx = Math.min(M + pw + 26, W - M - btw);
-    g.save(); roundRect(g, bx, y + 28, btw, 68, 20); g.fillStyle = '#ff5a3c'; g.fill(); g.restore();
-    g.fillStyle = '#fff'; g.fillText(bt, bx + 24, y + 40);
+    var by = y + Math.round((psize - 40) / 2) + 6;
+    g.save(); roundRect(g, bx, by, btw, 68, 20); g.fillStyle = '#ff5a3c'; g.fill(); g.restore();
+    g.fillStyle = '#fff'; g.fillText(bt, bx + 24, by + 12);
   }
   y += 150;
 

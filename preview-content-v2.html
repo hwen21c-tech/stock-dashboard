@@ -1238,7 +1238,7 @@
   /* ---------- 추천샵 모달 4대 몰 ---------- */
   .pk-name-row{display:flex;gap:6px;min-width:0}
   .pk-name-row input{flex:1 1 auto;min-width:0}
-  .pk-name-row .pk-btn{flex:0 0 auto;white-space:nowrap;padding:9px 11px;font-size:11.5px}
+  .pk-name-row .pk-btn{flex:0 0 auto;white-space:nowrap;padding:9px 10px;font-size:11.5px;display:inline-flex;align-items:center;justify-content:center;line-height:1.1}
   .pk-mallbar{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
   .pk-mallbar a{text-decoration:none;border:1px solid #2a3444;background:#0e131a;color:#cfd8e6;border-radius:7px;padding:5px 8px;font-size:11px;font-weight:800;white-space:nowrap}
   .pk-scriptbox{margin-top:9px}
@@ -15317,8 +15317,8 @@ const GEN_ACTIONS = [
     var blocked = 0;
     MALLS.forEach(function(m){
       var w = null;
-      try { w = window.open(mallUrl(m[0], q), '_blank', 'noopener'); } catch(e){}
-      if (!w) blocked++;
+      try { w = window.open(mallUrl(m[0], q), '_blank'); } catch(e){}
+      if (w){ try { w.opener = null; } catch(e){} } else blocked++;
     });
     if (blocked) toast('팝업이 차단됐습니다 — 상품명 아래 몰별 버튼을 하나씩 눌러 주세요');
   }
@@ -15376,7 +15376,10 @@ const GEN_ACTIONS = [
     var box = document.getElementById('pkScriptBox');
     if (box) box.value = d.script + '\n\n' + d.comment;
     var wrapEl = document.getElementById('pkScriptWrap');
-    if (wrapEl) wrapEl.hidden = false;
+    if (wrapEl){
+      wrapEl.hidden = false;
+      try { wrapEl.scrollIntoView({ block: 'nearest' }); } catch(e){}
+    }
     var st = document.getElementById('pkStatus');
     if (st) st.textContent = '대본과 고정 댓글을 만들었습니다 — 아래 복사 버튼을 누르세요.';
   }
@@ -15585,12 +15588,14 @@ const GEN_ACTIONS = [
   var safeHint = null;
   $$('.hint').forEach(function(h){ if (!safeHint && h.textContent.indexOf('세이프 존') >= 0) safeHint = h; });
   makeChip(safeHint, '세이프 존 잠금 — 저장한 영상이 <b>쇼츠 UI에 가려지는 영역</b>을 피해 그리도록 상단 180·하단 380·좌 60·우 120 안에만 배치합니다.', true);
-  /* pick 모달의 4대 몰 안내 — 모달이 열릴 때 동적으로 붙임 */
+  /* pick 모달의 4대 몰 안내 — 모달이 열릴 때 동적으로 붙임(입력줄 레이아웃은 건드리지 않고 몰 버튼 줄 끝에) */
   document.addEventListener('click', function(e){
     var m = e.target && e.target.id === 'pkMall4' ? e.target : null;
     if (!m || m.getAttribute('data-hq-done') === '1') return;
+    var bar = document.getElementById('pkMallbar');
+    if (!bar) return;
     m.setAttribute('data-hq-done', '1');
-    makeChip(m, '4대 몰 검색 — 쿠팡·테무·알리·네이버 가격비교를 <b>새 창으로</b> 엽니다. 팝업이 막히면 아래 몰별 버튼을 하나씩 누르세요.', false);
+    makeChip(bar, '4대 몰 검색 — 쿠팡·테무·알리·네이버 가격비교를 <b>새 창으로</b> 엽니다. 팝업이 막히면 아래 몰별 버튼을 하나씩 누르세요.', true);
   }, true);
 
   window.HowGuide = { open: openHow, close: closeHow, version: '1.0.0' };
