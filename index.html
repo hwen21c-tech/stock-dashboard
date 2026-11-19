@@ -3674,8 +3674,13 @@
         setInterval(function(){ if (!document.hidden) refreshLive(); }, 120000);
       }
       window.OpenPicks = { render: render, toggle: window.openPicksToggle };
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-      else boot();
+      var opBooted = false;
+      function opBootOnce(){ if (opBooted) return; opBooted = true; boot(); }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', opBootOnce);
+        window.addEventListener('load', opBootOnce);
+        setTimeout(opBootOnce, 1500);
+      } else opBootOnce();
     })();
     </script>
     <!-- OPENING_PICKS_ENGINE_END -->
@@ -14264,8 +14269,14 @@
         render: render,
         onShow: render
       };
-      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', render);
-      else render();
+      /* DOMContentLoaded 가 늦거나(대용량 페이지·느린 요청) 아예 안 와도 그린다 — '로딩 중'에 멈추지 않게 */
+      var ipoBooted = false;
+      function ipoBootOnce(){ if (ipoBooted) return; ipoBooted = true; render(); }
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ipoBootOnce);
+        window.addEventListener('load', ipoBootOnce);
+        setTimeout(ipoBootOnce, 1500);
+      } else ipoBootOnce();
     })();
     </script>
     <!-- IPO_ENGINE_END -->
@@ -15244,6 +15255,7 @@
         if (tBj) tBj.style.display = (view === 'bijoong') ? 'block' : 'none';
         if (tKk) tKk.style.display = (view === 'kkangto') ? 'block' : 'none';
         if (tIp) tIp.style.display = (view === 'ipo') ? 'block' : 'none';
+        if (view === 'ipo' && window.IpoTab) { try { window.IpoTab.onShow(); } catch(e){} }
 
         if (view === 'rnzone' && window.RnZone) {
           if (!window.rnZoneInited) {
