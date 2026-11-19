@@ -2572,7 +2572,7 @@ const SCHEMA_SHORT_SCRIPT = {
     clipHashtags: { type: 'array', description: '네이버 클립 해시태그 5~8개 (# 없이)', items: { type: 'string' } },
     warnings: { type: 'array', description: '확인하지 못해 [확인 필요]로 남긴 값·사실', items: { type: 'string' } },
   },
-  required: ['title', 'hook', 'hookCaption', 'beats', 'ending'],
+  required: ['title', 'titleOptions', 'hook', 'hookCaption', 'hookTitle', 'beats', 'ending'],
 };
 
 /* ---------------------------------------------------------------- 📋 요약 (유튜브 · 문서 · 짧은 영상/음성) */
@@ -3326,7 +3326,7 @@ function promptShortsScript(b) {
   const v3Block = v3 ? `
 [V3 연출 — 이번 대본은 "진짜 유튜버" 구어체로 쓴다]
 a) 말투: "~했습니다" 대신 "~했죠", "~인데요", "이거 모르면", "잠깐만요"처럼 말을 거는 구어체. 한 문장은 20자 안팎으로 끊고, 접속사는 입에 붙는 것만 쓴다(근데, 그래서, 그런데).
-b) hookTitle: 첫 1.5초 화면 절반을 채우는 대형 타이틀, 12자 이내. 질문·숫자·반전 중 하나로. hook 문장을 그대로 줄이지 말고 화면용으로 다시 쓴다.
+b) hookTitle: 첫 1.5초 화면 절반을 채우는 대형 타이틀, 12자 이내. 비우면 실패다. 질문·숫자·반전 중 하나로. hook 문장을 그대로 줄이지 말고 화면용으로 다시 쓴다.
 c) highlightWords: 카라오케 자막에서 노랗게 칠할 단어 3~6개. 숫자·고유명사 위주, 조사 없이.
 d) bgmMood: news | calm | tension | upbeat 중 하나.${v3Num ? `
 e) 숫자: spoken 안의 숫자는 자막과 똑같이 숫자로 쓴다(예: "5,090", "3,400억"). 읽는 소리 변환은 합성 엔진이 알아서 하므로 한글로 풀어 쓰지 않는다.` : ''}` : '';
@@ -3364,7 +3364,7 @@ e) 숫자: spoken 안의 숫자는 자막과 똑같이 숫자로 쓴다(예: "5,
     clipCaption(네이버 클립 한 줄 40자 내외) + clipHashtags(5~8개, # 없이). 자료에 없는 브랜드·지역명을 해시태그로 만들지 않는다.
 13) seriesBadge: 이 시리즈를 한눈에 알아볼 MP4 상단 칩 (영문 2~3단어 대문자 또는 한글 8자 이내, 예: MARKET CLOSE·동탄 주말 코스).
 14) ttsVoice: 나레이션 톤 1줄 (예: "차분한 남성 · 또박또박 · 숫자는 또렷하게").
-15) titleOptions: 클릭률(CTR) 관점의 제목 3안을 서로 다른 각도로 만든다 — 각 32자 이내.
+15) titleOptions: 클릭률(CTR) 관점의 제목 3안을 서로 다른 각도로 만든다 — 각 32자 이내. 비우면 실패다(3개 모두 채운다).
     - 호기심형: 궁금증을 남기는 질문·반전 (예: "왜 10시엔 아무도 안 사는 걸까")
     - 숫자 직격형: 가장 센 숫자 1개를 앞세운다 (예: "5,000 깨졌다, 오늘 남은 1시간")
     - 비교형: A vs B 구도를 제목에 드러낸다 (예: "엔터 vs 반도체, 오늘 돈은 어디로")
@@ -12755,7 +12755,8 @@ const GEN_ACTIONS = [
       if (titles.length){
         titles.forEach(function (t) { h += '<div class="t"><span class="tag">' + esc(t.tag) + '</span>' + esc(t.text) + '</div>'; });
       } else {
-        h += '<div class="t">' + esc(d.title || topic) + '</div>';
+        h += '<div class="t">' + esc(d.title || topic) + '</div>' +
+          '<div class="t" style="color:#fbbf24">모델이 제목 3안을 비워 왔습니다 — 한 번 더 생성하면 채워집니다.</div>';
       }
       h += '</div><h4 style="margin-top:10px">② 첫 1.5초 대형 훅 타이틀</h4><div class="ostit"><b>' + esc(d.hookTitle || d.hookCaption || '(모델이 비워 둠)') + '</b>';
       var words = d.highlightWords || [];
