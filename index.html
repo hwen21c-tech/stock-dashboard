@@ -3567,6 +3567,8 @@
     var loEl = document.getElementById('ucxLo_' + id);
     var stEl = document.getElementById('ucxFst_' + id);
     var c = LAST[id];
+    /* 메인 모달은 자체 오버레이 엔진(IDX_LAST_CALC)을 쓴다 — 자동 스윙 값을 입력칸에 미리 채워 준다 */
+    if (!c && id === 'main' && window.IDX_LAST_CALC) c = window.IDX_LAST_CALC;
     if (hiEl && document.activeElement !== hiEl && document.activeElement !== loEl) {
       hiEl.value = m ? m.hi : (c && num(c.H) ? fmtAuto(c.H) : '');
       loEl.value = m ? m.lo : (c && num(c.L) ? fmtAuto(c.L) : '');
