@@ -808,7 +808,7 @@ html.inst-lock,html.inst-lock body{overflow:hidden}
 .inst-toast.on{opacity:1;transform:translate(-50%,0)}
 
 /* ============ 18. 고도화 — 성명학 · 손금/관상 · 궁합 · 택일 · 종합 ============ */
-/* 탭 10개 — 좁은 화면에서는 자연스럽게 두 줄로 접힌다(기존 5개 모양은 그대로) */
+/* 탭 9개(종합·PDF 제거 후) — 좁은 화면에서는 자연스럽게 두 줄로 접힌다(기존 모양은 그대로) */
 .tabbar{flex-wrap:wrap}
 .tab-btn{flex:1 1 0;min-width:58px}
 @media(max-width:560px){
@@ -1187,7 +1187,6 @@ details.sx-fold .fold-body ul{padding-left:15px;margin:4px 0}
     <button class="tab-btn" role="tab" aria-selected="false" data-tab="vision"><b>손금·관상</b><i>手相</i></button>
     <button class="tab-btn" role="tab" aria-selected="false" data-tab="compat"><b>궁합 심화</b><i>宮合+</i></button>
     <button class="tab-btn" role="tab" aria-selected="false" data-tab="calendar"><b>길일 달력</b><i>擇日</i></button>
-    <button class="tab-btn" role="tab" aria-selected="false" data-tab="summary"><b>종합·PDF</b><i>總合</i></button>
   </nav>
 
   <main>
@@ -1357,10 +1356,6 @@ details.sx-fold .fold-body ul{padding-left:15px;margin:4px 0}
       <div class="sx-tabsum" data-tabsum="calendar"></div>
     </section>
 
-    <!-- ========== 📋 종합정리 & PDF ========== -->
-    <section class="panel" id="panel-summary" role="tabpanel" aria-label="종합 리포트" hidden>
-      <div id="summaryBody"></div>
-    </section>
   </main>
 
   <div class="foot">
@@ -3972,7 +3967,8 @@ function load(){
   var t = localStorage.getItem(LS_T);
   if (t === 'day' || t === 'night') document.documentElement.setAttribute('data-theme', t);
   var tb = localStorage.getItem(LS_TAB);
-  if (tb && ['chart','today','yearly','match','profiles','name','vision','compat','calendar','summary'].indexOf(tb)>=0) state.tab = tb;
+  if (tb === 'summary') tb = 'chart';        /* 종합·PDF 탭 제거(11/19) — 옛 저장값은 사주팔자로 */
+  if (tb && ['chart','today','yearly','match','profiles','name','vision','compat','calendar'].indexOf(tb)>=0) state.tab = tb;
 }
 function save(){
   try { localStorage.setItem(LS_P, JSON.stringify(state.profiles)); } catch(e){}
@@ -5006,6 +5002,8 @@ function saveProfile(){
    11. 탭 · 이벤트
    ========================================================= */
 function setTab(tab){
+  /* 종합·PDF 탭은 없어졌다 — 옛 링크·저장값이 와도 사주팔자로 돌린다 */
+  if (tab === 'summary' || !document.getElementById('panel-' + tab)) tab = 'chart';
   state.tab = tab;
   try { localStorage.setItem(LS_TAB, tab); } catch(e){}
   document.querySelectorAll('.tab-btn').forEach(function(b){
@@ -5013,7 +5011,7 @@ function setTab(tab){
     b.classList.toggle('is-on', on);
     b.setAttribute('aria-selected', on?'true':'false');
   });
-  ['chart','today','yearly','match','profiles','name','vision','compat','calendar','summary'].forEach(function(k){
+  ['chart','today','yearly','match','profiles','name','vision','compat','calendar'].forEach(function(k){
     var el = document.getElementById('panel-'+k);
     if (el) el.hidden = (k!==tab);
   });
@@ -8951,8 +8949,7 @@ function renderTabSummary(tab){
     + '<div class="sx-sum"><div class="sh"><div class="st"><span class="h">摘要</span>' + esc(d.title) + '</div>'
     + '<span class="s">' + esc(d.tag || '') + '</span></div>'
     + '<div class="sl">' + d.lines.filter(Boolean).map(function(l){ return l; }).join('<br>') + '</div>'
-    + '<div class="sp"><button class="sx-btn" type="button" data-sx-print="' + esc(tab) + '">📄 이 탭 PDF 저장</button>'
-    + '<button class="sx-btn ghost" type="button" data-sx-print="summary">📋 종합 리포트</button></div>'
+    + '<div class="sp"><button class="sx-btn" type="button" data-sx-print="' + esc(tab) + '">📄 이 탭 PDF 저장</button></div>'
     + '</div></div>';
 }
 function renderAllTabSummaries(){
@@ -9499,12 +9496,11 @@ function printSub(){
 var PRINT_TITLES = {
   chart:'사주팔자 리포트', today:'오늘의 운세 리포트', yearly:'연도별 운세 리포트', match:'가족 궁합 리포트',
   profiles:'프로필 목록', name:'성명학 리포트', vision:'손금·관상 리포트', compat:'궁합 심화 리포트',
-  calendar:'택일(길일) 달력', summary:'종합 리포트'
+  calendar:'택일(길일) 달력'
 };
 function printTab(tab){
   var panel = document.getElementById('panel-' + tab);
   if (!panel){ sxToast('인쇄할 화면이 없습니다'); return; }
-  if (tab === 'summary') renderSummary();
   if (tab === 'name') ensureNameReady();
   document.querySelectorAll('main > .panel').forEach(function(pp){
     pp.classList.remove('print-on');
@@ -9639,26 +9635,8 @@ function reportHtmlFile(p){
 /* =========================================================
    I. 종합 탭 · 화면 연결 · 초기화
    ========================================================= */
-function renderSummary(){
-  var box = document.getElementById('summaryBody');
-  if (!box) return;
-  var p = activeProfile();
-  var has = !!p;
-  box.innerHTML = '<div class="card sx-card sx-noprint">'
-    + '<div class="card-h"><div class="card-t"><span class="h">總合</span>종합 리포트</div>'
-    + '<div class="card-note">원국 · 세운 · 성명학 · 손금/관상 · 궁합</div></div>'
-    + '<div class="sx-btns">'
-    + '<button class="sx-btn solid" type="button" data-sx-print="summary"' + (has ? '' : ' disabled') + '>📄 PDF 저장 (인쇄)</button>'
-    + '<button class="sx-btn" type="button" data-sx-dl="html"' + (has ? '' : ' disabled') + '>⬇ HTML</button>'
-    + '<button class="sx-btn" type="button" data-sx-dl="md"' + (has ? '' : ' disabled') + '>⬇ 마크다운</button>'
-    + '<button class="sx-btn" type="button" data-sx-dl="txt"' + (has ? '' : ' disabled') + '>⬇ 텍스트</button>'
-    + '<button class="sx-btn ghost" type="button" data-sx-copy' + (has ? '' : ' disabled') + '>⧉ 복사</button>'
-    + '</div>'
-    + '<div class="sx-note">PDF는 브라우저 인쇄 창에서 <b>대상: PDF로 저장</b>을 고르면 됩니다(모바일은 공유 → 인쇄). '
-    + '인쇄용 스타일은 이 리포트만 깔끔하게 담기도록 따로 만들었습니다. 저장이 안 되는 환경이면 <b>HTML</b>이 가장 확실합니다.</div>'
-    + '</div>'
-    + (has ? summaryHtml(p) : summaryHtml(null));
-}
+/* 종합·PDF 탭은 2026-11-19 제거 — 탭별 인쇄(📄 이 탭 PDF 저장)만 남는다.
+   reportText·summaryHtml·reportHtmlFile 은 파일 저장용으로 남겨 둔다. */
 function ensureNameReady(){
   var b = document.getElementById('nameBody');
   if (b && !b.innerHTML.trim()) renderName();
@@ -9672,12 +9650,7 @@ function bindGlobal(){
     var t = e.target.closest ? e.target.closest('[data-sx-print],[data-sx-dl],[data-sx-copy],[data-sx-goto-tab]') : null;
     if (!t) return;
     if (t.hasAttribute('data-sx-print')){
-      var tab = t.getAttribute('data-sx-print');
-      if (tab === 'summary'){
-        var nb = document.querySelector('.tab-btn[data-tab="summary"]');
-        if (nb && curTab() !== 'summary') nb.click();
-        setTimeout(function(){ printTab('summary'); }, 30);
-      } else printTab(tab);
+      printTab(t.getAttribute('data-sx-print'));
       return;
     }
     if (t.hasAttribute('data-sx-dl')){
@@ -9733,13 +9706,12 @@ function renderForTab(tab){
   else if (tab === 'vision'){ renderVision(); bindVision(); }
   else if (tab === 'compat'){ renderCompat(); bindCompat(); }
   else if (tab === 'calendar'){ renderCalendar(); bindCalendar(); }
-  else if (tab === 'summary'){ renderSummary(); }
   renderTabSummary(tab);
   LAST_TAB = tab;
 }
 function refreshAll(){
   var t = curTab();
-  if (['name', 'vision', 'compat', 'calendar', 'summary'].indexOf(t) >= 0){
+  if (['name', 'vision', 'compat', 'calendar'].indexOf(t) >= 0){
     // 프로필 변경·테마 변경 등 — 캐시 비우고 다시 그린다
     VIS.pid = null;
     renderForTab(t);
@@ -9774,7 +9746,7 @@ window.SajuX = {
   bindGlobal();
   bindName(); bindVision(); bindCompat(); bindCalendar();
   var t = curTab();
-  if (['name', 'vision', 'compat', 'calendar', 'summary'].indexOf(t) >= 0) renderForTab(t);
+  if (['name', 'vision', 'compat', 'calendar'].indexOf(t) >= 0) renderForTab(t);
   renderAllTabSummaries();
   // 탭이 바뀌면 요약도 함께 갱신되도록 클릭을 한 번 더 받는다
   document.querySelectorAll('.tab-btn').forEach(function(b){
