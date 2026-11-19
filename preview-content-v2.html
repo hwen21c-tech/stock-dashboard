@@ -1205,6 +1205,46 @@
   /* ---------- 보관함: 웹 영상(쇼츠) 기록 ---------- */
   .stype.wvid{color:#a7f3d0;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.36)}
 
+  /* ---------- 📖 사용법 모달 ---------- */
+  .gd-wrap{position:fixed;inset:0;z-index:9985;display:flex;align-items:center;justify-content:center;padding:14px}
+  .gd-wrap[hidden]{display:none}
+  .gd-back{position:absolute;inset:0;background:rgba(10,9,8,.62)}
+  .gd-panel{position:relative;width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;background:#151a22;color:#e8edf5;border:1px solid #2a3444;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.5);overflow:hidden}
+  .gd-head{display:flex;align-items:center;gap:8px;padding:14px 15px 10px}
+  .gd-head h3{margin:0;font-size:15px;color:#fff;letter-spacing:-.02em}
+  .gd-x{margin-left:auto;border:0;background:transparent;color:#9aa7ba;font-size:17px;line-height:1;padding:4px 2px}
+  .gd-tabs{display:flex;gap:6px;padding:0 12px 10px;overflow-x:auto;scrollbar-width:none}
+  .gd-tabs::-webkit-scrollbar{display:none}
+  .gd-tab{flex:0 0 auto;border:1px solid #2a3444;background:#0e131a;color:#9aa7ba;border-radius:999px;padding:7px 11px;font-size:11.5px;font-weight:800;white-space:nowrap}
+  .gd-tab.on{background:#f59e0b;border-color:#f59e0b;color:#1a1206}
+  .gd-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:0 15px 16px}
+  .gd-sec{display:none;flex-direction:column;gap:9px}
+  .gd-sec.on{display:flex}
+  .gd-step{display:flex;gap:9px;align-items:flex-start;background:#0e131a;border:1px solid #232d3b;border-radius:11px;padding:10px 11px}
+  .gd-step .n{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:#f59e0b;color:#1a1206;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .gd-step .t{font-size:12px;line-height:1.55;color:#cfd8e6;min-width:0}
+  .gd-step .t b{color:#fff}
+  .gd-step .t .k{display:inline-block;background:#1d2632;border:1px solid #32404f;border-radius:6px;padding:1px 5px;margin:1px 2px 1px 0;font-size:11px;font-weight:800;color:#fbbf24;white-space:nowrap}
+  .gd-foot{margin-top:2px;font-size:10.5px;color:#7c8a9d;line-height:1.5}
+  .gd-note{margin-top:8px;font-size:11px;color:#9aa7ba;line-height:1.55;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:10px;padding:9px 10px}
+
+  /* ---------- ? 도움말 아이콘 ---------- */
+  .hq{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;border:1px solid #3a4658;background:#0e131a;color:#fbbf24;font-size:11px;font-weight:900;line-height:1;margin-left:5px;vertical-align:middle;padding:0;flex:0 0 auto}
+  .hq:active{background:#f59e0b;color:#1a1206}
+  .hq-tip{position:fixed;z-index:9995;max-width:min(280px,calc(100vw - 24px));background:#0b0f15;color:#e8edf5;border:1px solid #3a4658;border-radius:10px;padding:9px 11px;font-size:11.5px;line-height:1.5;box-shadow:0 12px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .14s}
+  .hq-tip.on{opacity:1}
+  .hq-tip b{color:#fbbf24}
+
+  /* ---------- 추천샵 모달 4대 몰 ---------- */
+  .pk-name-row{display:flex;gap:6px;min-width:0}
+  .pk-name-row input{flex:1 1 auto;min-width:0}
+  .pk-name-row .pk-btn{flex:0 0 auto;white-space:nowrap;padding:9px 11px;font-size:11.5px}
+  .pk-mallbar{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+  .pk-mallbar a{text-decoration:none;border:1px solid #2a3444;background:#0e131a;color:#cfd8e6;border-radius:7px;padding:5px 8px;font-size:11px;font-weight:800;white-space:nowrap}
+  .pk-scriptbox{margin-top:9px}
+  .pk-scriptbox[hidden]{display:none}
+  .pk-scriptbox textarea{width:100%;min-height:128px;background:#0e131a;border:1px solid #2a3444;border-radius:9px;color:#cfd8e6;padding:9px 10px;font-size:11px;line-height:1.55;font-family:inherit;resize:vertical}
+
 </style>
 <body>
 
@@ -1219,6 +1259,7 @@
   <div class="top-actions">
     <span class="status-badge" id="statusBadge"><span class="dot"></span>정적 스튜디오 · 내 Gemini 키 직접 호출</span>
     <button class="btn-guide" id="apiGuideBtn" aria-expanded="false" aria-controls="apiGuide">🔑 Gemini 연결 <span class="cv">▼</span></button>
+    <button class="btn-guide" id="howBtn" aria-expanded="false" aria-controls="howModal">📖 사용법</button>
     <button class="btn-install" id="pwaInstallBtn" type="button" title="AI 스튜디오를 홈 화면에 앱으로 설치" hidden>📲 앱 설치</button>
   </div>
 </header>
@@ -2269,6 +2310,45 @@
 </details>
 
 <footer>
+
+<!-- 📖 사용법 (목적별 30초 루틴) -->
+<div class="gd-wrap" id="howModal" hidden>
+  <div class="gd-back" data-gdclose="1"></div>
+  <div class="gd-panel" role="dialog" aria-modal="true" aria-labelledby="gdTitle">
+    <div class="gd-head">
+      <h3 id="gdTitle">📖 30초 사용법 — 목적별 3코스</h3>
+      <button class="gd-x" type="button" data-gdclose="1" aria-label="사용법 닫기">✕</button>
+    </div>
+    <div class="gd-tabs" role="tablist" aria-label="사용법 코스">
+      <button class="gd-tab on" type="button" role="tab" aria-selected="true" data-gdtab="stock">📈 시황 블로그·쇼츠</button>
+      <button class="gd-tab" type="button" role="tab" aria-selected="false" data-gdtab="picks">🛍️ 핫템 추천샵·릴스</button>
+      <button class="gd-tab" type="button" role="tab" aria-selected="false" data-gdtab="wvid">🎬 웹 영상 제작</button>
+    </div>
+    <div class="gd-body">
+      <section class="gd-sec on" data-gdpane="stock" role="tabpanel">
+        <div class="gd-step"><span class="n">1</span><span class="t"><b>재료 불러오기</b> — 상단 <span class="k">📋 요약</span>·<span class="k">✍️ 블로그 자동 작성기</span>의 참고 자료 패널에서 <span class="k">📰 최신 브리핑 불러오기</span> · <span class="k">📡 오늘 시황 불러오기</span> · <span class="k">✈️ 오늘 특가 불러오기</span> 중 하나를 누릅니다.</span></div>
+        <div class="gd-step"><span class="n">2</span><span class="t"><b>AI 생성</b> — <span class="k">✍️ 블로그로</span>로 재료를 넘기고 주제·키워드를 적은 뒤 <span class="k">🤖 AI 본문 생성</span>을 누릅니다. (3초 훅이 필요하면 <span class="k">🎬 쇼츠로</span> → <span class="k">🎬 쇼츠 대본 생성</span>)</span></div>
+        <div class="gd-step"><span class="n">3</span><span class="t"><b>복사·저장</b> — <span class="k">📋 네이버 서식 복사</span>로 스마트에디터에 붙여넣고, <span class="k">📊 블로그용 차트 PNG</span>·<span class="k">📥 대표 썸네일 PNG 저장</span>으로 표지를 저장합니다.</span></div>
+        <div class="gd-step"><span class="n">4</span><span class="t"><b>보관</b> — <span class="k">보관함에 저장</span>을 누르면 다음에 열어 다시 쓸 수 있습니다. 발행하면 <span class="k">발행 체크</span>에 기록됩니다.</span></div>
+        <div class="gd-note">🔑 Gemini 키는 <b>🔑 Gemini 연결</b>에서 한 번만 넣으면 이 브라우저에만 저장됩니다.</div>
+      </section>
+      <section class="gd-sec" data-gdpane="picks" role="tabpanel">
+        <div class="gd-step"><span class="n">1</span><span class="t"><b>상품·핫템 만들기</b> — 테마 <span class="k">SNS 핫템 가격비교</span>를 고르고 주제(상품명)를 적은 뒤 <span class="k">🤖 AI 본문 생성</span> 또는 <span class="k">🎬 쇼츠 대본 생성</span>을 누릅니다.</span></div>
+        <div class="gd-step"><span class="n">2</span><span class="t"><b>추천샵으로 보내기</b> — <span class="k">🗂 내 작업 보관함</span>의 항목에서 <span class="k">🛍️ 추천샵</span>을 누르고, 상품명·정가·최저가를 채운 뒤 <span class="k">🔍 4대 몰</span>으로 쿠팡·테무·알리·네이버 최저가를 확인합니다.</span></div>
+        <div class="gd-step"><span class="n">3</span><span class="t"><b>올리기</b> — 내 제휴 단축링크를 넣고 <span class="k">🛍️ 추천샵에 바로 올리기</span>(PIN 필요) 또는 <span class="k">📋 JSON 복사</span> → picks.html 관리자 모드에 붙여넣기.</span></div>
+        <div class="gd-step"><span class="n">4</span><span class="t"><b>쇼츠·릴스용으로</b> — 같은 모달의 <span class="k">🎬 15초 대본</span>으로 대본·고정 댓글을 복사하고, picks.html 관리자 모드의 <span class="k">🖼️ 9:16 PNG</span>로 스토리·릴스 표지(1080×1920)를 저장합니다.</span></div>
+        <div class="gd-note">🛍️ 추천샵 웹: <b>picks.html</b> · 영상 번호는 고정 댓글과 프로필에 <b>picks.html?q=번호</b>로 넣습니다.</div>
+      </section>
+      <section class="gd-sec" data-gdpane="wvid" role="tabpanel">
+        <div class="gd-step"><span class="n">1</span><span class="t"><b>대본 생성</b> — <span class="k">🎬 쇼츠 대본 생성</span>으로 대본을 만들고, 결과 카드의 <span class="k">🎬 영상 생성 (크레딧 0)</span>을 누르면 대본이 영상 생성기로 넘어갑니다.</span></div>
+        <div class="gd-step"><span class="n">2</span><span class="t"><b>생성기 열기</b> — 페이지 맨 아래 <span class="k">🎬 웹 영상 생성기 — 1080×1920 쇼츠 · 크레딧 0</span>을 펼칩니다.</span></div>
+        <div class="gd-step"><span class="n">3</span><span class="t"><b>양식·옵션</b> — <span class="k">📊 정보/시황 카드형</span> · <span class="k">📈 모션 차트/비교표형</span> · <span class="k">🖼️ 사진 줌인/캡처형</span> 중 하나를 고르고, <span class="k">⚙ 옵션</span>에서 채널 프리셋(<span class="k">📈 주식 채널</span>·<span class="k">🏷️ 특가·핫템 채널</span>)·성우·BGM을 정합니다.</span></div>
+        <div class="gd-step"><span class="n">4</span><span class="t"><b>생성·저장</b> — <span class="k">▶ 생성</span>을 누르고 끝나면 <span class="k">⬇ 영상 저장</span>(MP4, 안 되면 WebM)과 <span class="k">📋 업로드 세트 복사</span>(제목·해시태그·고정 댓글)를 씁니다.</span></div>
+        <div class="gd-note">모든 양식은 쇼츠 <b>세이프 존</b>(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 그립니다 — 저장 전에 미리보기로 가려지는 곳이 없는지 확인하세요.</div>
+      </section>
+    </div>
+  </div>
+</div>
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
@@ -15138,7 +15218,13 @@ const GEN_ACTIONS = [
             '<div class="pk-fld"><label for="pkCat">카테고리</label><select id="pkCat">' +
               CATS.map(function(c){ return '<option value="' + c[0] + '">' + c[1] + '</option>'; }).join('') +
             '</select></div>' +
-            '<div class="pk-fld full"><label for="pkName">상품명</label><input id="pkName" placeholder="휴대용 미니 블렌더"></div>' +
+            '<div class="pk-fld full"><label for="pkName">상품명</label>' +
+              '<div class="pk-name-row">' +
+                '<input id="pkName" placeholder="휴대용 미니 블렌더">' +
+                '<button class="pk-btn" type="button" id="pkMall4" title="쿠팡·테무·알리·네이버 검색을 새 창으로 엽니다">🔍 4대 몰</button>' +
+              '</div>' +
+              '<div class="pk-mallbar" id="pkMallbar"></div>' +
+            '</div>' +
             '<div class="pk-fld"><label for="pkSns">SNS·정가 (원)</label><input id="pkSns" inputmode="numeric" placeholder="39000"></div>' +
             '<div class="pk-fld"><label for="pkPrice">최저가 (원)</label><input id="pkPrice" inputmode="numeric" placeholder="18900"></div>' +
             '<div class="pk-fld full"><label for="pkRocket">🚀 쿠팡 파트너스 링크</label><input id="pkRocket" placeholder="https://link.coupang.com/a/..."></div>' +
@@ -15150,7 +15236,16 @@ const GEN_ACTIONS = [
           '<div class="pk-acts">' +
             '<button class="pk-btn" type="button" id="pkSend">🛍️ 추천샵에 바로 올리기</button>' +
             '<button class="pk-btn ghost" type="button" id="pkCopy">📋 JSON 복사</button>' +
+            '<button class="pk-btn ghost" type="button" id="pkShorts">🎬 15초 대본</button>' +
             '<button class="pk-btn ghost" type="button" data-pkclose="1">닫기</button>' +
+          '</div>' +
+          '<div class="pk-scriptbox" id="pkScriptWrap" hidden>' +
+            '<label style="font-size:10.5px;font-weight:800;color:#9aa7ba;display:block;margin-bottom:4px">15초 대본 · 고정 댓글 — 복사해서 그대로 쓰세요</label>' +
+            '<textarea id="pkScriptBox" readonly></textarea>' +
+            '<div class="pk-acts" style="margin-top:6px">' +
+              '<button class="pk-btn ghost" type="button" id="pkCopyScript">📋 대본 복사</button>' +
+              '<button class="pk-btn ghost" type="button" id="pkCopyComment">📋 고정 댓글 복사</button>' +
+            '</div>' +
           '</div>' +
           '<div class="pk-status" id="pkStatus"></div>' +
           '<div class="pk-note">※ 가격은 실제 판매처에서 확인한 값만 적어 주세요. 비우면 picks 카드에 “가격 확인”으로 표시됩니다.</div>' +
@@ -15160,6 +15255,13 @@ const GEN_ACTIONS = [
         if (e.target.closest('[data-pkclose]')) { wrap.hidden = true; return; }
         if (e.target.id === 'pkCopy') { doCopy(); return; }
         if (e.target.id === 'pkSend') { doSend(e.target); return; }
+        if (e.target.id === 'pkMall4') { openMall4(); return; }
+        if (e.target.id === 'pkShorts') { showShorts(); return; }
+        if (e.target.id === 'pkCopyScript') { copyPart('script'); return; }
+        if (e.target.id === 'pkCopyComment') { copyPart('comment'); return; }
+      });
+      wrap.addEventListener('input', function(e){
+        if (e.target && e.target.id === 'pkName') syncMallbar();
       });
     }
     var title = String(current.title || '').replace(/^[\[\(].*?[\]\)]\s*/, '').slice(0, 70);
@@ -15176,8 +15278,117 @@ const GEN_ACTIONS = [
     document.getElementById('pkPass').placeholder = body ? ('예: ' + body.slice(0, 90)) : '';
     document.getElementById('pkPin').value = '';
     document.getElementById('pkStatus').textContent = '';
+    var sw = document.getElementById('pkScriptWrap');
+    if (sw) sw.hidden = true;
+    var sb = document.getElementById('pkScriptBox');
+    if (sb) sb.value = '';
+    window.PicksBridge._script = null;
+    syncMallbar();
     wrap.hidden = false;
     setTimeout(function(){ document.getElementById('pkName').focus(); }, 60);
+  }
+
+  /* ── 🔍 4대 몰 동시 검색 ── */
+  var MALLS = [
+    ['coupang','쿠팡','🚀'], ['temu','테무','💸'], ['ali','알리','🌏'], ['naver','네이버','🔎']
+  ];
+  function mallUrl(kind, name){
+    var q = String(name || '').trim(), e = encodeURIComponent(q);
+    if (kind === 'temu')  return 'https://www.temu.com/search_result.html?search_key=' + e;
+    if (kind === 'ali')   return 'https://ko.aliexpress.com/w/wholesale-' + encodeURIComponent(q.split(/\s+/).join('-')) + '.html';
+    if (kind === 'naver') return 'https://search.shopping.naver.com/search/all?query=' + e;
+    return 'https://www.coupang.com/np/search?q=' + e;
+  }
+  function nameVal(){
+    var el = document.getElementById('pkName');
+    return el ? String(el.value || '').trim() : '';
+  }
+  function syncMallbar(){
+    var bar = document.getElementById('pkMallbar');
+    if (!bar) return;
+    var q = nameVal() || '인스타 핫템';
+    bar.innerHTML = MALLS.map(function(m){
+      return '<a href="' + esc(mallUrl(m[0], q)) + '" target="_blank" rel="noopener nofollow">' + m[2] + ' ' + m[1] + '</a>';
+    }).join('');
+  }
+  function openMall4(){
+    var q = nameVal();
+    if (!q){ toast('상품명을 먼저 입력하세요'); document.getElementById('pkName').focus(); return; }
+    var blocked = 0;
+    MALLS.forEach(function(m){
+      var w = null;
+      try { w = window.open(mallUrl(m[0], q), '_blank', 'noopener'); } catch(e){}
+      if (!w) blocked++;
+    });
+    if (blocked) toast('팝업이 차단됐습니다 — 상품명 아래 몰별 버튼을 하나씩 눌러 주세요');
+  }
+
+  /* ── 🎬 15초 쇼츠 대본 · 고정 댓글 ── */
+  function wonN(n){ n = Number(n) || 0; return n > 0 ? n.toLocaleString('ko-KR') : ''; }
+  function pickUrl(no){
+    var base = 'picks.html';
+    try { base = new URL('picks.html', location.href).href; } catch(e){}
+    return base + '?q=' + encodeURIComponent(no || '');
+  }
+  function buildScript(it){
+    var price = Number(it.price) || 0;
+    var ref = Number(it.snsPrice) || 0;
+    var save = (ref > price && price > 0) ? (ref - price) : 0;
+    var pct = (ref > 0 && save > 0) ? Math.round(save / ref * 100) : 0;
+    var pros = (it.pros || []).filter(Boolean).slice(0, 2);
+    var no = it.no || '';
+    var L = [];
+    L.push('🎬 15초 핫템 쇼츠 — #' + no + ' ' + it.name);
+    L.push('');
+    L.push('[0~3초 · 훅]');
+    if (save) L.push('나레이션: "인스타에서 ' + wonN(ref) + '원에 팔던 이거, ' + (it.store || '최저가') + '에서는 ' + wonN(price) + '원입니다."');
+    else if (price) L.push('나레이션: "인스타에서 보던 이거, ' + (it.store || '최저가') + '에서 ' + wonN(price) + '원에 나왔습니다."');
+    else L.push('나레이션: "인스타에서 보던 이거, 어디서 제일 싸게 사는지 정리했습니다."');
+    L.push('자막: ' + (save ? '인스타 ' + wonN(ref) + ' → ' + wonN(price) + '원' : '오늘의 핫템 #' + no));
+    L.push('');
+    L.push('[3~7초 · 비교]');
+    if (save) L.push('나레이션: "같은 물건인데 ' + wonN(save) + '원 차이. ' + pct + '% 싸게 사는 겁니다."');
+    else L.push('나레이션: "가격부터 구성까지 한 번에 비교해 봤습니다."');
+    L.push('자막: ' + (save ? '-' + pct + '% · ' + wonN(save) + '원 절약' : '#' + no + ' 최저가 비교'));
+    L.push('');
+    L.push('[7~12초 · 장점 / 패스 포인트]');
+    if (pros.length) L.push('나레이션: "' + pros.join(' 그리고 ') + '"');
+    else L.push('나레이션: "실사용 기준으로 볼 만한 것만 골랐습니다."');
+    if (it.pass) L.push('나레이션: "다만 ' + it.pass + '"');
+    L.push('자막: ' + (pros[0] ? String(pros[0]).slice(0, 16) : '실사용 장점') + (it.pass ? ' / 패스 조건 있음' : ''));
+    L.push('');
+    L.push('[12~15초 · CTA]');
+    L.push('나레이션: "프로필 링크에서 ' + (no || '번호') + ' 검색하면 최저가 링크로 바로 갑니다."');
+    L.push('자막: 프로필 링크 → #' + no + ' 검색');
+    var C = [];
+    C.push('🛍️ #' + no + ' ' + it.name);
+    if (save) C.push('정가 ' + wonN(ref) + '원 → 최저 ' + wonN(price) + '원 (' + pct + '%↓ · ' + wonN(save) + '원 절약)');
+    else if (price) C.push('최저 ' + wonN(price) + '원 · ' + (it.store || '판매처') + ' 기준');
+    else C.push('가격은 판매처에서 확인해 주세요');
+    C.push('👉 최저가 링크: ' + pickUrl(no));
+    C.push('※ 이 링크는 제휴 링크로, 구매가 이루어지면 일정액의 수수료를 받습니다. 가격·재고는 판매처와 시점에 따라 달라질 수 있습니다.');
+    return { script: L.join('\n'), comment: C.join('\n') };
+  }
+  function showShorts(){
+    var it = item(); if (!it) return;
+    var d = buildScript(it);
+    window.PicksBridge._script = d;
+    var box = document.getElementById('pkScriptBox');
+    if (box) box.value = d.script + '\n\n' + d.comment;
+    var wrapEl = document.getElementById('pkScriptWrap');
+    if (wrapEl) wrapEl.hidden = false;
+    var st = document.getElementById('pkStatus');
+    if (st) st.textContent = '대본과 고정 댓글을 만들었습니다 — 아래 복사 버튼을 누르세요.';
+  }
+  function copyPart(kind){
+    var d = window.PicksBridge._script;
+    if (!d){ showShorts(); d = window.PicksBridge._script; }
+    if (!d) return;
+    var txt = kind === 'script' ? d.script : kind === 'comment' ? d.comment : (d.script + '\n\n' + d.comment);
+    var okMsg = kind === 'script' ? '15초 대본을 복사했습니다' : kind === 'comment' ? '고정 댓글을 복사했습니다' : '대본과 고정 댓글을 복사했습니다';
+    var done = function(){ var st = document.getElementById('pkStatus'); if (st) st.textContent = okMsg; toast(okMsg); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, function(){ fallback(txt, done); });
+    else fallback(txt, done);
   }
 
   function item(){
@@ -15264,9 +15475,126 @@ const GEN_ACTIONS = [
     }
   }
 
-  window.PicksBridge = { open: open, version: '1.1.0', lastError: null };
+  window.PicksBridge = { open: open, version: '1.2.0', lastError: null, _script: null };
 })();
 
+</script>
+<script>
+/* ══════════════════════════════════════════════════════
+   📖 사용법 모달 · ? 도움말 아이콘
+   ─ 헤더 [📖 사용법] → 목적별 3코스(시황·추천샵·웹 영상).
+   ─ 헷갈리기 쉬운 버튼 옆 [?] → 2줄 이내 설명 팝업.
+   ══════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  function $$(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); }
+
+  /* ── 모달 ── */
+  var modal = document.getElementById('howModal');
+  var openBtn = document.getElementById('howBtn');
+  function setTab(name){
+    $$('.gd-tab').forEach(function(t){
+      var on = t.getAttribute('data-gdtab') === name;
+      t.classList.toggle('on', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    $$('.gd-sec').forEach(function(p){
+      p.classList.toggle('on', p.getAttribute('data-gdpane') === name);
+    });
+    var body = modal && modal.querySelector('.gd-body');
+    if (body) body.scrollTop = 0;
+  }
+  function openHow(tab){
+    if (!modal) return;
+    if (tab) setTab(tab);
+    modal.hidden = false;
+    if (openBtn) openBtn.setAttribute('aria-expanded', 'true');
+  }
+  function closeHow(){
+    if (!modal) return;
+    modal.hidden = true;
+    if (openBtn) openBtn.setAttribute('aria-expanded', 'false');
+  }
+  if (openBtn) openBtn.addEventListener('click', function(){
+    if (modal && !modal.hidden) closeHow(); else openHow('stock');
+  });
+  if (modal) modal.addEventListener('click', function(e){
+    if (e.target.closest('[data-gdclose]')){ closeHow(); return; }
+    var t = e.target.closest('[data-gdtab]');
+    if (t) setTab(t.getAttribute('data-gdtab'));
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape'){ closeHow(); hideTip(); }
+  });
+
+  /* ── [?] 도움말 ── */
+  var tipEl = null, tipFor = null, tipTimer = null;
+  function hideTip(){
+    if (tipEl) tipEl.classList.remove('on');
+    tipFor = null;
+    clearTimeout(tipTimer);
+  }
+  function showTip(el, html){
+    if (!tipEl){
+      tipEl = document.createElement('div');
+      tipEl.className = 'hq-tip';
+      tipEl.setAttribute('role', 'tooltip');
+      document.body.appendChild(tipEl);
+    }
+    tipEl.innerHTML = html;
+    tipEl.classList.add('on');
+    var rect = el.getBoundingClientRect();
+    var w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+    var left = Math.min(Math.max(10, rect.left + rect.width / 2 - w / 2), window.innerWidth - w - 10);
+    var top = rect.bottom + 9;
+    if (top + h > window.innerHeight - 10) top = Math.max(10, rect.top - h - 9);
+    tipEl.style.left = left + 'px';
+    tipEl.style.top = top + 'px';
+    clearTimeout(tipTimer);
+    tipTimer = setTimeout(hideTip, 5600);
+    tipFor = el;
+  }
+  function makeChip(el, html, inside){
+    if (!el) return null;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'hq';
+    b.textContent = '?';
+    b.setAttribute('aria-label', '점검 도움말');
+    b.addEventListener('click', function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      if (tipFor === b) hideTip(); else showTip(b, html);
+    });
+    if (inside) el.appendChild(b);
+    else if (el.parentNode) el.parentNode.insertBefore(b, el.nextSibling);
+    return b;
+  }
+
+  var TIPS = [
+    ['#copyHtmlBtn', '네이버 서식 복사 — 본문을 <b>굵은 소제목·인용구·표</b>가 살아 있는 HTML로 복사합니다. 스마트에디터·티스토리에 붙여넣으면 서식이 그대로 유지됩니다.'],
+    ['#blogOneShotBtn', '원소스 변환 — 지금 완성한 블로그 글 <b>하나로</b> 쇼츠 v3 대본·제목 3안·추천 차트 PNG를 한 번에 뽑습니다.'],
+    ['#t11Dl', '1:1 대표 썸네일 PNG — 인스타·블로그 표지용 <b>1080×1080</b>. 제목·배지·워터마크를 넣어 저장합니다.'],
+    ['#matToShorts', '원소스 변환 — 같은 참고 자료를 블로그가 아니라 <b>쇼츠 대본</b>으로 넘깁니다.'],
+    ['#wvBgm', 'BGM — 영상에 깔 배경음악입니다. 성우 목 말소리가 묻히지 않게 <b>차분한 뉴스·밝은 리뷰</b>를 권장합니다.']
+  ];
+  TIPS.forEach(function(t){ makeChip(document.querySelector(t[0]), t[1], false); });
+  /* 보관함 헤더의 🛍️ 추천샵 설명 (summary 안에 넣음) */
+  var shelfSummary = document.querySelector('#shelf > summary');
+  makeChip(shelfSummary, '🛍️ 추천샵 — 보관함 작업을 <b>picks.html 상품 카드 초안</b>으로 보냅니다. JSON 복사 또는 PIN 입력으로 원클릭 업로드.', true);
+  /* 세이프 존 설명 (웹 영상 생성기 안내줄 끝에 붙임) */
+  var safeHint = null;
+  $$('.hint').forEach(function(h){ if (!safeHint && h.textContent.indexOf('세이프 존') >= 0) safeHint = h; });
+  makeChip(safeHint, '세이프 존 잠금 — 저장한 영상이 <b>쇼츠 UI에 가려지는 영역</b>을 피해 그리도록 상단 180·하단 380·좌 60·우 120 안에만 배치합니다.', true);
+  /* pick 모달의 4대 몰 안내 — 모달이 열릴 때 동적으로 붙임 */
+  document.addEventListener('click', function(e){
+    var m = e.target && e.target.id === 'pkMall4' ? e.target : null;
+    if (!m || m.getAttribute('data-hq-done') === '1') return;
+    m.setAttribute('data-hq-done', '1');
+    makeChip(m, '4대 몰 검색 — 쿠팡·테무·알리·네이버 가격비교를 <b>새 창으로</b> 엽니다. 팝업이 막히면 아래 몰별 버튼을 하나씩 누르세요.', false);
+  }, true);
+
+  window.HowGuide = { open: openHow, close: closeHow, version: '1.0.0' };
+})();
 </script>
 </body>
 </html>

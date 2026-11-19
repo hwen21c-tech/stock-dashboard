@@ -262,6 +262,75 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
   z-index:120; opacity:0; pointer-events:none; transition:opacity .18s, transform .18s; max-width:calc(100vw - 32px); text-align:center;
 }
 .toast.on{opacity:1; transform:translate(-50%,0)}
+
+/* ── 📖 운영 가이드(관리자 상단 접이식) ── */
+.guide-sec{padding:0; overflow:hidden}
+.guide-sec summary{
+  cursor:pointer; list-style:none; padding:12px; font-size:12.5px; font-weight:900;
+  display:flex; align-items:center; gap:6px; letter-spacing:-.01em;
+}
+.guide-sec summary::-webkit-details-marker{display:none}
+.guide-sec summary .arw{margin-left:auto; color:#8a8074; font-size:11px; transition:transform .15s}
+.guide-sec[open] summary .arw{transform:rotate(180deg)}
+.guide-bd{padding:0 12px 12px; display:flex; flex-direction:column; gap:8px}
+.gstep{display:flex; gap:8px; align-items:flex-start; font-size:11.5px; line-height:1.5; color:#3d3830}
+.gstep .gn{
+  flex:0 0 auto; width:19px; height:19px; border-radius:50%; background:var(--accent); color:#fff;
+  font-size:10.5px; font-weight:900; display:flex; align-items:center; justify-content:center; margin-top:1px;
+}
+.gstep b{font-weight:900}
+.gstep code{background:#f2ede5; border-radius:5px; padding:1px 4px; font-size:10.5px; word-break:break-all}
+
+/* ── 🔍 4대 몰 검색 ── */
+.name-row{display:flex; gap:6px; min-width:0}
+.name-row input{flex:1 1 auto; min-width:0}
+.name-row .btn{flex:0 0 auto; white-space:nowrap}
+.mallbar{display:flex; gap:5px; flex-wrap:wrap; align-items:center; margin-top:6px}
+.mallbar a{
+  text-decoration:none; border:1px solid var(--line); background:#fff; border-radius:8px;
+  padding:5px 8px; font-size:11px; font-weight:800; color:var(--ink2); white-space:nowrap;
+}
+.mallbar a:active{transform:translateY(1px)}
+.mallbar .mtip{font-size:10px; color:#9c9287; line-height:1.35; flex:1 1 100%}
+
+/* ── 🚨 방문자 제보 ── */
+.rep{margin-top:-3px}
+.repbtn{
+  border:0; background:transparent; color:#a89e92; font-size:10.5px; font-weight:800;
+  padding:2px 0; text-decoration:underline; text-underline-offset:2px;
+}
+.repbtn:active{color:var(--accent)}
+.rep-opts{display:flex; flex-direction:column; gap:7px}
+.rep-opt{
+  display:flex; align-items:center; gap:9px; text-align:left; width:100%;
+  border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:11px 12px;
+  font-size:13px; font-weight:900; line-height:1.3;
+}
+.rep-opt .em{font-size:17px; line-height:1}
+.rep-opt small{display:block; font-size:10.5px; font-weight:700; color:#9c9287; margin-top:2px}
+.rep-opt:active{transform:scale(.99); border-color:var(--accent)}
+
+/* ── 관리자 상품 행 · 보조 버튼 ── */
+.arow{flex-wrap:wrap}
+.arow .an{flex:1 1 110px}
+.arow2{flex:1 1 100%; display:flex; gap:5px; flex-wrap:wrap; margin-top:3px}
+.arow2 .btn{padding:6px 8px; font-size:10.5px; border-radius:8px}
+.arow2 .rep-pill{background:#fff5f2; color:#c2410c; border-color:#ffd3c6}
+
+/* ── 🎬 쇼츠 대본 모달 ── */
+.modal .panel.wide{max-width:560px; max-height:90vh; display:flex; flex-direction:column}
+.modal .panel.wide .mw-scroll{overflow-y:auto; -webkit-overflow-scrolling:touch; margin:0 -2px; padding:0 2px}
+.ta-wrap{display:flex; flex-direction:column; gap:5px; margin-bottom:11px}
+.ta-wrap .th{display:flex; align-items:center; gap:6px}
+.ta-wrap .th label{font-size:11px; font-weight:900; color:var(--ink2)}
+.ta-wrap .th .btn{margin-left:auto}
+.ta-wrap textarea{
+  width:100%; border:1.5px solid var(--line); border-radius:11px; padding:10px 11px;
+  font-size:11.8px; line-height:1.6; font-family:inherit; background:#fff; resize:vertical; min-height:120px;
+}
+.ta-wrap textarea:focus{border-color:var(--accent); outline:none}
+.wide-acts{display:flex; gap:7px; flex-wrap:wrap; margin-top:2px}
+.wide-acts .btn{flex:1 1 auto; text-align:center}
 </style>
 </head>
 <body>
@@ -362,9 +431,28 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
     </div>
     <div class="sbody">
 
+      <details class="sec guide-sec" id="opGuide">
+        <summary>📖 운영 4단계 가이드 <span class="arw">▾</span></summary>
+        <div class="guide-bd">
+          <div class="gstep"><span class="gn">1</span><span><b>🔍 4대 몰 검색</b> — 상품명을 넣고 [🔍 4대 몰 검색]을 누르면 쿠팡·테무·알리·네이버 가격비교가 한 번에 열립니다. 같은 상품의 최저가를 먼저 확인하세요.</span></div>
+          <div class="gstep"><span class="gn">2</span><span><b>실제 가격·내 제휴 단축링크 입력 후 저장</b> — 정가·최저가와 쿠팡 파트너스(또는 테무·알리) 단축링크를 넣고 [💾 저장]. 링크를 비우면 상품명 검색 결과로 연결됩니다.</span></div>
+          <div class="gstep"><span class="gn">3</span><span><b>🎬 쇼츠 대본 복사 · 🖼️ 9:16 카드 PNG</b> — 상품 행의 버튼으로 15초 대본·고정 댓글을 한 번에 복사하고, 1080×1920 요약 이미지를 저장해 릴스·스토리에 붙입니다.</span></div>
+          <div class="gstep"><span class="gn">4</span><span><b>고정 댓글·프로필에 직통 링크</b> — <code>picks.html?q=12</code>처럼 번호를 넣어 두면 방문자가 영상 번호만 검색해 바로 그 카드로 옵니다. 대가성 고지는 페이지 상단에 항상 떠 있습니다.</span></div>
+        </div>
+      </details>
+
       <div class="sec">
         <h3>📊 클릭 통계 <span class="sp" id="statTotal">총 0회</span></h3>
         <div class="alist" id="statList"></div>
+      </div>
+
+      <div class="sec">
+        <h3>🚨 방문자 제보 <span class="sp" id="repTotal">0건</span></h3>
+        <div class="alist" id="repList"></div>
+        <div class="row-btns" style="margin-top:9px">
+          <button class="btn ghost sm" type="button" id="btnRepClearAll">🧹 제보 전체 초기화</button>
+        </div>
+        <div class="tip" style="margin-top:6px; font-size:10.5px; color:#9c9287">방문자가 남긴 '가격 다름·품절·링크 오류'가 쌓이면 여기서 바로 확인하고, 상품을 고친 뒤 초기화하세요.</div>
       </div>
 
       <div class="sec">
@@ -381,7 +469,14 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
         <div class="formgrid">
           <div class="fld"><label for="f_no">쇼츠 번호</label><input id="f_no" placeholder="12"><div class="tip">영상에 쓴 번호. #은 빼고 숫자만</div></div>
           <div class="fld"><label for="f_cat">카테고리</label><select id="f_cat"></select></div>
-          <div class="fld full"><label for="f_name">상품명 <span style="color:#d63a1e">*</span></label><input id="f_name" placeholder="휴대용 미니 블렌더"></div>
+          <div class="fld full">
+            <label for="f_name">상품명 <span style="color:#d63a1e">*</span></label>
+            <div class="name-row">
+              <input id="f_name" placeholder="휴대용 미니 블렌더">
+              <button class="btn sm" type="button" id="btnMall4" title="쿠팡·테무·알리·네이버 가격비교를 새 창으로 엽니다">🔍 4대 몰 검색</button>
+            </div>
+            <div class="mallbar" id="mallBar" aria-label="몰별 검색 링크"></div>
+          </div>
           <div class="fld"><label for="f_sns">SNS·정가 (원)</label><input id="f_sns" inputmode="numeric" placeholder="39000"></div>
           <div class="fld"><label for="f_price">최저가 (원)</label><input id="f_price" inputmode="numeric" placeholder="18900"></div>
           <div class="fld"><label for="f_store">판매처 표기</label><input id="f_store" placeholder="쿠팡"></div>
@@ -433,6 +528,46 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
   </div>
 </div>
 
+<!-- 🚨 방문자 제보 -->
+<div class="modal" id="repModal" hidden>
+  <div class="back" data-close="rep"></div>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="repTitle">
+    <h2 id="repTitle">🚨 가격·품절 제보</h2>
+    <p class="small" id="repDesc">무엇이 달랐나요? 한 번만 눌러 주시면 바로 확인합니다.</p>
+    <div class="rep-opts">
+      <button class="rep-opt" type="button" data-repkind="price"><span class="em">💰</span><span>가격이 달라요<small>표시된 가격과 실제 판매가가 달라요</small></span></button>
+      <button class="rep-opt" type="button" data-repkind="soldout"><span class="em">📦</span><span>품절이에요<small>구매 버튼이 없거나 품절로 뜹니다</small></span></button>
+      <button class="rep-opt" type="button" data-repkind="link"><span class="em">🔗</span><span>링크가 안 열려요<small>다른 페이지·오류 화면으로 연결됩니다</small></span></button>
+    </div>
+    <div class="pin-acts"><button class="b2" type="button" data-close="rep" style="flex:1">닫기</button></div>
+  </div>
+</div>
+
+<!-- 🎬 쇼츠 대본 · 고정 댓글 -->
+<div class="modal" id="shortsModal" hidden>
+  <div class="back" data-close="shorts"></div>
+  <div class="panel wide" role="dialog" aria-modal="true" aria-labelledby="shortsTitle">
+    <h2 id="shortsTitle">🎬 15초 쇼츠 대본</h2>
+    <p class="small" id="shortsSub">—</p>
+    <div class="mw-scroll">
+      <div class="ta-wrap">
+        <div class="th"><label for="shortsScript">15초 대본 — 후킹 → 비교 → 장점·패스 → CTA</label></div>
+        <textarea id="shortsScript" rows="13" readonly></textarea>
+        <div class="row-btns"><button class="btn ghost sm" type="button" data-copy="script">📋 대본만 복사</button></div>
+      </div>
+      <div class="ta-wrap">
+        <div class="th"><label for="shortsComment">고정 댓글 — 링크 + 대가성 고지</label></div>
+        <textarea id="shortsComment" rows="6" readonly></textarea>
+        <div class="row-btns"><button class="btn ghost sm" type="button" data-copy="comment">📋 고정 댓글만 복사</button></div>
+      </div>
+    </div>
+    <div class="wide-acts">
+      <button class="btn" type="button" data-copy="both">📋 둘 다 복사</button>
+      <button class="btn ghost" type="button" data-close="shorts">닫기</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -451,9 +586,10 @@ var CFG = {
   key: 'sb_publishable_e5JJbvCPDhY91uXaUEVNVA_8Byv_gI8',
   table: 'family_sync',
   store: 'picks_store_public',
-  clicks: 'picks_clicks_public'
+  clicks: 'picks_clicks_public',
+  reports: 'picks_reports_public'
 };
-var LS = { store:'picks.store.v2', clicks:'picks.clicks.v2', q:'picks.ui.q' };
+var LS = { store:'picks.store.v2', clicks:'picks.clicks.v2', reports:'picks.reports.v2', q:'picks.ui.q' };
 
 var CATS = [
   { id:'all',     name:'전체' },
@@ -526,10 +662,12 @@ var SEED = [
 ];
 
 /* ── 상태 ── */
-var state = { qRaw:'', cat:'all', items:[], pin:null, updatedAt:0, hideSamples:false, clicks:{}, editId:null, sampleNoticeClosed:false };
+var state = { qRaw:'', cat:'all', items:[], pin:null, updatedAt:0, hideSamples:false, clicks:{}, reports:{}, editId:null, sampleNoticeClosed:false, repId:null };
 var syncOK = null;   // null 확인중 / true 연결 / false 기기 저장만
 var pending = {};    // 아직 서버에 못 올린 클릭 수
+var pendingRep = {}; // 아직 서버에 못 올린 제보 수
 var flushing = false;
+var flushingRep = false;
 
 /* ── 작은 도구 ── */
 function $(s){ return document.querySelector(s); }
@@ -546,12 +684,43 @@ function toast(msg, ms){
 function catName(id){ for (var i=0;i<CATS.length;i++) if (CATS[i].id === id) return CATS[i].name; return '기타'; }
 function nowSec(){ return Date.now(); }
 
+/* ── 4대 몰 검색 링크 ── */
+var MALLS = [
+  { id:'coupang', name:'쿠팡', emoji:'🚀' },
+  { id:'temu',    name:'테무', emoji:'💸' },
+  { id:'ali',     name:'알리', emoji:'🌏' },
+  { id:'naver',   name:'네이버', emoji:'🔎' }
+];
+function mallUrl(kind, name){
+  var q = String(name || '').trim();
+  var e = encodeURIComponent(q);
+  if (kind === 'direct' || kind === 'temu') return 'https://www.temu.com/search_result.html?search_key=' + e;
+  if (kind === 'ali')  return 'https://ko.aliexpress.com/w/wholesale-' + encodeURIComponent(q.split(/\s+/).join('-')) + '.html';
+  if (kind === 'naver') return 'https://search.shopping.naver.com/search/all?query=' + e;
+  return 'https://www.coupang.com/np/search?q=' + e;
+}
+function mallLinks(name){
+  return MALLS.map(function(m){ return { id:m.id, name:m.name, emoji:m.emoji, url:mallUrl(m.id, name) }; });
+}
+function openMall4(name, popFallbackMsg){
+  var q = String(name || '').trim();
+  if (!q){ toast('상품명을 먼저 입력하세요'); return false; }
+  var links = mallLinks(q), blocked = 0;
+  links.forEach(function(l){
+    var w = null;
+    try { w = window.open(l.url, '_blank', 'noopener'); } catch(e){}
+    if (!w) blocked++;
+  });
+  if (blocked){
+    toast((popFallbackMsg || '팝업이 차단됐습니다') + ' — 아래 몰별 버튼을 하나씩 눌러 주세요', 3600);
+    return false;
+  }
+  return true;
+}
+
 /* ── 상품 링크 ── */
 function searchUrl(kind, name){
-  var q = encodeURIComponent(name || '');
-  if (kind === 'direct') return 'https://www.temu.com/search_result.html?search_key=' + q;
-  if (kind === 'naver')  return 'https://search.shopping.naver.com/search/all?query=' + q;
-  return 'https://www.coupang.com/np/search?q=' + q;
+  return mallUrl(kind, name);
 }
 function linkOf(it, kind){
   var l = it.links || {};
@@ -678,6 +847,7 @@ function cardHtml(it){
         '<a href="' + esc(linkOf(it, 'naver')) + '" target="_blank" rel="noopener nofollow">🔎 네이버 최저가</a>' +
         '<span class="ct">' + (clicks > 0 ? '👆 ' + clicks + '회' : '') + '</span>' +
       '</div>' +
+      '<div class="rep"><button class="repbtn" type="button" data-rep="' + esc(it.id) + '">🚨 가격·품절 제보</button></div>' +
     '</div>' +
   '</article>';
 }
@@ -807,6 +977,364 @@ function updateAllCounts(){
 }
 
 /* ══════════════════════════════════════════════════════
+   🚨 방문자 제보 (가격·품절·링크 오류)
+   ─ picks_reports_public 행 하나만 사용한다(클릭 집계와 분리).
+     data = { items: { [상품id]: { price:n, soldout:n, link:n, last:ts } }, at:ts }
+   ══════════════════════════════════════════════════════ */
+var REP_KINDS = { price:'가격 다름', soldout:'품절', link:'링크 오류' };
+function repOf(id){
+  var r = state.reports[id];
+  if (!r) return { price:0, soldout:0, link:0, last:0 };
+  return { price:Number(r.price)||0, soldout:Number(r.soldout)||0, link:Number(r.link)||0, last:Number(r.last)||0 };
+}
+function repCount(id){ var r = repOf(id); return r.price + r.soldout + r.link; }
+function repTotal(){ var s = 0; for (var k in state.reports) s += repCount(k); return s; }
+function pendingRepCount(){
+  var s = 0;
+  for (var k in pendingRep){ var p = pendingRep[k]; s += (Number(p.price)||0) + (Number(p.soldout)||0) + (Number(p.link)||0); }
+  return s;
+}
+function openRep(id){
+  var it = state.items.filter(function(x){ return x.id === id; })[0];
+  if (!it) return;
+  state.repId = id;
+  $('#repDesc').textContent = '「' + it.name + '」 — 무엇이 달랐나요? 한 번만 눌러 주시면 바로 확인합니다.';
+  $('#repModal').hidden = false;
+}
+function closeRep(){ $('#repModal').hidden = true; state.repId = null; }
+function addReport(id, kind){
+  if (!REP_KINDS[kind] || !id) return;
+  var r = repOf(id);
+  r[kind] = (Number(r[kind]) || 0) + 1;
+  r.last = nowSec();
+  state.reports[id] = r;
+  pendingRep[id] = pendingRep[id] || { price:0, soldout:0, link:0 };
+  pendingRep[id][kind] = (Number(pendingRep[id][kind]) || 0) + 1;
+  lsSet(LS.reports, { items: state.reports, pending: pendingRep });
+  scheduleRepFlush();
+  closeRep();
+  toast('제보 감사합니다 — 확인해서 바로 고칠게요', 2400);
+}
+var repTimer = null;
+function scheduleRepFlush(){
+  clearTimeout(repTimer);
+  repTimer = setTimeout(function(){ flushReports(); }, 1800);
+}
+function flushReports(){
+  if (flushingRep) return Promise.resolve();
+  var ids = Object.keys(pendingRep);
+  if (!ids.length) return Promise.resolve();
+  flushingRep = true;
+  var mine = {};
+  ids.forEach(function(id){
+    mine[id] = { price:Number(pendingRep[id].price)||0, soldout:Number(pendingRep[id].soldout)||0, link:Number(pendingRep[id].link)||0 };
+  });
+  return remoteGet(CFG.reports).then(function(row){
+    var remote = (row && row.data && row.data.items) ? row.data.items : {};
+    var merged = {};
+    for (var k in remote){
+      merged[k] = { price:Number(remote[k].price)||0, soldout:Number(remote[k].soldout)||0, link:Number(remote[k].link)||0, last:Number(remote[k].last)||0 };
+    }
+    for (var id in mine){
+      var base = merged[id] || { price:0, soldout:0, link:0, last:0 };
+      base.price += mine[id].price; base.soldout += mine[id].soldout; base.link += mine[id].link;
+      base.last = nowSec();
+      merged[id] = base;
+    }
+    return remotePut(CFG.reports, { items: merged, at: nowSec() }).then(function(){
+      ids.forEach(function(id){ delete pendingRep[id]; });
+      state.reports = merged;
+      lsSet(LS.reports, { items: state.reports, pending: pendingRep });
+      if (admin) renderReports();
+    });
+  }).catch(function(){ /* 오프라인 — 다음 기회에 */ })
+    .then(function(){ flushingRep = false; });
+}
+function loadReports(){
+  return remoteGet(CFG.reports).then(function(row){
+    if (row && row.data && row.data.items){
+      var remote = row.data.items, out = {};
+      for (var k in remote){
+        out[k] = { price:Number(remote[k].price)||0, soldout:Number(remote[k].soldout)||0, link:Number(remote[k].link)||0, last:Number(remote[k].last)||0 };
+      }
+      for (var id in pendingRep){
+        var b = out[id] || { price:0, soldout:0, link:0, last:0 };
+        b.price += Number(pendingRep[id].price)||0;
+        b.soldout += Number(pendingRep[id].soldout)||0;
+        b.link += Number(pendingRep[id].link)||0;
+        out[id] = b;
+      }
+      state.reports = out;
+      lsSet(LS.reports, { items: state.reports, pending: pendingRep });
+      if (admin) renderReports();
+    }
+  }).catch(function(){ /* 무시 */ });
+}
+function clearReports(id){
+  var msg = id ? '이 상품의 제보를 초기화할까요?' : '모든 상품의 제보를 초기화할까요?';
+  if (!confirm(msg)) return;
+  function applyLocal(){
+    if (id) delete state.reports[id]; else state.reports = {};
+    if (id) delete pendingRep[id]; else pendingRep = {};
+    lsSet(LS.reports, { items: state.reports, pending: pendingRep });
+    renderReports();
+    toast('제보를 초기화했습니다');
+  }
+  remoteGet(CFG.reports).then(function(row){
+    var remote = (row && row.data && row.data.items) ? row.data.items : {};
+    var merged = {};
+    for (var k in remote){ if (!id || k !== id) merged[k] = remote[k]; }
+    return remotePut(CFG.reports, { items: merged, at: nowSec() });
+  }).then(applyLocal).catch(applyLocal);
+}
+
+/* ══════════════════════════════════════════════════════
+   🎬 15초 쇼츠 대본 · 고정 댓글
+   ══════════════════════════════════════════════════════ */
+function pickPageUrl(it){
+  var base = location.origin + location.pathname.replace(/[^\/]*$/, '');
+  if (!/^https?:/.test(base)) base = './';
+  return base + 'picks.html?q=' + encodeURIComponent(it.no || '');
+}
+function buildShorts(it){
+  var price = Number(it.price) || 0;
+  var ref = Number(it.snsPrice) || 0;
+  var save = (ref > price && price > 0) ? (ref - price) : 0;
+  var pct = (ref > 0 && save > 0) ? Math.round(save / ref * 100) : 0;
+  var refLabel = it.cat === 'insta' ? '인스타' : '정가';
+  var pros = (it.pros || []).filter(Boolean).slice(0, 2);
+  var no = it.no || '';
+  var L = [];
+  L.push('🎬 15초 핫템 쇼츠 — #' + no + ' ' + it.name);
+  L.push('');
+  L.push('[0~3초 · 훅]');
+  if (save) L.push('나레이션: "' + refLabel + '에서 ' + won(ref) + '원에 팔던 이거, ' + (it.store || '최저가') + '에서는 ' + won(price) + '원입니다."');
+  else if (price) L.push('나레이션: "인스타에서 보던 이거, ' + (it.store || '최저가') + '에서 ' + won(price) + '원에 나왔습니다."');
+  else L.push('나레이션: "인스타에서 보던 이거, 어디서 제일 싸게 사는지 정리했습니다."');
+  L.push('자막: ' + (save ? refLabel + ' ' + won(ref) + ' → ' + won(price) + '원' : '오늘의 핫템 #' + no));
+  L.push('');
+  L.push('[3~7초 · 비교]');
+  if (save) L.push('나레이션: "같은 물건인데 ' + won(save) + '원 차이. ' + pct + '% 싸게 사는 겁니다."');
+  else L.push('나레이션: "가격부터 구성까지 한 번에 비교해 봤습니다."');
+  L.push('자막: ' + (save ? '-' + pct + '% · ' + won(save) + '원 절약' : '#' + no + ' 최저가 비교'));
+  L.push('');
+  L.push('[7~12초 · 장점 / 패스 포인트]');
+  if (pros.length) L.push('나레이션: "' + pros.join(' 그리고 ') + '"');
+  else L.push('나레이션: "실사용 기준으로 볼 만한 것만 골랐습니다."');
+  if (it.pass) L.push('나레이션: "다만 ' + it.pass + '"');
+  L.push('자막: ' + (pros[0] ? pros[0].slice(0, 16) : '실사용 장점') + (it.pass ? ' / 패스 조건 있음' : ''));
+  L.push('');
+  L.push('[12~15초 · CTA]');
+  L.push('나레이션: "프로필 링크에서 ' + (no || '번호') + ' 검색하면 최저가 링크로 바로 갑니다."');
+  L.push('자막: 프로필 링크 → #' + no + ' 검색');
+
+  var C = [];
+  C.push('🛍️ #' + no + ' ' + it.name);
+  if (save) C.push('정가 ' + won(ref) + '원 → 최저 ' + won(price) + '원 (' + pct + '%↓ · ' + won(save) + '원 절약)');
+  else if (price) C.push('최저 ' + won(price) + '원 · ' + (it.store || '판매처') + ' 기준');
+  else C.push('가격은 판매처에서 확인해 주세요');
+  C.push('👉 최저가 링크: ' + pickPageUrl(it));
+  C.push('※ 이 링크는 제휴 링크로, 구매가 이루어지면 일정액의 수수료를 받습니다. 가격·재고는 판매처와 시점에 따라 달라질 수 있습니다.');
+  return { script: L.join('\n'), comment: C.join('\n') };
+}
+function openShorts(id){
+  var it = state.items.filter(function(x){ return x.id === id; })[0];
+  if (!it){ toast('상품을 찾지 못했습니다'); return; }
+  var d = buildShorts(it);
+  $('#shortsSub').textContent = '#' + (it.no || '-') + ' ' + it.name + ' — 복사해서 릴스·숏츠·고정 댓글에 그대로 쓰세요.';
+  $('#shortsScript').value = d.script;
+  $('#shortsComment').value = d.comment;
+  $('#shortsModal').hidden = false;
+}
+function closeShorts(){ $('#shortsModal').hidden = true; }
+
+/* ══════════════════════════════════════════════════════
+   🖼️ 9:16 요약 카드 PNG (1080×1920)
+   ══════════════════════════════════════════════════════ */
+var CAT_PAL = {
+  insta:['#fff1ea','#ffd7c4'], kitchen:['#eef7e8','#d3ead0'],
+  family:['#fff0f5','#ffd7e3'], tech:['#eef3ff','#cfdcff'], deal:['#fff8e2','#ffe7a6']
+};
+function cFont(w, px){ return w + ' ' + px + 'px "Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif'; }
+function roundRect(g, x, y, w, h, r){
+  r = Math.min(r, w/2, h/2);
+  g.beginPath();
+  g.moveTo(x+r, y); g.lineTo(x+w-r, y); g.quadraticCurveTo(x+w, y, x+w, y+r);
+  g.lineTo(x+w, y+h-r); g.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  g.lineTo(x+r, y+h); g.quadraticCurveTo(x, y+h, x, y+h-r);
+  g.lineTo(x, y+r); g.quadraticCurveTo(x, y, x+r, y); g.closePath();
+}
+function wrapLines(g, text, maxW, maxLines){
+  var out = [], cur = '';
+  var chars = String(text || '').replace(/\s+/g, ' ').trim().split('');
+  for (var i=0;i<chars.length;i++){
+    var t = cur + chars[i];
+    if (g.measureText(t).width > maxW && cur){
+      out.push(cur.replace(/\s+$/, ''));
+      cur = chars[i] === ' ' ? '' : chars[i];
+      if (out.length === maxLines) return out;
+    } else cur = t;
+  }
+  if (cur.trim() && out.length < maxLines) out.push(cur.trim());
+  return out;
+}
+function loadImgSafe(src){
+  return new Promise(function(res){
+    if (!src) return res(null);
+    var im = new Image(), done = false;
+    function fin(v){ if (!done){ done = true; res(v); } }
+    try { im.crossOrigin = 'anonymous'; } catch(e){}
+    im.onload = function(){ fin(im); };
+    im.onerror = function(){ fin(null); };
+    im.src = src;
+    setTimeout(function(){ fin(null); }, 3000);
+  });
+}
+function drawCover(g, im, x, y, w, h){
+  var s = Math.max(w / im.width, h / im.height);
+  var sw = im.width * s, sh = im.height * s;
+  g.drawImage(im, x + (w - sw)/2, y + (h - sh)/2, sw, sh);
+}
+function saveCanvasPng(canvas, filename){
+  function save(url, revoke){
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    if (revoke) setTimeout(function(){ try{ URL.revokeObjectURL(url); }catch(e){} }, 5000);
+  }
+  if (canvas.toBlob){
+    canvas.toBlob(function(blob){
+      if (blob) save(URL.createObjectURL(blob), true);
+      else { try{ save(canvas.toDataURL('image/png'), false); }catch(e){ toast('이미지를 저장하지 못했습니다'); } }
+    }, 'image/png');
+  } else {
+    try { save(canvas.toDataURL('image/png'), false); } catch(e){ toast('이미지를 저장하지 못했습니다'); }
+  }
+}
+function makeCardPng(it){
+  var W = 1080, H = 1920, M = 72, INK = '#1b1814';
+  var c = document.createElement('canvas'); c.width = W; c.height = H;
+  var g = c.getContext('2d');
+  var pal = CAT_PAL[it.cat] || CAT_PAL.insta;
+  var grd = g.createLinearGradient(0, 0, W, H);
+  grd.addColorStop(0, pal[0]); grd.addColorStop(1, pal[1]);
+  g.fillStyle = grd; g.fillRect(0, 0, W, H);
+
+  // 상단 브랜드
+  g.fillStyle = INK; g.font = cFont(900, 44); g.textBaseline = 'top';
+  g.fillText('연오랑 PICK', M, 66);
+  g.fillStyle = '#ff5a3c'; g.font = cFont(800, 30);
+  g.fillText('최저가 비교', M + g.measureText('연오랑 PICK').width + 150, 78);
+  g.fillStyle = 'rgba(27,24,20,.55)'; g.font = cFont(700, 30);
+  g.textAlign = 'right'; g.fillText('SCROLL & SAVE', W - M, 80); g.textAlign = 'left';
+
+  // 이미지 / 이모지 영역
+  var ix = M, iy = 160, iw = W - M*2, ih = 700;
+  g.save(); roundRect(g, ix, iy, iw, ih, 48); g.clip();
+  g.fillStyle = 'rgba(255,255,255,.72)'; g.fillRect(ix, iy, iw, ih);
+  if (it.img){
+    g.fillStyle = '#f0ebe2'; g.fillRect(ix, iy, iw, ih);
+  } else {
+    g.font = '360px "Apple Color Emoji","Noto Color Emoji",system-ui,sans-serif';
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    g.fillText(it.emoji || '🛍️', ix + iw/2, iy + ih/2 + 20);
+    g.textAlign = 'left'; g.textBaseline = 'top';
+  }
+  g.restore();
+
+  // 번호 배지
+  var badge = '#' + (it.no || '-');
+  g.font = cFont(900, 56);
+  var bw = Math.max(150, g.measureText(badge).width + 64);
+  g.save(); roundRect(g, ix + 28, iy + ih - 108, bw, 84, 24);
+  g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.18)'; g.shadowBlur = 18; g.fill(); g.restore();
+  g.fillStyle = INK; g.fillText(badge, ix + 28 + 32, iy + ih - 94);
+
+  var y = iy + ih + 56;
+  // 카테고리 칩
+  var cname = catName(it.cat);
+  g.font = cFont(800, 30);
+  var cw = g.measureText(cname).width + 44;
+  g.save(); roundRect(g, M, y, cw, 54, 27);
+  g.fillStyle = 'rgba(27,24,20,.82)'; g.fill(); g.restore();
+  g.fillStyle = '#fff'; g.fillText(cname, M + 22, y + 11);
+  y += 86;
+
+  // 상품명 (최대 3줄)
+  g.fillStyle = INK; g.font = cFont(900, 68);
+  var nameLines = wrapLines(g, it.name, W - M*2, 3);
+  nameLines.forEach(function(line, i){ g.fillText(line, M, y + i * 84); });
+  y += nameLines.length * 84 + 16;
+
+  // 가격
+  var price = Number(it.price) || 0;
+  var ref = Number(it.snsPrice) || 0;
+  var save = (ref > price && price > 0) ? ref - price : 0;
+  var pct = (ref > 0 && save > 0) ? Math.round(save / ref * 100) : 0;
+  if (save){
+    g.fillStyle = 'rgba(27,24,20,.42)'; g.font = cFont(800, 42);
+    var refTxt = won(ref) + '원';
+    g.fillText(refTxt, M, y);
+    var rw = g.measureText(refTxt).width;
+    g.strokeStyle = 'rgba(27,24,20,.42)'; g.lineWidth = 4;
+    g.beginPath(); g.moveTo(M, y + 28); g.lineTo(M + rw, y + 28); g.stroke();
+    y += 56;
+  }
+  g.fillStyle = INK; g.font = cFont(900, 116);
+  var priceTxt = price ? won(price) + '원' : '가격 확인';
+  g.fillText(priceTxt, M, y);
+  if (save){
+    var pw = g.measureText(priceTxt).width;
+    var bt = '-' + pct + '% · ' + won(save) + '원 절약';
+    g.font = cFont(900, 40);
+    var btw = g.measureText(bt).width + 48;
+    var bx = Math.min(M + pw + 26, W - M - btw);
+    g.save(); roundRect(g, bx, y + 28, btw, 68, 20); g.fillStyle = '#ff5a3c'; g.fill(); g.restore();
+    g.fillStyle = '#fff'; g.fillText(bt, bx + 24, y + 40);
+  }
+  y += 150;
+
+  // 장점 2줄
+  var pros = (it.pros || []).filter(Boolean).slice(0, 2);
+  g.font = cFont(700, 42);
+  pros.forEach(function(p){
+    var lines = wrapLines(g, p, W - M*2 - 60, 1);
+    g.fillStyle = '#0f9d58'; g.fillText('✓', M, y);
+    g.fillStyle = '#3d3830'; g.fillText(lines[0] || '', M + 56, y);
+    y += 66;
+  });
+
+  // CTA 바
+  var cy = 1660;
+  g.save(); roundRect(g, M, cy, W - M*2, 132, 36); g.fillStyle = INK; g.fill(); g.restore();
+  g.fillStyle = '#fff'; g.font = cFont(900, 46); g.textAlign = 'center';
+  g.fillText('프로필 링크에서 #' + (it.no || '번호') + ' 검색', W/2, cy + 40);
+  g.textAlign = 'left';
+  g.fillStyle = 'rgba(27,24,20,.55)'; g.font = cFont(700, 26); g.textAlign = 'center';
+  g.fillText('가격·재고는 판매처와 시점에 따라 다를 수 있어요 · 제휴 링크 포함', W/2, H - 96);
+  g.textAlign = 'left';
+
+  var filename = 'pick-' + (it.no || 'item') + '.png';
+  if (it.img){
+    return loadImgSafe(it.img).then(function(im){
+      if (im){
+        g.save(); roundRect(g, ix, iy, iw, ih, 48); g.clip();
+        try { drawCover(g, im, ix, iy, iw, ih); } catch(e){}
+        g.restore();
+        // 배지 다시 얹기(사진 위)
+        g.save(); roundRect(g, ix + 28, iy + ih - 108, bw, 84, 24);
+        g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.18)'; g.shadowBlur = 18; g.fill(); g.restore();
+        g.fillStyle = INK; g.font = cFont(900, 56); g.fillText(badge, ix + 28 + 32, iy + ih - 94);
+      }
+      saveCanvasPng(c, filename);
+      return true;
+    });
+  }
+  saveCanvasPng(c, filename);
+  return Promise.resolve(true);
+}
+
+/* ══════════════════════════════════════════════════════
    저장 · 불러오기
    ══════════════════════════════════════════════════════ */
 function persistLocal(){
@@ -913,16 +1441,60 @@ function renderAdmin(){
   var items = state.items.slice().sort(byRecent);
   $('#itemCount').textContent = items.length + '개';
   $('#adminList').innerHTML = items.map(function(it){
+    var rc = repCount(it.id);
     return '<div class="arow">' +
       '<span class="num">#' + esc(it.no || '-') + '</span>' +
       '<span class="an">' + esc(it.name) + (it.sample ? ' <span style="color:#b45309;font-size:10px">예시</span>' : '') + '</span>' +
       '<button class="btn ghost sm" type="button" data-edit="' + esc(it.id) + '">수정</button>' +
       '<button class="btn danger sm" type="button" data-delitem="' + esc(it.id) + '">삭제</button>' +
+      '<div class="arow2">' +
+        '<button class="btn ghost sm" type="button" data-shorts="' + esc(it.id) + '" title="15초 쇼츠 대본과 고정 댓글을 만듭니다">🎬 쇼츠 대본</button>' +
+        '<button class="btn ghost sm" type="button" data-card="' + esc(it.id) + '" title="1080×1920 요약 카드 PNG를 저장합니다">🖼️ 9:16 PNG</button>' +
+        '<button class="btn ghost sm" type="button" data-mall="' + esc(it.id) + '" title="쿠팡·테무·알리·네이버 검색을 새 창으로 엽니다">🔍 4대 몰</button>' +
+        (rc ? '<span class="btn rep-pill sm" style="display:inline-flex;align-items:center;cursor:default">🚨 ' + rc + '</span>' : '') +
+      '</div>' +
     '</div>';
   }).join('') || '<div class="an" style="color:#9c9287;font-weight:700;padding:4px">상품이 없습니다. “새 상품 추가”를 누르세요.</div>';
 
+  renderReports();
+
   $('#btnHideSamples').textContent = state.hideSamples ? '🧪 샘플 카드 다시 보이기' : '🧪 샘플 카드 숨기기';
   $('#syncState').textContent = syncOK === true ? '☁️ 연결됨' : syncOK === false ? '📱 기기 저장만' : '… 확인 중';
+}
+
+function renderReports(){
+  var rows = Object.keys(state.reports).filter(function(id){ return repCount(id) > 0; })
+    .map(function(id){
+      var it = state.items.filter(function(x){ return x.id === id; })[0];
+      return { id:id, it:it, r:repOf(id), n:repCount(id) };
+    }).sort(function(a, b){ return b.n - a.n; });
+  var total = rows.reduce(function(s, x){ return s + x.n; }, 0);
+  var el = $('#repTotal');
+  if (el) el.textContent = total + '건' + (pendingRepCount() ? ' · 전송 대기 ' + pendingRepCount() : '');
+  var list = $('#repList');
+  if (!list) return;
+  list.innerHTML = rows.length ? rows.map(function(x){
+    var bits = [];
+    if (x.r.price) bits.push('가격 ' + x.r.price);
+    if (x.r.soldout) bits.push('품절 ' + x.r.soldout);
+    if (x.r.link) bits.push('링크 ' + x.r.link);
+    return '<div class="arow">' +
+      '<span class="num">#' + esc(x.it ? (x.it.no || '-') : '-') + '</span>' +
+      '<span class="an">' + esc(x.it ? x.it.name : '(삭제된 상품)') + '</span>' +
+      '<span class="ac" style="color:#c2410c">🚨 ' + esc(bits.join(' · ')) + '</span>' +
+      (x.it ? '<button class="btn ghost sm" type="button" data-repedit="' + esc(x.id) + '">수정</button>' : '') +
+      '<button class="btn danger sm" type="button" data-repclear="' + esc(x.id) + '">초기화</button>' +
+    '</div>';
+  }).join('') : '<div class="an" style="color:#9c9287; font-weight:700; padding:4px">아직 제보가 없습니다.</div>';
+}
+
+function renderMallBar(){
+  var bar = $('#mallBar');
+  if (!bar) return;
+  var q = ($('#f_name') && $('#f_name').value || '').trim();
+  bar.innerHTML = MALLS.map(function(m){
+    return '<a href="' + esc(mallUrl(m.id, q || '인스타 핫템')) + '" target="_blank" rel="noopener nofollow">' + m.emoji + ' ' + m.name + '</a>';
+  }).join('') + '<span class="mtip">상품명을 고치면 검색어도 바뀝니다 · 위 [🔍 4대 몰 검색]은 네 창을 한 번에 엽니다</span>';
 }
 
 function catOptions(){
@@ -954,6 +1526,7 @@ function openForm(id){
   var prev = $('#imgPrev');
   if (it && it.img){ prev.src = it.img; prev.classList.add('on'); } else { prev.removeAttribute('src'); prev.classList.remove('on'); }
   $('#formSec').scrollIntoView({ behavior:'smooth', block:'start' });
+  renderMallBar();
 }
 function num(v){ var n = parseInt(String(v || '').replace(/[^\d]/g, ''), 10); return isFinite(n) ? n : 0; }
 function saveItem(){
@@ -1109,6 +1682,8 @@ document.getElementById('grid').addEventListener('click', function(e){
   }
   var buy = e.target.closest('[data-buy]');
   if (buy){ addClick(buy.getAttribute('data-buy')); return; }
+  var rep = e.target.closest('[data-rep]');
+  if (rep){ openRep(rep.getAttribute('data-rep')); return; }
 });
 $('#top3row').addEventListener('click', function(e){
   var b = e.target.closest('[data-jump]'); if (!b) return;
@@ -1134,7 +1709,10 @@ fab.addEventListener('click', function(){ window.scrollTo({ top:0, behavior:'smo
 document.querySelectorAll('[data-close]').forEach(function(el){
   el.addEventListener('click', function(){
     var t = el.getAttribute('data-close');
-    if (t === 'pin') closePin(); else closeSheet();
+    if (t === 'pin') closePin();
+    else if (t === 'rep') closeRep();
+    else if (t === 'shorts') closeShorts();
+    else closeSheet();
   });
 });
 $('#pinGo').addEventListener('click', tryPin);
@@ -1151,8 +1729,51 @@ $('#adminList').addEventListener('click', function(e){
   var ed = e.target.closest('[data-edit]');
   if (ed){ openForm(ed.getAttribute('data-edit')); return; }
   var del = e.target.closest('[data-delitem]');
-  if (del) deleteItem(del.getAttribute('data-delitem'));
+  if (del){ deleteItem(del.getAttribute('data-delitem')); return; }
+  var sh = e.target.closest('[data-shorts]');
+  if (sh){ openShorts(sh.getAttribute('data-shorts')); return; }
+  var cd = e.target.closest('[data-card]');
+  if (cd){
+    var id = cd.getAttribute('data-card');
+    var it = state.items.filter(function(x){ return x.id === id; })[0];
+    if (!it){ toast('상품을 찾지 못했습니다'); return; }
+    toast('9:16 카드를 만드는 중…', 1400);
+    makeCardPng(it).then(function(){
+      toast('9:16 카드 PNG를 저장했습니다 · pick-' + (it.no || 'item') + '.png', 2800);
+    }).catch(function(){ toast('이미지를 만들지 못했습니다'); });
+    return;
+  }
+  var ml = e.target.closest('[data-mall]');
+  if (ml){
+    var mit = state.items.filter(function(x){ return x.id === ml.getAttribute('data-mall'); })[0];
+    if (mit) openMall4(mit.name, '팝업이 차단됐습니다');
+    return;
+  }
 });
+$('#repList').addEventListener('click', function(e){
+  var ed = e.target.closest('[data-repedit]');
+  if (ed){ openForm(ed.getAttribute('data-repedit')); return; }
+  var cl = e.target.closest('[data-repclear]');
+  if (cl){ clearReports(cl.getAttribute('data-repclear')); return; }
+});
+$('#btnRepClearAll').addEventListener('click', function(){ clearReports(null); });
+$('#repModal').addEventListener('click', function(e){
+  var opt = e.target.closest('[data-repkind]');
+  if (opt){ addReport(state.repId, opt.getAttribute('data-repkind')); return; }
+});
+$('#shortsModal').addEventListener('click', function(e){
+  var cp = e.target.closest('[data-copy]');
+  if (!cp) return;
+  var kind = cp.getAttribute('data-copy');
+  var s = $('#shortsScript').value, m = $('#shortsComment').value;
+  if (kind === 'script') copyText(s, '15초 대본을 복사했습니다');
+  else if (kind === 'comment') copyText(m, '고정 댓글을 복사했습니다');
+  else copyText(s + '\n\n' + m, '대본과 고정 댓글을 모두 복사했습니다');
+});
+$('#btnMall4').addEventListener('click', function(){
+  openMall4(($('#f_name').value || '').trim(), '팝업이 차단됐습니다');
+});
+$('#f_name').addEventListener('input', renderMallBar);
 $('#btnHideSamples').addEventListener('click', function(){
   state.hideSamples = !state.hideSamples;
   saveStore(true);
@@ -1189,7 +1810,7 @@ function fallbackCopy(txt, okMsg){
   document.body.removeChild(ta);
 }
 
-window.addEventListener('pagehide', function(){ flushClicks(true); });
+window.addEventListener('pagehide', function(){ flushClicks(true); flushReports(); });
 
 /* ══════════════════════════════════════════════════════
    시작
@@ -1205,6 +1826,9 @@ function boot(){
   var c = lsGet(LS.clicks, null);
   if (c && c.counts) state.clicks = c.counts;
   if (c && c.pending) pending = c.pending;
+  var r = lsGet(LS.reports, null);
+  if (r && r.items) state.reports = r.items;
+  if (r && r.pending) pendingRep = r.pending;
 
   // URL로 번호 바로 열기: picks.html?q=12 , picks.html#12
   var p = new URLSearchParams(location.search);
@@ -1213,7 +1837,7 @@ function boot(){
   if (qs){ state.qRaw = qs; $('#q').value = qs; }
 
   render();
-  loadRemote().then(function(){ render(); loadClicks(); });
+  loadRemote().then(function(){ render(); loadClicks(); loadReports(); });
 }
 boot();
 
