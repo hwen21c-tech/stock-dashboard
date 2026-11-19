@@ -15045,7 +15045,7 @@ const GEN_ACTIONS = [
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
   }); }
   function toast(msg){
-    if (window.toast) { try { window.toast(msg); return; } catch(e){} }
+    try { if (typeof window.toast === 'function'){ window.toast(msg); return; } } catch(e){}
     var t = document.getElementById('pkToast');
     if (!t){
       t = document.createElement('div'); t.id = 'pkToast';
@@ -15053,7 +15053,18 @@ const GEN_ACTIONS = [
       document.body.appendChild(t);
     }
     t.textContent = msg; t.style.display = 'block';
-    clearTimeout(t._t); t._t = setTimeout(function(){ t.style.display = 'none'; }, 2600);
+    clearTimeout(t._t); t._t = setTimeout(function(){ t.style.display = 'none'; }, 2800);
+  }
+  function signal(ms){
+    try { var c = new AbortController(); setTimeout(function(){ try{ c.abort(); }catch(e){} }, ms); return c.signal; } catch(e){ return undefined; }
+  }
+  function guard(p, ms, label){
+    return new Promise(function(res, rej){
+      var done = false;
+      var t = setTimeout(function(){ if (!done){ done = true; rej(new Error(label + ' 응답 없음')); } }, ms);
+      p.then(function(v){ if (done) return; done = true; clearTimeout(t); res(v); },
+             function(e){ if (done) return; done = true; clearTimeout(t); rej(e); });
+    });
   }
   function sha256(text){
     return crypto.subtle.digest('SHA-256', new TextEncoder().encode(text)).then(function(buf){
@@ -15067,17 +15078,21 @@ const GEN_ACTIONS = [
     return h;
   }
   function getStore(){
-    return fetch(apiUrl() + '?code=eq.' + SB.code + '&select=code,data', { headers: headers(), cache: 'no-store' })
+    var req = fetch(apiUrl() + '?code=eq.' + SB.code + '&select=code,data',
+      { headers: headers(), cache: 'no-store', signal: signal(11000) })
       .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function(a){ return (a && a[0] && a[0].data) ? a[0].data : { v:2, pin:null, items:[], updatedAt:0 }; });
+    return guard(req, 12000, '서버 읽기');
   }
   function putStore(data){
-    return fetch(apiUrl() + '?on_conflict=code', {
+    var req = fetch(apiUrl() + '?on_conflict=code', {
       method: 'POST',
       headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
       body: JSON.stringify([{ code: SB.code, data: data }]),
-      cache: 'no-store'
+      cache: 'no-store',
+      signal: signal(14000)
     }).then(function(r){ if (!r.ok) return r.text().then(function(t){ throw new Error('HTTP ' + r.status + ' ' + t.slice(0,80)); }); return true; });
+    return guard(req, 15000, '서버 저장');
   }
 
   /* ── 모달 CSS (pk- 접두사로 기존 스튜디오 스타일과 격리) ── */
@@ -15101,7 +15116,8 @@ const GEN_ACTIONS = [
     '.pk-btn{border:1px solid #f59e0b;background:#f59e0b;color:#1a1206;border-radius:9px;padding:9px 13px;font-size:12.5px;font-weight:900}',
     '.pk-btn.ghost{background:transparent;color:#e8edf5;border-color:#3a4658}',
     '.pk-btn:disabled{opacity:.55}',
-    '.pk-note{margin-top:9px;font-size:10.5px;color:#8b98ab;line-height:1.5}'
+    '.pk-status{min-height:15px;margin-top:9px;font-size:11px;font-weight:800;color:#fbbf24;line-height:1.4}',
+    '.pk-note{margin-top:6px;font-size:10.5px;color:#8b98ab;line-height:1.5}'
   ].join('\n');
   document.head.appendChild(style);
 
@@ -15136,6 +15152,7 @@ const GEN_ACTIONS = [
             '<button class="pk-btn ghost" type="button" id="pkCopy">📋 JSON 복사</button>' +
             '<button class="pk-btn ghost" type="button" data-pkclose="1">닫기</button>' +
           '</div>' +
+          '<div class="pk-status" id="pkStatus"></div>' +
           '<div class="pk-note">※ 가격은 실제 판매처에서 확인한 값만 적어 주세요. 비우면 picks 카드에 “가격 확인”으로 표시됩니다.</div>' +
         '</div>';
       document.body.appendChild(wrap);
@@ -15149,16 +15166,16 @@ const GEN_ACTIONS = [
     var body = String(current.text || '').replace(/\s+/g, ' ').trim();
     document.getElementById('pkNo').value = '';
     document.getElementById('pkName').value = title;
-    document.getElementById('pkCat').value = /핫템|가격|최저가|직구|인스타/.test(title + ' ' + body) ? 'insta' : 'insta';
+    document.getElementById('pkCat').value = 'insta';
     document.getElementById('pkSns').value = '';
     document.getElementById('pkPrice').value = '';
     document.getElementById('pkRocket').value = '';
     document.getElementById('pkDirect').value = '';
     document.getElementById('pkPros').value = '';
     document.getElementById('pkPass').value = '';
+    document.getElementById('pkPass').placeholder = body ? ('예: ' + body.slice(0, 90)) : '';
     document.getElementById('pkPin').value = '';
-    var hint = body.slice(0, 90);
-    if (hint && !document.getElementById('pkPass').value) document.getElementById('pkPass').placeholder = '예: ' + hint;
+    document.getElementById('pkStatus').textContent = '';
     wrap.hidden = false;
     setTimeout(function(){ document.getElementById('pkName').focus(); }, 60);
   }
@@ -15194,7 +15211,10 @@ const GEN_ACTIONS = [
   function doCopy(){
     var it = item(); if (!it) return;
     var txt = JSON.stringify({ items: [it] }, null, 2);
-    var done = function(){ toast('JSON을 복사했습니다 — picks.html 관리자 모드 → JSON 붙여넣기에 그대로 넣으세요'); };
+    var done = function(){
+      document.getElementById('pkStatus').textContent = 'JSON을 복사했습니다 → picks.html 관리자 모드의 [JSON 붙여넣기]에 붙여 넣으세요.';
+      toast('JSON을 복사했습니다');
+    };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, function(){ fallback(txt, done); });
     else fallback(txt, done);
   }
@@ -15207,28 +15227,44 @@ const GEN_ACTIONS = [
   }
 
   function doSend(btn){
-    var it = item(); if (!it) return;
-    var pin = (document.getElementById('pkPin').value || '').trim();
-    if (pin.length < 4){ toast('추천샵 관리자 PIN을 입력하세요'); document.getElementById('pkPin').focus(); return; }
-    btn.disabled = true;
-    var old = btn.textContent; btn.textContent = '올리는 중…';
-    getStore().then(function(data){
-      if (!data.pin) throw new Error('추천샵 PIN이 아직 없습니다 — picks.html에서 먼저 설정하세요');
-      return sha256(pin).then(function(h){
-        if (h !== data.pin) throw new Error('PIN이 맞지 않습니다');
-        var items = Array.isArray(data.items) ? data.items.slice() : [];
-        items.unshift(it);
-        return putStore({ v:2, pin: data.pin, items: items, hideSamples: !!data.hideSamples, updatedAt: Date.now() });
-      });
-    }).then(function(){
-      toast('추천샵에 올렸습니다 — picks.html에서 확인하세요');
-      wrap.hidden = true;
-    }).catch(function(e){
-      toast('올리지 못했습니다: ' + String(e.message || e).slice(0, 60));
-    }).then(function(){ btn.disabled = false; btn.textContent = old; });
+    var st = document.getElementById('pkStatus');
+    function say(m){ if (st) st.textContent = m; }
+    var old = btn.textContent;
+    function reset(){ btn.disabled = false; btn.textContent = old; }
+    try {
+      var it = item(); if (!it) return;
+      var pin = (document.getElementById('pkPin').value || '').trim();
+      if (pin.length < 4){ toast('추천샵 관리자 PIN을 입력하세요'); document.getElementById('pkPin').focus(); return; }
+      btn.disabled = true; btn.textContent = '올리는 중…';
+      say('① 서버 확인 중…');
+      getStore().then(function(data){
+        if (!data.pin) throw new Error('추천샵 PIN이 아직 없습니다 — picks.html에서 먼저 설정하세요');
+        say('② PIN 확인 중…');
+        return sha256(pin).then(function(h){
+          if (h !== data.pin) throw new Error('PIN이 맞지 않습니다');
+          say('③ 저장 중…');
+          var items = Array.isArray(data.items) ? data.items.slice() : [];
+          items.unshift(it);
+          return putStore({ v:2, pin: data.pin, items: items, hideSamples: !!data.hideSamples, updatedAt: Date.now() });
+        });
+      }).then(function(){
+        say('✅ 추천샵에 올렸습니다 (picks.html 새로고침)');
+        try { toast('추천샵에 올렸습니다 — picks.html에서 확인하세요'); } catch(e){}
+        wrap.hidden = true;
+      }).catch(function(e){
+        var m = '올리지 못했습니다: ' + String((e && e.message) || e || '알 수 없는 오류').slice(0, 70);
+        window.PicksBridge.lastError = m;
+        say(m);
+        try { toast(m); } catch(err){}
+      }).then(reset, reset);
+    } catch(e){
+      window.PicksBridge.lastError = String((e && e.message) || e);
+      say('오류: ' + window.PicksBridge.lastError.slice(0, 80));
+      reset();
+    }
   }
 
-  window.PicksBridge = { open: open, version: '1.0.0' };
+  window.PicksBridge = { open: open, version: '1.1.0', lastError: null };
 })();
 
 </script>

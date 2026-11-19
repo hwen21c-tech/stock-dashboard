@@ -1138,7 +1138,7 @@ document.querySelectorAll('[data-close]').forEach(function(el){
   });
 });
 $('#pinGo').addEventListener('click', tryPin);
-$('#pinInput').addEventListener('keydown', function(e){ if (e.key === 'Enter') tryPin(); });
+$('#pinInput').addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); e.stopPropagation(); tryPin(); } });
 
 $('#btnNew').addEventListener('click', function(){ openForm(null); });
 $('#btnCancelItem').addEventListener('click', function(){ $('#formSec').hidden = true; state.editId = null; });
