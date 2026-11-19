@@ -25,6 +25,8 @@ var SIZES = [
   { w:1280, h:900, name:'1280 PC' }
 ];
 var results = [];
+var ONLY = new URLSearchParams(location.search).get('only');
+if (ONLY) SIZES = SIZES.filter(function(x){ return String(x.w) === ONLY; });
 function measure(win, doc, spec){
   var iw = win.innerWidth, sw = doc.documentElement.scrollWidth, bw = doc.body.scrollWidth;
   var over = [];
