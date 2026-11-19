@@ -1090,6 +1090,7 @@ details.sx-fold .fold-body ul{padding-left:15px;margin:4px 0}
   .sx-cand,.sx-up .pickbtn,.sx-up .clear,.sx-up input[type=file],#visKey,.sx-keybox,
   .sx-tabsum,.sx-noprint,.sx-day[disabled],.sx-upgrid .sx-note{display:none!important}
   .sx-sylrow,.sx-reco,.sx-col,.sx-day,.sx-fit .fx{break-inside:avoid;page-break-inside:avoid}
+  #pfList .acts{display:none!important}
   .sx-up{min-height:120px;border-style:solid!important}
   .sx-up.has img{position:static;width:100%;height:auto;max-height:150px;object-fit:contain;opacity:1}
   .sx-up .guide{display:none!important}
@@ -1235,7 +1236,7 @@ details.sx-fold .fold-body ul{padding-left:15px;margin:4px 0}
 
     <!-- ========== 프로필 ========== -->
     <section class="panel" id="panel-profiles" role="tabpanel" aria-label="프로필" hidden>
-      <div class="card">
+      <div class="card sx-noprint">
         <div class="card-h">
           <div class="card-t"><span class="h">登錄</span><span id="pfTitle">사주 등록</span></div>
           <div class="card-note">이 기기 + ☁️ 백업</div>
@@ -1302,7 +1303,7 @@ details.sx-fold .fold-body ul{padding-left:15px;margin:4px 0}
         </div>
         <div class="fmsg" id="pfMsg" role="status"></div>
       </div>
-      <div class="card" style="margin-top:12px" id="cloudCard">
+      <div class="card sx-noprint" style="margin-top:12px" id="cloudCard">
         <div class="card-h">
           <div class="card-t"><span class="h">雲</span>클라우드 동기화</div>
           <div class="card-note" id="cloudState" data-s="off">비밀코드 필요</div>
@@ -1325,7 +1326,7 @@ details.sx-fold .fold-body ul{padding-left:15px;margin:4px 0}
         </div>
         <button class="btn ghost" type="button" id="cloudSync" style="margin-top:11px;width:100%">🔒 비밀코드 넣고 동기화</button>
       </div>
-      <div class="card" style="margin-top:12px">
+      <div class="card sx-noprint" style="margin-top:12px">
         <div class="card-h"><div class="card-t"><span class="h">家族</span>저장된 프로필</div><div class="card-note" id="pfCount"></div></div>
         <div class="plist" id="pfList"></div>
       </div>
@@ -9382,6 +9383,24 @@ function pdNameDeep(p){
   return '<div class="pd-block pd-narr">' + pdH('姓名','이름 · 한자 · 원형이정 4격 상세') + nameDetailHtml(r) + '</div>'
     + pdBlock(pdH('深解','성명학 심층 풀이 전문') + nameDeepHtml(r));
 }
+function pdProfilesDeep(p){
+  function z(n){ return (n < 10 ? '0' : '') + n; }
+  var ps = profilesAll(), cur = activeProfile();
+  var rows = ps.map(function(x){
+    var hh = (x.hour === null || x.hour === undefined || x.hour === '') ? '시각 모름'
+      : z(x.hour) + ':' + z(x.minute || 0)
+        + (x.solarTime ? ' · 진태양시' : '') + (x.nightZi ? ' · 야자시' : '');
+    var zw = '—';
+    try { var c = chartOfId(x.id); if (c && c.shengxiao) zw = c.shengxiao + '띠'; } catch(e2){ zw = '—'; }
+    return [ (cur && cur.id === x.id ? '● ' : '') + esc(x.name || '이름 없음'),
+             (x.gender === 'F' ? '여' : '남'),
+             (x.cal === 'lunar' ? '음력 ' : '양력 ') + x.y + '-' + z(x.m) + '-' + z(x.d) + (x.leap ? ' (윤달)' : ''),
+             hh, zw, esc(x.memo || '—') ];
+  });
+  return pdBlock(pdH('家族','저장된 프로필 ' + ps.length + '명')
+      + pdTbl(['이름','성별','태어난 날','태어난 시각','띠','메모'], rows))
+    + pdP('● 는 지금 보고 있는 사람입니다. 프로필과 복기 메모는 이 기기에 저장되고, ☁️ 비밀코드를 넣은 기기에서만 내 클라우드에 백업됩니다. 가족 생년월일이므로 비밀코드는 본인만 아는 값으로 두세요.');
+}
 function pdVisionDeep(p){
   var st = (typeof VIS_ST !== 'undefined' && VIS_ST[p.id]) ? VIS_ST[p.id] : {};
   var photos = '';
@@ -9484,6 +9503,7 @@ function buildPrintDeep(tab){
     if (tab === 'match') return pdMatchDeep(p);
     if (tab === 'compat') return pdCompatDeep(p);
     if (tab === 'calendar') return pdCalendarDeep(p);
+    if (tab === 'profiles') return pdProfilesDeep(p);
   } catch(e){
     try { console.warn('[sx-print]', tab, e && e.message); } catch(_){}
   }
@@ -9530,6 +9550,9 @@ function printTab(tab){
   var deep = panel.querySelector(':scope > .sx-print-deep');
   if (!deep){ deep = document.createElement('div'); deep.className = 'sx-print-deep'; panel.appendChild(deep); }
   deep.innerHTML = buildPrintDeep(tab);
+  /* 인쇄 꼬리말은 항상 심층 리포트 뒤(문서 맨 끝)에 오도록 */
+  var footEl = panel.querySelector(':scope > .sx-printfoot');
+  if (footEl) panel.appendChild(footEl);
   document.body.setAttribute('data-print-tab', tab);
   var done = false;
   function cleanup(){
