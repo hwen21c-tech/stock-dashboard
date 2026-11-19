@@ -9737,6 +9737,9 @@ window.SajuX = {
     printTab: printTab, downloadFile: downloadFile, reportHtmlFile: reportHtmlFile,
     nameDeepHtml: nameDeepHtml, buildPrintDeep: buildPrintDeep,
     palmResultHtml: palmResultHtml, faceResultHtml: faceResultHtml,
+    reportName: reportName, reportCompat: reportCompat, reportCalendar: reportCalendar, reportPalmFace: reportPalmFace,
+    chartOfId: chartOfId, profilesAll: profilesAll, compatDeep: compatDeep, modeGuess: modeGuess,
+    needEls: needEls, splitName: splitName, fourGyeok: fourGyeok, surCharOf: surCharOf,
     visAdviceHtml: visAdviceHtml, visNoteHtml: visNoteHtml, visAgesHtml: visAgesHtml
   }
 };
@@ -9913,15 +9916,339 @@ function pillarLine(pl){
     + ' · 지장간 ' + (pl.hide || []).map(function(h){ return h.gan + '(' + h.ss + ')'; }).join('·')
     + ' · ' + pl.diShi + ' · 납음 ' + (pl.naYin || '—');
 }
-function ctxText(p, chart, room){
+/* =========================================================
+   19-a. 운 흐름 확장 — 세운 3개년 · 남은 달 전체 월운 · 이동수(역마·충·합)
+   ---------------------------------------------------------
+   · 엔진(S)의 세운·월운·대운·일진 계산을 그대로 써서 사주비서가 "언제"를
+     답할 수 있게 연·월 단위 표를 만든다. 점수는 화면과 같은 값이다.
+   · 이동수는 원국 일지·년지의 역마(寅申巳亥) 자리, 충(沖), 형·파·해,
+     합(六合·三合)으로 판정해 [역마·이동수 강] / [충·변동] / [합·안정] 으로 남긴다.
+   · 길일(택일)은 이 앱의 택일 엔진(SajuX._dbg.dayAlmanac)을 그대로 쓴다.
+   ========================================================= */
+var YEOKMA = { 申:'寅', 子:'寅', 辰:'寅', 寅:'申', 午:'申', 戌:'申', 巳:'亥', 酉:'亥', 丑:'亥', 亥:'巳', 卯:'巳', 未:'巳' };
+var YEOK_ZHI = ['寅','申','巳','亥'];
+var R_YUKHAP = { 子丑:'土', 寅亥:'木', 卯戌:'火', 辰酉:'金', 巳申:'水', 午未:'土' };
+var R_CHUNG = ['子午','丑未','寅申','卯酉','辰戌','巳亥'];
+var R_PA = ['子酉','卯午','辰丑','未戌','寅巳','申亥'];
+var R_HAE = ['子未','丑午','寅巳','卯辰','申亥','酉戌'];
+var R_HYUNG2 = ['子卯'];
+var R_HYUNG3 = [['寅','巳','申'],['丑','戌','未']];
+var R_SAMHAP = [['申','子','辰','水'],['亥','卯','未','木'],['寅','午','戌','火'],['巳','酉','丑','金']];
+var R_EL_KO = { 木:'목', 火:'화', 土:'토', 金:'금', 水:'수' };
+
+function relKey2(a, b){ return [a, b].sort(function(x, y){ return ZHI.indexOf(x) - ZHI.indexOf(y); }).join(''); }
+function relList2(a, b){
+  var out = [];
+  if (!a || !b) return out;
+  var k = relKey2(a, b);
+  if (a === b) out.push({ t:'same', n:'복음' });
+  if (R_YUKHAP[k]) out.push({ t:'yukhap', n:'육합' });
+  if (R_CHUNG.indexOf(k) >= 0) out.push({ t:'chung', n:'충' });
+  if (R_PA.indexOf(k) >= 0) out.push({ t:'pa', n:'파' });
+  if (R_HAE.indexOf(k) >= 0) out.push({ t:'hae', n:'해' });
+  if (R_HYUNG2.indexOf(k) >= 0) out.push({ t:'hyung', n:'형' });
+  R_HYUNG3.forEach(function(tri){
+    if (a !== b && tri.indexOf(a) >= 0 && tri.indexOf(b) >= 0) out.push({ t:'hyung', n:'형' });
+  });
+  return out;
+}
+
+/* 지지 하나가 이 사주에 어떤 이동 신호를 거는지 */
+function moveInfo(chart, zhi){
+  var tags = [], why = [], strong = false;
+  if (!chart || !zhi) return { tags:tags, why:why, strong:false };
+  var dayZ = chart.dayZhi;
+  var yrZ = (chart.pillars && chart.pillars[0]) ? chart.pillars[0].zhi : '';
+  var yeok = [];
+  if (YEOKMA[dayZ] === zhi) yeok.push('일지 ' + dayZ + '의 역마 자리');
+  if (yrZ && yrZ !== dayZ && YEOKMA[yrZ] === zhi) yeok.push('년지 ' + yrZ + '의 역마 자리');
+  if (yeok.length){ tags.push('역마·이동수 강'); why.push(yeok.join(', ')); strong = true; }
+  else if (YEOK_ZHI.indexOf(zhi) >= 0){ tags.push('역마지'); why.push('인신사해(寅申巳亥)'); }
+
+  var chung = [], hyung = [], pa = [], hae = [], hap = [], same = [];
+  (chart.pillars || []).forEach(function(pl){
+    if (!pl || !pl.zhi) return;
+    relList2(zhi, pl.zhi).forEach(function(r){
+      var s = pl.short + '지 ' + pl.zhi + ' ' + r.n;
+      if (r.t === 'chung') chung.push(s);
+      else if (r.t === 'hyung') hyung.push(s);
+      else if (r.t === 'pa') pa.push(s);
+      else if (r.t === 'hae') hae.push(s);
+      else if (r.t === 'yukhap') hap.push(s);
+      else if (r.t === 'same') same.push(pl.short + '지');
+    });
+  });
+  var brs = (chart.pillars || []).map(function(x){ return x ? x.zhi : ''; }).filter(Boolean);
+  R_SAMHAP.forEach(function(tri){
+    if (tri.indexOf(zhi) < 0) return;
+    var mine = brs.filter(function(z){ return tri.indexOf(z) >= 0; });
+    if (mine.length >= 2 && mine.indexOf(zhi) < 0) hap.push('삼합 ' + tri.slice(0, 3).join('') + '→' + tri[3] + '국');
+  });
+  if (chung.length){ tags.push('충·변동'); why.push(chung.join(', ')); strong = true; }
+  if (hyung.length){ tags.push('형'); why.push(hyung.join(', ')); }
+  if (pa.length) tags.push('파');
+  if (hae.length){ tags.push('해'); why.push(hae.join(', ')); }
+  if (same.length) why.push(same.join('·') + ' 복음(같은 지지)');
+  if (hap.length){ tags.push('합·안정'); why.push(hap.join(', ')); }
+  return { tags:tags, why:why, strong:strong };
+}
+
+/* 세운 한 해 — 한 줄 요약 */
+function saeunPack(chart, year){
+  var se = null;
+  try { se = S.saeunOf(chart, year); } catch(e){ se = null; }
+  if (!se) return null;
+  var mi = moveInfo(chart, se.zhi);
+  var t = year + '년 ' + se.gz + '(' + se.ganKo + se.zhiKo + ') 총' + se.total
+    + ' (재' + se.dom.wealth + '/일' + se.dom.work + '/가' + se.dom.family + ')'
+    + ' · ' + se.ssG + '/' + se.ssZ + ' · 12운성 ' + (se.ds ? se.ds.ko : '—')
+    + (se.daeun ? ' · 대운 ' + se.daeun.gz : '');
+  if (se.keys && se.keys.length) t += ' · 키워드 ' + se.keys.map(function(k){ return k.t; }).join('·');
+  if (mi.tags.length) t += ' [' + mi.tags.join('·') + (mi.why.length ? ' — ' + mi.why.join('; ') : '') + ']';
+  else t += ' [역마·충 없음]';
+  return { se:se, mi:mi, text:t };
+}
+
+/* 월운 — 절기 구간의 실제 양력 날짜까지 붙인다 */
+function spanOfMonth(i, year, range){
+  var rg = String(range || '').split('~');
+  var a = String(rg[0] || '').split('/'), b = String(rg[1] || '').split('/');
+  var sm = +a[0] || 0, sd = +a[1] || 0, em = +b[0] || 0, ed = +b[1] || 0;
+  var sy = year + ((2 + i) > 12 ? 1 : 0);
+  var ey = sy + ((em && sm && em < sm) ? 1 : 0);
+  return { sy:sy, sm:sm, sd:sd, ey:ey, em:em, ed:ed };
+}
+function dkey(y, m, d){ return y * 10000 + m * 100 + d; }
+function spanStart(sp){ return dkey(sp.sy, sp.sm, sp.sd); }
+function spanEnd(sp){ return dkey(sp.ey, sp.em, sp.ed); }
+function spanText(sp){ return sp.sy + '-' + p2(sp.sm) + '-' + p2(sp.sd) + '~' + p2(sp.em) + '-' + p2(sp.ed); }
+
+function monthsOfYear(chart, year, dt){
+  var list = [];
+  try { list = S.wolunOf(chart, year) || []; } catch(e){ list = []; }
+  var today = dt ? dkey(dt.y, dt.m, dt.d) : 0;
+  return list.map(function(m, i){
+    var sp = spanOfMonth(i, year, m.range);
+    return { m:m, sp:sp, mi:moveInfo(chart, m.zhi), year:year, idx:i, past: today ? (spanEnd(sp) < today) : false };
+  });
+}
+function monthRows(chart, fromYear, toYear, dt){
+  var today = dkey(dt.y, dt.m, dt.d), out = [];
+  for (var yy = fromYear; yy <= toYear; yy++){
+    monthsOfYear(chart, yy, dt).forEach(function(x){
+      if (spanEnd(x.sp) < today) return;
+      out.push(x);
+    });
+  }
+  return out;
+}
+function monthLine(x, mark){
+  var m = x.m, mi = x.mi, s;
+  s = spanText(x.sp) + ' ' + m.label + ' ' + m.gz
+    + ' 총' + m.total + ' (재' + m.dom.wealth + '/일' + m.dom.work + '/가' + m.dom.family + ')'
+    + ' ' + m.ssG + '/' + m.ssZ;
+  if (['정인','편인'].indexOf(m.ssG) >= 0 || ['정인','편인'].indexOf(m.ssZ) >= 0) s += ' 문서·인성';
+  if (mi.tags.length) s += ' [' + mi.tags.join('·') + (mi.why.length ? ' — ' + mi.why.join('; ') : '') + ']';
+  else s += ' [역마·충 없음]';
+  if (m.care && m.care.length && m.care[0] !== '무난') s += ' · 앱배지 ' + m.care.join('·');
+  if (mark) s += ' ' + mark;
+  return s;
+}
+
+/* 질문에서 연도·월을 읽는다 — "27년"=2027, "28년"=2028, "내년"=+1 */
+function yearsInMsg(msg, curY){
+  var s = String(msg || ''), out = [];
+  function push(v){ if (v >= 1900 && v <= 2100 && out.indexOf(v) < 0) out.push(v); }
+  var re = /(20\d{2})\s*년?/g, m;
+  while ((m = re.exec(s))) push(+m[1]);
+  re = /(^|[^0-9])(\d{2})\s*년/g;
+  while ((m = re.exec(s))){ var v = +m[2]; if (v >= 20 && v <= 49) push(2000 + v); }
+  if (/내후년/.test(s)) push(curY + 2);
+  else if (/내년|명년|다음\s*해/.test(s)) push(curY + 1);
+  if (/올해|금년/.test(s)) push(curY);
+  if (/작년|지난해/.test(s)) push(curY - 1);
+  return out;
+}
+function monthsInMsg(msg, dt){
+  var s = String(msg || ''), out = [], m;
+  var hint = null;
+  m = s.match(/(20\d{2})\s*년/);
+  if (m){ hint = +m[1]; }
+  else if (/내후년/.test(s)){ hint = dt.y + 2; }
+  else if (/내년|명년|다음\s*해/.test(s)){ hint = dt.y + 1; }
+  else if (/올해|금년/.test(s)){ hint = dt.y; }
+  var re = /(\d{1,2})\s*월/g;
+  while ((m = re.exec(s))){
+    var mo = +m[1];
+    if (mo < 1 || mo > 12) continue;
+    var yy = (hint != null) ? hint : (mo < dt.m ? dt.y + 1 : dt.y);
+    var k = yy * 100 + mo;
+    if (!out.some(function(x){ return x.y * 100 + x.m === k; })) out.push({ y:yy, m:mo });
+  }
+  return out;
+}
+function intentOf(msg){
+  var s = String(msg || ''), out = [];
+  var map = [
+    ['이동수·이사', /이동수|이사|이전|집\s*옮|이주|역마|해외|유학|출장|발령|전근/],
+    ['이직·직장', /이직|직장|회사|조직|승진|퇴사|취업|사업/],
+    ['문서·계약', /문서|계약|등기|시험|자격|합격|논문|특허|서류/],
+    ['재물·투자', /돈|재물|투자|주식|매수|매도|수입|대출|자금|월급/],
+    ['가족·관계', /가족|아내|남편|자녀|아이|애|궁합|결혼|연애|만남|부모/],
+    ['건강', /건강|몸|병|수술|치료|컨디션/],
+    ['길일·날짜', /길일|좋은\s*날|날짜|언제|며칠|택일/]
+  ];
+  map.forEach(function(pr){ if (pr[1].test(s)) out.push(pr[0]); });
+  return out;
+}
+
+/* 가족 프로필 — 최대 6명까지 자동 파악 */
+function familyLines(chart, dt){
+  var out = [], meId = (chart && chart.profile) ? chart.profile.id : '';
+  var others = profiles().filter(function(x){ return x.id !== meId; }).slice(0, 6);
+  others.forEach(function(p2){
+    var c2 = null;
+    try { c2 = S.chartOf(p2); } catch(e){ c2 = null; }
+    if (!c2){ out.push('· ' + (p2.name || '이름 없음') + ' — 사주 계산 불가(생년월일 확인 필요)'); return; }
+    var age = dt.y - p2.y + 1;
+    var zr = [];
+    relList2(chart.dayZhi, c2.dayZhi).forEach(function(r){ if (r.t !== 'same') zr.push(r.n); });
+    var cp = null;
+    try { cp = S.compatOf(chart, c2); } catch(e){ cp = null; }
+    var l = '· ' + (p2.name || '이름 없음') + '(' + (p2.gender === 'F' ? '여' : '남') + ' 세는나이 ' + age + '세'
+      + (p2.memo ? ', ' + strip(p2.memo).slice(0, 14) : '') + ')'
+      + ' · 일주 ' + c2.ilju + ' · 일간 ' + c2.dayGan + '(' + c2.dayGanKo + ')' + c2.dayEl
+      + ' · 용신 ' + (c2.yong ? c2.yong.el + (R_EL_KO[c2.yong.el] ? '(' + R_EL_KO[c2.yong.el] + ')' : '') : '—')
+      + ' · 나와 일지 ' + (zr.length ? zr.join('·') : '특이 없음')
+      + (cp ? ' · 궁합 ' + cp.score + '점' : '');
+    [dt.y, dt.y + 1].forEach(function(yy){
+      var s2 = null;
+      try { s2 = S.saeunOf(c2, yy); } catch(e){ s2 = null; }
+      if (!s2) return;
+      var mi2 = moveInfo(c2, s2.zhi);
+      l += ' / ' + yy + ' ' + s2.gz + ' 총' + s2.total + '(재' + s2.dom.wealth + ')'
+        + (mi2.tags.length ? '[' + mi2.tags.join('·') + ']' : '');
+    });
+    out.push(l);
+  });
+  return out;
+}
+
+/* 성명학·손금·관상 — 저장된 결과만 읽는다(없으면 미분석) */
+function nameSaved(p){
+  try {
+    var o = JSON.parse(localStorage.getItem('saju.x.name.v1') || '{}');
+    var st = o && o[p.id];
+    return !!(st && st.picks && st.picks.length && st.picks.some(Boolean));
+  } catch(e){ return false; }
+}
+function nameLine(p){
+  var X = window.SajuX && window.SajuX._dbg;
+  if (!X || !X.reportName) return '미분석';
+  var nm = null;
+  try { nm = X.reportName(p); } catch(e){ nm = null; }
+  if (!nm) return '미분석(성명학 탭에서 이름·한자를 넣으면 계산됨)';
+  var saved = nameSaved(p);
+  var s = (saved ? '(저장된 한자 기준) ' : '(한자 자동 선택 — 확정 전, 이름 소리 기준으로만 단정할 것) ')
+    + '이름 ' + (nm.sur || '') + nm.rows.map(function(x){ return x.syl; }).join('')
+    + ' / 한자 ' + (nm.surCh || '—') + ' ' + nm.rows.map(function(x){ return x.char || '?'; }).join('');
+  s += ' · 총점 ' + nm.total + ' · 사주궁합 ' + nm.chartScore;
+  s += ' · 발음 ' + nm.lingScore + '/음양 ' + nm.yinScore + '/수리 ' + nm.suScore + '/자원 ' + nm.resScore;
+  s += ' · 4격 ' + (nm.gyeok || []).map(function(g){ return g.k + g.num + '(' + g.grade + ')'; }).join('·');
+  if (nm.badList && nm.badList.length) s += ' · 불용한자 ' + nm.badList.map(function(b){ return b.char; }).join(',');
+  if (nm.covered && nm.covered.length) s += ' · 사주 보완 ' + nm.covered.join('·');
+  return s;
+}
+function stampText(at){
+  if (!at) return '';
+  try { var k = kstDate(new Date(at)); return k.y + '-' + p2(k.m) + '-' + p2(k.d); } catch(e){ return ''; }
+}
+function palmLine(p){
+  var X = window.SajuX && window.SajuX._dbg;
+  if (!X || !X.reportPalmFace) return '미분석';
+  var vf = null;
+  try { vf = X.reportPalmFace(p); } catch(e){ vf = null; }
+  if (!vf || (!vf.palm && !vf.face)) return '미분석(손금·관상 탭에서 사진을 넣고 분석하면 요약이 들어온다)';
+  var L = [];
+  if (vf.palm){
+    var pl = vf.palm.right || vf.palm.left || vf.palm || {};
+    L.push('손금 ' + ((pl.lines || []).map(function(l){ return l.key + ' ' + (l.score == null ? '—' : l.score); }).join('·') || '—')
+      + (pl.summary ? ' — ' + strip(pl.summary).slice(0, 170) : '')
+      + (vf.palm.at ? ' (' + stampText(vf.palm.at) + ' 분석)' : ''));
+  }
+  if (vf.face){
+    L.push('관상 ' + ((vf.face.samjeong || []).map(function(s){ return s.key + ' ' + (s.score == null ? '—' : s.score); }).join('·') || '—')
+      + (vf.face.summary ? ' — ' + strip(vf.face.summary).slice(0, 170) : '')
+      + (vf.face.at ? ' (' + stampText(vf.face.at) + ' 분석)' : ''));
+  }
+  return L.join(' / ');
+}
+
+/* 길일(택일) — 앱 택일 엔진(dayAlmanac) 결과 그대로 */
+function gililDays(chart, y, m, fromDt){
+  var out = [], days, D = (window.SajuX && window.SajuX._dbg) ? window.SajuX._dbg.dayAlmanac : null;
+  if (!D || !chart) return out;
+  try { days = new Date(Date.UTC(y, m, 0)).getUTCDate(); } catch(e){ return out; }
+  for (var d = 1; d <= days; d++){
+    if (fromDt && dkey(y, m, d) < dkey(fromDt.y, fromDt.m, fromDt.d)) continue;
+    var a = null;
+    try { a = D(chart, { y:y, m:m, d:d }); } catch(e){ a = null; }
+    if (a) out.push(a);
+  }
+  return out;
+}
+function gililLine(a, kind){
+  var f = a.fit || {}, fitTxt = [];
+  var ks = kind ? [kind] : ['이사', '계약'];
+  ks.forEach(function(k){ if (f[k]) fitTxt.push(k + ' ' + f[k].v); });
+  return a.dt.m + '/' + a.dt.d + '(' + wdKo(a.dt) + ') ' + a.gz + ' ' + a.sip + '(' + a.sipKo + ') '
+    + a.score + '점 ' + a.label + (a.hwang ? '·황도' : '') + (a.chung ? '·충' : '')
+    + ' · ' + ((a.why || []).slice(0, 2).join(' ') || '—')
+    + (fitTxt.length ? ' · 적합도 ' + fitTxt.join('/') : '');
+}
+function gililTargets(chart, dt, qm, intents){
+  var months = [{ y:dt.y, m:dt.m }];
+  (qm || []).forEach(function(x){
+    if (!months.some(function(m){ return m.y === x.y && m.m === x.m; })) months.push(x);
+  });
+  if (!months.some(function(m){ return m.y === dt.y && m.m === dt.m + 1; })){
+    months.push(dt.m === 12 ? { y:dt.y + 1, m:1 } : { y:dt.y, m:dt.m + 1 });
+  }
+  var kind = null;
+  if (intents.indexOf('이동수·이사') >= 0) kind = '이사';
+  else if (intents.indexOf('문서·계약') >= 0) kind = '계약';
+  months = months.slice(0, 4);
+  return months.map(function(mo){
+    var list = gililDays(chart, mo.y, mo.m, (mo.y === dt.y && mo.m === dt.m) ? dt : null);
+    var scored = list.map(function(a){
+      var v = (kind && a.fit && a.fit[kind]) ? a.fit[kind].v : a.score;
+      return { a:a, v:v };
+    }).sort(function(x, y){ return y.v - x.v; });
+    var best = scored.filter(function(x){ return x.a.grade === 'best' || x.a.grade === 'good'; }).slice(0, 5);
+    if (!best.length) best = scored.slice(0, 3);
+    var worst = scored.filter(function(x){ return x.a.grade === 'care'; }).sort(function(x, y){ return x.a.score - y.a.score; }).slice(0, 2);
+    return { y:mo.y, m:mo.m, kind:kind, best:best, worst:worst, count:list.length };
+  });
+}
+
+function ctxText(p, chart, room, userMsg){
   var dt = todayDt(), L = [], y = dt.y;
   var f = null, se = null, mo = null, du = nowDaeun(chart, y);
   try { f = S.fortuneFor(chart, dt); } catch(e){ f = null; }
   try { se = S.saeunOf(chart, y); } catch(e){ se = null; }
   try { mo = monthNow(chart, dt); } catch(e){ mo = null; }
+  var qy = yearsInMsg(userMsg, y);
+  var qm = monthsInMsg(userMsg, dt);
+  var intents = intentOf(userMsg);
 
   L.push('[상담 대상] ' + (p.name || '이름 없음') + ' · ' + (p.gender === 'F' ? '여성' : '남성')
     + ' · 세는나이 ' + (y - p.y + 1) + '세');
+  if (userMsg){
+    L.push('[이번 질문] "' + strip(userMsg).slice(0, 160) + '"'
+      + (intents.length ? ' · 초점: ' + intents.join('·') : '')
+      + (qy.length ? ' · 질문 연도: ' + qy.join(',') + '년' : '')
+      + (qm.length ? ' · 질문 월: ' + qm.map(function(x){ return x.y + '-' + p2(x.m); }).join(',') : ''));
+  }
   L.push('[출생] ' + (p.cal === 'lunar' ? '음력' : '양력') + ' ' + p.y + '-' + p2(p.m) + '-' + p2(p.d)
     + (chart.hasTime ? ' ' + p2(p.hour) + ':' + p2(p.minute || 0) : ' (시각 모름 — 삼주로 해석)')
     + ' · 띠 ' + chart.shengxiao + ' · 별자리 ' + chart.xingzuo);
@@ -9950,12 +10277,39 @@ function ctxText(p, chart, room){
   if (chart.yun && chart.yun.list && chart.yun.list.length){
     L.push('  대운 흐름: ' + chart.yun.list.map(function(d){ return d.gz + '(' + d.startYear + ')'; }).join(' → '));
   }
-  if (se){
-    L.push('[올해 세운] ' + se.year + '년 ' + se.gz + '(' + se.ganKo + se.zhiKo + ') 총운 ' + se.total
-      + ' · 재물 ' + se.dom.wealth + '/일 ' + se.dom.work + '/가족 ' + se.dom.family
-      + ' · 천간 ' + se.ssG + '·지지 ' + se.ssZ + ' · 12운성 ' + (se.ds ? se.ds.ko : '—'));
-    if (se.keys && se.keys.length) L.push('  세운 키워드: ' + se.keys.map(function(k){ return k.t + (k.k === 'bad' ? '(주의)' : (k.k === 'good' ? '(좋음)' : '')); }).join(' · '));
-    if (se.relNames && se.relNames.length) L.push('  세운 지지 관계: ' + se.relNames.join(' · '));
+
+  /* ---- 성명학 · 손금·관상 (저장된 분석만) ---- */
+  L.push('[성명학] ' + nameLine(p));
+  L.push('[손금·관상] ' + palmLine(p));
+
+  /* ---- 가족 프로필 자동 파악 ---- */
+  var fam = familyLines(chart, dt);
+  L.push('[가족 프로필 — 앱에 저장된 다른 사람 ' + fam.length + '명, 이름으로 물으면 이 줄을 근거로 답한다]');
+  if (fam.length) fam.forEach(function(t){ L.push('  ' + t); });
+  else L.push('  (등록된 다른 가족 프로필 없음)');
+
+  /* ---- 세운: 올해·내년·내후년 + 질문에 나온 해 ---- */
+  var years = [y, y + 1, y + 2];
+  qy.forEach(function(q){ if (years.indexOf(q) < 0) years.push(q); });
+  L.push('[세운 — 올해·내년·내후년' + (qy.length ? ' + 질문 연도' : '') + ']');
+  var packs = [];
+  years.forEach(function(yy){
+    var pk = null;
+    try { pk = saeunPack(chart, yy); } catch(e){ pk = null; }
+    if (pk){ packs.push(pk); L.push('  · ' + pk.text); }
+  });
+
+  /* ---- 월운: 이번 달부터 내년 12월(축월)까지 남은 달 전부 ---- */
+  var rows = [];
+  try { rows = monthRows(chart, y, y + 1, dt); } catch(e){ rows = []; }
+  if (rows.length){
+    L.push('[월운 — 이번 달부터 ' + (y + 1) + '년 축월까지 ' + rows.length + '개 달(남은 달 전부)]');
+    rows.forEach(function(x, i){
+      var mark = '';
+      if (x.sp.sy === dt.y && x.sp.sm === dt.m) mark = '(이번 달)';
+      else if (i === 0) mark = '(다음 달)';
+      L.push('  ' + monthLine(x, mark));
+    });
   }
   if (mo){
     L.push('[이번 달 월운] ' + mo.label + ' ' + mo.gz + ' (' + mo.range + ') 총 ' + mo.total
@@ -9964,6 +10318,66 @@ function ctxText(p, chart, room){
       + (mo.good && mo.good.length ? ' · 좋은 쪽: ' + mo.good.join('·') : '')
       + (mo.care && mo.care.length ? ' · 조심: ' + mo.care.join('·') : ''));
   }
+
+  /* ---- 이동수·변동운 스캔 ---- */
+  var sY = [], sM = [], hitY = {};
+  packs.forEach(function(pk){
+    if (pk.mi.strong || pk.mi.tags.indexOf('역마지') >= 0){
+      hitY[pk.se.year] = 1;
+      sY.push(pk.se.year + '년 ' + pk.se.gz + ' [' + pk.mi.tags.join('·') + ']'
+        + (pk.mi.why.length ? ' ' + pk.mi.why.join('; ') : ''));
+    }
+  });
+  rows.forEach(function(x){
+    if (x.mi.strong || x.mi.tags.indexOf('역마지') >= 0){
+      sM.push(spanText(x.sp) + ' ' + x.m.label + ' ' + x.m.gz + ' [' + x.mi.tags.join('·') + ']'
+        + (x.mi.why.length ? ' ' + x.mi.why.join('; ') : ''));
+    }
+  });
+  L.push('[이동수·변동운 스캔 — 역마(寅申巳亥·일지/년지 역마 자리)·충이 걸린 때]');
+  if (sY.length) sY.forEach(function(t){ L.push('  · 세운 ' + t); });
+  else L.push('  · 세운: 역마·충 걸리는 해 없음');
+  var noY = years.filter(function(yy){ return !hitY[yy]; });
+  if (noY.length){
+    L.push('  · 역마·충 없는 해: ' + noY.map(function(yy){ return yy + '년'; }).join('·')
+      + ' — 그 해 세운 지지가 역마 자리·충을 걸지 않는다(합·해·형은 위 세운 줄 참고)');
+  }
+  if (sM.length) sM.forEach(function(t){ L.push('  · 월운 ' + t); });
+  else L.push('  · 월운: 역마·충 걸리는 달 없음');
+  L.push('  ※ 이동수는 역마·충 → 움직임·변동(이사·이직·출장·해외·문서 이동), 합(육합·삼합) → 머무름·안정으로 읽는다. 형·파·해는 사람 사이 마찰·서류 문제로 구분한다.');
+
+  /* ---- 질문에 나온 연도: 세운 + 12개월 전체 ---- */
+  qy.forEach(function(q){
+    var pkq = null;
+    try { pkq = saeunPack(chart, q); } catch(e){ pkq = null; }
+    L.push('[질문에 나온 연도 — ' + q + '년'
+      + (q === y ? ' · 올해' : q === y + 1 ? ' · 내년' : q === y + 2 ? ' · 내후년' : q === y - 1 ? ' · 작년' : '') + ']');
+    if (pkq) L.push('  · 세운: ' + pkq.text);
+    var qr = [];
+    try { qr = monthsOfYear(chart, q, dt); } catch(e){ qr = []; }
+    if (qr.length){
+      L.push('  · ' + q + '년 12개월 월운:');
+      qr.forEach(function(x){
+        var mark = x.past ? '(지난 달)' : ((x.sp.sy === dt.y && x.sp.sm === dt.m) ? '(이번 달)' : '');
+        L.push('    ' + monthLine(x, mark));
+      });
+    }
+  });
+
+  /* ---- 길일(택일) ---- */
+  var gts = [];
+  try { gts = gililTargets(chart, dt, qm, intents); } catch(e){ gts = []; }
+  L.push('[길일 — 앱 택일 엔진 계산' + (gts.length && gts[0].kind ? ', ' + gts[0].kind + ' 기준 정렬' : '') + ']');
+  gts.forEach(function(g){
+    var head = '  · ' + g.y + '-' + p2(g.m) + '월 (' + g.count + '일 계산): ';
+    var bestTxt = g.best.map(function(x){ return gililLine(x.a, g.kind); }).join(' / ');
+    L.push(head + (bestTxt || '대길·길일 없음'));
+    if (g.worst.length){
+      L.push('    피할 날: ' + g.worst.map(function(x){ return gililLine(x.a, g.kind); }).join(' / '));
+    }
+  });
+
+  /* ---- 오늘 일진 ---- */
   if (f){
     L.push('[오늘 일진] ' + isoOf(dt) + '(' + wdKo(dt) + ') ' + f.dayGZ + '(' + gzKo(f.dayGZ) + ')'
       + ' · 내 일간 ' + chart.dayGan + ' 기준 ' + f.ss + '(' + (f.cat || '') + ')'
@@ -9991,21 +10405,27 @@ function ctxText(p, chart, room){
 }
 
 /* ---------- 프롬프트 ---------- */
-function sysPrompt(p, chart, room){
+function sysPrompt(p, chart, room, userMsg){
   return '너는 한국 전통 명리(四柱)를 아는 「사주비서」다. 이름은 ' + (p.name || '이 사람') + '님의 전담 비서이고, '
     + '아래 [명식 데이터]는 이 앱이 만세력 절기와 전통 명리 규칙으로 직접 계산한 값이다.\n\n'
     + '원칙\n'
-    + '1) 근거는 오직 아래 계산값이다. 없는 글자·없는 신살·없는 사건을 지어내지 마라. 데이터에 없으면 "명식에 그 정보가 없다"고 말한다.\n'
+    + '1) 근거는 오직 아래 계산값이다. 없는 글자·없는 신살·없는 사건·없는 날짜를 지어내지 마라. 데이터에 없으면 "명식에 그 정보가 없다"고 말한다.\n'
     + '2) 단정적 예언(반드시 ~된다), 질병 진단, 수명·사망, 법률 판단, 매수·매도 지시는 하지 않는다. 투자·계약은 "근거와 리스크"로만 말한다.\n'
-    + '3) 말투는 유능하고 따뜻한 비서다. 존댓말. 딱딱한 점쟁이 말투("~한 팔자입니다", "천机를 누설") 금지. 사람을 겁주지 말고, 결정할 수 있게 정리해 준다.\n'
-    + '4) 미래를 물으면 시기(세운·월운·일진)를 짚어 "지금 / 이번 달 / 올해" 범위로 나눠 말한다. 시기를 모르면 모른다고 한다.\n'
-    + '5) 상대가 아이면(초등 이하) 쉬운 말로 짧게, 보호자가 읽어도 되게 말한다.\n\n'
+    + '3) 말투는 유능하고 따뜻한 비서다. 존댓말. 딱딱한 점쟁이 말투("~한 팔자입니다", "천기를 누설") 금지. 사람을 겁주지 말고, 결정할 수 있게 정리해 준다.\n'
+    + '4) 추상적 위로 금지 — "흔들리지 마세요", "마음을 다잡으세요", "좋은 기운이 흐릅니다", "때가 올 거예요" 같은 근거 없는 위로·격려로 문장을 채우지 마라. 그런 문장은 지우고, 대신 연·월과 간지·십성·태그를 적는다.\n'
+    + '5) 시기를 물으면 반드시 연·월을 특정한다. [세운]·[월운]·[질문에 나온 연도] 블록의 실제 줄에서 연도·간지·점수·태그를 인용해 "언제"를 첫 문장에 쓴다. 블록에 있는 달을 "데이터가 없다"고 하지 마라.\n'
+    + '6) 연도 표기: "27년"=2027년, "28년"=2028년, "내년"=데이터의 내년, "올해"=올해다. [질문에 나온 연도] 블록이 있으면 그 블록을 먼저 근거로 쓴다.\n'
+    + '7) 이동수(역마·충·합) 판정: [이동수·변동운 스캔]과 각 줄의 [역마·이동수 강]·[충·변동]·[합·안정] 태그가 근거다. 역마(寅申巳亥, 일지·년지 역마 자리)는 옮김·출장·해외·이사, 충(沖)은 판이 바뀌는 변동, 합(육합·삼합)은 머무름·인연으로 읽는다. 강한 달 2~3개와 그 간지를 대고, 없으면 "그 해 세운에서는 역마·충이 걸리지 않는다"고 사실대로 말한다. 형·파·해는 사람 사이 마찰·서류 문제로 구분한다.\n'
+    + '8) 가족: [가족 프로필] 줄에 있는 사람만 말한다. 이름이나 "아내·딸"로 물으면 그 사람의 일주·용신·세운·나와의 일지 관계·궁합 점수를 근거로, 그 사람 몫과 내 몫을 구분해 답한다. 목록에 없는 가족은 지어내지 않는다.\n'
+    + '9) 성명학·손금·관상: [성명학]·[손금·관상] 줄이 "미분석"이면 분석하지 말고 "아직 분석 기록이 없다"고 말한다. 있으면 그 점수·요약만 인용하고, 성명학 줄에 "한자 자동 선택"이 붙어 있으면 한자를 확정된 것처럼 말하지 말고 이름 소리(발음오행) 기준으로만 말한다.\n'
+    + '10) 좋은 날·이사·계약 날짜를 물으면 [길일] 블록의 실제 날짜·일진·12신·점수·이유를 그대로 인용한다. 목록에 없는 날짜를 만들지 않는다. "이번 달 남은 기간"과 "다음 달"을 구분해서 말한다.\n'
+    + '11) 상대가 아이면(초등 이하) 쉬운 말로 짧게, 보호자가 읽어도 되게 말한다.\n\n'
     + '답변 형식 (매 답변 이 순서, 이 기호)\n'
-    + '① 핵심 결론 — 2~3문장. 질문에 바로 답한다.\n'
-    + '② 명식·운세 근거 — 어떤 글자 때문에 그렇게 보는지 구체적으로. 일간·일지·십성·용신·세운·월운·일진·신살 중 실제로 있는 것만 짚는다. 3~5줄.\n'
+    + '① 핵심 결론 — 2~3문장. 질문에 바로 답한다. 시기 질문이면 "언제"를 첫 문장에 쓴다(예: 2027년 3월 인월과 9월 신월).\n'
+    + '② 명식·운세 근거 — 어떤 글자 때문에 그렇게 보는지. 일간·일지·십성·용신·세운·월운·역마·충·합·길일 중 실제로 있는 것만. 시기 질문은 "연-월 간지 + 점수 + 태그"를 3~5줄로. 가족·성명학·손금 질문은 그 줄을 인용한다.\n'
     + '③ 비서 제안 — 오늘/이번 주에 할 수 있는 행동 2~3개. 가능하면 시간대·순서까지. 한 줄에 하나.\n\n'
-    + '분량 350~650자. 필요하면 짧은 목록을 쓰되 형식 기호(①②③)는 유지한다. 이전 상담 메모의 결정과 모순되면 그 차이를 먼저 짚는다.\n\n'
-    + ctxText(p, chart, room);
+    + '분량 350~700자(시기·연도·이동수·길일 질문은 900자까지). 필요하면 짧은 목록을 쓰되 형식 기호(①②③)는 유지한다. 이전 상담 메모의 결정과 모순되면 그 차이를 먼저 짚는다.\n\n'
+    + ctxText(p, chart, room, userMsg);
 }
 
 /* ---------- Gemini 호출 ---------- */
@@ -10346,7 +10766,9 @@ function ask(){
   busy = true; retryPid = p.id;
   render();
   scrollBottom();
-  var system = sysPrompt(p, chart, r);
+  var lastQ = '';
+  for (var qi = r.msgs.length - 1; qi >= 0; qi--){ if (r.msgs[qi].r === 'u'){ lastQ = r.msgs[qi].t; break; } }
+  var system = sysPrompt(p, chart, r, lastQ);
   var turns = turnsOf(r);
   if (!turns.length){ busy = false; render(); return; }
   callAI(system, turns).then(function(res){
@@ -10622,7 +11044,12 @@ window.SajuSecretary = {
     });
     return { msgs:n, memo:m, rooms:Object.keys(o.rooms).length };
   },
-  _ctx: function(){ var p = activeProfile(); return p ? ctxText(p, chartOf(p), roomOf(readStore(), p.id, false)) : ''; },
+  _ctx: function(msg){ var p = activeProfile(); return p ? ctxText(p, chartOf(p), roomOf(readStore(), p.id, false), msg || '') : ''; },
+  _sys: function(msg){
+    var p = activeProfile(); if (!p) return '';
+    var c = chartOf(p); if (!c) return '';
+    return sysPrompt(p, c, roomOf(readStore(), p.id, false), msg || '');
+  },
   _store: readStore,
   _greet: greetText,
   _fmt: fmt
