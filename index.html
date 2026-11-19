@@ -3309,10 +3309,13 @@
 .ucx-cvwrap{position:relative;width:100%;border-radius:6px;overflow:hidden;}
 .ucx-cvwrap canvas{width:100%;height:100%;display:block;touch-action:none;-webkit-user-select:none;user-select:none;cursor:grab;}
 .ucx-tip{font-size:9.5px;color:#64748b;margin-top:3px;min-height:12px;line-height:1.4;}
+.ucx-lk{background:#1e293b;color:#94a3b8;border:1px solid rgba(255,255,255,0.2);border-radius:4px;font-size:10px;font-weight:800;padding:2px 7px;cursor:pointer;white-space:nowrap;line-height:1.5;}
+.ucx-lk.on{background:rgba(251,191,36,0.18);color:#fbbf24;border-color:rgba(251,191,36,0.6);}
+.ucx-in:disabled,.ucx-btn:disabled{opacity:.45;cursor:not-allowed;}
 @media (max-width:430px){
   .ucx-in{width:72px;font-size:11px;}
   .ucx-bd{font-size:9px;}
-  .ucx-p,.ucx-ov{font-size:9.5px;padding:2px 6px;}
+  .ucx-p,.ucx-ov,.ucx-lk{font-size:9.5px;padding:2px 6px;}
 }
 
 #tabKkangto .kk-sec.kk-collapsed > *:not(.kk-sec-h){display:none !important;}
@@ -3335,7 +3338,7 @@
   if (window.UCX) return;
 
   var LS_KEY = 'ucx_state_v1';
-  var DB = { ov: {}, man: {} };       // {ov:{id:{fib,channel,ma20}}, man:{id|key:{hi,lo}}}
+  var DB = { ov: {}, man: {}, lock: {} };  // {ov:{id:{fib,channel,ma20}}, man:{id|key:{hi,lo}}, lock:{id|key:true}}
   var REG = {};                        // id -> {redraw, key, getPeriod, setPeriod, digits}
   var LAST = {};                       // id -> 마지막 계산 결과(오버레이·지표)
   var VIEW = {};                       // mount 전용 봉 보기 상태 {id:{count,offset}}
@@ -3349,6 +3352,7 @@
       if (j && typeof j === 'object') {
         if (j.ov && typeof j.ov === 'object') DB.ov = j.ov;
         if (j.man && typeof j.man === 'object') DB.man = j.man;
+        if (j.lock && typeof j.lock === 'object') DB.lock = j.lock;
       }
     } catch (e) { /* 저장값 없음/깨짐 — 기본값 */ }
   }
@@ -3415,6 +3419,14 @@
     try { delete DB.man[manKey(id)]; } catch (e) { DB.man[manKey(id)] = null; }
     save();
   }
+  /* 🔒 고정 — 종목/지수(키)별로 저장한다 */
+  function lockKey(id) { return id + '|' + curKey(id); }
+  function isLocked(id) { return !!DB.lock[lockKey(id)]; }
+  function setLocked(id, on) {
+    if (on) DB.lock[lockKey(id)] = true;
+    else { try { delete DB.lock[lockKey(id)]; } catch (e) { DB.lock[lockKey(id)] = false; } }
+    save();
+  }
 
   /* ---------------- 등록 (차트 렌더러가 자기 리드로우를 알려 준다) ---------------- */
   function register(id, cfg) {
@@ -3462,12 +3474,14 @@
 
   function fibRow(id) {
     var m = manualFib(id);
+    var lk = isLocked(id);
     return '<div class="ucx-pbar" id="ucxFib_' + id + '" style="align-items:center;">' +
       '<span style="font-size:9.5px;color:#94a3b8;font-weight:800;white-space:nowrap;">📐 피보 수치</span>' +
       '<input type="text" inputmode="decimal" autocomplete="off" class="ucx-in" id="ucxHi_' + id + '" aria-label="피보나치 고점 수치" placeholder="고점" value="' + (m ? m.hi : '') + '">' +
       '<input type="text" inputmode="decimal" autocomplete="off" class="ucx-in" id="ucxLo_' + id + '" aria-label="피보나치 저점 수치" placeholder="저점" value="' + (m ? m.lo : '') + '">' +
-      '<button type="button" class="ucx-btn" onclick="UCX.fibApply(\'' + id + '\')">적용</button>' +
-      '<button type="button" class="ucx-btn auto" onclick="UCX.fibAuto(\'' + id + '\')">자동 복귀</button>' +
+      '<button type="button" class="ucx-btn" id="ucxAp_' + id + '" onclick="UCX.fibApply(\'' + id + '\')">적용</button>' +
+      '<button type="button" class="ucx-btn auto" id="ucxAu_' + id + '" onclick="UCX.fibAuto(\'' + id + '\')">자동 복귀</button>' +
+      '<button type="button" class="ucx-lk' + (lk ? ' on' : '') + '" id="ucxLk_' + id + '" aria-pressed="' + (lk ? 'true' : 'false') + '" title="피보 고점·저점선 잠금 / 이동" onclick="UCX.toggleLock(\'' + id + '\')">' + (lk ? '🔒 고정' : '🔓 이동') + '</button>' +
       '<span class="ucx-fstat" id="ucxFst_' + id + '">' + (m ? '수동' : '자동(스윙)') + '</span>' +
       '</div>';
   }
@@ -3567,13 +3581,31 @@
     var loEl = document.getElementById('ucxLo_' + id);
     var stEl = document.getElementById('ucxFst_' + id);
     var c = LAST[id];
+    /* 🔒 고정 상태 — 수치칸·적용·자동복귀를 잠그고 토글 버튼을 칠한다 */
+    var lk = isLocked(id);
+    var apEl = document.getElementById('ucxAp_' + id);
+    var auEl = document.getElementById('ucxAu_' + id);
+    var lkEl = document.getElementById('ucxLk_' + id);
+    var lkTip = lk ? '🔒 고정 중 — 🔓 이동으로 풀면 바꿀 수 있습니다' : '';
+    if (hiEl) { hiEl.disabled = lk; hiEl.title = lkTip; }
+    if (loEl) { loEl.disabled = lk; loEl.title = lkTip; }
+    if (apEl) { apEl.disabled = lk; apEl.title = lkTip; }
+    if (auEl) { auEl.disabled = lk; auEl.title = lkTip; }
+    if (lkEl) {
+      lkEl.className = 'ucx-lk' + (lk ? ' on' : '');
+      lkEl.textContent = lk ? '🔒 고정' : '🔓 이동';
+      lkEl.setAttribute('aria-pressed', lk ? 'true' : 'false');
+    }
     /* 메인 모달은 자체 오버레이 엔진(IDX_LAST_CALC)을 쓴다 — 자동 스윙 값을 입력칸에 미리 채워 준다 */
     if (!c && id === 'main' && window.IDX_LAST_CALC) c = window.IDX_LAST_CALC;
     if (hiEl && document.activeElement !== hiEl && document.activeElement !== loEl) {
       hiEl.value = m ? m.hi : (c && num(c.H) ? fmtAuto(c.H) : '');
       loEl.value = m ? m.lo : (c && num(c.L) ? fmtAuto(c.L) : '');
     }
-    if (stEl) stEl.textContent = m ? ('수동 ' + fmtAuto(m.hi) + ' / ' + fmtAuto(m.lo)) : '자동(스윙)';
+    if (stEl) {
+      stEl.textContent = (lk ? '🔒 ' : '') + (m ? ('수동 ' + fmtAuto(m.hi) + ' / ' + fmtAuto(m.lo)) : '자동(스윙)');
+      if (!m) stEl.style.color = '';
+    }
     if (c) paintBadges(id, c);
     if (VIEW[id] && document.getElementById('ucxCnt_' + id)) {
       document.getElementById('ucxCnt_' + id).textContent = VIEW[id].count + '봉';
@@ -3633,6 +3665,11 @@
     redrawOf(id);
   }
   function fibApply(id) {
+    if (isLocked(id)) {
+      var sl = document.getElementById('ucxFst_' + id);
+      if (sl) { sl.textContent = '🔒 고정 중 — 🔓 이동 먼저'; sl.style.color = '#fbbf24'; }
+      return;
+    }
     var hiEl = document.getElementById('ucxHi_' + id);
     var loEl = document.getElementById('ucxLo_' + id);
     var stEl = document.getElementById('ucxFst_' + id);
@@ -3654,6 +3691,11 @@
     paint(id);
   }
   function fibAuto(id) {
+    if (isLocked(id)) {
+      var sl = document.getElementById('ucxFst_' + id);
+      if (sl) { sl.textContent = '🔒 고정 중 — 🔓 이동 먼저'; sl.style.color = '#fbbf24'; }
+      return;
+    }
     clearManual(id);
     var hiEl = document.getElementById('ucxHi_' + id);
     var loEl = document.getElementById('ucxLo_' + id);
@@ -3822,9 +3864,214 @@
         ctx.restore();
       }
     }
+    /* 4) 📐 고점(1.000)·저점(0.000)선 드래그 핸들 — 피보나치가 켜져 있을 때만 */
+    fibHandles(id, ctx, geo, c);
     paintBadges(id, c);
     return c;
   }
+
+  /* ==========================================================================
+   * 📐 피보 고점(1.000)·저점(0.000)선 드래그 이동 + 🔒 고정
+   *  - 오버레이를 그리는 순간의 Y스케일을 HIT[id]에 남겨 두고, 창(window) 캡처
+   *    단계에서 선 근처(±16px) 터치만 가로챈다 → 선을 안 잡으면 기존 좌우
+   *    팬·핀치·툴팁이 그대로 동작한다.
+   *  - 잡은 지점과 선의 간격(off)을 유지해 손가락이 튀지 않고, 잡은 순간의
+   *    가격/픽셀 스케일로 역산하므로 다시 그려도 값이 흔들리지 않는다.
+   * ========================================================================== */
+  var HIT = {};      // id -> {canvas, Y, top, bot, x0, x1, H, L, on, side, locked}
+  var DRAG = null;   // 진행 중인 드래그
+
+  function isIndexish(id) {
+    try {
+      if (id !== 'main') return false;
+      if (typeof window.IDXIsIndexSeries === 'function') return !!window.IDXIsIndexSeries();
+    } catch (e) { }
+    return false;
+  }
+  function roundFib(v, id) {
+    if (!num(v)) return v;
+    var d = isIndexish(id) ? 2 : (Math.abs(v) >= 100 ? 0 : 2);
+    var p = Math.pow(10, d);
+    return Math.round(v * p) / p;
+  }
+  function rrPath(ctx, x, y, w, h, r) {
+    if (w < 2 * r) r = w / 2;
+    if (h < 2 * r) r = h / 2;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  /* 각 렌더러가 자기 Y스케일을 넘기면 핸들을 그리고 히트 정보를 남긴다 */
+  function fibHandles(id, ctx, geo, c) {
+    if (!ctx || !geo || !c || !num(c.H) || !num(c.L)) return;
+    var on = (geo.fibOn === undefined) ? !!state(id).fib : !!geo.fibOn;
+    if (!on) { HIT[id] = null; return; }
+    var cv = ctx.canvas || null;
+    var locked = isLocked(id);
+    var Y = geo.Y, top = geo.top, bot = geo.bot;
+    var side = (geo.fibSide === 'left') ? 'right' : 'left';   /* 라벨 반대쪽 가장자리 */
+    HIT[id] = {
+      canvas: cv, Y: Y, top: top, bot: bot, x0: geo.x0, x1: geo.x1,
+      H: c.H, L: c.L, on: true, side: side, locked: locked
+    };
+    if (cv) { try { cv.__ucxId = id; } catch (e) { } }
+    var rows = [
+      { v: c.H, y: Y(c.H), tag: '고점', bd: 'rgba(248,113,113,.9)', bg: 'rgba(76,5,25,.92)', fg: '#fecdd3' },
+      { v: c.L, y: Y(c.L), tag: '저점', bd: 'rgba(56,189,248,.9)', bg: 'rgba(8,47,73,.92)', fg: '#bae6fd' }
+    ];
+    ctx.save();
+    ctx.font = 'bold 9.5px sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    for (var i = 0; i < rows.length; i += 1) {
+      var r = rows[i];
+      var txt = (locked ? '🔒 ' : '\u21C5 ') + r.tag + ' ' + fmtAuto(r.v);
+      var tw = ctx.measureText(txt).width;
+      var pw = Math.max(42, tw + 11), ph = 15;
+      var yy = Math.min(bot - ph / 2 - 1, Math.max(top + ph / 2 + 1, r.y)) - ph / 2;
+      var xx = (side === 'left') ? (geo.x0 + 2) : (geo.x1 - pw - 2);
+      rrPath(ctx, xx, yy, pw, ph, 4);
+      ctx.fillStyle = locked ? 'rgba(15,23,42,.94)' : r.bg;
+      ctx.fill();
+      ctx.setLineDash(locked ? [2, 2] : []);
+      ctx.strokeStyle = locked ? 'rgba(148,163,184,.8)' : r.bd;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = locked ? '#cbd5e1' : r.fg;
+      ctx.fillText(txt, xx + 5, yy + ph / 2 + 0.5);
+      ctx.strokeStyle = locked ? 'rgba(148,163,184,.55)' : r.bd;
+      ctx.beginPath();
+      if (side === 'left') {
+        ctx.moveTo(xx + pw, yy + ph / 2); ctx.lineTo(Math.min(xx + pw + 5, geo.x1), yy + ph / 2);
+      } else {
+        ctx.moveTo(xx, yy + ph / 2); ctx.lineTo(Math.max(xx - 5, geo.x0), yy + ph / 2);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  /* 선 근처(±16px)면 잡힌 것으로 본다. 잡은 지점과 선의 간격은 그대로 유지한다. */
+  function claimHit(target, cx, cy) {
+    var id = target && target.__ucxId;
+    if (!id) return null;
+    var h = HIT[id];
+    if (!h || !h.on || !h.canvas) return null;
+    if (isLocked(id)) return null;
+    var r = h.canvas.getBoundingClientRect();
+    if (!r || !r.width) return null;
+    if (cx < r.left - 2 || cx > r.right + 2 || cy < r.top - 2 || cy > r.bottom + 2) return null;
+    var y = cy - r.top;
+    var yH = h.Y(h.H), yL = h.Y(h.L);
+    if (Math.abs(yL - yH) < 0.5) return null;
+    var dH = Math.abs(y - yH), dL = Math.abs(y - yL);
+    if (dH > 16 && dL > 16) return null;
+    var which = (dH <= dL) ? 'hi' : 'lo';
+    var yRef = (which === 'hi') ? yH : yL;
+    var k = (h.L - h.H) / (yL - yH);        /* 가격 / 픽셀 */
+    var rng = Math.abs(h.H - h.L);
+    return {
+      id: id, which: which, cv: h.canvas,
+      off: y - yRef, basePrice: h.H, baseY: yH, scale: k,
+      H: h.H, L: h.L, gap: Math.max(0.01, rng * 0.002),
+      cursor: h.canvas.style.cursor || '', lastY: null, moved: false
+    };
+  }
+
+  function moveDrag(cx, cy) {
+    var d = DRAG;
+    if (!d) return;
+    var h = HIT[d.id];
+    if (!h || !h.canvas) return;
+    var r = h.canvas.getBoundingClientRect();
+    if (!r || !r.width) return;
+    var y = (cy - r.top) - d.off;
+    if (y < h.top + 1) y = h.top + 1;
+    if (y > h.bot - 1) y = h.bot - 1;
+    if (d.lastY != null && Math.abs(y - d.lastY) < 0.01) return;
+    d.lastY = y;
+    var p = d.basePrice + (y - d.baseY) * d.scale;
+    if (!num(p)) return;
+    var hi = d.H, lo = d.L;
+    if (d.which === 'hi') hi = Math.max(p, d.L + d.gap);
+    else lo = Math.min(p, d.H - d.gap);
+    hi = roundFib(hi, d.id);
+    lo = roundFib(lo, d.id);
+    if (!(hi > lo)) return;
+    d.H = hi; d.L = lo; d.moved = true;
+    DB.man[manKey(d.id)] = { hi: hi, lo: lo };
+    var st = state(d.id);
+    if (!st.fib) { st.fib = true; }      /* 선이 안 보이면 드래그가 의미 없다 → 자동 ON */
+    redrawOf(d.id);
+  }
+
+  function endDrag() {
+    var d = DRAG;
+    if (!d) return;
+    DRAG = null;
+    if (d.moved) save();               /* 드래그 종료 시에만 저장 */
+    if (d.cv) { try { d.cv.style.cursor = d.cursor || ''; } catch (e) { } }
+    redrawOf(d.id);
+  }
+
+  var DRAG_BOUND = false;
+  function bindDrag() {
+    if (DRAG_BOUND || !window.addEventListener) return;
+    DRAG_BOUND = true;
+    function pt(e) {
+      if (e.touches && e.touches.length) return { x: e.touches[0].clientX, y: e.touches[0].clientY, n: e.touches.length };
+      if (e.changedTouches && e.changedTouches.length) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY, n: e.changedTouches.length };
+      return { x: e.clientX, y: e.clientY, n: 1 };
+    }
+    function down(e) {
+      if (DRAG) return;
+      if (e.button != null && e.button !== 0) return;
+      var p = pt(e);
+      if (p.n > 1) return;
+      var d = claimHit(e.target, p.x, p.y);
+      if (!d) return;
+      DRAG = d;
+      try { d.cv.style.cursor = 'ns-resize'; } catch (er) { }
+      try { e.preventDefault(); } catch (er) { }
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+    }
+    function move(e) {
+      if (!DRAG) return;
+      var p = pt(e);
+      if (p.n > 1) return;
+      try { e.preventDefault(); } catch (er) { }
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      moveDrag(p.x, p.y);
+    }
+    function up(e) {
+      if (!DRAG) return;
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      endDrag();
+    }
+    var cap = { capture: true, passive: false };
+    window.addEventListener('pointerdown', down, cap);
+    window.addEventListener('mousedown', down, cap);
+    window.addEventListener('touchstart', down, cap);
+    window.addEventListener('pointermove', move, cap);
+    window.addEventListener('mousemove', move, cap);
+    window.addEventListener('touchmove', move, cap);
+    window.addEventListener('pointerup', up, cap);
+    window.addEventListener('mouseup', up, cap);
+    window.addEventListener('touchend', up, cap);
+    window.addEventListener('pointercancel', up, cap);
+    window.addEventListener('touchcancel', up, cap);
+    window.addEventListener('blur', function () { if (DRAG) endDrag(); });
+  }
+  bindDrag();
 
   /* ---------------- 자체 렌더러(mount) — 만쥬 등 ---------------- */
   function normalize(list) {
@@ -4120,6 +4367,23 @@
     toggleOv: toggleOv,
     fibApply: fibApply,
     fibAuto: fibAuto,
+    toggleLock: function (id) {
+      var on = !isLocked(id);
+      setLocked(id, on);
+      paint(id);
+      redrawOf(id);
+    },
+    isLocked: isLocked,
+    fibHandles: fibHandles,
+    dragging: function () { return !!DRAG; },
+    /* 진단용 — 현재 그려진 고점·저점선의 캔버스 좌표를 돌려준다 */
+    hitInfo: function (id) {
+      var h = HIT[id];
+      if (!h) return null;
+      return { yH: h.Y(h.H), yL: h.Y(h.L), top: h.top, bot: h.bot, H: h.H, L: h.L, locked: h.locked, on: h.on, side: h.side };
+    },
+    key: function (id) { return curKey(id); },
+    view: function (id) { return VIEW[id] ? { count: VIEW[id].count, offset: VIEW[id].offset } : null; },
     zoom: function (id, dir) { var r = REG[id] || {}; if (typeof r.zoom === 'function') { r.zoom(dir); } else { zoomMount(id, dir); } },
     pan: function (id, dir) { var r = REG[id] || {}; if (typeof r.pan === 'function') { r.pan(dir); } else { panMount(id, dir); } },
     reset: function (id) {
@@ -17277,8 +17541,9 @@
             <span style="font-size:9.5px;color:#94a3b8;font-weight:800;white-space:nowrap;">📐 피보 수치</span>
             <input type="text" inputmode="decimal" autocomplete="off" class="ucx-in" id="ucxHi_main" aria-label="피보나치 고점 수치" placeholder="고점">
             <input type="text" inputmode="decimal" autocomplete="off" class="ucx-in" id="ucxLo_main" aria-label="피보나치 저점 수치" placeholder="저점">
-            <button type="button" class="ucx-btn" onclick="UCX.fibApply('main')">적용</button>
-            <button type="button" class="ucx-btn auto" onclick="UCX.fibAuto('main')">자동 복귀</button>
+            <button type="button" class="ucx-btn" id="ucxAp_main" onclick="UCX.fibApply('main')">적용</button>
+            <button type="button" class="ucx-btn auto" id="ucxAu_main" onclick="UCX.fibAuto('main')">자동 복귀</button>
+            <button type="button" class="ucx-lk" id="ucxLk_main" aria-pressed="false" title="피보 고점·저점선 잠금 / 이동" onclick="UCX.toggleLock('main')">🔓 이동</button>
             <span class="ucx-fstat" id="ucxFst_main">자동(스윙)</span>
           </div>
           <div id="modalIdxBadges" style="display:flex;gap:4px;flex-wrap:wrap;margin:0 0 6px;max-width:100%;">
@@ -25711,7 +25976,7 @@ window.BijoongTab = {
       isUp = (all[all.length - 1].close >= (H + L) / 2);
     }
     var fib = [];
-    var RATIOS = [0.236, 0.382, 0.5, 0.618, 0.786];
+    var RATIOS = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
     for (i = 0; i < RATIOS.length; i += 1) {
       var r = RATIOS[i];
       fib.push({ r: r, p: isUp ? H - range * r : L + range * r });
@@ -25824,7 +26089,7 @@ window.BijoongTab = {
       }
     }
 
-    // 2) 피보나치 되돌림 (0.236 / 0.382 / 0.5 / 0.618 / 0.786)
+    // 2) 피보나치 되돌림 7단 (고점 0 · 0.236 · 0.382 · 0.5 · 0.618 · 0.786 · 저점 1)
     if (OV.fib) {
       ctx.save();
       ctx.font = 'bold 9px sans-serif';
@@ -25833,22 +26098,36 @@ window.BijoongTab = {
         var lv = c.fib[f];
         var y = yOf(lv.p);
         if (y < 8 || y > 10 + g.chartH) continue;
-        ctx.strokeStyle = lv.r === 0.5 ? 'rgba(250,204,21,0.55)' : 'rgba(148,163,184,0.38)';
-        ctx.setLineDash([3, 3]);
-        ctx.lineWidth = 1;
+        var isKeyLv = (lv.r === 0 || lv.r === 1);
+        ctx.strokeStyle = isKeyLv ? 'rgba(148,163,184,0.55)' : (lv.r === 0.5 ? 'rgba(250,204,21,0.55)' : 'rgba(148,163,184,0.38)');
+        ctx.setLineDash(isKeyLv ? [6, 3] : [3, 3]);
+        ctx.lineWidth = isKeyLv ? 1.1 : 1;
         ctx.beginPath();
         ctx.moveTo(base, y);
         ctx.lineTo(g.chartW, y);
         ctx.stroke();
         ctx.setLineDash([]);
-        var label = lv.r.toFixed(3) + ' ' + fmt(lv.p, 2);
+        var nm = (lv.r === 0) ? (c.isUp ? '고점 ' : '저점 ')
+          : (lv.r === 1) ? (c.isUp ? '저점 ' : '고점 ')
+            : (lv.r.toFixed(3) + ' ');
+        var label = nm + fmt(lv.p, 2);
         var tw = ctx.measureText(label).width;
         ctx.fillStyle = 'rgba(7,12,20,0.82)';
         ctx.fillRect(g.chartW - tw - 4, y - 8, tw + 4, 11);
-        ctx.fillStyle = lv.r === 0.5 ? '#facc15' : '#94a3b8';
+        ctx.fillStyle = isKeyLv ? '#cbd5e1' : (lv.r === 0.5 ? '#facc15' : '#94a3b8');
         ctx.fillText(label, g.chartW - 2, y + 1);
       }
       ctx.restore();
+    }
+
+    // 2-1) 📐 고점·저점선 드래그 핸들 (피보나치 OFF면 히트 정보도 지운다)
+    if (window.UCX && window.UCX.fibHandles) {
+      try {
+        window.UCX.fibHandles('main', ctx, {
+          X: xOf, Y: yOf, x0: base, x1: g.chartW, top: 8, bot: 10 + g.chartH,
+          labelRight: g.chartW, fibSide: 'right', fibOn: !!OV.fib
+        }, c);
+      } catch (eHd) { }
     }
 
     // 3) 20일선 값 라벨 (선 자체는 기본 렌더러가 그린다)
