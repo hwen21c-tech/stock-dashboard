@@ -442,6 +442,32 @@
   }
   #toast.on{opacity:1;transform:translate(-50%,0)}
 
+
+  /* ---------- 🎬 웹 영상 생성기 (Canvas + MediaRecorder · 크레딧 0) ---------- */
+  .wvhead{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+  .wvchip{font-size:10.6px;font-weight:900;color:#bae6fd;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);border-radius:999px;padding:2px 9px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wvopt{border:1px solid var(--line);border-radius:10px;background:#0a1424;overflow:hidden}
+  .wvopt>summary{list-style:none;cursor:pointer;padding:9px 11px;font-size:12px;font-weight:900;color:#e2e8f0}
+  .wvopt>summary::-webkit-details-marker{display:none}
+  .wvopt>summary::after{content:'▾';float:right;font-size:10px;color:#7dd3fc}
+  .wvopt[open]>summary::after{content:'▴'}
+  .wvbody{padding:0 11px 11px;display:grid;gap:8px}
+  .wvrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+  .wvrow select,.wvrow input[type=text]{min-width:0;flex:1 1 120px;background:#08111f;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:11.6px;font-weight:700}
+  .wvrow input[type=color]{width:40px;height:30px;padding:0;border:1px solid var(--line);border-radius:8px;background:#08111f}
+  .wvrender{display:flex;flex-wrap:wrap;gap:11px;align-items:flex-start;min-width:0}
+  #wvCanvas{flex:0 0 auto;width:164px;max-width:100%;aspect-ratio:9/16;height:auto;border-radius:12px;border:1px solid var(--line);background:#060a12}
+  .wvside{flex:1 1 190px;min-width:0;display:grid;gap:8px}
+  .wvprog{height:9px;border-radius:999px;background:rgba(148,163,184,.2);overflow:hidden}
+  .wvprog>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#38bdf8,#a855f7);transition:width .18s}
+  .wvthumbs{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .wvth{margin:0;width:62px;text-align:center}
+  .wvth img{width:62px;height:62px;object-fit:cover;border-radius:8px;border:1px solid var(--line);display:block}
+  .wvth figcaption{font-size:9.6px;color:var(--faint);font-weight:800;margin-top:2px}
+  #wvVideo{width:100%;max-width:240px;border-radius:12px;background:#000;border:1px solid var(--line)}
+  footer .shelf{background:#0a1424;margin:0;font-size:10.9px;font-weight:600;line-height:1.66;color:var(--faint)}
+  footer .shelf>summary{font-size:11.6px;color:#cbd5e1}
+
   footer{margin-top:16px;padding-top:12px;border-top:1px solid var(--line);font-size:10.8px;font-weight:600;color:var(--faint);line-height:1.65}
   footer b{color:#94a3b8}
 
@@ -1234,6 +1260,12 @@
 <details class="shelf" id="shelf">
   <summary><span>🗂 내 작업 보관함</span><span class="n" id="shelfPerf"></span><span class="n" id="shelfCount">0개</span><span class="arw">▾</span></summary>
   <div class="shelfbody" id="shelfBody"></div>
+  <div class="store-note" style="padding:0 12px 11px">
+    <span>이 브라우저 저장값(양식·보관함·설정) 백업 · API 키는 빠집니다</span>
+    <button class="linkbtn" id="bkExport" type="button">💾 백업</button>
+    <button class="linkbtn" id="bkImport" type="button">♻️ 복원</button>
+  </div>
+  <input type="file" id="bkFile" accept=".json,application/json" hidden>
 </details>
 
 <details class="shelf" id="affilPanel">
@@ -1357,7 +1389,7 @@
         <button class="presh" data-preset="letter"><b>③ 3단 블랙 레터박스</b><span>제목·클립·포인트</span></button>
       </div>
       <div class="stage"><div class="phone pv1" id="subPhone"></div></div>
-      <p class="hint" style="margin-top:9px">미리보기는 <b>선택한 비율</b>로 그려집니다. 실제 자막 렌더링·폰트 합성은 ffmpeg 단계 일 — <b style="color:#fbbf24">아직 없습니다</b>.</p>
+      <p class="hint" style="margin-top:9px">미리보기는 <b>선택한 비율</b>로 그려집니다. 이 영상 파일을 컷편집하는 자막 렌더링·폰트 합성은 ffmpeg 단계 일 — <b style="color:#fbbf24">아직 없습니다</b>.</p>
     </div>
 
     <div class="card">
@@ -1376,7 +1408,7 @@
           <span class="mv" id="mixBgmV">15%</span>
         </div>
       </div>
-      <p class="hint" style="margin-top:9px">지금 보이는 후킹 3종은 <b>템플릿</b>입니다. [편집 실행]을 누르면 Gemini가 클립에 맞춰 새로 씁니다. 덕킹 값(목소리:BGM)은 설계도 요청에 함께 들어갑니다 — 합성 단계는 아직 없습니다.</p>
+      <p class="hint" style="margin-top:9px">지금 보이는 후킹 3종은 <b>템플릿</b>입니다. [편집 실행]을 누르면 Gemini가 클립에 맞춰 새로 씁니다. 덕킹 값(목소리:BGM)은 설계도 요청에 함께 들어갑니다 — 합성 단계는 아직 없습니다. <b>쇼츠 대본은 아래 [🎬 웹 영상 생성기]에서 이 브라우저로 바로 영상이 됩니다(크레딧 0).</b></p>
     </div>
 
     <div class="card" id="pipeline" hidden>
@@ -1830,11 +1862,12 @@
           <button class="btn small primary" id="toVideoBtn">영상 탭으로 보내기</button>
           <button class="btn small" id="toShortsTtsBtn" type="button" title="이 50초 대본을 ElevenLabs 성우로 읽어 봅니다">🔊 미리듣기</button>
           <button class="btn small ghost" id="toShortsTtsMp3" type="button" title="미리듣기 음성을 .mp3로 저장" disabled>⬇ MP3</button>
+          <button class="btn small primary" id="toShortsVideoBtn" type="button" title="브라우저에서 1080×1920 쇼츠 영상을 직접 만듭니다 (크레딧 0)">🎬 웹에서 바로 영상 생성</button>
         </div>
         <div id="shortsOut"></div>
         <div id="shortsPin"></div>
         <div class="ttsbox" id="toShortsTtsBox" hidden></div>
-        <p class="hint" style="margin-top:8px">0~2초 후킹 → 3~40초 핵심 3컷 → 41~50초 엔딩. 대본은 말하는 문장이고, 합성(MP4)은 아직 이 사이트에 없습니다.</p>
+        <p class="hint" style="margin-top:8px">0~2초 후킹 → 3~40초 핵심 3컷 → 41~50초 엔딩. 대본은 말하는 문장이고, 합성은 <b>[🎬 웹에서 바로 영상 생성]</b>으로 이 브라우저에서 바로 합니다(서버·크레딧 0).</p>
       </div>
       <div class="card" id="oneShotCard" hidden>
         <div class="card-head">
@@ -1942,6 +1975,7 @@
               <button class="btn small" id="shPickleBtn" type="button" title="쇼츠 테마·1~4번 양식·대본 전체·점검 포인트를 복사합니다">📋 피클 점검용 복사</button>
               <button class="btn small" id="shTtsBtn" type="button" title="저장한 ElevenLabs 키로 이 대본을 바로 읽어 봅니다">🔊 ElevenLabs 미리듣기</button>
               <button class="btn small ghost" id="shTtsMp3" type="button" title="미리듣기로 만든 음성을 .mp3로 저장합니다" disabled>⬇ MP3</button>
+              <button class="btn small primary" id="shVideoBtn" type="button" title="이 대본을 브라우저에서 1080×1920 영상으로 바로 만듭니다 (크레딧 0)">🎬 영상 생성 (크레딧 0)</button>
               <button class="btn small" id="shMp4Btn" type="button" title="make_shorts_mp4.py 스펙 JSON(AB 훅·고정 댓글·릴스/클립 문구·컷)을 클립보드에 복사합니다">📦 고퀄리티 MP4용 JSON 복사</button>
               <button class="btn small mon" id="shAffilBtn" type="button" title="제휴 링크·필수 고지를 넣은 고정 댓글 초안을 만듭니다">💰 제휴·고지</button>
             </div>
@@ -2071,8 +2105,86 @@
 </section>
 
 
+<!-- ================= 🎬 웹 쇼츠 영상 생성기 (Canvas 1080×1920 + MediaRecorder · 크레딧 0) ================= -->
+<details class="shelf" id="wvPanel">
+  <summary><span>🎬 웹 영상 생성기 — 1080×1920 쇼츠 · 크레딧 0</span><span class="n" id="wvState">대기</span><span class="arw">▾</span></summary>
+  <div class="shelfbody">
+    <div class="wvhead">
+      <span class="wvchip" id="wvSrc">대본 없음</span>
+      <span class="wvchip" id="wvMusic">BGM —</span>
+      <span class="spacer"></span>
+      <button class="btn small ghost" id="wvSetBtn" type="button">⚙ 옵션</button>
+    </div>
+    <details class="wvopt" id="wvOpt">
+      <summary>⚙ 채널 프리셋 · 성우 · 자막색 · BGM · 내 사진</summary>
+      <div class="wvbody">
+        <div class="flabel">채널 프리셋 — 성우·테마색·자막색·BGM·워터마크 자동 세팅(이 브라우저에 저장)</div>
+        <div class="wvrow">
+          <button class="btn small" id="wvPreStock" type="button" data-wvpre="stock">📈 주식 채널</button>
+          <button class="btn small" id="wvPreDeal" type="button" data-wvpre="deal">🏷️ 특가·핫템 채널</button>
+        </div>
+        <div class="wvrow">
+          <label class="flabel" for="wvVoice" style="flex:0 0 auto">성우</label>
+          <select id="wvVoice" aria-label="ElevenLabs 성우"></select>
+        </div>
+        <div class="wvrow">
+          <label class="flabel" for="wvBgm" style="flex:0 0 auto">BGM</label>
+          <select id="wvBgm" aria-label="BGM 분위기">
+            <option value="news">차분한 뉴스</option>
+            <option value="tense">긴장감 비트</option>
+            <option value="bright">밝은 리뷰</option>
+            <option value="none">없음</option>
+          </select>
+          <label class="aftoggle" for="wvSfx"><input type="checkbox" id="wvSfx"> 전환·훅 효과음</label>
+        </div>
+        <div class="wvrow">
+          <label class="flabel" for="wvAccent" style="flex:0 0 auto">테마색</label>
+          <input type="color" id="wvAccent" aria-label="테마 강조색">
+          <label class="flabel" for="wvCap" style="flex:0 0 auto">자막색</label>
+          <input type="color" id="wvCap" aria-label="자막 강조색">
+          <label class="aftoggle" for="wvNum"><input type="checkbox" id="wvNum" checked> 숫자 한글 발음</label>
+        </div>
+        <div class="wvrow">
+          <label class="flabel" for="wvWm" style="flex:0 0 auto">워터마크</label>
+          <input type="text" id="wvWm" maxlength="30" placeholder="예) 연오랑의 3분 시황" aria-label="워터마크 문구">
+        </div>
+        <div class="flabel">📷 컷 배경 사진 (최대 3장 · 컷 순서대로 돌아가며 Ken Burns 줌인)</div>
+        <div class="wvrow">
+          <button class="btn small" id="wvPhotoBtn" type="button">사진 고르기</button>
+          <button class="btn small ghost" id="wvPhotoClear" type="button">비우기</button>
+        </div>
+        <input type="file" id="wvPhotoInput" accept="image/*" multiple hidden>
+        <div class="wvthumbs" id="wvThumbs"></div>
+      </div>
+    </details>
+    <div class="wvrender">
+      <canvas id="wvCanvas" width="1080" height="1920" aria-label="쇼츠 영상 미리보기"></canvas>
+      <div class="wvside">
+        <div class="wvprog"><i id="wvBar"></i></div>
+        <div class="hint" id="wvMsg">쇼츠 카드의 [🎬 영상 생성 (크레딧 0)]을 누르면 이 브라우저가 직접 그려 녹화합니다.</div>
+        <div class="wvrow">
+          <button class="btn small primary" id="wvStart" type="button">▶ 생성</button>
+          <button class="btn small" id="wvStop" type="button" disabled>■ 중지</button>
+        </div>
+        <div class="wvrow">
+          <button class="btn small" id="wvUpBtn" type="button" title="제목 + 설명글 + 해시태그 + 고정 댓글을 한 번에 복사">📋 업로드 세트 복사</button>
+          <a class="btn small ghost" id="wvDl" hidden download>⬇ 영상 저장</a>
+        </div>
+        <div class="hint">MP4 우선, 브라우저가 못 만들면 WebM으로 저장합니다. 생성 중에는 이 탭을 닫지 마세요.</div>
+      </div>
+    </div>
+    <video id="wvVideo" controls playsinline hidden></video>
+  </div>
+</details>
+
 <footer>
+<details class="shelf" id="footRef">
+  <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
+  <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.3 — 🎬 웹 영상 생성기(Canvas 1080×1920 + MediaRecorder · 크레딧 0 · ElevenLabs 성우 · BGM 3종 + 효과음 · 내 사진 Ken Burns · MP4/WebM 저장) · 채널 프리셋 2종 · 📋 업로드 세트 복사 · 보관함 [🔄 복제해 새 버전] · 💾 백업/복원 · 이 안내는 접이식으로 정리</div>
   <b>정적 스튜디오 v2 안내(내 Gemini 키)</b> — 이 페이지는 GitHub Pages 정적 파일 하나로 돌아갑니다. <b>키는 화면에서 한 번만 입력</b>하면 이 브라우저(localStorage)에만 저장되고, 생성 요청은 브라우저가 <b>generativelanguage.googleapis.com</b> 으로 직접 보냅니다. 서버가 없으므로 <b>API 키를 페이지·저장소에 넣지 않습니다</b>. <b>테마 9종</b>(여행·도서3·주식·생활지혜·요리·육아·SNS 핫템 가격비교)과 테마별 <b>🏆 블로거 양식 1·2·3·4번</b>(1·2·3번 = 테마별 실제 인기 블로그 3편에서 뽑은 서로 다른 프리셋 27종, 4번 = 내 글 붙여넣기로 뽑는 내 양식 · 테마별로 따로 저장), <b>🎬 쇼츠 대본 모드</b> — <b>쇼츠 전용 14테마</b>(아이돌·쇼핑·게임·드라마·스포츠·영화·경제/주식·요리·생활/IT·AI·여행/맛집·1분 지식·책/동기부여·육아/가족·SNS 핫템 가격비교)와 테마별 <b>쇼츠 양식 1·2·3번 = 42종</b>(3초 훅·컷 리듬·자막 습관·말투·금지 규칙) + <b>4번 내 유튜버</b>(정적은 CORS 때문에 링크는 참고용 저장 · <b>대본/자막을 붙여넣으면</b> 내 Gemini 키로 훅·리듬·자막·말투 분석·저장), <b>🎬 쇼츠 대본 생성</b>(약 50초 · 훅→4~7컷→엔딩 · 자막 15~20자), <b>쇼츠 전용 ✨ 2차 검수</b>(3초 훅 강도·자막 길이·구어체·양식 리듬·과장 제거 + 고친 점 배지 + 원본 복원), <b>📋 피클 점검용 복사</b>, 블로그 완성 본문 생성(제목 3종·경쟁 글 빈틈 2개·표·도입 훅·솔직한 단점), <b>📷 내 사진 업로드(최대 4장 · 1024px JPEG) → Gemini 멀티모달이 사진을 보고 본문 자동 배치</b>, <b>📚 Google Books 실제 책 표지 검색·저장·본문 삽입</b>(한도 초과 시 Open Library 대체), <b>본문 사진 자리 자동 파싱 → Wikimedia Commons 실시간 검색 및 저장</b>(브라우저 직접), <b>Canvas 1200×630 대표 이미지 PNG 생성·저장</b>, 유튜브 빈틈 분석 + 50초 쇼츠 대본, 블로그→쇼츠 변환, <b>톤 변환 3종·AI 티 빼기·댓글 유도 질문+링크 안내 박스·인스타 3줄과 쇼츠 1타 3피</b>, <b>검색 유입 해시태그 10개</b>, <b>✨ 2차 검수·다듬기</b>(거짓 경험담·AI 문투·양식 누락·맞춤법 교정 + 고친 점 배지 + 원본 복원), <b>📋 피클 점검용 복사</b>(본문 + 테마·블로거 양식 정보를 한 덩어리로), 영상 컷 설계도, 제목 3종의 <b>네이버 모바일 30자 기준선 + 본문 첫 줄 미리보기</b>와 네이버 서식 복사(내 사진·표지 이미지 포함), 발행 전 체크리스트, 자막 프리셋 3종 미리보기, <b>주간 발행 체크·포스팅 URL 기록</b>, 양식·문체 샘플·금지 상투어·빈틈 메모·루틴표·보관함(localStorage) 저장, <b>오늘 관제탑 시황 1클릭</b>(관제탑 동적 API 값 그대로 · 실패하면 관제탑 링크와 붙여넣기 칸). <b style="color:#fbbf24">정적이라 안 되는 것</b>: <b>공식 홈페이지 URL 사진 자동 추출(서버 필요 — 대신 내 사진 업로드)</b>, 유튜브 자막 자동 추출(CORS — 제목만 확인), 유튜브 실시간 검색·조회수·댓글 수집, 블로그 자동 포스팅, 영상 픽셀 분석, ffmpeg.wasm 컷편집·자막 렌더·BGM 합성·MP4 저장, 15:45 자동 생성 연동. Gemini가 만든 글은 값·날짜·업체명이 [확인 필요]로 남을 수 있으니 발행 전에 직접 확인하세요. 무료 사진·공식 홈페이지 사진·책 표지는 사용 조건과 출처 표기를 확인하세요. 기존 콘텐츠 스튜디오·관제탑과는 별개 파일입니다.<div style="margin-top:9px">🆕 <b>v2.2 업그레이드</b> — 🎙 ElevenLabs 성우 미리듣기·MP3 저장 / 📊 블로그용 차트 PNG 3종(지수·수급 · 주도테마 · 종목 일봉+20일선+피보나치) + 워터마크 / 🎬 블로그 글 하나로 쇼츠 v3 JSON·추천 차트 원클릭 / v3 구어체·대형 훅 타이틀·카라오케 강조·숫자 발음 변환 / 🔍 네이버 SEO 검색어 5~7개 자동 배치 / 제목 3안(호기심형 · 숫자 직격형 · 비교형).</div>
+  </div>
+</details>
 </footer>
 <!-- modal -->
 <div class="overlay" id="formModal" hidden>
@@ -8869,6 +8981,7 @@ const GEN_ACTIONS = [
         '<div class="srow">' +
           '<button class="btn small ghost" data-open="' + esc(x.id) + '">열기</button>' +
           '<button class="btn small" data-copy="' + esc(x.id) + '">복사</button>' +
+          '<button class="btn small" data-dup="' + esc(x.id) + '" title="이 항목을 참고 자료로 불러와 오늘 날짜·새 주제로 바로 다시 씁니다">🔄 복제해 새 버전</button>' +
           '<button class="btn small danger" data-del="' + esc(x.id) + '">삭제</button>' +
         '</div>' + perfBlockHtml(x) + '</div>';
     }).join('');
@@ -8956,9 +9069,95 @@ const GEN_ACTIONS = [
     setTimeout(function(){ $('#story').scrollIntoView({ behavior:'smooth', block:'center' }); }, 150);
     toast('영상 설계안을 불러왔습니다. 영상 파일은 다시 골라 주세요.');
   }
+  /* 🔄 복제해 새 버전 쓰기 — 원본을 그대로 다시 쓰지 않고, 참고 자료로 넣어 오늘 날짜·새 주제로 재작성한다. */
+  function cloneArchive(id){
+    var rec = state.archive.filter(function(x){ return x.id === id; })[0];
+    if (!rec){ toast('보관함 항목을 찾지 못했습니다.'); return; }
+    var d = new Date();
+    var ds = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    if (rec.type === 'blog'){
+      if (rec.formId && allForms().some(function(f){ return f.id === rec.formId; })) state.selectedFormId = rec.formId;
+      setTab('blog');
+      renderChips();
+      var base = String(rec.topic || '').replace(/\s*[·-]\s*\d{4}-\d{2}-\d{2}.*$/, '').trim();
+      if (topicEl) topicEl.value = (base || '새 주제') + ' · ' + ds + ' 새 버전';
+      if (typeof outText !== 'undefined' && outText) outText.textContent = rec.text || '';
+      if (typeof outEdit !== 'undefined' && outEdit) outEdit.value = rec.text || '';
+      var oe = $('#outEmpty'); if (oe) oe.hidden = true;
+      setSrc('[보관함 원본 · ' + fmtWhen(rec.createdAt) + ' · ' + base + ']\n' + String(rec.text || ''),
+        '원본을 [참고 자료]에 넣었습니다 — 위 주제만 고쳐 [AI 본문 생성]을 누르면 새 버전이 나옵니다.');
+      return;
+    }
+    if (rec.type === 'summary'){
+      openArchive(id);
+      var st = $('#sumText');
+      if (st){
+        st.value = String(rec.text || '').slice(0, 120000);
+        try { st.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){}
+      }
+      toast('요약 원문을 [텍스트 직접 붙여넣기]에 넣었습니다 — 새 자료로 바꿔 다시 요약하세요.');
+      return;
+    }
+    openArchive(id);
+    toast('영상 설계안을 불러왔습니다 — 스토리 방향만 새 주제로 고쳐 [보관함에 저장]을 눌러 주세요.');
+  }
+
+  /* 💾 localStorage 백업 · 복원 (API 키는 백업에서 제외) */
+  function bkExport(){
+    var out = {}, n = 0;
+    try{
+      for (var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i);
+        if (!k || k.indexOf('cs') !== 0) continue;
+        if (/api_key|apikey/i.test(k)) continue;
+        var v = localStorage.getItem(k);
+        if (v == null || v.length > 200000) continue;
+        out[k] = v; n++;
+      }
+    }catch(e){}
+    if (!n){ toast('저장된 항목이 없습니다.'); return; }
+    var pack = { v: 1, at: new Date().toISOString(), keys: n, data: out };
+    var blob = new Blob([JSON.stringify(pack, null, 2)], { type: 'application/json' });
+    var d = new Date(), p = function(z){ return ('0' + z).slice(-2); };
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'studio_backup_' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '.json';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ try{ URL.revokeObjectURL(a.href); }catch(e){} }, 5000);
+    toast('백업 파일을 내려받았습니다 · ' + n + '개 항목(API 키 제외)');
+  }
+  function bkImport(file){
+    var fr = new FileReader();
+    fr.onload = function(){
+      var pack = null;
+      try{ pack = JSON.parse(String(fr.result || '{}')); }catch(e){ toast('백업 파일을 읽지 못했습니다(JSON 형식 아님).'); return; }
+      if (!pack || !pack.data || typeof pack.data !== 'object'){ toast('이 파일은 스튜디오 백업 파일이 아닙니다.'); return; }
+      var ks = Object.keys(pack.data);
+      if (!ks.length){ toast('복원할 항목이 없습니다.'); return; }
+      if (!window.confirm('백업 ' + ks.length + '개 항목으로 이 브라우저 저장값을 덮어쓸까요?\n(API 키는 그대로 둡니다)')) return;
+      var ok = 0;
+      ks.forEach(function(k){
+        if (!/^cs/.test(k) || /api_key|apikey/i.test(k)) return;
+        try{ localStorage.setItem(k, pack.data[k]); ok++; }catch(e){}
+      });
+      toast('백업에서 ' + ok + '개 항목을 복원했습니다 — 화면을 새로 고칩니다.');
+      setTimeout(function(){ location.reload(); }, 900);
+    };
+    fr.readAsText(file);
+  }
+
+  var bkE = $('#bkExport');
+  if (bkE) bkE.addEventListener('click', bkExport);
+  var bkI = $('#bkImport');
+  if (bkI) bkI.addEventListener('click', function(){ var f = $('#bkFile'); if (f) f.click(); });
+  var bkF = $('#bkFile');
+  if (bkF) bkF.addEventListener('change', function(){ if (bkF.files && bkF.files[0]) bkImport(bkF.files[0]); bkF.value = ''; });
+
   shelfBody.addEventListener('click', function(e){
     var open = e.target.closest('[data-open]');
     if (open){ openArchive(open.getAttribute('data-open')); return; }
+    var dup = e.target.closest('[data-dup]');
+    if (dup){ cloneArchive(dup.getAttribute('data-dup')); return; }
     var cp = e.target.closest('[data-copy]');
     if (cp){
       var rec = state.archive.filter(function(x){ return x.id === cp.getAttribute('data-copy'); })[0];
@@ -12768,6 +12967,7 @@ const GEN_ACTIONS = [
       });
       if (d.ending && d.ending.spoken) h += '<div><span class="at">[엔딩]</span>' + esc(d.ending.spoken) + '</div>';
       h += '</div><div class="osacts">' +
+        '<button class="btn small primary" id="osVideo" type="button">🎬 웹에서 바로 영상 생성 (크레딧 0)</button>' +
         '<button class="btn small primary" id="osCopyJson" type="button">📦 제목 3안 + v3 JSON 복사</button>' +
         '<button class="btn small" id="osTts" type="button">🔊 ElevenLabs 미리듣기</button>' +
         '<button class="btn small ghost" id="osMp3" type="button" disabled>⬇ MP3</button>' +
@@ -12791,6 +12991,8 @@ const GEN_ACTIONS = [
       if (tb) tb.addEventListener('click', function () { v2Speak(osSpeakText(), 'osTtsBox', tb); });
       var mb = $('#osMp3');
       if (mb) mb.addEventListener('click', v2DownloadMp3);
+      var ov = $('#osVideo');
+      if (ov) ov.addEventListener('click', function () { if (window.WVID) WVID.launch('oneshot'); else toast('영상 생성기를 불러오지 못했습니다 — 새로 고침 후 다시 시도해 주세요.'); });
       cvReload(false).then(function () {
         cvDrawMarket('osCvMk');
         cvDrawThemes('osCvTh');
@@ -12876,6 +13078,30 @@ const GEN_ACTIONS = [
     var osc = $('#osClose');
     if (osc) osc.addEventListener('click', function () { var c = $('#oneShotCard'); if (c) c.hidden = true; });
     cvDrawAll();
+
+    /* 🎬 웹 영상 생성기 — 지금 화면의 대본을 영상 스펙으로 넘긴다 (크레딧 0) */
+    window.WVID_SRC = window.WVID_SRC || {};
+    window.WVID_SRC.shorts = function(){
+      try{
+        var p = shParseDraft(shCurrentText());
+        if (!p || (!p.hook && !(p.beats || []).length && !p.ending)) return null;
+        return shMp4SpecFrom(p, p);
+      }catch(e){ return null; }
+    };
+    window.WVID_SRC.oneshot = function(){ return (V2.oneShot && V2.oneShot.spec) || null; };
+    window.WVID_SRC.blogShorts = function(){
+      var d = state.shorts || {}, cuts = [];
+      if (d.hook) cuts.push({ text: d.hook, tts_text: d.hook, hook: d.hook });
+      (d.scenes || []).forEach(function(sc){
+        var line = String((sc && sc.line) || '').split(/\s*화면\s*[:：]/)[0].replace(/^\s*[-•]?\s*\d{0,2}\s*[:\-]\s*/, '').trim();
+        if (line) cuts.push({ text: line, tts_text: line });
+      });
+      if (d.ending) cuts.push({ text: d.ending, tts_text: d.ending });
+      if (!cuts.length) return null;
+      return { title: d.title || '', hook_title: d.hook || '', series_badge: '쇼츠', cuts: cuts, highlight_words: [], pinned_comment: { text: d.cta || '' } };
+    };
+    var wvA = $('#shVideoBtn'); if (wvA) wvA.addEventListener('click', function(){ if (window.WVID) WVID.launch('shorts'); else toast('영상 생성기를 불러오지 못했습니다 — 새로 고침 후 다시 시도해 주세요.'); });
+    var wvB = $('#toShortsVideoBtn'); if (wvB) wvB.addEventListener('click', function(){ if (window.WVID) WVID.launch('blogShorts'); else toast('영상 생성기를 불러오지 못했습니다 — 새로 고침 후 다시 시도해 주세요.'); });
     setTimeout(function () { cvReload(false); }, 700);
   }
 
@@ -13011,6 +13237,801 @@ const GEN_ACTIONS = [
   }catch(e){}
   window.addEventListener('pageshow', showBtn);
   showBtn();
+})();
+</script>
+<script>
+/* ============================================================
+   🎬 WVID — 웹 쇼츠 영상 생성기 (크레딧 0)
+   Canvas 1080×1920 · Web Audio API · MediaRecorder · ElevenLabs TTS
+   모든 합성은 이 브라우저 안에서 끝난다. 서버·유료 크레딧 없음.
+   ============================================================ */
+(function () {
+  'use strict';
+  var W = window, D = document;
+  var CFG_KEY = 'cs_wvid_cfg_v1', PRE_KEY = 'cs_wvid_presets_v1', EL_KEY = 'cs_elevenlabs_api_key';
+  var CW = 1080, CH = 1920, GAP = 0.16;
+  var FF = "'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif";
+
+  var VOICES = [
+    { id: 'IKne3meq5aSn9XLyUdCD', n: 'Charlie · 깊고 자신감 있는 남성' },
+    { id: 'TX3LPaxmHKxFdv7VOQHJ', n: 'Liam · 에너지 넘치는 크리에이터' },
+    { id: 'nPczCjzI2devNBz1zQrb', n: 'Brian · 낮고 안정적인 목소리' },
+    { id: 'JBFqnCBsd6RMkjVDRZzb', n: 'George · 따뜻한 스토리텔러' },
+    { id: 'cgSgspJ2msm6clMCkdW9', n: 'Jessica · 밝고 경쾌한 여성' },
+    { id: 'EXAVITQu4vr4xnSDxMaL', n: 'Sarah · 성숙하고 단단한 여성' }
+  ];
+  var PRESETS = {
+    stock: { name: '📈 주식 채널', accent: '#38bdf8', cap: '#fde047', bgm: 'news', voice: 'IKne3meq5aSn9XLyUdCD', wm: '연오랑의 3분 시황' },
+    deal: { name: '🏷️ 특가·핫템 채널', accent: '#f472b6', cap: '#fbbf24', bgm: 'bright', voice: 'cgSgspJ2msm6clMCkdW9', wm: '연오랑의 특가 레이더' }
+  };
+  var DEF = { preset: '', accent: '#38bdf8', cap: '#fde047', bgm: 'news', sfx: true, voice: VOICES[0].id, wm: '연오랑의 3분 시황', numNorm: true };
+
+  var S = { cfg: null, spec: null, cuts: [], total: 0, running: false, abort: false, rec: null,
+    chunks: [], url: '', blob: null, photos: [], t0: 0, timer: null, actx: null, dest: null, mime: '' };
+
+  /* ---------- utils ---------- */
+  function $(s) { return D.querySelector(s); }
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+    return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+  function ls(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
+  function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function elKey() { return String(ls(EL_KEY, '') || '').trim(); }
+  function elModel() { return 'eleven_multilingual_v2'; }
+  function hexA(hex, a) {
+    var h = String(hex || '#38bdf8').replace('#', '');
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    var n = parseInt(h, 16);
+    if (!isFinite(n)) return 'rgba(56,189,248,' + a + ')';
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+  function pad(n) { return ('0' + n).slice(-2); }
+  function stamp() {
+    var d = new Date();
+    return '' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes());
+  }
+  function say(msg, kind) {
+    var el = $('#wvMsg');
+    if (el) { el.innerHTML = msg; el.style.color = kind === 'bad' ? '#fda4af' : kind === 'good' ? '#86efac' : ''; }
+    if (kind === 'bad' || kind === 'good') flash(msg.replace(/<[^>]+>/g, ''));
+  }
+  function flash(msg) {
+    var t = $('#toast');
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add('on');
+    clearTimeout(flash._t);
+    flash._t = setTimeout(function () { t.classList.remove('on'); }, 3600);
+  }
+  function setBar(f) { var b = $('#wvBar'); if (b) b.style.width = Math.max(0, Math.min(100, f * 100)).toFixed(1) + '%'; }
+  function setState(txt, on) {
+    var s = $('#wvState');
+    if (s) { s.textContent = txt; s.style.color = on ? '#86efac' : ''; }
+  }
+  function copy(text, okMsg) {
+    var done = function () { flash(okMsg || '복사했습니다.'); say(esc(okMsg || '복사했습니다.'), 'good'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done).catch(function () { fallbackCopy(text); done(); });
+    } else { fallbackCopy(text); done(); }
+  }
+  function fallbackCopy(text) {
+    var ta = D.createElement('textarea');
+    ta.value = text; ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+    D.body.appendChild(ta); ta.select();
+    try { D.execCommand('copy'); } catch (e) {}
+    D.body.removeChild(ta);
+  }
+
+  /* 숫자 → 한글 발음 정규화 (TTS가 '3,200'을 '삼천이백'으로 읽도록) */
+  var KOD = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+  function ko4(n) {
+    var out = '', p = 0, unit = ['', '십', '백', '천'];
+    while (n > 0) { var d = n % 10; if (d) out = KOD[d] + unit[p] + out; n = (n - d) / 10; p++; }
+    return out;
+  }
+  function koInt(n) {
+    if (!isFinite(n) || n <= 0) return '영';
+    var units = ['', '만', '억', '조', '경'], out = '', i = 0;
+    while (n > 0) { var part = n % 10000; if (part) out = ko4(part) + units[i] + out; n = Math.floor(n / 10000); i++; }
+    return out;
+  }
+  function numToKo(s) {
+    var p = String(s).split('.');
+    var out = koInt(parseInt(p[0].replace(/,/g, ''), 10));
+    if (p[1]) out += '점' + p[1].split('').map(function (d) { return KOD[Number(d)] || d; }).join('');
+    return out;
+  }
+  function koNumNormalize(text) {
+    var s = String(text == null ? '' : text);
+    s = s.replace(/(\d[\d,]*(?:\.\d+)?)\s*(%|퍼센트)/g, function (m, a) { return numToKo(a) + ' 퍼센트'; });
+    s = s.replace(/(\d[\d,]*(?:\.\d+)?)\s*(원|만원|억원|조원)/g, function (m, a, u) { return numToKo(a) + ' ' + u; });
+    s = s.replace(/(\d[\d,]*(?:\.\d+)?)/g, function (m, a) { return numToKo(a); });
+    s = s.replace(/\+/g, ' 플러스 ').replace(/(^|\s)-(\d)/g, '$1마이너스 $2');
+    return s.replace(/\s{2,}/g, ' ').trim();
+  }
+
+  /* ---------- config ---------- */
+  function loadCfg() {
+    var c = {};
+    try { c = JSON.parse(ls(CFG_KEY, '{}')) || {}; } catch (e) { c = {}; }
+    for (var k in DEF) if (Object.prototype.hasOwnProperty.call(DEF, k) && c[k] === undefined) c[k] = DEF[k];
+    return c;
+  }
+  function saveCfg() { lsSet(CFG_KEY, JSON.stringify(S.cfg)); }
+  function loadPresets() {
+    var p = {};
+    try { p = JSON.parse(ls(PRE_KEY, '{}')) || {}; } catch (e) { p = {}; }
+    return p;
+  }
+  function applyPreset(name) {
+    var custom = loadPresets()[name] || {};
+    var p = PRESETS[name] || {};
+    var next = {};
+    for (var k in p) next[k] = p[k];
+    for (var k2 in custom) next[k2] = custom[k2];
+    S.cfg.preset = name;
+    if (next.accent) S.cfg.accent = next.accent;
+    if (next.cap) S.cfg.cap = next.cap;
+    if (next.bgm) S.cfg.bgm = next.bgm;
+    if (next.voice) S.cfg.voice = next.voice;
+    if (next.wm) S.cfg.wm = next.wm;
+    saveCfg(); syncUi();
+    if (S.spec) { S.spec.accent = S.cfg.accent; S.spec.capColor = S.cfg.cap; S.spec.watermark = S.cfg.wm; }
+    flash((p.name || name) + ' 프리셋을 적용했습니다 — 성우·색·BGM·워터마크 자동 세팅');
+  }
+
+  /* ---------- UI sync ---------- */
+  function syncUi() {
+    var c = S.cfg;
+    var v = $('#wvVoice'); if (v) { if (!v.options.length) VOICES.forEach(function (o) { var op = D.createElement('option'); op.value = o.id; op.textContent = o.n; v.appendChild(op); }); v.value = c.voice; }
+    var b = $('#wvBgm'); if (b) b.value = c.bgm;
+    var s = $('#wvSfx'); if (s) s.checked = !!c.sfx;
+    var a = $('#wvAccent'); if (a) a.value = /^#[0-9a-f]{6}$/i.test(c.accent) ? c.accent : '#38bdf8';
+    var cp = $('#wvCap'); if (cp) cp.value = /^#[0-9a-f]{6}$/i.test(c.cap) ? c.cap : '#fde047';
+    var wm = $('#wvWm'); if (wm) wm.value = c.wm || '';
+    var nn = $('#wvNum'); if (nn) nn.checked = c.numNorm !== false;
+    var tag = $('#wvMusic');
+    if (tag) tag.textContent = (c.bgm === 'news' ? 'BGM 차분한 뉴스' : c.bgm === 'tense' ? 'BGM 긴장감 비트' : c.bgm === 'bright' ? 'BGM 밝은 리뷰' : 'BGM 없음') + (elKey() ? ' · 성우 ElevenLabs' : ' · 무음(키 없음)');
+    $$('#wvPreStock,#wvPreDeal').forEach(function (btn) {
+      btn.classList.toggle('primary', btn.getAttribute('data-wvpre') === c.preset);
+    });
+    var th = $('#wvThumbs');
+    if (th) {
+      th.innerHTML = S.photos.length
+        ? S.photos.map(function (im, i) {
+            return '<figure class="wvth"><img src="' + im.src + '" alt="컷 사진 ' + (i + 1) + '"><figcaption>' + (i + 1) + '번째</figcaption></figure>';
+          }).join('')
+        : '<span class="hint">사진 없이 색 그라데이션으로 그립니다.</span>';
+    }
+  }
+
+  /* ---------- spec ---------- */
+  function estDur(text) {
+    var t = String(text || '').replace(/\s+/g, '');
+    return Math.max(2.2, Math.min(12, t.length * 0.155 + 0.75));
+  }
+  function normSpec(spec) {
+    if (!spec || !spec.cuts || !spec.cuts.length) return null;
+    var cuts = [];
+    spec.cuts.slice(0, 12).forEach(function (c, i) {
+      var text = String((c && (c.text || c.tts_text)) || '').trim();
+      if (!text) return;
+      cuts.push({
+        text: text,
+        tts: String((c && c.tts_text) || text).trim(),
+        hook: String((c && c.hook) || spec.hook_title || '').trim(),
+        d: Math.max(1.6, Number(c && c.duration) || estDur(text))
+      });
+    });
+    if (!cuts.length) return null;
+    return {
+      title: String(spec.title || ''),
+      badge: String(spec.series_badge || spec.kicker || 'AI 스튜디오').slice(0, 16),
+      accent: String(spec.accent || S.cfg.accent),
+      capColor: String(S.cfg.cap),
+      hookTitle: String(spec.hook_title || '').slice(0, 60),
+      words: (spec.highlight_words || []).filter(Boolean).slice(0, 8),
+      watermark: String(S.cfg.wm || ''),
+      pinned: spec.pinned_comment || {},
+      captions: spec.platform_captions || {},
+      loop: String(spec.loop_ending || ''),
+      cuts: cuts
+    };
+  }
+
+  /* ---------- photos ---------- */
+  function addPhotos(files) {
+    var list = Array.prototype.slice.call(files || []).slice(0, 3 - S.photos.length);
+    if (!list.length) { flash('사진은 최대 3장까지 넣을 수 있습니다.'); return; }
+    list.forEach(function (f) {
+      if (!/^image\//.test(f.type)) return;
+      var fr = new FileReader();
+      fr.onload = function () {
+        var im = new Image();
+        im.onload = function () {
+          if (S.photos.length < 3) { S.photos.push(im); syncUi(); }
+        };
+        im.src = fr.result;
+      };
+      fr.readAsDataURL(f);
+    });
+  }
+
+  /* ---------- ElevenLabs ---------- */
+  function ttsBuf(actx, text) {
+    var key = elKey();
+    if (!key || !text) return Promise.resolve(null);
+    return fetch('https://api.elevenlabs.io/v1/text-to-speech/' + S.cfg.voice + '?output_format=mp3_44100_128', {
+      method: 'POST',
+      headers: { 'xi-api-key': key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: String(text).slice(0, 900),
+        model_id: elModel(),
+        voice_settings: { stability: 0.42, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
+      })
+    }).then(function (r) {
+      if (!r.ok) throw new Error('ElevenLabs ' + r.status);
+      return r.arrayBuffer();
+    }).then(function (ab) {
+      return new Promise(function (res, rej) { actx.decodeAudioData(ab, res, rej); });
+    });
+  }
+
+  /* ---------- BGM / SFX ---------- */
+  function bgm(ctx, out, mood, base, total) {
+    var g = ctx.createGain();
+    g.gain.value = Math.pow(10, -22 / 20); /* -22dB */
+    g.connect(out);
+    var P = {
+      news: { step: 2.0, notes: [[220, 0, 1.9, .55, 'sine'], [330, 0, 1.9, .22, 'sine'], [277.2, 1.0, 1.4, .26, 'triangle']] },
+      tense: { step: 0.5, notes: [[110, 0, .42, .5, 'sawtooth'], [164.8, .25, .3, .2, 'square'], [220, .5, .3, .18, 'triangle']] },
+      bright: { step: 1.0, notes: [[523.3, 0, .5, .32, 'triangle'], [659.3, .5, .5, .26, 'triangle'], [784, 1.0, .55, .22, 'sine']] }
+    };
+    var p = P[mood] || P.news;
+    for (var at = 0; at < total + 1; at += p.step) {
+      for (var i = 0; i < p.notes.length; i++) {
+        var n = p.notes[i];
+        var o = ctx.createOscillator(), e = ctx.createGain();
+        o.type = n[4]; o.frequency.value = n[0];
+        var t0 = base + at + n[1];
+        e.gain.setValueAtTime(0.0001, t0);
+        e.gain.linearRampToValueAtTime(n[3], t0 + 0.09);
+        e.gain.exponentialRampToValueAtTime(0.0001, t0 + n[2]);
+        o.connect(e); e.connect(g);
+        o.start(t0); o.stop(t0 + n[2] + 0.05);
+      }
+    }
+  }
+  function popSfx(ctx, out, at, vol) {
+    var o = ctx.createOscillator(), e = ctx.createGain();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(760, at);
+    o.frequency.exponentialRampToValueAtTime(1500, at + 0.11);
+    e.gain.setValueAtTime(0.0001, at);
+    e.gain.linearRampToValueAtTime(vol || 0.1, at + 0.02);
+    e.gain.exponentialRampToValueAtTime(0.0001, at + 0.16);
+    o.connect(e); e.connect(out); o.start(at); o.stop(at + 0.2);
+  }
+
+  /* ---------- drawing ---------- */
+  function rr(ctx, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+  function lines(ctx, text, maxW, font) {
+    ctx.font = font;
+    var words = String(text || '').replace(/\s+/g, ' ').trim().split(' ');
+    var out = [], cur = '';
+    for (var i = 0; i < words.length; i++) {
+      var t = cur ? cur + ' ' + words[i] : words[i];
+      if (ctx.measureText(t).width <= maxW || !cur) cur = t;
+      else { out.push(cur); cur = words[i]; }
+    }
+    if (cur) out.push(cur);
+    return out;
+  }
+  function fit(ctx, text, maxW, maxLines, base, weight) {
+    var w = weight || 900;
+    for (var size = base; size >= Math.round(base * 0.55); size -= 4) {
+      var f = w + ' ' + size + 'px ' + FF;
+      var ls = lines(ctx, text, maxW, f);
+      if (ls.length <= maxLines) return { font: f, size: size, lines: ls };
+    }
+    var f2 = w + ' ' + Math.round(base * 0.55) + 'px ' + FF;
+    return { font: f2, size: Math.round(base * 0.55), lines: lines(ctx, text, maxW, f2).slice(0, maxLines + 1) };
+  }
+  function cover(img, W0, H0) {
+    var ir = img.width / img.height, r = W0 / H0;
+    if (ir > r) { var sw = img.height * r; return [(img.width - sw) / 2, 0, sw, img.height]; }
+    var sh = img.width / r; return [0, (img.height - sh) / 2, img.width, sh];
+  }
+
+  function drawFrame(t) {
+    var cv = $('#wvCanvas');
+    if (!cv) return;
+    var ctx = cv.getContext('2d');
+    var spec = S.spec, cuts = S.cuts;
+    if (!spec || !cuts.length) return;
+    var idx = 0;
+    while (idx < cuts.length - 1 && t >= cuts[idx].end) idx++;
+    var cut = cuts[idx];
+    var tIn = Math.max(0, t - cut.start);
+    var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
+    var ac = spec.accent || '#38bdf8';
+
+    /* 배경 */
+    var bg = ctx.createLinearGradient(0, 0, 0, CH);
+    bg.addColorStop(0, '#070d18'); bg.addColorStop(.45, '#0b1424'); bg.addColorStop(1, '#060a12');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, CW, CH);
+    var glow = ctx.createRadialGradient(CW * .5, CH * .2, 40, CW * .5, CH * .2, 820);
+    glow.addColorStop(0, hexA(ac, .28)); glow.addColorStop(1, hexA(ac, 0));
+    ctx.fillStyle = glow; ctx.fillRect(0, 0, CW, CH);
+
+    /* 컷 사진 (Ken Burns) */
+    if (cut.img) {
+      var z = 1.06 + 0.13 * p;
+      var dw = CW * z, dh = CH * z;
+      var dx = (CW - dw) / 2 + (idx % 2 ? 20 : -20) * p;
+      var dy = (CH - dh) / 2 - 18 * p;
+      var cr = cover(cut.img, CW, CH);
+      ctx.save();
+      ctx.globalAlpha = .92;
+      ctx.drawImage(cut.img, cr[0], cr[1], cr[2], cr[3], dx, dy, dw, dh);
+      ctx.restore();
+      var ov = ctx.createLinearGradient(0, 0, 0, CH);
+      ov.addColorStop(0, 'rgba(6,10,18,.58)');
+      ov.addColorStop(.42, 'rgba(6,10,18,.40)');
+      ov.addColorStop(1, 'rgba(6,10,18,.93)');
+      ctx.fillStyle = ov; ctx.fillRect(0, 0, CW, CH);
+    }
+
+    /* 컷 전환 슬라이드 */
+    var ein = Math.min(1, tIn / .34);
+    var eout = Math.min(1, Math.max(0, cut.dur - tIn) / .2);
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, ein) * (.55 + .45 * Math.min(1, eout + .35));
+    ctx.translate((1 - ein) * (idx % 2 ? 46 : -46), 0);
+
+    /* 상단 배지 · 컷 카운터 */
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    var badge = spec.badge || 'AI 스튜디오';
+    var bwMax = CW - 300;
+    ctx.font = '800 30px ' + FF;
+    if (ctx.measureText(badge).width + 46 > bwMax) ctx.font = '800 24px ' + FF;
+    var bw = Math.min(bwMax, ctx.measureText(badge).width + 46);
+    ctx.fillStyle = hexA(ac, .16); rr(ctx, 64, 118, bw, 58, 29); ctx.fill();
+    ctx.strokeStyle = hexA(ac, .55); ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = ac; ctx.fillText(badge, 64 + 24, 148);
+    ctx.textAlign = 'right'; ctx.font = '700 28px ' + FF;
+    ctx.fillStyle = 'rgba(226,232,240,.62)';
+    ctx.fillText((idx + 1) + ' / ' + cuts.length, CW - 64, 148);
+
+    /* 오프닝 대형 훅 타이틀 */
+    if (idx === 0 && spec.hookTitle) {
+      var hp = Math.min(1, tIn / .55);
+      var hf = fit(ctx, spec.hookTitle, CW - 150, 3, 118, 900);
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, hp * 1.2);
+      var sc = .92 + .08 * Math.min(1, hp);
+      ctx.translate(CW / 2, 640); ctx.scale(sc, sc); ctx.translate(-CW / 2, -640);
+      ctx.font = hf.font; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
+      ctx.shadowColor = hexA(ac, .55); ctx.shadowBlur = 34;
+      var hy = 640 - (hf.lines.length - 1) * (hf.size * .58);
+      hf.lines.forEach(function (ln, i) {
+        ctx.fillText(ln, CW / 2, hy + i * hf.size * 1.16);
+      });
+      ctx.shadowBlur = 0;
+      var uw = Math.min(CW - 220, 520 * Math.min(1, tIn / .7));
+      ctx.fillStyle = ac; rr(ctx, (CW - uw) / 2, hy + (hf.lines.length - 1) * hf.size * 1.16 + hf.size * .72, uw, 12, 6); ctx.fill();
+      ctx.restore();
+    }
+
+    /* 이후 컷 — 훅 라인을 작게 유지해 문맥을 잇는다 */
+    if (idx > 0 && (cut.hook || spec.hookTitle)) {
+      var hk = cut.hook || spec.hookTitle;
+      var hf2 = fit(ctx, hk, CW - 210, 2, 66, 800);
+      ctx.font = hf2.font; ctx.textAlign = 'center'; ctx.fillStyle = 'rgba(226,232,240,.84)';
+      var hy2 = 560 - (hf2.lines.length - 1) * hf2.size * .6;
+      hf2.lines.forEach(function (ln, i) { ctx.fillText(ln, CW / 2, hy2 + i * hf2.size * 1.16); });
+      ctx.fillStyle = hexA(ac, .8);
+      rr(ctx, CW / 2 - 60, hy2 + (hf2.lines.length - 1) * hf2.size * 1.16 + hf2.size * .74, 120, 9, 5); ctx.fill();
+    }
+
+    /* 키워드 카드 + 장식 차트 모티프 */
+    var kwY = idx === 0 && spec.hookTitle ? 1120 : 880;
+    var kws = spec.words.length ? spec.words.slice(0, 3) : [];
+    if (!kws.length) {
+      kws = cut.text.split(/[\s,.!?·]/).filter(function (w) { return w.length >= 2; }).slice(0, 3);
+    }
+    if (kws.length) {
+      ctx.textAlign = 'left'; ctx.font = '800 30px ' + FF;
+      var kx = 64, kw = 0;
+      kws.forEach(function (k, i) {
+        var label = String(k).slice(0, 14);
+        var w0 = ctx.measureText(label).width + 44;
+        if (kx + w0 > CW - 64) return;
+        var ka = Math.min(1, Math.max(0, (tIn - i * .12) / .3));
+        ctx.save();
+        ctx.globalAlpha = ka * .95;
+        ctx.translate(0, (1 - ka) * 18);
+        ctx.fillStyle = hexA('#0b1424', .82); rr(ctx, kx, kwY, w0, 54, 27); ctx.fill();
+        ctx.strokeStyle = hexA(ac, .45); ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = 'rgba(226,232,240,.92)'; ctx.fillText(label, kx + 22, kwY + 29);
+        ctx.restore();
+        kx += w0 + 12; kw++;
+      });
+    }
+    /* 움직이는 장식 막대(수치 없음 — 그래프 느낌만) */
+    ctx.save();
+    ctx.globalAlpha = .17;
+    var barBase = kwY + 66;
+    for (var b = 0; b < 9; b++) {
+      var hgt = 20 + 66 * Math.abs(Math.sin((t * 1.6) + b * .7));
+      ctx.fillStyle = hexA(ac, .85);
+      rr(ctx, 64 + b * 46, barBase, 30, hgt, 8); ctx.fill();
+    }
+    ctx.restore();
+
+    /* 발성에 맞춘 하이라이트 자막 */
+    var capFont = fit(ctx, cut.text, CW - 150, 4, 76, 900);
+    ctx.font = capFont.font;
+    ctx.textAlign = 'left';
+    var capTop = 1330 - (capFont.lines.length - 1) * capFont.size * .62 - 40;
+    var boxH = capFont.lines.length * capFont.size * 1.24 + 56;
+    ctx.fillStyle = 'rgba(6,10,18,.5)';
+    rr(ctx, 52, capTop - 26, CW - 104, boxH, 26); ctx.fill();
+    var chars = cut.text.replace(/\s/g, '').length || 1, seen = 0;
+    for (var li = 0; li < capFont.lines.length; li++) {
+      var ln = capFont.lines[li];
+      var lw = ctx.measureText(ln).width;
+      var x = (CW - lw) / 2;
+      var y = capTop + li * capFont.size * 1.24 + capFont.size * .55;
+      var words2 = ln.split(' ');
+      var sp = ctx.measureText(' ').width;
+      for (var wi = 0; wi < words2.length; wi++) {
+        var word = words2[wi];
+        var ww = ctx.measureText(word).width;
+        var frac = seen / chars;
+        var on = p >= frac;
+        ctx.fillStyle = on ? (spec.capColor || '#fde047') : 'rgba(241,245,249,.70)';
+        if (on && spec.words.length && spec.words.indexOf(word.replace(/[^\w가-힣]/g, '')) >= 0) ctx.fillStyle = ac;
+        ctx.fillText(word, x, y);
+        x += ww + sp;
+        seen += word.length;
+      }
+    }
+
+    /* 진행 바 */
+    var bx = 64, bwid = CW - 128, by = 1698;
+    ctx.fillStyle = 'rgba(255,255,255,.13)'; rr(ctx, bx, by, bwid, 14, 7); ctx.fill();
+    ctx.fillStyle = ac; rr(ctx, bx, by, Math.max(6, bwid * Math.min(1, t / Math.max(.1, S.total))), 14, 7); ctx.fill();
+    cuts.forEach(function (c) {
+      if (c.start <= 0) return;
+      var cx = bx + bwid * (c.start / Math.max(.1, S.total));
+      ctx.fillStyle = 'rgba(6,10,18,.65)'; ctx.fillRect(cx - 2, by, 4, 14);
+    });
+
+    /* 워터마크 */
+    ctx.textAlign = 'left'; ctx.font = '800 27px ' + FF;
+    ctx.fillStyle = 'rgba(226,232,240,.66)';
+    ctx.fillText('🎬 ' + (spec.watermark || 'AI 스튜디오'), 64, 1806);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(148,163,184,.55)';
+    ctx.font = '700 24px ' + FF;
+    ctx.fillText(Math.floor(t) + 's / ' + Math.round(S.total) + 's', CW - 64, 1806);
+
+    ctx.restore();
+  }
+
+  /* ---------- render ---------- */
+  function pickMime() {
+    var c = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4;codecs=avc1.4D401E,mp4a.40.2', 'video/mp4;codecs=h264,aac', 'video/mp4',
+      'video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm'];
+    for (var i = 0; i < c.length; i++) {
+      try { if (W.MediaRecorder && MediaRecorder.isTypeSupported(c[i])) return c[i]; } catch (e) {}
+    }
+    return '';
+  }
+
+  function reset() {
+    S.abort = true; S.running = false;
+    if (S.timer) { clearInterval(S.timer); S.timer = null; }
+    if (S.rec && S.rec.state !== 'inactive') { try { S.rec.stop(); } catch (e) {} }
+    if (S.actx && S.actx.state === 'running') { try { S.actx.suspend(); } catch (e) {} }
+    var st = $('#wvStop'); if (st) st.disabled = true;
+    var go = $('#wvStart'); if (go) go.disabled = false;
+    setState('대기');
+  }
+
+  function fail(msg) {
+    reset();
+    S.running = false; S.abort = false;
+    say('⚠️ ' + msg, 'bad');
+    setBar(0);
+  }
+
+  function start() {
+    if (S.running) { flash('이미 생성 중입니다 — [■ 중지]로 멈출 수 있습니다.'); return; }
+    var spec = S.spec || (W.WVID_SRC && W.WVID_SRC.shorts ? normSpec(W.WVID_SRC.shorts()) : null);
+    if (!spec) { say('먼저 쇼츠 대본을 만들어 주세요. 쇼츠 카드의 <b>[🎬 웹에서 바로 영상 생성]</b> 버튼으로 시작할 수 있습니다.', 'bad'); return; }
+    S.spec = spec;
+    if (!W.MediaRecorder) { fail('이 브라우저는 MediaRecorder를 지원하지 않습니다 — Chrome·삼성 인터넷 최신 버전에서 열어 주세요.'); return; }
+    var cv = $('#wvCanvas');
+    if (!cv || !cv.captureStream) { fail('이 브라우저는 canvas.captureStream을 지원하지 않습니다.'); return; }
+    if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.protocol !== 'file:') {
+      say('⚠️ HTTPS가 아니면 일부 브라우저가 녹화를 막습니다. https 주소로 열어 주세요.');
+    }
+    S.running = true; S.abort = false; S.chunks = []; S.blob = null;
+    if (S.url) { try { URL.revokeObjectURL(S.url); } catch (e) {} S.url = ''; }
+    var vEl = $('#wvVideo'); if (vEl) { vEl.hidden = true; vEl.removeAttribute('src'); }
+    var dl = $('#wvDl'); if (dl) { dl.hidden = true; }
+    var go = $('#wvStart'); if (go) go.disabled = true;
+    var st = $('#wvStop'); if (st) st.disabled = false;
+    setBar(0); setState('준비'); setState2('생성 중');
+    say('🎙 컷별 음성·길이를 준비하고 있어요…');
+
+    var AC = W.AudioContext || W.webkitAudioContext;
+    if (!AC) { fail('이 브라우저는 Web Audio API를 지원하지 않습니다.'); return; }
+    S.actx = new AC();
+    var actx = S.actx;
+    var resume = actx.state === 'suspended' ? actx.resume() : Promise.resolve();
+
+    resume.then(function () {
+      return buildPlan(actx);
+    }).then(function (plan) {
+      if (S.abort) return;
+      S.cuts = plan.cuts; S.total = plan.total;
+      if (plan.failed.length) {
+        say('⚠️ ' + plan.failed.length + '개 컷은 음성 합성에 실패해 무음 타이밍으로 갑니다(' + plan.failed.join(',') + '컷). 나머지는 정상입니다.');
+      }
+      return renderAll(actx, plan);
+    }).catch(function (err) {
+      fail((err && err.message ? err.message : '영상 생성 중 오류가 발생했습니다.') + ' — 대본·키를 확인해 주세요.');
+    });
+  }
+  function setState2(t) { var s = $('#wvState'); if (s) { s.textContent = t; s.style.color = '#fbbf24'; } }
+
+  function buildPlan(actx) {
+    var spec = S.spec, key = elKey(), failed = [], out = [], t = 0;
+    var seq = Promise.resolve();
+    spec.cuts.forEach(function (c, i) {
+      seq = seq.then(function () {
+        if (S.abort) return;
+        say('🎙 ' + (i + 1) + ' / ' + spec.cuts.length + '컷 음성 준비 중…');
+        var ttsText = S.cfg.numNorm ? koNumNormalize(c.tts) : c.tts;
+        var p = key ? ttsBuf(actx, ttsText).catch(function () { failed.push(i + 1); return null; }) : Promise.resolve(null);
+        return p.then(function (buf) {
+          var d = buf ? Math.max(1.5, buf.duration + .34) : c.d;
+          var img = S.photos.length ? S.photos[i % S.photos.length] : null;
+          out.push({ text: c.text, tts: ttsText, hook: c.hook, dur: d, start: t, end: t + d, buf: buf, img: img, idx: i });
+          t += d + GAP;
+        });
+      });
+    });
+    return seq.then(function () {
+      return { cuts: out, total: Math.max(2, t - GAP), failed: failed };
+    });
+  }
+
+  function renderAll(actx, plan) {
+    var cv = $('#wvCanvas');
+    var vStream = cv.captureStream(30);
+    var dest = actx.createMediaStreamDestination();
+    S.dest = dest;
+    var base = actx.currentTime + 0.28;
+    /* 음성 */
+    plan.cuts.forEach(function (c) {
+      if (!c.buf) return;
+      var src = actx.createBufferSource();
+      src.buffer = c.buf;
+      src.connect(dest);
+      src.start(base + c.start);
+    });
+    /* 효과음 */
+    if (S.cfg.sfx) {
+      popSfx(actx, dest, base, .13);
+      plan.cuts.forEach(function (c, i) { if (i > 0) popSfx(actx, dest, base + c.start, .09); });
+    }
+    /* BGM */
+    if (S.cfg.bgm !== 'none') bgm(actx, dest, S.cfg.bgm, base, plan.total);
+
+    var tracks = vStream.getVideoTracks().concat(dest.stream.getAudioTracks());
+    var stream = new MediaStream(tracks);
+    S.mime = pickMime();
+    var opts = { videoBitsPerSecond: 6000000, audioBitsPerSecond: 128000 };
+    if (S.mime) opts.mimeType = S.mime;
+    var rec;
+    try { rec = new MediaRecorder(stream, opts); }
+    catch (e) {
+      try { rec = new MediaRecorder(stream); } catch (e2) { fail('이 브라우저에서는 MediaRecorder로 녹화할 수 없습니다.'); return; }
+    }
+    S.rec = rec;
+    rec.ondataavailable = function (ev) { if (ev.data && ev.data.size) S.chunks.push(ev.data); };
+    rec.onstop = function () { done(rec); };
+    rec.onerror = function () { fail('녹화 중 오류가 발생했습니다.'); };
+
+    drawFrame(0); /* 첫 프레임 미리 그리기 */
+    var t0 = performance.now() + 280;
+    S.t0 = t0;
+    rec.start(1000);
+    setState2('녹화 중');
+    say('🔴 녹화 중 — ' + Math.round(plan.total) + '초 · 이 탭을 닫지 마세요.');
+
+    S.timer = setInterval(function () {
+      if (!S.running) return;
+      var t = (performance.now() - t0) / 1000;
+      if (t < 0) t = 0;
+      drawFrame(Math.min(t, S.total));
+      setBar(Math.min(1, t / Math.max(.1, S.total)));
+      if (t >= S.total + .15) {
+        clearInterval(S.timer); S.timer = null; S.running = false;
+        if (rec.state !== 'inactive') rec.stop();
+      }
+    }, 33);
+  }
+
+  function done(rec) {
+    if (S.timer) { clearInterval(S.timer); S.timer = null; }
+    if (S.actx) { try { S.actx.close(); } catch (e) {} S.actx = null; }
+    var st = $('#wvStop'); if (st) st.disabled = true;
+    var go = $('#wvStart'); if (go) go.disabled = false;
+    if (S.abort || !S.chunks.length) {
+      S.running = false; S.abort = false;
+      setState('중지'); say('생성을 중지했습니다. 다시 [▶ 생성]을 누르면 처음부터 만듭니다.');
+      setBar(0);
+      return;
+    }
+    var mime = (rec && rec.mimeType) || S.mime || 'video/webm';
+    var blob = new Blob(S.chunks, { type: mime });
+    S.blob = blob;
+    if (S.url) { try { URL.revokeObjectURL(S.url); } catch (e) {} }
+    S.url = URL.createObjectURL(blob);
+    var ext = /mp4/i.test(mime) ? 'mp4' : 'webm';
+    var vEl = $('#wvVideo');
+    if (vEl) { vEl.hidden = false; vEl.src = S.url; vEl.load(); }
+    var dl = $('#wvDl');
+    if (dl) { dl.hidden = false; dl.href = S.url; dl.download = 'shorts_' + stamp() + '.' + ext; dl.textContent = '⬇ 영상 저장 (' + ext.toUpperCase() + ')'; }
+    var mb = (blob.size / 1048576).toFixed(1);
+    setBar(1); setState('완성', true);
+    say('✅ 완성 — ' + Math.round(S.total) + '초 · ' + mb + 'MB · ' + ext.toUpperCase() +
+      (S.photos.length ? ' · 사진 ' + S.photos.length + '장' : '') +
+      (elKey() ? ' · 성우 음성' : ' · 무음(ElevenLabs 키 없음)') +
+      '. 아래 [⬇ 영상 저장]으로 내려받으세요.', 'good');
+    S.running = false; S.abort = false;
+  }
+
+  /* ---------- 업로드 세트 ---------- */
+  function uploadSetText() {
+    var spec = S.spec || (W.WVID_SRC && W.WVID_SRC.shorts ? normSpec(W.WVID_SRC.shorts()) : null);
+    if (!spec) return '';
+    var L = [];
+    var title = spec.title || spec.hookTitle || '쇼츠';
+    L.push('[제목]');
+    L.push(title);
+    L.push('');
+    L.push('[설명]');
+    if (spec.hookTitle) L.push(spec.hookTitle);
+    L.push('');
+    spec.cuts.forEach(function (c, i) {
+      L.push((i + 1) + '. ' + c.text);
+    });
+    if (spec.loop) { L.push(''); L.push(spec.loop); }
+    L.push('');
+    L.push('[해시태그]');
+    var tags = [];
+    var cap = spec.captions || {};
+    if (cap.instagram_reels && cap.instagram_reels.hashtags) tags = tags.concat(cap.instagram_reels.hashtags);
+    if (cap.naver_clip && cap.naver_clip.hashtags) tags = tags.concat(cap.naver_clip.hashtags);
+    tags = tags.filter(Boolean).map(function (t) {
+      var s = String(t).trim();
+      return s.charAt(0) === '#' ? s : '#' + s.replace(/\s+/g, '');
+    });
+    if (!tags.length && spec.words.length) tags = spec.words.map(function (w) { return '#' + String(w).replace(/\s+/g, ''); });
+    if (!tags.length) tags = ['#쇼츠', '#AI스튜디오'];
+    L.push(tags.slice(0, 20).join(' '));
+    L.push('');
+    L.push('[고정 댓글]');
+    var pin = '';
+    if (spec.pinned && spec.pinned.text) pin = spec.pinned.text;
+    else if (spec.pinned && spec.pinned.question) pin = spec.pinned.question;
+    L.push(pin || '(대본 카드의 [💰 제휴·고지]로 고정 댓글 초안을 만들 수 있습니다)');
+    L.push('');
+    L.push('[안내] 이 영상은 AI 스튜디오에서 만든 1080×1920 세로 영상입니다. 수치·가격·업체명은 발행 전에 직접 확인하세요.');
+    return L.join('\n');
+  }
+
+  /* ---------- launch ---------- */
+  function openPanel() {
+    var p = $('#wvPanel');
+    if (p) { p.open = true; try { p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
+  }
+  function launch(kind) {
+    var fn = W.WVID_SRC && W.WVID_SRC[kind];
+    var raw = typeof fn === 'function' ? fn() : null;
+    var spec = normSpec(raw);
+    openPanel();
+    if (!spec) {
+      say('대본을 읽지 못했습니다 — 먼저 해당 카드에서 <b>대본 생성</b>을 눌러 주세요.', 'bad');
+      return;
+    }
+    S.spec = spec;
+    syncUi();
+    var src = $('#wvSrc');
+    if (src) src.textContent = '📄 ' + (spec.title || spec.hookTitle || '쇼츠') + ' · ' + spec.cuts.length + '컷';
+    start();
+  }
+
+  /* ---------- bind ---------- */
+  function bind() {
+    var go = $('#wvStart'); if (go) go.addEventListener('click', start);
+    var st = $('#wvStop'); if (st) st.addEventListener('click', function () { S.abort = true; if (S.rec && S.rec.state !== 'inactive') S.rec.stop(); else reset(); });
+    $$('#wvPreStock,#wvPreDeal').forEach(function (b) {
+      b.addEventListener('click', function () { applyPreset(b.getAttribute('data-wvpre')); });
+    });
+    var v = $('#wvVoice'); if (v) v.addEventListener('change', function () { if (!S.cfg.preset) S.cfg.voice = v.value; else { S.cfg.voice = v.value; saveCfg(); } saveCfg(); syncUi(); });
+    var b2 = $('#wvBgm'); if (b2) b2.addEventListener('change', function () { S.cfg.bgm = b2.value; saveCfg(); syncUi(); });
+    var s2 = $('#wvSfx'); if (s2) s2.addEventListener('change', function () { S.cfg.sfx = !!s2.checked; saveCfg(); });
+    var a2 = $('#wvAccent'); if (a2) a2.addEventListener('input', function () { S.cfg.accent = a2.value; saveCfg(); if (S.spec) S.spec.accent = a2.value; });
+    var c2 = $('#wvCap'); if (c2) c2.addEventListener('input', function () { S.cfg.cap = c2.value; saveCfg(); if (S.spec) S.spec.capColor = c2.value; });
+    var w2 = $('#wvWm'); if (w2) w2.addEventListener('input', function () { S.cfg.wm = w2.value; saveCfg(); if (S.spec) S.spec.watermark = w2.value; });
+    var n2 = $('#wvNum'); if (n2) n2.addEventListener('change', function () { S.cfg.numNorm = !!n2.checked; saveCfg(); });
+    var ph = $('#wvPhotoBtn'); var pin = $('#wvPhotoInput');
+    if (ph && pin) ph.addEventListener('click', function () { pin.click(); });
+    if (pin) pin.addEventListener('change', function () { addPhotos(pin.files); pin.value = ''; });
+    var pc = $('#wvPhotoClear'); if (pc) pc.addEventListener('click', function () { S.photos = []; syncUi(); flash('컷 사진을 비웠습니다.'); });
+    var up = $('#wvUpBtn'); if (up) up.addEventListener('click', function () {
+      var txt = uploadSetText();
+      if (!txt) { say('먼저 쇼츠 대본이 필요합니다.', 'bad'); return; }
+      copy(txt, '업로드 세트(제목·설명·해시태그·고정 댓글)를 복사했습니다.');
+    });
+    var opt = $('#wvSetBtn'); if (opt) opt.addEventListener('click', function () {
+      var d = $('#wvOpt'); if (d) { d.open = !d.open; if (d.open) d.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+    });
+    var cv = $('#wvCanvas');
+    if (cv) { try { drawIdle(); } catch (e) {} }
+    window.addEventListener('beforeunload', function (e) {
+      if (S.running) { e.preventDefault(); e.returnValue = ''; }
+    });
+  }
+  function $$(sel) { return Array.prototype.slice.call(D.querySelectorAll(sel)); }
+  function drawIdle() {
+    var cv = $('#wvCanvas'); if (!cv) return;
+    var ctx = cv.getContext('2d');
+    var g = ctx.createLinearGradient(0, 0, 0, CH);
+    g.addColorStop(0, '#0a1424'); g.addColorStop(1, '#060a12');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, CW, CH);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(148,163,184,.8)'; ctx.font = '900 54px ' + FF;
+    ctx.fillText('🎬', CW / 2, CH / 2 - 70);
+    ctx.fillStyle = 'rgba(226,232,240,.92)'; ctx.font = '900 46px ' + FF;
+    ctx.fillText('1080 × 1920', CW / 2, CH / 2 + 10);
+    ctx.fillStyle = 'rgba(148,163,184,.7)'; ctx.font = '700 34px ' + FF;
+    ctx.fillText('쇼츠 카드에서 [영상 생성]을 누르세요', CW / 2, CH / 2 + 80);
+  }
+
+  function init() {
+    S.cfg = loadCfg();
+    bind();
+    syncUi();
+  }
+  if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', init);
+  else init();
+
+  W.WVID = {
+    launch: launch,
+    start: start,
+    stop: function () { S.abort = true; if (S.rec && S.rec.state !== 'inactive') S.rec.stop(); else reset(); },
+    spec: function () { return S.spec; },
+    norm: koNumNormalize,
+    uploadSet: uploadSetText,
+    preset: applyPreset
+  };
 })();
 </script>
 </body>
