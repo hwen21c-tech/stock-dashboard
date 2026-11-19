@@ -1231,7 +1231,7 @@
   /* ---------- ? 도움말 아이콘 ---------- */
   .hq{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;border:1px solid #3a4658;background:#0e131a;color:#fbbf24;font-size:11px;font-weight:900;line-height:1;margin-left:5px;vertical-align:middle;padding:0;flex:0 0 auto}
   .hq:active{background:#f59e0b;color:#1a1206}
-  .hq-tip{position:fixed;z-index:9995;max-width:min(280px,calc(100vw - 24px));background:#0b0f15;color:#e8edf5;border:1px solid #3a4658;border-radius:10px;padding:9px 11px;font-size:11.5px;line-height:1.5;box-shadow:0 12px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .14s}
+  .hq-tip{position:fixed;z-index:9995;max-width:min(320px,calc(100vw - 24px));background:#0b0f15;color:#e8edf5;border:1px solid #3a4658;border-radius:10px;padding:8px 11px;font-size:11.5px;line-height:1.45;box-shadow:0 12px 30px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .14s}
   .hq-tip.on{opacity:1}
   .hq-tip b{color:#fbbf24}
 
@@ -15574,20 +15574,20 @@ const GEN_ACTIONS = [
   }
 
   var TIPS = [
-    ['#copyHtmlBtn', '네이버 서식 복사 — 본문을 <b>굵은 소제목·인용구·표</b>가 살아 있는 HTML로 복사합니다. 스마트에디터·티스토리에 붙여넣으면 서식이 그대로 유지됩니다.'],
-    ['#blogOneShotBtn', '원소스 변환 — 지금 완성한 블로그 글 <b>하나로</b> 쇼츠 v3 대본·제목 3안·추천 차트 PNG를 한 번에 뽑습니다.'],
-    ['#t11Dl', '1:1 대표 썸네일 PNG — 인스타·블로그 표지용 <b>1080×1080</b>. 제목·배지·워터마크를 넣어 저장합니다.'],
-    ['#matToShorts', '원소스 변환 — 같은 참고 자료를 블로그가 아니라 <b>쇼츠 대본</b>으로 넘깁니다.'],
-    ['#wvBgm', 'BGM — 영상에 깔 배경음악입니다. 성우 목 말소리가 묻히지 않게 <b>차분한 뉴스·밝은 리뷰</b>를 권장합니다.']
+    ['#copyHtmlBtn', '네이버 서식 복사 — 소제목·인용구·표가 사는 HTML로 복사해 스마트에디터에 붙여넣기.'],
+    ['#blogOneShotBtn', '원소스 변환 — 이 블로그 글 하나로 쇼츠 대본·제목·차트를 한 번에.'],
+    ['#t11Dl', '1:1 대표 썸네일 — 인스타·블로그 표지용 1080×1080 PNG.'],
+    ['#matToShorts', '원소스 변환 — 같은 참고 자료를 쇼츠 대본으로 넘깁니다.'],
+    ['#wvBgm', 'BGM — 성우 말소리가 묻히지 않게 차분한 뉴스·밝은 리뷰를 권장.']
   ];
   TIPS.forEach(function(t){ makeChip(document.querySelector(t[0]), t[1], false); });
   /* 보관함 헤더의 🛍️ 추천샵 설명 (summary 안에 넣음) */
   var shelfSummary = document.querySelector('#shelf > summary');
-  makeChip(shelfSummary, '🛍️ 추천샵 — 보관함 작업을 <b>picks.html 상품 카드 초안</b>으로 보냅니다. JSON 복사 또는 PIN 입력으로 원클릭 업로드.', true);
+  makeChip(shelfSummary, '🛍️ 추천샵 — 보관함 작업을 picks.html 상품 카드 초안으로 보냅니다.', true);
   /* 세이프 존 설명 (웹 영상 생성기 안내줄 끝에 붙임) */
   var safeHint = null;
   $$('.hint').forEach(function(h){ if (!safeHint && h.textContent.indexOf('세이프 존') >= 0) safeHint = h; });
-  makeChip(safeHint, '세이프 존 잠금 — 저장한 영상이 <b>쇼츠 UI에 가려지는 영역</b>을 피해 그리도록 상단 180·하단 380·좌 60·우 120 안에만 배치합니다.', true);
+  makeChip(safeHint, '세이프 존 — 쇼츠 UI에 가려지는 영역(상단 180·하단 380)을 피해 그립니다.', true);
   /* pick 모달의 4대 몰 안내 — 모달이 열릴 때 동적으로 붙임(입력줄 레이아웃은 건드리지 않고 몰 버튼 줄 끝에) */
   document.addEventListener('click', function(e){
     var m = e.target && e.target.id === 'pkMall4' ? e.target : null;
@@ -15595,7 +15595,7 @@ const GEN_ACTIONS = [
     var bar = document.getElementById('pkMallbar');
     if (!bar) return;
     m.setAttribute('data-hq-done', '1');
-    makeChip(bar, '4대 몰 검색 — 쿠팡·테무·알리·네이버 가격비교를 <b>새 창으로</b> 엽니다. 팝업이 막히면 아래 몰별 버튼을 하나씩 누르세요.', true);
+    makeChip(bar, '4대 몰 — 쿠팡·테무·알리·네이버를 새 창으로 엽니다.', true);
   }, true);
 
   window.HowGuide = { open: openHow, close: closeHow, version: '1.0.0' };
