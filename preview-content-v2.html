@@ -1170,6 +1170,33 @@
   .cutlist .at{color:#7dd3fc;font-weight:800;margin-right:5px}
   .cutlist .cap{color:#94a3b8}
 
+  /* ---------- 🖼️ 1:1 대표 썸네일(표지) 1080×1080 ---------- */
+  .t11wrap{margin-top:15px;border-top:1px solid var(--line);padding-top:13px;min-width:0}
+  .t11opts{display:grid;grid-template-columns:1fr;gap:7px;margin:9px 0 3px}
+  @media(min-width:720px){.t11opts{grid-template-columns:1.5fr .85fr .85fr}}
+  .t11opts input{width:100%;min-width:0;background:#08111d;border:1px solid rgba(148,163,184,.28);border-radius:9px;padding:8px 10px;font-size:12.5px;color:#e2e8f0;letter-spacing:0}
+  .t11opts input:focus{outline:2px solid rgba(56,189,248,.4);outline-offset:1px}
+  .t11chips{display:flex;flex-wrap:wrap;gap:5px;margin:2px 0 7px}
+  .t11chip{font-size:11.4px;font-weight:800;color:#cbd5e1;background:rgba(148,163,184,.10);border:1px solid rgba(148,163,184,.26);border-radius:999px;padding:3px 9px;cursor:pointer;letter-spacing:0}
+  .t11chip:hover{background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.42);color:#e0f2fe}
+  #t11Canvas{width:100%;max-width:520px;height:auto;display:block;border-radius:13px;border:1px solid var(--line);background:#070c14;margin:6px auto 0}
+  .t11row{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+
+  /* ---------- 🎬 영상 편집기 ↔ 웹 쇼츠 생성기 연결 ---------- */
+  .wvbridge{display:flex;flex-wrap:wrap;align-items:center;gap:9px;border:1px solid rgba(56,189,248,.34);border-radius:12px;padding:11px 12px;margin:0 0 12px;background:linear-gradient(135deg,rgba(56,189,248,.13),rgba(168,85,247,.09));min-width:0}
+  .wvbridge .wb-t{flex:1 1 210px;min-width:0;display:grid;gap:3px}
+  .wvbridge .wb-t b{font-size:12.7px;font-weight:900;color:#bae6fd;letter-spacing:-.02em}
+  .wvbridge .wb-t span{font-size:11.4px;font-weight:650;color:#cbd5e1;line-height:1.55;letter-spacing:0}
+  .wvbridge .btn{flex:0 0 auto}
+
+  /* ---------- 🔍 탐색기 대본 → 원클릭 전송 ---------- */
+  .ytgo{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin-top:10px;padding:10px;border:1px solid rgba(34,197,94,.30);border-radius:11px;background:rgba(34,197,94,.07);min-width:0}
+  .ytgo .aid{flex:1 1 140px;min-width:0;font-size:10.8px;font-weight:700;color:#94a3b8;letter-spacing:0;line-height:1.5}
+  @media (max-width:520px){ .ytgo .aid{flex:1 1 100%} }
+
+  /* ---------- 보관함: 웹 영상(쇼츠) 기록 ---------- */
+  .stype.wvid{color:#a7f3d0;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.36)}
+
 </style>
 <body>
 
@@ -1336,6 +1363,14 @@
 
   <!-- (A) merge -->
   <div id="modeMerge">
+    <div class="wvbridge">
+      <div class="wb-t">
+        <b>🎬 사진 + 대본만으로 처음부터 영상 만들기</b>
+        <span>영상 파일이 없어도 됩니다. 쇼츠 대본(또는 이 화면의 스토리 방향) + 사진 3장이면 <b>1080×1920 쇼츠 영상</b>을 브라우저에서 바로 만듭니다 — 크레딧 0.</span>
+      </div>
+      <button class="btn primary" id="bridgeWv" type="button">🎬 웹 쇼츠 생성기 열기</button>
+      <button class="btn small ghost" id="bridgeWvShort" type="button">✍️ 쇼츠 대본부터 만들기</button>
+    </div>
     <div class="merge-cols">
       <div>
         <div class="card">
@@ -1427,6 +1462,13 @@
       <div id="aiPlan"></div>
       <div class="realbox" id="realBox"></div>
       <div class="waitbox">🔒 <b>이 화면에서 실제로 하지 않는 것</b> — Gemini는 <b>영상 픽셀을 보지 않습니다</b>(파일명·길이·In/Out만 전달). ffmpeg.wasm 컷편집 · 자막 렌더 · BGM 합성 · MP4 저장도 이 사이트에 아직 없습니다. 위 설계도는 <b>편집 지시서</b>이고 완성 영상이 아닙니다.</div>
+      <div class="wvbridge" style="margin-top:12px;margin-bottom:0">
+        <div class="wb-t">
+          <b>🎬 이 설계도 → 실제 영상</b>
+          <span>위 설계도는 <b>지시서</b>입니다. 실제 1080×1920 영상은 <b>웹 쇼츠 생성기</b>에서 대본 + 사진으로 바로 만들고, 만들면 <b>보관함에 제작 이력(제목·생성일·컷 수)</b>이 자동으로 남습니다.</span>
+        </div>
+        <button class="btn small primary" id="bridgeWv2" type="button">🎬 웹 쇼츠 생성기 열기</button>
+      </div>
     </div>
   </div>
 
@@ -1742,6 +1784,27 @@
             </div>
             <canvas id="cvSt" role="img" aria-label="종목 차트 미리보기"></canvas>
           </div>
+        </div>
+        <div class="t11wrap">
+          <div class="card-head" style="margin-bottom:6px">
+            <span class="num">🖼️</span><h2>블로그 1:1 대표 썸네일(표지)</h2>
+            <span class="bdg real" id="t11Stat">1080×1080 · 브라우저</span>
+          </div>
+          <p class="hint">블로그 글 맨 위·인스타 카드에 쓰는 <b>정사각 1080×1080 표지</b>입니다. <b>제목 · 상단 강조 배지 · 하단 워터마크</b>만 넣어 깔끔한 카드형으로 그립니다(API·키 없이 100% 동작). 제목을 비우면 <b>[제목 3종]</b>에서 고른 제목을 그대로 씁니다.</p>
+          <div class="t11opts">
+            <input type="text" id="t11Title" maxlength="90" placeholder="표지 제목 (비우면 [제목 3종] 제목)" aria-label="1:1 표지 제목">
+            <input type="text" id="t11Badge" maxlength="24" placeholder="상단 배지 (예: 📌 시황 요약)" aria-label="상단 강조 배지">
+            <input type="text" id="t11Wm" maxlength="30" placeholder="하단 워터마크 (예: 연오랑의 3분 시황)" aria-label="하단 워터마크">
+          </div>
+          <div class="t11chips" id="t11Chips"></div>
+          <canvas id="t11Canvas" width="1080" height="1080" role="img" aria-label="1:1 대표 썸네일 1080×1080 미리보기"></canvas>
+          <div class="t11row">
+            <button class="btn small primary" id="t11Dl" type="button">📥 대표 썸네일 PNG 저장</button>
+            <button class="btn small ghost" id="t11Style" type="button">🎲 다른 스타일</button>
+            <button class="btn small" id="t11Auto" type="button">↺ 제목·배지 자동 채우기</button>
+            <button class="btn small ghost" id="t11ToThumb" type="button">🖼 1200×630 썸네일도 만들기</button>
+          </div>
+          <p class="hint" style="margin-top:7px">저장 파일명은 <b>제목-1080x1080.png</b>. 배지·워터마크·스타일은 이 브라우저에 저장돼 다음 글에도 그대로 씁니다.</p>
         </div>
         <div class="cvnote" id="cvNote">값은 관제탑이 준 실측치 그대로입니다.</div>
       </div>
@@ -2191,6 +2254,7 @@
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.4 — 🔍 쇼츠 탐색기 50초 대본 → 🎬 웹 영상 생성기 / ✍️ 쇼츠 스튜디오 <b>원클릭 전송</b> · 🖼️ 블로그 <b>1:1 대표 썸네일(1080×1080)</b> PNG(제목+배지+워터마크 · 스타일 3종) · 🎬 영상 편집기 ↔ 웹 쇼츠 생성기 연결 · 웹 영상 제작 이력(<b>제목·생성일·컷 수</b>)을 보관함에 자동 기록</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.3 — 🎬 웹 영상 생성기(Canvas 1080×1920 + MediaRecorder · 크레딧 0 · ElevenLabs 성우 · BGM 3종 + 효과음 · 내 사진 Ken Burns · MP4/WebM 저장) · 채널 프리셋 2종 · 📋 업로드 세트 복사 · 보관함 [🔄 복제해 새 버전] · 💾 백업/복원 · 이 안내는 접이식으로 정리</div>
   <b>정적 스튜디오 v2 안내(내 Gemini 키)</b> — 이 페이지는 GitHub Pages 정적 파일 하나로 돌아갑니다. <b>키는 화면에서 한 번만 입력</b>하면 이 브라우저(localStorage)에만 저장되고, 생성 요청은 브라우저가 <b>generativelanguage.googleapis.com</b> 으로 직접 보냅니다. 서버가 없으므로 <b>API 키를 페이지·저장소에 넣지 않습니다</b>. <b>테마 9종</b>(여행·도서3·주식·생활지혜·요리·육아·SNS 핫템 가격비교)과 테마별 <b>🏆 블로거 양식 1·2·3·4번</b>(1·2·3번 = 테마별 실제 인기 블로그 3편에서 뽑은 서로 다른 프리셋 27종, 4번 = 내 글 붙여넣기로 뽑는 내 양식 · 테마별로 따로 저장), <b>🎬 쇼츠 대본 모드</b> — <b>쇼츠 전용 14테마</b>(아이돌·쇼핑·게임·드라마·스포츠·영화·경제/주식·요리·생활/IT·AI·여행/맛집·1분 지식·책/동기부여·육아/가족·SNS 핫템 가격비교)와 테마별 <b>쇼츠 양식 1·2·3번 = 42종</b>(3초 훅·컷 리듬·자막 습관·말투·금지 규칙) + <b>4번 내 유튜버</b>(정적은 CORS 때문에 링크는 참고용 저장 · <b>대본/자막을 붙여넣으면</b> 내 Gemini 키로 훅·리듬·자막·말투 분석·저장), <b>🎬 쇼츠 대본 생성</b>(약 50초 · 훅→4~7컷→엔딩 · 자막 15~20자), <b>쇼츠 전용 ✨ 2차 검수</b>(3초 훅 강도·자막 길이·구어체·양식 리듬·과장 제거 + 고친 점 배지 + 원본 복원), <b>📋 피클 점검용 복사</b>, 블로그 완성 본문 생성(제목 3종·경쟁 글 빈틈 2개·표·도입 훅·솔직한 단점), <b>📷 내 사진 업로드(최대 4장 · 1024px JPEG) → Gemini 멀티모달이 사진을 보고 본문 자동 배치</b>, <b>📚 Google Books 실제 책 표지 검색·저장·본문 삽입</b>(한도 초과 시 Open Library 대체), <b>본문 사진 자리 자동 파싱 → Wikimedia Commons 실시간 검색 및 저장</b>(브라우저 직접), <b>Canvas 1200×630 대표 이미지 PNG 생성·저장</b>, 유튜브 빈틈 분석 + 50초 쇼츠 대본, 블로그→쇼츠 변환, <b>톤 변환 3종·AI 티 빼기·댓글 유도 질문+링크 안내 박스·인스타 3줄과 쇼츠 1타 3피</b>, <b>검색 유입 해시태그 10개</b>, <b>✨ 2차 검수·다듬기</b>(거짓 경험담·AI 문투·양식 누락·맞춤법 교정 + 고친 점 배지 + 원본 복원), <b>📋 피클 점검용 복사</b>(본문 + 테마·블로거 양식 정보를 한 덩어리로), 영상 컷 설계도, 제목 3종의 <b>네이버 모바일 30자 기준선 + 본문 첫 줄 미리보기</b>와 네이버 서식 복사(내 사진·표지 이미지 포함), 발행 전 체크리스트, 자막 프리셋 3종 미리보기, <b>주간 발행 체크·포스팅 URL 기록</b>, 양식·문체 샘플·금지 상투어·빈틈 메모·루틴표·보관함(localStorage) 저장, <b>오늘 관제탑 시황 1클릭</b>(관제탑 동적 API 값 그대로 · 실패하면 관제탑 링크와 붙여넣기 칸). <b style="color:#fbbf24">정적이라 안 되는 것</b>: <b>공식 홈페이지 URL 사진 자동 추출(서버 필요 — 대신 내 사진 업로드)</b>, 유튜브 자막 자동 추출(CORS — 제목만 확인), 유튜브 실시간 검색·조회수·댓글 수집, 블로그 자동 포스팅, 영상 픽셀 분석, ffmpeg.wasm 컷편집·자막 렌더·BGM 합성·MP4 저장, 15:45 자동 생성 연동. Gemini가 만든 글은 값·날짜·업체명이 [확인 필요]로 남을 수 있으니 발행 전에 직접 확인하세요. 무료 사진·공식 홈페이지 사진·책 표지는 사용 조건과 출처 표기를 확인하세요. 기존 콘텐츠 스튜디오·관제탑과는 별개 파일입니다.<div style="margin-top:9px">🆕 <b>v2.2 업그레이드</b> — 🎙 ElevenLabs 성우 미리듣기·MP3 저장 / 📊 블로그용 차트 PNG 3종(지수·수급 · 주도테마 · 종목 일봉+20일선+피보나치) + 워터마크 / 🎬 블로그 글 하나로 쇼츠 v3 JSON·추천 차트 원클릭 / v3 구어체·대형 훅 타이틀·카라오케 강조·숫자 발음 변환 / 🔍 네이버 SEO 검색어 5~7개 자동 배치 / 제목 3안(호기심형 · 숫자 직격형 · 비교형).</div>
   </div>
@@ -5796,10 +5860,22 @@ const GEN_ACTIONS = [
         h += '<div class="ainote">빈틈이 비어 왔습니다. 주제를 조금 더 구체적으로 적고 다시 시도해 보세요.</div>';
       }
       h += scriptHtml(d.shorts);
+      window.YT_AI_LAST = { shorts: d.shorts || null, topic: q, gaps: d.gaps || [] };
+      if (d.shorts && ((d.shorts.scenes || []).length || d.shorts.hook)){
+        h += '<div class="ytgo">' +
+          '<button class="btn small primary" id="ytToWv" type="button" title="이 대본의 훅·컷 대사를 그대로 영상 스펙으로 넘겨 1080×1920 쇼츠를 브라우저에서 만듭니다">🎬 이 대본으로 쇼츠 영상 만들기 (크레딧 0)</button>' +
+          '<button class="btn small" id="ytToShorts" type="button" title="훅·컷 대사를 쇼츠 스튜디오 대본 칸에 그대로 채웁니다">✍️ 쇼츠 스튜디오로 보내기</button>' +
+          '<span class="aid">복붙 없이 그대로 넘깁니다 — 영상은 성우·BGM·사진 옵션을 고른 뒤 [▶ 생성]을 누르세요.</span>' +
+          '</div>';
+      }
       var notes = (j.notes || []).concat(d.warnings || []);
       if (notes.length) h += '<div class="ainote"><b>확인 필요</b><ul>' + notes.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
       h += '<div class="ainote">유튜브 실제 검색·조회수·댓글은 이 사이트에 연동되어 있지 않습니다. 위 분석은 <b>주제와 고른 영상 제목</b> 기준입니다.</div>';
       host.innerHTML = h;
+      var yw = $('#ytToWv');
+      if (yw) yw.addEventListener('click', ytToWv);
+      var ys = $('#ytToShorts');
+      if (ys) ys.addEventListener('click', ytToShortsStudio);
       host.scrollIntoView({ behavior: 'smooth', block: 'start' });
       toast('빈틈 ' + (d.gaps || []).length + '개와 50초 대본을 만들었습니다.');
     } catch(err){
@@ -5807,6 +5883,68 @@ const GEN_ACTIONS = [
     }
   }
 
+  /* 🔍 쇼츠 탐색기 대본 → 웹 영상 생성기 · 쇼츠 스튜디오 원클릭 전송 */
+  function ytDraftShorts(){ var l = window.YT_AI_LAST || {}; return l.shorts || null; }
+  function ytLineText(s){
+    return String(s == null ? '' : s)
+      .split(/\s*화면\s*[:：]/)[0]
+      .replace(/^\s*\[?\s*\d{1,2}\s*[:：]\s*\d{2}[^\]]*\]?\s*/, '')
+      .replace(/^\s*(말|대사|자막)\s*[:：]\s*/, '')
+      .trim();
+  }
+  function ytSpecFrom(sh){
+    if (!sh) return null;
+    var cuts = [];
+    (sh.scenes || []).forEach(function(sc){
+      var t = ytLineText(sc && sc.line);
+      if (t) cuts.push({ text: t, tts_text: t });
+    });
+    if (!cuts.length && sh.hook){
+      var h0 = ytLineText(sh.hook);
+      if (h0) cuts.push({ text: h0, tts_text: h0 });
+    }
+    var e0 = ytLineText(sh.ending);
+    if (e0) cuts.push({ text: e0, tts_text: e0 });
+    if (!cuts.length) return null;
+    return {
+      title: sh.title || (window.YT_AI_LAST && window.YT_AI_LAST.topic) || '',
+      hook_title: ytLineText(sh.hook) || '',
+      series_badge: '쇼츠',
+      cuts: cuts,
+      highlight_words: [],
+      pinned_comment: { text: sh.cta || '' }
+    };
+  }
+  function ytToWv(){
+    var spec = ytSpecFrom(ytDraftShorts());
+    if (!spec){ toast('먼저 [AI 분석 + 50초 대본]으로 대본을 만들어 주세요.'); return; }
+    if (!window.WVID){ toast('영상 생성기를 불러오지 못했습니다 — 새로 고침 후 다시 시도해 주세요.'); return; }
+    window.WVID.launchSpec(spec, '탐색기 대본');
+  }
+  function ytToShortsStudio(){
+    var sh = ytDraftShorts();
+    if (!sh){ toast('먼저 [AI 분석 + 50초 대본]으로 대본을 만들어 주세요.'); return; }
+    var L = [];
+    L.push('🎬 ' + (sh.title || '쇼츠 대본'));
+    L.push('출처: 🔍 쇼츠 탐색기 · AI 빈틈 분석 50초 대본');
+    if (sh.hook){ L.push(''); L.push('[0:00–0:03] 훅'); L.push('말: ' + ytLineText(sh.hook)); }
+    (sh.scenes || []).forEach(function(sc){
+      var t = ytLineText(sc && sc.line);
+      if (!t) return;
+      L.push(''); L.push('[' + (sc.time || '') + ']'); L.push('말: ' + t);
+    });
+    if (sh.ending){ L.push(''); L.push('[엔딩]'); L.push('말: ' + ytLineText(sh.ending)); }
+    if (sh.cta){ L.push(''); L.push('[CTA]'); L.push('말: ' + ytLineText(sh.cta)); }
+    if (sh.captionGuide){ L.push(''); L.push('자막 가이드: ' + sh.captionGuide); }
+    var topic = (window.YT_AI_LAST && window.YT_AI_LAST.topic) || '';
+    setTab('blog'); shSetMode('shorts');
+    setTimeout(function(){
+      var t = $('#shTopic'); if (t && topic && !String(t.value || '').trim()) t.value = topic;
+      shShowOut(L.join('\n'), '탐색기에서 전송');
+      var c = $('#shOutCard'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast('쇼츠 스튜디오 대본 칸에 넣었습니다 — [🎬 영상 생성 (크레딧 0)]으로 바로 이어서 만드세요.');
+    }, 180);
+  }
   $('#aiYtBtn').addEventListener('click', function(){ runYtAI(); });
   $('#ytTopic').addEventListener('keydown', function(e){
     if (e.key === 'Enter'){ e.preventDefault(); runYtAI(); }
@@ -7422,6 +7560,253 @@ const GEN_ACTIONS = [
     } catch(e){ fail(); }
   }
 
+  /* ---------- 🖼️ 1:1 대표 썸네일(표지) 1080×1080 ---------- */
+  var T11_KEY = 'cs2_thumb11_v1';
+  var T11_BADGES = [
+    ['📌 시황 요약', 'stock'], ['🏷️ 핫템 비교', 'hottem'], ['✈️ 특가 정리', 'travel'],
+    ['🍳 5분 레시피', 'cooking'], ['🧸 육아 꿀팁', 'parenting'], ['📘 3줄 요약', 'selfhelp'],
+    ['💹 경제 읽기', 'economy'], ['📖 책 이야기', 'novel'], ['🔥 오늘의 이슈', '']
+  ];
+  var T11_FORM_BADGE = {
+    stock: '📌 시황 요약', hottem: '🏷️ 핫템 비교', travel: '✈️ 특가 정리', cooking: '🍳 5분 레시피',
+    parenting: '🧸 육아 꿀팁', selfhelp: '📘 3줄 요약', economy: '💹 경제 읽기', novel: '📖 책 이야기'
+  };
+  var T11 = { style: 0, wm: '연오랑의 3분 시황', badge: '' };
+  (function t11Restore(){
+    try {
+      var o = lsGet(T11_KEY, {});
+      if (o && typeof o === 'object'){
+        if (isFinite(Number(o.style))) T11.style = Math.abs(Number(o.style)) % THUMB_STYLES.length;
+        if (o.wm) T11.wm = String(o.wm).slice(0, 30);
+        if (o.badge) T11.badge = String(o.badge).slice(0, 24);
+      }
+    } catch(e){}
+  })();
+  function t11Save(){ try { lsSet(T11_KEY, { style: T11.style, wm: T11.wm, badge: T11.badge }); } catch(e){} }
+  function t11Alpha(hex, a){
+    var h = String(hex || '#38bdf8').replace('#', '');
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    var n = parseInt(h, 16);
+    if (!isFinite(n)) return 'rgba(56,189,248,' + a + ')';
+    return 'rgba(' + ((n >> 16) & 255) + ',' + ((n >> 8) & 255) + ',' + (n & 255) + ',' + a + ')';
+  }
+  function t11TitleText(){
+    var el = $('#t11Title');
+    var v = String((el && el.value) || '').trim();
+    return v || thumbTitleText();
+  }
+  function t11BadgeText(){
+    var el = $('#t11Badge');
+    var v = String((el && el.value) || '').trim();
+    if (v) return v;
+    if (T11.badge) return T11.badge;
+    var f = getForm(state.selectedFormId);
+    return T11_FORM_BADGE[(f && f.id) || ''] || '📌 오늘의 정리';
+  }
+  function t11WmText(){
+    var el = $('#t11Wm');
+    var v = String((el && el.value) || '').trim();
+    return v || T11.wm || '연오랑의 3분 시황';
+  }
+  function t11DateStr(){
+    var d = new Date();
+    return d.getFullYear() + '.' + ('0' + (d.getMonth() + 1)).slice(-2) + '.' + ('0' + d.getDate()).slice(-2);
+  }
+  function t11Draw(){
+    var cv = $('#t11Canvas');
+    if (!cv || !cv.getContext) return;
+    var ctx = cv.getContext('2d');
+    var W = cv.width || 1080, H = cv.height || 1080;
+    var st = THUMB_STYLES[T11.style % THUMB_STYLES.length];
+    ctx.clearRect(0, 0, W, H);
+
+    /* 배경 */
+    var g = ctx.createLinearGradient(0, 0, W, H);
+    g.addColorStop(0, st.bg[0]);
+    g.addColorStop(1, st.bg[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = 'rgba(255,255,255,.045)';
+    for (var x = 44; x < W; x += 48){ for (var y = 44; y < H; y += 48) ctx.fillRect(x, y, 2, 2); }
+
+    var rg = ctx.createRadialGradient(W * .84, H * .12, 20, W * .84, H * .12, 540);
+    rg.addColorStop(0, st.glow); rg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = rg; ctx.fillRect(0, 0, W, H);
+
+    /* 카드 프레임 */
+    roundRectPath(ctx, 56, 56, W - 112, H - 112, 46);
+    var cg = ctx.createLinearGradient(0, 56, 0, H - 56);
+    cg.addColorStop(0, 'rgba(255,255,255,.055)');
+    cg.addColorStop(1, 'rgba(255,255,255,.015)');
+    ctx.fillStyle = cg; ctx.fill();
+    ctx.strokeStyle = t11Alpha(st.accent, .46);
+    ctx.lineWidth = 2; ctx.stroke();
+
+    /* 상단 배지 */
+    var badge = t11BadgeText();
+    ctx.font = '900 27px ' + THUMB_FONT;
+    var bw = Math.min(W - 340, ctx.measureText(badge).width + 52);
+    roundRectPath(ctx, 104, 118, bw, 62, 31);
+    ctx.fillStyle = st.chip; ctx.fill();
+    ctx.strokeStyle = t11Alpha(st.accent, .62); ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = st.chipText; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.fillText(badge, 130, 150);
+    ctx.textAlign = 'right';
+    ctx.font = '800 22px ' + THUMB_FONT;
+    ctx.fillStyle = 'rgba(226,232,240,.55)';
+    ctx.fillText('AI 콘텐츠 스튜디오', W - 104, 150);
+    ctx.textAlign = 'left';
+
+    /* 제목 */
+    var title = t11TitleText();
+    var maxW = W - 208;
+    var sizes = [98, 90, 84, 78, 72, 66, 60, 54, 48];
+    var size = sizes[0], tl = [];
+    for (var i = 0; i < sizes.length; i++){
+      size = sizes[i];
+      ctx.font = '900 ' + size + 'px ' + THUMB_FONT;
+      tl = wrapCanvasText(ctx, title, maxW, 4);
+      var lastLn = tl.length ? tl[tl.length - 1] : '';
+      if (tl.length <= 4 && lastLn.slice(-1) !== '…') break;
+    }
+    ctx.fillStyle = st.accent;
+    roundRectPath(ctx, 104, 246, 96, 11, 6); ctx.fill();
+    var ty = 296;
+    ctx.fillStyle = '#ffffff';
+    ctx.textBaseline = 'top';
+    ctx.shadowColor = 'rgba(0,0,0,.35)';
+    ctx.shadowBlur = 18;
+    tl.forEach(function(line){
+      ctx.fillText(line, 104, ty);
+      ty += size * 1.18;
+    });
+    ctx.shadowBlur = 0;
+
+    /* 키워드 칩 */
+    var kws = thumbKeywords().slice(0, 3);
+    var ky = H - 306;
+    if (kws.length && ty > ky - 20) kws = [];
+    if (kws.length){
+      var kx = 104;
+      ctx.textBaseline = 'middle';
+      kws.forEach(function(kw){
+        ctx.font = '800 23px ' + THUMB_FONT;
+        var w0 = ctx.measureText(kw).width + 40;
+        if (kx + w0 > W - 104) return;
+        roundRectPath(ctx, kx, ky, w0, 48, 24);
+        ctx.fillStyle = t11Alpha(st.accent, .13); ctx.fill();
+        ctx.strokeStyle = t11Alpha(st.accent, .34); ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText(kw, kx + 20, ky + 25);
+        kx += w0 + 10;
+      });
+    }
+
+    /* 하단 워터마크 */
+    ctx.strokeStyle = 'rgba(255,255,255,.16)';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(104, H - 212); ctx.lineTo(W - 104, H - 212); ctx.stroke();
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.fillStyle = st.accent;
+    ctx.beginPath(); ctx.arc(116, H - 152, 11, 0, Math.PI * 2); ctx.fill();
+    ctx.font = '900 34px ' + THUMB_FONT;
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillText(t11WmText(), 142, H - 151);
+    var cat = thumbCategory();
+    ctx.font = '700 23px ' + THUMB_FONT;
+    ctx.fillStyle = 'rgba(148,163,184,.85)';
+    ctx.fillText(cat, 104, H - 96);
+    ctx.textAlign = 'right';
+    ctx.font = '800 23px ' + THUMB_FONT;
+    ctx.fillStyle = 'rgba(148,163,184,.75)';
+    ctx.fillText(t11DateStr() + ' · 1080×1080', W - 104, H - 96);
+    ctx.textAlign = 'left';
+  }
+  function t11Name(){
+    var s = String(t11TitleText() || 'blog')
+      .replace(/[\\/:*?"<>|!%#&'`]+/g, ' ')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40);
+    return (s || 'blog') + '-1080x1080.png';
+  }
+  function t11Download(){
+    var cv = $('#t11Canvas');
+    if (!cv) return;
+    var name = t11Name();
+    function ok(){ toast('1:1 대표 썸네일 PNG를 저장했습니다 · ' + name); var s = $('#t11Stat'); if (s) s.textContent = '저장됨 · ' + name; }
+    function fail(){ toast('PNG를 만들지 못했습니다. 다시 한 번 눌러 주세요.'); }
+    try {
+      if (cv.toBlob){
+        cv.toBlob(function(b){ if (photoBlobSave(b, name)) ok(); else fail(); }, 'image/png');
+        return;
+      }
+      triggerDownload(cv.toDataURL('image/png'), name);
+      ok();
+    } catch(e){ fail(); }
+  }
+  function t11Chips(){
+    var host = $('#t11Chips');
+    if (!host) return;
+    host.innerHTML = T11_BADGES.map(function(b, i){
+      return '<button type="button" class="t11chip" data-badge="' + esc(b[0]) + '">' + esc(b[0]) + '</button>';
+    }).join('');
+  }
+  function t11Auto(){
+    var tEl = $('#t11Title'), bEl = $('#t11Badge'), wEl = $('#t11Wm');
+    if (tEl && !String(tEl.value || '').trim()) tEl.value = '';
+    if (bEl) bEl.value = t11BadgeText();
+    if (wEl) wEl.value = t11WmText();
+    T11.badge = (bEl && bEl.value || '').slice(0, 24);
+    T11.wm = (wEl && wEl.value || T11.wm).slice(0, 30);
+    t11Save();
+    t11Draw();
+    var s = $('#t11Stat');
+    if (s) s.textContent = '자동 채움 · ' + t11BadgeText();
+    toast('제목·배지·워터마크를 채웠습니다 — 제목만 고쳐 [📥 PNG 저장]을 누르세요.');
+  }
+  (function bindT11(){
+    var t1 = $('#t11Title'), b1 = $('#t11Badge'), w1 = $('#t11Wm');
+    if (t1) t1.addEventListener('input', t11Draw);
+    if (b1) b1.addEventListener('input', function(){ T11.badge = String(b1.value || '').slice(0, 24); t11Save(); t11Draw(); });
+    if (w1) w1.addEventListener('input', function(){ T11.wm = String(w1.value || '').slice(0, 30); t11Save(); t11Draw(); });
+    var ch = $('#t11Chips');
+    if (ch) ch.addEventListener('click', function(e){
+      var b = e.target.closest('[data-badge]');
+      if (!b) return;
+      var v = b.getAttribute('data-badge') || '';
+      if (b1) b1.value = v;
+      T11.badge = v.slice(0, 24); t11Save(); t11Draw();
+    });
+    var st1 = $('#t11Style');
+    if (st1) st1.addEventListener('click', function(){
+      T11.style = (T11.style + 1) % THUMB_STYLES.length;
+      t11Save(); t11Draw();
+      toast('표지 스타일 ' + (T11.style + 1) + ' / ' + THUMB_STYLES.length);
+    });
+    var au = $('#t11Auto');
+    if (au) au.addEventListener('click', t11Auto);
+    var dl = $('#t11Dl');
+    if (dl) dl.addEventListener('click', t11Download);
+    var th = $('#t11ToThumb');
+    if (th) th.addEventListener('click', function(){
+      var v = t11TitleText();
+      var tt = $('#thumbTitle');
+      if (tt) tt.value = v;
+      var pc = $('#photoCard');
+      if (pc) pc.hidden = false;
+      drawThumb();
+      var tc = $('#thumbCanvas');
+      if (tc) tc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      toast('1200×630 대표 이미지에 같은 제목을 넣었습니다 — [⬇ 썸네일 PNG 저장]을 누르세요.');
+    });
+    if (b1 && !b1.value && T11.badge) b1.value = T11.badge;
+    if (w1) w1.value = T11.wm;
+    t11Chips();
+    t11Draw();
+  })();
+
   /* ---------- 사진 UI 이벤트 ---------- */
   (function bindPhotoUI(){
     var host = $('#photoSlots');
@@ -8621,6 +9006,7 @@ const GEN_ACTIONS = [
     });
     renderNaver();
     drawThumb();
+    try { if (typeof t11Draw === 'function') t11Draw(); } catch(e){}
   }
   function draftFirstLine(){
     var t = String(currentDraftText() || '').replace(/\r/g, '');
@@ -8947,7 +9333,7 @@ const GEN_ACTIONS = [
   var shelfBody = $('#shelfBody'), shelfCount = $('#shelfCount');
   function loadShelf(){
     var a = lsGet(LSK2.shelf, []);
-    state.archive = Array.isArray(a) ? a.filter(function(x){ return x && x.id && (x.type === 'blog' || x.type === 'video' || x.type === 'summary'); }) : [];
+    state.archive = Array.isArray(a) ? a.filter(function(x){ return x && x.id && (x.type === 'blog' || x.type === 'video' || x.type === 'summary' || x.type === 'wvid'); }) : [];
   }
   function saveShelf(){ return lsSet(LSK2.shelf, state.archive); }
   function fmtWhen(ts){
@@ -8982,9 +9368,11 @@ const GEN_ACTIONS = [
         ? ((x.srcKind === 'youtube' ? '유튜브' : x.srcKind === 'media' ? '영상·음성' : '문서') + (x.srcName ? ' · ' + x.srcName : '') + ' · ' + charLen(x.text || '') + '자')
         : x.type === 'blog'
           ? ((x.formName || '양식') + ' · 뼈대 ' + charLen(x.text || '') + '자')
-          : (x.ratio + ' · ' + presetName(x.preset) + ' · 클립 ' + ((x.clips || []).length) + '개 — 파일은 다시 골라야 합니다');
+          : x.type === 'wvid'
+            ? ('웹 영상 1080×1920 · ' + (x.cuts || 0) + '컷 · ' + Math.round(x.dur || 0) + '초 · ' + String(x.ext || 'mp4').toUpperCase() + (x.voice ? ' · 성우' : ' · 무음') + (x.photos ? ' · 사진 ' + x.photos + '장' : '') + (x.size ? ' · ' + (x.size / 1048576).toFixed(1) + 'MB' : ''))
+            : (x.ratio + ' · ' + presetName(x.preset) + ' · 클립 ' + ((x.clips || []).length) + '개 — 파일은 다시 골라야 합니다');
       return '<div class="sitem" data-id="' + esc(x.id) + '">' +
-        '<div class="sh"><span class="stype ' + x.type + '">' + (x.type === 'summary' ? '요약' : x.type === 'blog' ? '블로그' : '영상') + '</span>' +
+        '<div class="sh"><span class="stype ' + x.type + '">' + (x.type === 'summary' ? '요약' : x.type === 'blog' ? '블로그' : x.type === 'wvid' ? '쇼츠영상' : '영상') + '</span>' +
         '<span class="stit" title="' + esc(x.title) + '">' + esc(x.title) + '</span>' +
         '<span class="sdate">' + fmtWhen(x.createdAt) + '</span></div>' +
         '<div class="snote">' + esc(note) + '</div>' +
@@ -9020,6 +9408,11 @@ const GEN_ACTIONS = [
   function openArchive(id){
     var rec = state.archive.filter(function(x){ return x.id === id; })[0];
     if (!rec) return;
+    if (rec.type === 'wvid'){
+      if (window.WVID && window.WVID.load) window.WVID.load(rec.spec || null, '보관함 · ' + fmtWhen(rec.createdAt));
+      toast('보관함의 영상 스펙을 생성기에 불러왔습니다 — [▶ 생성]을 누르면 다시 만듭니다.');
+      return;
+    }
     if (rec.type === 'summary'){
       setTab('sum');
       SUM.last = rec.data || { headline: '', three: [], timeline: [], facts: [], actions: [], blog: {}, shorts: {}, markdown: rec.text || '', title: rec.title || '' };
@@ -9083,6 +9476,7 @@ const GEN_ACTIONS = [
   function cloneArchive(id){
     var rec = state.archive.filter(function(x){ return x.id === id; })[0];
     if (!rec){ toast('보관함 항목을 찾지 못했습니다.'); return; }
+    if (rec.type === 'wvid'){ openArchive(id); return; }
     var d = new Date();
     var ds = d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
     if (rec.type === 'blog'){
@@ -9172,6 +9566,11 @@ const GEN_ACTIONS = [
     if (cp){
       var rec = state.archive.filter(function(x){ return x.id === cp.getAttribute('data-copy'); })[0];
       if (!rec) return;
+      if (rec.type === 'wvid'){
+        var up = (window.WVID && window.WVID.uploadSetSpec) ? window.WVID.uploadSetSpec(rec.spec) : '';
+        copyText(up || (rec.title || ''), up ? '업로드 세트(제목·설명·해시태그·고정 댓글)를 복사했습니다.' : '복사할 내용이 없습니다.');
+        return;
+      }
       copyText(rec.type === 'video' ? designText(rec) : (rec.text || ''), rec.type === 'summary' ? '요약을 복사했습니다.' : rec.type === 'blog' ? '블로그 초안을 복사했습니다.' : '영상 설계안을 복사했습니다.');
       return;
     }
@@ -13125,6 +13524,7 @@ const GEN_ACTIONS = [
       }catch(e){ return null; }
     };
     window.WVID_SRC.oneshot = function(){ return (V2.oneShot && V2.oneShot.spec) || null; };
+    window.WVID_SRC.ytAi = function(){ return ytSpecFrom(ytDraftShorts()); };
     window.WVID_SRC.blogShorts = function(){
       var d = state.shorts || {}, cuts = [];
       if (d.hook) cuts.push({ text: d.hook, tts_text: d.hook, hook: d.hook });
@@ -13136,6 +13536,48 @@ const GEN_ACTIONS = [
       if (!cuts.length) return null;
       return { title: d.title || '', hook_title: d.hook || '', series_badge: '쇼츠', cuts: cuts, highlight_words: [], pinned_comment: { text: d.cta || '' } };
     };
+    /* 🎬 웹 영상 생성기 제작 이력 → 보관함 (제목 · 생성일 · 컷 수) */
+    window.CS2_RECORD_WVID = function (info) {
+      info = info || {};
+      var rec = {
+        id: 'w' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
+        type: 'wvid',
+        title: String(info.title || '쇼츠 영상').slice(0, 120),
+        createdAt: Date.now(),
+        cuts: Number(info.cuts) || 0,
+        dur: Number(info.dur) || 0,
+        ext: info.ext || 'mp4',
+        size: Number(info.size) || 0,
+        voice: !!info.voice,
+        photos: Number(info.photos) || 0,
+        badge: info.badge || '',
+        spec: info.spec || null
+      };
+      upsertArchive(rec);
+      renderShelf();
+      toast('보관함에 제작 이력을 기록했습니다 — ' + rec.title + ' · ' + rec.cuts + '컷');
+    };
+
+    /* 🎬 영상 편집기 → 웹 쇼츠 생성기 바로가기 */
+    function bridgeToWv(){
+      if (!window.WVID){ toast('영상 생성기를 불러오지 못했습니다 — 새로 고침 후 다시 시도해 주세요.'); return; }
+      var draft = shCurrentText().trim();
+      if (draft){ window.WVID.launch('shorts'); return; }
+      if (window.WVID.open) window.WVID.open();
+      if (window.WVID.say) window.WVID.say('<b>사진 + 대본</b>만으로 만들 수 있습니다. 대본이 아직 없으면 [✍️ 쇼츠 대본부터 만들기]로 대본을 먼저 뽑고, 옵션에서 사진 3장·성우를 고른 뒤 [▶ 생성]을 누르세요.');
+      toast('웹 쇼츠 생성기를 열었습니다 — 사진과 대본으로 바로 만들 수 있어요.');
+    }
+    var br1 = $('#bridgeWv'); if (br1) br1.addEventListener('click', bridgeToWv);
+    var br2 = $('#bridgeWv2'); if (br2) br2.addEventListener('click', bridgeToWv);
+    var br3 = $('#bridgeWvShort'); if (br3) br3.addEventListener('click', function(){
+      setTab('blog'); shSetMode('shorts');
+      setTimeout(function(){
+        var t = $('#shTopic');
+        if (t){ t.focus(); t.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+      }, 150);
+      toast('쇼츠 대본을 먼저 만든 뒤 [🎬 영상 생성 (크레딧 0)]을 누르면 웹 생성기로 이어집니다.');
+    });
+
     var wvA = $('#shVideoBtn'); if (wvA) wvA.addEventListener('click', function(){ if (window.WVID) WVID.launch('shorts'); else toast('영상 생성기를 불러오지 못했습니다 — 새로 고침 후 다시 시도해 주세요.'); });
     var wvB = $('#toShortsVideoBtn'); if (wvB) wvB.addEventListener('click', function(){ if (window.WVID) WVID.launch('blogShorts'); else toast('영상 생성기를 불러오지 못했습니다 — 새로 고침 후 다시 시도해 주세요.'); });
     setTimeout(function () { cvReload(false); }, 700);
@@ -13947,11 +14389,40 @@ const GEN_ACTIONS = [
       (elKey() ? ' · 성우 음성' : (' · 성우 없음(ElevenLabs 키 없음' + (S.cfg.bgm !== 'none' ? ' · BGM 포함' : '') + ')')) +
       '. 아래 [⬇ 영상 저장]으로 내려받으세요.', 'good');
     S.running = false; S.abort = false;
+    try { recordMake(blob, ext); } catch (e) {}
+  }
+
+  /* ---------- 제작 이력 → 보관함 ---------- */
+  function recordMake(blob, ext) {
+    var hook = W.CS2_RECORD_WVID;
+    if (typeof hook !== 'function' || !S.spec) return;
+    var spec = S.spec;
+    hook({
+      title: spec.title || spec.hookTitle || '쇼츠 영상',
+      cuts: spec.cuts.length,
+      dur: S.total || 0,
+      ext: ext,
+      size: blob ? blob.size : 0,
+      voice: !!elKey(),
+      photos: S.photos.length,
+      badge: spec.badge || '',
+      spec: {
+        title: spec.title,
+        hook_title: spec.hookTitle,
+        series_badge: spec.badge,
+        accent: spec.accent,
+        cuts: spec.cuts.map(function (c) { return { text: c.text, tts_text: c.tts, duration: c.d }; }),
+        highlight_words: spec.words,
+        pinned_comment: spec.pinned,
+        platform_captions: spec.captions,
+        loop_ending: spec.loop
+      }
+    });
   }
 
   /* ---------- 업로드 세트 ---------- */
-  function uploadSetText() {
-    var spec = S.spec || (W.WVID_SRC && W.WVID_SRC.shorts ? normSpec(W.WVID_SRC.shorts()) : null);
+  function uploadSetText(specIn) {
+    var spec = specIn ? normSpec(specIn) : (S.spec || (W.WVID_SRC && W.WVID_SRC.shorts ? normSpec(W.WVID_SRC.shorts()) : null));
     if (!spec) return '';
     var L = [];
     var title = spec.title || spec.hookTitle || '쇼츠';
@@ -13994,20 +14465,36 @@ const GEN_ACTIONS = [
     var p = $('#wvPanel');
     if (p) { p.open = true; try { p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
   }
-  function launch(kind) {
-    var fn = W.WVID_SRC && W.WVID_SRC[kind];
-    var raw = typeof fn === 'function' ? fn() : null;
+  function setSrcTag(spec, label) {
+    var src = $('#wvSrc');
+    if (!src) return;
+    src.textContent = '📄 ' + (label ? label + ' · ' : '') + (spec.title || spec.hookTitle || '쇼츠') + ' · ' + spec.cuts.length + '컷';
+  }
+  function adoptSpec(raw, label) {
     var spec = normSpec(raw);
     openPanel();
     if (!spec) {
       say('대본을 읽지 못했습니다 — 먼저 해당 카드에서 <b>대본 생성</b>을 눌러 주세요.', 'bad');
-      return;
+      return null;
     }
     S.spec = spec;
     syncUi();
-    var src = $('#wvSrc');
-    if (src) src.textContent = '📄 ' + (spec.title || spec.hookTitle || '쇼츠') + ' · ' + spec.cuts.length + '컷';
-    start();
+    setSrcTag(spec, label || '');
+    return spec;
+  }
+  function launch(kind) {
+    var fn = W.WVID_SRC && W.WVID_SRC[kind];
+    var raw = typeof fn === 'function' ? fn() : null;
+    var lbl = { shorts: '쇼츠 대본', blogShorts: '블로그 원소스', oneshot: '블로그 1편', ytAi: '탐색기 대본' }[kind] || '';
+    if (adoptSpec(raw, lbl)) start();
+  }
+  function launchSpec(raw, label) {
+    if (adoptSpec(raw, label || '')) start();
+  }
+  function loadSpec(raw, label) {
+    var spec = adoptSpec(raw, label || '보관함');
+    if (spec) { try { drawFrame(0); } catch (e) {} }
+    return spec;
   }
 
   /* ---------- bind ---------- */
@@ -14068,6 +14555,11 @@ const GEN_ACTIONS = [
 
   W.WVID = {
     launch: launch,
+    launchSpec: launchSpec,
+    load: loadSpec,
+    open: openPanel,
+    say: say,
+    uploadSetSpec: function (spec) { return spec ? uploadSetText(spec) : ''; },
     start: start,
     stop: function () { S.abort = true; if (S.rec && S.rec.state !== 'inactive') S.rec.stop(); else reset(); },
     spec: function () { return S.spec; },
