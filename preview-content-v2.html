@@ -2510,6 +2510,18 @@ const SCHEMA_SHORT_SCRIPT = {
   type: 'object',
   properties: {
     title: { type: 'string', description: '쇼츠 제목 (32자 이내, 클릭하고 싶은 한 줄)' },
+    titleOptions: {
+      type: 'array',
+      description: '쇼츠 제목 3안 — 호기심형 / 숫자 직격형 / 비교형 순서, 각 32자 이내',
+      items: {
+        type: 'object',
+        properties: {
+          type: { type: 'string', enum: ['호기심형', '숫자 직격형', '비교형'] },
+          text: { type: 'string' },
+        },
+        required: ['type', 'text'],
+      },
+    },
     hook: { type: 'string', description: '첫 3초에 실제로 말할 문장 (인사 없이 바로, 20자 내외)' },
     hookCaption: { type: 'string', description: '첫 3초 화면에 띄울 자막 (공백 포함 15~20자)' },
     beats: {
@@ -3352,8 +3364,12 @@ e) 숫자: spoken 안의 숫자는 자막과 똑같이 숫자로 쓴다(예: "5,
     clipCaption(네이버 클립 한 줄 40자 내외) + clipHashtags(5~8개, # 없이). 자료에 없는 브랜드·지역명을 해시태그로 만들지 않는다.
 13) seriesBadge: 이 시리즈를 한눈에 알아볼 MP4 상단 칩 (영문 2~3단어 대문자 또는 한글 8자 이내, 예: MARKET CLOSE·동탄 주말 코스).
 14) ttsVoice: 나레이션 톤 1줄 (예: "차분한 남성 · 또박또박 · 숫자는 또렷하게").
+15) titleOptions: 클릭률(CTR) 관점의 제목 3안을 서로 다른 각도로 만든다 — 각 32자 이내.
+    - 호기심형: 궁금증을 남기는 질문·반전 (예: "왜 10시엔 아무도 안 사는 걸까")
+    - 숫자 직격형: 가장 센 숫자 1개를 앞세운다 (예: "5,000 깨졌다, 오늘 남은 1시간")
+    - 비교형: A vs B 구도를 제목에 드러낸다 (예: "엔터 vs 반도체, 오늘 돈은 어디로")
 ${v3Block}
-[출력] title · hook · hookCaption · hookTitle · highlightWords · bgmMood · beats · ending · captionGuide · seriesBadge · ttsVoice · hookAB · loopEnding · commentQuestion · pinnedComment · reelsCaption · reelsHashtags · clipCaption · clipHashtags · warnings JSON.`,
+[출력] title · titleOptions · hook · hookCaption · hookTitle · highlightWords · bgmMood · beats · ending · captionGuide · seriesBadge · ttsVoice · hookAB · loopEnding · commentQuestion · pinnedComment · reelsCaption · reelsHashtags · clipCaption · clipHashtags · warnings JSON.`,
   ]
     .filter(Boolean)
     .join('\n');
@@ -3732,6 +3748,9 @@ function normShortsScript(data) {
   const captionGuide = s(data && data.captionGuide, 300);
   const seriesBadge = s(data && data.seriesBadge, 24);
   const ttsVoice = s(data && data.ttsVoice, 80);
+  const titleOptions = arr(data && data.titleOptions, 3)
+    .map((t) => ({ type: s(t && t.type, 16) || '제목', text: s(t && t.text, 80) }))
+    .filter((t) => t.text);
   const hookTitle = s(data && data.hookTitle, 40);
   const highlightWords = arr(data && data.highlightWords, 8).map((x) => s(x, 24).replace(/^#/, '')).filter(Boolean);
   const bgmMood = s(data && data.bgmMood, 20);
@@ -3760,7 +3779,7 @@ function normShortsScript(data) {
     return n > 24;
   }).length;
   if (longCaps) warnings.push('자막 ' + longCaps + '줄이 24자를 넘습니다 — 2차 검수로 15~20자에 맞춰 주세요.');
-  return { title, hook, hookCaption, hooks: { title: hookTitle, words: highlightWords, bgm: bgmMood }, hookTitle, highlightWords, bgmMood, beats, ending, captionGuide, seriesBadge, ttsVoice, hookAB, loopEnding, commentQuestion, pinnedComment, reelsCaption, reelsHashtags, clipCaption, clipHashtags, warnings, beatsNum: beats.length };
+  return { title, titleOptions, hook, hookCaption, hooks: { title: hookTitle, words: highlightWords, bgm: bgmMood }, hookTitle, highlightWords, bgmMood, beats, ending, captionGuide, seriesBadge, ttsVoice, hookAB, loopEnding, commentQuestion, pinnedComment, reelsCaption, reelsHashtags, clipCaption, clipHashtags, warnings, beatsNum: beats.length };
 }
 
 /* ---------------------------------------------------------------- 핸들러 */
@@ -10599,6 +10618,11 @@ const GEN_ACTIONS = [
     L.push('🎬 ' + (d.title || '쇼츠 대본'));
     L.push('테마: ' + shHeaderLine());
     L.push('');
+    if ((d.titleOptions || []).length){
+      L.push('[제목 3안]');
+      d.titleOptions.forEach(function(t){ L.push('· ' + t.type + ': ' + t.text); });
+      L.push('');
+    }
     L.push('[0:00–0:03] 훅');
     L.push('말: ' + (d.hook || ''));
     L.push('자막: ' + (d.hookCaption || '핵심 단어 3~5개'));
@@ -12725,6 +12749,7 @@ const GEN_ACTIONS = [
       V2.oneShot = { topic: topic, data: d, spec: spec, model: (j && j.model) || AI.model };
       if (st) st.textContent = 'v3 · ' + V2.oneShot.model;
       var titles = (state.titles || []).slice(0, 3);
+      if (!titles.length) titles = (d.titleOptions || []).map(function(t){ return { tag: t.type || '제목', text: t.text || '' }; }).filter(function(t){ return t.text; });
       var h = '<div class="osgrid"><div class="osbox">';
       h += '<h4>① 제목 3안 — 클릭률 순서로 고르세요</h4><div class="ostit">';
       if (titles.length){
