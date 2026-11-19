@@ -3580,7 +3580,7 @@
             '<span class="op-price">' + esc(p.priceText || '') + '</span>' +
             '<span class="op-chg ' + clsOf(p.chg) + '" style="color:' + (p.chg > 0 ? '#f43f5e' : p.chg < 0 ? '#38bdf8' : '#cbd5e1') + ';">' + (typeof p.chg === 'number' ? pctf(p.chg) : esc(p.chgText || '')) + '</span></div>' +
             '<div class="op-meta">' + esc(p.basis || '기준가') + (p.vol ? ' · ' + esc(p.vol) : '') + '</div>' +
-            '<div class="op-live" data-op-live>현재가 조회 중…</div>' +
+            '<div class="op-live" data-op-live>현재가 확인 중…</div>' +
             '<div class="op-why">' + (p.reasons || []).map(function(r){ return '· ' + esc(r); }).join('<br>') + '</div>' +
             '<div class="op-tags">' + (p.tags || []).map(function(t){ return '<span class="op-tag ' + esc(t.cls || '') + '">' + esc(t.label || t) + '</span>'; }).join('') + '</div>' +
             '</div>';
@@ -3622,11 +3622,14 @@
 
       function refreshLive(){
         var codes = (D().picks || []).map(function(p){ return p.code; }).filter(Boolean);
-        if (!codes.length || !window.fetch) return;
-        fetch('/api/stock-live?codes=' + codes.join(','), { cache: 'no-store' })
-          .then(function(r){ return r.json(); })
+        if (!codes.length || !window.fetch) { markLive('현재가 미수신 · 기준가 기준'); return; }
+        var ctrl = null, timer = null;
+        try { ctrl = new AbortController(); } catch(e) { ctrl = null; }
+        if (ctrl) timer = setTimeout(function(){ try { ctrl.abort(); } catch(e){} }, 25000);
+        fetch('/api/stock-live?codes=' + codes.join(','), ctrl ? { cache: 'no-store', signal: ctrl.signal } : { cache: 'no-store' })
+          .then(function(r){ if (timer) clearTimeout(timer); return r.json(); })
           .then(function(j){
-            if (!j || j.ok !== true || !j.stocks) return;
+            if (!j || j.ok !== true || !j.stocks) { markLive('현재가 미수신 · 기준가 기준'); return; }
             var map = {};
             j.stocks.forEach(function(s){ if (s && s.code) map[s.code] = s; });
             Array.prototype.forEach.call(document.querySelectorAll('#opBody [data-op-idx]'), function(el){
@@ -3643,7 +3646,16 @@
                 (s.tradedAtKst ? ' <span style="color:#475569;">' + esc(s.tradedAtKst) + '</span>' : '');
               host.setAttribute('data-live', '1');
             });
-          }).catch(function(){});
+            markLive(null);
+          }).catch(function(){ markLive('현재가 미수신 · 기준가 기준'); });
+      }
+
+      /* 실시간 시세를 못 받은 칸을 '조회 중…'에 영원히 두지 않는다 — 사실대로 적는다. */
+      function markLive(msg){
+        Array.prototype.forEach.call(document.querySelectorAll('#opBody [data-op-live]'), function(h){
+          if (h.hasAttribute('data-live')) return;
+          if (msg) h.textContent = msg;
+        });
       }
 
       function openPick(i){
@@ -3652,7 +3664,8 @@
         var meta = (p.basis || '기준가') + ' ' + (p.priceText || '') + (p.vol ? ' · ' + p.vol : '');
         var desc = (p.reasons || []).map(function(r){ return '· ' + esc(r); }).join('<br>') +
           '<br><span style="color:#94a3b8; font-size:10px;">출처: ' + esc(p.source || D().source || '08:50 브리핑') + '</span>';
-        if (typeof window.openDetail === 'function') window.openDetail(p.name, p.chgText || p.priceText || '', meta, desc);
+        var title = p.name + (p.code ? ' (' + p.code + ')' : '');
+        if (typeof window.openDetail === 'function') window.openDetail(title, p.chgText || p.priceText || '', meta, desc);
         var db = window.DAILY_500_CANDLES || {};
         if (p.code && !db[p.code] && window.__STATIC_PAGE) staticChart(p.code);
       }
