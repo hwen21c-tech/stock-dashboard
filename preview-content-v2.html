@@ -15079,10 +15079,10 @@ const GEN_ACTIONS = [
   }
   function getStore(){
     var req = fetch(apiUrl() + '?code=eq.' + SB.code + '&select=code,data',
-      { headers: headers(), cache: 'no-store', signal: signal(11000) })
+      { headers: headers(), cache: 'no-store', signal: signal(18000) })
       .then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function(a){ return (a && a[0] && a[0].data) ? a[0].data : { v:2, pin:null, items:[], updatedAt:0 }; });
-    return guard(req, 12000, '서버 읽기');
+    return guard(req, 20000, '서버 읽기');
   }
   function putStore(data){
     var req = fetch(apiUrl() + '?on_conflict=code', {
@@ -15090,9 +15090,9 @@ const GEN_ACTIONS = [
       headers: headers({ Prefer: 'resolution=merge-duplicates,return=minimal' }),
       body: JSON.stringify([{ code: SB.code, data: data }]),
       cache: 'no-store',
-      signal: signal(14000)
+      signal: signal(22000)
     }).then(function(r){ if (!r.ok) return r.text().then(function(t){ throw new Error('HTTP ' + r.status + ' ' + t.slice(0,80)); }); return true; });
-    return guard(req, 15000, '서버 저장');
+    return guard(req, 25000, '서버 저장');
   }
 
   /* ── 모달 CSS (pk- 접두사로 기존 스튜디오 스타일과 격리) ── */
@@ -15236,7 +15236,7 @@ const GEN_ACTIONS = [
       var pin = (document.getElementById('pkPin').value || '').trim();
       if (pin.length < 4){ toast('추천샵 관리자 PIN을 입력하세요'); document.getElementById('pkPin').focus(); return; }
       btn.disabled = true; btn.textContent = '올리는 중…';
-      say('① 서버 확인 중…');
+      say('① 서버 확인 중… (회선이 느리면 최대 20초)');
       getStore().then(function(data){
         if (!data.pin) throw new Error('추천샵 PIN이 아직 없습니다 — picks.html에서 먼저 설정하세요');
         say('② PIN 확인 중…');
