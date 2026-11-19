@@ -3286,6 +3286,901 @@
   </style>
 </head>
 <body>
+<style id="ucxStyle">
+/* ===== UCX 공통 차트 컨트롤 ===== */
+/* ===== UCX 공통 차트 컨트롤 스타일 (관제탑 전 탭 동일 규격) ===== */
+.ucx-wrap{background:#070c14;border:1px solid rgba(56,189,248,0.25);border-radius:8px;padding:8px;box-sizing:border-box;max-width:100%;}
+.ucx-head{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+.ucx-title{font-size:11px;font-weight:800;color:#38bdf8;}
+.ucx-pbar{display:flex;gap:4px;flex-wrap:wrap;align-items:center;margin:0 0 5px;max-width:100%;}
+.ucx-p{background:#1e293b;color:#94a3b8;border:1px solid rgba(255,255,255,0.12);border-radius:4px;font-size:10px;font-weight:800;padding:2px 8px;cursor:pointer;white-space:nowrap;line-height:1.5;}
+.ucx-p.on{background:rgba(56,189,248,0.15);color:#38bdf8;border-color:rgba(56,189,248,0.30);}
+.ucx-p.off{opacity:.42;}
+.ucx-ov{background:#1e293b;color:#64748b;border:1px solid rgba(255,255,255,0.12);border-radius:4px;font-size:10px;font-weight:800;padding:2px 7px;cursor:pointer;white-space:nowrap;line-height:1.5;}
+.ucx-ov.on{background:rgba(56,189,248,0.20);color:#38bdf8;border-color:rgba(56,189,248,0.55);}
+.ucx-in{width:82px;min-width:56px;background:#0b1220;border:1px solid rgba(148,163,184,0.35);border-radius:4px;color:#e2e8f0;font-size:12px;font-weight:700;padding:2px 5px;box-sizing:border-box;font-family:inherit;}
+.ucx-btn{background:#1e293b;color:#e2e8f0;border:1px solid rgba(255,255,255,0.2);border-radius:4px;font-size:10px;font-weight:800;padding:2px 7px;cursor:pointer;white-space:nowrap;line-height:1.5;}
+.ucx-btn.auto{background:rgba(56,189,248,0.12);color:#38bdf8;border-color:rgba(56,189,248,0.35);}
+.ucx-fstat{font-size:9px;font-weight:800;color:#94a3b8;white-space:nowrap;}
+.ucx-bd{font-size:9.5px;font-weight:800;color:#cbd5e1;background:#0b1220;border:1px solid rgba(148,163,184,0.22);border-radius:4px;padding:2px 6px;white-space:nowrap;line-height:1.5;}
+.ucx-z{min-width:26px;height:24px;padding:0 6px;background:#1e293b;color:#f1f5f9;border:1px solid rgba(255,255,255,0.2);border-radius:4px;font-size:11px;font-weight:900;cursor:pointer;line-height:1;}
+.ucx-z.reset{background:rgba(56,189,248,0.15);color:#38bdf8;border-color:rgba(56,189,248,0.3);}
+.ucx-cnt{font-size:9.5px;color:#cbd5e1;margin-left:2px;white-space:nowrap;}
+.ucx-cvwrap{position:relative;width:100%;border-radius:6px;overflow:hidden;}
+.ucx-cvwrap canvas{width:100%;height:100%;display:block;touch-action:none;-webkit-user-select:none;user-select:none;cursor:grab;}
+.ucx-tip{font-size:9.5px;color:#64748b;margin-top:3px;min-height:12px;line-height:1.4;}
+@media (max-width:430px){
+  .ucx-in{width:72px;font-size:11px;}
+  .ucx-bd{font-size:9px;}
+  .ucx-p,.ucx-ov{font-size:9.5px;padding:2px 6px;}
+}
+
+#tabKkangto .kk-sec.kk-collapsed > *:not(.kk-sec-h){display:none !important;}
+#tabKkangto .kk-sec-h[onclick]{cursor:pointer;}
+#tabKkangto .kk-col-b{background:#1e293b;color:#c4b5fd;border:1px solid rgba(255,255,255,0.16);border-radius:4px;font-size:10px;font-weight:800;padding:2px 8px;cursor:pointer;white-space:nowrap;line-height:1.5;}
+</style>
+<script id="ucxEngine">
+/* ==========================================================================
+ * UCX — 관제탑 통합 차트 컨트롤 · 피보나치 수치 입력 엔진
+ *  - 사진 기준 규격: 기간[15일][30일][60일][120일][200일][1년][2년]
+ *                    줌[−][＋][◀][▶][↻] · 오버레이[피보나치][추세채널][20선]
+ *                    피보 수치 직접 입력(고점·저점) + [적용] + [자동 복귀]
+ *                    지표 칩[20일선][RSI(14)][피보][채널]
+ *  - 차트 렌더러는 자기 캔버스에 그린 뒤 UCX.drawOverlays(ctx,id,geo)만 부르면
+ *    피보나치·추세채널·20선 라벨과 지표 칩이 같은 규격으로 붙는다.
+ *  - 수치는 전부 화면의 실측 일봉에서 계산한다(추정·합성 없음).
+ * ========================================================================== */
+(function () {
+  'use strict';
+  if (window.UCX) return;
+
+  var LS_KEY = 'ucx_state_v1';
+  var DB = { ov: {}, man: {} };       // {ov:{id:{fib,channel,ma20}}, man:{id|key:{hi,lo}}}
+  var REG = {};                        // id -> {redraw, key, getPeriod, setPeriod, digits}
+  var LAST = {};                       // id -> 마지막 계산 결과(오버레이·지표)
+  var VIEW = {};                       // mount 전용 봉 보기 상태 {id:{count,offset}}
+
+  /* ---------------- 저장/불러오기 ---------------- */
+  function load() {
+    try {
+      var raw = window.localStorage && localStorage.getItem(LS_KEY);
+      if (!raw) return;
+      var j = JSON.parse(raw);
+      if (j && typeof j === 'object') {
+        if (j.ov && typeof j.ov === 'object') DB.ov = j.ov;
+        if (j.man && typeof j.man === 'object') DB.man = j.man;
+      }
+    } catch (e) { /* 저장값 없음/깨짐 — 기본값 */ }
+  }
+  function save() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(DB)); } catch (e) { /* 사파리 프라이빗 등 */ }
+  }
+  load();
+
+  /* ---------------- 숫자 포맷/파싱 ---------------- */
+  function num(v) { return typeof v === 'number' && isFinite(v); }
+  function fmt(v, d) {
+    if (!num(v)) return '—';
+    var dd = (d == null) ? 2 : d;
+    return v.toLocaleString('en-US', { minimumFractionDigits: dd, maximumFractionDigits: dd });
+  }
+  function fmtAuto(v) {
+    if (!num(v)) return '—';
+    if (Math.abs(v) >= 1000) return Math.round(v).toLocaleString('en-US');
+    if (Math.abs(v) >= 100) return v.toFixed(1);
+    return v.toFixed(2);
+  }
+  function parseNum(s) {
+    if (typeof s === 'number') return s;
+    var t = String(s == null ? '' : s).replace(/[, \u00a0]/g, '').replace(/(원|pt|p|\$)/gi, '');
+    if (!t) return NaN;
+    var v = Number(t);
+    return isFinite(v) ? v : NaN;
+  }
+
+  /* ---------------- 캔들 필드 정규화 ---------------- */
+  function cH(c) { return num(c.high) ? c.high : c.h; }
+  function cL(c) { return num(c.low) ? c.low : c.l; }
+  function cO(c) { return num(c.open) ? c.open : c.o; }
+  function cC(c) { return num(c.close) ? c.close : c.c; }
+  function cV(c) { return num(c.vol) ? c.vol : (c.v || 0); }
+  function cD(c) { return c.date || c.d || ''; }
+
+  /* ---------------- 상태 ---------------- */
+  function state(id) {
+    var s = DB.ov[id];
+    if (!s || typeof s !== 'object') s = { fib: true, channel: true, ma20: true };
+    if (s.fib === undefined) s.fib = true;
+    if (s.channel === undefined) s.channel = true;
+    if (s.ma20 === undefined) s.ma20 = true;
+    DB.ov[id] = s;
+    return s;
+  }
+  function curKey(id) {
+    var r = REG[id];
+    if (!r) return '_';
+    try { return String(typeof r.key === 'function' ? r.key() : (r.key || '_')); } catch (e) { return '_'; }
+  }
+  function manKey(id) { return id + '|' + curKey(id); }
+  function manualFib(id) {
+    var m = DB.man[manKey(id)];
+    if (m && num(m.hi) && num(m.lo) && m.hi > m.lo) return m;
+    return null;
+  }
+  function setManual(id, hi, lo) {
+    DB.man[manKey(id)] = { hi: hi, lo: lo };
+    save();
+  }
+  function clearManual(id) {
+    try { delete DB.man[manKey(id)]; } catch (e) { DB.man[manKey(id)] = null; }
+    save();
+  }
+
+  /* ---------------- 등록 (차트 렌더러가 자기 리드로우를 알려 준다) ---------------- */
+  function register(id, cfg) {
+    REG[id] = REG[id] || {};
+    var k;
+    for (k in cfg) if (Object.prototype.hasOwnProperty.call(cfg, k)) REG[id][k] = cfg[k];
+    return REG[id];
+  }
+  function redrawOf(id) {
+    var r = REG[id];
+    if (r && typeof r.redraw === 'function') { try { r.redraw(); } catch (e) { } }
+  }
+
+  /* ---------------- 표준 바 HTML ---------------- */
+  var P_LABEL = { 15: '15일', 30: '30일', 60: '60일', 120: '120일', 200: '200일', 250: '1년', 500: '2년' };
+  var P_ALL = [15, 30, 60, 120, 200, 250, 500];
+
+  function periodChips(id, active, periods) {
+    var list = periods || P_ALL;
+    var h = '<div class="ucx-pbar" id="ucxP_' + id + '">';
+    for (var i = 0; i < list.length; i += 1) {
+      var n = list[i];
+      h += '<button type="button" class="ucx-p' + (n === active ? ' on' : '') + '" data-p="' + n +
+        '" onclick="UCX.period(\'' + id + '\',' + n + ')">' + (P_LABEL[n] || (n + '일')) + '</button>';
+    }
+    h += '</div>';
+    return h;
+  }
+
+  function ovToggleHTML(id, key, label) {
+    var on = !!state(id)[key];
+    return '<button type="button" class="ucx-ov' + (on ? ' on' : '') + '" data-ov="' + key +
+      '" data-lbl="' + label + '" onclick="UCX.toggleOv(\'' + id + '\',\'' + key + '\')">' +
+      (on ? '✓ ' : '') + label + '</button>';
+  }
+
+  function overlayRow(id) {
+    return '<div class="ucx-pbar" id="ucxOv_' + id + '" style="align-items:center;">' +
+      ovToggleHTML(id, 'fib', '📐 피보나치') +
+      ovToggleHTML(id, 'channel', '📈 추세채널') +
+      ovToggleHTML(id, 'ma20', '📉 20선') +
+      '<span style="font-size:9px;color:#64748b;">실측 일봉 자동 계산</span>' +
+      '</div>';
+  }
+
+  function fibRow(id) {
+    var m = manualFib(id);
+    return '<div class="ucx-pbar" id="ucxFib_' + id + '" style="align-items:center;">' +
+      '<span style="font-size:9.5px;color:#94a3b8;font-weight:800;white-space:nowrap;">📐 피보 수치</span>' +
+      '<input type="text" inputmode="decimal" autocomplete="off" class="ucx-in" id="ucxHi_' + id + '" aria-label="피보나치 고점 수치" placeholder="고점" value="' + (m ? m.hi : '') + '">' +
+      '<input type="text" inputmode="decimal" autocomplete="off" class="ucx-in" id="ucxLo_' + id + '" aria-label="피보나치 저점 수치" placeholder="저점" value="' + (m ? m.lo : '') + '">' +
+      '<button type="button" class="ucx-btn" onclick="UCX.fibApply(\'' + id + '\')">적용</button>' +
+      '<button type="button" class="ucx-btn auto" onclick="UCX.fibAuto(\'' + id + '\')">자동 복귀</button>' +
+      '<span class="ucx-fstat" id="ucxFst_' + id + '">' + (m ? '수동' : '자동(스윙)') + '</span>' +
+      '</div>';
+  }
+
+  function badgeRow(id) {
+    return '<div class="ucx-pbar" id="ucxBd_' + id + '" style="align-items:center;">' +
+      '<span class="ucx-bd" id="ucxBdMa_' + id + '">📉 20일선 —</span>' +
+      '<span class="ucx-bd" id="ucxBdRsi_' + id + '">⚡ RSI(14) —</span>' +
+      '<span class="ucx-bd" id="ucxBdFib_' + id + '">📐 피보 —</span>' +
+      '<span class="ucx-bd" id="ucxBdCh_' + id + '">📈 채널 —</span>' +
+      '</div>';
+  }
+
+  /* full=true → 기간·오버레이·피보·지표 4줄 전부 */
+  function barHTML(id, o) {
+    o = o || {};
+    return (o.title ? headerHTML(id, o.title, o.sub, o) : '') +
+      periodChips(id, o.active || 60, o.periods) +
+      overlayRow(id) +
+      fibRow(id) +
+      badgeRow(id);
+  }
+
+  /* 정적 마커(data-ucxbar="id" 를 가진 빈 요소)를 표준 바로 채운다 — 각 탭 마크업에 한 줄만 넣으면 끝 */
+  function fillBar(el) {
+    if (!el) return;
+    var id = el.getAttribute('data-ucxbar');
+    if (!id) return;
+    if (el.getAttribute('data-ucxfilled') === '1') return;
+    el.innerHTML = barHTML(id, {
+      title: el.getAttribute('data-ucxtitle') || '',
+      sub: el.getAttribute('data-ucxsub') || '',
+      active: Number(el.getAttribute('data-ucxactive') || 60),
+      periods: el.getAttribute('data-ucxperiods') ? el.getAttribute('data-ucxperiods').split(',').map(Number) : null
+    });
+    el.setAttribute('data-ucxfilled', '1');
+  }
+  function fillBars() {
+    var els = document.querySelectorAll('[data-ucxbar]');
+    for (var i = 0; i < els.length; i += 1) fillBar(els[i]);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fillBars);
+  else fillBars();
+  window.addEventListener('load', fillBars);
+
+  function headerHTML(id, title, sub, o) {
+    o = o || {};
+    var H = o.height || 240;
+    return '<div class="ucx-head" id="ucxHead_' + id + '">' +
+      '<div style="display:flex;align-items:center;gap:6px;min-width:0;flex-wrap:wrap;">' +
+      '<span class="ucx-title">' + (title || '📊 실시간 캔들 & 추세선 차트') + '</span>' +
+      (sub ? '<span style="font-size:9.5px;color:#94a3b8;">' + sub + '</span>' : '') +
+      '</div>' +
+      '<div style="display:flex;gap:3px;align-items:center;">' +
+      '<button type="button" class="ucx-z" title="축소" onclick="UCX.zoom(\'' + id + '\',-1)">－</button>' +
+      '<button type="button" class="ucx-z" title="확대" onclick="UCX.zoom(\'' + id + '\',1)">＋</button>' +
+      '<button type="button" class="ucx-z" title="과거로 이동" onclick="UCX.pan(\'' + id + '\',1)">◀</button>' +
+      '<button type="button" class="ucx-z" title="최근으로 이동" onclick="UCX.pan(\'' + id + '\',-1)">▶</button>' +
+      '<button type="button" class="ucx-z reset" title="초기화" onclick="UCX.reset(\'' + id + '\')">↻</button>' +
+      '<span class="ucx-cnt" id="ucxCnt_' + id + '">— 봉</span>' +
+      '</div></div>';
+  }
+
+  /* ---------------- 칩/입력 다시 칠하기 ---------------- */
+  function paint(id, act) {
+    var st = state(id);
+    var r = REG[id] || {};
+    var actP = act && act.period;
+    if (!actP && typeof r.getPeriod === 'function') { try { actP = r.getPeriod(); } catch (e) { } }
+    var box = document.getElementById('ucxP_' + id);
+    if (!box && id === 'main') box = document.getElementById('modalPeriodBar');   /* 메인 모달은 기존 바를 그대로 쓴다 */
+    if (box && actP != null) {
+      var limV = (REG[id] || {}).limit;
+      var lim = (typeof limV === 'function') ? (num(limV()) ? limV() : 0) : (num(limV) ? limV : 0);
+      var bs = box.querySelectorAll('button.ucx-p');
+      for (var i = 0; i < bs.length; i += 1) {
+        var pn = Number(bs[i].getAttribute('data-p'));
+        var off = lim > 0 && pn > lim;
+        var on = pn === Number(actP) && !off;
+        bs[i].className = 'ucx-p' + (on ? ' on' : '') + (off ? ' off' : '');
+        bs[i].title = off ? ('데이터 ' + lim + '일까지만 있습니다') : '';
+      }
+    }
+    var ovb = document.getElementById('ucxOv_' + id);
+    if (ovb) {
+      var ob = ovb.querySelectorAll('button.ucx-ov');
+      for (var j = 0; j < ob.length; j += 1) {
+        var k = ob[j].getAttribute('data-ov');
+        var lbl = ob[j].getAttribute('data-lbl') || k;
+        var onv = !!st[k];
+        ob[j].className = 'ucx-ov' + (onv ? ' on' : '');
+        ob[j].innerHTML = (onv ? '✓ ' : '') + lbl;
+      }
+    }
+    var m = manualFib(id);
+    var hiEl = document.getElementById('ucxHi_' + id);
+    var loEl = document.getElementById('ucxLo_' + id);
+    var stEl = document.getElementById('ucxFst_' + id);
+    var c = LAST[id];
+    if (hiEl && document.activeElement !== hiEl && document.activeElement !== loEl) {
+      hiEl.value = m ? m.hi : (c && num(c.H) ? fmtAuto(c.H) : '');
+      loEl.value = m ? m.lo : (c && num(c.L) ? fmtAuto(c.L) : '');
+    }
+    if (stEl) stEl.textContent = m ? ('수동 ' + fmtAuto(m.hi) + ' / ' + fmtAuto(m.lo)) : '자동(스윙)';
+    if (c) paintBadges(id, c);
+    if (VIEW[id] && document.getElementById('ucxCnt_' + id)) {
+      document.getElementById('ucxCnt_' + id).textContent = VIEW[id].count + '봉';
+    }
+  }
+
+  function paintBadges(id, c) {
+    var el;
+    el = document.getElementById('ucxBdMa_' + id);
+    if (el) {
+      el.textContent = num(c.ma20)
+        ? ('📉 20일선 ' + fmt(c.ma20, 2) + (num(c.dev) ? ' · 이격 ' + (c.dev >= 0 ? '+' : '') + c.dev.toFixed(2) + '%' : ''))
+        : '📉 20일선 —';
+      el.style.color = num(c.dev) ? (c.dev >= 0 ? '#f87171' : '#38bdf8') : '#94a3b8';
+    }
+    el = document.getElementById('ucxBdRsi_' + id);
+    if (el) {
+      var rsiTxt = '⚡ RSI(14) —';
+      if (num(c.rsi)) {
+        var v = c.rsi, lab = v >= 70 ? '과열' : (v >= 55 ? '상단' : (v >= 45 ? '중립' : (v >= 30 ? '중립 하단' : '과매도')));
+        rsiTxt = '⚡ RSI(14) ' + v.toFixed(1) + ' · ' + lab;
+      }
+      el.textContent = rsiTxt;
+      el.style.color = num(c.rsi) ? (c.rsi >= 70 ? '#fbbf24' : (c.rsi < 30 ? '#34d399' : '#cbd5e1')) : '#94a3b8';
+    }
+    el = document.getElementById('ucxBdFib_' + id);
+    if (el) {
+      el.textContent = num(c.H)
+        ? ('📐 피보 ' + (c.manual ? '수동' : (c.n + '봉 스윙')) + ' · ' + fmtAuto(c.H) + ' / ' + fmtAuto(c.L))
+        : '📐 피보 —';
+      el.style.color = c.manual ? '#fbbf24' : '#cbd5e1';
+    }
+    el = document.getElementById('ucxBdCh_' + id);
+    if (el) {
+      var d = '—';
+      if (c.ch && num(c.ch.pos)) d = (c.ch.dir === 'up' ? '상승' : (c.ch.dir === 'down' ? '하락' : '횡보')) + ' · 밴드 ' + Math.round(c.ch.pos) + '% 위';
+      el.textContent = '📈 채널 ' + (d === '—' ? '—' : d);
+      el.style.color = c.ch ? (c.ch.pos >= 70 ? '#fda4af' : (c.ch.pos <= 30 ? '#7dd3fc' : '#cbd5e1')) : '#94a3b8';
+    }
+  }
+
+  /* ---------------- 사용자 동작 ---------------- */
+  function period(id, n) {
+    var r = REG[id] || {};
+    if (typeof r.setPeriod === 'function') {
+      try { r.setPeriod(Number(n)); } catch (e) { }
+    } else if (VIEW[id]) {
+      setPeriodMount(id, Number(n));
+    }
+    paint(id, { period: Number(n) });
+  }
+  function toggleOv(id, key) {
+    var st = state(id);
+    st[key] = !st[key];
+    save();
+    paint(id);
+    redrawOf(id);
+  }
+  function fibApply(id) {
+    var hiEl = document.getElementById('ucxHi_' + id);
+    var loEl = document.getElementById('ucxLo_' + id);
+    var stEl = document.getElementById('ucxFst_' + id);
+    var hi = parseNum(hiEl ? hiEl.value : '');
+    var lo = parseNum(loEl ? loEl.value : '');
+    if (!num(hi) || !num(lo) || hi <= lo) {
+      if (stEl) { stEl.textContent = '⚠ 고점 > 저점으로 입력'; stEl.style.color = '#f87171'; }
+      if (hiEl) hiEl.style.borderColor = 'rgba(248,113,113,.8)';
+      if (loEl) loEl.style.borderColor = 'rgba(248,113,113,.8)';
+      return;
+    }
+    if (hiEl) hiEl.style.borderColor = '';
+    if (loEl) loEl.style.borderColor = '';
+    setManual(id, hi, lo);
+    var st = state(id);
+    if (!st.fib) { st.fib = true; save(); }      // 값만 넣고 선이 안 보이면 헷갈린다 → 자동 ON
+    if (stEl) stEl.style.color = '';
+    redrawOf(id);
+    paint(id);
+  }
+  function fibAuto(id) {
+    clearManual(id);
+    var hiEl = document.getElementById('ucxHi_' + id);
+    var loEl = document.getElementById('ucxLo_' + id);
+    if (hiEl) hiEl.style.borderColor = '';
+    if (loEl) loEl.style.borderColor = '';
+    var stEl = document.getElementById('ucxFst_' + id);
+    if (stEl) stEl.style.color = '';
+    redrawOf(id);
+    paint(id);
+  }
+
+  /* ---------------- 계산: 피보나치·추세채널·20선·RSI ---------------- */
+  function compute(id, cs, all) {
+    if (!cs || cs.length < 3) return null;
+    var i, n = cs.length;
+    var hiI = 0, loI = 0;
+    for (i = 1; i < n; i += 1) {
+      if (cH(cs[i]) > cH(cs[hiI])) hiI = i;
+      if (cL(cs[i]) < cL(cs[loI])) loI = i;
+    }
+    var H = cH(cs[hiI]), L = cL(cs[loI]);
+    var m = manualFib(id);
+    var manual = false;
+    if (m) { H = m.hi; L = m.lo; manual = true; }
+    if (!(H > L)) return null;
+    var last = cC(cs[n - 1]);
+    var dirUp = manual ? (last >= (H + L) / 2) : (hiI >= loI);
+    var range = H - L;
+    var RAT = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
+    var fib = [];
+    for (i = 0; i < RAT.length; i += 1) {
+      var r = RAT[i];
+      fib.push({ r: r, p: dirUp ? (H - range * r) : (L + range * r) });
+    }
+    /* 20일선·RSI — 전체 일봉 기준(창을 좁혀도 값은 시장 기준으로 동일) */
+    var src = (all && all.length ? all : cs);
+    var closes = [];
+    for (i = 0; i < src.length; i += 1) closes.push(cC(src[i]));
+    var ma20 = null, dev = null;
+    var mN = Math.min(20, closes.length);
+    if (mN >= 5) {
+      var sum = 0;
+      for (i = closes.length - mN; i < closes.length; i += 1) sum += closes[i];
+      ma20 = sum / mN;
+      dev = ma20 ? ((last - ma20) / ma20) * 100 : null;
+    }
+    var rsi = null;
+    if (closes.length > 15) {
+      var ag = 0, al = 0, k;
+      for (k = 1; k <= 14; k += 1) {
+        var d0 = closes[k] - closes[k - 1];
+        if (d0 > 0) ag += d0; else al -= d0;
+      }
+      ag /= 14; al /= 14;
+      for (k = 15; k < closes.length; k += 1) {
+        var d1 = closes[k] - closes[k - 1];
+        ag = (ag * 13 + (d1 > 0 ? d1 : 0)) / 14;
+        al = (al * 13 + (d1 < 0 ? -d1 : 0)) / 14;
+      }
+      rsi = al > 0 ? 100 - 100 / (1 + ag / al) : 100;
+    }
+    /* 추세채널 — 보이는 봉 종가 선형회귀 + 고·저 상하단 평행선 */
+    var sx = 0, sy = 0, sxy = 0, sxx = 0;
+    for (i = 0; i < n; i += 1) { sx += i; sy += cC(cs[i]); sxy += i * cC(cs[i]); sxx += i * i; }
+    var den = n * sxx - sx * sx;
+    var b = den ? (n * sxy - sx * sy) / den : 0;
+    var a = (sy - b * sx) / n;
+    var rHi = -Infinity, rLo = Infinity;
+    for (i = 0; i < n; i += 1) {
+      var reg = a + b * i;
+      if (cH(cs[i]) - reg > rHi) rHi = cH(cs[i]) - reg;
+      if (cL(cs[i]) - reg < rLo) rLo = cL(cs[i]) - reg;
+    }
+    var upEnd = a + b * (n - 1) + rHi, loEnd = a + b * (n - 1) + rLo;
+    var pos = (upEnd - loEnd) ? ((last - loEnd) / (upEnd - loEnd)) * 100 : 50;
+    var th = range * 0.02;                 // 기울기 판정 임계(창 가격폭의 2%)
+    var dir = b > th ? 'up' : (b < -th ? 'down' : 'flat');
+    return {
+      n: n, H: H, L: L, fib: fib, manual: manual, dirUp: dirUp, last: last,
+      ma20: ma20, dev: dev, rsi: rsi,
+      ch: { a: a, b: b, rHi: rHi, rLo: rLo, up: upEnd, lo: loEnd, pos: pos, dir: dir }
+    };
+  }
+
+  /* ---------------- 오버레이 그리기 ----------------
+   * geo = { X(i), Y(v), x0, x1, top, bot, cs, all, vs, labelRight }
+   */
+  function drawOverlays(ctx, id, geo) {
+    if (!ctx || !geo || !geo.cs || !geo.cs.length) return null;
+    var st = state(id);
+    var c = compute(id, geo.cs, geo.all || geo.cs);
+    if (!c) return null;
+    c.geo = null;
+    LAST[id] = c;
+    var X = geo.X, Y = geo.Y, x0 = geo.x0, x1 = geo.x1, top = geo.top, bot = geo.bot;
+
+    /* 1) 추세채널 */
+    if (st.channel) {
+      var n = geo.cs.length;
+      var yu0 = Y(c.ch.a), yl0 = Y(c.ch.a + c.ch.rLo);
+      var yu1 = Y(c.ch.a + c.ch.b * (n - 1) + c.ch.rHi), yl1 = Y(c.ch.a + c.ch.b * (n - 1) + c.ch.rLo);
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(x0, yu0); ctx.lineTo(x1, yu1); ctx.lineTo(x1, yl1); ctx.lineTo(x0, yl0);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(168,85,247,0.10)';
+      ctx.fill();
+      ctx.setLineDash([5, 4]); ctx.lineWidth = 1.1;
+      ctx.strokeStyle = 'rgba(192,132,252,0.85)';
+      ctx.beginPath(); ctx.moveTo(x0, yu0); ctx.lineTo(x1, yu1); ctx.stroke();
+      ctx.strokeStyle = 'rgba(192,132,252,0.55)';
+      ctx.beginPath(); ctx.moveTo(x0, yl0); ctx.lineTo(x1, yl1); ctx.stroke();
+      ctx.restore();
+    }
+
+    /* 2) 피보나치 되돌림(0·0.236·0.382·0.5·0.618·0.786·1) */
+    if (st.fib) {
+      ctx.save();
+      ctx.font = 'bold 9px sans-serif';
+      var fibLeft = geo.fibSide === 'left';
+      ctx.textAlign = fibLeft ? 'left' : 'right';
+      var lx = fibLeft ? (x0 + 3) : ((geo.labelRight || x1) - 2);
+      var placed = [];
+      for (var f = 0; f < c.fib.length; f += 1) {
+        var lv = c.fib[f];
+        var y = Y(lv.p);
+        if (y < top - 2 || y > bot + 2) continue;
+        var isKey = (lv.r === 0 || lv.r === 1);
+        ctx.strokeStyle = isKey ? 'rgba(148,163,184,0.45)' : (lv.r === 0.5 ? 'rgba(250,204,21,0.60)' : 'rgba(148,163,184,0.38)');
+        ctx.setLineDash(isKey ? [6, 3] : [3, 3]);
+        ctx.lineWidth = isKey ? 1.1 : 1;
+        ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+        ctx.setLineDash([]);
+        /* 라벨은 11px 안에 겹치면 생략 — 선은 그대로 둔다(라벨 뭉침 방지) */
+        var near = false;
+        for (var pz = 0; pz < placed.length; pz += 1) { if (Math.abs(placed[pz] - y) < 11) { near = true; break; } }
+        if (near) continue;
+        placed.push(y);
+        var lname = (lv.r === 0) ? (c.dirUp ? '\uACE0\uC810 ' : '\uC800\uC810 ') : ((lv.r === 1) ? (c.dirUp ? '\uC800\uC810 ' : '\uACE0\uC810 ') : (lv.r.toFixed(3) + ' '));
+        var label = lname + fmtAuto(lv.p);
+        var tw = ctx.measureText(label).width;
+        var bx = fibLeft ? lx : (lx - tw - 4);
+        ctx.fillStyle = 'rgba(7,12,20,0.82)';
+        ctx.fillRect(bx - (fibLeft ? 3 : 0), y - 8, tw + 4, 11);
+        ctx.fillStyle = isKey ? '#cbd5e1' : (lv.r === 0.5 ? '#facc15' : '#94a3b8');
+        ctx.fillText(label, lx, y + 1);
+      }
+      ctx.restore();
+    }
+
+    /* 3) 20일선 값 라벨 (선 자체는 각 렌더러가 그린다) */
+    if (st.ma20 && num(c.ma20)) {
+      var y20 = Y(c.ma20);
+      if (y20 > top - 2 && y20 < bot + 2) {
+        ctx.save();
+        ctx.font = 'bold 9px sans-serif';
+        var maLeft = geo.fibSide !== 'left';
+        ctx.textAlign = maLeft ? 'left' : 'right';
+        var x20 = maLeft ? (x0 + 3) : (x0 + (x1 - x0) * 0.5 + 30);
+        var t20 = 'MA20 ' + fmtAuto(c.ma20);
+        var w20 = ctx.measureText(t20).width;
+        ctx.fillStyle = 'rgba(7,12,20,0.82)';
+        ctx.fillRect(maLeft ? x20 - 3 : x20 - 2, y20 - 8, w20 + 4, 11);
+        ctx.fillStyle = '#f87171';
+        ctx.fillText(t20, maLeft ? x20 : x20 - w20, y20 + 1);
+        ctx.restore();
+      }
+    }
+    paintBadges(id, c);
+    return c;
+  }
+
+  /* ---------------- 자체 렌더러(mount) — 만쥬 등 ---------------- */
+  function normalize(list) {
+    var out = [];
+    if (!list) return out;
+    for (var i = 0; i < list.length; i += 1) {
+      var c = list[i];
+      if (!c) continue;
+      var h = cH(c), l = cL(c), o = cO(c), cc = cC(c);
+      if (!num(h) || !num(l) || !num(cc)) continue;
+      out.push({ d: cD(c), o: num(o) ? o : cc, h: h, l: l, c: cc, v: cV(c) });
+    }
+    return out;
+  }
+
+  function setPeriodMount(id, n) {
+    var v = VIEW[id];
+    var m = document.getElementById('ucxCv_' + id);
+    var len = (REG[id] && typeof REG[id].getLen === 'function') ? REG[id].getLen() : 0;
+    if (!v || !len) return;
+    v.count = Math.max(10, Math.min(len, n || 60));
+    v.offset = 0;
+    redrawOf(id);
+  }
+
+  function zoomMount(id, dir) {
+    var v = VIEW[id];
+    var len = (REG[id] && typeof REG[id].getLen === 'function') ? REG[id].getLen() : 0;
+    if (!v || !len) return;
+    var step = v.count > 100 ? 30 : (v.count > 40 ? 15 : 6);
+    v.count = Math.max(10, Math.min(len, v.count + (dir > 0 ? -step : step)));
+    redrawOf(id);
+  }
+  function panMount(id, dir) {
+    var v = VIEW[id];
+    var len = (REG[id] && typeof REG[id].getLen === 'function') ? REG[id].getLen() : 0;
+    if (!v || !len) return;
+    var step = v.count > 100 ? 15 : (v.count > 40 ? 8 : 4);
+    if (dir > 0) v.offset = Math.min(Math.max(0, len - v.count), v.offset + step);
+    else v.offset = Math.max(0, v.offset - step);
+    redrawOf(id);
+  }
+
+  function drawMount(id) {
+    var cv = document.getElementById('ucxCv_' + id);
+    var r = REG[id] || {};
+    if (!cv || typeof r.getCandles !== 'function') return;
+    var all = normalize(r.getCandles());
+    var v = VIEW[id];
+    if (!v) { v = VIEW[id] = { count: Math.min(60, all.length), offset: 0 }; }
+    if (!all.length) {
+      var cx = cv.getContext('2d');
+      cv.width = Math.max(120, cv.clientWidth || 300) * (window.devicePixelRatio || 1);
+      cv.height = 120 * (window.devicePixelRatio || 1);
+      return;
+    }
+    v.count = Math.max(10, Math.min(all.length, v.count || 60));
+    v.offset = Math.max(0, Math.min(all.length - v.count, v.offset || 0));
+    var end = all.length - v.offset;
+    var start = Math.max(0, end - v.count);
+    var cs = all.slice(start, end);
+
+    var dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2.5);
+    var W = Math.max(160, Math.round(cv.clientWidth || cv.parentElement.clientWidth || 320));
+    var H = Math.round(r.height || 250);
+    cv.width = Math.round(W * dpr);
+    cv.height = Math.round(H * dpr);
+    cv.style.height = H + 'px';
+    var ctx = cv.getContext('2d');
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#070c14';
+    ctx.fillRect(0, 0, W, H);
+
+    var padL = 8, padR = 52, top = 10, axisH = 13, volH = Math.round(H * 0.18), vGap = 6;
+    var chartW = W - padL - padR;
+    var chartH = H - top - axisH - volH - vGap;
+    var hi = -Infinity, lo = Infinity, maxV = 0, i;
+    for (i = 0; i < cs.length; i += 1) {
+      if (cs[i].h > hi) hi = cs[i].h;
+      if (cs[i].l < lo) lo = cs[i].l;
+      if (cs[i].v > maxV) maxV = cs[i].v;
+    }
+    var range = (hi - lo) || (hi * 0.02 || 1);
+    hi += range * 0.06; lo -= range * 0.06;
+    var pRange = hi - lo;
+    var Y = function (v) { return top + chartH * (1 - (v - lo) / pRange); };
+    var barW = chartW / cs.length;
+    var X = function (i2) { return padL + i2 * barW + barW / 2; };
+    var bodyW = Math.max(1, barW * 0.66);
+
+    /* 그리드 */
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.fillStyle = '#64748b';
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'right';
+    for (i = 0; i <= 4; i += 1) {
+      var yg = top + chartH * (1 - i / 4);
+      ctx.beginPath(); ctx.moveTo(padL, yg); ctx.lineTo(padL + chartW, yg); ctx.stroke();
+      var pv = lo + pRange * i / 4;
+      ctx.fillText(fmtAuto(pv), W - 4, yg + 3);
+    }
+    /* 캔들 + 거래량 */
+    for (i = 0; i < cs.length; i += 1) {
+      var cd = cs[i];
+      var up = cd.c >= cd.o;
+      var col = up ? '#f43f5e' : '#38bdf8';
+      var vh = maxV > 0 ? (cd.v / maxV) * volH : 0;
+      ctx.fillStyle = up ? 'rgba(244,63,94,0.32)' : 'rgba(56,189,248,0.32)';
+      ctx.fillRect(X(i) - bodyW / 2, H - axisH - vh, bodyW, vh);
+      ctx.strokeStyle = col; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(X(i), Y(cd.h)); ctx.lineTo(X(i), Y(cd.l)); ctx.stroke();
+      ctx.fillStyle = col;
+      ctx.fillRect(X(i) - bodyW / 2, Math.min(Y(cd.o), Y(cd.c)), bodyW, Math.max(1, Math.abs(Y(cd.c) - Y(cd.o))));
+    }
+    /* 이동평균 5/20/60/120 */
+    var mas = [[5, '#f59e0b'], [20, '#ef4444'], [60, '#22c55e'], [120, '#a855f7']];
+    for (var mi = 0; mi < mas.length; mi += 1) {
+      var per = mas[mi][0];
+      if (per === 20 && !state(id).ma20) continue;
+      if (per === 120 && all.length < 80) continue;
+      ctx.strokeStyle = mas[mi][1];
+      ctx.lineWidth = per === 20 ? 1.4 : 1.1;
+      ctx.beginPath();
+      var started = false;
+      for (i = 0; i < cs.length; i += 1) {
+        var gi = start + i;
+        if (gi < per - 1) { started = false; continue; }
+        var sum = 0;
+        for (var q = 0; q < per; q += 1) sum += all[gi - q].c;
+        var ma = sum / per;
+        var mx = X(i), my = Y(ma);
+        if (!started) { ctx.moveTo(mx, my); started = true; } else ctx.lineTo(mx, my);
+      }
+      ctx.stroke();
+    }
+    /* 오버레이(피보나치·채널·20선 라벨) */
+    drawOverlays(ctx, id, {
+      X: X, Y: Y, x0: padL, x1: padL + chartW, top: top, bot: top + chartH,
+      cs: cs, all: all, vs: start, labelRight: padL + chartW
+    });
+    /* 현재가 태그 */
+    var lastC = cs[cs.length - 1];
+    var ly = Y(lastC.c);
+    var lup = lastC.c >= lastC.o;
+    ctx.fillStyle = lup ? '#f43f5e' : '#38bdf8';
+    ctx.fillRect(padL + chartW + 2, ly - 8, padR - 6, 16);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText(fmtAuto(lastC.c), padL + chartW + 4, ly + 3);
+
+    /* 전략 기준선(cfg.levels) */
+    var lv = (typeof r.levels === 'function') ? r.levels() : (r.levels || []);
+    for (i = 0; i < (lv || []).length; i += 1) {
+      var L0 = lv[i];
+      if (!L0 || !num(L0.v)) continue;
+      var yy = Y(L0.v);
+      if (yy < top || yy > top + chartH) continue;
+      ctx.save();
+      ctx.strokeStyle = L0.color || '#fbbf24';
+      ctx.setLineDash([4, 3]);
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(padL + chartW, yy); ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = L0.color || '#fbbf24';
+      ctx.font = 'bold 8.5px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(L0.label + ' ' + fmtAuto(L0.v), padL + 3, yy - 3);
+    }
+    /* 봉수 표시 */
+    var cnt = document.getElementById('ucxCnt_' + id);
+    if (cnt) cnt.textContent = cs.length + '봉';
+    paint(id, { period: cs.length });
+  }
+
+  function mount(host, cfg) {
+    if (!host) return null;
+    var id = cfg.id;
+    if (VIEW[id] == null) VIEW[id] = { count: Math.min(cfg.def || 60, (cfg.candlesLen && cfg.candlesLen()) || 60), offset: 0 };
+    register(id, {
+      redraw: function () { drawMount(id); },
+      getCandles: cfg.getCandles,
+      key: cfg.key,
+      height: cfg.height || 250,
+      levels: cfg.levels,
+      getLen: function () { return normalize(cfg.getCandles()).length; },
+      getPeriod: function () { return VIEW[id] ? VIEW[id].count : (cfg.def || 60); },
+      setPeriod: function (n) { setPeriodMount(id, n); }
+    });
+    host.innerHTML =
+      '<div class="ucx-wrap" id="ucxWrap_' + id + '">' +
+      headerHTML(id, cfg.title || '📊 실시간 캔들 & 추세선 차트', cfg.sub, { height: cfg.height }) +
+      periodChips(id, (cfg.def || 60)) +
+      overlayRow(id) + fibRow(id) + badgeRow(id) +
+      '<div class="ucx-cvwrap" style="height:' + (cfg.height || 250) + 'px;">' +
+      '<canvas id="ucxCv_' + id + '" style="width:100%;height:100%;display:block;touch-action:none;cursor:grab;"></canvas>' +
+      '</div>' +
+      '<div class="ucx-tip" id="ucxTip_' + id + '"></div>' +
+      '</div>';
+    bindMount(id);
+    drawMount(id);
+    return {
+      redraw: function () { drawMount(id); },
+      setData: function () { VIEW[id] = { count: Math.min((cfg.def || 60), normalize(cfg.getCandles()).length), offset: 0 }; drawMount(id); }
+    };
+  }
+
+  function bindMount(id) {
+    var cv = document.getElementById('ucxCv_' + id);
+    if (!cv || cv._ucxBound) return;
+    cv._ucxBound = true;
+    var drag = null, pts = {}, pinch = null;
+    var dist = function () {
+      var a = [];
+      for (var k in pts) if (pts.hasOwnProperty(k)) a.push(pts[k]);
+      return a.length < 2 ? 0 : Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
+    };
+    cv.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      var v = VIEW[id];
+      if (!v) return;
+      var len = (REG[id] && REG[id].getLen) ? REG[id].getLen() : 0;
+      var f = e.deltaY < 0 ? 0.85 : 1.18;
+      v.count = Math.max(10, Math.min(len || v.count, Math.round(v.count * f)));
+      drawMount(id);
+    }, { passive: false });
+    cv.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      try { cv.setPointerCapture(e.pointerId); } catch (er) { }
+      var n = Object.keys(pts).length;
+      if (n === 1) { drag = { x: e.clientX, moved: 0 }; pinch = null; }
+      else if (n === 2) { pinch = { d: dist() }; drag = null; }
+    });
+    cv.addEventListener('pointermove', function (e) {
+      if (!pts[e.pointerId]) return;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var v = VIEW[id];
+      if (!v) return;
+      var len = (REG[id] && REG[id].getLen) ? REG[id].getLen() : 0;
+      if (pinch && Object.keys(pts).length >= 2) {
+        var d = dist();
+        if (d > 6 && pinch.d > 6) {
+          var f2 = Math.min(2, Math.max(0.5, pinch.d / d));
+          v.count = Math.max(10, Math.min(len || v.count, Math.round(v.count * f2)));
+          drawMount(id);
+        }
+        pinch.d = d;
+        return;
+      }
+      if (drag) {
+        var dx = e.clientX - drag.x;
+        drag.moved += Math.abs(dx);
+        if (Math.abs(dx) >= 8) {
+          var per = v.count / Math.max(1, (cv.clientWidth || 300) - 60);
+          v.offset = Math.max(0, Math.min(Math.max(0, len - v.count), v.offset + Math.round(dx * per)));
+          drag.x = e.clientX;
+          drawMount(id);
+        }
+      }
+    });
+    var up = function (e) {
+      try { delete pts[e.pointerId]; } catch (er) { pts[e.pointerId] = null; }
+      if (Object.keys(pts).length < 2) pinch = null;
+      if (!Object.keys(pts).length) drag = null;
+    };
+    cv.addEventListener('pointerup', up);
+    cv.addEventListener('pointercancel', up);
+    cv.addEventListener('pointerleave', up);
+    window.addEventListener('resize', function () {
+      if (document.getElementById('ucxCv_' + id) && cv.offsetParent) drawMount(id);
+    });
+  }
+
+  /* ---------------- 바인딩 ---------------- */
+  window.UCX = {
+    version: '1.0',
+    register: register,
+    paint: paint,
+    barHTML: barHTML,
+    periodChips: periodChips,
+    overlayRow: overlayRow,
+    fibRow: fibRow,
+    badgeRow: badgeRow,
+    headerHTML: headerHTML,
+    drawOverlays: drawOverlays,
+    compute: compute,
+    manualFib: manualFib,
+    state: state,
+    last: function (id) { return LAST[id] || null; },
+    period: period,
+    toggleOv: toggleOv,
+    fibApply: fibApply,
+    fibAuto: fibAuto,
+    zoom: function (id, dir) { var r = REG[id] || {}; if (typeof r.zoom === 'function') { r.zoom(dir); } else { zoomMount(id, dir); } },
+    pan: function (id, dir) { var r = REG[id] || {}; if (typeof r.pan === 'function') { r.pan(dir); } else { panMount(id, dir); } },
+    reset: function (id) {
+      var r = REG[id] || {};
+      if (typeof r.reset === 'function') { try { r.reset(); } catch (e) { } } else { setPeriodMount(id, 60); }
+      paint(id);
+    },
+    mount: mount,
+    fillBar: fillBar,
+    fillBars: fillBars,
+    fmt: fmt,
+    fmtAuto: fmtAuto
+  };
+})();
+
+</script>
+<script id="kkCollapseEngine">
+/* ===== 깡토 탭 ①② 박스 접기/펼치기 (localStorage 기억) ===== */
+(function () {
+  var K = 'kk_col_state_v1';
+  function readSt() { try { return JSON.parse(localStorage.getItem(K) || '{}') || {}; } catch (e) { return {}; } }
+  function writeSt(st) { try { localStorage.setItem(K, JSON.stringify(st)); } catch (e) { } }
+  function secOf(key, el) {
+    var s = (el && el.closest) ? el.closest('.kk-sec') : null;
+    if (s && s.getAttribute('data-kkc')) return s;
+    return document.querySelector('#tabKkangto .kk-sec[data-kkc="' + key + '"]');
+  }
+  function paintBtn(sec, col) {
+    var b = sec.querySelector('.kk-col-b');
+    if (b) b.textContent = col ? '\u25BC \uD3BC\uCE58\uAE30' : '\u25B2 \uC811\uAE30';
+    sec.setAttribute('data-kkcol', col ? '1' : '0');
+  }
+  window.kkCol = function (key, el) {
+    var sec = secOf(key, el);
+    if (!sec) return;
+    var col = !sec.classList.contains('kk-collapsed');
+    sec.classList.toggle('kk-collapsed', col);
+    paintBtn(sec, col);
+    var st = readSt(); st[key] = col; writeSt(st);
+  };
+  window.kkColBtn = function (key, ev) {
+    if (ev && ev.stopPropagation) ev.stopPropagation();
+    var sec = secOf(key, ev && ev.currentTarget);
+    if (!sec) return;
+    var col = !sec.classList.contains('kk-collapsed');
+    sec.classList.toggle('kk-collapsed', col);
+    paintBtn(sec, col);
+    var st = readSt(); st[key] = col; writeSt(st);
+  };
+  function init() {
+    var st = readSt();
+    ['break', 'near'].forEach(function (k) {
+      var sec = document.querySelector('#tabKkangto .kk-sec[data-kkc="' + k + '"]');
+      if (!sec) return;
+      if (st[k]) sec.classList.add('kk-collapsed');
+      paintBtn(sec, !!st[k]);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+  window.addEventListener('load', init);
+})();
+</script>
+
 <script src="live-static-api.js"></script>
 
   <!-- PIN CODE SECURITY LOCK OVERLAY -->
@@ -15872,21 +16767,8 @@
       <button class="x" id="cmClose">닫기 ✕</button>
     </div>
     <div class="modal-body">
-      <div class="m-zoom">
-        <span class="pchips" id="cmChips">
-          <button class="pchip on" data-period="15">15일</button>
-          <button class="pchip" data-period="30">30일</button>
-          <button class="pchip" data-period="60">60일</button>
-          <button class="pchip" data-period="120">120일</button>
-          <button class="pchip" data-period="200">200일</button>
-        </span>
-        <span class="zbtns">
-          <button class="zbtn" id="cmOut" aria-label="축소">－</button>
-          <button class="zbtn" id="cmIn" aria-label="확대">＋</button>
-          <button class="zbtn wide" id="cmReset">↺ 초기화</button>
-        </span>
-        <span class="hint" id="cmZoomHint">두 손가락 핀치 · 마우스 휠 = 확대/축소 · 한 손가락 좌우 드래그 = 이동 · 두 번 탭 = 초기화</span>
-      </div>
+      <div id="cmChips" data-ucxbar="bij" data-ucxtitle="📊 실시간 캔들 &amp; 추세선 차트" data-ucxsub="(5/20/60/120선)" data-ucxactive="15"></div>
+      <div class="hint" id="cmZoomHint" style="font-size:9px;color:#64748b;margin:0 0 5px;">두 손가락 핀치 · 마우스 휠 = 확대/축소 · 한 손가락 좌우 드래그 = 이동</div>
       <div class="chart-canvas-wrap zoomable"><canvas id="cmCanvas"></canvas><div class="ctip" id="cmTip"></div></div>
       <div class="m-split" id="cmSplit">—</div>
       <div class="legend">
@@ -16106,18 +16988,7 @@
       <div class="m-status ok" id="hiCmLive">⚡ 지금 시세 확인 중…</div>
       <div class="m-status ok" id="hiCmStatus">⏳ 실측 일봉을 불러오는 중…</div>
       <!-- 기간 전환 · 줌 (관제탑 전 탭 공통 규격) -->
-      <div id="hiChartCtl" style="display:flex; align-items:center; gap:4px; margin:2px 0 7px 0; overflow-x:auto; padding-bottom:2px;">
-        <button class="hip" data-hip="15" onclick="HonginkiTab.setPeriod(15)" style="padding:4px 9px; border-radius:5px; background:#1e293b; color:#94a3b8; border:1px solid rgba(255,255,255,0.12); font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">15일</button>
-        <button class="hip" data-hip="30" onclick="HonginkiTab.setPeriod(30)" style="padding:4px 9px; border-radius:5px; background:#1e293b; color:#94a3b8; border:1px solid rgba(255,255,255,0.12); font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">30일</button>
-        <button class="hip" data-hip="60" onclick="HonginkiTab.setPeriod(60)" style="padding:4px 9px; border-radius:5px; background:#1e293b; color:#94a3b8; border:1px solid rgba(255,255,255,0.12); font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">60일</button>
-        <button class="hip" data-hip="120" onclick="HonginkiTab.setPeriod(120)" style="padding:4px 9px; border-radius:5px; background:#1e293b; color:#94a3b8; border:1px solid rgba(255,255,255,0.12); font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">120일</button>
-        <button class="hip" data-hip="200" onclick="HonginkiTab.setPeriod(200)" style="padding:4px 9px; border-radius:5px; background:#1e293b; color:#94a3b8; border:1px solid rgba(255,255,255,0.12); font-size:11px; font-weight:800; cursor:pointer; white-space:nowrap;">200일</button>
-        <span style="display:flex; gap:3px; margin-left:auto;">
-          <button id="hiZoomOut" onclick="HonginkiTab.zoomBy(1/1.5)" style="min-width:30px; height:28px; padding:0 7px; border-radius:5px; background:#1e293b; color:#f1f5f9; border:1px solid rgba(255,255,255,0.2); font-size:13px; font-weight:900; cursor:pointer;">－</button>
-          <button id="hiZoomIn" onclick="HonginkiTab.zoomBy(1.5)" style="min-width:30px; height:28px; padding:0 7px; border-radius:5px; background:#1e293b; color:#f1f5f9; border:1px solid rgba(255,255,255,0.2); font-size:13px; font-weight:900; cursor:pointer;">＋</button>
-          <button id="hiZoomReset" onclick="HonginkiTab.resetView()" style="min-width:30px; height:28px; padding:0 8px; border-radius:5px; background:rgba(56,189,248,0.15); color:#38bdf8; border:1px solid rgba(56,189,248,0.35); font-size:12px; font-weight:900; cursor:pointer;">↺</button>
-        </span>
-      </div>
+      <div id="hiChartCtl" data-ucxbar="hi" data-ucxtitle="📊 실시간 캔들 &amp; 추세선 차트" data-ucxsub="(5/20/60/120선)" data-ucxactive="120"></div>
       <div class="chart-wrap">
         <canvas id="hiChartCanvas"></canvas>
         <div class="ch-info" id="hiChInfo"></div>
@@ -16251,22 +17122,28 @@
     <div class="kk-sres" id="kkSearchOut">종목명·코드를 넣으면 200일 일봉으로 전고점(60/120일 고점)과 60일선을 계산해 깡토 기준선 차트를 엽니다.</div>
   </div>
 
-  <div class="kk-sec">
-    <div class="kk-sec-h">
-      <div class="kk-sec-t">🎯 ① 전고점 5% 이내 접근 후보 <span class="kk-sec-s" id="kkNearCount">—</span></div>
-      <div class="kk-sec-s">시총 1조↑(또는 주도주) · 종가 &gt; 60일선 · 전고점 대비 −5%~0% · 실시간 −5% 이탈 시 자동 제외</div>
-    </div>
-    <div class="kk-grid" id="kkNearGrid"></div>
-    <div class="kk-sec-n">📌 핀 고정한 종목은 실시간으로 5% 밖으로 밀려도 목록에서 지우지 않습니다. 카드 1탭 = 큰 차트 · 두 손가락 핀치 = 확대 · 드래그 = 좌우 이동.</div>
-  </div>
-
-  <div class="kk-sec">
-    <div class="kk-sec-h">
+  <div class="kk-sec" data-kkc="break">
+    <div class="kk-sec-h" onclick="kkCol('break', this)" title="눌러서 접기/펼치기">
       <div class="kk-sec-t">🚀 ② 전고점 돌파 종목 <span class="kk-sec-s" id="kkBreakCount">—</span></div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
       <div class="kk-sec-s">오늘·전일 종가가 60일 전고점을 넘고 60일선 위에 있는 종목</div>
+      <button type="button" class="kk-col-b" onclick="kkColBtn('break', event)">▲ 접기</button>
+      </div>
     </div>
     <div class="kk-grid" id="kkBreakGrid"></div>
     <div class="kk-sec-n">깡토 원문: 알림은 전고점에 정확히 걸지 않고 <b>살짝 아래</b>에 걸어 두고, 알림이 오면 장대양봉·거래량·인더스트리 액션 3조건을 확인한 뒤 진입합니다. 돌파 후 긴 윗꼬리가 나오면 진입하지 않습니다.</div>
+  </div>
+
+  <div class="kk-sec" data-kkc="near">
+    <div class="kk-sec-h" onclick="kkCol('near', this)" title="눌러서 접기/펼치기">
+      <div class="kk-sec-t">🎯 ① 전고점 5% 이내 접근 후보 <span class="kk-sec-s" id="kkNearCount">—</span></div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+      <div class="kk-sec-s">시총 1조↑(또는 주도주) · 종가 &gt; 60일선 · 전고점 대비 −5%~0% · 실시간 −5% 이탈 시 자동 제외</div>
+      <button type="button" class="kk-col-b" onclick="kkColBtn('near', event)">▲ 접기</button>
+      </div>
+    </div>
+    <div class="kk-grid" id="kkNearGrid"></div>
+    <div class="kk-sec-n">📌 핀 고정한 종목은 실시간으로 5% 밖으로 밀려도 목록에서 지우지 않습니다. 카드 1탭 = 큰 차트 · 두 손가락 핀치 = 확대 · 드래그 = 좌우 이동.</div>
   </div>
 
   <div class="kk-sec" style="border-color:rgba(251,191,36,.3);background:rgba(69,26,3,.22)">
@@ -16420,22 +17297,24 @@
             </div>
             <!-- ZOOM & PAN CONTROLLERS -->
             <div style="display: flex; gap: 3px; align-items: center;">
-              <button onclick="modalZoomIn()" title="확대" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">🔍 +</button>
-              <button onclick="modalZoomOut()" title="축소" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">🔍 -</button>
+              <button onclick="modalZoomIn()" title="확대" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 11px; font-weight: 900; cursor: pointer;">＋</button>
+              <button onclick="modalZoomOut()" title="축소" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 11px; font-weight: 900; cursor: pointer;">－</button>
               <button onclick="modalPanLeft()" title="과거로 이동" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">◀</button>
               <button onclick="modalPanRight()" title="최근으로 이동" style="padding: 2px 6px; background: #1e293b; color: #f1f5f9; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">▶</button>
-              <button onclick="modalResetZoom()" title="초기화" style="padding: 2px 6px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">⟲</button>
+              <button onclick="modalResetZoom()" title="초기화" style="padding: 2px 6px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; font-size: 11px; font-weight: 900; cursor: pointer;">↻</button>
               <span id="modalChartZoomCount" style="font-size: 9.5px; color: #cbd5e1; margin-left: 2px;">60봉</span>
             </div>
           </div>
 
           <!-- QUICK PERIOD PRESETS BAR (1M / 3M / 6M / 1Y / 2Y) -->
-          <div id="modalPeriodBar" style="display: flex; gap: 4px; margin-bottom: 6px; overflow-x: auto; padding-bottom: 2px;">
-            <button onclick="setModalPeriod(20)" style="padding: 2px 7px; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;">1개월(20봉)</button>
-            <button onclick="setModalPeriod(60)" style="padding: 2px 7px; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;">3개월(60봉)</button>
-            <button onclick="setModalPeriod(120)" style="padding: 2px 7px; background: #1e293b; color: #94a3b8; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; font-size: 10px; font-weight: 700; cursor: pointer;">6개월(120봉)</button>
-            <button onclick="setModalPeriod(250)" style="padding: 2px 7px; background: rgba(56,189,248,0.15); color: #38bdf8; border: 1px solid rgba(56,189,248,0.3); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">1년(250봉)</button>
-            <button onclick="setModalPeriod(500)" style="padding: 2px 7px; background: rgba(168,85,247,0.15); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); border-radius: 4px; font-size: 10px; font-weight: 800; cursor: pointer;">2년 전체(500봉)</button>
+          <div id="modalPeriodBar" class="ucx-pbar" style="margin-bottom:6px;">
+            <button class="ucx-p" data-p="15" onclick="setModalPeriod(15)">15일</button>
+            <button class="ucx-p" data-p="30" onclick="setModalPeriod(30)">30일</button>
+            <button class="ucx-p" data-p="60" onclick="setModalPeriod(60)">60일</button>
+            <button class="ucx-p" data-p="120" onclick="setModalPeriod(120)">120일</button>
+            <button class="ucx-p" data-p="200" onclick="setModalPeriod(200)">200일</button>
+            <button class="ucx-p" data-p="250" onclick="setModalPeriod(250)">1년</button>
+            <button class="ucx-p" data-p="500" onclick="setModalPeriod(500)">2년</button>
           </div>
 
           
@@ -16445,6 +17324,14 @@
             <button type="button" class="idx-ov-btn" data-ovbtn="channel" data-ovlabel="📈 추세채널" onclick="idxToggleOv('channel', this)" aria-pressed="true" style="background:rgba(56,189,248,0.20);color:#38bdf8;border-color:rgba(56,189,248,0.55);">✓ 📈 추세채널</button>
             <button type="button" class="idx-ov-btn" data-ovbtn="ma20" data-ovlabel="📉 20선" onclick="idxToggleOv('ma20', this)" aria-pressed="true" style="background:rgba(56,189,248,0.20);color:#38bdf8;border-color:rgba(56,189,248,0.55);">✓ 📉 20선</button>
             <span style="font-size:9px;color:#64748b;">실측 일봉 자동 계산</span>
+          </div>
+                    <div id="modalFibBar" class="ucx-pbar" style="align-items:center;margin:0 0 5px;" data-ucxmainfib="1">
+            <span style="font-size:9.5px;color:#94a3b8;font-weight:800;white-space:nowrap;">📐 피보 수치</span>
+            <input type="text" inputmode="decimal" autocomplete="off" class="ucx-in" id="ucxHi_main" aria-label="피보나치 고점 수치" placeholder="고점">
+            <input type="text" inputmode="decimal" autocomplete="off" class="ucx-in" id="ucxLo_main" aria-label="피보나치 저점 수치" placeholder="저점">
+            <button type="button" class="ucx-btn" onclick="UCX.fibApply('main')">적용</button>
+            <button type="button" class="ucx-btn auto" onclick="UCX.fibAuto('main')">자동 복귀</button>
+            <span class="ucx-fstat" id="ucxFst_main">자동(스윙)</span>
           </div>
           <div id="modalIdxBadges" style="display:flex;gap:4px;flex-wrap:wrap;margin:0 0 6px;max-width:100%;">
             <span class="idx-badge" id="idxBadgeMa20" style="color:#f43f5e;">📉 20일선 —</span>
@@ -20324,8 +21211,19 @@ window.DAILY_500_CANDLES = {"451760":[["20251105",8460.0,8500.0,8200.0,8280.0,72
       var tagStr = lastC >= 1000 ? Math.round(lastC).toLocaleString() : lastC.toFixed(1);
       ctx.fillText(tagStr, chartW + 4, lastY + 3);
       if (window.IDXOnDrawn) { try { window.IDXOnDrawn(); } catch (eDr) {} }
+      if (window.UCX) { try { UCX.paint('main', { period: modalViewCount }); } catch (eUx) { } }
     }
     window.drawModalCandles = drawModalCandles;
+
+    /* 📐 UCX — 메인 모달 차트를 통합 컬트롬 규격에 연결(피보 수치 입력·기간 칩·지표 칩) */
+    if (window.UCX) {
+      UCX.register('main', {
+        redraw: function () { try { drawModalCandles(); } catch (e) { } },
+        key: function () { return String(window.modalCurrentKey || '') + '|' + String(window.modalCurrentTitle || ''); },
+        getPeriod: function () { return modalViewCount; },
+        setPeriod: function (n) { setModalPeriod(n); }
+      });
+    }
 
     // ROCK-SOLID TOUCH DRAG & PINCH ZOOM ON MOBILE (FOLD 8 PERFECT COMPLIANCE)
     function setupModalCanvasInteraction() {
@@ -22099,6 +22997,18 @@ function drawChart() {
       ' · 시 ' + nf(c.o) + ' 고 ' + nf(c.h) + ' 저 ' + nf(c.l) + ' 종 ' + nf(c.c) +
       ' (' + sign(((c.c / view[i > 0 ? i - 1 : 0].c - 1) * 100).toFixed(2)) + '%) · 거래량 ' + nf(c.v);
   }
+
+  /* 📐 UCX 오버레이 — 피보나치(수치 직접 입력 포함)·추세채널·20선 라벸 */
+  if (window.UCX) {
+    try {
+      UCX.drawOverlays(ctx, 'hi', {
+        X: function (i2) { return padL + i2 * barW + barW / 2; },
+        Y: yOf, x0: padL, x1: padL + chartW, top: top, bot: top + chartH,
+        cs: view, all: full, vs: startIdx, labelRight: padL + chartW
+      });
+      UCX.paint('hi', { period: view.length });
+    } catch (eUcx) { }
+  }
 }
 function chartHover(ev) {
   const canvas = $('hiChartCanvas');
@@ -22168,6 +23078,19 @@ function hiResetView() {
   chartState.hover = -1;
   hiSyncChips();
   drawChart();
+}
+/* 📐 UCX — 홍인기 종목 차트 통합 컨트롬(기간·줌·이동·피보 수치·지표 칩) */
+if (window.UCX) {
+  UCX.register('hi', {
+    redraw: function () { try { drawChart(); } catch (e) { } },
+    key: function () { return chartState.code || '_'; },
+    getPeriod: function () { return chartState.count || HIP_DEF; },
+    setPeriod: function (n) { hiSetPeriod(n); },
+    limit: function () { return (chartState.full || []).length || HIP_DEF; },
+    zoom: function (dir) { hiZoomBy(dir > 0 ? 1.5 : (1 / 1.5)); },
+    pan: function (dir) { hiPanPx(dir > 0 ? -40 : 40); },
+    reset: function () { hiResetView(); }
+  });
 }
 function hiBindGestures() {
   const cv = $('hiChartCanvas');
@@ -23169,6 +24092,16 @@ function drawCandles(cv, candles, opts) {
   }
 
   /* 입력 처리(줌·팬·호버)가 쓸 기하 정보 */
+  /* 📐 UCX 오버레이 — 피보나치(수치 직접 입력 포함)·추세채널·20선 라벨 (큰 차트 전용) */
+  if (window.UCX && (o.big || o.ov)) {
+    try {
+      UCX.drawOverlays(ctx, (o.ov || 'bij'), {
+        X: X, Y: Y, x0: pl, x1: pl + iw, top: pt, bot: pt + ph,
+        cs: cs, all: all, vs: vs, labelRight: pl + iw, fibSide: 'left'
+      });
+      UCX.paint((o.ov || 'bij'), { period: cs.length });
+    } catch (eUcx) { }
+  }
   cv._geo = { pl: pl, iw: iw, pt: pt, ph: ph, volTop: volTop, volBot: volBot, count: cs.length, start: vs, W: W, H: H, bw: bw };
 }
 
@@ -23719,6 +24652,33 @@ function renderModal() {
   stx += ' · ' + new Date().toLocaleTimeString('ko-KR', { hour12: false }) + ' KST';
   $('cmStatus').textContent = stx;
   $('cmStatus').className = 'm-status ok';
+}
+
+/* 📐 UCX — 비중법사 봉차트 통합 컨트롬(기간·줌·이동·피보 수치·지표 칩) */
+if (window.UCX) {
+  UCX.register('bij', {
+    redraw: function () { try { renderModal(); } catch (e) { } },
+    key: function () { return (MODAL && MODAL.card) ? String(MODAL.card.code) : '_'; },
+    getPeriod: function () { var s = ZS.m; return s ? s.count : 15; },
+    setPeriod: function (n) {
+      var s = ZS.m; if (!s) return;
+      s.count = Math.min(zMaxCount(s), Math.max(zMinCount(s), n));
+      s.countF = s.count;
+      s.startF = Math.max(0, s.len - s.count);
+      s.hover = null;
+      renderModal();
+    },
+    limit: function () { var s = ZS.m; return s ? s.len : 0; },
+    zoom: function (dir) { var s = ZS.m; if (!s) return; zZoom(s, dir > 0 ? (1 / 1.4) : 1.4, 1); renderModal(); },
+    pan: function (dir) {
+      var s = ZS.m; if (!s) return;
+      var step = Math.max(1, Math.round(s.count * 0.25));
+      s.startF = Math.max(0, Math.min(Math.max(0, s.len - s.count), s.startF + (dir > 0 ? -step : step)));
+      s.hover = null;
+      renderModal();
+    },
+    reset: function () { var s = ZS.m; if (!s) return; zReset(s, MODAL_DEF); renderModal(); }
+  });
 }
 
 function openChart(code) {
@@ -24796,6 +25756,12 @@ window.BijoongTab = {
     }
     var H = win[hi].high, L = win[lo].low, range = H - L;
     var isUp = hi > lo;                       // 저점 → 고점이면 상승 스윙
+    /* 📐 피보 수치 직접 입력 — 사용자가 넣은 고점·저점이 있으면 그 값으로 되돌림을 그린다 */
+    var __ucxManual = (window.UCX && UCX.manualFib('main')) || null;
+    if (__ucxManual) {
+      H = __ucxManual.hi; L = __ucxManual.lo; range = H - L;
+      isUp = (all[all.length - 1].close >= (H + L) / 2);
+    }
     var fib = [];
     var RATIOS = [0.236, 0.382, 0.5, 0.618, 0.786];
     for (i = 0; i < RATIOS.length; i += 1) {
@@ -24850,7 +25816,7 @@ window.BijoongTab = {
     var pos = (upEnd - loEnd) ? ((last - loEnd) / (upEnd - loEnd)) * 100 : 50;
 
     return {
-      n: n, winStart: winStart, H: H, L: L, hiDate: win[hi].date, loDate: win[lo].date,
+      n: n, winStart: winStart, H: H, L: L, manual: !!__ucxManual, hiDate: win[hi].date, loDate: win[lo].date,
       isUp: isUp, fib: fib, ma20: ma20, dev: dev, rsi: rsi, last: last,
       slope: b, a: a, rHi: rHi, rLo: rLo, chUp: upEnd, chLo: loEnd, chPos: pos
     };
@@ -25058,7 +26024,9 @@ window.BijoongTab = {
       br.innerHTML = '⚡ RSI(14) ' + (rs === null ? '—' : rs.toFixed(1)) + ' · ' + rt;
       br.style.color = rs === null ? '#cbd5e1' : rs >= 70 ? '#f97316' : rs <= 30 ? '#22d3ee' : '#cbd5e1';
     }
-    if (bf) bf.innerHTML = '📐 피보 ' + c.n + '봉 스윙 기준';
+    if (bf) bf.innerHTML = c.manual
+      ? ('📐 피보 수동 ' + fmt(c.H, 2) + ' ~ ' + fmt(c.L, 2))
+      : ('📐 피보 ' + c.n + '봉 스윙 기준');
     if (bc) bc.innerHTML = '📈 채널 ' + (c.slope >= 0 ? '상승' : '하락') + ' · 밴드 ' + Math.max(0, Math.min(100, c.chPos)).toFixed(0) + '% 위치';
 
     var idxNow = isIndexKey();

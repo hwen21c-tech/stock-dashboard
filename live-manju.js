@@ -122,9 +122,9 @@
       + row('캔들 모양', bodyTxt + ' · ' + wickTxt + (c.lower != null ? ' · 아래꼬리 ' + pct(c.lower) : ''))
       + row('종가 위치', posTxt + (pos != null && pos >= 90 ? ' <b style="color:#34d399;">(고가 밀착)</b>' : (pos != null && pos <= 30 ? ' <b style="color:#f87171;">(저가권 마감)</b>' : '')))
       + row('거래량', c.volX != null ? '20일 평균 대비 <b>' + c.volX + '배</b>' : '—')
-      + '<div style="margin-top:8px;background:#0b1120;border:1px solid #1e293b;border-radius:8px;padding:4px;">'
-      + '<canvas id="mjdCanvas" style="width:100%;height:170px;display:block;"></canvas>'
-      + '<div style="font-size:9.5px;color:#64748b;text-align:right;padding:2px 4px 0;">최근 ' + (s.candles || []).length + '봉 일봉</div></div>';
+      + '<div style="margin-top:8px;background:#0b1120;border:1px solid #1e293b;border-radius:8px;padding:6px;">'
+      + '<div id="mjdChartHost"></div>'
+      + '<div style="font-size:9.5px;color:#64748b;text-align:right;padding:2px 4px 0;">최근 ' + (s.candles || []).length + '봉 일봉 · 기간·줌·이동·피보 수치 직접 입력 가능</div></div>';
 
     /* ③ 외인/기관 수급 */
     var h3 = '';
@@ -226,16 +226,14 @@
       + '<div style="font-size:9.5px;color:#64748b;line-height:1.5;">데이터: 네이버 증권 일봉·종목 뉴스·투자자별 매매동향(확정) · '
       + '지수/선물 실측. 값이 없는 항목은 미확인으로 표시합니다(추정 금지).</div>';
 
-    canvas = document.getElementById('mjdCanvas');
-    ctx = canvas ? canvas.getContext('2d') : null;
     series = (s.candles || []).slice();
-    draw();
+    mountChart();
 
     /* 실시간 60일봉이 있으면(동적 Vercel) 차트·현재가를 한 번 더 보강.
        정적 GitHub Pages(live-api.js 없음)에서는 /api 가 없으므로 호출하지 않는다(404 콘솔 오류 방지). */
     try {
       if (!window.LiveAPI) throw new Error('static');
-      fetch('/api/stock-chart?code=' + encodeURIComponent(s.code), { cache: 'no-store' })
+      fetch('/api/stock-chart?code=' + encodeURIComponent(s.code) + '&count=200', { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           var arr = j && (j.candles || j.bars || null);
@@ -244,10 +242,34 @@
             return { date: b.date || b.d, open: b.open != null ? b.open : b.o, high: b.high != null ? b.high : b.h,
               low: b.low != null ? b.low : b.l, close: b.close != null ? b.close : b.c, vol: b.vol || b.v || 0 };
           });
-          if (mapped.length >= 20) { series = mapped; draw(); }
+          if (mapped.length >= 20) { series = mapped; if (ucxApi) { try { ucxApi.setData(); } catch (e) { } } else { mountChart(); } }
         })
         .catch(function () { /* 정적 배포본은 API 없음 — 내장 일봉 유지 */ });
     } catch (e) { /* noop */ }
+  }
+
+
+  /* 📊 통합 캐들 차트(UCX) — 기간·줌·이동·피보나치(고점·저점 직접 입력)·추세채널·20선·지표 칩 */
+  var ucxApi = null;
+  function mountChart() {
+    var host = document.getElementById('mjdChartHost');
+    if (!host) return;
+    if (!window.UCX) {
+      host.innerHTML = '<div style="font-size:11px;color:#fbbf24;padding:8px 2px;">차트 엔진(UCX)을 불러오지 못했습니다 — 페이지를 새로고침해 주세요.</div>';
+      return;
+    }
+    var host2 = document.createElement('div');
+    host.innerHTML = '';
+    host.appendChild(host2);
+    ucxApi = window.UCX.mount(host2, {
+      id: 'manju',
+      title: '📊 실시간 캐들 & 추세선 차트',
+      sub: '(5/20/60/120선)',
+      height: 262,
+      def: 60,
+      getCandles: function () { return series; },
+      key: function () { return curCode || '_'; }
+    });
   }
 
   function draw() {
