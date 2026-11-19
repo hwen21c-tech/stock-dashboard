@@ -2581,8 +2581,19 @@ const recentWild = [];
 const LEGEND_RATE = 0.02;
 /* 이미 잡은 몬스터도 20% 정도는 다시 나온다(미포획 우선 + 재등장 섞기) */
 const RECATCH_RATE = 0.2;
+/* 같은 포켓몬을 3번 이상 잡으면 야생 출현에서 제외한다 — 아래 pickWild 가 이 값을 본다.
+   · 진화 해금(EVO_READY_MIN = 2)보다 뒤라 3번째 이후 제외돼도 진화에는 지장이 없다
+   · 아빠 권한으로 도감에서 지우면 counts 도 함께 지워져 다시 야생에 나올 수 있다 */
+const CAPTURE_LIMIT = 3;
+function caughtTimes(p) {
+  const c = (S.dex && S.dex.counts) ? S.dex.counts : null;
+  return (c && Number(c[p && p.id])) || 0;
+}
 function pickWild(excludeId) {
-  const all = wildPool();
+  const wildAll = wildPool();
+  /* 3번 이상 잡은 포켓몬은 풀에서 빠진다. 전부 3번 이상일 때만 안전 폴백으로 원래 풀 유지 */
+  const kept = wildAll.filter((p) => caughtTimes(p) < CAPTURE_LIMIT);
+  const all = kept.length ? kept : wildAll;
   const plain = all.filter((p) => !p.leg && !p.myth);
   const rare = all.filter((p) => p.leg || p.myth);
   const wantRare = rare.length > 0 && Math.random() < LEGEND_RATE;

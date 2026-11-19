@@ -41,6 +41,22 @@
   const SHINY_SPR = (id) => 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/' + id + '.png';
   const CRY = (id) => 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/' + id + '.ogg';
 
+  /* ---------- 0-1. 3회 포획 포켓몬 야생 출현 제외 ---------- */
+  /* 게임 본체(pickWild)와 같은 규칙 — 한 포켓몬을 3번 이상 잡으면 야생 출현 풀에서 뺀다.
+     진화 해금 기준(2회)보다 뒤라 진화에는 지장이 없고, 도감에서 지우면 counts 가 지워져 다시 나온다.
+     보스·미션 버프·진화 출현도 같은 규칙을 따른다(전부 3번 이상일 때만 안전 폴백). */
+  const CAPTURE_LIMIT = 3;
+  function caughtTimesOf(p) {
+    try {
+      const c = (S && S.dex && S.dex.counts) ? S.dex.counts : null;
+      return (c && Number(c[p && p.id])) || 0;
+    } catch (e) { return 0; }
+  }
+  /* 3번 미만으로 잡은 포켓몬만 남긴다(순수 필터). 안전 폴백은 부르는 쪽에서 정한다. */
+  function freshOf(list) {
+    return (list || []).filter((p) => caughtTimesOf(p) < CAPTURE_LIMIT);
+  }
+
   /* ---------- 1. 타입 → 배경 테마 ---------- */
   const THEME_OF = {
     물: 'lake', 얼음: 'lake',
@@ -229,7 +245,9 @@
   function legendBoost() {
     if (!Mission.buffOn()) return null;
     if (Math.random() > 0.05) return null;   /* 미션 버프 전설 확률 12% → 5% */
-    const pool = POKEMON.filter((p) => !p.form && (p.leg || p.myth));
+    const poolAll = POKEMON.filter((p) => !p.form && (p.leg || p.myth));
+    if (!poolAll.length) return null;
+    const pool = freshOf(poolAll);   /* 3번 이상 잡은 전설·환상은 미션 버프로도 나오지 않는다 */
     if (!pool.length) return null;
     const p = pick(pool);
     return Object.assign({}, p, { level: rand(20, 50), cp: rand(400, 900) });
@@ -1567,8 +1585,12 @@
       if (typeof POKEMON === 'undefined' || !Array.isArray(POKEMON) || !POKEMON.length) return orig.apply(null, args);
       const ids = (typeof S !== 'undefined' && S && S.dex && S.dex.ids) ? S.dex.ids : null;
       /* 전설·환상 쿨다운 중이면 일반 몬스터 풀만 남긴다 */
-      const plain = POKEMON.filter((p) => p && !p.form && (!o.noRare || !(p.leg || p.myth)));
-      if (!plain.length) return orig.apply(null, args);
+      const plainAll = POKEMON.filter((p) => p && !p.form && (!o.noRare || !(p.leg || p.myth)));
+      if (!plainAll.length) return orig.apply(null, args);
+      /* 3번 이상 잡은 포켓몬은 재등장·가중치 풀에서도 제외.
+         전부 3번 이상이라 남는 게 없을 때만 안전 폴백으로 원래 풀을 쓴다. */
+      const freshPool = freshOf(plainAll);
+      const plain = freshPool.length ? freshPool : plainAll;
       const base = ecoPool(plain);
       const saved = POKEMON;
       /* 아직 아무것도 못 잡았으면 생태계 가중치만 적용하고 본체에 넘긴다 */
@@ -1833,7 +1855,8 @@
         const nexts = PB.evo[String(id)];
         if (!nexts) return;
         nexts.forEach((n) => {
-          if (n !== excludeId && byId(n) && !byId(n).form) cands.push({ from: id, to: n });
+          if (n !== excludeId && byId(n) && !byId(n).form
+            && caughtTimesOf(byId(n)) < CAPTURE_LIMIT) cands.push({ from: id, to: n });
         });
       });
       if (!cands.length) return null;
@@ -2275,6 +2298,8 @@
       pool = POKEMON.filter((p) => p && p.id !== excludeId
         && (p.leg || p.myth || (p.tag && String(p.tag).indexOf('거다이맥스') >= 0)));
     } catch (e) { return null; }
+    if (!pool.length) return null;
+    pool = freshOf(pool);   /* 3번 이상 잡은 포켓몬은 보스로도 나오지 않는다 */
     if (!pool.length) return null;
     const caught = (S.dex && S.dex.ids) || new Set();
     const uncaught = pool.filter((p) => !caught.has(p.id));
