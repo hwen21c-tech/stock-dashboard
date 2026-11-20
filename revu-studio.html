@@ -203,6 +203,8 @@ main{padding:6px 0 40px;min-height:60vh}
 .flag.plain{background:rgba(148,163,184,.10);color:#cbd5e1;border-color:var(--line)}
 .cfoot{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
 .done{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:900;padding:3px 8px;border-radius:8px;background:rgba(52,211,153,.16);color:#a7f3d0;border:1px solid rgba(52,211,153,.34)}
+.done.off{background:rgba(148,163,184,.14);color:#c3cfdf;border-color:var(--line2)}
+.item.applied{border-left:3px solid rgba(251,191,36,.5)}
 
 /* ---------- lists (apply / review) ---------- */
 .items{display:flex;flex-direction:column;gap:10px}
@@ -512,13 +514,13 @@ footer b{color:var(--mut)}
     <section id="view-apply" class="hide">
       <div class="panel">
         <div class="phead">
-          <h2>✍️ 체험단 지원 · 신청 한마디 3종</h2>
-          <span class="sub" id="applyCnt">담은 캠페인 0건</span>
+          <h2>✍️ 지원 · 지원함 &amp; 발표 대기</h2>
+          <span class="sub" id="applyCnt">지원함 0건 · 발표 대기 0건</span>
         </div>
         <div class="tip info">
-          레뷰 신청 한마디는 <b>미션 수행 계획</b>이 구체적일수록 선정률이 올라갑니다.
-          아래 3가지 톤 중 하나를 골라 <b>[멘트 복사 &amp; 지원창 열기]</b>를 누르면 클립보드에 복사되고 해당 캠페인 신청 페이지가 새 탭으로 열립니다.
-          <b>실제 신청 버튼은 직접 눌러 주세요</b>(정적 웹앱은 레뷰 로그인 세션으로 대신 신청할 수 없습니다).
+          <b>📝 아직 신청 전</b> — 담아 둔 캠페인은 <b>신청 한마디 3종</b>을 만들어 복사한 뒤 신청 페이지에서 직접 신청합니다.
+          <b>⏳ 발표 대기 중</b> — 이미 신청한 캠페인은 <b>발표일</b>을 보고, 선정되면 <b>[🎉 선정됨 → 리뷰 탭]</b>을 눌러 리뷰 준비로 넘기세요.
+          실제 신청·선정 확인은 각 플랫폼 계정에서 직접 합니다(정적 웹앱은 대신 신청할 수 없습니다).
         </div>
       </div>
       <div id="applyBody" style="margin-top:12px"></div>
@@ -530,7 +532,7 @@ footer b{color:var(--mut)}
       <div class="panel">
         <div class="phead">
           <h2>📝 체험단 리뷰 · 사진 배치 &amp; 리뷰 3종</h2>
-          <span class="sub" id="reviewCnt">신청완료·선정 0건</span>
+          <span class="sub" id="reviewCnt">선정·리뷰완료 0건</span>
         </div>
         <div class="tip warn">
           <b>레뷰 정책 주의</b> — 레뷰는 <b>일반 캠페인에서 생성형 AI로 만든 글·이미지·영상을 제한</b>합니다.
@@ -1012,8 +1014,43 @@ footer b{color:var(--mut)}
   function cartRows() {
     return S.cart.map(byId).filter(function (r) { return !!r; });
   }
+  /* ✍️ 지원 탭 = 지원함에 담은 것 + 신청완료(발표 대기) */
+  function applyRows() {
+    var list = S.rows.filter(function (r) {
+      var st = S.status[r.id];
+      if (st === 'applied') return true;
+      if (!st && S.cart.indexOf(r.id) >= 0) return true;
+      return false;
+    });
+    list.sort(function (a, b) {
+      var aa = a.announce ? dday(a.announce) : null, ba = b.announce ? dday(b.announce) : null;
+      if (aa !== null && ba !== null && aa !== ba) return aa - ba;
+      if (aa !== null && ba === null) return -1;
+      if (aa === null && ba !== null) return 1;
+      return (a.d === null ? 99 : a.d) - (b.d === null ? 99 : b.d);
+    });
+    return list;
+  }
+  /* 📝 리뷰 탭 = 최종 선정·리뷰완료만 (신청완료·발표대기는 제외) */
   function reviewRows() {
-    return S.rows.filter(function (r) { return !!S.status[r.id]; });
+    return S.rows.filter(function (r) {
+      var st = S.status[r.id];
+      return st === 'selected' || st === 'reviewed';
+    });
+  }
+  function statusLabel(st) {
+    if (st === 'selected') return '🎉 선정됨';
+    if (st === 'reviewed') return '✅ 리뷰완료';
+    if (st === 'dropped') return '🚫 미선정';
+    if (st === 'applied') return '✓ 신청완료';
+    return '';
+  }
+  function announceLine(r) {
+    if (!r.announce) return '<span class="duetag safe">발표일 미확인</span>';
+    var n = dday(r.announce);
+    var txt = (n === null ? '발표일 ' : (n > 0 ? '발표 D-' + n : n === 0 ? '오늘 발표' : '발표 완료')) + ' (' + mdLabel(r.announce) + ')';
+    var cls = n === null ? 'safe' : (n <= 0 ? 'warn1' : n <= 2 ? 'warn3' : 'safe');
+    return '<span class="duetag ' + cls + '">📢 ' + txt + '</span>';
   }
   function providerPrice(r) {
     if (r.price && r.price > 0) return num(r.price);
@@ -1059,19 +1096,33 @@ footer b{color:var(--mut)}
       : '선정된 캠페인 제공내역 기준 합계 (직접 입력 가능)';
     /* 마감 패널티 */
     var pool = reviewRows().slice();
-    cartRows().forEach(function (r) { if (pool.indexOf(r) < 0) pool.push(r); });
+    applyRows().forEach(function (r) { if (pool.indexOf(r) < 0) pool.push(r); });
     var alerts = dueAlertRows();
     var nearest = null;
     pool.forEach(function (r) { if (r.d !== null && r.d >= 0 && (nearest === null || r.d < nearest)) nearest = r.d; });
     var late = alerts.filter(function (r) { return dueInfo(r).n < 0; }).length;
-    $('dueVal').innerHTML = (alerts.length ? '<span style="color:#fecaca">' + alerts.length + '건</span>' : (nearest === null ? '–' : ddayText(nearest))) +
-      '<small id="dueSub">' + (alerts.length ? '리뷰 등록 임박' : '3일 내 ' + pool.filter(function (r) { return r.d !== null && r.d >= 0 && r.d <= 3; }).length + '건 마감') + '</small>';
-    $('dueNote').textContent = alerts.length
-      ? (late ? '지연 ' + late + '건 · ' : '') + '신청·선정 캠페인 리뷰 등록 마감이 3일 내입니다'
-      : (pool.length ? '담음·신청 ' + pool.length + '건 중 급한 리뷰 마감 없음' : '담은 캠페인이 아직 없습니다');
+    var nextAnn = null;
+    S.rows.forEach(function (r) {
+      if (S.status[r.id] !== 'applied' || !r.announce) return;
+      var n = dday(r.announce);
+      if (n === null || n < 0) return;
+      if (nextAnn === null || n < nextAnn.n) nextAnn = { n: n, d: r.announce };
+    });
+    if (alerts.length) {
+      $('dueVal').innerHTML = '<span style="color:#fecaca">' + alerts.length + '건</span><small id="dueSub">리뷰 등록 임박</small>';
+      $('dueNote').textContent = (late ? '지연 ' + late + '건 · ' : '') + '선정 캠페인 리뷰 등록 마감이 3일 내입니다';
+    } else if (nextAnn) {
+      $('dueVal').innerHTML = 'D-' + nextAnn.n + '<small id="dueSub">발표 임박</small>';
+      $('dueNote').textContent = '발표 대기 ' + S.rows.filter(function (r) { return S.status[r.id] === 'applied'; }).length +
+        '건 · 가장 빠른 발표 ' + mdLabel(nextAnn.d);
+    } else {
+      $('dueVal').innerHTML = (nearest === null ? '–' : ddayText(nearest)) +
+        '<small id="dueSub">' + (pool.length ? '3일 내 ' + pool.filter(function (r) { return r.d !== null && r.d >= 0 && r.d <= 3; }).length + '건 마감' : '등록된 지원 없음') + '</small>';
+      $('dueNote').textContent = pool.length ? '담음·신청 ' + pool.length + '건 중 급한 마감' : '담은 캠페인이 아직 없습니다';
+    }
     /* counters */
     $('nMain').textContent = String(S.rows.length);
-    $('nApply').textContent = String(S.cart.length);
+    $('nApply').textContent = String(applyRows().length);
     $('nReview').textContent = String(reviewRows().length);
     /* source line */
     var m = S.meta || {};
@@ -1101,7 +1152,7 @@ footer b{color:var(--mut)}
     var inCart = S.cart.indexOf(r.id) >= 0;
     var cls = 'card' + (inCart ? ' in' : '');
     var statusChip = st
-      ? '<span class="done">' + (st === 'selected' ? '🎉 선정됨' : st === 'reviewed' ? '✅ 리뷰완료' : '✓ 신청완료') + '</span>'
+      ? '<span class="done' + (st === 'dropped' ? ' off' : '') + '">' + statusLabel(st) + '</span>'
       : '';
     return '<article class="' + cls + '" data-id="' + esc(r.id) + '">' +
       '<div class="ctop">' +
@@ -1264,8 +1315,10 @@ footer b{color:var(--mut)}
       (inCart ? '✓ 지원함에서 빼기' : '+ 지원함 담기') + '</button>';
     if (!st) {
       foot += '<button class="btn ok" data-mark="' + esc(r.id) + '" data-markto="applied" type="button">이미 신청했어요</button>';
+    } else if (st === 'dropped') {
+      foot += '<button class="btn ghost" data-mark="' + esc(r.id) + '" data-markto="" type="button">미선정 표시 해제</button>';
     } else {
-      foot += '<button class="btn danger" data-mark="' + esc(r.id) + '" data-markto="" type="button">신청완료 해제</button>';
+      foot += '<button class="btn danger" data-mark="' + esc(r.id) + '" data-markto="" type="button">' + (st === 'applied' ? '신청완료 해제' : '상태 해제') + '</button>';
     }
     foot += '<button class="btn ghost" data-close="mDetail" type="button">닫기</button>';
     $('mDetailFoot').innerHTML = foot;
@@ -1408,14 +1461,59 @@ footer b{color:var(--mut)}
 
   /* ------------------------------------------------------------------ apply tab */
   function renderApply() {
-    var rows = cartRows();
-    $('applyCnt').textContent = '담은 캠페인 ' + rows.length + '건';
-    if (!rows.length) {
+    var pendingRows = S.rows.filter(function (r) {
+      return !S.status[r.id] && S.cart.indexOf(r.id) >= 0;
+    });
+    var appliedRows = S.rows.filter(function (r) { return S.status[r.id] === 'applied'; });
+    appliedRows.sort(function (a, b) {
+      var aa = a.announce ? dday(a.announce) : null, ba = b.announce ? dday(b.announce) : null;
+      if (aa === null && ba === null) return (a.d === null ? 99 : a.d) - (b.d === null ? 99 : b.d);
+      if (aa === null) return 1;
+      if (ba === null) return -1;
+      return aa - ba;
+    });
+    $('applyCnt').textContent = '지원함 ' + pendingRows.length + '건 · 발표 대기 ' + appliedRows.length + '건';
+
+    if (!pendingRows.length && !appliedRows.length) {
       $('applyBody').innerHTML = '<div class="panel"><div class="empty">아직 담은 캠페인이 없습니다.<br>' +
         '<b>📋 메인</b> 탭에서 마음에 드는 캠페인의 <b>[+ 지원함 담기]</b>를 눌러 주세요.</div></div>';
       return;
     }
-    $('applyBody').innerHTML = '<div class="items">' + rows.map(applyItemHtml).join('') + '</div>';
+
+    var html = '';
+    html += '<div class="panel" style="margin-top:12px">' +
+      '<div class="phead"><h2>📝 아직 신청 전 (지원함)</h2><span class="sub">' + pendingRows.length + '건 · 멘트 3종을 만든 뒤 지원창을 열어 신청하세요</span></div>' +
+      (pendingRows.length
+        ? '<div class="items">' + pendingRows.map(applyItemHtml).join('') + '</div>'
+        : '<div class="empty" style="padding:18px 12px">지원함이 비어 있습니다. 메인 탭에서 <b>[+ 지원함 담기]</b>를 눌러 담아 보세요.</div>') +
+    '</div>';
+
+    html += '<div class="panel" style="margin-top:12px">' +
+      '<div class="phead"><h2>⏳ 발표 대기 중 (신청 완료)</h2><span class="sub">' + appliedRows.length + '건 · 발표일 가까운 순</span></div>' +
+      (appliedRows.length
+        ? '<div class="items">' + appliedRows.map(appliedItemHtml).join('') + '</div>'
+        : '<div class="empty" style="padding:18px 12px">발표를 기다리는 캠페인이 없습니다. 메인 탭 카드의 <b>[이미 신청했어요]</b>로도 옮길 수 있어요.</div>') +
+    '</div>';
+
+    $('applyBody').innerHTML = html;
+  }
+
+  function appliedItemHtml(r) {
+    var n = r.announce ? dday(r.announce) : null;
+    return '<div class="item applied" data-aitem="' + esc(r.id) + '">' +
+      '<div class="itemtop"><h3>' + esc(r.title) + '</h3>' +
+        platBadge(r) + announceLine(r) +
+        '<span class="done">✓ 신청완료</span></div>' +
+      '<div class="meta">' + esc(r.category || '기타') + ' · 신청 ' + (r.applicants || '–') + '/' + (r.capacity || '–') +
+        ' · 경쟁 ' + rateText(r.rate) + (r.offer ? ' · 제공 ' + esc(slice(r.offer, 34)) : '') + '</div>' +
+      '<div class="toolrow" style="margin-top:9px">' +
+        '<button class="btn sm ok" data-mark="' + esc(r.id) + '" data-markto="selected" type="button">🎉 선정됨 → 리뷰 탭</button>' +
+        '<button class="btn sm ghost" data-mark="' + esc(r.id) + '" data-markto="dropped" type="button">😢 미선정</button>' +
+        '<button class="btn sm ghost" data-mark="' + esc(r.id) + '" data-markto="" type="button">대기에서 빼기</button>' +
+        '<a class="btn sm ghost" href="' + esc(r.applyUrl || r.url) + '" target="_blank" rel="noopener">' + esc(platOf(r).name) + '에서 보기 ↗</a>' +
+      '</div>' +
+      (r.note ? '<div class="srcnote" style="margin-top:7px">' + esc(r.note) + '</div>' : '') +
+    '</div>';
   }
 
   function checksHtml(r) {
@@ -1531,11 +1629,21 @@ footer b{color:var(--mut)}
   /* ------------------------------------------------------------------ review tab */
   function renderReview() {
     var rows = reviewRows();
-    $('reviewCnt').textContent = '신청완료·선정 ' + rows.length + '건';
+    $('reviewCnt').textContent = '선정·리뷰완료 ' + rows.length + '건';
     renderDueAlarm();
     if (!rows.length) {
-      $('reviewBody').innerHTML = '<div class="panel"><div class="empty">아직 신청·선정된 캠페인이 없습니다.<br>' +
-        '지원 후 <b>[신청완료로 표시]</b>를 누르면 이곳에 모입니다.</div></div>';
+      var wait = S.rows.filter(function (r) { return S.status[r.id] === 'applied'; });
+      var dates = wait.map(function (r) { return r.announce; }).filter(function (v) { return !!v; }).sort();
+      var tail = wait.length
+        ? '현재 <b>발표 대기 중인 캠페인 ' + wait.length + '건</b>' +
+          (dates.length ? ' (가장 빠른 발표: <b>' + mdLabel(dates[0]) + '</b>)' : ' (발표일 미확인)') +
+          '<br>발표에서 선정되면 그때 이 탭으로 옮겨집니다.'
+        : '지원 후 <b>[이미 신청했어요]</b>로 신청완료를 표시하면 이곳에서 발표를 기다립니다.';
+      $('reviewBody').innerHTML = '<div class="panel"><div class="empty" style="padding:22px 14px">' +
+        '<div style="font-size:15px;font-weight:900;color:#e9eff9;margin-bottom:7px">📝 아직 선정된 캠페인이 없습니다</div>' +
+        '<div style="font-size:12.5px;line-height:1.8;color:#9babc1;font-weight:700">' + tail + '</div>' +
+        '<button class="btn sm ghost" data-gotoapply="1" type="button" style="margin-top:12px">✍️ 지원 탭에서 보기</button>' +
+      '</div></div>';
       return;
     }
     var sorted = rows.slice().sort(function (a, b) {
@@ -2109,9 +2217,14 @@ footer b{color:var(--mut)}
       if (to) { S.status[mid] = to; } else { delete S.status[mid]; }
       save(); renderStats(); renderMain(); renderApply(); renderReview();
       if ($('mDetail').classList.contains('on')) { if (byId(mid)) openDetail(mid); }
-      toast(to ? '상태 변경됨' : '상태를 해제했어요', 'ok');
+      toast(to === 'selected' ? '🎉 선정됨으로 옮겼어요 — 리뷰 탭에서 등록 준비' :
+            to === 'dropped' ? '미선정으로 표시했어요' :
+            to ? '상태 변경됨' : '상태를 해제했어요', 'ok');
+      if (to === 'selected' && S.ui.tab === 'apply') setTab('review');
       return;
     }
+
+    if ((c = closest('[data-gotoapply]'))) { setTab('apply'); return; }
 
     if ((c = closest('[data-gen]'))) { genApply(c.getAttribute('data-gen')); return; }
 
