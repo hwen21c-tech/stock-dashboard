@@ -115,7 +115,7 @@
 
   /* ---------- tabs ---------- */
   .tabs{
-    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+    display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;
     background:#0a1220;border:1px solid var(--line);border-radius:13px;padding:5px;margin-bottom:13px;
   }
   .tab{
@@ -1088,7 +1088,8 @@
   .sumacts .btn{flex:1 1 130px;justify-content:center}
   .stype.summary{color:#fde68a;background:rgba(250,204,21,.12);border:1px solid rgba(250,204,21,.34)}
   @media (max-width:520px){
-    .tabs{grid-template-columns:1fr}
+    .tabs{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .tab{font-size:12.2px;white-space:normal;line-height:1.28;padding:9px 5px}
   }
   /* ================= 💰 수익화 4종 ================= */
   .affilbox{display:grid;gap:7px;min-width:0}
@@ -1344,6 +1345,7 @@
 
 <nav class="tabs" role="tablist" aria-label="모드 전환">
   <button class="tab on" id="tabVideo" role="tab" aria-selected="true" aria-controls="panelVideo">🎬 AI 영상 스튜디오</button>
+  <button class="tab" id="tabShorts" role="tab" aria-selected="false" aria-controls="panelShorts">📱 쇼츠 스튜디오</button>
   <button class="tab" id="tabBlog" role="tab" aria-selected="false" aria-controls="panelBlog">✍️ 블로그 자동 작성기</button>
   <button class="tab" id="tabSum" role="tab" aria-selected="false" aria-controls="panelSum">📋 요약</button>
 </nav>
@@ -1438,10 +1440,10 @@
   <div id="modeMerge">
     <div class="wvbridge">
       <div class="wb-t">
-        <b>🎬 사진 + 대본만으로 처음부터 영상 만들기</b>
-        <span>영상 파일이 없어도 됩니다. 쇼츠 대본(또는 이 화면의 스토리 방향) + 사진 3장이면 <b>1080×1920 쇼츠 영상</b>을 브라우저에서 바로 만듭니다 — 크레딧 0.</span>
+        <b>✂️ 이 탭은 영상 편집기 — 내가 찍은 클립을 자르고 이어 붙이는 곳</b>
+        <span>클립 2~3개를 올려 순서·길이·자막·훅을 설계합니다. <b>대본 → 🦊 폭스시그널 → 1080×1920 완성 영상</b>은 <b>📱 쇼츠 스튜디오</b> 탭에서 한 번에 만듭니다(크레딧 0).</span>
       </div>
-      <button class="btn primary" id="bridgeWv" type="button">🎬 웹 쇼츠 생성기 열기</button>
+      <button class="btn primary" id="bridgeWv" type="button">📱 쇼츠 스튜디오 열기</button>
       <button class="btn small ghost" id="bridgeWvShort" type="button">✍️ 쇼츠 대본부터 만들기</button>
     </div>
     <div class="merge-cols">
@@ -1608,10 +1610,6 @@
 
 <!-- ================= BLOG ================= -->
 <section id="panelBlog" role="tabpanel" aria-labelledby="tabBlog" hidden>
-  <div class="csmodeseg" id="csModeSeg" role="group" aria-label="콘텐츠 모드 전환">
-    <button type="button" class="csm on" data-csmode="blog" aria-pressed="true">✍️ 블로그 글 <span>9테마 · 27양식</span></button>
-    <button type="button" class="csm" data-csmode="shorts" aria-pressed="false">🎬 쇼츠 대본 <span>14테마 · 42양식</span></button>
-  </div>
   <div id="blogMain">
   <details class="shelf" id="materialPanel">
     <summary><span>📥 재료 수집 — 유튜브 자막 · 오늘 관제탑 시황</span><span class="n" id="matState">대기</span><span class="arw">▾</span></summary>
@@ -1899,6 +1897,7 @@
             <button class="btn small mon" id="affilBtn" type="button" title="저장한 제휴 링크와 필수 고지 문구를 본문 끝에 넣습니다(다시 누르면 뺍니다)">💰 제휴 링크·고지 넣기</button>
             <button class="btn small primary" id="blogOneShotBtn" type="button" title="이 글 하나로 쇼츠 v3 대본·MP3·MP4 JSON·추천 차트 PNG를 한 번에 뽑습니다">🎬 이 글로 쇼츠 JSON·제목 한 번에</button>
             <button class="btn small primary" id="msBtn" type="button" title="이 한 편을 네이버·티스토리·인스타·쇼츠 4채널로 한 번에 바꿉니다">🚀 4채널 동시 변환</button>
+            <button class="btn small primary" id="blogToShortsBtn" type="button" title="이 글을 50초 5컷 쇼츠 대본으로 바꿔 복사하고, 📱 쇼츠 스튜디오 대본 칸과 🎬 웹 영상 생성기에 바로 넣습니다">📱 쇼츠로 변환</button>
           </div>
           <div class="proofbadge" id="proofNote" hidden></div>
           <pre class="out" id="outText"></pre>
@@ -2035,7 +2034,11 @@
     </div>
   </div>
   </div><!-- /#blogMain -->
-  <div id="shortsMain" hidden>
+</section>
+
+<!-- ================= 📱 쇼츠 스튜디오 (대본 → 🦊 폭스시그널 → 1080×1920 영상) ================= -->
+<section id="panelShorts" role="tabpanel" aria-labelledby="tabShorts" hidden>
+  <div id="shortsMain">
     <div class="blog-cols">
       <div>
         <div class="card">
@@ -2142,6 +2145,99 @@
       </div>
     </div>
   </div><!-- /#shortsMain -->
+
+<!-- ================= 🎬 웹 쇼츠 영상 생성기 (Canvas 1080×1920 + MediaRecorder · 크레딧 0) ================= -->
+<details class="shelf" id="wvPanel" open>
+  <summary><span>🎬 웹 영상 생성기 — 대본 → 🦊 폭스시그널 → 1080×1920 완성 · 크레딧 0</span><span class="n" id="wvState">대기</span><span class="arw">▾</span></summary>
+  <div class="shelfbody">
+    <div class="wvhead">
+      <span class="wvchip" id="wvSrc">대본 없음</span>
+      <span class="wvchip" id="wvTplTag">📊 카드형</span>
+      <span class="wvchip" id="wvMusic">BGM —</span>
+      <span class="spacer"></span>
+      <button class="btn small" id="wvPasteBtn" type="button" aria-expanded="false" aria-controls="wvPaste">📋 대본 붙여넣기</button>
+      <button class="btn small ghost" id="wvSampleBtn" type="button" data-wvsample="1">🧪 샘플로 바로 만들기</button>
+      <button class="btn small ghost" id="wvSetBtn" type="button">⚙ 옵션</button>
+    </div>
+    <div class="wvpaste" id="wvPaste" hidden>
+      <div class="wvrow" style="gap:6px">
+        <span class="flabel" style="margin:0">📋 대본 직접 붙여넣기</span>
+        <span class="hint" id="wvPasteHint" style="margin:0;flex:1 1 180px;min-width:0">타임스탬프([00:00~00:03])·컷 대본·SRT·3~7문장을 그대로 붙여넣으면 컷으로 나눕니다. 해시태그·음성 노트·기준 줄은 자동으로 걷어냅니다.</span>
+      </div>
+      <textarea id="wvPasteTa" spellcheck="false" rows="6" aria-label="붙여넣을 쇼츠 대본" placeholder="예)&#10;[0~3.4초 · 후킹]&#10;  자막: 코스피 5.2% 폭락 (-5.21%)&#10;  나레이션: 코스피 5.2퍼센트 폭락.&#10;&#10;[3.4~16.1초 · 컷 1 — 지수와 하루 흐름]&#10;  자막: 종가 4,869.96 · 코스닥 645(-5.71%) · 사이드카&#10;  나레이션: 종가 4,869. 장중 4,831까지 밀렸다가 되돌렸습니다."></textarea>
+      <div class="wvpasteacts">
+        <button class="btn small primary" id="wvPasteApply" type="button">✅ 이 대본 적용</button>
+        <button class="btn small ghost" id="wvPasteClear" type="button">지우기</button>
+        <span class="hint" id="wvPasteMsg" style="margin:0;flex:1 1 160px;min-width:0">붙여넣고 [✅ 이 대본 적용]을 누르면 미리보기가 바로 바뀝니다. (Ctrl+Enter)</span>
+      </div>
+      <ul class="wvpastelist" id="wvPasteList" hidden></ul>
+    </div>
+    <div class="wvrow" style="gap:6px"><span class="flabel" style="margin:0">🎨 영상 디자인 템플릿</span><span class="hint" id="wvDesignHint" style="margin:0">선택값은 이 브라우저에 저장됩니다</span></div>
+    <div class="wvdesignrow" role="group" aria-label="영상 디자인 템플릿 선택 — 다크 시네마 / 폭스시그널 에디토리얼">
+      <button class="wvdesign on" type="button" data-wvdesign="dark" aria-pressed="true"><b>🌙 다크 시네마</b><span>기본 — 딥 네이비 바탕 · 카드/차트/사진 3양식</span></button>
+      <button class="wvdesign" type="button" data-wvdesign="fox" aria-pressed="false"><b>🦊 폭스시그널 에디토리얼</b><span>크림 아이보리 · 빅넘버 · 여우 4종 · 에디토리얼 자막</span></button>
+    </div>
+    <div class="wvfoxbox" id="wvFoxBox" hidden>
+      <div class="flabel" style="margin:0">🦊 컷별 여우 포즈 <span class="bdg info">자동 = 컷 내용으로 선택</span></div>
+      <div class="wvfoxcuts" id="wvFoxCuts"></div>
+    </div>
+    <div class="wvtplrow" role="group" aria-label="영상 양식 선택 — 3종 모두 세이프 존·자동 줄바꿈·3단 그리드 동일">
+      <button class="wvtpl on" type="button" data-wvtpl="card" aria-pressed="true"><b>📊 정보/시황 카드형</b><span>훅 + 핵심 포인트 카드 + 자막</span></button>
+      <button class="wvtpl" type="button" data-wvtpl="chart" aria-pressed="false"><b>📈 모션 차트/비교표형</b><span>수치를 움직이는 바·좌우 비교로</span></button>
+      <button class="wvtpl" type="button" data-wvtpl="photo" aria-pressed="false"><b>🖼️ 사진 줌인/캡처형</b><span>내 사진 Ken Burns + 배지·자막</span></button>
+    </div>
+    <div class="hint" id="wvLayoutHint">쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.</div>
+    <details class="wvopt" id="wvOpt">
+      <summary>⚙ 채널 프리셋 · 성우 · 자막색 · BGM · 내 사진</summary>
+      <div class="wvbody">
+        <div class="flabel">채널 프리셋 — 성우·테마색·자막색·BGM·워터마크 자동 세팅(이 브라우저에 저장)</div>
+        <div class="wvrow">
+          <button class="btn small" id="wvPreStock" type="button" data-wvpre="stock">📈 주식 채널</button>
+          <button class="btn small" id="wvPreDeal" type="button" data-wvpre="deal">🏷️ 특가·핫템 채널</button>
+        </div>
+        <div class="wvrow">
+          <label class="flabel" for="wvVoice" style="flex:0 0 auto">성우</label>
+          <select id="wvVoice" aria-label="성우 (한국어 무료 · ElevenLabs)"></select>
+          <button class="btn small ghost" id="wvVoiceRefresh" type="button" title="ElevenLabs 키로 내 계정 보이스 다시 불러오기">🔄 내 보이스</button>
+        </div>
+        <div class="wvrow" style="flex-wrap:nowrap;align-items:center">
+          <label class="flabel" for="wvSpeed" style="flex:0 0 auto">말 속도</label>
+          <input type="range" id="wvSpeed" min="0.90" max="1.25" step="0.01" value="1" style="flex:1 1 120px;min-width:0;accent-color:#38bdf8" aria-label="성우 말 속도">
+          <output id="wvSpeedTag" for="wvSpeed" style="flex:0 0 auto;margin-left:8px;font-weight:900;font-variant-numeric:tabular-nums">1.00x</output>
+        </div>
+        <div class="wvrow">
+          <label class="flabel" for="wvBgm" style="flex:0 0 auto">BGM</label>
+          <select id="wvBgm" aria-label="BGM 분위기">
+            <option value="news">차분한 뉴스</option>
+            <option value="tense">긴장감 비트</option>
+            <option value="bright">밝은 리뷰</option>
+            <option value="none">없음</option>
+          </select>
+          <label class="aftoggle" for="wvSfx"><input type="checkbox" id="wvSfx"> 전환·훅 효과음</label>
+        </div>
+        <div class="wvrow">
+          <label class="flabel" for="wvAccent" style="flex:0 0 auto">테마색</label>
+          <input type="color" id="wvAccent" aria-label="테마 강조색">
+          <label class="flabel" for="wvCap" style="flex:0 0 auto">자막색</label>
+          <input type="color" id="wvCap" aria-label="자막 강조색">
+          <label class="aftoggle" for="wvNum"><input type="checkbox" id="wvNum" checked> 숫자 한글 발음</label>
+        </div>
+        <div class="wvrow">
+          <label class="flabel" for="wvWm" style="flex:0 0 auto">워터마크</label>
+          <input type="text" id="wvWm" maxlength="30" placeholder="예) 연오랑의 3분 시황" aria-label="워터마크 문구">
+        </div>
+        <div class="flabel">📈 차트 데이터 (선택 · 모션 차트형에서만 사용)</div>
+        <textarea id="wvChartData" rows="3" placeholder="코스피, 5092&#10;코스닥, 671" aria-label="모션 차트 데이터 수동 입력"></textarea>
+        <div class="hint">한 줄에 <b>이름, 값</b> (예: <b>코스피, 5092</b>). 입력하면 대본 자동 파싱보다 우선하며 모든 컷에 같은 비교표를 씁니다. 비우면 컷의 숫자를 읽고, 수치가 없는 컷은 카드형으로 대체합니다.</div>
+        <div class="flabel">📷 컷 배경 사진 (최대 4장 · 컷마다 자동 순환 배분 · 부드러운 Ken Burns 줌인/패닝)</div>
+        <div class="wvrow">
+          <button class="btn small" id="wvPhotoBtn" type="button">사진 고르기</button>
+          <button class="btn small ghost" id="wvPhotoClear" type="button">비우기</button>
+        </div>
+        <input type="file" id="wvPhotoInput" accept="image/*" multiple hidden>
+        <div class="wvthumbs" id="wvThumbs"></div>
+      </div>
+    </details>
 </section>
 
 <!-- ================= 📋 요약 ================= -->
@@ -2251,98 +2347,6 @@
 </section>
 
 
-<!-- ================= 🎬 웹 쇼츠 영상 생성기 (Canvas 1080×1920 + MediaRecorder · 크레딧 0) ================= -->
-<details class="shelf" id="wvPanel">
-  <summary><span>🎬 웹 영상 생성기 — 1080×1920 쇼츠 · 크레딧 0</span><span class="n" id="wvState">대기</span><span class="arw">▾</span></summary>
-  <div class="shelfbody">
-    <div class="wvhead">
-      <span class="wvchip" id="wvSrc">대본 없음</span>
-      <span class="wvchip" id="wvTplTag">📊 카드형</span>
-      <span class="wvchip" id="wvMusic">BGM —</span>
-      <span class="spacer"></span>
-      <button class="btn small" id="wvPasteBtn" type="button" aria-expanded="false" aria-controls="wvPaste">📋 대본 붙여넣기</button>
-      <button class="btn small ghost" id="wvSampleBtn" type="button" data-wvsample="1">🧪 샘플로 바로 만들기</button>
-      <button class="btn small ghost" id="wvSetBtn" type="button">⚙ 옵션</button>
-    </div>
-    <div class="wvpaste" id="wvPaste" hidden>
-      <div class="wvrow" style="gap:6px">
-        <span class="flabel" style="margin:0">📋 대본 직접 붙여넣기</span>
-        <span class="hint" id="wvPasteHint" style="margin:0;flex:1 1 180px;min-width:0">타임스탬프([00:00~00:03])·컷 대본·SRT·3~7문장을 그대로 붙여넣으면 컷으로 나눕니다. 해시태그·음성 노트·기준 줄은 자동으로 걷어냅니다.</span>
-      </div>
-      <textarea id="wvPasteTa" spellcheck="false" rows="6" aria-label="붙여넣을 쇼츠 대본" placeholder="예)&#10;[0~3.4초 · 후킹]&#10;  자막: 코스피 5.2% 폭락 (-5.21%)&#10;  나레이션: 코스피 5.2퍼센트 폭락.&#10;&#10;[3.4~16.1초 · 컷 1 — 지수와 하루 흐름]&#10;  자막: 종가 4,869.96 · 코스닥 645(-5.71%) · 사이드카&#10;  나레이션: 종가 4,869. 장중 4,831까지 밀렸다가 되돌렸습니다."></textarea>
-      <div class="wvpasteacts">
-        <button class="btn small primary" id="wvPasteApply" type="button">✅ 이 대본 적용</button>
-        <button class="btn small ghost" id="wvPasteClear" type="button">지우기</button>
-        <span class="hint" id="wvPasteMsg" style="margin:0;flex:1 1 160px;min-width:0">붙여넣고 [✅ 이 대본 적용]을 누르면 미리보기가 바로 바뀝니다. (Ctrl+Enter)</span>
-      </div>
-      <ul class="wvpastelist" id="wvPasteList" hidden></ul>
-    </div>
-    <div class="wvrow" style="gap:6px"><span class="flabel" style="margin:0">🎨 영상 디자인 템플릿</span><span class="hint" id="wvDesignHint" style="margin:0">선택값은 이 브라우저에 저장됩니다</span></div>
-    <div class="wvdesignrow" role="group" aria-label="영상 디자인 템플릿 선택 — 다크 시네마 / 폭스시그널 에디토리얼">
-      <button class="wvdesign on" type="button" data-wvdesign="dark" aria-pressed="true"><b>🌙 다크 시네마</b><span>기본 — 딥 네이비 바탕 · 카드/차트/사진 3양식</span></button>
-      <button class="wvdesign" type="button" data-wvdesign="fox" aria-pressed="false"><b>🦊 폭스시그널 에디토리얼</b><span>크림 아이보리 · 빅넘버 · 여우 4종 · 에디토리얼 자막</span></button>
-    </div>
-    <div class="wvfoxbox" id="wvFoxBox" hidden>
-      <div class="flabel" style="margin:0">🦊 컷별 여우 포즈 <span class="bdg info">자동 = 컷 내용으로 선택</span></div>
-      <div class="wvfoxcuts" id="wvFoxCuts"></div>
-    </div>
-    <div class="wvtplrow" role="group" aria-label="영상 양식 선택 — 3종 모두 세이프 존·자동 줄바꿈·3단 그리드 동일">
-      <button class="wvtpl on" type="button" data-wvtpl="card" aria-pressed="true"><b>📊 정보/시황 카드형</b><span>훅 + 핵심 포인트 카드 + 자막</span></button>
-      <button class="wvtpl" type="button" data-wvtpl="chart" aria-pressed="false"><b>📈 모션 차트/비교표형</b><span>수치를 움직이는 바·좌우 비교로</span></button>
-      <button class="wvtpl" type="button" data-wvtpl="photo" aria-pressed="false"><b>🖼️ 사진 줌인/캡처형</b><span>내 사진 Ken Burns + 배지·자막</span></button>
-    </div>
-    <div class="hint" id="wvLayoutHint">쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.</div>
-    <details class="wvopt" id="wvOpt">
-      <summary>⚙ 채널 프리셋 · 성우 · 자막색 · BGM · 내 사진</summary>
-      <div class="wvbody">
-        <div class="flabel">채널 프리셋 — 성우·테마색·자막색·BGM·워터마크 자동 세팅(이 브라우저에 저장)</div>
-        <div class="wvrow">
-          <button class="btn small" id="wvPreStock" type="button" data-wvpre="stock">📈 주식 채널</button>
-          <button class="btn small" id="wvPreDeal" type="button" data-wvpre="deal">🏷️ 특가·핫템 채널</button>
-        </div>
-        <div class="wvrow">
-          <label class="flabel" for="wvVoice" style="flex:0 0 auto">성우</label>
-          <select id="wvVoice" aria-label="성우 (한국어 무료 · ElevenLabs)"></select>
-          <button class="btn small ghost" id="wvVoiceRefresh" type="button" title="ElevenLabs 키로 내 계정 보이스 다시 불러오기">🔄 내 보이스</button>
-        </div>
-        <div class="wvrow" style="flex-wrap:nowrap;align-items:center">
-          <label class="flabel" for="wvSpeed" style="flex:0 0 auto">말 속도</label>
-          <input type="range" id="wvSpeed" min="0.90" max="1.25" step="0.01" value="1" style="flex:1 1 120px;min-width:0;accent-color:#38bdf8" aria-label="성우 말 속도">
-          <output id="wvSpeedTag" for="wvSpeed" style="flex:0 0 auto;margin-left:8px;font-weight:900;font-variant-numeric:tabular-nums">1.00x</output>
-        </div>
-        <div class="wvrow">
-          <label class="flabel" for="wvBgm" style="flex:0 0 auto">BGM</label>
-          <select id="wvBgm" aria-label="BGM 분위기">
-            <option value="news">차분한 뉴스</option>
-            <option value="tense">긴장감 비트</option>
-            <option value="bright">밝은 리뷰</option>
-            <option value="none">없음</option>
-          </select>
-          <label class="aftoggle" for="wvSfx"><input type="checkbox" id="wvSfx"> 전환·훅 효과음</label>
-        </div>
-        <div class="wvrow">
-          <label class="flabel" for="wvAccent" style="flex:0 0 auto">테마색</label>
-          <input type="color" id="wvAccent" aria-label="테마 강조색">
-          <label class="flabel" for="wvCap" style="flex:0 0 auto">자막색</label>
-          <input type="color" id="wvCap" aria-label="자막 강조색">
-          <label class="aftoggle" for="wvNum"><input type="checkbox" id="wvNum" checked> 숫자 한글 발음</label>
-        </div>
-        <div class="wvrow">
-          <label class="flabel" for="wvWm" style="flex:0 0 auto">워터마크</label>
-          <input type="text" id="wvWm" maxlength="30" placeholder="예) 연오랑의 3분 시황" aria-label="워터마크 문구">
-        </div>
-        <div class="flabel">📈 차트 데이터 (선택 · 모션 차트형에서만 사용)</div>
-        <textarea id="wvChartData" rows="3" placeholder="코스피, 5092&#10;코스닥, 671" aria-label="모션 차트 데이터 수동 입력"></textarea>
-        <div class="hint">한 줄에 <b>이름, 값</b> (예: <b>코스피, 5092</b>). 입력하면 대본 자동 파싱보다 우선하며 모든 컷에 같은 비교표를 씁니다. 비우면 컷의 숫자를 읽고, 수치가 없는 컷은 카드형으로 대체합니다.</div>
-        <div class="flabel">📷 컷 배경 사진 (최대 4장 · 컷마다 자동 순환 배분 · 부드러운 Ken Burns 줌인/패닝)</div>
-        <div class="wvrow">
-          <button class="btn small" id="wvPhotoBtn" type="button">사진 고르기</button>
-          <button class="btn small ghost" id="wvPhotoClear" type="button">비우기</button>
-        </div>
-        <input type="file" id="wvPhotoInput" accept="image/*" multiple hidden>
-        <div class="wvthumbs" id="wvThumbs"></div>
-      </div>
-    </details>
     <div class="wvrender">
       <canvas id="wvCanvas" width="1080" height="1920" aria-label="쇼츠 영상 미리보기"></canvas>
       <div class="wvside">
@@ -2395,7 +2399,7 @@
       </section>
       <section class="gd-sec" data-gdpane="wvid" role="tabpanel">
         <div class="gd-step"><span class="n">1</span><span class="t"><b>대본 생성</b> — <span class="k">🎬 쇼츠 대본 생성</span>으로 대본을 만들고, 결과 카드의 <span class="k">🎬 영상 생성 (크레딧 0)</span>을 누르면 대본이 영상 생성기로 넘어갑니다.</span></div>
-        <div class="gd-step"><span class="n">2</span><span class="t"><b>생성기 열기</b> — 페이지 맨 아래 <span class="k">🎬 웹 영상 생성기 — 1080×1920 쇼츠 · 크레딧 0</span>을 펼칩니다.</span></div>
+        <div class="gd-step"><span class="n">2</span><span class="t"><b>생성기 열기</b> — <span class="k">📱 쇼츠 스튜디오</span> 탭의 맨 아래 <span class="k">🎬 웹 영상 생성기</span>에서 이어서 만듭니다(대본·붙여넣기 → 🦊 폭스시그널 → ▶ 생성).</span></div>
         <div class="gd-step"><span class="n">3</span><span class="t"><b>양식·옵션</b> — <span class="k">📊 정보/시황 카드형</span> · <span class="k">📈 모션 차트/비교표형</span> · <span class="k">🖼️ 사진 줌인/캡처형</span> 중 하나를 고르고, <span class="k">⚙ 옵션</span>에서 채널 프리셋(<span class="k">📈 주식 채널</span>·<span class="k">🏷️ 특가·핫템 채널</span>)·성우·BGM을 정합니다.</span></div>
         <div class="gd-step"><span class="n">4</span><span class="t"><b>생성·저장</b> — <span class="k">▶ 생성</span>을 누르고 끝나면 <span class="k">⬇ 영상 저장</span>(MP4, 안 되면 WebM)과 <span class="k">📋 업로드 세트 복사</span>(제목·해시태그·고정 댓글)를 씁니다.</span></div>
         <div class="gd-note">모든 양식은 쇼츠 <b>세이프 존</b>(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 그립니다 — 저장 전에 미리보기로 가려지는 곳이 없는지 확인하세요.</div>
@@ -2406,6 +2410,7 @@
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.7 — <b>역할별 3탭</b>(🎬 AI 영상 스튜디오=클립 편집 · 📱 쇼츠 스튜디오=대본→영상 · ✍️ 블로그 작성) — <b>🎬 웹 영상 생성기를 📱 쇼츠 스튜디오 탭 안으로 통합</b>(대본·붙여넣기 → 🦊 폭스시그널 → ▶ 생성) · 블로그 결과 카드 <b>[📱 쇼츠로 변환]</b>(글 → 50초 5컷 · 복사 + 쇼츠 스튜디오 + 웹 영상 생성기 동시 전송)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.6 — 🎬 웹 영상 생성기 <b>📋 대본 직접 붙여넣기</b>(타임스탬프·컷·SRT·문장 대본을 컷 3~8로 자동 변환 · 해시태그·음성 노트 자동 정리) · <b>🧪 샘플로 바로 만들기</b>(11/20 시황 5컷 즉시 로드 → 바로 [▶ 생성])</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.5 — 🎬 웹 영상 생성기 <b>쇼츠 세이프 존 잠금</b>(상단 180·하단 380·좌 60·우 120 · 안전 영역 x 60~960 · y 180~1540) · <b>글자 폭 실측 자동 줄바꿈·자동 축소</b>(칸 밖 이탈 0) · <b>3단 고정 그리드</b>(훅 → 메인 → 자막, gap 28) · <b>영상 양식 3종</b>(📊 정보 카드형 · 📈 모션 차트/비교표형 · 🖼️ 사진 줌인형)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.5 — 🛍️ 추천샵(picks) 연동 — 보관함의 [🛍️ 추천샵] 버튼으로 상품 카드 초안을 <b>JSON 복사</b>하거나 <b>원클릭 업로드</b></div>
@@ -5121,21 +5126,29 @@ var CSVoice = (function () {
   }
 
   /* ================= tabs + guide ================= */
-  var tabVideo = $('#tabVideo'), tabBlog = $('#tabBlog'), tabSum = $('#tabSum');
-  var panelVideo = $('#panelVideo'), panelBlog = $('#panelBlog'), panelSum = $('#panelSum');
+  var tabVideo = $('#tabVideo'), tabBlog = $('#tabBlog'), tabSum = $('#tabSum'), tabShorts = $('#tabShorts');
+  var panelVideo = $('#panelVideo'), panelBlog = $('#panelBlog'), panelSum = $('#panelSum'), panelShorts = $('#panelShorts');
+  /* 탭 = 역할 — 🎬 AI 영상 스튜디오(클립 편집) · 📱 쇼츠 스튜디오(대본→영상) · ✍️ 블로그 작성 · 📋 요약 */
   function setTab(which){
-    var v = which === 'video', b = which === 'blog', sm = which === 'sum';
-    if (!v && !b && !sm) b = true;
+    var v = which === 'video', b = which === 'blog', sm = which === 'sum', sh = which === 'shorts';
+    if (!v && !b && !sm && !sh) b = true;
     if (tabVideo){ tabVideo.classList.toggle('on', v); tabVideo.setAttribute('aria-selected', v ? 'true' : 'false'); }
+    if (tabShorts){ tabShorts.classList.toggle('on', sh); tabShorts.setAttribute('aria-selected', sh ? 'true' : 'false'); }
     if (tabBlog){ tabBlog.classList.toggle('on', b); tabBlog.setAttribute('aria-selected', b ? 'true' : 'false'); }
     if (tabSum){ tabSum.classList.toggle('on', sm); tabSum.setAttribute('aria-selected', sm ? 'true' : 'false'); }
     if (panelVideo) panelVideo.hidden = !v;
+    if (panelShorts) panelShorts.hidden = !sh;
     if (panelBlog) panelBlog.hidden = !b;
     if (panelSum) panelSum.hidden = !sm;
+    /* 쇼츠·블로그는 같은 스튜디오의 두 탭 — 모드 상태(SH.mode)도 같이 맞춘다 (noTab=true 로 재진입 방지) */
+    if (typeof shSetMode === 'function' && (b || sh)) shSetMode(sh ? 'shorts' : 'blog', true, true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   tabVideo.addEventListener('click', function(){ setTab('video'); });
+  if (tabShorts) tabShorts.addEventListener('click', function(){ setTab('shorts'); });
   tabBlog.addEventListener('click', function(){ setTab('blog'); });
+  /* 🎬 WVID(다른 스크립트)에서 탭을 바꿀 수 있게 열어 둔다 */
+  window.CS2_TAB = function (w) { setTab(w); };
 
   /* ================================================================
      📋 요약 — 유튜브 자막 · 문서(PDF/TXT/MD/CSV) · 짧은 영상/음성
@@ -10214,6 +10227,142 @@ var CSVoice = (function () {
 
   $('#toShortsBtn').addEventListener('click', function(){ runShortsAI(); });
 
+  /* ================================================================
+     📱 블로그 결과 → 50초 5컷 쇼츠 변환
+     · Gemini(blog_to_shorts)로 바꾸고, 키가 없거나 실패하면 핵심 문단 요약으로 만든다.
+     · 만든 대본은 ① 클립보드 ② 📱 쇼츠 스튜디오 대본 칸 ③ 🎬 웹 영상 생성기(5컷) 로 동시에 보낸다.
+     ================================================================ */
+  function b2sClean(s){
+    return String(s == null ? '' : s)
+      .replace(/\[📸[^\]]*\]/g, ' ')
+      .replace(/\[([^\]]{1,60})\]\([^)]*\)/g, '$1')
+      .replace(/^[#>*•\-\s|]+/, '')
+      .replace(/\*\*|__|`/g, '')
+      .replace(/\|/g, ' ')
+      .replace(/\s+/g, ' ').trim();
+  }
+  function b2sClip(s, n){
+    var t = b2sClean(s);
+    if (t.length <= n) return t;
+    var cut = t.slice(0, n);
+    var at = Math.max(cut.lastIndexOf(' '), cut.lastIndexOf(','));
+    return (at > n * 0.5 ? cut.slice(0, at) : cut).replace(/[,·\-–—]$/, '').trim();
+  }
+  function b2sSentences(body){
+    var out = [];
+    String(body || '').split(/\n+/).forEach(function (raw){
+      var line = b2sClean(raw);
+      if (line.length < 12) return;
+      line.replace(/([.!?。！？])(?=\s|$)/g, '$1\u0001').split('\u0001').forEach(function (x){
+        var t = b2sClean(x);
+        if (t.length >= 12) out.push(t);
+      });
+    });
+    return out;
+  }
+  function b2sClock(sec){
+    var s = Math.max(0, Math.round(sec));
+    return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+  }
+  /* 컷 5개 = 훅 1 + 핵심 3 + 엔딩 1 (약 48초) */
+  function b2sSpec(title, hook, mid, ending, cta){
+    var cuts = [];
+    var h = b2sClean(hook) || b2sClean(title);
+    cuts.push({ text: b2sClip(h, 60), tts_text: h, duration: 3.6 });
+    (mid || []).slice(0, 3).forEach(function (x){
+      var t = b2sClean(x);
+      if (!t) return;
+      cuts.push({ text: b2sClip(t, 82), tts_text: t, duration: 12 });
+    });
+    var e = b2sClean(ending) || (mid && mid.length > 3 ? b2sClean(mid[3]) : '');
+    if (!e) e = b2sClean(mid && mid[0]) || h;
+    cuts.push({ text: b2sClip(e + (cta ? ' · ' + b2sClean(cta) : ''), 90), tts_text: e, duration: 8 });
+    return {
+      title: b2sClip(title || h, 60),
+      hook_title: b2sClip(h, 60),
+      series_badge: '블로그 변환',
+      pinned_comment: cta ? { text: b2sClean(cta) } : {},
+      cuts: cuts
+    };
+  }
+  /* Gemini 없이 — 숫자·결론 문장 우선으로 5컷 */
+  function b2sFallback(body, title, note){
+    var sents = b2sSentences(body);
+    if (!sents.length) sents = [b2sClip(body, 120) || b2sClip(title, 60) || '오늘의 정리'];
+    var picked = [], used = {};
+    function take(x){ x = b2sClean(x); if (!x || used[x]) return; used[x] = 1; picked.push(x); }
+    take(sents[0]);
+    sents.forEach(function (x){ if (picked.length < 4 && /\d/.test(x)) take(x); });
+    sents.forEach(function (x){ if (picked.length < 4) take(x); });
+    take(sents[sents.length - 1]);
+    var guard = 0;
+    while (picked.length < 5 && guard++ < 30) take(sents[picked.length % sents.length]);
+    var spec = b2sSpec(title || picked[0], picked[0], picked.slice(1, 4), picked[4] || '', '');
+    spec.series_badge = note || '블로그 변환';
+    return spec;
+  }
+  function b2sScriptText(spec, note){
+    var L = [], t = 0;
+    L.push('🎬 ' + (spec.title || '쇼츠 대본'));
+    L.push('테마: 블로그 글 → 쇼츠 변환' + (note ? ' · ' + note : ''));
+    (spec.cuts || []).forEach(function (c, i){
+      var dur = Number(c.duration) || 10;
+      var a = b2sClock(t), b = b2sClock(t + dur);
+      t += dur;
+      L.push('');
+      L.push(i === 0 ? '[0:00–' + b + '] 훅' : '[' + a + '–' + b + ']');
+      L.push('말: ' + (c.tts_text || c.text || ''));
+      if (c.text && c.text !== (c.tts_text || '')) L.push('자막: ' + c.text);
+    });
+    return L.join('\n');
+  }
+  function b2sCanAI(){
+    try {
+      if (window.CSAI && typeof window.CSAI.run === 'function') return !!(typeof getKey === 'function' && getKey());
+      return true;   /* 동적(content-v2)은 서버 /api 가 키를 갖고 있다 */
+    } catch (e) { return false; }
+  }
+  async function blogToShortsRun(btn){
+    var body = String(currentDraftText() || '').trim();
+    if (body.length < 80){ toast('먼저 블로그 본문을 만들거나 [✎ 편집]에서 붙여넣어 주세요.'); return; }
+    var topic = ((state.lastDraft && state.lastDraft.topic) || (topicEl && topicEl.value) || '').trim();
+    var d = null, usedAI = false, note = '';
+    if (b2sCanAI()){
+      try {
+        var j = await callAI('blog_to_shorts', { topic: topic, body: affilStrip(body), banPhrases: banAll() }, btn, '50초 5컷으로 바꾸는 중…');
+        d = (j && j.data) || {};
+        usedAI = !!((d.scenes || []).length || d.hook);
+        if (!usedAI) note = '결과가 비어 핵심 문단으로 만듦';
+      } catch (err) {
+        note = 'Gemini 실패 → 핵심 문단으로 만듦';
+      }
+    } else {
+      note = 'Gemini 키 없이 핵심 문단으로 만듦';
+    }
+    var spec;
+    if (usedAI){
+      state.shorts = d;
+      var mid = (d.scenes || []).map(function (sc){ return b2sClean(String((sc && sc.line) || '').split(/\s*화면\s*[:：]/)[0]); }).filter(Boolean);
+      spec = b2sSpec(d.title || topic || '쇼츠 대본', d.hook || '', mid, d.ending || '', d.cta || '');
+    } else {
+      state.shorts = null;
+      spec = b2sFallback(body, topic, note ? '블로그 변환 · 요약' : '');   /* 주제가 없으면 글 첫 문장을 제목으로 */
+    }
+    var script = b2sScriptText(spec, note);
+    /* ③ 웹 영상 생성기 — 5컷 그대로 올려 두고 [▶ 생성]만 남긴다 */
+    if (window.WVID && window.WVID.load){ try { window.WVID.load(spec, '블로그 변환'); } catch (e) {} }
+    /* ② 쇼츠 스튜디오 탭 · 대본 칸 */
+    setTab('shorts');
+    setTimeout(function (){
+      try { shShowOut(script, '블로그 변환' + (usedAI ? ' · Gemini' : ' · 요약')); } catch (e) {}
+      var c = $('#shOutCard'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 160);
+    /* ① 클립보드 */
+    copyText(script, '📱 50초 5컷으로 바꿨습니다 — 대본을 복사했고 📱 쇼츠 스튜디오 대본 칸·🎬 웹 영상 생성기에도 넣었습니다.' + (note ? ' (' + note + ')' : ''));
+  }
+  var b2sBtn = $('#blogToShortsBtn');
+  if (b2sBtn) b2sBtn.addEventListener('click', function () { blogToShortsRun(b2sBtn); });
+
   $('#copyShortsBtn').addEventListener('click', function(){
     var d = state.shorts || {};
     if (!d.title && !(d.scenes || []).length){
@@ -11610,21 +11759,15 @@ var CSVoice = (function () {
   }
 
   /* ---------- mode ---------- */
-  function shSetMode(mode, save){
+  function shSetMode(mode, save, noTab){
     SH.mode = (mode === 'shorts') ? 'shorts' : 'blog';
     if (save !== false) lsSet(SH_KEYS.mode, SH.mode);
-    var seg = $('#csModeSeg');
-    if (seg){
-      Array.prototype.forEach.call(seg.querySelectorAll('.csm'), function(b){
-        var on = b.getAttribute('data-csmode') === SH.mode;
-        b.classList.toggle('on', on);
-        b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      });
-    }
     var bm = $('#blogMain'), sm = $('#shortsMain');
     if (bm) bm.hidden = SH.mode !== 'blog';
     if (sm) sm.hidden = SH.mode !== 'shorts';
     if (SH.mode === 'shorts') shRenderAll();
+    /* 모드 = 탭 — 📱 쇼츠 스튜디오 / ✍️ 블로그 작성 탭을 함께 움직인다 */
+    if (!noTab && typeof setTab === 'function') setTab(SH.mode === 'shorts' ? 'shorts' : 'blog');
   }
 
   /* ---------- draft text ---------- */
@@ -12230,7 +12373,7 @@ var CSVoice = (function () {
   function shInit(){
     shBind();
     shRenderAll();
-    shSetMode(SH.mode, false);
+    shSetMode(SH.mode, false, true);
   }
 
   /* ================================================================
@@ -15742,6 +15885,8 @@ var CSVoice = (function () {
 
   /* ---------- launch ---------- */
   function openPanel() {
+    /* 📱 쇼츠 스튜디오 탭 안으로 들어왔으므로, 그 탭을 먼저 연다 */
+    if (window.CS2_TAB) { try { window.CS2_TAB('shorts'); } catch (e) {} }
     var p = $('#wvPanel');
     if (p) { p.open = true; try { p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
   }
