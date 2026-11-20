@@ -8917,8 +8917,11 @@ var CSVoice = (function () {
     }
     var seen = {}, out = [];
     tags.concat(['주식', '코스피', '코스닥', '시황', '폭스시그널']).forEach(function(t){
-      var v = String(t == null ? '' : t).replace(/^#/, '').trim();
-      if (!v || seen[v]) return;
+      var v = String(t == null ? '' : t).replace(/^#/, '').replace(/\s+/g, '').trim();
+      /* 잘린 말줄임(…), 날짜 슬래시, 1~2자 조각, 14자 초과는 태그로 쓰지 않는다 */
+      if (!v || v.length < 2 || v.length > 14) return;
+      if (/[…\.]{1,}|\/|\||·/.test(v)) return;
+      if (seen[v]) return;
       seen[v] = 1; out.push(v);
     });
     return out.slice(0, 10);
