@@ -620,7 +620,8 @@
           '<div class="diff-desc">' + diff.desc + ' · 지난번 선택한 난이도로 기억해요</div></div>' : '') +
         '<div class="rules-panel">' +
           '<b>룰</b> · 5장 덱, <b>★코스트 합계 12 이하</b> · 낼 <b>순서 1~5</b> 직접 지정<br>' +
-          '<span class="muted">5라운드 동시 공개 → 파워(HP+등급) + 상성 보너스 +30 · 먼저 3승 승리 (+10코인)</span>' +
+          '<span class="muted">5라운드 동시 공개 → 파워(HP+등급) + 상성 보너스 +30 · 먼저 3승 승리' +
+            (ui.mode === 'p2' ? ' <b style="color:#ffe9bf">(+10코인)</b>' : ' · 🤖 연습게임은 <b style="color:#ffb3c1">코인 지급 없음</b>') + '</span>' +
         '</div>' +
         '<div class="budget"><span>내 덱 코스트</span><div class="bar' + (stars > BUDGET ? '' : ' done') + '">' +
           '<i style="width:' + Math.min(100, stars / BUDGET * 100) + '%"></i></div><b>' + stars + ' / ' + BUDGET + '</b>' +
@@ -1709,11 +1710,15 @@
     const b = ui.bt;
     if (!b) return;
     const winner = b.score[0] > b.score[1] ? 0 : b.score[1] > b.score[0] ? 1 : -1;
-    let reward = '';
+    let reward = '', coinReward = false;
+    /* 🪙 코인은 사람끼리(1:1) 대전에서만 — 컴퓨터(연습게임)에서 이겨도 전적만 남고 코인은 0 */
     if (winner === 0) {
       const pr = P.prof(b.me.profile);
-      pr.coins += 10; pr.wins = (pr.wins || 0) + 1;
-      P.save(); reward = '+10 코인 획득!'; U.bumpCoins();
+      pr.wins = (pr.wins || 0) + 1;
+      if (b.mode === 'p2') { pr.coins += 10; coinReward = true; reward = '+10 코인 획득!'; }
+      else { reward = '🤖 연습게임은 코인이 지급되지 않아요 · 코인은 남매 1:1 대전에서만!'; }
+      P.save();
+      if (coinReward) U.bumpCoins();
     } else if (winner === 1) {
       if (b.mode === 'p2') {
         const pr = P.prof(b.foe.profile);
@@ -1734,7 +1739,7 @@
       '<div style="text-align:center;font-size:20px;font-weight:900;margin-bottom:6px">' +
       (winner === 0 ? P.prof(b.me.profile).name + ' 승리!' : winner === 1 ? b.foe.name + ' 승리!' : '무승부') + '</div>' +
       '<div style="text-align:center;font-size:16px;font-weight:900;color:#ffe9bf">' + b.score[0] + ' : ' + b.score[1] + '</div>' +
-      (reward ? '<div style="text-align:center;margin-top:8px;color:#6ef2b0;font-weight:900">' + reward + '</div>' : '') +
+      (reward ? '<div style="text-align:center;margin-top:8px;color:' + (coinReward ? '#6ef2b0' : '#9aa6cc') + ';font-weight:900;font-size:13px">' + reward + '</div>' : '') +
       pvpResultHtml(pvpRes) +
       '<div class="list" style="margin-top:16px">' + b.results.map((r, i) => {
         const ca = b.me.deck.find(c => c.id === r.a), cc = b.foe.deck.find(c => c.id === r.c);

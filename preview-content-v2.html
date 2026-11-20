@@ -14632,11 +14632,11 @@ var CSVoice = (function () {
       creamMark(g, W, H);
       return;
     }
-    var top = sq ? 236 : 188;
-    var panelH = sq ? 300 : 250;
+    var top = sq ? 236 : 196;
+    var panelH = sq ? 300 : 330;
     var gapP = 22;
     var panelW = sq ? (W - 84) : Math.round((W - 84 - gapP) / 2);
-    var rowH = Math.min(62, Math.floor((panelH - 74) / 3));
+    var rowH = Math.min(sq ? 62 : 76, Math.floor((panelH - 74) / 3));
     panels.forEach(function(p, pi){
       var px = 42 + (sq ? 0 : pi * (panelW + gapP));
       var py = sq ? (top + pi * (panelH + 20)) : top;
@@ -14694,18 +14694,18 @@ var CSVoice = (function () {
     });
     var denom = sum.up + sum.down;
     var ratio = denom ? (sum.up / denom) * 100 : null;
-    var rows = allOnly ? [{ o: d.all, name: '코스피+코스닥' }] : [{ o: k, name: '코스피' }, { o: q, name: '코스닥' }];
+    var rows = allOnly ? [{ o: d.all, name: '전체' }] : [{ o: k, name: '코스피' }, { o: q, name: '코스닥' }];
     var top = sq ? 268 : 214;
     var rowGap = sq ? 150 : 112;
     var x0 = 42 + Math.round(W / 12), x1 = W - 42 - Math.round(W / 9);
-    if (allOnly){ top = sq ? 330 : 300; rowGap = 0; }
+    if (allOnly){ top = sq ? 330 : 292; rowGap = 0; }
     rows.forEach(function(r, i){
       var y = top + i * rowGap;
       cvText(g, r.name, 42, y + 20, Math.round(W / 54), CREAM.ink, 'left', 900);
       if (!r.o){ cvText(g, '이 시장 값이 없습니다', 42, y + 48, Math.round(W / 84), CREAM.mute, 'left', 700); return; }
       var u = Number(r.o.up) || 0, dn = Number(r.o.down) || 0, fl = Number(r.o.flat) || 0;
       var tot = u + dn + fl || 1;
-      var barH = sq ? 46 : 38;
+      var barH = allOnly ? (sq ? 130 : 104) : (sq ? 46 : 38);
       var wUp = Math.round((u / tot) * (x1 - x0));
       var wFl = Math.round((fl / tot) * (x1 - x0));
       var wDn = Math.max(0, (x1 - x0) - wUp - wFl);
