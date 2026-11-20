@@ -16598,7 +16598,7 @@ var CSVoice = (function () {
       }
       ty += tfit.height + 24;
     }
-    var cardH = 0;
+    var cardH = 0, cardTop = ty;
     if (chart) {
       var avail = Math.max(180, slot.y + slot.h - ty - 6);
       if (chart.length === 1) cardH = Math.min(avail, 330);
@@ -16606,12 +16606,15 @@ var CSVoice = (function () {
         var rowH = Math.max(58, Math.min(150, Math.floor((avail - 72) / chart.length)));
         cardH = Math.min(avail, 72 + rowH * chart.length);
       }
-      drawFoxChart(ctx, cut, p == null ? .7 : p, slot.x, ty, 512, cardH);
+      cardTop = ty + Math.max(0, (avail - cardH) / 2);     /* 남는 높이는 위아래로 나눠 카드를 가운데에 */
+      drawFoxChart(ctx, cut, p == null ? .7 : p, slot.x, cardTop, 512, cardH);
     } else if (big) {
       cardH = 296;
       drawFoxNumber(ctx, big, slot.x, ty, 512, cardH);
     }
-    drawFox(ctx, pose, 596, Math.round(y + Math.max(0, (34 + (tfit ? tfit.height + 24 : 0) + cardH - 360) / 2)), 360);
+    var foxY = chart ? (cardTop + Math.max(0, (cardH - 360) / 2))
+      : (y + Math.max(0, (34 + (tfit ? tfit.height + 24 : 0) + cardH - 360) / 2));
+    drawFox(ctx, pose, 596, Math.round(foxY), 360);
   }
   /* 하단 — 그림자·명암 대비 확보한 에디토리얼 자막 카드 */
   function drawFoxCaption(ctx, cut, p, spec) {
