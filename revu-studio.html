@@ -2519,11 +2519,24 @@ footer b{color:var(--mut)}
 })();
 </script>
 <script>
-/* PWA — 홈 화면 독립 설치/오프라인용 서비스워커 (파일: revu-studio-sw.js) */
+/* PWA — 홈 화면 독립 설치/오프라인용 서비스워커 (파일: revu-studio-sw.js)
+   [11/20] 스코프 분리: 관제탑(index.html, scope ./)과 같은 스코프를 쓰면 "이미 설치됨"으로 설치가 막혀서
+   이 앱은 자기 HTML 하나(./revu-studio.html)만 스코프로 잡는다. (사주·콘텐츠스튜디오와 같은 방식) */
 (function () {
   if (!('serviceWorker' in navigator)) return;
+  var REG = 'revu-studio-sw.js';
   window.addEventListener('load', function () {
-    navigator.serviceWorker.register('revu-studio-sw.js', { scope: './' }).catch(function () {});
+    navigator.serviceWorker.register(REG, { scope: './revu-studio.html' }).then(function () {
+      /* 예전 판이 ./ 전체 스코프로 등록해 둔 '이 워커'만 정리한다. 다른 앱 등록은 건드리지 않는다. */
+      var ROOT = new URL('./', location.href).pathname;
+      return navigator.serviceWorker.getRegistrations().then(function (regs) {
+        regs.forEach(function (reg) {
+          if (new URL(reg.scope).pathname !== ROOT) return;
+          var w = reg.active || reg.waiting || reg.installing;
+          if (w && w.scriptURL && w.scriptURL.indexOf(REG) >= 0) reg.unregister();
+        });
+      });
+    }).catch(function () {});
   });
 })();
 </script>

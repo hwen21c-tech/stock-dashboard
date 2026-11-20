@@ -1,8 +1,11 @@
 /* 리뷰단 스튜디오 — 오프라인/독립 설치용 서비스 워커
    · 셸(HTML·manifest·아이콘)은 미리 캐시, 캠페인 데이터는 네트워크 우선 + 캐시 폴백
    · 파일을 고칠 때는 CACHE 이름의 버전을 올려 주세요.
+   · [11/20] PWA 스코프 분리: 등록 스코프를 ./revu-studio.html 하나로 좁혔다.
+     같은 오리진(관제탑·체험단ZIP·사주 등)의 다른 앱 캐시는 activate에서도 건드리지 않는다.
 */
-var CACHE = 'revu-studio-v3';
+var PREFIX = 'revu-studio-';
+var CACHE = PREFIX + 'v4';
 var SHELL = [
   './revu-studio.html',
   './revu-studio-manifest.json',
@@ -25,9 +28,9 @@ self.addEventListener('install', function (event) {
 self.addEventListener('activate', function (event) {
   event.waitUntil(
     caches.keys().then(function (keys) {
-      return Promise.all(keys.map(function (k) {
-        return k === CACHE ? null : caches.delete(k);
-      }));
+      return Promise.all(keys.filter(function (k) {
+        return k.indexOf(PREFIX) === 0 && k !== CACHE;
+      }).map(function (k) { return caches.delete(k); }));
     }).then(function () { return self.clients.claim(); })
   );
 });

@@ -1270,7 +1270,19 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('review-zip-sw.js', { scope: './' }).catch(function () {});
+      /* [11/20] 스코프 분리 — 관제탑(scope ./)·리뷰 스튜디오와 같은 스코프를 쓰지 않고
+         이 HTML 하나(./review-zip.html)만 잡아 "이미 설치됨" 충돌을 없앴다. */
+      var REG = 'review-zip-sw.js';
+      navigator.serviceWorker.register(REG, { scope: './review-zip.html' }).then(function () {
+        var ROOT = new URL('./', location.href).pathname;
+        return navigator.serviceWorker.getRegistrations().then(function (regs) {
+          regs.forEach(function (reg) {
+            if (new URL(reg.scope).pathname !== ROOT) return;
+            var w = reg.active || reg.waiting || reg.installing;
+            if (w && w.scriptURL && w.scriptURL.indexOf(REG) >= 0) reg.unregister();
+          });
+        });
+      }).catch(function () {});
     });
   }
   window.addEventListener('beforeinstallprompt', function (e) {
