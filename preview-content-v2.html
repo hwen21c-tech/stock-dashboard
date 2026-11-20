@@ -14722,6 +14722,22 @@ var CSVoice = (function () {
         (rr != null ? '  (상승 비율 ' + rr.toFixed(1) + '%)' : ''),
         42, y + barH + Math.round(W / 62), Math.round(W / 88), CREAM.sub, 'left', 700, W - 84);
     });
+    /* 합산 한 줄만 있을 때 — 아래에 상승·하락·보합 숫자 카드로 여백을 채운다 */
+    if (allOnly){
+      var allBarH = sq ? 130 : 104;
+      var cy0 = top + allBarH + 66;
+      var cw = Math.round((W - 84 - 24) / 3);
+      var chh = sq ? 150 : 118;
+      [{ k: '상승', v: sum.up || null, c: CREAM.up },
+       { k: '하락', v: sum.down || null, c: CREAM.down },
+       { k: '보합', v: sum.flat || null, c: CREAM.flat }].forEach(function(c, i){
+        var cx = 42 + i * (cw + 12);
+        g.fillStyle = CREAM.card; g.strokeStyle = CREAM.line; g.lineWidth = 1.5;
+        cvRR(g, cx, cy0, cw, chh, 12); g.fill(); g.stroke();
+        cvText(g, c.k, cx + 16, cy0 + 32, Math.round(W / 78), CREAM.sub, 'left', 800);
+        cvText(g, c.v == null ? '—' : Number(c.v).toLocaleString('ko-KR'), cx + 16, cy0 + Math.round(chh * 0.72), Math.round(W / 30), c.c, 'left', 900, cw - 30);
+      });
+    }
     if (ratio != null){
       var big = Math.round(W / 12);
       cvText(g, ratio.toFixed(1) + '%', W - 44, sq ? 214 : 200, big, CREAM.up, 'right', 900);
