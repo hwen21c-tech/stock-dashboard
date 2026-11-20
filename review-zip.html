@@ -1293,7 +1293,8 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   }
 
   function renderHoney() {
-    var pool = S.rows.filter(isHoney).sort(function (a, b) {
+    /* 빈집털이·키워드는 유형/지역 조건과 무관한 추천이지만, '빼고 보기' 제외는 전역 규칙이라 함께 지킨다. */
+    var pool = S.rows.filter(function (r) { return isHoney(r) && !excludedBy(r, null); }).sort(function (a, b) {
       var ad = a.d === null ? 99 : a.d, bd = b.d === null ? 99 : b.d;
       if (ad !== bd) return ad - bd;
       var ar = a.rate === null ? 999 : a.rate, br = b.rate === null ? 999 : b.rate;
@@ -1396,7 +1397,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   }
 
   function renderAll() {
-    renderTypeChips(); renderRegionChips(); renderExclChips(); renderPlatChips(); renderCatChips(); renderList();
+    renderTypeChips(); renderRegionChips(); renderExclChips(); renderPlatChips(); renderCatChips(); renderList(); renderHoney();
   }
 
   function renderMeta() {
