@@ -2287,7 +2287,7 @@
       </div>
       <ul class="wvpastelist" id="wvPasteList" hidden></ul>
     </div>
-    <div class="wvrow" style="gap:6px"><span class="flabel" style="margin:0">🎨 영상 디자인 템플릿</span><span class="hint" id="wvDesignHint" style="margin:0">선택값은 이 브라우저에 저장됩니다</span></div>
+    <div class="wvrow" style="gap:6px"><span class="flabel" style="margin:0">🎨 영상 디자인 템플릿</span><span class="hint" id="wvDesignHint" style="margin:0">선택값·성우·말 속도는 이 브라우저에 컨셉별로 저장됩니다</span></div>
     <div class="wvdesignrow" role="group" aria-label="영상 디자인 템플릿 선택 — 다크 시네마 / 폭스시그널 / 시바딜 / 피치홈 / 펭귄특가">
       <button class="wvdesign on" type="button" data-wvdesign="dark" aria-pressed="true"><b>🌙 다크 시네마</b><span>기본 — 딥 네이비 바탕 · 카드/차트/사진 3양식</span></button>
       <button class="wvdesign" type="button" data-wvdesign="fox" aria-pressed="false"><b>🦊 폭스시그널 에디토리얼</b><span>크림 아이보리 · 빅넘버 · 여우 4종 · 에디토리얼 자막</span></button>
@@ -2331,6 +2331,11 @@
           <input type="range" id="wvSpeed" min="0.90" max="1.25" step="0.01" value="1" style="flex:1 1 120px;min-width:0;accent-color:#38bdf8" aria-label="성우 말 속도">
           <output id="wvSpeedTag" for="wvSpeed" style="flex:0 0 auto;margin-left:8px;font-weight:900;font-variant-numeric:tabular-nums">1.00x</output>
         </div>
+        <div class="wvrow" style="gap:6px;align-items:center">
+          <button class="btn small" id="wvPinBtn" type="button" title="지금 고른 성우와 말 속도를 이 컨셉(템플릿)의 고정값으로 저장합니다">📌 이 컨셉에 고정</button>
+          <button class="btn small ghost" id="wvPinReset" type="button" title="이 컨셉의 고정값·저장값을 지우고 기본 성우·속도로 되돌립니다">↺ 컨셉 기본값</button>
+        </div>
+        <div class="hint" id="wvPinNote">컨셉마다 성우·말 속도를 따로 기억합니다.</div>
         <div class="wvrow">
           <label class="flabel" for="wvBgm" style="flex:0 0 auto">BGM</label>
           <select id="wvBgm" aria-label="BGM 분위기">
@@ -4814,7 +4819,16 @@ var CSVoice = (function () {
     s = s.replace(/^\s*(?:xi-api-key|authorization)\s*[:=]\s*/i, '');        /* 헤더째 붙여넣은 경우 */
     s = s.replace(/^bearer\s+/i, '');                                        /* 'Bearer sk_…' */
     s = s.replace(/[\u2018\u2019\u201C\u201D]/g, '');                      /* 스마트 따옴표 */
-    return s.trim().replace(/[^\x21-\x7E]/g, '');                            /* 공백·비 ASCII 전부 제거 */
+    s = s.trim().replace(/[^\x21-\x7E]/g, '');                               /* 공백·비 ASCII 전부 제거 */
+    /* 끝에 ; , . ' " ) > 같은 ASCII 문장부호가 딸려 들어와 401 이 나는 경우 →
+       'sk_' 로 시작하는 토큰 하나만 뽑아 쓴다(영문·숫자·_·- 만 남긴다) */
+    var toks = s.match(/sk_[A-Za-z0-9_-]+/g);
+    if (toks && toks.length) {
+      var best = toks[0];
+      for (var ti = 1; ti < toks.length; ti++) if (toks[ti].length > best.length) best = toks[ti];
+      return best.replace(/-+$/, '').replace(/_+$/, '');
+    }
+    return s;
   }
   function elKeyRaw() {
     try { return String(localStorage.getItem(EL_KEY) || ''); } catch (e) { return ''; }
@@ -15402,7 +15416,7 @@ var CSVoice = (function () {
   ];
   var PRESETS = {
     stock: { name: '📈 주식 채널', accent: '#38bdf8', cap: '#fde047', bgm: 'news', wm: '연오랑의 3분 시황',
-             voiceKo: 'ko:ko-KR-InJoonNeural', speed: 1.00 },
+             voiceKo: 'ko:ko-KR-HyunsuMultilingualNeural', speed: 1.20 },
     deal: { name: '🏷️ 특가·핫템 채널', accent: '#f472b6', cap: '#fbbf24', bgm: 'bright', wm: '연오랑의 특가 레이더',
             voiceKo: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12 }
   };
@@ -15529,6 +15543,10 @@ var CSVoice = (function () {
     if (!TPL_NAME[c.tpl]) c.tpl = 'card';
     if (!DESIGN[c.design]) c.design = 'dark';
     if (!c.formula || typeof c.formula !== 'object' || Object.prototype.toString.call(c.formula) !== '[object Object]') c.formula = {};
+    /* 컨셉(템플릿)별 성우·속도 — 자동 저장값과 📌 고정값 */
+    if (!c.voicePick || typeof c.voicePick !== 'object') c.voicePick = {};
+    if (!c.speedPick || typeof c.speedPick !== 'object') c.speedPick = {};
+    if (!c.pin || typeof c.pin !== 'object') c.pin = {};
     return c;
   }
   function saveCfg() { lsSet(CFG_KEY, JSON.stringify(S.cfg)); }
@@ -15548,25 +15566,26 @@ var CSVoice = (function () {
     if (next.cap) S.cfg.cap = next.cap;
     if (next.bgm) S.cfg.bgm = next.bgm;
     if (next.voice) S.cfg.voice = next.voice;
-    if (next.voiceKo) {
-      var hasEl = !!(window.CSVoice && CSVoice.elKey());
-      S.cfg.voice = next.voiceKo;
-      if (hasEl && window.CSVoice && elKey()) S.cfg.voice = 'el:' + ('stock' === name ? 'IKne3meq5aSn9XLyUdCD' : 'cgSgspJ2msm6clMCkdW9');
-    }
+    /* 프리셋의 🇰🇷 무료 성우를 그대로 쓴다 — ElevenLabs 키가 있어도 임의로 바꾸지 않는다
+       (EL 성우를 쓰려면 성우 칸에서 직접 고르고 [📌 이 컨셉에 고정]) */
+    if (next.voiceKo) S.cfg.voice = next.voiceKo;
     if (next.speed != null) S.cfg.speed = clampSpeed(next.speed);
     if (window.CSVoice) {
       var pv = CSVoice.resolve(S.cfg.voice);
-      if (pv && pv.speedHint && !next.speed) S.cfg.speed = pv.speedHint;
+      if (pv && pv.speedHint && next.speed == null) S.cfg.speed = pv.speedHint;
     }
     if (next.wm) S.cfg.wm = next.wm;
-    if (next.voice || next.voiceKo) {
+    if (next.voice || next.voiceKo || next.speed != null) {
       S.cfg.voicePick = S.cfg.voicePick || {};
       S.cfg.voicePick[designOf()] = S.cfg.voice;
+      S.cfg.speedPick = S.cfg.speedPick || {};
+      S.cfg.speedPick[designOf()] = clampSpeed(S.cfg.speed);
     }
     saveCfg(); syncUi();
     if (S.spec) { S.spec.accent = S.cfg.accent; S.spec.capColor = S.cfg.cap; S.spec.watermark = S.cfg.wm; }
     redraw();
-    flash((p.name || name) + ' 프리셋을 적용했습니다 — 성우·색·BGM·워터마크 자동 세팅');
+    var pinMsg = pinOf(designOf()) ? ' · 이 컨셉은 성우·속도가 📌 고정되어 있어 컨셉을 바꿀 때 고정값이 우선합니다(지금 값으로 바꾸려면 [📌 다시 고정])' : '';
+    flash((p.name || name) + ' 프리셋을 적용했습니다 — 성우·색·BGM·워터마크 자동 세팅' + pinMsg);
   }
 
   /* ---------- 글자 폭 실측 · 자동 줄바꿈 · 자동 축소 ---------- */
@@ -16022,22 +16041,37 @@ var CSVoice = (function () {
   };
 
   function roleOf() { var d = designOf(); return ROLE[d] ? d : null; }
-  /* 🎙️ 템플릿별 무료 성우 자동 매칭 — 사용자가 직접 고른 성우는 디자인별로 기억해 유지한다 */
+  /* 🎙️ 컨셉(템플릿)별 성우·말 속도
+       · VOICE_PRESET[d]  = 그 컨셉의 기본값 (저장된 값이 하나도 없을 때)
+       · S.cfg.pin[d]     = [📌 이 컨셉에 고정]으로 명시 저장한 값 — 가장 우선
+       · S.cfg.voicePick / S.cfg.speedPick[d] = 그 컨셉에서 마지막으로 쓰던 값(자동 저장)
+     컨셉을 바꾸면  고정값 → 마지막 값 → 기본값  순서로 되살린다. */
   var VOICE_PRESET = {
-    fox: { voice: 'ko:ko-KR-InJoonNeural:cute', speed: 1.06, label: '인준 · 귀여운 남자 톤 1.06x' },
+    dark: { voice: 'ko:ko-KR-SunHiNeural', speed: 1.00, label: '선히 · 기본 1.00x' },
+    fox: { voice: 'ko:ko-KR-HyunsuMultilingualNeural', speed: 1.20, label: '현수 · 또렷한 남성 1.20x' },
     shiba: { voice: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12, label: '선히 · 밝은 톤 1.12x' },
     bunny: { voice: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12, label: '선히 · 밝은 톤 1.12x' },
     penguin: { voice: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12, label: '선히 · 밝은 톤 1.12x' }
   };
+  function voiceShort(key) {
+    var nm = '';
+    try { nm = (window.CSVoice && CSVoice.resolve(key).name) || ''; } catch (e) { nm = ''; }
+    if (!nm) nm = String(key == null ? '' : key);
+    return nm.split(' · ')[0];
+  }
+  function pinOf(d) { var p = S.cfg && S.cfg.pin; return (p && p[d]) || null; }
   function applyVoicePreset(d) {
-    var p = VOICE_PRESET[d];
-    if (!p) return '';
-    var pick = S.cfg.voicePick && S.cfg.voicePick[d];
-    if (pick) { S.cfg.voice = pick; saveCfg(); return ''; }
-    S.cfg.voice = p.voice;
-    S.cfg.speed = clampSpeed(p.speed);
+    d = DESIGN[d] ? d : 'dark';
+    var p = VOICE_PRESET[d] || VOICE_PRESET.dark;
+    var pin = pinOf(d);
+    var pick = (S.cfg.voicePick && S.cfg.voicePick[d]) || '';
+    var sp = S.cfg.speedPick ? S.cfg.speedPick[d] : null;
+    var voice = (pin && pin.voice) || pick || p.voice;
+    var speed = (pin && pin.speed != null) ? pin.speed : ((sp != null && isFinite(Number(sp))) ? sp : p.speed);
+    S.cfg.voice = voice;
+    S.cfg.speed = clampSpeed(speed);
     saveCfg();
-    return p.label;
+    return (pin ? '📌 ' : '') + voiceShort(S.cfg.voice) + ' ' + S.cfg.speed.toFixed(2) + 'x';
   }
   var DESIGN_CHIP = { fox: '🦊 폭스시그널', shiba: '🐶 시바딜', bunny: '🐰 피치홈', penguin: '🐧 펭귄특가' };
   function designChip() { var d = designOf(); return d === 'dark' ? (TPL_NAME[tplOf()] || '') : (DESIGN_CHIP[d] || ''); }
@@ -16926,6 +16960,22 @@ var CSVoice = (function () {
     if (t === 'photo' && !S.photos.length) t = 'card';
     return t;
   }
+  /* 성우·말 속도 줄 아래 — 이 컨셉의 고정 상태를 한 줄로 보여 준다 */
+  function pinNote() {
+    var el = $('#wvPinNote');
+    if (!el) return;
+    var d = designOf(), pin = pinOf(d), base = VOICE_PRESET[d] || VOICE_PRESET.dark;
+    var curV = S.cfg.voice, curS = clampSpeed(S.cfg.speed);
+    if (pin) {
+      var same = pin.voice === curV && Math.abs(clampSpeed(pin.speed) - curS) < 0.005;
+      el.innerHTML = '📌 <b>' + esc(DESIGN[d] || '이 컨셉') + '</b> 고정값 — ' + esc(voiceShort(pin.voice)) + ' · ' + clampSpeed(pin.speed).toFixed(2) + 'x'
+        + (same ? ' (지금 값과 같음)' : ' — 지금 값과 다릅니다 · <b>[📌 다시 고정]</b>을 누르면 지금 값으로 바뀝니다');
+      el.style.color = same ? '#86efac' : '#fbbf24';
+    } else {
+      el.innerHTML = '이 컨셉은 아직 <b>고정 전</b>입니다 — 컨셉을 바꾸면 기본값(' + esc(voiceShort(base.voice)) + ' · ' + base.speed.toFixed(2) + 'x)으로 시작합니다. 지금 값으로 굳히려면 <b>[📌 이 컨셉에 고정]</b>.';
+      el.style.color = '';
+    }
+  }
   function syncUi() {
     var c = S.cfg;
     var v = $('#wvVoice');
@@ -16940,6 +16990,9 @@ var CSVoice = (function () {
     if (sp) { var sv = clampSpeed(c.speed); if (sp.value !== sv.toFixed(2)) sp.value = sv.toFixed(2); }
     var spt = $('#wvSpeedTag');
     if (spt) spt.textContent = clampSpeed(c.speed).toFixed(2) + 'x';
+    var pinB = $('#wvPinBtn');
+    if (pinB) pinB.textContent = pinOf(c.design || 'dark') ? '📌 다시 고정' : '📌 이 컨셉에 고정';
+    pinNote();
     var b = $('#wvBgm'); if (b) b.value = c.bgm;
     var s = $('#wvSfx'); if (s) s.checked = !!c.sfx;
     var a = $('#wvAccent'); if (a) a.value = /^#[0-9a-f]{6}$/i.test(c.accent) ? c.accent : '#38bdf8';
@@ -17742,9 +17795,12 @@ var CSVoice = (function () {
         var ttsText = S.cfg.numNorm ? koNumNormalize(c.tts) : c.tts;
         var p = hasVoice ? ttsBuf(actx, ttsText).catch(function () { failed.push(i + 1); return null; }) : Promise.resolve(null);
         return p.then(function (buf) {
-          var d = buf ? Math.max(1.5, buf.duration / spd + .34) : c.d;
+          /* 한국어 성우는 /api/tts 의 rate 로 이미 빨라진 음성이 온다 → 재생 배속 1 · 길이도 그대로 쓴다
+             (1.20x 에서 컷이 음성보다 짧아져 다음 컷과 겹치던 문제 방지) */
+          var pbr = isKo ? 1 : spd;
+          var d = buf ? Math.max(1.5, buf.duration / pbr + .34) : c.d;
           var img = S.photos.length ? S.photos[i % S.photos.length] : null;
-          out.push({ text: c.text, tts: ttsText, hook: c.hook, dur: d, start: t, end: t + d, buf: buf, img: img, idx: i, pbr: isKo ? 1 : spd });
+          out.push({ text: c.text, tts: ttsText, hook: c.hook, dur: d, start: t, end: t + d, buf: buf, img: img, idx: i, pbr: pbr });
           t += d + GAP;
         });
       });
@@ -18296,14 +18352,46 @@ var CSVoice = (function () {
       S.cfg.voice = v.value;
       S.cfg.voicePick = S.cfg.voicePick || {};
       S.cfg.voicePick[designOf()] = v.value;      /* 이 템플릿에서는 내가 고른 성우를 계속 쓴다 */
-      if (window.CSVoice) { var vv = CSVoice.resolve(v.value); if (vv && vv.speedHint) S.cfg.speed = vv.speedHint; }
+      if (window.CSVoice) {
+        var vv = CSVoice.resolve(v.value);
+        if (vv && vv.speedHint) {                       /* 그 성우의 권장 속도(예: 선히 밝은 톤 1.12x) */
+          S.cfg.speed = vv.speedHint;
+          S.cfg.speedPick = S.cfg.speedPick || {};
+          S.cfg.speedPick[designOf()] = clampSpeed(S.cfg.speed);
+        }
+      }
       saveCfg(); syncUi(); redraw();
     });
     var spdEl = $('#wvSpeed');
     if (spdEl) spdEl.addEventListener('input', function () {
-      S.cfg.speed = clampSpeed(spdEl.value); saveCfg();
+      S.cfg.speed = clampSpeed(spdEl.value);
+      S.cfg.speedPick = S.cfg.speedPick || {};
+      S.cfg.speedPick[designOf()] = S.cfg.speed;      /* 컨셉마다 마지막 말 속도를 기억한다 */
+      saveCfg();
       var t = $('#wvSpeedTag'); if (t) t.textContent = S.cfg.speed.toFixed(2) + 'x';
       syncUi();
+    });
+    /* 📌 이 컨셉에 고정 — 지금 성우·말 속도를 그 컨셉의 고정값으로 저장 */
+    var pinBtn = $('#wvPinBtn');
+    if (pinBtn) pinBtn.addEventListener('click', function () {
+      var pd = designOf();
+      S.cfg.pin = S.cfg.pin || {};
+      S.cfg.pin[pd] = { voice: S.cfg.voice, speed: clampSpeed(S.cfg.speed), at: Date.now() };
+      S.cfg.voicePick = S.cfg.voicePick || {}; S.cfg.voicePick[pd] = S.cfg.voice;
+      S.cfg.speedPick = S.cfg.speedPick || {}; S.cfg.speedPick[pd] = clampSpeed(S.cfg.speed);
+      saveCfg(); syncUi();
+      say('📌 <b>' + esc(DESIGN[pd] || '이 컨셉') + '</b>에 <b>' + esc(voiceShort(S.cfg.voice)) + ' · ' + clampSpeed(S.cfg.speed).toFixed(2) + 'x</b>를 고정했습니다 — 컨셉을 바꿨다 돌아와도 이 값으로 시작합니다.', 'good');
+    });
+    /* ↺ 컨셉 기본값 — 고정·저장값을 지우고 기본 성우·속도로 */
+    var pinRst = $('#wvPinReset');
+    if (pinRst) pinRst.addEventListener('click', function () {
+      var rd = designOf();
+      if (S.cfg.pin) delete S.cfg.pin[rd];
+      if (S.cfg.voicePick) delete S.cfg.voicePick[rd];
+      if (S.cfg.speedPick) delete S.cfg.speedPick[rd];
+      applyVoicePreset(rd);
+      syncUi(); redraw();
+      say('↺ <b>' + esc(DESIGN[rd] || '이 컨셉') + '</b>의 고정·저장값을 지우고 기본값(<b>' + esc((VOICE_PRESET[rd] || VOICE_PRESET.dark).label) + '</b>)으로 되돌렸습니다.');
     });
     var vrf = $('#wvVoiceRefresh');
     if (vrf) vrf.addEventListener('click', function () {
@@ -18429,6 +18517,7 @@ var CSVoice = (function () {
   function init() {
     S.cfg = loadCfg();
     bind();
+    applyVoicePreset(S.cfg.design || 'dark');   /* 이 컨셉에 저장된 성우·속도(없으면 기본값)로 시작 */
     syncUi();
     if ((S.cfg.design || 'dark') === 'fox') foxLoad();
     if (ROLE[S.cfg.design]) charLoad(S.cfg.design);
