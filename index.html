@@ -4923,7 +4923,7 @@
           var pct = num(s.changePct);
           live = '현재 <b style="color:#fff;">' + won(s.price) + '</b> ' +
             (pct === null ? '' : '<span style="color:' + upColor(pct) + '; font-weight:900;">' + pctf(pct) + '</span> ') +
-            (s.valueText ? '· 대금 ' + esc(s.valueText) + ' ' : '') +
+            ((s.valueDispText || s.valueText) ? '· 대금 ' + esc(s.valueDispText || s.valueText) + ' ' : '') +
             (s.tradedAtKst ? '<span style="color:#475569;">' + esc(s.tradedAtKst) + '</span>' : '');
         } else {
           live = esc(LIVE_MSG || (LIVE_OK ? '시세 없음 · 기준가 기준' : '현재가 확인 중…'));
@@ -24164,7 +24164,7 @@ window.__HONGINKI.ready = true;
     var price = null, pct = null, valTxt = null, source = 'snap';
     if (q && typeof q.price === 'number' && q.price > 0) {
       price = q.price;
-      valTxt = q.valueIntegText || q.valueText || null;
+      valTxt = q.valueDispText || q.valueIntegText || q.valueText || null;
       source = 'live';
     } else {
       price = card.close;
@@ -24328,7 +24328,7 @@ window.__HONGINKI.ready = true;
     if (live.ok && live.map && live.map[c.code]) {
       var q = live.map[c.code];
       var st = liveStateOf(c, q.price);
-      el.textContent = '⚡ 지금 ' + nf(q.price) + '원 (' + sign(st.diff.toFixed(2)) + '% · ' + st.text + ') · 대금 ' + (q.valueIntegText || q.valueText || '—');
+      el.textContent = '⚡ 지금 ' + nf(q.price) + '원 (' + sign(st.diff.toFixed(2)) + '% · ' + st.text + ') · 대금 ' + (q.valueDispText || q.valueIntegText || q.valueText || '—');
       el.className = 'm-status ok';
     } else {
       el.textContent = '⚪ 실시간 시세 미수신 — 11/13 종가 스냅샷 기준으로 표시 중입니다.';
