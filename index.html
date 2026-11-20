@@ -19596,7 +19596,7 @@ function openDetail(title, v1, v2, desc) {
         document.getElementById('modalVal2').innerText = v2;
         document.getElementById('modalDesc').innerHTML = desc;
         /* 💪 종목 모달 상태로 전환 — 지수 흐름 대신 지수 대비 상대강도(RS) 박스를 쓴다 */
-        try { window.RSEnterStockModal(v1); } catch (eRs) { /* RS 실패가 모달을 막지 않는다 */ }
+        try { window.RSEnterStockModal(title, v1); } catch (eRs) { /* RS 실패가 모달을 막지 않는다 */ }
         /* 📰 종목 모달 — 최신 뉴스 자동 조회 (코드 확인 시에만 · 사실만) */
         try { if (window.modalLoadStockNews) window.modalLoadStockNews(title); } catch (e) {}
 
@@ -22647,6 +22647,7 @@ window.DAILY_500_CANDLES = {"451760":[["20251105",8460.0,8500.0,8200.0,8280.0,72
 
         /* 지수 모달: 🕘 시간별 지수 흐름만 — RS 박스는 숨긴다 */
         window.__MODAL_KIND = 'index';
+        window.__MODAL_STOCK = null;
         var rsBoxIdx = document.getElementById('modalRsBox');
         if (rsBoxIdx) rsBoxIdx.style.display = 'none';
 
@@ -27108,6 +27109,13 @@ window.BijoongTab = {
   var RS_SEQ = 0;
   var RS_LAST = null;
 
+  /* 모달 제목 — 페이지 구현에 따라 window.modalCurrentTitle 이 없을 수 있어
+     openDetail 이 넘겨준 값(window.__MODAL_STOCK)을 1순위로 쓴다. */
+  function rsTitle() {
+    var s = window.__MODAL_STOCK;
+    var t = (s && s.title) ? s.title : window.modalCurrentTitle;
+    return String(t || '');
+  }
   function rsN(v) { return (typeof v === 'number' && isFinite(v)) ? v : null; }
   function rsPct(v) { return v === null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%'; }
   function rsPP(v) { return v === null ? '—' : (v >= 0 ? '+' : '') + v.toFixed(2) + '%p'; }
@@ -27159,7 +27167,7 @@ window.BijoongTab = {
 
   /* 모달 제목에서 '이 종목' 하나를 특정한다. 요약 카드(여러 종목)면 null */
   function rsTarget() {
-    var title = String(window.modalCurrentTitle || '');
+    var title = rsTitle();
     if (!title) return null;
     var map = rsNameMap();
     var hits = [];
@@ -27324,9 +27332,11 @@ window.BijoongTab = {
 
   function rsVerdict(d5, d20) {
     if (d5 && d20) {
-      if (d5.rs > 0 && d20.rs > 0) return '📌 5일·20일 모두 지수 대비 초과수익 — 추세적으로 시장을 이기는 구간';
-      if (d5.rs > 0 && d20.rs <= 0) return '📌 5일은 지수 대비 강함 · 20일은 아직 부진 — 단기 반등 국면';
-      if (d5.rs <= 0 && d20.rs > 0) return '📌 20일은 강했지만 최근 5일은 지수 대비 밀림 — 힘 빠지는 구간';
+      var a = d5.rs, b = d20.rs;
+      if (a >= 2 && b >= 2) return '📌 5일·20일 모두 지수 대비 뚜렷한 초과수익 — 추세적으로 시장을 이기는 구간';
+      if (a > 0 && b > 0) return '📌 5일·20일 모두 지수보다 강하지만 폭은 크지 않음 — 완만한 아웃퍼폼';
+      if (a > 0 && b <= 0) return '📌 5일은 지수 대비 강함 · 20일은 아직 부진 — 단기 반등 국면';
+      if (a <= 0 && b > 0) return '📌 20일은 강했지만 최근 5일은 지수 대비 밀림 — 힘 빠지는 구간';
       return '📌 5일·20일 모두 지수 대비 부진 — 약세 지속';
     }
     if (d5) return '📌 20일 RS는 일봉 부족으로 계산하지 않았습니다(5일 실측만).';
@@ -27410,7 +27420,7 @@ window.BijoongTab = {
     var pLive = code ? rsJson('/api/stock-live?codes=' + encodeURIComponent(code)).catch(function () { return null; }) : Promise.resolve(null);
     var guessed = !code;   /* 코드 없이 이름으로 조회한 경우만 '다른 종목' 검증을 건다 */
     return pChart.then(function (chart) {
-      if (guessed && chart && chart.ok === true && chart.name && String(window.modalCurrentTitle || '').indexOf(chart.name) === -1) {
+      if (guessed && chart && chart.ok === true && chart.name && rsTitle().indexOf(chart.name) === -1) {
         /* API가 다른 종목으로 풀었으면 남의 종목 RS 를 붙이지 않는다 */
         chart = null;
       }
@@ -27432,7 +27442,7 @@ window.BijoongTab = {
     box.style.display = 'block';
     /* 같은 종목을 다시 그릴 때(줌·팬)는 이미 계산한 값을 그대로 다시 칠한다 */
     var nowMs = Date.now();
-    if (RS_LAST && RS_LAST.title === String(window.modalCurrentTitle || '') && RS_CACHE[RS_LAST.ck] &&
+    if (RS_LAST && RS_LAST.title === rsTitle() && RS_CACHE[RS_LAST.ck] &&
         RS_CACHE[RS_LAST.ck].payload && (nowMs - RS_CACHE[RS_LAST.ck].at) < RS_TTL) {
       rsPaint(RS_CACHE[RS_LAST.ck].payload);
       return;
@@ -27443,7 +27453,7 @@ window.BijoongTab = {
     var name = tgt.name, code = tgt.code;
     var ck = (code || '') + '|' + name;
     var now = nowMs || Date.now();
-    RS_LAST = { title: String(window.modalCurrentTitle || ''), ck: ck };
+    RS_LAST = { title: rsTitle(), ck: ck };
     var hit = RS_CACHE[ck];
     if (hit && hit.payload && (now - hit.at) < RS_TTL) { rsPaint(hit.payload); return; }
     if (basisEl) basisEl.textContent = code ? (name + ' · ' + code) : name;
@@ -27454,13 +27464,13 @@ window.BijoongTab = {
     RS_SEQ += 1;
     rsLoad(code, name).then(function (payload) {
       RS_CACHE[ck] = { at: Date.now(), loading: false, payload: payload };
-      if (String(window.modalCurrentTitle || '').indexOf(name) === -1) return;
+      if (rsTitle().indexOf(name) === -1) return;
       if (window.__MODAL_KIND !== 'stock') return;
       rsPaint(payload);
     }).catch(function (err) {
       var fail = { ok: false, reason: String((err && err.message) || err || 'network') };
       RS_CACHE[ck] = { at: Date.now(), loading: false, payload: fail };
-      if (String(window.modalCurrentTitle || '').indexOf(name) === -1) return;
+      if (rsTitle().indexOf(name) === -1) return;
       rsPaint(fail);
     });
   };
@@ -27468,9 +27478,12 @@ window.BijoongTab = {
   /* 종목 모달로 전환할 때: 지수 흐름·자동계산 박스는 숨기고 RS 박스를 켠다.
      이전 종목의 숫자가 남아 보이지 않도록 내용을 먼저 비운다.
      실제 렌더는 renderUniversalModalChart 가 종목명을 확정한 뒤(제목 설정 후) 호출한다. */
-  window.RSEnterStockModal = function (v1) {
+  window.RSEnterStockModal = function (title, v1) {
     window.__MODAL_KIND = 'stock';
     window.__MODAL_V1 = v1 || '';
+    window.__MODAL_STOCK = { title: String(title || ''), v1: String(v1 || ''), at: Date.now() };
+    /* 동적 본체: 늦게 도착한 지수 일봉 응답이 종목 모달을 덮지 않도록 진행 중 요청을 무효화한다 */
+    try { window.modalIndexReqId = (Number(window.modalIndexReqId) || 0) + 1; } catch (eMri) { /* 무시 */ }
     var flow = document.getElementById('modalIdxFlow');
     var calc = document.getElementById('modalIdxCalc');
     if (flow) flow.style.display = 'none';
@@ -27573,7 +27586,7 @@ window.BijoongTab = {
       : ('📐 피보 ' + c.n + '봉 스윙 기준');
     if (bc) bc.innerHTML = '📈 채널 ' + (c.slope >= 0 ? '상승' : '하락') + ' · 밴드 ' + Math.max(0, Math.min(100, c.chPos)).toFixed(0) + '% 위치';
 
-    var idxNow = isIndexKey();
+    var idxNow = isIndexKey() && window.__MODAL_KIND !== 'stock';   /* 종목 모달이면 지수 흐름을 쓰지 않는다 */
     if (calcBox) calcBox.style.display = idxNow ? 'block' : 'none';
     if (panel) panel.style.display = idxNow ? 'block' : 'none';
     /* 지수 모달 ↔ 종목 모달 상태 분리 — 지수는 시간별 흐름만, 종목은 RS 박스만 */
