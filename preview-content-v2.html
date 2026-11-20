@@ -443,6 +443,17 @@
   #toast.on{opacity:1;transform:translate(-50%,0)}
 
 
+  /* ---------- 🦊 시간대 1클릭 상태줄 (쇼츠 스튜디오 · 웹 영상 생성기) ---------- */
+  .slotstate{margin-top:8px;font-size:12.5px;line-height:1.62;color:#86efac;background:rgba(16,185,129,.10);border:1px solid rgba(16,185,129,.32);border-radius:10px;padding:8px 10px}
+  .slotstate.bad{color:#fda4af;background:rgba(244,63,94,.10);border-color:rgba(244,63,94,.35)}
+  .slotrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:9px}
+  .slotrow .flabel{margin:0}
+  .wvslotrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;padding:7px 9px;border:1px solid rgba(245,158,11,.28);border-radius:10px;background:rgba(245,158,11,.07)}
+  .feedbanner{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:9px 0 0;padding:9px 11px;border:1px solid rgba(245,158,11,.38);border-radius:12px;background:rgba(245,158,11,.10);font-size:12.5px;line-height:1.62;color:#fde68a}
+  .feedbanner[hidden]{display:none}
+  .feedbanner #feedBannerText{flex:1 1 220px;min-width:0;color:#fef3c7}
+  .feedbanner #feedBannerText b{color:#fff}
+
   /* ---------- 🎬 웹 영상 생성기 (Canvas + MediaRecorder · 크레딧 0) ---------- */
   .wvhead{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
   .wvchip{font-size:10.6px;font-weight:900;color:#bae6fd;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);border-radius:999px;padding:2px 9px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1418,6 +1429,12 @@
   <button class="tab" id="tabSum" role="tab" aria-selected="false" aria-controls="panelSum">📋 요약</button>
 </nav>
 
+<div class="feedbanner" id="feedBanner" hidden role="status" aria-live="polite">
+  <span id="feedBannerText"></span>
+  <button class="btn small primary" id="feedBannerGo" type="button">📥 피클 최신 초안 다시 불러오기</button>
+  <button class="linkbtn" id="feedBannerClose" type="button">닫기</button>
+</div>
+
 <details class="shelf" id="routinePanel">
   <summary><span>📅 주간 발행 루틴표 (월~일)</span><span class="n" id="routineToday">오늘</span><span class="arw">▾</span></summary>
   <div class="shelfbody">
@@ -1695,13 +1712,17 @@
       <div class="field" style="margin-top:0">
         <div class="flabel">오늘 관제탑 시황 1클릭 <span class="bdg info">지수 · 수급 · 주도 테마 · 대장주</span></div>
         <div class="matpanel-row" style="margin-top:0">
+          <span class="flabel" style="margin:0">📥 피클 자동 초안</span>
+          <button class="btn small primary" id="feedDraftBtn" type="button" title="피클이 시간대별로 만들어 둔 최신 초안(data/content_auto_latest.json)을 읽어 제목·본문·태그를 결과 카드에 채우고 크림 그래프까지 갱신합니다 (지금 작업 중인 본문은 최신본으로 덮어씁니다)">📥 피클 최신 초안 다시 불러오기</button>
+          <span class="hint" id="feedDraftHint">장전(07:45)·점심(12:20)·정규마감(16:15)·통합 마감(20:10)마다 피클이 만들어 두는 초안입니다. 페이지를 열면 최신 초안이 자동으로 채워지고, 이 버튼은 언제든 최신본으로 다시 불러옵니다.</span>
+        </div>
+        <div class="matpanel-row" style="margin-top:0">
           <span class="flabel" style="margin:0">🦊 폭스시그널 시간대 1클릭</span>
-          <button class="btn small primary" id="slotPreBtn" type="button" title="장전 시황 재료를 채우고 📈 주식 시황 + 🦊 장전 양식(5번)으로 바꿉니다">🌅 장전</button>
-          <button class="btn small primary" id="slotNoonBtn" type="button" title="점심 시황 재료를 채우고 📈 주식 시황 + 🦊 점심 양식(6번)으로 바꿉니다">☀️ 점심</button>
-          <button class="btn small primary" id="slotCloseBtn" type="button" title="장마감 결산 재료를 채우고 📈 주식 시황 + 🦊 장마감 양식(7번)으로 바꿉니다">🌆 장마감</button>
+          <button class="btn small primary" id="slotPreBtn" type="button" title="장전 재료(밤사이 미 증시·야간선물·원달러)를 채우고 📈 주식 시황 + 🦊 장전 양식(5번)으로 바꿉니다">🌅 장전</button>
+          <button class="btn small primary" id="slotCloseBtn" type="button" title="정규장 결산 + NXT 애프터장(15:30~20:00) + 야간선물·일정 재료를 채우고 📈 주식 시황 + 🦊 통합 마감(정규+애프터) 양식(6번)으로 바꿉니다">🌙 통합 마감(정규+애프터)</button>
         </div>
         <div class="matpanel-row" style="margin-top:4px">
-          <span class="hint" id="slotHint">누르면 그 시간대 <b>관제탑 실측</b>으로 [참고 자료]·[주제]를 채우고, <b>📈 주식 시황 + 폭스시그널 양식</b>으로 바꾼 뒤 <b>크림 그래프·대표 썸네일</b>까지 다시 그립니다. 받지 못한 값은 비워 둡니다.</span>
+          <span class="hint" id="slotHint">블로그는 <b>🌅 장전</b>·<b>🌙 통합 마감(정규+애프터)</b> <b>2종</b>입니다. 누르면 그 시간대 <b>관제탑 실측</b>(지수·수급·NXT 애프터·야간선물·뉴스)으로 [참고 자료]·[주제]를 채우고, <b>📈 주식 시황 + 폭스시그널 양식</b>으로 바꾼 뒤 <b>크림 그래프·대표 썸네일</b>까지 다시 그립니다. 받지 못한 값은 비워 둡니다.</span>
         </div>
         <div class="matpanel-row">
           <button class="btn small primary" id="mktBtn">📡 오늘 시황 불러오기</button>
@@ -1765,8 +1786,7 @@
           <div class="quick" style="margin-top:7px">
             <span class="hint" style="margin:0 6px 0 0">🦊 시간대 1클릭 →</span>
             <button class="btn small" id="slotPreBtn2" type="button">🌅 장전</button>
-            <button class="btn small" id="slotNoonBtn2" type="button">☀️ 점심</button>
-            <button class="btn small" id="slotCloseBtn2" type="button">🌆 장마감</button>
+            <button class="btn small" id="slotCloseBtn2" type="button">🌙 통합 마감</button>
           </div>
           <div class="stnow" id="styleNow">적용 중인 양식: —</div>
           <div class="stbody" id="styleBody"></div>
@@ -2162,6 +2182,16 @@
           </div>
           <p class="hint">테마를 고르면 <b>아래 카드 2의 1·2·3번 쇼츠 양식</b>과 <b>카드 3의 참고 채널</b>이 그 테마로 바뀝니다. 블로그 9개 테마와는 저장이 따로입니다.</p>
           <div class="chiprow" id="shThemeChips"></div>
+          <div class="slotrow" role="group" aria-label="폭스시그널 시간대 1클릭 — 실측 데이터로 공식·대본·영상 레이아웃 세팅">
+            <span class="flabel">🦊 폭스시그널 시간대 1클릭</span>
+            <button class="btn small primary" type="button" data-cs-slot="pre">🌅 장전</button>
+            <button class="btn small primary" type="button" data-cs-slot="noon">☀️ 점심</button>
+            <button class="btn small primary" type="button" data-cs-slot="close">🌆 정규마감</button>
+            <button class="btn small primary" type="button" data-cs-slot="after">🌙 애프터장</button>
+            <button class="btn small" type="button" data-feed-draft="shorts" title="피클이 만들어 둔 최신 초안(블로그·쇼츠)을 이 화면에 다시 불러옵니다">📥 피클 최신 초안 다시 불러오기</button>
+          </div>
+          <div class="slotstate" id="shSlotState" hidden></div>
+          <p class="hint" style="margin-top:6px">누르면 그 시간대 <b>관제탑 실측·NXT 애프터마켓·뉴스</b>를 읽어 참고 자료와 주제를 채우고, <b>폭스시그널 공식</b>과 <b>🎬 영상 레이아웃</b>을 그 시간대로 바꿉니다. <b>블로그 글을 쓰지 않아도</b> 바로 동작합니다.</p>
           <div class="store-note">
             <span id="shThemeInfo">테마를 고르면 이 브라우저에 저장됩니다</span>
             <button class="linkbtn" id="shThemeReset" type="button">이 테마만 1번으로</button>
@@ -2273,6 +2303,15 @@
       <button class="btn small" id="wvPasteBtn" type="button" aria-expanded="false" aria-controls="wvPaste">📋 대본 붙여넣기</button>
       <button class="btn small ghost" id="wvSampleBtn" type="button" data-wvsample="1">🧪 샘플로 바로 만들기</button>
       <button class="btn small ghost" id="wvSetBtn" type="button">⚙ 옵션</button>
+    </div>
+    <div class="wvslotrow" role="group" aria-label="폭스시그널 시간대 1클릭 — 실측 데이터·공식·레이아웃 자동 전환">
+      <span class="flabel">🦊 시간대 1클릭</span>
+      <button class="btn small" type="button" data-cs-slot="pre" data-cs-slot-mode="wvid">🌅 장전</button>
+      <button class="btn small" type="button" data-cs-slot="noon" data-cs-slot-mode="wvid">☀️ 점심</button>
+      <button class="btn small" type="button" data-cs-slot="close" data-cs-slot-mode="wvid">🌆 정규마감</button>
+      <button class="btn small" type="button" data-cs-slot="after" data-cs-slot-mode="wvid">🌙 애프터장</button>
+      <button class="btn small primary" type="button" data-feed-draft="shorts" title="피클이 만들어 둔 최신 쇼츠 대본을 컷으로 나눠 이 생성기에 올립니다">📥 피클 최신 초안 다시 불러오기</button>
+      <span class="hint" style="margin:0;flex:1 1 200px;min-width:0">누르면 그 시간대 <b>피클 초안</b>이 있으면 먼저 불러오고, 없으면 실측을 읽어 <b>폭스시그널 공식·카드 레이아웃·5컷 미리보기</b>까지 세팅합니다(성우 고정값 유지).</span>
     </div>
     <div class="wvpaste" id="wvPaste" hidden>
       <div class="wvrow" style="gap:6px">
@@ -2541,6 +2580,7 @@
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.8 — ✍️ 블로그 <b>2종</b>(🌅 장전 · 🌙 통합 마감(정규+애프터): ① 정규장 결산 → ② NXT 애프터장 15:30~20:00 유지/이탈·신규 재료 → ③ 야간선물·미 선물·환율 → ④ 중요 일정 → ⑤ 리스크 괄호 표기) · 📱 쇼츠·🎬 영상 생성기 <b>4종</b>(🌅 장전 · ☀️ 점심 · 🌆 정규마감 · 🌙 애프터장) <b>1클릭</b> — 실측·NXT·뉴스로 공식·레이아웃 자동 전환, 블로그 글 없이도 동작</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.7 — <b>역할별 3탭</b>(🎬 AI 영상 스튜디오=클립 편집 · 📱 쇼츠 스튜디오=대본→영상 · ✍️ 블로그 작성) — <b>🎬 웹 영상 생성기를 📱 쇼츠 스튜디오 탭 안으로 통합</b>(대본·붙여넣기 → 🦊 폭스시그널 → ▶ 생성) · 블로그 결과 카드 <b>[📱 쇼츠로 변환]</b>(글 → 50초 5컷 · 복사 + 쇼츠 스튜디오 + 웹 영상 생성기 동시 전송)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.6 — 🎬 웹 영상 생성기 <b>📋 대본 직접 붙여넣기</b>(타임스탬프·컷·SRT·문장 대본을 컷 3~8로 자동 변환 · 해시태그·음성 노트 자동 정리) · <b>🧪 샘플로 바로 만들기</b>(11/20 시황 5컷 즉시 로드 → 바로 [▶ 생성])</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.5 — 🎬 웹 영상 생성기 <b>쇼츠 세이프 존 잠금</b>(상단 180·하단 380·좌 60·우 120 · 안전 영역 x 60~960 · y 180~1540) · <b>글자 폭 실측 자동 줄바꿈·자동 축소</b>(칸 밖 이탈 0) · <b>3단 고정 그리드</b>(훅 → 메인 → 자막, gap 28) · <b>영상 양식 3종</b>(📊 정보 카드형 · 📈 모션 차트/비교표형 · 🖼️ 사진 줌인형)</div>
@@ -8798,7 +8838,7 @@ var CSVoice = (function () {
       return '<div style="margin:26px 0 10px;padding:14px 16px;border:1px solid #e5d8bd;border-left:4px solid ' + MK.up + ';border-radius:10px;background-color:#fdf8ec;color:#2b2b2b">' +
         '<div style="font-size:12px;font-weight:800;color:#8a7a5c;letter-spacing:.02em">📺 영상으로도 봅니다</div>' +
         '<div style="margin-top:5px;font-size:15.5px;font-weight:800;color:#2b2b2b">🦊 폭스시그널 — 오늘의 시장 신호</div>' +
-        '<div style="margin-top:5px;font-size:13.5px;line-height:1.7;color:#4a453c">장전 · 점심 · 장마감 시황을 영상으로 정리합니다. 글에서 못 다한 수급·재료는 영상에서 이어집니다.</div>' +
+        '<div style="margin-top:5px;font-size:13.5px;line-height:1.7;color:#4a453c">장전 · 점심 · 정규마감 · 애프터장 시황을 영상으로 정리합니다. 글에서 못 다한 수급·재료는 영상에서 이어집니다.</div>' +
         '<div style="margin-top:9px"><a href="' + YT_URL + '"' + (tis ? ' target="_blank" rel="noopener"' : '') + ' style="font-size:13.5px;font-weight:800;color:#781b33;text-decoration:none;border-bottom:1px solid #781b33;padding-bottom:1px">▶ youtube.com/@폭스시그널</a></div>' +
         '</div>';
     }
@@ -9381,22 +9421,13 @@ var CSVoice = (function () {
         rules:['확정 종가와 프리마켓·장중 값을 구분한다','전망은 추정이라고 밝힌다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','수급을 다룬 문단 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','상승·하락 종목을 다룬 문단 바로 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','없는 종목·수치를 만들지 않고 모르는 값은 [확인 필요]로 둔다']
       },
       6: {
-        id:'stockFoxNoon', fox:'noon', name:'🦊 폭스시그널 · ☀️ 점심 시황', label:'6번 🦊 폭스시그널 점심 시황',
-        who:'오전장 주도 테마와 실시간 수급을 정리하고 오후 관전 포인트로 넘기는 점심 브리핑',
-        structure:['오전장 한 줄 결론 — 지수와 수급','오전 주도 테마와 대장주(돈이 들어온 곳)','실시간 수급 — 외국인·기관·개인 숫자','오후 관전 포인트 2~3개','오후 리스크와 대응'],
-        rhythm:'결론 한 문장 → 근거 2~3문장. 표와 불릿으로 끊고, 감탄 없이 숫자로 말한다.',
-        symbols:['📌 오전 요약 3줄','| 구분 | 코스피 | 코스닥 | 표','==오후의 핵심 문장== 형광펜 3~5곳','[📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부]','[📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부]','🦊 폭스시그널 점심 시황'],
-        voice:'현장 중계체. "~하는 중입니다", "~로 보입니다". 장중 값에는 반드시 시각을 붙인다.',
-        rules:['장중 값에는 기준 시각을 붙인다','확정치와 잠정치를 섞지 않는다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','수급을 다룬 문단 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','상승·하락 종목을 다룬 문단 바로 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','오후 전망은 시나리오로만 쓴다']
-      },
-      7: {
-        id:'stockFoxClose', fox:'close', name:'🦊 폭스시그널 · 🌆 장마감 결산(오늘 첫 글 표준)', label:'7번 🦊 폭스시그널 장마감 결산',
-        who:'확정 지수·수급을 표로 못 박고 돈이 들어온 곳과 빠진 곳을 갈라 다음 거래일 체크포인트로 닫는 장마감 결산',
-        structure:['확정 지수·거래대금 한 줄 정리','확정 수급 — 외국인·기관·개인 표','💰 돈이 들어온 곳 vs 🚪 빠진 곳','오늘의 재료 — 공시·뉴스 정리','다음 거래일 체크포인트 3개','한 줄 총평'],
-        rhythm:'결론 → 표 → 해석 2~3문장. 소제목마다 같은 형식을 반복해 훑기 쉽게 만든다.',
-        symbols:['| 구분 | 코스피 | 코스닥 | 표','💰 들어온 곳 / 🚪 빠진 곳','==오늘의 결론== 형광펜 3~5곳','[📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부]','[📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부]','🦊 폭스시그널 장마감 결산'],
-        voice:'정리하는 해설체. "~로 마감했습니다", "~가 남았습니다". 확정치는 소수점까지 그대로.',
-        rules:['확정 종가·확정 수급만 단정하고 장중 값은 시각과 함께 쓴다','다음 거래일 전망은 조건(가격·수급)과 함께 쓴다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','확정 수급 표 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','돈이 들어온 곳·빠진 곳 문단 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','없는 종목·수치를 만들지 않고 모르는 값은 [확인 필요]로 둔다']
+        id:'stockFoxUnified', fox:'after', name:'🦊 폭스시그널 · 🌙 통합 마감(정규+애프터)', label:'6번 🦊 폭스시그널 통합 마감(정규+애프터)',
+        who:'정규장 결산에 NXT 애프터장(15:30~20:00)의 유지·이탈, 야간선물·일정까지 붙여 다음 거래일 시초 조건으로 닫는 통합 마감 글',
+        structure:['① 정규장 마감 결산 — 확정 지수·거래대금·수급·대장주','② NXT 애프터장(15:30~20:00) — 정규장 강세주 유지/이탈 + 장 마감 후 새로 뜬 종목·공시/뉴스','③ 야간선물·미 선물·환율 현황','④ 중요 증시 일정 — 오늘/내일/이번 주 핵심 일정과 시장 영향','⑤ 리스크 괄호 표기와 한 줄 총평 — 다음 거래일 시초 조건'],
+        rhythm:'①은 표 → 해석 2~3문장, ②는 종목별 "정규 종가 → 시간외 → 종가比"를 한 줄씩. ③④는 불릿 3~4개, ⑤는 두 문장으로 닫는다.',
+        symbols:['| 구분 | 코스피 | 코스닥 | 표','💰 유지 / 🚪 이탈','🌙 NXT 15:30~20:00','📅 오늘·내일·이번 주 일정','==오늘의 결론== 형광펜 3~5곳','[📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부]','[📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부]','🦊 폭스시그널 통합 마감'],
+        voice:'정리하는 해설체. "~로 마감했습니다", "~가 남았습니다". 확정치는 소수점까지 그대로 옮긴다.',
+        rules:['확정 종가·확정 수급만 단정하고 장중 값은 시각과 함께 쓴다','②에는 정규장 강세주가 시간외에서 종가 위에 남았는지(유지) 종가 아래로 밀렸는지(이탈)를 종목마다 구분해 적는다','장 마감 뒤 새로 뜬 종목은 공시·보도로 재료가 확인된 것만 쓰고, 확인 못 한 재료는 [확인 필요]로 둔다','종목 옆 리스크는 괄호로 구분한다 — 실제 지정 종목은 (투자주의 지정)·(투자경고 지정)·(거래정지)처럼 사실대로 쓰고, 지정 사실이 확인되지 않은 급등주는 (단기 급등·과열 주의)로 적는다','③에는 야간선물·미 선물·원/달러를 숫자와 시각으로 적고, 받지 못한 값은 [확인 필요]로 둔다','④에는 오늘/내일/이번 주 일정과 그 일정이 시장에 미칠 영향을 한 줄씩 붙인다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','수급을 다룬 문단 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','상승·하락 종목을 다룬 문단 바로 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','없는 종목·수치를 만들지 않고 모르는 값은 [확인 필요]로 둔다']
       }
     },
     living: {
@@ -11015,17 +11046,40 @@ var CSVoice = (function () {
     });
   }
 
-  /* ---------- 🦊 폭스시그널 시간대 1클릭 (🌅 장전 · ☀️ 점심 · 🌆 장마감) ----------
-     · 그 시간대 관제탑 실측(/api/stock-live · /api/tabs-live · /api/breadth ·
-       data/supply-latest.json · data/latest-briefing.json · data/flow_timeline_today.json)을 읽어
-       [참고 자료]·[주제]를 채운다. 받지 못한 값은 지어내지 않고 '—'로 남긴다.
-     · 📈 주식 시황 + 폭스시그널 양식(5 장전 / 6 점심 / 7 장마감)으로 자동 전환한다.
-     · 크림 그래프 3종(수급 · 종목 대비)과 대표 썸네일을 다시 그려 바로 저장할 수 있게 한다. */
+  /* ---------- 🦊 폭스시그널 시간대 1클릭 (🌅 장전 · ☀️ 점심 · 🌆 정규마감 · 🌙 애프터장) ----------
+     · 블로그(2종)  : 🌅 장전 = 5번 양식 / 🌙 통합 마감(정규+애프터) = 6번 양식
+     · 쇼츠(4종)    : 같은 실측으로 폭스시그널 공식 1~4번 + 🎬 웹 영상 생성기 레이아웃까지 세팅한다.
+                      블로그 글을 만들지 않았어도(점심·정규마감) 실측/브리핑만으로 동작한다.
+     · 소스: /api/stock-live · /api/tabs-live(NXT 애프터·상한가·신고가) · /api/live-briefing(미 선물·환율·뉴스) ·
+             /api/macro-live · /api/econ-calendar · /api/stock-live?mode=alerts(공식 지정 현황) ·
+             data/supply-latest.json · data/latest-briefing.json · data/flow_timeline_today.json · /api/breadth
+     · 받지 못한 값은 지어내지 않고 '—' 또는 [확인 필요]로 남긴다. */
   var SLOT_DEF = {
-    pre:   { no: 5, icon: '🌅', name: '장전',       label: '장전 시황' },
-    noon:  { no: 6, icon: '☀️', name: '점심',       label: '점심 시황' },
-    close: { no: 7, icon: '🌆', name: '장마감 결산', label: '장마감 결산' }
+    pre:   { icon: '🌅', name: '장전',     label: '장전 시황',             blogNo: 5, foxNo: '1' },
+    noon:  { icon: '☀️', name: '점심',     label: '점심 시황',             blogNo: 0, foxNo: '2' },
+    close: { icon: '🌆', name: '정규마감', label: '정규마감 시황',         blogNo: 0, foxNo: '3' },
+    after: { icon: '🌙', name: '애프터장', label: '통합 마감(정규+애프터)', blogNo: 6, foxNo: '4' }
   };
+  var SLOT_EXT = { at: 0, livebrief: null, macro: null, econ: null, alerts: null, err: [] };
+  function slotExtra(force){
+    if (!force && SLOT_EXT.at && (Date.now() - SLOT_EXT.at) < 60000) return Promise.resolve(SLOT_EXT);
+    var base = (typeof MKT_BASE === 'string' && MKT_BASE) ? MKT_BASE : 'https://stock-dashboard-live-6frm.vercel.app';
+    var jobs = [
+      ['livebrief', base + '/api/live-briefing'],
+      ['macro', base + '/api/macro-live'],
+      ['econ', base + '/api/econ-calendar'],
+      ['alerts', base + '/api/stock-live?mode=alerts']
+    ];
+    return Promise.all(jobs.map(function (j) {
+      return fetchJsonT(j[1], 9000).then(function (x) { return [j[0], x]; }, function () { return [j[0], null]; });
+    })).then(function (rows) {
+      var err = [];
+      rows.forEach(function (r) { if (r[1]) SLOT_EXT[r[0]] = r[1]; else err.push(r[0]); });
+      SLOT_EXT.at = Date.now();
+      SLOT_EXT.err = err;
+      return SLOT_EXT;
+    });
+  }
   function pad2n(n){ return (n < 10 ? '0' : '') + n; }
   function slotStamp(){
     var d = new Date(), days = ['일', '월', '화', '수', '목', '금', '토'];
@@ -11039,6 +11093,18 @@ var CSVoice = (function () {
     var a = Math.abs(n);
     var jo = Math.floor(a / 10000), rest = a % 10000;
     return s + (jo ? jo.toLocaleString('ko-KR') + '조' : '') + (rest || !jo ? rest.toLocaleString('ko-KR') + '억' : '');
+  }
+  function slotPhaseWord(){
+    var lb = SLOT_EXT && SLOT_EXT.livebrief;
+    var ph = (lb && lb.marketPhase) || '';
+    var ms = (V2.data && V2.data.live && V2.data.live.marketStatus) || '';
+    var at = (lb && lb.generatedAtKst) ? ' ' + lb.generatedAtKst : '';
+    if (/애프터/.test(ph)) return '정규장 마감 · 애프터마켓' + at;
+    if (/장중/.test(ph)) return '장중 잠정' + at;
+    if (/장마감/.test(ph)) return '정규장 마감' + at;
+    if (/OPEN/.test(ms)) return '장중 잠정';
+    if (/CLOSE/.test(ms)) return '정규장 마감';
+    return '실측 시각';
   }
   function slotIndexLine(){
     var L = [], ids = (V2.data && V2.data.live && V2.data.live.indices) || [];
@@ -11088,32 +11154,233 @@ var CSVoice = (function () {
       basis: b.basis || ''
     };
   }
+  /* 실제 KRX 지정(투자주의·경고·위험·거래정지)은 사실대로, 미지정 급등주만 (단기 급등·과열 주의) */
+  function slotAlertTag(code){
+    var a = SLOT_EXT && SLOT_EXT.alerts;
+    if (!a || !a.byCode || !code) return '';
+    var r = a.byCode[String(code)];
+    if (!r) return '';
+    if (r.tradeStop) return '(거래정지)';
+    if (r.alertLabel) return '(' + r.alertLabel + ' 지정)';
+    return '';
+  }
+  function slotRiskTag(code, pct){
+    var t = slotAlertTag(code);
+    if (t) return t;
+    var n = Number(pct);
+    if (isFinite(n) && n >= 15) return '(단기 급등·과열 주의)';
+    return '';
+  }
   function slotThemeLines(n){
     var t = (V2.data && V2.data.tabs && V2.data.tabs.themes) || [];
     return t.slice(0, n || 3).map(function(x, i){
       var pct = x.top4Avg != null ? x.top4Avg : x.avgPct;
       var lead = (x.stocks || []).filter(function(s){ return /대장/.test(String(s.role || '')); })[0] || (x.stocks || [])[0];
+      var risk = lead ? slotRiskTag(lead.code, lead.changePct) : '';
       return (i + 1) + ') ' + (x.name || x.keyword || '테마') +
         (pct != null ? ' ' + (pct > 0 ? '+' : '') + Number(pct).toFixed(2) + '%' : '') +
-        (lead && lead.name ? ' — ' + lead.name + (lead.changePct != null ? ' ' + (lead.changePct > 0 ? '+' : '') + Number(lead.changePct).toFixed(2) + '%' : '') : '');
+        (lead && lead.name ? ' — ' + lead.name + (lead.changePct != null ? ' ' + (lead.changePct > 0 ? '+' : '') + Number(lead.changePct).toFixed(2) + '%' : '') + (risk ? ' ' + risk : '') : '');
     }).join(' / ');
   }
   function slotFuturesLine(){
     var L = [], f = (V2.data && V2.data.live && V2.data.live.futures) || [];
+    if (!f.length && SLOT_EXT.livebrief) f = SLOT_EXT.livebrief.futures || [];
     f.slice(0, 3).forEach(function(x){
       if (!x || x.price == null) return;
       L.push((x.name || '') + ' ' + Number(x.price).toLocaleString('ko-KR') + ' (' + (x.changePct > 0 ? '+' : '') + Number(x.changePct).toFixed(2) + '%)' + (x.asOfKst ? ' ' + x.asOfKst : ''));
     });
-    var fx = V2.data && V2.data.live && V2.data.live.fx;
-    if (fx && fx.price != null) L.push('원/달러 ' + Number(fx.price).toLocaleString('ko-KR') + '원 (' + (fx.changePct > 0 ? '+' : '') + Number(fx.changePct).toFixed(2) + '%)');
+    var fx = (V2.data && V2.data.live && V2.data.live.fx) || ((SLOT_EXT.livebrief && SLOT_EXT.livebrief.fx) || null);
+    if (fx && fx.price != null) L.push('원/달러 ' + Number(fx.price).toLocaleString('ko-KR') + '원 (' + (fx.changePct > 0 ? '+' : '') + Number(fx.changePct).toFixed(2) + '%)' + (fx.tradedDate ? ' ' + fx.tradedDate : ''));
     return L.join(' · ');
   }
-  function buildSlotMaterial(slot){
+  /* KRX 코스피200 야간선물 — 공개 실시간 API 가 없어 브리핑 문장에 적힌 값만 인용한다 */
+  function slotNightFut(){
+    var b = (V2.data && V2.data.brief) || {};
+    var txt = String((b.summaryLine || '') + ' ' + (b.bodyExcerpt || ''));
+    var m = /야간선물[^\d\n]{0,26}([\d,]+\.\d+)\s*(?:pt|p)?\s*(?:\(\s*([+\-][\d.]+%))?/.exec(txt);
+    if (!m) return null;
+    return { price: m[1], pct: m[2] || '' };
+  }
+  function slotMacroLines(){
+    var m = SLOT_EXT && SLOT_EXT.macro;
+    if (!m || !Array.isArray(m.items)) return [];
+    var want = { vix: 'VIX', us10y: '미 10년물', dxy: '달러인덱스', gold: '금', wti: 'WTI', btc: '비트코인', us2y: '미 2년물' };
+    var out = [];
+    m.items.forEach(function(it){
+      if (!it || it.ok === false || it.value == null) return;
+      var nm = want[it.key] || it.name;
+      if (!nm) return;
+      out.push('· ' + nm + ' ' + Number(it.value).toLocaleString('ko-KR', { maximumFractionDigits: it.digits != null ? it.digits : 2 }) +
+        (it.unit ? ' ' + it.unit : '') +
+        (it.changePct != null ? ' (' + (it.changePct > 0 ? '+' : '') + Number(it.changePct).toFixed(2) + '%)' : '') +
+        (it.asOfKst ? ' · ' + it.asOfKst : '') + (it.basisLabel ? ' (' + it.basisLabel + ')' : ''));
+    });
+    return out.slice(0, 6);
+  }
+  function slotNewsLines(n){
+    var L = [], seen = {};
+    var lb = SLOT_EXT && SLOT_EXT.livebrief;
+    var arr = (lb && Array.isArray(lb.news) && lb.news.length) ? lb.news
+      : ((V2.data && V2.data.tabs && Array.isArray(V2.data.tabs.news)) ? V2.data.tabs.news : []);
+    (arr || []).forEach(function(x){
+      if (!x || !x.title || seen[x.title]) return;
+      seen[x.title] = 1;
+      L.push((x.time ? x.time + ' ' : '') + x.title + (x.press ? ' (' + x.press + ')' : ''));
+    });
+    return L.slice(0, n || 5);
+  }
+  function slotEconLines(n){
+    var e = SLOT_EXT && SLOT_EXT.econ;
+    if (!e) return [];
+    var L = [], seen = {};
+    function take(it){
+      if (!it || !it.title) return;
+      var k = it.title + '|' + (it.dateLabel || '');
+      if (seen[k]) return;
+      seen[k] = 1;
+      L.push('· ' + (it.dateLabel || it.timeKst || '시각 미상') + ' ' + (it.country ? '[' + it.country + '] ' : '') + it.title +
+        (it.impactRank >= 3 ? ' · 영향 상' : it.impactRank === 2 ? ' · 영향 중' : '') +
+        (it.forecast ? ' · 예상 ' + it.forecast : '') + (it.previous ? ' · 이전 ' + it.previous : '') +
+        (it.actual ? ' · 실제 ' + it.actual : ''));
+    }
+    (e.todayItems || []).forEach(take);
+    (e.upcoming || []).forEach(take);
+    if (e.next && e.next.title) take(e.next);
+    return L.slice(0, n || 4);
+  }
+  function slotBriefQuotes(words, n){
+    var b = (V2.data && V2.data.brief) || {};
+    var txt = String((b.bodyExcerpt || '') + ' ' + (b.summaryLine || ''));
+    var out = [], seen = {};
+    txt.split(/\s*[•·]\s*|\n+/).forEach(function(seg){
+      var t = String(seg || '').replace(/^\s+|\s+$/g, '');
+      if (t.length < 20) return;
+      for (var i = 0; i < words.length; i++){
+        if (t.indexOf(words[i]) > -1){
+          var k = t.slice(0, 30);
+          if (seen[k]) return;
+          seen[k] = 1;
+          out.push(t.length > 190 ? t.slice(0, 190) + '…' : t);
+          return;
+        }
+      }
+    });
+    return out.slice(0, n || 3);
+  }
+  function slotFlowLines(near){
+    var f = V2.data && V2.data.flow, L = [];
+    if (!f || !Array.isArray(f.slots)) return L;
+    var done = f.slots.filter(function(s){ return s && s.state === 'done'; });
+    if (!done.length) return L;
+    var pick = done[done.length - 1];
+    if (near){
+      for (var i = done.length - 1; i >= 0; i--){ if (String(done[i].t) <= String(near)){ pick = done[i]; break; } }
+    }
+    L.push('· 장중 흐름(' + (f.date || '') + ' ' + (pick.measured || pick.t) + ' 실측): ' + (pick.statusLabel || '—') +
+      (pick.leadName ? ' · ' + pick.leadName + (pick.leadChg ? ' ' + pick.leadChg : '') : ''));
+    var th = (pick.themes || []).slice(0, 4).map(function(t){
+      return t.name + (t.status === 'keep' ? '(유지)' : t.status === 'weak' ? '(약화)' : '');
+    });
+    if (th.length) L.push('· 그 시각 테마: ' + th.join(' · '));
+    if (pick.supply && pick.supply.note) L.push('· 수급 메모: ' + pick.supply.note);
+    return L;
+  }
+  function slotUpperLines(){
+    var t = (V2.data && V2.data.tabs) || {}, L = [];
+    var up = t.upperLimit || {};
+    function lst(a){
+      return (a || []).map(function(s){
+        var tag = slotRiskTag(s.code, s.changePct);
+        return s.name + (s.changePct != null ? ' ' + (s.changePct > 0 ? '+' : '') + Number(s.changePct).toFixed(2) + '%' : '') +
+          (s.valueText ? '·' + s.valueText : '') + (tag ? ' ' + tag : '');
+      });
+    }
+    var c = lst(up.confirmed).slice(0, 3), nr = lst(up.near).slice(0, 3);
+    if (c.length) L.push('· 상한가: ' + c.join(' · '));
+    if (nr.length) L.push('· 상한가 근접: ' + nr.join(' · '));
+    var h5 = t.high52 || {};
+    var hv = (h5.byValue || []).slice(0, 3).map(function(s){
+      var tag = slotRiskTag(s.code, s.changePct);
+      return s.name + (s.changePct != null ? ' ' + (s.changePct > 0 ? '+' : '') + Number(s.changePct).toFixed(2) + '%' : '') + (tag ? ' ' + tag : '');
+    });
+    if (hv.length) L.push('· 52주 신고가(' + (h5.stockCount || hv.length) + '종 중 대금 상위): ' + hv.join(' · '));
+    return L;
+  }
+  /* NXT 애프터마켓 — 정규장 종가 대비 유지/이탈을 코드별로 합쳐 한 표로 만든다 */
+  function slotAfterRows(){
+    var t = (V2.data && V2.data.tabs) || {};
+    var am = t.aftermarket || {}, map = {};
+    function put(code, name, o){
+      if (!code || !name) return;
+      var r = map[code];
+      if (!r){
+        r = map[code] = { code: code, name: name, market: '', regularClose: null, regularPct: null,
+          nxt: null, nxtPct: null, nxtValueText: '', vsClose: null, high: null, low: null };
+      }
+      if (o.market) r.market = o.market;
+      if (o.regularClose != null && r.regularClose == null) r.regularClose = Number(o.regularClose);
+      if (o.regularPct != null && r.regularPct == null) r.regularPct = Number(o.regularPct);
+      if (o.nxt != null) r.nxt = Number(o.nxt);
+      if (o.nxtPct != null) r.nxtPct = Number(o.nxtPct);
+      if (o.nxtValueText && !r.nxtValueText) r.nxtValueText = String(o.nxtValueText);
+      if (o.vsClose != null && r.vsClose == null) r.vsClose = Number(o.vsClose);
+      if (o.high != null && r.high == null) r.high = Number(o.high);
+      if (o.low != null && r.low == null) r.low = Number(o.low);
+    }
+    (am.byValue || []).forEach(function(s){
+      put(s.code, s.name, { market: s.market, regularClose: s.regularClose, regularPct: s.changePct,
+        nxt: s.overPrice, nxtPct: s.overPct, nxtValueText: s.overValueText || s.overValueDispText, vsClose: s.divergencePct });
+    });
+    var nl = t.nxtLeaders || {};
+    (nl.byPct || []).forEach(function(s){
+      put(s.code, s.name, { market: s.market, nxt: s.price, nxtPct: s.changePct, nxtValueText: s.valueText,
+        high: s.high, low: s.low });
+    });
+    (t.themes || []).forEach(function(th){
+      (th.stocks || []).forEach(function(s){
+        if (s.overPrice == null && s.overPct == null) return;
+        put(s.code, s.name, { market: s.market, regularClose: s.price, regularPct: s.changePct,
+          nxt: s.overPrice, nxtPct: s.overPct, nxtValueText: s.overValueText });
+      });
+    });
+    var rows = Object.keys(map).map(function(k){
+      var r = map[k];
+      if (r.vsClose == null && r.regularClose && r.nxt) r.vsClose = (r.nxt - r.regularClose) / r.regularClose * 100;
+      return r;
+    });
+    return {
+      rows: rows,
+      topValue: (am.byValue || []).slice(0, 6),
+      basis: am.basisLabel || '',
+      inSession: !!am.inSession,
+      universe: am.withAfterCount || rows.length,
+      leadersBasis: (nl.sessionLabel || '') + (nl.source ? ' · ' + nl.source : '')
+    };
+  }
+  function slotNum(v){ return Number(v).toLocaleString('ko-KR'); }
+  function slotAfterLine(r){
+    var P = [];
+    P.push(r.name + (r.market ? '(' + r.market + ')' : ''));
+    if (r.nxt != null) P.push('시간외 ' + slotNum(r.nxt) + '원');
+    if (r.nxtPct != null) P.push('전일比 ' + (r.nxtPct > 0 ? '+' : '') + Number(r.nxtPct).toFixed(2) + '%');
+    if (r.regularClose != null) P.push('정규종가 ' + slotNum(r.regularClose));
+    if (r.vsClose != null){
+      P.push('종가比 ' + (r.vsClose > 0 ? '+' : '') + Number(r.vsClose).toFixed(2) + '% ' +
+        (r.vsClose > 0.0001 ? '유지' : (r.vsClose < -0.0001 ? '이탈' : '보합')));
+    }
+    if (r.nxtValueText) P.push('NXT대금 ' + r.nxtValueText);
+    var tag = slotRiskTag(r.code, r.nxtPct);
+    return '  - ' + P.join(' · ') + (tag ? ' ' + tag : '');
+  }
+  function buildSlotMaterial(slot, mode){
     var d = SLOT_DEF[slot], b = (V2.data && V2.data.brief) || {};
-    var L = [];
+    var L = [], after = null;
     L.push('[🦊 폭스시그널 ' + d.icon + ' ' + d.label + ' 재료 — ' + slotStamp() + ']');
+    L.push('쓸 곳: ' + (mode === 'blog'
+      ? ('✍️ 블로그 — 📈 주식 시황 ' + d.blogNo + '번 양식')
+      : ('📱 쇼츠 — 폭스시그널 4종 공식 ' + d.foxNo + '번 · 🎬 웹 영상 생성기 🦊 폭스시그널')));
     var idx = slotIndexLine();
-    L.push('지수(네이버 폴링 · 마감 뒤에는 직전 마감값): ' + (idx || '값을 받지 못했습니다'));
+    L.push('지수(' + slotPhaseWord() + ' · 네이버 폴링): ' + (idx || '값을 받지 못했습니다'));
     if (b.slotLabel) L.push('관제탑 최신 브리핑: ' + b.slotLabel + (b.dateLabel ? ' · ' + b.dateLabel : ''));
     var sp = slotSupplyLine();
     L.push('수급(' + (sp.basis || '기준 불명') + '): ' + sp.text);
@@ -11122,61 +11389,419 @@ var CSVoice = (function () {
     var th = slotThemeLines(3);
     if (th) L.push('주도 테마(관제탑 실시간): ' + th);
     var fu = slotFuturesLine();
-    if (fu) L.push('선물·환율: ' + fu);
-    if (slot === 'pre') L.push('※ 장전 글: 밤사이 미 증시·야간선물은 위 선물 값과 브리핑 문장에서만 인용하고, 시초가 예상 등락률은 쓰지 않습니다.');
-    if (slot === 'noon') L.push('※ 점심 글: 장중 수급은 위 기준 시각 값이며 확정치가 아닙니다 — 문장마다 시각을 붙입니다.');
-    if (slot === 'close') L.push('※ 장마감 글: 확정 종가·확정 수급만 단정하고, 다음 거래일 전망은 조건과 함께 씁니다.');
-    L.push('※ 숫자는 관제탑 API·파일이 준 값 그대로입니다. 받지 못한 값은 비워 두었습니다.');
-    var topicBits = [];
-    var k0 = ((V2.data && V2.data.live && V2.data.live.indices) || []).filter(function(x){ return /KOSPI/.test(x.key || '') || /코스피/.test(x.name || ''); })[0];
-    if (k0 && k0.price != null) topicBits.push('코스피 ' + Number(k0.price).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '(' + (k0.changePct > 0 ? '+' : '') + Number(k0.changePct).toFixed(2) + '%)');
-    var t1 = ((V2.data && V2.data.tabs && V2.data.tabs.themes) || [])[0];
-    if (t1 && (t1.name || t1.keyword)) topicBits.push(t1.name || t1.keyword);
-    var topic = (d.dateLabel || '') ;
+    L.push('선물·환율: ' + (fu || '값을 받지 못했습니다'));
+    var nf = slotNightFut();
+
+    if (slot === 'pre'){
+      L.push('');
+      L.push('■ 간밤·장전 지표(실측)');
+      slotMacroLines().forEach(function (x) { L.push(x); });
+      L.push('· 야간선물(코스피200): ' + (nf ? nf.price + 'pt' + (nf.pct ? ' (' + nf.pct + ')' : '') : '브리핑·API에서 수치를 받지 못했습니다 [확인 필요]'));
+      slotBriefQuotes(['밤사이', '간밤', '미 증시', '나스닥', '야간선물', '환율', '미장'], 3).forEach(function (x) {
+        L.push('· 브리핑 문장: ' + x);
+      });
+      var pn = slotNewsLines(3);
+      if (pn.length){ L.push('· 뉴스: ' + pn.join(' / ')); }
+      L.push('■ 장전 체크포인트(재료 기준): ① 시초 갭과 개장 30분 뒤 위치 ② 어제 강했던 테마의 유지/이탈 ③ 환율·미 선물 방향.');
+      L.push('※ 장전: 밤사이 미 증시·야간선물은 위 값과 브리핑 문장에서만 인용하고, 시초가 예상 등락률은 쓰지 않습니다.');
+    }
+
+    if (slot === 'noon'){
+      L.push('');
+      L.push('■ 오전장 실측(장중 값)');
+      slotFlowLines('12:00').forEach(function (x) { L.push(x); });
+      slotBriefQuotes(['오전', '장중', '수급'], 3).forEach(function (x) { L.push('· 브리핑 문장: ' + x); });
+      L.push('※ 점심: 장중 지수·수급은 위 기준 시각 값이며 확정치가 아닙니다 — 문장마다 시각을 붙입니다.');
+    }
+
+    if (slot === 'close'){
+      L.push('');
+      L.push('■ 정규장 확정 결산');
+      slotUpperLines().forEach(function (x) { L.push(x); });
+      slotBriefQuotes(['확정', '종가', '마감', '대금'], 3).forEach(function (x) { L.push('· 브리핑 문장: ' + x); });
+      var cn = slotNewsLines(3);
+      if (cn.length) L.push('· 마감 무렵 뉴스: ' + cn.join(' / '));
+      L.push('※ 정규마감: 확정 종가·확정 수급만 단정하고, 다음 거래일 전망은 조건(가격·수급)과 함께 씁니다.');
+    }
+
+    if (slot === 'after'){
+      after = slotAfterRows();
+      L.push('');
+      L.push('■ ① 정규장 마감 결산');
+      slotUpperLines().forEach(function (x) { L.push(x); });
+      slotBriefQuotes(['확정', '종가', '마감'], 2).forEach(function (x) { L.push('· 브리핑 문장: ' + x); });
+      L.push('');
+      L.push('■ ② NXT 애프터마켓(15:30~20:00) — 기준 ' + (after.basis || '브리핑 기준') + (after.inSession ? ' · 세션 진행 중' : ' · 마감값') +
+        (after.leadersBasis ? ' · ' + after.leadersBasis : ''));
+      L.push('· NXT 시간외 체결이 있는 종목 ' + after.universe + '종 기준(종가比 = 오늘 정규장 종가 대비).');
+      var strong = after.rows.filter(function (r) { return r.regularPct != null && r.regularPct > 0 && r.nxtPct != null; })
+        .sort(function (a2, b2) { return Math.abs(b2.nxtPct || 0) - Math.abs(a2.nxtPct || 0); });
+      var keep = strong.filter(function (r) { return r.vsClose != null && r.vsClose > 0.0001; }).slice(0, 4);
+      var drop = strong.filter(function (r) { return r.vsClose != null && r.vsClose < -0.0001; }).slice(0, 4);
+      L.push('· 정규장 강세주 → 시간외에서 종가 위 유지(' + keep.length + '):');
+      if (keep.length) keep.forEach(function (r) { L.push(slotAfterLine(r)); });
+      else L.push('  - 확인된 종목 없음 [확인 필요]');
+      L.push('· 정규장 강세주 → 시간외에서 종가 아래 이탈(' + drop.length + '):');
+      if (drop.length) drop.forEach(function (r) { L.push(slotAfterLine(r)); });
+      else L.push('  - 확인된 종목 없음');
+      var fresh = after.rows.filter(function (r) { return r.nxtPct != null && r.nxtPct >= 10 && (r.regularPct == null || r.regularPct < 5); })
+        .sort(function (a2, b2) { return (b2.nxtPct || 0) - (a2.nxtPct || 0); }).slice(0, 4);
+      L.push('· 장 마감 뒤 새로 뜬 종목(정규장 +5% 미만 → 시간외 +10% 이상):');
+      if (fresh.length) fresh.forEach(function (r) { L.push(slotAfterLine(r)); });
+      else L.push('  - 확인된 종목 없음');
+      if (after.topValue.length){
+        L.push('· NXT 시간외 대금 상위: ' + after.topValue.map(function (s) {
+          return s.name + ' ' + (s.overValueText || '') + (s.overPct != null ? '(' + (s.overPct > 0 ? '+' : '') + Number(s.overPct).toFixed(2) + '%)' : '');
+        }).join(' · '));
+      }
+      var an = slotNewsLines(4);
+      L.push('· 마감 뒤 확인된 뉴스(공시는 확인된 것만): ' + (an.length ? an.join(' / ') : 'API에서 받은 뉴스가 없습니다 [확인 필요]'));
+      L.push('');
+      L.push('■ ③ 야간선물·미 선물·환율');
+      L.push('· 미 선물·환율: ' + (fu || '값을 받지 못했습니다'));
+      L.push('· 야간선물(코스피200): ' + (nf ? nf.price + 'pt' + (nf.pct ? ' (' + nf.pct + ')' : '') : '브리핑·API에서 수치를 받지 못했습니다 [확인 필요]'));
+      slotMacroLines().forEach(function (x) { L.push(x); });
+      L.push('');
+      L.push('■ ④ 중요 증시 일정 — 오늘/내일/이번 주 핵심과 시장 영향');
+      var ev = slotEconLines(4);
+      if (ev.length) ev.forEach(function (x) { L.push(x + ' → 발표 전후 변동성·환율·금리 반응을 함께 봅니다.'); });
+      else L.push('· 캘린더에서 받은 일정이 없습니다 [확인 필요]');
+      if (SLOT_EXT.econ && SLOT_EXT.econ.sourceLabel) L.push('  (일정 출처: ' + SLOT_EXT.econ.sourceLabel + ' · ' + (SLOT_EXT.econ.country || 'USD') + ' high/medium — 국내 일정은 브리핑에 적힌 것만)');
+      L.push('');
+      L.push('■ ⑤ 종목 옆 리스크 괄호 표기 규칙');
+      var ex = [];
+      after.rows.forEach(function (r) {
+        var t2 = slotAlertTag(r.code);
+        if (t2 && ex.length < 3 && String(t2).indexOf('거래정지') < 0) ex.push(r.name + t2);
+      });
+      L.push('· 실제로 지정된 종목은 사실대로 적습니다' + (ex.length ? ' — 예: ' + ex.join(' · ') : '') + ' (KRX 지정 현황 실측: 투자주의/투자경고/투자위험/거래정지).');
+      L.push('· 지정 사실이 확인되지 않은 급등주는 (단기 급등·과열 주의)로 구분해 적고, 지정 종목과 같은 괄호로 섞지 않습니다.');
+      L.push('· 확인하지 못한 지정·공시는 괄호를 만들지 말고 [확인 필요]로 남깁니다.');
+      L.push('※ 통합 마감 양식: ① 정규장 결산 → ② NXT 애프터장 → ③ 야간선물·미 선물·환율 → ④ 중요 일정 → ⑤ 리스크 괄호.');
+    }
+
+    var miss = (SLOT_EXT.err || []).slice();
+    if (V2.data && V2.data.err && V2.data.err.length) miss = miss.concat(V2.data.err);
+    L.push('');
+    L.push('※ 숫자는 관제탑 API·파일이 준 값 그대로입니다. 받지 못한 값은 비워 두었습니다' +
+      (miss.length ? ' — ' + miss.join(' · ') : '') + '.');
+
     var dt = new Date(), wd = ['일', '월', '화', '수', '목', '금', '토'][dt.getDay()];
-    topic = (dt.getMonth() + 1) + '/' + dt.getDate() + '(' + wd + ') ' + d.label + (topicBits.length ? ' — ' + topicBits.join(' · ') : '');
-    return { text: L.join('\n'), topic: topic, thumb: (dt.getMonth() + 1) + '/' + dt.getDate() + ' ' + d.name + (k0 && k0.price != null ? ' 코스피 ' + Number(k0.price).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) : '') };
+    var k0 = ((V2.data && V2.data.live && V2.data.live.indices) || []).filter(function (x) {
+      return /KOSPI/.test(x.key || '') || /코스피/.test(x.name || '');
+    })[0];
+    var bits = [];
+    if (k0 && k0.price != null) bits.push('코스피 ' + Number(k0.price).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) +
+      '(' + (k0.changePct > 0 ? '+' : '') + Number(k0.changePct).toFixed(2) + '%)');
+    if (slot === 'after' && after && after.rows.length){
+      var top = after.rows.filter(function (r) { return r.nxtPct != null; }).sort(function (a2, b2) { return (b2.nxtPct || 0) - (a2.nxtPct || 0); })[0];
+      if (top) bits.push('NXT ' + top.name + ' ' + (top.nxtPct > 0 ? '+' : '') + Number(top.nxtPct).toFixed(2) + '%');
+    } else {
+      var t1 = ((V2.data && V2.data.tabs && V2.data.tabs.themes) || [])[0];
+      if (t1 && (t1.name || t1.keyword)) bits.push(t1.name || t1.keyword);
+    }
+    var topic = (dt.getMonth() + 1) + '/' + dt.getDate() + '(' + wd + ') ' + d.label + (bits.length ? ' — ' + bits.join(' · ') : '');
+    var thumb = (dt.getMonth() + 1) + '/' + dt.getDate() + ' ' + d.name +
+      (k0 && k0.price != null ? ' 코스피 ' + Number(k0.price).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) : '');
+    return { text: L.join('\n'), topic: topic.slice(0, 80), thumb: thumb.slice(0, 60) };
   }
-  function runSlot(slot, btn){
+  /* 세 모드: blog = 글 양식까지 전환 / shorts = 쇼츠 스튜디오 세팅 / wvid = 쇼츠 + 영상 생성기 레이아웃 */
+  function runSlot(slot, mode, btn){
     var def = SLOT_DEF[slot];
-    if (!def) return;
-    var st = $('#matState');
-    if (st) st.textContent = '읽는 중…';
+    if (!def) return Promise.resolve(false);
+    var m = (mode === 'shorts' || mode === 'wvid') ? mode : 'blog';
+    var st = $('#matState'), sst = $('#shSlotState');
+    if (m === 'blog'){
+      if (st) st.textContent = '읽는 중…';
+      if (sst) sst.hidden = true;
+    } else {
+      if (st) st.textContent = '읽는 중…';
+      if (sst){ sst.hidden = false; sst.className = 'slotstate'; sst.textContent = def.icon + ' ' + def.name + ' 초안·실측 읽는 중…'; }
+    }
     if (btn) spinner(btn, true, '관제탑 읽는 중…');
-    return cvReload(true).then(function(){
-      var mat = buildSlotMaterial(slot);
+    /* ① 그 슬롯의 '오늘자' 피클 초안이 있으면 그것을 먼저 불러온다 (없으면 실측 흐름) */
+    return feedSlotHit(slot, m).then(function(hit){
+      if (hit){
+        if (st) st.textContent = def.icon + ' ' + def.name + ' 피클 초안';
+        if (sst && m !== 'blog'){
+          sst.hidden = false;
+          sst.className = 'slotstate ok';
+          sst.innerHTML = def.icon + ' <b>' + esc(def.name + ' 시황') + '</b> — 📥 피클이 작성한 초안을 불러왔습니다';
+        }
+        return true;
+      }
+      return Promise.all([cvReload(true), slotExtra(true)]).then(function(){
+      var mat = buildSlotMaterial(slot, m);
       var src = $('#srcMaterial');
       if (src){ src.value = mat.text; try { src.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
       var tp = $('#topic');
       if (tp){ tp.value = mat.topic; try { tp.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
-      /* 📈 주식 시황 양식으로 전환 + 폭스시그널 시간대 양식 */
-      var chip = document.querySelector('#formChips .fchip[data-id="stock"]');
-      if (chip) chip.click();
-      bloggerPick['stock'] = def.no;
-      savePick();
-      try { renderStyle(); } catch(e){}
-      /* 그래프·썸네일 다시 그리기 */
-      try { cvDrawAll(); } catch(e){}
-      var tt = $('#thumbTitle');
-      if (tt){ tt.value = mat.thumb; try { tt.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
-      try { if (window.CS2_PHOTO && window.CS2_PHOTO.draw) window.CS2_PHOTO.draw(); } catch(e){}
+      if (m === 'blog'){
+        var chip = document.querySelector('#formChips .fchip[data-id="stock"]');
+        if (chip) chip.click();
+        if (def.blogNo){
+          bloggerPick['stock'] = def.blogNo;
+          savePick();
+          try { renderStyle(); } catch(e){}
+        }
+        try { cvDrawAll(); } catch(e){}
+        var tt = $('#thumbTitle');
+        if (tt){ tt.value = mat.thumb; try { tt.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
+        try { if (window.CS2_PHOTO && window.CS2_PHOTO.draw) window.CS2_PHOTO.draw(); } catch(e){}
+        if (st) st.textContent = def.icon + ' ' + def.name + ' 재료 준비됨';
+        var card = $('#chartCard');
+        if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        toast(def.icon + ' ' + def.name + ' 재료로 바꿨습니다 — 📈 주식 시황 · ' + def.blogNo + '번 양식 · 크림 그래프·썸네일까지 다시 그렸습니다.');
+        return true;
+      }
+      /* --- 쇼츠 / 웹 영상 생성기: 블로그 글과 무관하게 실측 데이터로 바로 세팅 --- */
+      var chipEl = document.querySelector('#shThemeChips [data-sh-theme="economy"]');
+      if (chipEl) chipEl.click();
+      else {
+        SH.theme = 'economy';
+        lsSet(SH_KEYS.theme, 'economy');
+        try { shRenderAll(); } catch(e){}
+      }
+      var sq = $('#shTopic');
+      if (sq){ sq.value = mat.topic; try { sq.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
+      var wv = null;
+      try { if (window.WVID && window.WVID.slot) wv = window.WVID.slot(slot); } catch(e){ wv = null; }
+      var vname = (wv && wv.voice) ? wv.voice : '';
+      if (sst){
+        sst.className = 'slotstate ok';
+        sst.innerHTML = def.icon + ' <b>' + esc(def.name + ' 시황') + '</b> 실측 준비됨 — 참고 자료 <b>' + charLen(mat.text) + '자</b> · 주제 자동 입력' +
+          (wv ? ' · 폭스시그널 공식 <b>' + esc(wv.name || '') + '</b>' + (vname ? ' · 성우 <b>' + esc(vname) + '</b>' : '') + ' · 미리보기 5컷 로드' : '');
+      }
       if (st) st.textContent = def.icon + ' ' + def.name + ' 재료 준비됨';
-      var card = $('#chartCard');
-      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      toast(def.icon + ' ' + def.name + ' 재료로 바꿨습니다 — 📈 주식 시황 · ' + def.no + '번 폭스시그널 양식 · 크림 그래프·썸네일까지 다시 그렸습니다.');
-    }).catch(function(e){
-      if (st) st.textContent = '실패';
-      toast('재료를 불러오지 못했습니다 — ' + ((e && e.message) || ''));
-    }).then(function(){
+      toast(def.icon + ' ' + def.name + ' 실측으로 세팅했습니다' +
+        (wv ? ' — 폭스시그널 공식 ' + (wv.name || '') + ' · 5컷 미리보기까지' : '') + ' · [🎬 쇼츠 대본 생성]으로 바로 이어가세요.');
+      return true;
+      }).catch(function(e){
+        if (st) st.textContent = '실패';
+        if (sst){ sst.hidden = false; sst.className = 'slotstate bad'; sst.textContent = def.icon + ' ' + def.name + ' 실측을 불러오지 못했습니다 — ' + ((e && e.message) || ''); }
+        toast('재료를 불러오지 못했습니다 — ' + ((e && e.message) || ''));
+        return false;
+      });
+    }).then(function(r){
       if (btn) spinner(btn, false);
+      return r;
     });
   }
   (function(){
-    [['slotPreBtn', 'pre'], ['slotNoonBtn', 'noon'], ['slotCloseBtn', 'close'],
-     ['slotPreBtn2', 'pre'], ['slotNoonBtn2', 'noon'], ['slotCloseBtn2', 'close']].forEach(function(pair){
+    [['slotPreBtn', 'pre'], ['slotCloseBtn', 'after'],
+     ['slotPreBtn2', 'pre'], ['slotCloseBtn2', 'after']].forEach(function(pair){
       var el = document.getElementById(pair[0]);
-      if (el) el.addEventListener('click', function(){ runSlot(pair[1], el); });
+      if (el) el.addEventListener('click', function(){ runSlot(pair[1], 'blog', el); });
     });
+    /* 쇼츠 스튜디오 · 🎬 웹 영상 생성기의 4시간대 버튼 — data-cs-slot / data-cs-slot-mode */
+    document.addEventListener('click', function(ev){
+      var b = ev.target && ev.target.closest ? ev.target.closest('[data-cs-slot]') : null;
+      if (!b) return;
+      ev.preventDefault();
+      var slot = b.getAttribute('data-cs-slot');
+      var mode = b.getAttribute('data-cs-slot-mode') || 'shorts';
+      runSlot(slot, mode, b);
+    });
+  })();
+
+  /* ---------- 📥 피클 자동 초안 (data/content_auto_latest.json) ----------
+     구조: { updatedAt, date, latestSlot, slots:{ pre|lunch|close|after:{ slot, slotLabel, updatedAt,
+              blog?:{title, markdown, tags[], chartFiles[]}, shorts?:{title, formulaKey, script, ...} } } }
+       · top-level blog/shorts 는 latestSlot 의 사본(하위 호환) — 없으면 slots 쪽을 읽는다.
+     동작:
+       · 페이지를 열면 최신 슬롯(latestSlot)의 블로그 초안 + 쇼츠 대본을 1회 자동 세팅
+         (작업 중인 본문·대본이 있으면 덮지 않고 배너만).
+       · [🌅][☀️][🌆][🌙] 시간대 버튼 — 그 슬롯의 '오늘자' 피클 초안이 있으면 그것을 먼저 불러오고,
+         없을 때만 관제탑 실측 재료 → Gemini 흐름으로 넘어간다.
+       · [📥 피클 최신 초안 다시 불러오기] — 언제든 최신본으로 덮어쓴다.
+     · 파일이 없거나 형식이 다르면 값을 지어내지 않고 안내만 한다. */
+  var FEED_PATH = './data/content_auto_latest.json';
+  var FEED = { at: 0, data: null };
+  function feedToday(){
+    var d = new Date();
+    return d.getFullYear() + '-' + pad2n(d.getMonth() + 1) + '-' + pad2n(d.getDate());
+  }
+  function feedFetch(force){
+    if (!force && FEED.data && (Date.now() - FEED.at) < 60000) return Promise.resolve(FEED.data);
+    var urls = [FEED_PATH, V2.ORIGIN + '/data/content_auto_latest.json'];
+    function one(i){
+      return fetchJsonT(urls[i], 9000).then(function (j) {
+        if (!j || typeof j !== 'object') throw new Error('빈 초안');
+        FEED.data = j;
+        FEED.at = Date.now();
+        return j;
+      }, function (e) {
+        if (i + 1 < urls.length) return one(i + 1);
+        throw e;
+      });
+    }
+    return one(0);
+  }
+  function feedSlotWord(slot){
+    return ({ pre: '🌅 장전', lunch: '☀️ 점심', noon: '☀️ 점심', close: '🌆 정규마감', after: '🌙 통합 마감(정규+애프터)' })[slot] || '📥 초안';
+  }
+  /* 슬롯 하나를 꺼낸다 — slots[slot] 우선, 없으면 최신 슬롯의 top-level 사본 */
+  function feedNode(j, slot){
+    if (!j) return null;
+    var s = (j.slots && slot) ? j.slots[slot] : null;
+    if (s && (s.blog || s.shorts)) return s;
+    var latest = j.latestSlot || j.slot || '';
+    if (slot && latest && slot !== latest) return null;
+    if (j.blog || j.shorts){
+      return { slot: latest || slot, slotLabel: j.slotLabel, updatedAt: j.updatedAt, date: j.date, blog: j.blog, shorts: j.shorts };
+    }
+    return null;
+  }
+  function feedIsToday(node){
+    var d = String((node && (node.date || node.updatedAt)) || '');
+    return d.indexOf(feedToday()) === 0;
+  }
+  function feedBlogFormNo(slot){ return (slot === 'pre') ? 5 : 6; }
+  function feedApplyBlog(node, force){
+    var b = (node && node.blog) || null;
+    if (!b || !String(b.markdown || '').trim()) return { ok: false, why: 'no-blog' };
+    if (!force && String(currentDraftText() || '').trim()) return { ok: false, why: 'busy' };
+    var slot = node.slot || 'after';
+    var chip = document.querySelector('#formChips .fchip[data-id="stock"]');
+    if (chip) chip.click();
+    bloggerPick['stock'] = feedBlogFormNo(slot);
+    savePick();
+    try { renderStyle(); } catch (e) {}
+    var title = String(b.title || '').trim();
+    var body = String(b.markdown || '');
+    if (title && !/^#{1,3}\s/.test(body)) body = '## ' + title + '\n\n' + body;
+    if (title && topicEl){
+      topicEl.value = title;
+      try { topicEl.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+    }
+    state.titles = [{ type: '피클 초안', text: title || '오늘 시황' }];
+    state.titleIdx = 0;
+    try { renderTitles(); } catch (e) {}
+    try {
+      fillBlogOutput(title, getForm(state.selectedFormId), body, '📥 피클 초안 · ' + (node.slotLabel || feedSlotWord(slot)));
+    } catch (e) { return { ok: false, why: 'render' }; }
+    var tags = (b.tags || []).filter(Boolean);
+    if (tags.length){ try { renderSeo({ keywords: tags, hashtags: tags }, '피클 초안'); } catch (e) {} }
+    try { cvReload(false); } catch (e) {}
+    var tt = $('#thumbTitle'); if (tt && title) tt.value = title;
+    return { ok: true, slot: slot, title: title, chars: body.length, tags: tags.length, charts: (b.chartFiles || []) };
+  }
+  function feedApplyShorts(node, force, quiet){
+    var s = (node && node.shorts) || null;
+    var script = String((s && s.script) || '').trim();
+    if (!script) return { ok: false, why: 'no-shorts' };
+    if (!force){
+      var cur = String((($('#shOutText') || {}).textContent) || '').trim();
+      if (cur) return { ok: false, why: 'busy' };
+    }
+    var slotKey = s.slot || node.slot || 'after';
+    var chipEl = document.querySelector('#shThemeChips [data-sh-theme="economy"]');
+    if (chipEl) chipEl.click();
+    else { SH.theme = 'economy'; lsSet(SH_KEYS.theme, 'economy'); try { shRenderAll(); } catch (e) {} }
+    var title = String(s.title || '').trim();
+    if (title){
+      var sq = $('#shTopic');
+      if (sq){ sq.value = title; try { sq.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} }
+    }
+    try { shShowOut(script, '📥 피클 초안' + (s.formulaLabel ? ' · ' + s.formulaLabel : '')); } catch (e) {}
+    var wv = null;
+    try {
+      if (window.WVID && window.WVID.feed) wv = window.WVID.feed(slotKey, s.formulaKey, script, '피클 초안 · ' + feedSlotWord(slotKey), !!quiet);
+    } catch (e) { wv = null; }
+    return { ok: true, slot: slotKey, title: title, cuts: (wv && wv.cuts) || 0, formula: (wv && wv.name) || '', voice: (wv && wv.voice) || '' };
+  }
+  function feedBanner(html){
+    var box = $('#feedBanner'), txt = $('#feedBannerText');
+    if (!box || !txt) return;
+    txt.innerHTML = html;
+    box.hidden = false;
+  }
+  /* 시간대 버튼 — 오늘자 피클 초안이 있으면 우선 로드, 없으면 false 를 돌려 실측 흐름으로 넘긴다 */
+  function feedSlotHit(slot, mode){
+    return feedFetch(true).then(function (j) {
+      var node = feedNode(j, slot);
+      if (!node || !feedIsToday(node)) return false;
+      if (mode === 'blog'){
+        if (!node.blog) return false;
+        var r = feedApplyBlog(node, true);
+        if (!r.ok) return false;
+        toast('📥 피클이 작성한 ' + (node.slotLabel || feedSlotWord(slot)) + ' 초안을 불러왔습니다 — 블로그 ' +
+          Number(r.chars || 0).toLocaleString('ko-KR') + '자 · 태그 ' + r.tags + '개' + (r.charts.length ? ' · 차트 ' + r.charts.join(' · ') : '') + '.');
+        return true;
+      }
+      if (!node.shorts) return false;
+      var r2 = feedApplyShorts(node, true, true);
+      if (!r2.ok) return false;
+      toast('📥 피클이 작성한 ' + (node.slotLabel || feedSlotWord(slot)) + ' 초안을 불러왔습니다 — 쇼츠 ' +
+        r2.cuts + '컷 · 폭스시그널 ' + (r2.formula || '') + ' · 성우 ' + (r2.voice || '고정값') + '.');
+      return true;
+    }).catch(function () { return false; });
+  }
+  var FEED_BUSY = false;
+  /* [📥 피클 최신 초안 다시 불러오기] — 최신본으로 덮어쓴다 */
+  function feedLatest(btn){
+    if (FEED_BUSY) return Promise.resolve(false);
+    FEED_BUSY = true;
+    if (btn) spinner(btn, true, '초안 읽는 중…');
+    return feedFetch(true).then(function (j) {
+      var node = feedNode(j, j.latestSlot || j.slot);
+      if (!node) throw new Error('초안 없음');
+      var rb = feedApplyBlog(node, true);
+      var rs = feedApplyShorts(node, true, false);
+      var got = [];
+      if (rb.ok) got.push('블로그 ' + Number(rb.chars || 0).toLocaleString('ko-KR') + '자 · 태그 ' + rb.tags + '개');
+      if (rs.ok) got.push('쇼츠 ' + rs.cuts + '컷 · 폭스시그널 ' + (rs.formula || ''));
+      var why = [];
+      if (!rb.ok) why.push(rb.why === 'no-blog' ? '이 슬롯 초안에는 블로그 본문이 없습니다' : '블로그를 채우지 못했습니다');
+      if (!rs.ok) why.push(rs.why === 'no-shorts' ? '이 슬롯 초안에는 쇼츠 대본이 없습니다' : '쇼츠를 채우지 못했습니다');
+      if (got.length) toast('📥 ' + (node.slotLabel || feedSlotWord(node.slot)) + ' 초안을 다시 불러왔습니다 — ' + got.join(' · ') + '.');
+      if (why.length) toast('📥 ' + why.join(' · '));
+      return got.length > 0;
+    }).catch(function () {
+      toast('📥 피클 최신 초안을 읽지 못했습니다 — data/content_auto_latest.json 이 아직 없거나 형식이 다릅니다.');
+      return false;
+    }).then(function (r) {
+      FEED_BUSY = false;
+      if (btn) spinner(btn, false);
+      return r;
+    });
+  }
+  /* 페이지를 열면 1회 — 작업 중인 내용이 없을 때만 조용히 채운다 */
+  function feedAuto(){
+    feedFetch(true).then(function (j) {
+      var node = feedNode(j, j.latestSlot || j.slot);
+      if (!node || !feedIsToday(node)) return;
+      var rb = feedApplyBlog(node, false);
+      var rs = feedApplyShorts(node, false, true);
+      var got = [];
+      if (rb.ok) got.push('블로그 본문 ' + Number(rb.chars || 0).toLocaleString('ko-KR') + '자 · 태그 ' + rb.tags + '개');
+      if (rs.ok) got.push('쇼츠 ' + rs.cuts + '컷 · 폭스시그널 ' + (rs.formula || ''));
+      var when = node.updatedAt || j.updatedAt ? String(node.updatedAt || j.updatedAt).replace('T', ' ').slice(5, 16) : '';
+      if (got.length){
+        feedBanner('📥 <b>피클이 만든 ' + esc(node.slotLabel || feedSlotWord(node.slot)) + '</b> 초안' + (when ? ' (' + esc(when) + ')' : '') +
+          '을 열자마자 채웠습니다 — ' + esc(got.join(' · ')) + '. 최신본으로 다시 덮으려면 <b>[📥 피클 최신 초안 다시 불러오기]</b>를 누르세요.');
+      } else if (rb.why === 'busy' || rs.why === 'busy'){
+        feedBanner('📥 <b>피클 최신 초안이 준비되어 있습니다</b>(' + esc(node.slotLabel || feedSlotWord(node.slot)) + ') — 지금 작업 중인 내용은 그대로 두었습니다. 최신본으로 바꾸려면 <b>[📥 피클 최신 초안 다시 불러오기]</b>를 누르세요.');
+      }
+    }).catch(function () {
+      var box = $('#feedBanner');
+      if (box) box.hidden = true;
+    });
+  }
+  (function(){
+    var b = document.getElementById('feedDraftBtn');
+    if (b) b.addEventListener('click', function(){ feedLatest(b); });
+    document.addEventListener('click', function(ev){
+      var x = ev.target && ev.target.closest ? ev.target.closest('[data-feed-draft]') : null;
+      if (!x) return;
+      ev.preventDefault();
+      feedLatest(x);
+    });
+    var g = document.getElementById('feedBannerGo');
+    if (g) g.addEventListener('click', function(){ feedLatest(g); });
+    var c = document.getElementById('feedBannerClose');
+    if (c) c.addEventListener('click', function(){ var box = $('#feedBanner'); if (box) box.hidden = true; });
+    setTimeout(function(){ try { feedAuto(); } catch (e) {} }, 1500);
   })();
 
   /* ---------- ② 오늘 관제탑 시황 1클릭 ---------- */
@@ -15971,21 +16596,29 @@ var CSVoice = (function () {
   /* 흥행 공식 — 대본 프롬프트·샘플·카드가 모두 이 정의를 함께 쓴다 */
   var FORMULA = {
     fox: {
-      1: { tag: '🌆', name: '장마감 시황 (기본)', desc: '종가·수급·주도 섹터 결산', eye: 'SIGNAL', card: 'fox', cardName: '빅넘버 + 여우 카드',
-           hook: '오늘 종가와 수급을 한 문장으로 결산하며 시작한다',
-           plan: ['0~3초 오늘 종가·등락률·수급을 한 문장으로', '3~12초 외인·기관·개인 수급 숫자', '12~24초 오늘 돈이 간 주도 섹터 2~3개', '24~38초 오늘의 특이 신호(사이드카·신고가·상한가)', '38~50초 다음 거래일 체크포인트 2개'],
-           caption: '지수·수급 숫자는 그대로, 한 컷 15~20자', tone: '차분한 분석 · 숫자는 또렷하게',
-           avoid: ['확인하지 않은 수치를 만들지 않는다', '방향을 단정하지 않는다'] },
-      2: { tag: '🌅', name: '장전 시황', desc: '야간선물·미장·갭 대응', eye: 'PRE-MARKET', card: 'fox', cardName: '빅넘버 + 여우 카드 + 갭 신호등', signal: true,
+      1: { tag: '🌅', name: '장전 시황', desc: '야간선물·미장·갭 대응', eye: 'PRE-MARKET', card: 'fox', cardName: '빅넘버 + 여우 카드 + 갭 신호등', signal: true,
            hook: '밤사이 야간선물과 미 증시를 한 문장으로 정리하며 시작한다',
            plan: ['0~3초 야간선물·미 증시 등락을 한 문장으로', '3~13초 빅테크·반도체가 왜 움직였는지', '13~24초 어제 국내에서 강했던 테마', '24~38초 장전 뉴스·환율·시초가 갭 대응(🔴 주의 / 🟡 관망 / 🟢 우위)', '38~50초 개장 직후 볼 두 가지'],
            caption: '간밤 수치는 숫자 그대로, 신호는 🔴🟡🟢로', tone: '짧고 또렷하게 · 개장 전 준비하는 톤',
            avoid: ['간밤 시세를 지어내지 않는다', '갭 방향을 단정하지 않는다'] },
-      3: { tag: '🕛', name: '점심 시황', desc: '오전 주도·오후 관전', eye: 'MIDDAY', card: 'fox', cardName: '빅넘버 + 여우 카드',
+      2: { tag: '☀️', name: '점심 시황', desc: '오전 주도·오후 관전', eye: 'MIDDAY', card: 'fox', cardName: '빅넘버 + 여우 카드',
            hook: '오전 마감 지수와 오전 수급을 한 문장으로 시작한다',
            plan: ['0~3초 오전 지수·등락률', '3~13초 오전 외인·기관·개인 수급 흐름', '13~24초 오전 주도 섹터와 거래대금 1위', '24~38초 선물·신규 편입 뉴스', '38~50초 오후장 이어서 볼 섹터·흐름'],
            caption: '오전 수치는 그대로, 오후 관전은 한 줄로', tone: '점심에 훑는 톤 · 간결하게',
-           avoid: ['오전 데이터를 추정으로 채우지 않는다', '오후 방향을 단정하지 않는다'] }
+           avoid: ['오전 데이터를 추정으로 채우지 않는다', '오후 방향을 단정하지 않는다'] },
+      3: { tag: '🌆', name: '정규마감 시황', desc: '종가·수급·주도 섹터 결산', eye: 'SIGNAL', card: 'fox', cardName: '빅넘버 + 여우 카드',
+           hook: '오늘 정규장 종가와 수급을 한 문장으로 결산하며 시작한다',
+           plan: ['0~3초 오늘 종가·등락률·수급을 한 문장으로', '3~12초 외인·기관·개인 수급 숫자', '12~24초 오늘 돈이 간 주도 섹터 2~3개', '24~38초 오늘의 특이 신호(사이드카·신고가·상한가)', '38~50초 다음 거래일 체크포인트 2개'],
+           caption: '지수·수급 숫자는 그대로, 한 컷 15~20자', tone: '차분한 분석 · 숫자는 또렷하게',
+           avoid: ['확인하지 않은 수치를 만들지 않는다', '방향을 단정하지 않는다'] },
+      4: { tag: '🌙', name: '애프터장 결산', desc: 'NXT 15:30 이후 변화', eye: 'AFTER MARKET', card: 'fox', cardName: '빅넘버 + 여우 카드 + NXT 유지/이탈',
+           hook: '15시 30분 이후가 반전이었는지 유지였는지 한 문장으로 던지며 시작한다',
+           plan: ['0~4초 밤사이(15:30 이후) 반전/유지 훅 — 정규장 종가와 NXT 애프터 방향을 한 문장으로',
+                  '4~20초 시간외 강약 — 낮 강세주가 종가 위 유지인지 종가 아래 이탈인지, 장 마감 뒤 새로 뜬 종목·재료, 지정 종목은 (투자주의 지정)·미지정 급등주는 (단기 급등·과열 주의)로 구분',
+                  '20~35초 야간선물·미 선물·환율과 오늘/내일/이번 주 핵심 일정',
+                  '35~50초 다음 거래일 시초가 대응(지지·저항·조건) + 티스토리 연결 CTA'],
+           caption: '시간외 수치는 종가 대비(종가比)로, 종목 옆 리스크는 괄호로', tone: '마감 뒤 정리하는 톤 · 유지/이탈을 분명히',
+           avoid: ['NXT 체결이 확인되지 않은 종목을 시간외 급등으로 쓰지 않는다', '지정 여부를 확인하지 않고 (투자주의)로 쓰지 않는다'] }
     },
     shiba: {
       1: { tag: '①', name: '가격 충격 비교형', desc: '정가 → 오늘가 낙차', eye: 'DEAL', card: 'shock', cardName: '정가 취소선 + 오늘가 빅넘버 카드',
@@ -16907,28 +17540,35 @@ var CSVoice = (function () {
       { text: '15:00 · 키즈카페 2시간 12,000원, 주차 무료', hook: '3시 키즈카페' },
       { text: '세 곳 합쳐 1인 26,000원, 오전에 출발하세요', hook: '1인 26,000원' }
     ], '동탄 주말 코스 3곳', '동탄에서 차로 40분, 주말 코스 3곳', ['동탄', '주말', '26,000원']),
-    /* 🦊 폭스시그널 — 장마감 / 장전 / 점심 (샘플 수치는 예시값) */
+    /* 🦊 폭스시그널 — 장전 / 점심 / 정규마감 / 애프터장 (샘플 수치는 예시값 · 애프터장은 11/20 실측) */
     'fox:1': mkSample([
-      { text: '코스피 4,869.96, -5.21%로 오늘 장을 마쳤습니다', hook: '코스피 -5.21% 마감' },
-      { text: '외인 -1조 2,311억 · 기관 -7,863계약 · 개인 +1조 6,618억', hook: '오늘의 수급' },
-      { text: '바이오 · 화장품이 올랐고 반도체는 밀렸습니다', hook: '돈이 간 섹터' },
-      { text: '사이드카 발동 · 상한가 0종 · 신고가 3종', hook: '오늘의 신호' },
-      { text: '다음 거래일은 4,831 지지와 외인 선물만 보세요', hook: '내일 체크포인트' }
-    ], '코스피 -5.21% 마감 결산', '코스피 -5.21%, 오늘 수급이 말하는 것', ['코스피', '쌍매도', '사이드카']),
-    'fox:2': mkSample([
       { text: '간밤 야간선물 -0.4%, 미 증시 반도체가 약했습니다', hook: '야간선물 -0.4%' },
       { text: '나스닥 -0.8% · 빅테크는 금리 부담에 밀렸습니다', hook: '빅테크가 밀린 이유' },
       { text: '어제 국내는 바이오 · 화장품이 강했습니다', hook: '어제 강한 테마' },
       { text: '장전 뉴스는 환율과 반도체 수출 두 개입니다', hook: '장전 뉴스 두 개' },
       { text: '시초가 갭 대응은 🔴 주의 · 🟡 관망 · 🟢 우위로 봅니다', hook: '갭 대응 신호등' }
     ], '장전 시황 · 야간선물 -0.4%', '밤사이 야간선물과 미 증시 정리', ['야간선물', '나스닥', '갭']),
-    'fox:3': mkSample([
+    'fox:2': mkSample([
       { text: '오전 코스피는 4,890, +0.4%로 오전을 마쳤습니다', hook: '오전 +0.4%' },
       { text: '외인 3,200억 순매수 · 기관 1,100억 매도', hook: '오전 수급' },
       { text: '주도 섹터는 반도체 · 2차전지, 대금 1위 삼성전자', hook: '오전 주도 섹터' },
       { text: '선물 +0.6%, 새로 편입된 뉴스는 없습니다', hook: '선물 +0.6%' },
       { text: '오후장은 반도체 대금과 외인 프로그램만 보세요', hook: '오후 관전 포인트' }
-    ], '점심 시황 · 오전 +0.4%', '오전 마감 +0.4%, 오후에 볼 것', ['오전', '수급', '반도체'])
+    ], '점심 시황 · 오전 +0.4%', '오전 마감 +0.4%, 오후에 볼 것', ['오전', '수급', '반도체']),
+    'fox:3': mkSample([
+      { text: '코스피 4,869.96, -5.21%로 오늘 장을 마쳤습니다', hook: '코스피 -5.21% 마감' },
+      { text: '외인 -1조 2,311억 · 기관 -7,863계약 · 개인 +1조 6,618억', hook: '오늘의 수급' },
+      { text: '바이오 · 화장품이 올랐고 반도체는 밀렸습니다', hook: '돈이 간 섹터' },
+      { text: '사이드카 발동 · 상한가 0종 · 신고가 3종', hook: '오늘의 신호' },
+      { text: '다음 거래일은 4,831 지지와 외인 선물만 보세요', hook: '내일 체크포인트' }
+    ], '코스피 -5.21% 마감 결산', '코스피 -5.21%, 오늘 수급이 말하는 것', ['코스피', '쌍매도', '사이드카']),
+    'fox:4': mkSample([
+      { text: '코스피 -5.21%로 마감한 뒤, 애프터에서 방향이 갈렸습니다', hook: '마감 뒤 방향이 갈렸다' },
+      { text: '큐로셀 25,350원 종가比 +19.58% 유지 · 금양그린파워 9,260원 +25.14%', hook: '종가 위에 남은 두 종목' },
+      { text: '바이오니아는 +20%로 올랐다가 애프터 -6.31%로 밀렸습니다', hook: '이탈한 강세주' },
+      { text: '야간선물 745.05 -1.02% · 나스닥100 선물 -1.13% · 원/달러 1,338.78', hook: '밤사이 지표' },
+      { text: '월요일 08:00 NXT 프리마켓에서 25,000과 9,000을 먼저 보세요', hook: '시초가 대응' }
+    ], '애프터장 결산 · 큐로셀만 살아남았다', '코스피 -5.21%, 애프터에서 살아남은 종목', ['NXT', '큐로셀', '야간선물'])
   };
   function sampleFor(d, f) { return SAMPLE_F[d + ':' + f] || SAMPLE_F[d + ':1'] || SAMPLE_SPEC; }
 
@@ -16947,7 +17587,7 @@ var CSVoice = (function () {
       say(R.name + ' — ' + (f ? f.tag + ' ' + f.name + ' · ' : '') + '빅넘버·카드·캐릭터 4종 자동 매칭' + vNote + '. 아래 <b>🎯 분야 흥행 공식</b>을 고르면 대본 구조와 카드까지 함께 바뀝니다.');
     } else if (d === 'fox') {
       var ff = formulaOf(d);
-      say('🦊 <b>폭스시그널 에디토리얼</b> — 크림 아이보리 바탕 · 빅넘버 카드 · 여우 4종 자동 매칭' + vNote + '. 아래 <b>🎯 분야 흥행 공식</b>에서 장마감·장전·점심을 고릅니다.');
+      say('🦊 <b>폭스시그널 에디토리얼</b> — 크림 아이보리 바탕 · 빅넘버 카드 · 여우 4종 자동 매칭' + vNote + '. 아래 <b>🎯 분야 흥행 공식</b>에서 장전·점심·정규마감·애프터장을 고릅니다.');
     } else {
       say('🌙 <b>다크 시네마</b> — 기존 3양식(카드·차트·사진)으로 그립니다.');
     }
@@ -17046,7 +17686,7 @@ var CSVoice = (function () {
         lh.innerHTML = ROLE[roleD].name + ' · <b>' + (rf ? rf.tag + ' ' + rf.name : '') + '</b> — 브랜드 필 → <b>훅 + ' + (rf ? rf.cardName : '카드') + ' + ' + (roleD === 'shiba' ? '시바견' : roleD === 'bunny' ? '토끼' : '펭귄') + '</b> → <b>자막 카드</b> 고정 레이아웃입니다. 대본·샘플·카드가 모두 이 공식으로 그려집니다(테마색·내 사진은 🌙 다크 시네마 전용).';
       } else if (isFox) {
         var xf = formulaOf('fox');
-        lh.innerHTML = '🦊 <b>폭스시그널 에디토리얼</b>' + (xf ? ' · <b>' + xf.tag + ' ' + xf.name + '</b>' : '') + ' — 브랜드 필 → <b>빅넘버 + 여우</b> → <b>에디토리얼 자막</b> 고정 레이아웃입니다. 아래 <b>🎯 분야 흥행 공식</b>에서 장마감·장전·점심을 고르면 대본·샘플이 함께 바뀝니다.';
+        lh.innerHTML = '🦊 <b>폭스시그널 에디토리얼</b>' + (xf ? ' · <b>' + xf.tag + ' ' + xf.name + '</b>' : '') + ' — 브랜드 필 → <b>빅넘버 + 여우</b> → <b>에디토리얼 자막</b> 고정 레이아웃입니다. 아래 <b>🎯 분야 흥행 공식</b>에서 장전·점심·정규마감·애프터장을 고르면 대본·샘플이 함께 바뀝니다.';
       } else {
         lh.innerHTML = '쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.';
       }
@@ -17977,20 +18617,21 @@ var CSVoice = (function () {
   }
 
   /* ---------- launch ---------- */
-  function openPanel() {
-    /* 📱 쇼츠 스튜디오 탭 안으로 들어왔으므로, 그 탭을 먼저 연다 */
-    if (window.CS2_TAB) { try { window.CS2_TAB('shorts'); } catch (e) {} }
+  function openPanel(quiet) {
+    /* 📱 쇼츠 스튜디오 탭 안으로 들어왔으므로, 그 탭을 먼저 연다.
+       quiet=true 는 피클 초안 자동 로드 — 탭 이동·스크롤 없이 조용히 채운다. */
+    if (!quiet && window.CS2_TAB) { try { window.CS2_TAB('shorts'); } catch (e) {} }
     var p = $('#wvPanel');
-    if (p) { p.open = true; try { p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
+    if (p) { p.open = true; if (!quiet) { try { p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} } }
   }
   function setSrcTag(spec, label) {
     var src = $('#wvSrc');
     if (!src) return;
     src.textContent = '📄 ' + (label ? label + ' · ' : '') + (spec.title || spec.hookTitle || '쇼츠') + ' · ' + spec.cuts.length + '컷';
   }
-  function adoptSpec(raw, label) {
+  function adoptSpec(raw, label, quiet) {
     var spec = normSpec(raw);
-    openPanel();
+    openPanel(quiet);
     if (!spec) {
       say('대본을 읽지 못했습니다 — 먼저 해당 카드에서 <b>대본 생성</b>을 눌러 주세요.', 'bad');
       return null;
@@ -18258,6 +18899,25 @@ var CSVoice = (function () {
     say('📋 붙여넣은 대본을 <b>' + applied.cuts.length + '컷</b>으로 바꿨습니다 — 미리보기를 확인하고 <b>[▶ 생성]</b>을 누르세요.', 'good');
     return applied;
   }
+  /* 📥 피클 초안·외부 대본 — 타임스탬프 대본을 컷으로 나눠 바로 올린다 (quiet = 자동 로드, 탭 이동 없음) */
+  function loadScript(raw, label, quiet) {
+    if (S.running) {
+      if (!quiet) say('녹화 중에는 대본을 바꿀 수 없습니다 — [■ 중지]를 누른 뒤 다시 시도해 주세요.', 'bad');
+      return null;
+    }
+    var spec = parseScriptText(raw);
+    if (!spec) {
+      if (!quiet) say('대본을 컷으로 나누지 못했습니다 — [00:00~00:03] 형태의 타임스탬프나 줄바꿈으로 컷이 나뉘어 있는지 확인해 주세요.', 'bad');
+      return null;
+    }
+    var ta = $('#wvPasteTa'); if (ta) ta.value = String(raw || '');
+    var applied = adoptSpec(spec, label || '피클 초안', quiet);
+    if (!applied) return null;
+    try { renderPasteList(applied); } catch (e) {}
+    if (!quiet) pasteSay('📥 ' + (label || '피클 초안') + ' — ' + applied.cuts.length + '컷으로 나눴습니다. [▶ 생성]만 누르면 그대로 녹화합니다.', 'good');
+    return applied;
+  }
+
   /* [🧪 샘플로 바로 만들기] — 오늘(11/20) 시황 5컷을 실제 컷으로 올린다 */
   function loadSample() {
     if (S.running) {
@@ -18280,6 +18940,42 @@ var CSVoice = (function () {
       ? '🧪 <b>' + nm0 + ' · ' + rf.tag + ' ' + rf.name + '</b> 샘플 ' + sp.cuts.length + '컷을 불러왔습니다 — 카드 모양과 포즈까지 그 공식으로 그립니다. <b>[▶ 생성]</b>을 누르세요.'
       : '🧪 <b>샘플 5컷</b>을 불러왔습니다 — <b>[▶ 생성]</b>을 누르세요.', 'good');
     return applied;
+  }
+
+  /* ---------- 🦊 폭스시그널 시간대 1클릭 ----------
+     · 쇼츠 스튜디오/영상 생성기의 4버튼이 이 함수를 부른다.
+     · 디자인은 🦊 폭스시그널로, 공식은 그 시간대(1 장전 / 2 점심 / 3 정규마감 / 4 애프터장)로 바꾸고
+       그 공식의 5컷 샘플을 미리보기에 올린다. 성우·말 속도는 이 컨셉의 고정값(없으면 기본 현수 1.20x)을 그대로 쓴다. */
+  function slotApply(slot) {
+    var map = { pre: '1', noon: '2', close: '3', after: '4' };
+    var k = map[slot] || '1';
+    setDesign('fox');
+    S.cfg.formula = S.cfg.formula || {};
+    S.cfg.formula.fox = FORMULA.fox[k] ? k : '1';
+    saveCfg();
+    syncUi();
+    var applied = loadSample();
+    var vName = '';
+    try { vName = voiceShort(S.cfg.voice) + ' ' + clampSpeed(S.cfg.speed).toFixed(2) + 'x'; } catch (e) { vName = ''; }
+    return { key: k, name: formulaName(), tag: formulaTag(), voice: vName, applied: !!applied };
+  }
+
+  /* ---------- 📥 피클 초안 — 폭스시그널 + 그 슬롯 공식 + 대본 컷 분할 ----------
+     · slotKey: pre | lunch | noon | close | after, formulaKey: '1'~'4'
+     · 디자인·성우는 이 컨셉의 고정값(현수 1.20x 등)을 그대로 두고 공식만 그 시간대로 바꾼다. */
+  function feedDraftWv(slotKey, formulaKey, script, label, quiet) {
+    var map = { pre: '1', lunch: '2', noon: '2', close: '3', after: '4' };
+    var k = String(formulaKey == null ? '' : formulaKey).trim();
+    if (!FORMULA.fox[k]) k = map[slotKey] || '1';
+    setDesign('fox');
+    S.cfg.formula = S.cfg.formula || {};
+    S.cfg.formula.fox = FORMULA.fox[k] ? k : '1';
+    saveCfg();
+    syncUi();
+    var applied = loadScript(script, label || '피클 초안', quiet);
+    var vName = '';
+    try { vName = voiceShort(S.cfg.voice) + ' ' + clampSpeed(S.cfg.speed).toFixed(2) + 'x'; } catch (e) { vName = ''; }
+    return { key: k, name: formulaName(), tag: formulaTag(), voice: vName, cuts: applied ? applied.cuts.length : 0 };
   }
 
   /* ---------- 템플릿 선택 ---------- */
@@ -18544,6 +19240,9 @@ var CSVoice = (function () {
     foxOf: function (cut, idx) { return foxPoseOf(cut, idx || 0); },
     poseOf: function (d, cut, idx) { return poseOfCut(d || designOf(), cut, idx || 0); },
     setFormula: setFormula,
+    slot: slotApply,
+    feed: feedDraftWv,
+    loadScript: loadScript,
     formula: function () { return ROLE[designOf()] ? { design: designOf(), key: formulaKey(), name: formulaName(), tag: formulaTag() } : null; },
     formulaPrompt: formulaPrompt,
     formulaSummary: formulaSummary,
