@@ -273,6 +273,10 @@ section.block{margin-top:36px;padding-top:22px;border-top:1px solid var(--rule)}
 .flag.visit{background:rgba(167,139,250,.12);color:#ddd6fe;border-color:rgba(167,139,250,.26)}
 .flag.ship{background:rgba(52,211,153,.11);color:#bbf7d0;border-color:rgba(52,211,153,.24)}
 .flag.under{background:rgba(52,211,153,.15);color:#86efac;border-color:rgba(52,211,153,.36)}
+.flag.reg{background:rgba(125,211,252,.10);color:#bae6fd;border-color:rgba(125,211,252,.24)}
+.flag.pay{background:rgba(251,191,36,.13);color:#fde68a;border-color:rgba(251,191,36,.3)}
+.flag.rep{background:rgba(148,163,184,.14);color:#e2e8f0;border-color:rgba(148,163,184,.3)}
+.chip.excl.on{background:linear-gradient(135deg,rgba(251,191,36,.22),rgba(251,113,133,.18))}
 
 /* ============ keywords ============ */
 .kwrow{display:flex;gap:7px;flex-wrap:wrap}
@@ -499,6 +503,9 @@ html[data-theme="light"] .dd.s3{background:#fdf7e3;color:#8a6a0e;border-color:#f
 html[data-theme="light"] .flag.visit{background:#f1ecff;color:#5b21b6;border-color:#e0d5fb}
 html[data-theme="light"] .flag.ship{background:#e6f7ee;color:#0f7a53;border-color:#b7e4cb}
 html[data-theme="light"] .flag.under{background:#dcf7e9;color:#0b6b48;border-color:#a7e8c6}
+html[data-theme="light"] .flag.reg{background:#e8f4fd;color:#075985;border-color:#bae6fd}
+html[data-theme="light"] .flag.pay{background:#fef3c7;color:#854d0e;border-color:#fcd34d}
+html[data-theme="light"] .flag.rep{background:#eef2f7;color:#334155;border-color:#cbd5e1}
 html[data-theme="light"] .pb.revu{background:#e5f1fb;color:#0b5c8f;border-color:#c6e0f5}
 html[data-theme="light"] .pb.reviewnote{background:#f1ecff;color:#5b21b6;border-color:#e0d5fb}
 html[data-theme="light"] .pb.dinnerqueen{background:#ffe3e7;color:#a1173a;border-color:#f6c2ca}
@@ -638,8 +645,14 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       </button>
     </div>
     <div id="filterBody">
+    <div class="filterlabel"><span>제외</span>
+      <div class="chips" id="exclChips" style="flex:1"></div>
+    </div>
     <div class="filterlabel"><span>유형</span>
       <div class="chips" id="typeChips" style="flex:1"></div>
+    </div>
+    <div class="filterlabel"><span>지역</span>
+      <div class="chips" id="regionChips" style="flex:1"></div>
     </div>
     <div class="filterlabel"><span>플랫폼</span>
       <div class="chips" id="platChips" style="flex:1"></div>
@@ -647,7 +660,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     <div class="filterlabel"><span>분류</span>
       <div class="chips" id="catChips" style="flex:1"></div>
     </div>
-    <div class="typehint">유형은 각 플랫폼이 공개한 원문 분류(배송 / 방문·지역 방문)로 판별했습니다. · 건수는 다른 조건을 반영한 실제 남는 수량입니다.</div>
+    <div class="typehint">유형·지역은 플랫폼이 밝힌 표기 기준이고, 집으로 오는 캠페인은 <b>전국·배송</b>입니다. · 건수는 다른 조건을 반영한 실제 남는 수량입니다.</div>
     </div>
   </div>
 </div>
@@ -793,10 +806,112 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     { k: '배송형', label: '📦 배송형' },
     { k: '방문형', label: '🏃 방문형' },
     { k: '페이백', label: '💰 페이백' },
+    { k: '기자단', label: '📰 기자단' },
     { k: '미확인', label: '❓ 미확인' }
   ];
 
-  var S = { rows: [], meta: null, ui: { type: 'all', plat: 'all', cat: 'all', q: '', sort: 'deadline', wish: false }, wish: [], limit: 24 };
+  /* ===== 유형·자부담·지역 정규화 — scripts/review_normalize.py 와 같은 규칙 ===== */
+  var KNOWN_TYPES = ['배송형', '방문형', '페이백', '기자단'];
+  var REGION_ORDER = ['서울', '경기·인천', '충청', '강원', '영남', '호남', '제주', '전국·배송', '지역 미표기'];
+  var REGION_ALL = '전국·배송', REGION_UNKNOWN = '지역 미표기';
+  var REGION_LABEL = {
+    '서울': '📍 서울', '경기·인천': '📍 경기·인천', '충청': '📍 충청', '강원': '📍 강원',
+    '영남': '📍 영남', '호남': '📍 호남', '제주': '📍 제주',
+    '전국·배송': '📦 전국·배송', '지역 미표기': '❓ 지역 미표기'
+  };
+  var CITY_ALL = ['재택', '전국', '전국배송', '전국 배송', '온라인'];
+  var COST_KW = ['배송비', '초과', '자부담', '본인부담', '페이백'];
+  var COST_NEG = ['배송비 포함', '배송비포함', '배송비 무료', '무료배송', '배송비 없음',
+                  '자부담 없음', '본인부담 없음', '추가금액 발생없음', '추가금 발생없음'];
+  var RG1 = {
+    '서울': '서울',
+    '경기·인천': '경기,인천',
+    '충청': '충남,충북,충청',
+    '강원': '강원',
+    '영남': '경남,경북,경상,대구,부산,영남,울산',
+    '호남': '광주,전남,전라,전북,호남',
+    '제주': '제주'
+  };
+  var RG2 = {
+    '서울': '가로수길,건대입구,성신여대,건국대,삼성동,압구정,여의도,왕십리,이태원,강남,강서,건대,관악,노원,논현,대치,마포,목동,사당,상암,서초,선릉,성수,송파,신사,신촌,역삼,용산,익선,잠실,종로,청담,한남,합정,홍대',
+    '경기·인천': '남양주,의정부,검단,고양,과천,광명,구리,군포,김포,동탄,미사,부천,부평,분당,성남,송도,수원,시흥,안산,안성,안양,양주,여주,오산,용인,의왕,이천,일산,파주,판교,평택,포천,하남,화성',
+    '충청': '계룡,공주,논산,당진,대전,보령,서산,세종,아산,제천,천안,청주,충주',
+    '강원': '강릉,동해,삼척,속초,양양,영월,원주,인제,정선,철원,춘천,태백,평창,홍천,횡성',
+    '영남': '거제,거창,경산,경주,구미,김천,김해,남해,마산,문경,밀양,봉화,사천,상주,안동,양산,영주,영천,울주,울진,의성,진주,진해,창원,통영,포항,하동,함안',
+    '호남': '강진,고창,고흥,곡성,광양,구례,군산,김제,나주,남원,담양,목포,무안,무주,보성,부안,순창,순천,신안,여수,영광,영암,완도,완주,익산,임실,장성,장수,장흥,전주,정읍,진도,진안,함평,해남,화순',
+    '제주': '서귀포,추자도,구좌,김녕,사계,성산,애월,우도,조천,중문,표선,함덕,협재'
+  };
+  var RG3 = {
+    '서울': '디지털단지,영등포구,노량진,논현동,답십리,동대문,서대문,서소문,신도림,연신내,영등포,을지로,장한평,청량리,충무로,충정로,가락,가산,강북,개포,고덕,공덕,공릉,광진,구로,군자,금천,금호,길동,당산,대림,도봉,도산,돈암,동작,둔촌,뚝섬,마곡,면목,명동,무악,문래,문정,미아,반포,발산,방배,방이,불광,상봉,성동,성북,수유,신당,신천,안암,약수,양재,양천,여의,옥수,용답,월계,은평,잠원,장안,중곡,중구,중랑,중화,창동,천호,태릉,하계,한티,홍제,화곡,회기,흑석',
+    '경기·인천': '광교,기흥,동백,별내,병점,봉담,산본,상동,수지,위례,죽전,중동,탄현,향남',
+    '영남': '부산진,해운대,광안,금정,기장,달서,동래,북구,사상,서면,수성,수영,연제,영도',
+    '호남': '둔산,상무,수완,유성,첨단'
+  };
+  var RG_TOKENS = [];
+  [RG1, RG2, RG3].forEach(function (tbl, i) {
+    Object.keys(tbl).forEach(function (reg) {
+      tbl[reg].split(',').forEach(function (tok) {
+        if (tok) RG_TOKENS.push({ t: tok, r: reg, tier: i + 1 });
+      });
+    });
+  });
+
+  function findRegion(text) {
+    var s = String(text == null ? '' : text);
+    if (!s.trim()) return null;
+    for (var tier = 1; tier <= 3; tier++) {
+      var best = null;
+      for (var i = 0; i < RG_TOKENS.length; i++) {
+        var tk = RG_TOKENS[i];
+        if (tk.tier !== tier) continue;
+        var pos = s.indexOf(tk.t);
+        if (pos < 0) continue;
+        if (!best || pos < best.pos || (pos === best.pos && tk.t.length > best.len)) {
+          best = { pos: pos, len: tk.t.length, r: tk.r };
+        }
+      }
+      if (best) return best.r;
+    }
+    return null;
+  }
+  function cityRegion(city) {
+    var c = String(city == null ? '' : city).trim();
+    if (!c) return null;
+    if (CITY_ALL.indexOf(c) >= 0) return REGION_ALL;
+    return findRegion(c);
+  }
+  function detectCost(r) {
+    var txt = [r.title, r.offer, r.missionSummary, r.caution].filter(function (v) { return !!v; }).join(' ');
+    if (!txt) return false;
+    var probe = txt;
+    COST_NEG.forEach(function (neg) { probe = probe.split(neg).join(' '); });
+    for (var i = 0; i < COST_KW.length; i++) { if (probe.indexOf(COST_KW[i]) >= 0) return true; }
+    return false;
+  }
+  function regionOf(r, t) {
+    var ty = t || typeOf(r);
+    var reg = cityRegion(r.city);
+    if (reg) return reg;
+    reg = findRegion(String(r.categoryRaw || ''));
+    if (reg) return reg;
+    if (ty === '방문형') return findRegion(String(r.title || '')) || REGION_UNKNOWN;
+    return REGION_ALL;
+  }
+
+  /* 기본으로 빼고 보는 3종(자부담·페이백·기자단) — 사용자가 해제하면 그 선택을 localStorage 에 기억 */
+  var DEFAULT_EXCL = { ai: false, cost: true, visit: false, payback: true, jigan: true };
+  var EXCL_DEF = [
+    { k: 'cost', label: '💰 자부담 제외' },
+    { k: 'payback', label: '💰 페이백 제외' },
+    { k: 'jigan', label: '📰 기자단 제외' },
+    { k: 'ai', label: '⚠️ AI 금지 제외' },
+    { k: 'visit', label: '🚗 방문형 제외' }
+  ];
+  var EXCL_KEY = 'review_zip_excl';
+  var EXCL_SCHEMA = 2;
+
+  var S = { rows: [], meta: null, ui: { type: 'all', plat: 'all', cat: 'all', region: 'all', q: '', sort: 'deadline', wish: false },
+            excl: { ai: false, cost: true, visit: false, payback: true, jigan: true }, wish: [], limit: 24 };
   var WISH_KEY = 'review_zip_wish';
   var PORTAL_URL = 'https://hwen21c-tech.github.io/stock-dashboard/review-zip.html';
 
@@ -808,6 +923,41 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   }
   function saveWish() { try { localStorage.setItem(WISH_KEY, JSON.stringify(S.wish)); } catch (e) {} }
   function isWished(r) { return S.wish.indexOf(r.key) >= 0; }
+
+  /* 빼고 보기(제외) 기본값 — 자부담·페이백·기자단은 ON으로 시작한다.
+     사용자가 직접 끄면 그 선택을 localStorage 에 저장하고, 구버전 저장값(스키마 없음)은 기본 ON으로 올린다. */
+  function defaultExcl() { return { ai: false, cost: true, visit: false, payback: true, jigan: true }; }
+  function loadExcl() {
+    var base = defaultExcl();
+    try {
+      var raw = localStorage.getItem(EXCL_KEY);
+      if (raw) {
+        var o = JSON.parse(raw) || {};
+        if (o.schema === EXCL_SCHEMA) {
+          EXCL_DEF.forEach(function (d) { if (typeof o[d.k] === 'boolean') base[d.k] = o[d.k]; });
+        }
+      }
+    } catch (e) {}
+    S.excl = base;
+  }
+  function saveExcl() {
+    try {
+      localStorage.setItem(EXCL_KEY, JSON.stringify({
+        schema: EXCL_SCHEMA, ai: !!S.excl.ai, cost: !!S.excl.cost, visit: !!S.excl.visit,
+        payback: !!S.excl.payback, jigan: !!S.excl.jigan
+      }));
+    } catch (e) {}
+  }
+  /* 필터 초기화 — 첫 진입과 같은 상태(지역·유형 전체, 기본 제외 3종 ON)로 돌린다 */
+  function resetFilters(sort) {
+    S.ui = { type: 'all', plat: 'all', cat: 'all', region: 'all', q: '', sort: sort || S.ui.sort || 'deadline', wish: false };
+    S.excl = defaultExcl();
+    S.limit = 24;
+    var qq = $('q'); if (qq) qq.value = '';
+    var ss = $('sortSel'); if (ss) ss.value = S.ui.sort;
+    saveExcl();
+    renderAll();
+  }
 
   var $ = function (id) { return document.getElementById(id); };
   function esc(v) {
@@ -885,14 +1035,19 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     return '<span class="pb ' + p.cls + '">' + esc(p.name) + '</span>';
   }
   function cardHtml(r) {
-    var typeFlag = r.type === '방문형' ? '<span class="flag visit">방문</span>'
-      : r.type === '배송형' ? '<span class="flag ship">배송</span>' : '';
+    var t = typeOf(r);
+    var typeFlag = t === '방문형' ? '<span class="flag visit">방문</span>'
+      : t === '배송형' ? '<span class="flag ship">배송</span>'
+      : t === '페이백' ? '<span class="flag pay">💰 페이백</span>'
+      : t === '기자단' ? '<span class="flag rep">📰 기자단</span>' : '';
+    var regFlag = (r.region && r.region !== REGION_ALL)
+      ? '<span class="flag reg" title="' + esc(r.regionDetail || r.region) + '">📍 ' + esc(r.region) + '</span>' : '';
     var under = (r.applicants !== null && r.capacity > 0 && r.applicants < r.capacity)
       ? '<span class="flag under">미달</span>' : '';
     var newFlag = r.isNew ? '<span class="new">🆕 NEW</span>' : '';
     return '<a class="card" href="' + esc(r.url || '#') + '" target="_blank" rel="noopener nofollow">' +
       '<div class="ctop">' + platBadge(r) +
-        '<span class="cat">' + esc(r.category || '기타') + '</span>' + typeFlag + under + newFlag +
+        '<span class="cat">' + esc(r.category || '기타') + '</span>' + typeFlag + regFlag + under + newFlag +
         '<span class="dd ' + ddayCls(r.d) + '">' + ddayText(r.d) + '</span>' +
         '<button class="wish' + (isWished(r) ? ' on' : '') + '" type="button" data-wish="' + esc(r.key) + '" ' +
           'aria-label="찜하기" title="' + (isWished(r) ? '찜 해제' : '찜하기') + '">♥</button>' +
@@ -918,6 +1073,13 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       for (var k in c) { if (Object.prototype.hasOwnProperty.call(c, k)) r[k] = c[k]; }
       r.id = String(c.id);
       r.key = (c.platform || 'revu') + ':' + c.id;
+      r.flags = {};
+      var cf = c.flags || {};
+      for (var fk in cf) { if (Object.prototype.hasOwnProperty.call(cf, fk)) r.flags[fk] = cf[fk]; }
+      r.type = typeOf(r);                       /* 원문·보정 규칙으로 유형 확정 */
+      if (r.flags.extraCost !== true && detectCost(r)) r.flags.extraCost = true;
+      r.region = (c.region && REGION_ORDER.indexOf(c.region) >= 0) ? c.region : regionOf(r, r.type);
+      r.regionDetail = c.regionDetail || null;
       r.applicants = (c.applicants === null || c.applicants === undefined) ? null : num(c.applicants);
       r.capacity = num(c.capacity);
       r.rate = (r.capacity > 0 && r.applicants !== null) ? r.applicants / r.capacity : null;
@@ -936,33 +1098,57 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 
   /* 유형 — 플랫폼이 공개한 원문 분류만으로 판별한다(추정으로 채우지 않음).
      · type 필드가 있으면 그대로
-     · 없으면 categoryRaw 의 '배송' 표기 → 배송형, 지역명(예: '성남 판교') → 현장 방문형
-     · flags.visitRequired 가 명시된 경우 그 값을 우선 적용
-     · 어느 것도 없으면 '미확인'으로 남김 */
+     · 없으면 categoryRaw 키워드(기자단·원고료 / 페이백·구매평 / 배송) → city(재택=배송) → flags.visitRequired → 지역명
+     · 어느 것도 없으면 '미확인'으로 남김  (scripts/review_normalize.py 와 같은 규칙) */
   function typeOf(r) {
-    if (r.type === '배송형' || r.type === '방문형' || r.type === '페이백') return r.type;
+    if (!r) return '미확인';
+    if (KNOWN_TYPES.indexOf(r.type) >= 0) return r.type;
     var raw = String(r.categoryRaw || '');
-    var f = (r.flags || {}).visitRequired;
+    if (raw.indexOf('기자단') >= 0 || raw.indexOf('원고료') >= 0) return '기자단';
+    if (raw.indexOf('페이백') >= 0 || raw.indexOf('구매평') >= 0) return '페이백';
     if (raw.indexOf('배송') >= 0) return '배송형';
+    if (CITY_ALL.indexOf(String(r.city || '').trim()) >= 0) return '배송형';
+    var f = (r.flags || {}).visitRequired;
     if (f === true) return '방문형';
     if (f === false) return '배송형';
-    if (raw) return '방문형';
+    if (raw && findRegion(raw)) return '방문형';
+    if (raw.trim()) return '방문형';
     return '미확인';
   }
   function typeLabel(k) {
     for (var i = 0; i < TYPES.length; i++) { if (TYPES[i].k === k) return TYPES[i].label; }
     return k;
   }
+  function exclHit(r, k) {
+    if (k === 'ai') return (r.flags || {}).aiBanned === true;
+    if (k === 'cost') return (r.flags || {}).extraCost === true;
+    if (k === 'visit') return typeOf(r) === '방문형';
+    if (k === 'payback') return typeOf(r) === '페이백';
+    if (k === 'jigan') return typeOf(r) === '기자단';
+    return false;
+  }
+  /* offFlag: 이 제외 토글 하나만 빼고 판단(칩 건수 계산용) */
+  function excludedBy(r, offFlag) {
+    for (var i = 0; i < EXCL_DEF.length; i++) {
+      var k = EXCL_DEF[i].k;
+      if (k === offFlag) continue;
+      if (S.excl[k] && exclHit(r, k)) return true;
+    }
+    return false;
+  }
 
   /* skip 에 넣은 필터는 무시하고 나머지 조건을 모두 통과하는지 — 칩 건수 계산용 */
-  function pass(r, skip) {
+  function pass(r, skip, offFlag) {
     var u = S.ui, q = String(u.q || '').trim().toLowerCase();
     if (skip !== 'wish' && u.wish && !isWished(r)) return false;
     if (skip !== 'type' && u.type !== 'all' && typeOf(r) !== u.type) return false;
+    if (skip !== 'region' && u.region !== 'all' && regionOf(r) !== u.region) return false;
     if (skip !== 'plat' && u.plat !== 'all' && r.platform !== u.plat) return false;
     if (skip !== 'cat' && u.cat !== 'all' && (r.category || '기타') !== u.cat) return false;
+    if (skip !== 'excl' && excludedBy(r, offFlag)) return false;
     if (skip !== 'q' && q) {
-      var hay = [r.title, r.brand, r.category, r.offer, r.platformName, r.city].join(' ').toLowerCase();
+      var hay = [r.title, r.brand, r.category, r.offer, r.platformName, r.city,
+                 r.categoryRaw, r.region, r.regionDetail].join(' ').toLowerCase();
       if (hay.indexOf(q) < 0) return false;
     }
     return true;
@@ -974,6 +1160,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     if (facet === 'plat') return r.platform === val;
     if (facet === 'cat') return (r.category || '기타') === val;
     if (facet === 'type') return typeOf(r) === val;
+    if (facet === 'region') return regionOf(r) === val;
     return false;
   }
   /* n: 다른 조건을 반영한 실제 남는 건수 · base: 필터와 무관한 전체 보유량 */
@@ -984,6 +1171,17 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       if (!facetHit(facet, r, val)) continue;
       base++;
       if (pass(r, facet)) n++;
+    }
+    return { n: n, base: base };
+  }
+  /* 제외 토글 하나를 눌렀을 때 가려지는 건수 — 자기 토글만 빼고 나머지 조건 반영 */
+  function exclStats(k) {
+    var n = 0, base = 0;
+    for (var i = 0; i < S.rows.length; i++) {
+      var r = S.rows[i];
+      if (!exclHit(r, k)) continue;
+      base++;
+      if (pass(r, 'excl', k)) n++;
     }
     return { n: n, base: base };
   }
@@ -1068,6 +1266,32 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     $('catChips').innerHTML = html;
   }
 
+  function renderRegionChips() {
+    var el = $('regionChips');
+    if (!el) return;
+    var html = chipHtml('region', 'all', '🗺️ 지역 전체', countExcept('region'), S.ui.region === 'all');
+    REGION_ORDER.forEach(function (rg) {
+      var s = facetStats('region', rg);
+      if (!s.base && S.ui.region !== rg) return;   /* 실제 데이터에 있는 지역만 노출 */
+      html += chipHtml('region', rg, REGION_LABEL[rg] || esc(rg), s.n, S.ui.region === rg);
+    });
+    el.innerHTML = html;
+  }
+
+  function renderExclChips() {
+    var el = $('exclChips');
+    if (!el) return;
+    var html = '';
+    EXCL_DEF.forEach(function (d) {
+      var s = exclStats(d.k), on = !!S.excl[d.k];
+      if (!s.base && !on) return;                  /* 가려질 것이 없는 토글은 숨김(예: 기자단 0건) */
+      html += '<button class="chip excl' + (on ? ' on' : (s.n ? '' : ' z')) + '" data-excl="' + d.k +
+        '" type="button" aria-pressed="' + (on ? 'true' : 'false') + '">' + d.label +
+        ' <span class="c">' + s.n + '</span></button>';
+    });
+    el.innerHTML = html;
+  }
+
   function renderHoney() {
     var pool = S.rows.filter(isHoney).sort(function (a, b) {
       var ad = a.d === null ? 99 : a.d, bd = b.d === null ? 99 : b.d;
@@ -1118,8 +1342,12 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     var q = String(S.ui.q || '').trim();
     if (q) parts.push('검색 ‘' + q + '’');
     if (S.ui.type !== 'all') parts.push('유형 ‘' + S.ui.type + '’');
+    if (S.ui.region !== 'all') parts.push('지역 ‘' + S.ui.region + '’');
     if (S.ui.plat !== 'all') parts.push('플랫폼 ‘' + ((PLAT[S.ui.plat] || {}).name || S.ui.plat) + '’');
     if (S.ui.cat !== 'all') parts.push('분류 ‘' + S.ui.cat + '’');
+    var ex = EXCL_DEF.filter(function (d) { return S.excl[d.k]; })
+      .map(function (d) { return d.label.replace(' 제외', ''); });
+    if (ex.length) parts.push('제외 ' + ex.join('·'));
     if (S.ui.wish) parts.push('찜한 캠페인만');
     return parts;
   }
@@ -1151,7 +1379,9 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       var acts = '';
       if (S.ui.cat !== 'all') acts += '<button class="btn" data-reset="cat" type="button">전체 분류로 보기</button>';
       if (S.ui.type !== 'all') acts += '<button class="btn" data-reset="type" type="button">전체 유형으로 보기</button>';
+      if (S.ui.region !== 'all') acts += '<button class="btn" data-reset="region" type="button">지역 전체</button>';
       if (S.ui.plat !== 'all') acts += '<button class="btn" data-reset="plat" type="button">플랫폼 전체</button>';
+      if (EXCL_DEF.some(function (d) { return S.excl[d.k]; })) acts += '<button class="btn" data-reset="excl" type="button">빼고 보기 전부 해제</button>';
       if (String(S.ui.q || '').trim()) acts += '<button class="btn" data-reset="q" type="button">검색어 지우기</button>';
       if (S.ui.wish) acts += '<button class="btn" data-reset="wish" type="button">찜 필터 끄기</button>';
       acts += '<button class="btn primary" data-reset="all" type="button">조건 초기화</button>';
@@ -1166,7 +1396,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   }
 
   function renderAll() {
-    renderTypeChips(); renderPlatChips(); renderCatChips(); renderList();
+    renderTypeChips(); renderRegionChips(); renderExclChips(); renderPlatChips(); renderCatChips(); renderList();
   }
 
   function renderMeta() {
@@ -1337,7 +1567,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       renderPlatChips(); renderHoney(); renderList();
       return;
     }
-    var c = el.closest ? el.closest('[data-type],[data-plat],[data-cat],[data-kw],[data-wishonly]') : null;
+    var c = el.closest ? el.closest('[data-type],[data-plat],[data-cat],[data-region],[data-excl],[data-kw],[data-wishonly]') : null;
     if (c && c.hasAttribute('data-wishonly')) {
       S.ui.wish = !S.ui.wish; S.limit = 24;
       renderAll();
@@ -1347,6 +1577,16 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     if (c && c.hasAttribute('data-type')) {
       S.ui.type = c.getAttribute('data-type'); S.limit = 24;
       renderAll(); return;
+    }
+    if (c && c.hasAttribute('data-region')) {
+      S.ui.region = c.getAttribute('data-region'); S.limit = 24;
+      renderAll(); return;
+    }
+    if (c && c.hasAttribute('data-excl')) {
+      var ek = c.getAttribute('data-excl');
+      S.excl[ek] = !S.excl[ek]; S.limit = 24;
+      saveExcl(); renderAll();
+      return;
     }
     if (c && c.hasAttribute('data-plat')) {
       S.ui.plat = c.getAttribute('data-plat'); S.limit = 24;
@@ -1379,11 +1619,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       return;
     }
     if (el && el.id === 'resetBtn') {
-      S.ui = { type: 'all', plat: 'all', cat: 'all', q: '', sort: 'deadline', wish: false };
-      S.limit = 24;
-      var qq = $('q'); if (qq) qq.value = '';
-      var ss = $('sortSel'); if (ss) ss.value = 'deadline';
-      renderAll();
+      resetFilters('deadline');
       return;
     }
     if (el && (el.id === 'filterToggle' || (el.closest && el.closest('#filterToggle')))) {
@@ -1395,10 +1631,12 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     if (rz) {
       var what = rz.getAttribute('data-reset');
       if (what === 'all') {
-        S.ui = { type: 'all', plat: 'all', cat: 'all', q: '', sort: S.ui.sort, wish: false };
-        var q3 = $('q'); if (q3) q3.value = '';
+        resetFilters(S.ui.sort);
+        return;
       } else if (what === 'cat') { S.ui.cat = 'all'; }
       else if (what === 'type') { S.ui.type = 'all'; }
+      else if (what === 'region') { S.ui.region = 'all'; }
+      else if (what === 'excl') { S.excl = { ai: false, cost: false, visit: false, payback: false, jigan: false }; saveExcl(); }
       else if (what === 'plat') { S.ui.plat = 'all'; }
       else if (what === 'wish') { S.ui.wish = false; }
       else if (what === 'q') { S.ui.q = ''; var q4 = $('q'); if (q4) q4.value = ''; }
@@ -1420,6 +1658,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 
   applyTheme(currentTheme());
   loadWish();
+  loadExcl();
   loadDeals();
 
   fetch(CONFIG.dataUrl, { cache: 'no-store' })

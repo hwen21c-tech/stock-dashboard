@@ -747,10 +747,16 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
           <button class="chip on" data-type="all" type="button">유형 전체</button>
           <button class="chip" data-type="배송형" type="button">📦 배송형만</button>
           <button class="chip" data-type="방문형" type="button">🚗 방문형만</button>
+          <button class="chip" data-type="페이백" type="button">💰 페이백만</button>
+          <button class="chip" data-type="기자단" type="button">📰 기자단만</button>
         </div>
+        <div class="chips" id="regionChips" style="margin-top:7px"></div>
+        <div class="metaline" style="margin-top:4px"><span id="regionHint">지역은 플랫폼이 밝힌 표기(주소·지역 필드·제목) 기준 — 집으로 오는 캠페인은 전국·배송입니다.</span></div>
         <div class="chips" id="flagChips" style="margin-top:7px">
-          <button class="chip" data-flag="ai" type="button">⚠️ AI 금지 제외</button>
           <button class="chip" data-flag="cost" type="button">💰 자부담 제외</button>
+          <button class="chip" data-flag="payback" type="button">💰 페이백 제외</button>
+          <button class="chip" data-flag="jigan" type="button">📰 기자단 제외</button>
+          <button class="chip" data-flag="ai" type="button">⚠️ AI 금지 제외</button>
           <button class="chip" data-flag="visit" type="button">🚗 방문형 제외</button>
           <button class="chip" data-flag="applied" type="button">✅ 신청완료 숨기기</button>
         </div>
@@ -905,11 +911,136 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
   };
   var PLAT_ORDER = ['revu', 'reviewnote', 'dinnerqueen', 'mrblog', 'gangnam'];
 
+  /* ===== 유형·자부담·지역 정규화 — scripts/review_normalize.py 와 같은 규칙 =====
+     수집기(06:50)와 후처리가 데이터에 넣어 둔 값을 그대로 쓰되, 혹시 비어 있으면
+     여기서 같은 기준으로 다시 계산한다(값을 지어내지 않고 플랫폼 원문 표기만 사용). */
+  var TYPE_DEF = [
+    { k: '배송형', label: '📦 배송형만' },
+    { k: '방문형', label: '🚗 방문형만' },
+    { k: '페이백', label: '💰 페이백만' },
+    { k: '기자단', label: '📰 기자단만' },
+    { k: '미확인', label: '❓ 미확인' }
+  ];
+  var KNOWN_TYPES = ['배송형', '방문형', '페이백', '기자단'];
+  var REGION_ORDER = ['서울', '경기·인천', '충청', '강원', '영남', '호남', '제주', '전국·배송', '지역 미표기'];
+  var REGION_ALL = '전국·배송', REGION_UNKNOWN = '지역 미표기';
+  var REGION_LABEL = {
+    '서울': '📍 서울', '경기·인천': '📍 경기·인천', '충청': '📍 충청', '강원': '📍 강원',
+    '영남': '📍 영남', '호남': '📍 호남', '제주': '📍 제주',
+    '전국·배송': '📦 전국·배송', '지역 미표기': '❓ 지역 미표기'
+  };
+  var CITY_ALL = ['재택', '전국', '전국배송', '전국 배송', '온라인'];
+  var COST_KW = ['배송비', '초과', '자부담', '본인부담', '페이백'];
+  var COST_NEG = ['배송비 포함', '배송비포함', '배송비 무료', '무료배송', '배송비 없음',
+                  '자부담 없음', '본인부담 없음', '추가금액 발생없음', '추가금 발생없음'];
+  var RG1 = {
+    '서울': '서울',
+    '경기·인천': '경기,인천',
+    '충청': '충남,충북,충청',
+    '강원': '강원',
+    '영남': '경남,경북,경상,대구,부산,영남,울산',
+    '호남': '광주,전남,전라,전북,호남',
+    '제주': '제주'
+  };
+  var RG2 = {
+    '서울': '가로수길,건대입구,성신여대,건국대,삼성동,압구정,여의도,왕십리,이태원,강남,강서,건대,관악,노원,논현,대치,마포,목동,사당,상암,서초,선릉,성수,송파,신사,신촌,역삼,용산,익선,잠실,종로,청담,한남,합정,홍대',
+    '경기·인천': '남양주,의정부,검단,고양,과천,광명,구리,군포,김포,동탄,미사,부천,부평,분당,성남,송도,수원,시흥,안산,안성,안양,양주,여주,오산,용인,의왕,이천,일산,파주,판교,평택,포천,하남,화성',
+    '충청': '계룡,공주,논산,당진,대전,보령,서산,세종,아산,제천,천안,청주,충주',
+    '강원': '강릉,동해,삼척,속초,양양,영월,원주,인제,정선,철원,춘천,태백,평창,홍천,횡성',
+    '영남': '거제,거창,경산,경주,구미,김천,김해,남해,마산,문경,밀양,봉화,사천,상주,안동,양산,영주,영천,울주,울진,의성,진주,진해,창원,통영,포항,하동,함안',
+    '호남': '강진,고창,고흥,곡성,광양,구례,군산,김제,나주,남원,담양,목포,무안,무주,보성,부안,순창,순천,신안,여수,영광,영암,완도,완주,익산,임실,장성,장수,장흥,전주,정읍,진도,진안,함평,해남,화순',
+    '제주': '서귀포,추자도,구좌,김녕,사계,성산,애월,우도,조천,중문,표선,함덕,협재'
+  };
+  var RG3 = {
+    '서울': '디지털단지,영등포구,노량진,논현동,답십리,동대문,서대문,서소문,신도림,연신내,영등포,을지로,장한평,청량리,충무로,충정로,가락,가산,강북,개포,고덕,공덕,공릉,광진,구로,군자,금천,금호,길동,당산,대림,도봉,도산,돈암,동작,둔촌,뚝섬,마곡,면목,명동,무악,문래,문정,미아,반포,발산,방배,방이,불광,상봉,성동,성북,수유,신당,신천,안암,약수,양재,양천,여의,옥수,용답,월계,은평,잠원,장안,중곡,중구,중랑,중화,창동,천호,태릉,하계,한티,홍제,화곡,회기,흑석',
+    '경기·인천': '광교,기흥,동백,별내,병점,봉담,산본,상동,수지,위례,죽전,중동,탄현,향남',
+    '영남': '부산진,해운대,광안,금정,기장,달서,동래,북구,사상,서면,수성,수영,연제,영도',
+    '호남': '둔산,상무,수완,유성,첨단'
+  };
+  var RG_TOKENS = [];
+  [RG1, RG2, RG3].forEach(function (tbl, i) {
+    Object.keys(tbl).forEach(function (reg) {
+      tbl[reg].split(',').forEach(function (tok) {
+        if (tok) RG_TOKENS.push({ t: tok, r: reg, tier: i + 1 });
+      });
+    });
+  });
+
+  function findRegion(text) {
+    var s = String(text == null ? '' : text);
+    if (!s.trim()) return null;
+    for (var tier = 1; tier <= 3; tier++) {
+      var best = null;
+      for (var i = 0; i < RG_TOKENS.length; i++) {
+        var tk = RG_TOKENS[i];
+        if (tk.tier !== tier) continue;
+        var pos = s.indexOf(tk.t);
+        if (pos < 0) continue;
+        if (!best || pos < best.pos || (pos === best.pos && tk.t.length > best.len)) {
+          best = { pos: pos, len: tk.t.length, r: tk.r };
+        }
+      }
+      if (best) return best.r;
+    }
+    return null;
+  }
+  function cityRegion(city) {
+    var c = String(city == null ? '' : city).trim();
+    if (!c) return null;
+    if (CITY_ALL.indexOf(c) >= 0) return REGION_ALL;
+    return findRegion(c);
+  }
+  /* 유형 — 원본 type → categoryRaw 키워드 → city(재택=배송) → flags.visitRequired → 지역명 → 미확인 */
+  function typeOf(r) {
+    if (!r) return '미확인';
+    if (KNOWN_TYPES.indexOf(r.type) >= 0) return r.type;
+    var raw = String(r.categoryRaw || '');
+    if (raw.indexOf('기자단') >= 0 || raw.indexOf('원고료') >= 0) return '기자단';
+    if (raw.indexOf('페이백') >= 0 || raw.indexOf('구매평') >= 0) return '페이백';
+    if (raw.indexOf('배송') >= 0) return '배송형';
+    if (CITY_ALL.indexOf(String(r.city || '').trim()) >= 0) return '배송형';
+    var f = (r.flags || {}).visitRequired;
+    if (f === true) return '방문형';
+    if (f === false) return '배송형';
+    if (raw && findRegion(raw)) return '방문형';
+    if (raw.trim()) return '방문형';
+    return '미확인';
+  }
+  function typeLabel(k) {
+    for (var i = 0; i < TYPE_DEF.length; i++) { if (TYPE_DEF[i].k === k) return TYPE_DEF[i].label.replace('만', ''); }
+    return k;
+  }
+  /* 자부담 — 제공내역·제목·미션·주의 문구에 배송비/초과/자부담/본인부담/페이백 */
+  function detectCost(r) {
+    var bits = [r.title, r.offer, r.missionSummary, r.caution];
+    if (r.missions && r.missions.summary) bits.push(r.missions.summary);
+    var txt = bits.filter(function (v) { return !!v; }).join(' ');
+    if (!txt) return false;
+    var probe = txt;
+    COST_NEG.forEach(function (neg) { probe = probe.split(neg).join(' '); });
+    for (var i = 0; i < COST_KW.length; i++) { if (probe.indexOf(COST_KW[i]) >= 0) return true; }
+    return false;
+  }
+  function regionOf(r, t) {
+    var ty = t || typeOf(r);
+    var reg = cityRegion(r.city);
+    if (reg) return reg;
+    reg = findRegion(String(r.categoryRaw || ''));
+    if (reg) return reg;
+    if (ty === '방문형') return findRegion(String(r.title || '')) || REGION_UNKNOWN;
+    return REGION_ALL;
+  }
+
+  var DEFAULT_FLAGS = { cost: true, payback: true, jigan: true };   /* 기본으로 빼고 보는 3종 */
+  var DEFAULT_FLAGS_KEYS = ['cost', 'payback', 'jigan'];
+  var UI_SCHEMA = 2;
+
   var S = {
     rows: [], meta: null, loaded: false, fallback: false,
     cart: [], status: {}, checks: {}, picked: {}, msgs: {}, reviews: {},
     photos: {}, photoBusy: {}, capBusy: {},
-    ui: { tab: 'main', sorts: { popular: true, rate: true, value: true }, cat: 'all', plat: 'all', type: 'all', flags: {}, q: '' },
+    ui: { tab: 'main', sorts: { popular: true, rate: true, value: true }, cat: 'all', plat: 'all', type: 'all', region: 'all',
+          flags: { cost: true, payback: true, jigan: true }, q: '' },
     savings: { manual: 0 }, prices: {},
     blogSpec: { posts: null, visitors: null, last: null },
     due: {}, kwCache: {}, kwBusy: {},
@@ -1026,7 +1157,21 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
         if (o.ui.cat) S.ui.cat = o.ui.cat;
         if (o.ui.plat) S.ui.plat = o.ui.plat;
         if (o.ui.type) S.ui.type = o.ui.type;
-        if (o.ui.flags) S.ui.flags = o.ui.flags;
+        if (o.ui.region && (o.ui.region === 'all' || REGION_ORDER.indexOf(o.ui.region) >= 0)) S.ui.region = o.ui.region;
+        /* 구버전 저장값은 기본 제외 3종이 꺼진 상태였다 — 이번 스키마부터 기본 ON으로 올린다.
+           이번 스키마(2)에서 사용자가 내린 선택(false)은 그대로 유지된다. */
+        if (o.ui.flags && typeof o.ui.flags === 'object') {
+          if (o.ui.schema === UI_SCHEMA) {
+            S.ui.flags = o.ui.flags;
+          } else {
+            var oldF = o.ui.flags;
+            S.ui.flags = { ai: !!oldF.ai, visit: !!oldF.visit, applied: !!oldF.applied,
+                           cost: true, payback: true, jigan: true };
+          }
+          DEFAULT_FLAGS_KEYS.forEach(function (k) {
+            if (S.ui.flags[k] === undefined) S.ui.flags[k] = DEFAULT_FLAGS[k];
+          });
+        }
         if (o.ui.tab) S.ui.tab = o.ui.tab;
       }
     } catch (e) {}
@@ -1037,7 +1182,8 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
         cart: S.cart, status: S.status, checks: S.checks,
         savings: { manual: S.savings.manual }, prices: S.prices,
         blogSpec: S.blogSpec, due: S.due,
-        ui: { sorts: S.ui.sorts, cat: S.ui.cat, plat: S.ui.plat, type: S.ui.type, flags: S.ui.flags, tab: S.ui.tab }
+        ui: { sorts: S.ui.sorts, cat: S.ui.cat, plat: S.ui.plat, type: S.ui.type, region: S.ui.region,
+              flags: S.ui.flags, tab: S.ui.tab, schema: UI_SCHEMA }
       }));
     } catch (e) {}
   }
@@ -1083,7 +1229,16 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     row.rate = (row.capacity > 0 && row.applicants > 0) ? row.applicants / row.capacity : null;
     if (row.rate === null && row.capacity > 0 && row.applicants === 0) row.rate = 0;
     row.d = dday(c.deadline);
-    row.flags = c.flags || {};
+    row.flags = {};
+    var cf = c.flags || {};
+    for (var fk in cf) { if (Object.prototype.hasOwnProperty.call(cf, fk)) row.flags[fk] = cf[fk]; }
+    row.type = typeOf(c);                       /* 원문·보정 규칙으로 유형 확정 */
+    if (row.flags.extraCost !== true && detectCost(row)) row.flags.extraCost = true;
+    if (row.flags.visitRequired === undefined || row.flags.visitRequired === null) {
+      row.flags.visitRequired = (row.type === '방문형');
+    }
+    row.region = (c.region && REGION_ORDER.indexOf(c.region) >= 0) ? c.region : regionOf(row, row.type);
+    row.regionDetail = c.regionDetail || null;
     row.missions = c.missions || null;
     row.keywords = Array.isArray(c.keywords) ? c.keywords.filter(function (v) { return !!v; }) : [];
     return row;
@@ -1251,22 +1406,108 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
   }
 
   function visibleRows() {
-    var q = String(S.ui.q || '').trim().toLowerCase();
-    return S.rows.filter(function (r) {
-      if (S.ui.plat !== 'all' && r.platform !== S.ui.plat) return false;
-      if (S.ui.type !== 'all' && r.type !== S.ui.type) return false;
-      if (S.ui.cat !== 'all' && r.category !== S.ui.cat) return false;
-      if (flagActive('ai') && r.flags.aiBanned) return false;
-      if (flagActive('cost') && r.flags.extraCost) return false;
-      if (flagActive('visit') && r.flags.visitRequired) return false;
-      if (flagActive('applied') && S.status[r.id]) return false;
-      if (q) {
-        var hay = [r.title, r.brand, r.category, r.offer, r.missionSummary, r.platformName,
-                   (r.keywords || []).join(' ')].join(' ').toLowerCase();
-        if (hay.indexOf(q) < 0) return false;
-      }
-      return true;
+    return S.rows.filter(function (r) { return passRow(r, null); });
+  }
+  /* skip: 자기 조건은 빼고 나머지 조건만 보기(칩 건수 계산용) · 'flag:k' 형태로 제외 토글 하나만 빼기도 한다 */
+  function passRow(r, skip) {
+    var u = S.ui;
+    var q = String(u.q || '').trim().toLowerCase();
+    if (skip !== 'plat' && u.plat !== 'all' && r.platform !== u.plat) return false;
+    if (skip !== 'type' && u.type !== 'all' && r.type !== u.type) return false;
+    if (skip !== 'region' && u.region !== 'all' && r.region !== u.region) return false;
+    if (skip !== 'cat' && u.cat !== 'all' && (r.category || '기타') !== u.cat) return false;
+    if (flagActive('ai') && skip !== 'flag:ai' && r.flags.aiBanned === true) return false;
+    if (flagActive('cost') && skip !== 'flag:cost' && r.flags.extraCost === true) return false;
+    if (flagActive('visit') && skip !== 'flag:visit' && r.type === '방문형') return false;
+    if (flagActive('payback') && skip !== 'flag:payback' && r.type === '페이백') return false;
+    if (flagActive('jigan') && skip !== 'flag:jigan' && r.type === '기자단') return false;
+    if (flagActive('applied') && skip !== 'flag:applied' && S.status[r.id]) return false;
+    if (skip !== 'q' && q) {
+      var hay = [r.title, r.brand, r.category, r.offer, r.missionSummary, r.platformName,
+                 (r.keywords || []).join(' '), r.categoryRaw, r.city, r.region, r.regionDetail]
+        .join(' ').toLowerCase();
+      if (hay.indexOf(q) < 0) return false;
+    }
+    return true;
+  }
+  function flagHit(r, k) {
+    if (k === 'ai') return r.flags.aiBanned === true;
+    if (k === 'cost') return r.flags.extraCost === true;
+    if (k === 'visit') return r.type === '방문형';
+    if (k === 'payback') return r.type === '페이백';
+    if (k === 'jigan') return r.type === '기자단';
+    if (k === 'applied') return !!S.status[r.id];
+    return false;
+  }
+  /* 다른 조건을 반영한 실제 남는 건수 */
+  function facetCount(kind, val) {
+    var n = 0;
+    for (var i = 0; i < S.rows.length; i++) {
+      var r = S.rows[i];
+      if (kind === 'type' && r.type !== val) continue;
+      if (kind === 'region' && r.region !== val) continue;
+      if (passRow(r, kind)) n++;
+    }
+    return n;
+  }
+  function countExcept(kind) {
+    var n = 0;
+    for (var i = 0; i < S.rows.length; i++) { if (passRow(S.rows[i], kind)) n++; }
+    return n;
+  }
+  /* 제외 토글 하나를 눌렀을 때 가려지는 건수 */
+  function flagCount(k) {
+    var n = 0;
+    for (var i = 0; i < S.rows.length; i++) {
+      var r = S.rows[i];
+      if (!flagHit(r, k)) continue;
+      if (passRow(r, 'flag:' + k)) n++;
+    }
+    return n;
+  }
+
+  function renderTypeChips() {
+    var box = $('typeChips');
+    if (!box) return;
+    var html = '<button class="chip' + (S.ui.type === 'all' ? ' on' : '') + '" data-type="all" type="button">유형 전체 <span class="c">' +
+      countExcept('type') + '</span></button>';
+    TYPE_DEF.forEach(function (t) {
+      var n = facetCount('type', t.k);
+      if (!n && S.ui.type !== t.k) return;          /* 데이터에 없는 유형(예: 기자단 0건)은 숨김 */
+      html += '<button class="chip' + (S.ui.type === t.k ? ' on' : (n ? '' : ' off')) +
+        '" data-type="' + t.k + '" type="button">' + t.label + ' <span class="c">' + n + '</span></button>';
     });
+    box.innerHTML = html;
+  }
+
+  function renderRegionChips() {
+    var box = $('regionChips');
+    if (!box) return;
+    var html = '<button class="chip' + (S.ui.region === 'all' ? ' on' : '') + '" data-region="all" type="button">🗺️ 지역 전체 <span class="c">' +
+      countExcept('region') + '</span></button>';
+    REGION_ORDER.forEach(function (rg) {
+      var n = facetCount('region', rg);
+      if (!n && S.ui.region !== rg) return;         /* 실제 데이터에 있는 지역만 노출 */
+      html += '<button class="chip' + (S.ui.region === rg ? ' on' : (n ? '' : ' off')) +
+        '" data-region="' + esc(rg) + '" type="button">' + (REGION_LABEL[rg] || esc(rg)) +
+        ' <span class="c">' + n + '</span></button>';
+    });
+    box.innerHTML = html;
+  }
+
+  function renderFlagChips() {
+    var box = $('flagChips');
+    if (!box) return;
+    var defs = [['cost', '💰 자부담 제외'], ['payback', '💰 페이백 제외'], ['jigan', '📰 기자단 제외'],
+                ['ai', '⚠️ AI 금지 제외'], ['visit', '🚗 방문형 제외'], ['applied', '✅ 신청완료 숨기기']];
+    var html = '';
+    defs.forEach(function (d) {
+      var k = d[0], n = flagCount(k), on = flagActive(k);
+      if (!n && !on && (k === 'payback' || k === 'jigan')) return;   /* 데이터에 없는 유형 토글은 숨김 */
+      html += '<button class="chip' + (on ? ' on' : (n ? '' : ' off')) + '" data-flag="' + k +
+        '" type="button">' + d[1] + ' <span class="c">' + n + '</span></button>';
+    });
+    box.innerHTML = html;
   }
 
   /* ------------------------------------------------------------------ header */
@@ -1402,7 +1643,9 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     var f = r.flags || {};
     if (f.aiBanned === true) out.push('<span class="flag ai">⚠️ AI 금지</span>');
     if (f.extraCost) out.push('<span class="flag cost">💰 자부담</span>');
-    if (f.visitRequired) out.push('<span class="flag visit">🚗 방문형</span>');
+    if (r.type === '페이백') out.push('<span class="flag cost">💰 페이백</span>');
+    if (r.type === '기자단') out.push('<span class="flag">📰 기자단</span>');
+    if (r.type === '방문형') out.push('<span class="flag visit">🚗 방문형</span>');
     if (f.faceRequired) out.push('<span class="flag face">🙂 얼굴 노출</span>');
     return out.join('');
   }
@@ -1418,6 +1661,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
         platBadge(r) +
         '<span class="cat ' + catClass(r.category) + '">' + esc(r.category || '기타') + '</span>' +
         (r.type ? '<span class="flag plain">' + esc(r.type) + '</span>' : '') +
+        (r.region && r.region !== REGION_ALL ? '<span class="flag plain">📍 ' + esc(r.region) + '</span>' : '') +
         '<span class="dday ' + ddayClass(r.d) + '">' + ddayText(r.d) + '</span>' +
       '</div>' +
       '<h3>' + esc(r.title) + '</h3>' +
@@ -1511,6 +1755,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     $('sortHint').textContent = active.length
       ? (active.length > 1 ? active.length + '개 정렬을 함께 보는 중 — 같은 캠페인이 여러 묶음에 나올 수 있어요.' : '한 가지 정렬로 보고 있어요.')
       : '정렬을 모두 끄면 마감 임박 순 전체 목록으로 보여요.';
+    renderTypeChips(); renderRegionChips(); renderFlagChips();
   }
 
   /* ------------------------------------------------------------------ detail */
@@ -1547,6 +1792,8 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
       '<div class="flagrow" style="margin-top:8px">' + winBadge(r) + flagsHtml(r) + '</div>' +
       '<dl class="kv">' +
         '<dt>플랫폼</dt><dd>' + esc(platOf(r).name) + (r.platformName ? '' : '') + ' · ' + esc(r.type || '유형 미표기') + '</dd>' +
+        '<dt>지역</dt><dd>' + (r.region ? esc(r.region) + (r.regionDetail && r.region !== REGION_ALL ? ' <span style="color:var(--mut);font-weight:700">(' + esc(r.regionDetail) + ')</span>' : '') : '미확인') +
+          (r.region === REGION_ALL ? ' <span style="color:var(--mut);font-weight:700">— 집으로 배송되는 캠페인</span>' : '') + '</dd>' +
         '<dt>브랜드</dt><dd>' + esc(r.brand || '미확인') + '</dd>' +
         '<dt>제공내역</dt><dd>' + esc(r.offer || '미확인') + '</dd>' +
         '<dt>추정가</dt><dd>' + (providerPrice(r) ? money(providerPrice(r)) + (r.priceNote ? ' <span style="color:var(--mut);font-weight:700">(' + esc(r.priceNote) + ')</span>' : '') : '미확인 <button class="btn xs ghost" data-price="' + esc(r.id) + '" type="button">직접 입력</button>') + '</dd>' +
@@ -2548,9 +2795,10 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     }
     if ((c = closest('[data-type]'))) {
       S.ui.type = c.getAttribute('data-type');
-      document.querySelectorAll('#typeChips .chip').forEach(function (b) {
-        b.classList.toggle('on', b.getAttribute('data-type') === S.ui.type);
-      });
+      renderMain(); return;
+    }
+    if ((c = closest('[data-region]'))) {
+      S.ui.region = c.getAttribute('data-region');
       save(); renderMain(); return;
     }
 
@@ -2627,18 +2875,12 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
       return;
     }
     if (el.id === 'resetBtn') {
-      S.ui = { tab: S.ui.tab, sorts: { popular: true, rate: true, value: true }, cat: 'all', flags: {}, q: '' };
+      S.ui = { tab: S.ui.tab, sorts: { popular: true, rate: true, value: true }, cat: 'all', plat: 'all', type: 'all', region: 'all',
+               flags: { cost: true, payback: true, jigan: true }, q: '' };
       $('q').value = '';
       document.querySelectorAll('#sortChips .chip').forEach(function (b) { b.classList.add('on'); });
-      document.querySelectorAll('#catChips .chip').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-cat') === 'all'); });
-      document.querySelectorAll('#platChips .chip').forEach(function (b) {
-        b.classList.remove('on', 'plat-on');
-        if (b.getAttribute('data-plat') === 'all') b.classList.add('on');
-      });
-      document.querySelectorAll('#typeChips .chip').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-type') === 'all'); });
-      document.querySelectorAll('#flagChips .chip').forEach(function (b) { b.classList.remove('on'); });
-      S.ui.cat = 'all'; S.ui.plat = 'all'; S.ui.type = 'all'; S.ui.flags = {};
-      save(); renderPlatChips(); renderMain(); return;
+      renderPlatChips(); renderCatChips(); renderMain();
+      return;
     }
     if ((c = closest('[data-sort]'))) {
       var k = c.getAttribute('data-sort');
