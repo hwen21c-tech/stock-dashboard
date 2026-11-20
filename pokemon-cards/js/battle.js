@@ -1716,7 +1716,7 @@
       const pr = P.prof(b.me.profile);
       pr.wins = (pr.wins || 0) + 1;
       if (b.mode === 'p2') { pr.coins += 10; coinReward = true; reward = '+10 코인 획득!'; }
-      else { reward = '🤖 연습게임은 코인이 지급되지 않아요 · 코인은 남매 1:1 대전에서만!'; }
+      else { reward = '🤖 연습게임은 코인이 지급되지 않아요'; }
       P.save();
       if (coinReward) U.bumpCoins();
     } else if (winner === 1) {
