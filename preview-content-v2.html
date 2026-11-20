@@ -14549,7 +14549,7 @@ var CSVoice = (function () {
     /* /api/breadth 가 아직 배포 전일 때 — 관제탑 페이지가 이미 계산해 둔 시장 폭(코스피+코스닥 합산)을 읽는다 */
     var ix = V2.breadthIndex;
     if (ix && isFinite(ix.up) && isFinite(ix.down)){
-      return { kospi: null, kosdaq: null, all: ix, basis: '관제탑 만쥬 시장 폭(코스피+코스닥 합산) ' + (ix.at ? String(ix.at).slice(11, 16) : '') };
+      return { kospi: null, kosdaq: null, all: ix, basis: '관제탑 만쥬 시장 폭(코스피+코스닥 합산)' + (ix.atKst ? ' ' + ix.atKst + ' KST' : '') };
     }
     var b = V2.data && V2.data.brief;
     if (b){
@@ -14593,7 +14593,9 @@ var CSVoice = (function () {
       .then(function(txt){
         var m = /"breadth"\s*:\s*\{\s*"up"\s*:\s*(\d+)\s*,\s*"down"\s*:\s*(\d+)\s*(?:,\s*"ratio"\s*:\s*([\d.]+))?/.exec(txt);
         if (!m) return null;
-        var j = { up: Number(m[1]), down: Number(m[2]), ratio: m[3] ? Number(m[3]) : null, at: new Date().toISOString() };
+        var iso = new Date().toISOString();
+        var j = { up: Number(m[1]), down: Number(m[2]), ratio: m[3] ? Number(m[3]) : null, at: iso,
+                  atKst: (function(d){ function p(n){ return (n < 10 ? '0' : '') + n; } return p(d.getHours()) + ':' + p(d.getMinutes()); })(new Date()) };
         V2.breadthIndex = j;
         try { sessionStorage.setItem(key, JSON.stringify(j)); } catch(e){}
         return j;
@@ -14695,7 +14697,7 @@ var CSVoice = (function () {
     var top = sq ? 268 : 214;
     var rowGap = sq ? 150 : 112;
     var x0 = 42 + Math.round(W / 12), x1 = W - 42 - Math.round(W / 9);
-    if (allOnly){ top = sq ? 260 : 230; rowGap = 0; }
+    if (allOnly){ top = sq ? 330 : 300; rowGap = 0; }
     rows.forEach(function(r, i){
       var y = top + i * rowGap;
       cvText(g, r.name, 42, y + 20, Math.round(W / 54), CREAM.ink, 'left', 900);
