@@ -16355,7 +16355,15 @@ var CSVoice = (function () {
     ctx.fillRect(0, SAFE.y - 1, CW, 2);
     ctx.fillRect(0, SAFE.b - 1, CW, 2);
   }
-  /* 상단 — 🦊 폭스시그널 브랜드 필 + 컷 카운터 + 진행 프로그레스 바 */
+  /* 🏷️ 시간대 배지 — 지금 선택된 폭스시그널 공식을 상단에 한 글자로 못 박는다 */
+  var FOX_SLOT_LABEL = { '1': '🌅 장전', '2': '☀️ 점심', '3': '🌆 정규마감', '4': '🌙 애프터장' };
+  function foxSlotBadge() {
+    var k = formulaKey('fox');
+    if (FOX_SLOT_LABEL[k]) return FOX_SLOT_LABEL[k];
+    var f = formulaOf('fox');
+    return f ? String(f.tag + ' ' + f.name).trim() : '';
+  }
+  /* 상단 — 🦊 폭스시그널 브랜드 필 + 시간대 배지 + 컷 카운터 + 진행 프로그레스 바 */
   function drawFoxHead(ctx, spec, idx, n, t, total, cuts) {
     var y = SAFE.y + 14, h = 64;
     var label = '🦊 폭스시그널';
@@ -16365,6 +16373,33 @@ var CSVoice = (function () {
     var w = tw + 52;
     panel(ctx, SAFE.x, y, w, h, h / 2, FX.navy, null, 0, 'fx-brand');
     txLine(ctx, label, SAFE.x + 26, y + h / 2 + 1, f, FX.cream, 'left', 'fx-brand-text');
+    /* 🏷️ 시간대 배지 — 브랜드 필 바로 오른쪽 · 컷 카운터와 겹치지 않을 때만 그린다 */
+    var slot = foxSlotBadge();
+    if (slot) {
+      var cnt = ('0' + (idx + 1)).slice(-2) + ' / ' + ('0' + n).slice(-2);
+      ctx.font = '800 24px ' + FF;
+      var cntW = ctx.measureText(cnt).width;
+      var bx = SAFE.x + w + 16, room = (SAFE.r - cntW - 18) - bx;
+      var sf = '900 24px ' + FF, spad = 19, bw;
+      if (room >= 74) {
+        ctx.font = sf;
+        bw = ctx.measureText(slot).width + spad * 2;
+        while (bw > room && fontPx(sf) > 17) {                 /* 자리가 좁으면 글자를 줄인다 */
+          sf = '900 ' + Math.round(fontPx(sf) - 2) + 'px ' + FF;
+          ctx.font = sf;
+          bw = ctx.measureText(slot).width + spad * 2;
+        }
+        if (bw <= room) {
+          var bh = 44, by = y + (h - bh) / 2;
+          ctx.save();                                           /* 알약 밖으로 글자가 새지 않게 */
+          rr(ctx, bx, by, bw, bh, bh / 2);
+          ctx.clip();
+          panel(ctx, bx, by, bw, bh, bh / 2, FX.wine, 'rgba(201,162,94,.95)', 2, 'fx-slot');
+          txLine(ctx, slot, bx + bw / 2, by + bh / 2 + 1, sf, FX.cream, 'center', 'fx-slot-text');
+          ctx.restore();
+        }
+      }
+    }
     txLine(ctx, ('0' + (idx + 1)).slice(-2) + ' / ' + ('0' + n).slice(-2), SAFE.r, y + 21,
       '800 24px ' + FF, 'rgba(16,32,47,.62)', 'right', 'fx-counter');
     var wm = String((spec && spec.watermark) || '').trim();
