@@ -3,10 +3,10 @@
    · 파일을 고칠 때는 CACHE 이름의 버전을 올려 주세요.
    · [11/20] PWA 스코프 분리: 등록 스코프를 ./review-zip.html 하나로 좁혔다.
      같은 오리진(관제탑·리뷰 스튜디오·사주 등)의 다른 앱 캐시는 activate에서도 건드리지 않는다.
-   · [11/20] 폴드8 히어로 좌측 붙음/첫 글자 잘림 수정에 맞춰 v7로 올림.
+   · [11/20] 유형 필터·필터 접기·sticky 해제 반영으로 v8.
 */
 var PREFIX = 'review-zip-';
-var CACHE = PREFIX + 'v7';
+var CACHE = PREFIX + 'v8';
 var SHELL = [
   './review-zip.html',
   './review-zip-manifest.json',
