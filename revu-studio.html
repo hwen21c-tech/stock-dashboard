@@ -2533,7 +2533,9 @@ footer b{color:var(--mut)}
         regs.forEach(function (reg) {
           if (new URL(reg.scope).pathname !== ROOT) return;
           var w = reg.active || reg.waiting || reg.installing;
-          if (w && w.scriptURL && w.scriptURL.indexOf(REG) >= 0) reg.unregister();
+          /* 예전 판(revu-studio·review-zip 둘 중 먼저 열린 쪽)이 루트 스코프에 남긴 워커만 정리.
+             관제탑 sw.js·사주 sw.js 등 다른 앱 워커는 건드리지 않는다. */
+          if (w && w.scriptURL && /(revu-studio|review-zip)-sw\.js$/.test(w.scriptURL)) reg.unregister();
         });
       });
     }).catch(function () {});
