@@ -5,7 +5,20 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>리뷰 스튜디오 · 5대 체험단 통합 큐레이션 &amp; AI 지원/리뷰</title>
 <meta name="description" content="레뷰·리뷰노트·디너의여왕·미블 체험단을 한 화면에서 인기순·경쟁률 낮은 순·실속 리스트로 골라 담고, 내 블로그 기준 당첨 확률·황금 키워드·마감 패널티 트래커까지 챙기는 개인용 정적 스튜디오.">
-<meta name="theme-color" content="#05070d">
+<meta name="theme-color" content="#05070d" id="themeColorMeta">
+<script>
+/* ☀️/🌙 테마 선초기화 — 첫 페인트 전에 저장값을 적용해 깜빡임(FOUC)을 막는다.
+   이 앱은 독립 설치앱이라 포털(review_zip_theme)과 섞이지 않게 자기 키(revu_studio_theme)를 쓴다. */
+(function () {
+  try {
+    var t = localStorage.getItem('revu_studio_theme');
+    if (t !== 'light' && t !== 'dark') t = 'dark';   /* 기본값 = 기존 다크 */
+    document.documentElement.setAttribute('data-theme', t);
+    var m = document.getElementById('themeColorMeta');
+    if (m) m.setAttribute('content', t === 'light' ? '#eef4fb' : '#05070d');
+  } catch (e) {}
+})();
+</script>
 <link rel="manifest" href="revu-studio-manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="revu-studio-icon-192.png">
 <link rel="apple-touch-icon" href="revu-studio-icon-192.png">
@@ -22,6 +35,8 @@
   --ok:#34d399; --warn:#fbbf24; --bad:#f87171; --hot:#fb7185;
   --r:18px; --r2:13px;
   --sh:0 16px 44px rgba(0,0,0,.42);
+  /* 테마 공용 별칭 — 라이트에서만 값이 바뀐다 */
+  --txt2:#dbe6f6; --ok-t:#bbf7d0; --bad-t:#fecaca;
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -72,6 +87,9 @@ img{max-width:100%}
 }
 .pill:hover{background:rgba(125,211,252,.14);border-color:rgba(125,211,252,.4);color:#eaf6ff}
 .pill:active{transform:scale(.97)}
+.pill.install{background:linear-gradient(135deg,rgba(56,189,248,.24),rgba(129,140,248,.22));border-color:rgba(125,211,252,.5);color:#eaf6ff}
+.pill.themebtn{padding:7px 9px;min-width:34px;justify-content:center;font-size:13px;line-height:1}
+.pill.themebtn span{display:block;line-height:1}
 
 /* ---------- stat tiles ---------- */
 .stats{display:grid;grid-template-columns:1.15fr 1fr .95fr;gap:10px;margin-top:12px}
@@ -388,6 +406,250 @@ footer b{color:var(--mut)}
 @media (prefers-reduced-motion:reduce){
   *{animation:none!important;transition:none!important}
 }
+
+/* =====================================================================
+   ☀️ 라이트(밝은) 테마 — 11/20 추가
+   기본은 기존 다크. html[data-theme="light"] 일 때만 아래 값이 적용된다.
+   원칙: 밝은 회백색 바탕 + 흰 카드 + 진한 남색 글자, 색 뱃지는 '연한 바탕 + 진한 글자'.
+   ===================================================================== */
+html[data-theme="light"]{
+  color-scheme:light;
+  --bg:#eef4fb; --bg2:#e4ecf7; --panel:rgba(255,255,255,.90); --panel2:rgba(255,255,255,.96);
+  --line:rgba(16,44,78,.13); --line2:rgba(16,44,78,.24);
+  --txt:#10202f; --txt2:#22374c; --mut:#4a5e74; --mut2:#5d7286;
+  --cy:#0369a1; --cy2:#0284c7; --pk:#be185d; --vi:#6d28d9;
+  --ok:#047857; --ok-t:#065f46; --warn:#a16207; --bad:#b91c1c; --bad-t:#991b1b; --hot:#be123c;
+  --sh:0 12px 30px rgba(16,44,78,.10);
+}
+html[data-theme="light"] body{background:var(--bg);color:var(--txt)}
+html[data-theme="light"] body::before{
+  background:
+    radial-gradient(120% 80% at 50% -12%,#ffffff 0%,#eff5fd 46%,#e7eff9 100%),
+    radial-gradient(70% 50% at 90% 8%,rgba(56,189,248,.13),transparent 70%),
+    radial-gradient(60% 45% at 4% 22%,rgba(167,139,250,.12),transparent 70%);
+}
+html[data-theme="light"] body::after{
+  opacity:.55;
+  background-image:radial-gradient(rgba(16,44,78,.10) 1px,transparent 1px);
+}
+html[data-theme="light"] a{color:var(--cy)}
+
+/* ---- 헤더 ---- */
+html[data-theme="light"] .logo{
+  background:linear-gradient(145deg,#e2f2fe,#ece7fd);
+  border-color:#a7d8f5;box-shadow:0 8px 20px rgba(56,189,248,.12) inset;
+}
+html[data-theme="light"] .pill{
+  background:rgba(255,255,255,.92);border-color:var(--line);color:#24384d;
+  box-shadow:0 1px 2px rgba(16,44,78,.05);
+}
+html[data-theme="light"] .pill:hover{background:#eaf5fe;border-color:#8fd3f4;color:#075985}
+html[data-theme="light"] .pill.install{background:linear-gradient(135deg,#e0f2fe,#ede9fe);border-color:#7dd3fc;color:#075985}
+html[data-theme="light"] .pill.install:hover{background:linear-gradient(135deg,#d3ecfe,#e4defd)}
+
+/* ---- 요약 타일 ---- */
+html[data-theme="light"] .stat{
+  background:linear-gradient(158deg,#ffffff,#f7fafd);
+  border-color:var(--line);box-shadow:0 10px 24px rgba(16,44,78,.08);
+}
+html[data-theme="light"] .stat::after{background:radial-gradient(circle,rgba(56,189,248,.16),transparent 70%)}
+html[data-theme="light"] .stat .k{color:var(--mut)}
+html[data-theme="light"] .stat .v{color:var(--txt)}
+html[data-theme="light"] .stat .v small{color:var(--mut)}
+html[data-theme="light"] .stat .s{color:var(--mut2)}
+html[data-theme="light"] .stat .v a{color:var(--cy)}
+
+/* ---- 버튼 ---- */
+html[data-theme="light"] .btn:not(.pri):not(.warm){
+  background:rgba(255,255,255,.94);border-color:var(--line2);color:#22374c;
+}
+html[data-theme="light"] .btn:not(.pri):not(.warm):hover{background:#eaf2fb;border-color:#a9c6e0}
+html[data-theme="light"] .btn.pri{box-shadow:0 8px 18px rgba(56,189,248,.24);color:#03121f}
+html[data-theme="light"] .btn.warm{color:#2a1105}
+html[data-theme="light"] .btn.danger{background:#fee2e2;border-color:#f6b3b3;color:#991b1b}
+html[data-theme="light"] .btn.danger:hover{background:#fdd6d6}
+html[data-theme="light"] .btn.ok{background:#dcfce7;border-color:#9ae6b8;color:#065f46}
+html[data-theme="light"] .btn.ok:hover{background:#cdf7dd}
+html[data-theme="light"] .btn.ghost{background:rgba(255,255,255,.7)}
+html[data-theme="light"] .btn.ghost:hover{background:#eaf2fb}
+
+/* ---- 탭 ---- */
+html[data-theme="light"] .tabsbar{
+  background:linear-gradient(180deg,rgba(238,244,251,.96),rgba(238,244,251,.84) 70%,rgba(238,244,251,0));
+}
+html[data-theme="light"] .tabs{background:rgba(255,255,255,.92);border-color:var(--line);box-shadow:0 6px 16px rgba(16,44,78,.06)}
+html[data-theme="light"] .tab{color:var(--mut)}
+html[data-theme="light"] .tab .n{background:rgba(16,44,78,.08);color:#33485e}
+html[data-theme="light"] .tab.on{
+  background:linear-gradient(135deg,rgba(56,189,248,.20),rgba(129,140,248,.18));
+  color:#075985;box-shadow:0 1px 0 #ffffff inset;
+}
+html[data-theme="light"] .tab.on .n{background:rgba(56,189,248,.24);color:#075985}
+
+/* ---- 패널 · 칩 · 입력 ---- */
+html[data-theme="light"] .panel{
+  background:linear-gradient(160deg,rgba(255,255,255,.94),rgba(250,252,255,.94));
+  border-color:var(--line);box-shadow:0 12px 30px rgba(16,44,78,.08);
+}
+html[data-theme="light"] .phead .sub{color:var(--mut2)}
+html[data-theme="light"] .chip{background:rgba(255,255,255,.92);border-color:var(--line);color:#2b3f55}
+html[data-theme="light"] .chip:hover{border-color:#a9c6e0;background:#f4f9fe}
+html[data-theme="light"] .chip.on{
+  background:linear-gradient(135deg,rgba(56,189,248,.18),rgba(129,140,248,.16));
+  border-color:#7dd3fc;color:#075985;
+}
+html[data-theme="light"] .chip.on:hover{background:linear-gradient(135deg,rgba(56,189,248,.26),rgba(129,140,248,.22))}
+html[data-theme="light"] .chip .c{background:rgba(16,44,78,.08);color:#33485e}
+html[data-theme="light"] .chip.on .c{background:rgba(56,189,248,.22);color:#075985}
+html[data-theme="light"] .chip.plat-on{
+  background:linear-gradient(135deg,rgba(56,189,248,.18),rgba(129,140,248,.16));
+  border-color:#7dd3fc;color:#075985;
+}
+html[data-theme="light"] .field{background:#ffffff;border-color:var(--line2)}
+html[data-theme="light"] .field:focus-within{border-color:#7dd3fc;box-shadow:0 0 0 3px rgba(56,189,248,.14)}
+html[data-theme="light"] .field input{color:var(--txt)}
+html[data-theme="light"] .specbox .f span{color:var(--mut2)}
+html[data-theme="light"] .specbox .f input,
+html[data-theme="light"] .duerow input[type=date]{background:#ffffff;border-color:var(--line2);color:var(--txt)}
+html[data-theme="light"] .specbox .f input:focus{border-color:#7dd3fc;box-shadow:0 0 0 3px rgba(56,189,248,.14)}
+html[data-theme="light"] .sep{background:var(--line2)}
+
+/* ---- 캠페인 카드 ---- */
+html[data-theme="light"] .card{
+  background:linear-gradient(160deg,#ffffff,#f9fbfe);
+  border-color:var(--line);box-shadow:0 8px 20px rgba(16,44,78,.07);
+}
+html[data-theme="light"] .card:hover{border-color:#8fd3f4;box-shadow:0 14px 30px rgba(16,44,78,.13)}
+html[data-theme="light"] .card.in{border-color:#34d399;box-shadow:0 0 0 1px rgba(52,211,153,.28) inset,0 8px 20px rgba(16,44,78,.08)}
+html[data-theme="light"] .cat{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+html[data-theme="light"] .cat.food{background:#ffedd5;color:#9a3412;border-color:#fed7aa}
+html[data-theme="light"] .cat.kids{background:#fce7f3;color:#9d174d;border-color:#fbcfe8}
+html[data-theme="light"] .cat.digital{background:#e0e7ff;color:#3730a3;border-color:#c7d2fe}
+html[data-theme="light"] .cat.living{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+html[data-theme="light"] .cat.book{background:#fef3c7;color:#92400e;border-color:#fde68a}
+html[data-theme="light"] .dday{background:#fee2e2;color:#991b1b;border-color:#fbc4c4}
+html[data-theme="light"] .dday.safe{background:#eaf0f7;color:#3f556b;border-color:var(--line)}
+html[data-theme="light"] .dday.soon{background:#fef3c7;color:#854d0e;border-color:#fcd34d}
+html[data-theme="light"] .card .offer{color:var(--mut)}
+html[data-theme="light"] .m{background:#f2f6fb;border-color:var(--line);color:#33485e}
+html[data-theme="light"] .m b{color:#10202f}
+html[data-theme="light"] .m.rate-hot{background:#fee2e2;border-color:#fbc4c4;color:#991b1b}
+html[data-theme="light"] .m.rate-cool{background:#dcfce7;border-color:#a7f3d0;color:#065f46}
+html[data-theme="light"] .flag.ai{background:#fee2e2;color:#991b1b;border-color:#fbc4c4}
+html[data-theme="light"] .flag.cost{background:#fef3c7;color:#854d0e;border-color:#fcd34d}
+html[data-theme="light"] .flag.visit{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
+html[data-theme="light"] .flag.face{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+html[data-theme="light"] .flag.plain{background:#eef2f7;color:#3f556b;border-color:var(--line)}
+html[data-theme="light"] .done{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+html[data-theme="light"] .done.off{background:#eef2f7;color:#44586e;border-color:var(--line2)}
+
+/* ---- 지원·리뷰 리스트 ---- */
+html[data-theme="light"] .item{background:linear-gradient(160deg,#ffffff,#f9fbfe);border-color:var(--line);box-shadow:0 8px 20px rgba(16,44,78,.06)}
+html[data-theme="light"] .item .meta{color:var(--mut2)}
+html[data-theme="light"] .item.applied{border-left-color:#f59e0b}
+html[data-theme="light"] .missionbox{background:#f5f9fd;border-color:var(--line)}
+html[data-theme="light"] .missionbox .ttl{color:var(--mut)}
+html[data-theme="light"] .ck{background:#f2f6fb;border-color:var(--line);color:#33485e}
+html[data-theme="light"] .ck.on{background:#dcfce7;border-color:#a7f3d0;color:#065f46}
+html[data-theme="light"] .opt{background:#fbfdff;border-color:var(--line)}
+html[data-theme="light"] .opt:hover{border-color:#b9d4ea}
+html[data-theme="light"] .opt.on{background:#eff9ff;border-color:#7dd3fc;box-shadow:0 0 0 1px rgba(125,211,252,.35) inset}
+html[data-theme="light"] .opt .tone{color:var(--cy)}
+html[data-theme="light"] .opt .tone .len{color:var(--mut2)}
+html[data-theme="light"] .opt .text{color:var(--txt2)}
+html[data-theme="light"] .tip.warn{background:#fffbeb;border-color:#f2d79b;color:#8a5a06}
+html[data-theme="light"] .tip.bad{background:#fef2f2;border-color:#f6c9c9;color:#991b1b}
+html[data-theme="light"] .tip.ok{background:#f0fdf4;border-color:#b3ebc8;color:#065f46}
+html[data-theme="light"] .tip.info{background:#f0f9ff;border-color:#bae6fd;color:#075985}
+
+/* ---- 사진 배치 ---- */
+html[data-theme="light"] .ph{background:#f5f9fd;border-color:var(--line)}
+html[data-theme="light"] .ph .phrole{background:#ffffff;border-color:var(--line2);color:#22374c}
+html[data-theme="light"] .ph .phcap{color:var(--mut2)}
+html[data-theme="light"] .ph .phbtns button{background:#f2f6fb;border-color:var(--line);color:#3a4f66}
+html[data-theme="light"] .ph .phbtns button:hover{background:#e6eff9}
+html[data-theme="light"] .ph .del{background:rgba(255,255,255,.94);border-color:rgba(16,44,78,.18);color:#b91c1c}
+html[data-theme="light"] .upl{background:#f8fbfe;border-color:#c2d6e8;color:#33485e}
+html[data-theme="light"] .upl:hover{background:#eff9ff;border-color:#7dd3fc}
+html[data-theme="light"] .upl small{color:var(--mut2)}
+
+/* ---- 진행 단계 ---- */
+html[data-theme="light"] .step{background:#f2f6fb;border-color:var(--line);color:var(--mut)}
+html[data-theme="light"] .step.on{
+  background:linear-gradient(135deg,rgba(56,189,248,.20),rgba(129,140,248,.18));
+  border-color:#7dd3fc;color:#075985;
+}
+html[data-theme="light"] .step.done{background:#d1fae5;border-color:#a7f3d0;color:#065f46}
+
+/* ---- 모달 · 알림 ---- */
+html[data-theme="light"] .modal{background:rgba(16,32,54,.42)}
+html[data-theme="light"] .sheet{
+  background-color:#fbfdff;
+  background-image:linear-gradient(165deg,#ffffff,#fbfdff 60%,#f6f9fd);
+  border-color:var(--line2);box-shadow:0 28px 70px rgba(16,44,78,.26);
+}
+html[data-theme="light"] .sheethead{background:rgba(248,251,254,.98);border-bottom-color:var(--line)}
+html[data-theme="light"] .sheetfoot{background:rgba(248,251,254,.98);border-top-color:var(--line)}
+html[data-theme="light"] .x{background:#f1f5fa;border-color:var(--line);color:#33485e}
+html[data-theme="light"] .x:hover{background:#e4edf7}
+html[data-theme="light"] .kv dt{color:var(--mut2)}
+html[data-theme="light"] .kv dd{color:var(--txt2)}
+html[data-theme="light"] #toast .tmsg,
+html[data-theme="light"] .tmsg{
+  background:#ffffff;border-color:#bae6fd;color:#10202f;
+  box-shadow:0 14px 34px rgba(16,44,78,.20);
+}
+html[data-theme="light"] .tmsg.ok{border-color:#86efac}
+html[data-theme="light"] .tmsg.bad{border-color:#f6b3b3}
+
+/* ---- 기타 ---- */
+html[data-theme="light"] .empty{color:var(--mut2)}
+html[data-theme="light"] .empty b{color:var(--cy)}
+html[data-theme="light"] .loadbar{background:rgba(16,44,78,.10)}
+html[data-theme="light"] footer{color:var(--mut2)}
+html[data-theme="light"] footer b{color:var(--mut)}
+html[data-theme="light"] .srcnote{color:var(--mut2)}
+html[data-theme="light"] .metaline{color:var(--mut2)}
+html[data-theme="light"] .sgrphead .cnt{color:var(--cy)}
+html[data-theme="light"] .spin{border-color:rgba(3,18,31,.22);border-top-color:#03121f}
+
+/* ---- 5대 플랫폼 뱃지 · 당첨확률 · 키워드 · 마감 트래커 ---- */
+html[data-theme="light"] .pb.revu{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+html[data-theme="light"] .pb.reviewnote{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
+html[data-theme="light"] .pb.dinnerqueen{background:#ffe4e6;color:#9f1239;border-color:#fecdd3}
+html[data-theme="light"] .pb.mrblog{background:#fef3c7;color:#854d0e;border-color:#fde68a}
+html[data-theme="light"] .pb.gangnam{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+html[data-theme="light"] .pb.x{background:#eef2f7;color:#3f556b;border-color:var(--line)}
+html[data-theme="light"] .win.g{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+html[data-theme="light"] .win.y{background:#fef3c7;color:#854d0e;border-color:#fcd34d}
+html[data-theme="light"] .win.r{background:#fee2e2;color:#991b1b;border-color:#fbc4c4}
+html[data-theme="light"] .win.n{background:#eef2f7;color:#3f556b;border-color:var(--line)}
+html[data-theme="light"] .kwbox{background:linear-gradient(158deg,#fffaef,#fffdf7);border-color:#f0d9a8}
+html[data-theme="light"] .kwbox .hd{color:#854d0e}
+html[data-theme="light"] .kwbox .hd .src{background:#eef2f7;color:#41566b}
+html[data-theme="light"] .kwtag{background:#fef3c7;border-color:#fcd34d;color:#854d0e}
+html[data-theme="light"] .kwtag.must{background:#ffe4e6;border-color:#fecdd3;color:#9f1239}
+html[data-theme="light"] .alarm{
+  background:linear-gradient(158deg,#fef3f3,#fdf8f8);border-color:#f6c9c9;
+}
+html[data-theme="light"] .alarm .ah{color:#991b1b}
+html[data-theme="light"] .alarm .ah .n{background:#fecaca;color:#991b1b}
+html[data-theme="light"] .alarm ul{color:#24384c}
+html[data-theme="light"] .alarm ul b{color:#0f1d2e}
+html[data-theme="light"] .alarm.safe{background:linear-gradient(158deg,#f1fdf5,#f8fefb);border-color:#a7f3d0}
+html[data-theme="light"] .alarm.safe .ah{color:#065f46}
+html[data-theme="light"] .duetag.warn3{background:#fef3c7;color:#854d0e;border-color:#fcd34d}
+html[data-theme="light"] .duetag.warn1{background:#ffedd5;color:#9a3412;border-color:#fed7aa}
+html[data-theme="light"] .duetag.late{background:#dc2626;color:#ffffff;border-color:#b91c1c}
+html[data-theme="light"] .duetag.safe{background:#eef2f7;color:#3f556b;border-color:var(--line)}
+html[data-theme="light"] .duerow{color:var(--mut)}
+html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(16,44,78,.22);color:var(--mut)}
+
+/* ---- 좁은 화면: 테마 버튼 크기 ---- */
+@media (max-width:420px){
+  html[data-theme="light"] .pill{padding:6px 9px}
+  .pill.themebtn{padding:6px 8px;min-width:32px;font-size:12.5px}
+}
 </style>
 </head>
 
@@ -402,8 +664,9 @@ footer b{color:var(--mut)}
       </div>
     </div>
     <div class="topright">
-      <button class="pill hide" id="installBtn" type="button" style="background:linear-gradient(135deg,rgba(56,189,248,.24),rgba(129,140,248,.22));border-color:rgba(125,211,252,.5);color:#eaf6ff">📲 홈 화면에 설치</button>
+      <button class="pill install hide" id="installBtn" type="button">📲 홈 화면에 설치</button>
       <button class="pill" id="keyBtn" type="button">🔑 Gemini 키</button>
+      <button class="pill themebtn" id="themeBtn" type="button" aria-label="밝은 테마로 전환" aria-pressed="false" title="밝은 테마로 전환"><span id="themeIco" aria-hidden="true">☀️</span></button>
     </div>
   </div>
 
@@ -1105,7 +1368,7 @@ footer b{color:var(--mut)}
       if (nextAnn === null || n < nextAnn.n) nextAnn = { n: n, d: r.announce };
     });
     if (alerts.length) {
-      $('dueVal').innerHTML = '<span style="color:#fecaca">' + alerts.length + '건</span><small id="dueSub">리뷰 등록 임박</small>';
+      $('dueVal').innerHTML = '<span style="color:var(--bad-t)">' + alerts.length + '건</span><small id="dueSub">리뷰 등록 임박</small>';
       $('dueNote').textContent = (late ? '지연 ' + late + '건 · ' : '') + '선정 캠페인 리뷰 등록 마감이 3일 내입니다';
     } else if (nextAnn) {
       $('dueVal').innerHTML = 'D-' + nextAnn.n + '<small id="dueSub">발표 임박</small>';
@@ -1286,16 +1549,16 @@ footer b{color:var(--mut)}
         '<dt>플랫폼</dt><dd>' + esc(platOf(r).name) + (r.platformName ? '' : '') + ' · ' + esc(r.type || '유형 미표기') + '</dd>' +
         '<dt>브랜드</dt><dd>' + esc(r.brand || '미확인') + '</dd>' +
         '<dt>제공내역</dt><dd>' + esc(r.offer || '미확인') + '</dd>' +
-        '<dt>추정가</dt><dd>' + (providerPrice(r) ? money(providerPrice(r)) + (r.priceNote ? ' <span style="color:#9aa9bf;font-weight:700">(' + esc(r.priceNote) + ')</span>' : '') : '미확인 <button class="btn xs ghost" data-price="' + esc(r.id) + '" type="button">직접 입력</button>') + '</dd>' +
+        '<dt>추정가</dt><dd>' + (providerPrice(r) ? money(providerPrice(r)) + (r.priceNote ? ' <span style="color:var(--mut);font-weight:700">(' + esc(r.priceNote) + ')</span>' : '') : '미확인 <button class="btn xs ghost" data-price="' + esc(r.id) + '" type="button">직접 입력</button>') + '</dd>' +
         '<dt>신청/모집</dt><dd>' + (r.applicants !== null && r.applicants !== undefined ? r.applicants : '–') + '명 / ' + (r.capacity || '–') + '명 · <b>' + rateText(r.rate) + '</b></dd>' +
-        '<dt>당첨 확률</dt><dd>' + winBadge(r) + ' <span style="color:#9aa9bf;font-weight:700;font-size:11px">' + esc(winInfo(r).why) + '</span></dd>' +
-        '<dt>접수 기간</dt><dd>' + (r.deadline ? '~ ' + esc(r.deadline) + ' (' + ddayText(r.d) + ')' + (r.deadlineDerived ? ' <span style="color:#9aa9bf">· D-day 역산</span>' : '') : '미확인') + '</dd>' +
+        '<dt>당첨 확률</dt><dd>' + winBadge(r) + ' <span style="color:var(--mut);font-weight:700;font-size:11px">' + esc(winInfo(r).why) + '</span></dd>' +
+        '<dt>접수 기간</dt><dd>' + (r.deadline ? '~ ' + esc(r.deadline) + ' (' + ddayText(r.d) + ')' + (r.deadlineDerived ? ' <span style="color:var(--mut)">· D-day 역산</span>' : '') : '미확인') + '</dd>' +
         '<dt>발표일</dt><dd>' + (r.announce ? esc(r.announce) : '미확인') + '</dd>' +
         (regBy(r) ? '<dt>리뷰 마감</dt><dd>' + esc(regBy(r)) + ' <span class="duetag ' + dueInfo(r).cls + '">' + dueInfo(r).label + '</span></dd>' : '') +
       '</dl>' +
       ((r.keywords && r.keywords.length) ? '<div class="kwbox"><div class="hd">🔑 플랫폼 필수 키워드 <span class="src">' + esc(platOf(r).name) + ' 공지</span></div><div class="kwlist">' +
         r.keywords.map(function (k) { return '<button class="kwtag must" data-kwcopy="' + esc(k) + '" type="button">' + esc(k) + '<span class="cp">복사</span></button>'; }).join('') + '</div></div>' : '') +
-      '<div class="missionbox"><div class="ttl">📌 미션 체크리스트</div><ul style="margin:0;padding-left:17px;font-size:12px;line-height:1.85;color:#dbe6f6">' + mlines.join('') + '</ul>' +
+      '<div class="missionbox"><div class="ttl">📌 미션 체크리스트</div><ul style="margin:0;padding-left:17px;font-size:12px;line-height:1.85;color:var(--txt2)">' + mlines.join('') + '</ul>' +
       (r.missionSummary ? '<div class="srcnote" style="margin-top:6px">' + esc(r.missionSummary) + '</div>' : '') + '</div>' +
       (r.caution ? '<div class="tip warn" style="margin-top:9px">' + nl2br(r.caution) + '</div>' : '') +
       (r.note ? '<div class="tip info" style="margin-top:9px">' + nl2br(r.note) + '</div>' : '') +
@@ -1636,8 +1899,8 @@ footer b{color:var(--mut)}
           '<br>발표에서 선정되면 그때 이 탭으로 옮겨집니다.'
         : '지원 후 <b>[이미 신청했어요]</b>로 신청완료를 표시하면 이곳에서 발표를 기다립니다.';
       $('reviewBody').innerHTML = '<div class="panel"><div class="empty" style="padding:22px 14px">' +
-        '<div style="font-size:15px;font-weight:900;color:#e9eff9;margin-bottom:7px">📝 아직 선정된 캠페인이 없습니다</div>' +
-        '<div style="font-size:12.5px;line-height:1.8;color:#9babc1;font-weight:700">' + tail + '</div>' +
+        '<div style="font-size:15px;font-weight:900;color:var(--txt);margin-bottom:7px">📝 아직 선정된 캠페인이 없습니다</div>' +
+        '<div style="font-size:12.5px;line-height:1.8;color:var(--mut);font-weight:700">' + tail + '</div>' +
         '<button class="btn sm ghost" data-gotoapply="1" type="button" style="margin-top:12px">✍️ 지원 탭에서 보기</button>' +
       '</div></div>';
       return;
@@ -1659,7 +1922,7 @@ footer b{color:var(--mut)}
       '<ul>' + rows.map(function (r) {
         var i = dueInfo(r);
         return '<li><span class="duetag ' + i.cls + '">' + i.label + '</span> <b>' + esc(slice(r.title, 34)) + '</b>' +
-          ' <span style="color:#9aa9bf">· ' + esc(platOf(r).name) + ' · ' + esc(i.d) + ' 등록</span></li>';
+          ' <span style="color:var(--mut)">· ' + esc(platOf(r).name) + ' · ' + esc(i.d) + ' 등록</span></li>';
       }).join('') + '</ul>' +
       '<div class="srcnote" style="margin-top:6px">기한은 <b>각 플랫폼이 공지한 콘텐츠 등록 마감일</b>이고, 다르면 아래 카드에서 직접 고칠 수 있습니다. 지났으면 D+ 로 표시됩니다.</div></div>';
   }
@@ -1699,7 +1962,7 @@ footer b{color:var(--mut)}
         '</div></div>';
     }).join('');
     return '<div class="missionbox" style="margin-top:10px">' +
-      '<div class="ttl">📷 사진 배치 <span style="color:#6b7c93;font-weight:700">(' + list.length + '장 · 순서·역할·캡션)</span></div>' +
+      '<div class="ttl">📷 사진 배치 <span style="color:var(--mut2);font-weight:700">(' + list.length + '장 · 순서·역할·캡션)</span></div>' +
       (list.length ? '<div class="photos">' + thumbs + '</div>' : '<div class="srcnote" style="margin-bottom:8px">아직 올린 사진이 없습니다. 실제 촬영한 사진을 올리면 썸네일·순서·역할을 정리할 수 있어요.</div>') +
       '<div class="uploader">' +
         '<label class="upl">📷 사진 여러 장 올리기<input type="file" accept="image/*" multiple data-upload="' + esc(r.id) + '"></label>' +
@@ -1740,10 +2003,10 @@ footer b{color:var(--mut)}
         '<span>⏰ 리뷰 등록 마감</span>' +
         '<input type="date" data-due="' + esc(r.id) + '" value="' + esc(regBy(r) || '') + '">' +
         '<button class="btn xs ghost" data-duereset="' + esc(r.id) + '" type="button">수집값으로</button>' +
-        (r.registerBy ? '<span style="color:#6b7c93">수집값 ' + esc(r.registerBy) + '</span>' : '<span style="color:#6b7c93">플랫폼 미공개 — 직접 입력</span>') +
+        (r.registerBy ? '<span style="color:var(--mut2)">수집값 ' + esc(r.registerBy) + '</span>' : '<span style="color:var(--mut2)">플랫폼 미공개 — 직접 입력</span>') +
       '</div>' +
       '<div class="metaline" style="margin-top:6px">💰 제공가 ' +
-        (providerPrice(r) ? '<b style="color:#bbf7d0">' + money(providerPrice(r)) + '</b>' : '미확인') +
+        (providerPrice(r) ? '<b style="color:var(--ok-t)">' + money(providerPrice(r)) + '</b>' : '미확인') +
         '<button class="btn xs ghost" data-price="' + esc(r.id) + '" type="button">' + (providerPrice(r) ? '수정' : '입력') + '</button>' +
       '</div>' +
       stepHtml(r) +
@@ -2157,7 +2420,7 @@ footer b{color:var(--mut)}
     var k = getKey();
     $('keyInput').value = k ? '••••' + k.slice(-4) : '';
     $('keyState').innerHTML = k
-      ? '저장됨 <b style="color:#bbf7d0">' + esc(maskKey(k)) + '</b> — AI 생성이 켜져 있습니다.'
+      ? '저장됨 <b style="color:var(--ok-t)">' + esc(maskKey(k)) + '</b> — AI 생성이 켜져 있습니다.'
       : '키 없음 — 템플릿 모드로 동작합니다(생성은 즉시, 품질은 양식 기반).';
   }
 
@@ -2516,6 +2779,41 @@ footer b{color:var(--mut)}
   if (bootHash === 'apply' || bootHash === 'review' || bootHash === 'main') S.ui.tab = bootHash;
   syncTabUI();
   loadData();
+})();
+</script>
+<script>
+/* ☀️/🌙 테마 전환 — 버튼 클릭 시 다크↔라이트 즉시 전환, 선택은 localStorage(revu_studio_theme)에 기억 */
+(function () {
+  var KEY = 'revu_studio_theme';
+  function current() { return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+  function paint() {
+    var t = current();
+    var ic = document.getElementById('themeIco');
+    if (ic) ic.textContent = t === 'light' ? '🌙' : '☀️';
+    var b = document.getElementById('themeBtn');
+    if (b) {
+      var lbl = t === 'light' ? '다크 테마로 전환' : '밝은 테마로 전환';
+      b.setAttribute('aria-label', lbl);
+      b.title = lbl;
+      b.setAttribute('aria-pressed', t === 'light' ? 'true' : 'false');
+    }
+    var m = document.getElementById('themeColorMeta');
+    if (m) m.setAttribute('content', t === 'light' ? '#eef4fb' : '#05070d');
+  }
+  function apply(t) {
+    document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+    paint();
+  }
+  function toggle() {
+    var next = current() === 'light' ? 'dark' : 'light';
+    apply(next);
+    try { localStorage.setItem(KEY, next); } catch (e) {}
+    return next;
+  }
+  window.revuTheme = { current: current, apply: apply, toggle: toggle };
+  var btn = document.getElementById('themeBtn');
+  if (btn) btn.addEventListener('click', function () { toggle(); });
+  apply(current());
 })();
 </script>
 <script>
