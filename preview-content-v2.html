@@ -483,6 +483,40 @@
   .wvfoxcuts{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
   .wvfoxcut{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;background:#0a1424;padding:3px 7px;font-size:10.4px;font-weight:900;color:#cbd5e1}
   .wvfoxcut select{flex:0 0 auto;width:auto;min-width:0;max-width:104px;background:#08111f;border:1px solid var(--line);border-radius:7px;padding:3px 5px;font-size:10.4px;font-weight:800;color:#e2e8f0}
+  /* 🐶🐰🐧 역할별 템플릿 · 분야별 흥행 공식 */
+  .wvformulabox{border:1px solid rgba(234,88,12,.30);border-radius:11px;background:rgba(234,88,12,.05);padding:9px 11px;display:grid;gap:7px;min-width:0}
+  .wvformulabox[hidden]{display:none}
+  .wvformulabox[data-design="bunny"]{border-color:rgba(244,114,182,.32);background:rgba(244,114,182,.06)}
+  .wvformulabox[data-design="penguin"]{border-color:rgba(14,165,233,.32);background:rgba(14,165,233,.06)}
+  .wvformulabox[data-design="fox"]{border-color:rgba(159,18,57,.34);background:rgba(159,18,57,.06)}
+  .wvformulabox[data-design="fox"] .wvformula.on{border-color:rgba(159,18,57,.74);background:rgba(159,18,57,.18)}
+  .wvformulabox[data-design="fox"] .wvformula.on b{color:#fecdd3}
+  .wvformulabox[data-design="fox"] .wvformula.on span{color:#ffe4e6}
+  .wvformulas{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+  .wvformula{flex:1 1 172px;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left;cursor:pointer;border:1px solid var(--line);border-radius:9px;background:#0a1424;padding:7px 9px}
+  .wvformula b{font-size:11.2px;font-weight:900;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wvformula span{font-size:9.6px;font-weight:700;color:var(--faint);line-height:1.3}
+  .wvformula.on{border-color:rgba(234,88,12,.72);background:rgba(234,88,12,.14)}
+  .wvformula.on b{color:#fdba74}
+  .wvformula.on span{color:#fed7aa}
+  .wvformulabox[data-design="bunny"] .wvformula.on{border-color:rgba(244,114,182,.72);background:rgba(244,114,182,.16)}
+  .wvformulabox[data-design="bunny"] .wvformula.on b{color:#fbcfe8}
+  .wvformulabox[data-design="bunny"] .wvformula.on span{color:#fce7f3}
+  .wvformulabox[data-design="penguin"] .wvformula.on{border-color:rgba(14,165,233,.72);background:rgba(14,165,233,.16)}
+  .wvformulabox[data-design="penguin"] .wvformula.on b{color:#bae6fd}
+  .wvformulabox[data-design="penguin"] .wvformula.on span{color:#e0f2fe}
+  .wvdesign.on[data-wvdesign="shiba"]{border-color:rgba(234,88,12,.74);background:linear-gradient(135deg,#fff9f3,#ffe9d6)}
+  .wvdesign.on[data-wvdesign="shiba"] b{color:#2a1e16}
+  .wvdesign.on[data-wvdesign="shiba"] span{color:#a8460b}
+  .wvdesign.on[data-wvdesign="bunny"]{border-color:rgba(244,114,182,.76);background:linear-gradient(135deg,#fffdf5,#ffe8f2)}
+  .wvdesign.on[data-wvdesign="bunny"] b{color:#4a2c24}
+  .wvdesign.on[data-wvdesign="bunny"] span{color:#be185d}
+  .wvdesign.on[data-wvdesign="penguin"]{border-color:rgba(14,165,233,.76);background:linear-gradient(135deg,#f2f9ff,#dcf1ff)}
+  .wvdesign.on[data-wvdesign="penguin"] b{color:#0b3b52}
+  .wvdesign.on[data-wvdesign="penguin"] span{color:#0369a1}
+  .wvfoxbox[data-design="shiba"]{border-color:rgba(234,88,12,.32);background:rgba(234,88,12,.05)}
+  .wvfoxbox[data-design="bunny"]{border-color:rgba(244,114,182,.34);background:rgba(244,114,182,.06)}
+  .wvfoxbox[data-design="penguin"]{border-color:rgba(14,165,233,.34);background:rgba(14,165,233,.06)}
   .wvbody textarea{width:100%;min-width:0;max-width:100%;background:#08111f;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:11.4px;font-weight:700;color:#e2e8f0;resize:vertical;font-family:inherit}
   /* 📋 대본 직접 붙여넣기 · 🧪 샘플 */
   .wvpaste{border:1px solid rgba(56,189,248,.30);border-radius:11px;background:rgba(56,189,248,.06);padding:9px 11px;display:grid;gap:7px;min-width:0}
@@ -2102,6 +2136,7 @@
           </div>
           <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:11px">
             <button class="btn primary big" id="shGenBtn" style="flex:1 1 150px">🎬 쇼츠 대본 생성</button>
+            <div class="hint" id="shFormulaNote" hidden style="margin-top:7px"></div>
             <button class="btn small ghost" id="shClearBtn" type="button">대본 지우기</button>
           </div>
           <p class="hint" style="margin-top:8px">선택한 테마·1~4번 양식(<b>3초 훅 · 컷 리듬 · 자막 길이 · 말투 · 금지 규칙</b>)을 그대로 넣어 <b>약 50초 대본</b>(훅 → 4~7컷 → 엔딩)을 씁니다. 확인 못 한 수치는 [확인 필요]로 남깁니다.</p>
@@ -2173,12 +2208,19 @@
       <ul class="wvpastelist" id="wvPasteList" hidden></ul>
     </div>
     <div class="wvrow" style="gap:6px"><span class="flabel" style="margin:0">🎨 영상 디자인 템플릿</span><span class="hint" id="wvDesignHint" style="margin:0">선택값은 이 브라우저에 저장됩니다</span></div>
-    <div class="wvdesignrow" role="group" aria-label="영상 디자인 템플릿 선택 — 다크 시네마 / 폭스시그널 에디토리얼">
+    <div class="wvdesignrow" role="group" aria-label="영상 디자인 템플릿 선택 — 다크 시네마 / 폭스시그널 / 시바딜 / 피치홈 / 펭귄특가">
       <button class="wvdesign on" type="button" data-wvdesign="dark" aria-pressed="true"><b>🌙 다크 시네마</b><span>기본 — 딥 네이비 바탕 · 카드/차트/사진 3양식</span></button>
       <button class="wvdesign" type="button" data-wvdesign="fox" aria-pressed="false"><b>🦊 폭스시그널 에디토리얼</b><span>크림 아이보리 · 빅넘버 · 여우 4종 · 에디토리얼 자막</span></button>
+      <button class="wvdesign" type="button" data-wvdesign="shiba" aria-pressed="false"><b>🐶 시바딜 · 최저가</b><span>오프화이트 · 정가/할인 빅넘버 · 시바견 4종 · 공식 3종</span></button>
+      <button class="wvdesign" type="button" data-wvdesign="bunny" aria-pressed="false"><b>🐰 피치홈 · 리얼리뷰</b><span>버터크림 · 체크리스트 카드 · 토끼 4종 · 공식 3종</span></button>
+      <button class="wvdesign" type="button" data-wvdesign="penguin" aria-pressed="false"><b>🐧 펭귄특가 · 타임딜</b><span>스카이크림 · 보딩패스 D-day · 펭귄 4종 · 공식 3종</span></button>
+    </div>
+    <div class="wvformulabox" id="wvFormulaBox" data-design="shiba" hidden>
+      <div class="flabel" style="margin:0">🎯 분야 흥행 공식 <span class="bdg info">대본·샘플 5컷·카드에 함께 적용</span></div>
+      <div class="wvformulas" id="wvFormulas" role="group" aria-label="흥행 공식 선택"></div>
     </div>
     <div class="wvfoxbox" id="wvFoxBox" hidden>
-      <div class="flabel" style="margin:0">🦊 컷별 여우 포즈 <span class="bdg info">자동 = 컷 내용으로 선택</span></div>
+      <div class="flabel" id="wvFoxLabel" style="margin:0">🦊 컷별 여우 포즈 <span class="bdg info">자동 = 컷 내용으로 선택</span></div>
       <div class="wvfoxcuts" id="wvFoxCuts"></div>
     </div>
     <div class="wvtplrow" role="group" aria-label="영상 양식 선택 — 3종 모두 세이프 존·자동 줄바꿈·3단 그리드 동일">
@@ -3680,10 +3722,12 @@ e) 숫자: spoken 안의 숫자는 자막과 똑같이 숫자로 쓴다(예: "5,
   const src = s(b.sourceMaterial, 6000);
   const note = s(b.experienceNote, 1500);
   const style = shortsStyleBlock(b.shortsStyle, Number(b.styleNo) || 1);
+  const formula = s(b.formulaBlock, 1600);
   const user = [
     themeName ? `테마: ${themeName}` : '',
     `주제: ${s(b.topic, 160)}`,
     style,
+    formula ? `\n${formula}` : '',
     src ? `\n[참고 자료 — 사실 근거로만 인용. 내 경험처럼 쓰지 않는다]\n"""${src}"""` : '',
     note ? `\n[내 경험 메모 — 1인칭 경험은 여기 있는 것만]\n"""${note}"""` : '\n[내 경험 메모 — 없음. 1인칭 경험담은 쓰지 않는다]',
     banLine(b.banPhrases),
@@ -4687,7 +4731,11 @@ var CSVoice = (function () {
     { key: 'ko:ko-KR-InJoonNeural', voice: 'ko-KR-InJoonNeural', pitch: '+0Hz',
       name: '인준 · 차분한 남성 (시황·정보)' },
     { key: 'ko:ko-KR-HyunsuMultilingualNeural', voice: 'ko-KR-HyunsuMultilingualNeural', pitch: '+0Hz',
-      name: '현수 · 또렷한 남성 (다국어)' }
+      name: '현수 · 또렷한 남성 (다국어)' },
+    { key: 'ko:ko-KR-InJoonNeural:cute', voice: 'ko-KR-InJoonNeural', pitch: '+5Hz', speed: 1.06,
+      name: '인준 · 귀여운 남자 톤 (폭스 · +5Hz · 1.06x)' },
+    { key: 'ko:ko-KR-HyunsuMultilingualNeural:cute', voice: 'ko-KR-HyunsuMultilingualNeural', pitch: '+5Hz', speed: 1.06,
+      name: '현수 · 귀여운 남자 톤 (폭스 · +5Hz · 1.06x)' }
   ];
 
   /* ElevenLabs 기본 6종 (계정 보이스는 /v1/voices 로 추가된다) */
@@ -11972,6 +12020,14 @@ var CSVoice = (function () {
     }
   }
 
+  /* ---------- 🎯 흥행 공식 안내 — 웹 영상 생성기가 고른 템플릿·공식을 이 카드에 보여 준다 ---------- */
+  window.CS2_FORMULA_NOTE = function (txt) {
+    var el = $('#shFormulaNote');
+    if (!el) return;
+    el.innerHTML = txt || '';
+    el.hidden = !txt;
+  };
+
   /* ---------- 생성 · 검수 · 복사 ---------- */
   async function shGenerate(){
     var topicEl = $('#shTopic');
@@ -11991,7 +12047,8 @@ var CSVoice = (function () {
       durationSec: (st && st.sec) ? st.sec : 50,
       v3: v2Opts().casual,
       casual: v2Opts().casual,
-      numNormalize: v2Opts().numbers
+      numNormalize: v2Opts().numbers,
+      formulaBlock: (window.WVID && window.WVID.formulaPrompt) ? window.WVID.formulaPrompt() : ''
     };
     var note = $('#shAiNote');
     if (note) note.innerHTML = '';
@@ -14328,7 +14385,8 @@ var CSVoice = (function () {
   };
   var TPL_NAME = { card: '📊 카드형', chart: '📈 차트형', photo: '🖼️ 사진형' };
   /* ---------- 🎨 영상 디자인 템플릿 (🌙 다크 시네마 / 🦊 폭스시그널 에디토리얼) ---------- */
-  var DESIGN = { dark: '🌙 다크 시네마', fox: '🦊 폭스시그널 에디토리얼' };
+  var DESIGN = { dark: '🌙 다크 시네마', fox: '🦊 폭스시그널 에디토리얼',
+    shiba: '🐶 시바딜 · 최저가', bunny: '🐰 피치홈 · 리얼리뷰', penguin: '🐧 펭귄특가 · 타임딜' };
   var FOX_POSES = { main: '기본', surprise: '놀람·경고', analyze: '분석', cheer: '환호' };
   var FX = { cream: '#F8F3EA', band: '#F1E8D8', navy: '#10202F', wine: '#9F1239', paper: '#FFFFFF' };
   var FOX = {
@@ -14384,9 +14442,8 @@ var CSVoice = (function () {
     return best;
   }
   function foxPoseOf(cut, idx) {
-    var o = S.foxPose && S.foxPose[idx];
-    if (o && FOX_POSES[o] && o !== 'auto') return o;
-    return foxAuto(cut, idx);
+    /* 포즈 선택은 디자인별로 따로 기억한다(폭스시그널은 예전과 같은 키를 쓴다) */
+    return poseOfCut('fox', cut, idx || 0);
   }
   /* 컷 문장에서 가장 센 숫자 1개를 빅넘버로 뽑는다 (조·억·%·pt·배·원 단위가 있는 것만) */
   function foxBig(src) {
@@ -14441,13 +14498,13 @@ var CSVoice = (function () {
     deal: { name: '🏷️ 특가·핫템 채널', accent: '#f472b6', cap: '#fbbf24', bgm: 'bright', wm: '연오랑의 특가 레이더',
             voiceKo: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12 }
   };
-  var DEF = { preset: '', design: 'dark', tpl: 'card', chartData: '', accent: '#38bdf8', cap: '#fde047', bgm: 'news', sfx: true,
+  var DEF = { preset: '', design: 'dark', formula: null, tpl: 'card', chartData: '', accent: '#38bdf8', cap: '#fde047', bgm: 'news', sfx: true,
     voice: 'ko:ko-KR-SunHiNeural', speed: 1, wm: '연오랑의 3분 시황', numNorm: true };
   function clampSpeed(v) { var n = Number(v); if (!isFinite(n)) n = 1; return Math.min(1.25, Math.max(0.90, Math.round(n * 100) / 100)); }
   function voiceOf() { return window.CSVoice ? CSVoice.resolve(S.cfg.voice) : null; }
 
   var S = { cfg: null, spec: null, cuts: [], total: 0, running: false, abort: false, rec: null,
-    chunks: [], url: '', blob: null, photos: [], t0: 0, timer: null, actx: null, dest: null, mime: '', tplForce: null, designForce: null, foxPose: {} };
+    chunks: [], url: '', blob: null, photos: [], t0: 0, timer: null, actx: null, dest: null, mime: '', tplForce: null, designForce: null, poses: {}, foxPose: {} };
 
   /* ---------- utils ---------- */
   function $(s) { return D.querySelector(s); }
@@ -14560,6 +14617,7 @@ var CSVoice = (function () {
     for (var k in DEF) if (Object.prototype.hasOwnProperty.call(DEF, k) && c[k] === undefined) c[k] = DEF[k];
     if (!TPL_NAME[c.tpl]) c.tpl = 'card';
     if (!DESIGN[c.design]) c.design = 'dark';
+    if (!c.formula || typeof c.formula !== 'object' || Object.prototype.toString.call(c.formula) !== '[object Object]') c.formula = {};
     return c;
   }
   function saveCfg() { lsSet(CFG_KEY, JSON.stringify(S.cfg)); }
@@ -14590,6 +14648,10 @@ var CSVoice = (function () {
       if (pv && pv.speedHint && !next.speed) S.cfg.speed = pv.speedHint;
     }
     if (next.wm) S.cfg.wm = next.wm;
+    if (next.voice || next.voiceKo) {
+      S.cfg.voicePick = S.cfg.voicePick || {};
+      S.cfg.voicePick[designOf()] = S.cfg.voice;
+    }
     saveCfg(); syncUi();
     if (S.spec) { S.spec.accent = S.cfg.accent; S.spec.capColor = S.cfg.cap; S.spec.watermark = S.cfg.wm; }
     redraw();
@@ -14795,12 +14857,21 @@ var CSVoice = (function () {
     var cardH = big ? 296 : 0;
     var blockH = 34 + (tfit ? tfit.height + 24 : 0) + cardH;
     var y = slot.y + 12;
-    var ex = 'SIGNAL ' + ('0' + ((cut.idx || 0) + 1)).slice(-2);
+    var fx = formulaOf('fox');
+    var ex = ((fx && fx.eye) || 'SIGNAL') + ' ' + ('0' + ((cut.idx || 0) + 1)).slice(-2);
     var ef = '900 23px ' + FF;
     txLine(ctx, ex, slot.x, y + 12, ef, FX.wine, 'left', 'fx-eyebrow');
     ctx.font = ef;
     var ew = ctx.measureText(ex).width;
-    panel(ctx, slot.x + ew + 16, y + 11, Math.max(20, 560 - ew - 16), 3, 1.5, 'rgba(16,32,47,.16)', null, 0, 'fx-rule');
+    panel(ctx, slot.x + ew + 16, y + 11, Math.max(20, 470 - ew - 16), 3, 1.5, 'rgba(16,32,47,.16)', null, 0, 'fx-rule');
+    if (fx && fx.signal) {
+      var sg = signalOf(String(cut.text || '') + ' ' + String(cut.hook || ''));
+      var sgf = '900 24px ' + FF;
+      ctx.font = sgf;
+      var sgw = ctx.measureText(sg.txt).width + 36;
+      panel(ctx, SAFE.r - sgw, y + 2, sgw, 40, 20, sg.bg, null, 0, 'fx-signal');
+      txLine(ctx, sg.txt, SAFE.r - sgw / 2, y + 23, sgf, '#FFFFFF', 'center', 'fx-signal-text');
+    }
     var ty = y + 34;
     if (tfit) {
       for (var i = 0; i < tfit.lines.length; i++) {
@@ -14870,52 +14941,1071 @@ var CSVoice = (function () {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
     foxBands(ctx, 'surprise');
+    var fsp = sampleFor('fox', formulaKey('fox'));
+    var fcut = (fsp && fsp.cuts && fsp.cuts[0]) || { text: SAMPLE_SPEC.cuts[0].text };
     var spec = {
-      hookTitle: SAMPLE_SPEC.hook_title,
+      hookTitle: fsp.hook_title || '',
       watermark: '폭스시그널 · 오늘의 시장 신호',
-      words: ['외인', '쌍매도', '수급'], cutCount: 5
+      words: fsp.highlight_words || ['외인', '쌍매도', '수급'], cutCount: fsp.cuts.length
     };
     var cut = {
-      text: SAMPLE_SPEC.cuts[0].text,
+      text: fcut.text,
       hook: spec.hookTitle, idx: 0, dur: 5, start: 0
     };
-    drawFoxHead(ctx, spec, 0, 5, 2.2, 5, []);
+    drawFoxHead(ctx, spec, 0, fsp.cuts.length, 2.2, fsp.cuts.length * 5, []);
     drawFoxMain(ctx, spec, cut, 0, 'surprise');
-    drawFoxCaption(ctx, { text: SAMPLE_SPEC.cuts[0].text, idx: 0 }, 0.7, spec);
-    txLine(ctx, '샘플 미리보기 · [🧪 샘플로 바로 만들기] → 이 5컷 그대로 녹화', CW / 2, SAFE.b + 74,
+    drawFoxCaption(ctx, { text: fcut.text, idx: 0 }, 0.7, spec);
+    txLine(ctx, '샘플 미리보기 · [🧪 샘플로 바로 만들기] → 이 ' + fsp.cuts.length + '컷 그대로 녹화', CW / 2, SAFE.b + 74,
       '800 27px ' + FF, 'rgba(16,32,47,.52)', 'center', 'fx-sample-note');
-    txLine(ctx, '🦊 폭스시그널 에디토리얼 · 1080 × 1920', CW / 2, SAFE.b + 120,
+    var ff2 = formulaOf('fox');
+    txLine(ctx, '🦊 폭스시그널 에디토리얼' + (ff2 ? ' · ' + ff2.tag + ' ' + ff2.name : '') + ' · 1080 × 1920', CW / 2, SAFE.b + 120,
       '700 24px ' + FF, 'rgba(16,32,47,.36)', 'center', 'fx-sample-note2');
     ctx.restore();
   }
   function buildFoxCuts() {
     var box = $('#wvFoxCuts');
     if (!box) return;
+    var d = designOf();
+    if (!ROLE[d] && d !== 'fox') { box.innerHTML = ''; return; }
+    var P = posesOf(d), keys = Object.keys(P);
     var cuts = (S.spec && S.spec.cuts) || [];
     if (!cuts.length) {
-      box.innerHTML = '<span class="hint">대본을 만들면 컷마다 포즈를 바꿀 수 있습니다 — 지금은 샘플 레이아웃입니다.</span>';
+      box.innerHTML = '<span class="hint">대본을 만들면 컷마다 캐릭터 포즈를 바꿀 수 있습니다 — 지금은 샘플 레이아웃입니다.</span>';
       return;
     }
+    var store = poseStore(d);
+    var who = d === 'fox' ? '여우' : (d === 'shiba' ? '시바견' : d === 'bunny' ? '토끼' : '펭귄');
     var h = '';
     cuts.forEach(function (c, i) {
-      var cur = (S.foxPose && S.foxPose[i]) || 'auto';
-      var opts = '<option value="auto"' + (cur === 'auto' ? ' selected' : '') + '>자동 · ' + FOX_POSES[foxAuto(c, i)] + '</option>';
-      ['main', 'surprise', 'analyze', 'cheer'].forEach(function (k) {
-        opts += '<option value="' + k + '"' + (cur === k ? ' selected' : '') + '>' + FOX_POSES[k] + '</option>';
+      var cur = store[i] || 'auto';
+      var auto = d === 'fox' ? foxAuto(c, i) : autoPose(d, c);
+      var opts = '<option value="auto"' + (cur === 'auto' ? ' selected' : '') + '>자동 · ' + P[auto] + '</option>';
+      keys.forEach(function (k) {
+        opts += '<option value="' + k + '"' + (cur === k ? ' selected' : '') + '>' + P[k] + '</option>';
       });
-      h += '<label class="wvfoxcut">컷 ' + (i + 1) + '<select data-wvfox="' + i + '" aria-label="' + (i + 1) + '번 컷 여우 포즈">' + opts + '</select></label>';
+      h += '<label class="wvfoxcut">컷 ' + (i + 1) + '<select data-wvfox="' + i + '" aria-label="' + (i + 1) + '번 컷 ' + who + ' 포즈">' + opts + '</select></label>';
     });
     box.innerHTML = h;
   }
+  /* ══════════════════════════════════════════════════════════════════════
+     🐶🐰🐧 역할별 템플릿(시바딜·피치홈·펭귄특가) + 분야별 흥행 공식 3종
+     ─ 캐릭터 PNG 4종은 그 디자인을 처음 켤 때만 불러온다(다른 디자인은 0바이트)
+     ─ 배경·띠 색은 PNG 모서리 픽셀 실측값으로 이어 붙인다 → 사각 테두리 없음
+     ─ 카드는 공식별 9종, 모두 세이프 존(좌 60·우 120·상 180·하 380) 안 3단 고정
+     ══════════════════════════════════════════════════════════════════════ */
+  var ROLE = {
+    shiba: {
+      short: '시바딜', name: '🐶 시바딜 · 최저가', badge: '🐶 시바딜 · 최저가',
+      accent: '#EA580C', accent2: '#C2410C', mark: '#B45309', ink: '#2A1E16',
+      bg: '#FFF9F3', band: '#F6E6D4', paper: '#FFFFFF', hot: '#DC2626',
+      pill: '#EA580C', pill2: '#FB923C', wm: '시바딜 · 오늘의 최저가', radius: 26,
+      poses: { main: '기본', surprise: '놀람', compare: '비교', cheer: '추천' },
+      src: { main: 'assets/shiba/main.png', surprise: 'assets/shiba/surprise.png',
+             compare: 'assets/shiba/compare.png', cheer: 'assets/shiba/cheer.png' },
+      keys: {
+        surprise: ['비싸', '놀라', '충격', '실화', '품절', '인상', '실패', '사기', '후회', '깜짝', '대박', '미쳤'],
+        compare: ['비교', '정가', '원가', '대비', 'vs', 'VS', '이전', '지난', '차이', '최저', '저렴', '할인', '가격', '대결', '곳'],
+        cheer: ['추천', '꼭', '필수', '사야', '만족', '좋아', '꿀템', '가성비', '최고', '강추', '담아', '저장']
+      }
+    },
+    bunny: {
+      short: '피치홈', name: '🐰 피치홈 · 리얼리뷰', badge: '🐰 피치홈 · 리얼리뷰',
+      accent: '#F472B6', accent2: '#FB7185', mark: '#DB2777', ink: '#4A2C24',
+      bg: '#FFFDF5', band: '#FBEEE2', paper: '#FFFFFF', hot: '#E11D48',
+      pill: '#FB7185', pill2: '#F472B6', wm: '피치홈 · 리얼리뷰', radius: 30,
+      poses: { main: '기본', surprise: '놀람·선물', check: '체크', cheer: '하트·추천' },
+      src: { main: 'assets/bunny/main.png', surprise: 'assets/bunny/surprise.png',
+             check: 'assets/bunny/check.png', cheer: 'assets/bunny/cheer.png' },
+      keys: {
+        surprise: ['놀라', '깜짝', '선물', '감동', '첫', '생일', '예상', '몰랐', '반응'],
+        check: ['체크', '확인', '준비', '리스트', '순서', '방법', '필요', '챙', '점검', '기준', '구매', '세척'],
+        cheer: ['추천', '좋아', '만족', '아이', '행복', '꿀팁', '최고', '웃', '해결', '편해', '바뀌']
+      }
+    },
+    penguin: {
+      short: '펭귄특가', name: '🐧 펭귄특가 · 타임딜', badge: '🐧 펭귄특가 · 타임딜',
+      accent: '#0EA5E9', accent2: '#0284C7', mark: '#0284C7', ink: '#0B3B52',
+      bg: '#F2F9FF', band: '#E2F0FC', paper: '#FFFFFF', hot: '#EF4444',
+      pill: '#0284C7', pill2: '#38BDF8', wm: '펭귄특가 · 오늘의 여행 특가', radius: 26,
+      poses: { main: '기본', surprise: '마감놀람', deal: '숙소체크', cheer: '출발환호' },
+      src: { main: 'assets/penguin/main.png', surprise: 'assets/penguin/surprise.png',
+             deal: 'assets/penguin/deal.png', cheer: 'assets/penguin/cheer.png' },
+      keys: {
+        surprise: ['마감', '임박', '품절', '놀라', '인상', '마지막', '남은', '서둘', '놓치'],
+        deal: ['숙소', '호텔', '리조트', '조식', '수영장', '위치', '객실', '체크인', '주차', '뷰', '온천'],
+        cheer: ['출발', '여행', '가자', '환호', '예약', '완료', '설레', '떠나', '도착', '코스']
+      }
+    }
+  };
+
+  /* 흥행 공식 — 대본 프롬프트·샘플·카드가 모두 이 정의를 함께 쓴다 */
+  var FORMULA = {
+    fox: {
+      1: { tag: '🌆', name: '장마감 시황 (기본)', desc: '종가·수급·주도 섹터 결산', eye: 'SIGNAL', card: 'fox', cardName: '빅넘버 + 여우 카드',
+           hook: '오늘 종가와 수급을 한 문장으로 결산하며 시작한다',
+           plan: ['0~3초 오늘 종가·등락률·수급을 한 문장으로', '3~12초 외인·기관·개인 수급 숫자', '12~24초 오늘 돈이 간 주도 섹터 2~3개', '24~38초 오늘의 특이 신호(사이드카·신고가·상한가)', '38~50초 다음 거래일 체크포인트 2개'],
+           caption: '지수·수급 숫자는 그대로, 한 컷 15~20자', tone: '차분한 분석 · 숫자는 또렷하게',
+           avoid: ['확인하지 않은 수치를 만들지 않는다', '방향을 단정하지 않는다'] },
+      2: { tag: '🌅', name: '장전 시황', desc: '야간선물·미장·갭 대응', eye: 'PRE-MARKET', card: 'fox', cardName: '빅넘버 + 여우 카드 + 갭 신호등', signal: true,
+           hook: '밤사이 야간선물과 미 증시를 한 문장으로 정리하며 시작한다',
+           plan: ['0~3초 야간선물·미 증시 등락을 한 문장으로', '3~13초 빅테크·반도체가 왜 움직였는지', '13~24초 어제 국내에서 강했던 테마', '24~38초 장전 뉴스·환율·시초가 갭 대응(🔴 주의 / 🟡 관망 / 🟢 우위)', '38~50초 개장 직후 볼 두 가지'],
+           caption: '간밤 수치는 숫자 그대로, 신호는 🔴🟡🟢로', tone: '짧고 또렷하게 · 개장 전 준비하는 톤',
+           avoid: ['간밤 시세를 지어내지 않는다', '갭 방향을 단정하지 않는다'] },
+      3: { tag: '🕛', name: '점심 시황', desc: '오전 주도·오후 관전', eye: 'MIDDAY', card: 'fox', cardName: '빅넘버 + 여우 카드',
+           hook: '오전 마감 지수와 오전 수급을 한 문장으로 시작한다',
+           plan: ['0~3초 오전 지수·등락률', '3~13초 오전 외인·기관·개인 수급 흐름', '13~24초 오전 주도 섹터와 거래대금 1위', '24~38초 선물·신규 편입 뉴스', '38~50초 오후장 이어서 볼 섹터·흐름'],
+           caption: '오전 수치는 그대로, 오후 관전은 한 줄로', tone: '점심에 훑는 톤 · 간결하게',
+           avoid: ['오전 데이터를 추정으로 채우지 않는다', '오후 방향을 단정하지 않는다'] }
+    },
+    shiba: {
+      1: { tag: '①', name: '가격 충격 비교형', desc: '정가 → 오늘가 낙차', eye: 'DEAL', card: 'shock', cardName: '정가 취소선 + 오늘가 빅넘버 카드',
+           hook: '정가와 오늘 가격의 낙차를 첫 문장에 숫자로 붙여 던진다',
+           plan: ['0~3초 정가와 오늘 가격을 한 문장에 붙여 충격을 만든다', '3~12초 왜 이 가격인지(기간·재고·행사) 한 컷', '12~24초 실사용 장면 1개 + 체감', '24~38초 같은 상품 2~3곳 가격 비교', '38~50초 기간·품절 주의 + 저장 유도'],
+           caption: '가격·퍼센트는 숫자 그대로, 한 컷 15~20자', tone: '빠르고 단호하게 · 숫자는 또렷하게',
+           avoid: ['확인하지 않은 정가·할인율을 만들지 않는다', '재고·마감 시간을 지어내지 않는다'] },
+      2: { tag: '②', name: '가성비 vs 프리미엄 대결형', desc: '2열 대결 · VS 카드', eye: 'VS', card: 'duel', cardName: '좌우 2열 대결(VS) 카드',
+           hook: '싼 쪽과 비싼 쪽 가격을 나란히 놓고 "뭐가 다른가"로 시작한다',
+           plan: ['0~3초 가성비 A원 vs 프리미엄 B원으로 대결 구도를 세운다', '3~13초 가성비 쪽 스펙·장점', '13~23초 프리미엄 쪽 스펙·장점', '23~38초 실사용 차이 1개를 숫자로 비교', '38~50초 어떤 사람에게 어느 쪽인지 결론 + 저장 유도'],
+           caption: '두 제품명은 짧게, 가격·수치는 대결처럼 나란히', tone: '비교하듯 또박또박 · 판정은 단호하게',
+           avoid: ['한쪽을 근거 없이 깎아내리지 않는다', '스펙을 지어내지 않는다'] },
+      3: { tag: '③', name: '꿀템 TOP3 카운트다운', desc: '3·2·1 랭킹 카드', eye: 'TOP 3', card: 'rank', cardName: '1·2·3위 랭킹 + 가격 카드',
+           hook: '3위부터 거꾸로 올라가 1위에서 가장 센 가격을 터뜨린다',
+           plan: ['0~4초 "이번 주 꿀템 TOP3"로 예고하고 기준을 한 줄', '4~16초 3위 · 이름과 가격', '16~28초 2위 · 이름과 가격', '28~42초 1위 · 가장 센 숫자와 이유', '42~50초 세 개 합계·기간 안내 + 저장 유도'],
+           caption: '순위·개당 가격을 숫자로, 한 컷에 한 아이템만', tone: '리듬 있게 올라가며 마지막에 힘을 준다',
+           avoid: ['순위를 근거 없이 정하지 않는다', '확인하지 않은 최저가를 단정하지 않는다'] }
+    },
+    bunny: {
+      1: { tag: '①', name: '공감→해결 비포애프터', desc: 'BEFORE → AFTER', eye: 'BEFORE → AFTER', card: 'bimbo', cardName: 'BEFORE → AFTER 2단 카드',
+           hook: '지금 겪는 불편을 그대로 말해 "내 얘기"로 시작한다',
+           plan: ['0~4초 아침·육아의 구체적 불편을 숫자(시간·횟수)로 공감', '4~14초 원인 2~3가지로 쪼갠다', '14~26초 내가 바꾼 방법 하나', '26~40초 바뀐 뒤 수치(전 → 후)', '40~50초 같은 고민이면 오늘 할 일 1개 + 저장 유도'],
+           caption: '전/후 수치는 "12분 → 4분"처럼 화살표로', tone: '수다스럽지 않게, 내 경험만 1인칭으로',
+           avoid: ['겪지 않은 경험을 만들지 않는다', '효과를 과장하지 않는다'] },
+      2: { tag: '②', name: '장점2 + 솔직 단점1', desc: '장점 둘 · 단점 하나', eye: 'REVIEW', card: 'proscons', cardName: '장점 2 · 단점 1 카드',
+           hook: '"장점 둘, 단점 하나만 말하겠다"로 신뢰를 먼저 얻는다',
+           plan: ['0~4초 장점 2 · 단점 1로 말하겠다고 예고', '4~16초 장점 1 (숫자·상황)', '16~28초 장점 2 (숫자·상황)', '28~42초 솔직한 단점 1 (숨기지 않는다)', '42~50초 단점 감수 가능한 사람에게만 추천 + 저장 유도'],
+           caption: '장점·단점 라벨을 화면에 붙인다(✅/⚠️)', tone: '솔직하고 담백하게 · 광고 톤 금지',
+           avoid: ['단점을 빼고 장점만 나열하지 않는다', '협찬·광고를 숨기지 않는다'] },
+      3: { tag: '③', name: '체크리스트 꿀팁 3가지', desc: '구매 전 체크 3', eye: 'CHECK', card: 'check', cardName: '체크리스트 3줄 카드',
+           hook: '"사기 전에 이 3개만 보세요"로 손해 회피를 건다',
+           plan: ['0~4초 체크 3가지를 예고하고 왜 중요한지 한 줄', '4~16초 체크 1 · 기준과 숫자', '16~28초 체크 2 · 기준과 숫자', '28~42초 체크 3 · 기준과 숫자', '42~50초 셋 다 못 채우면 패스하라고 말하고 저장 유도'],
+           caption: '항목은 「부품 3개 이하 · 소음 45dB」처럼 가운뎃점으로', tone: '차분한 안내 · 강요하지 않는다',
+           avoid: ['기준을 지어내지 않는다', '특정 브랜드 광고처럼 쓰지 않는다'] }
+    },
+    penguin: {
+      1: { tag: '①', name: '타임딜 폭탄형', desc: 'D-day 마감 카드', eye: 'TIME DEAL', card: 'ticket', cardName: '보딩패스 + D-day 카드',
+           hook: '가격과 마감(D-day)을 한 문장에 붙여 지금 결정하게 만든다',
+           plan: ['0~3초 가격 + D-day를 한 문장에', '3~13초 원래 가격 대비 얼마나 내렸는지', '13~24초 포함 항목(조식·수영장·주차)', '24~38초 날짜와 남은 수량', '38~50초 취소 규정 + 마감 전 결정 유도'],
+           caption: '가격·D-day·날짜는 숫자 그대로', tone: '빠르고 급하게 · 그러나 과장 없이',
+           avoid: ['마감·잔여 수량을 지어내지 않는다', '취소 규정을 단정하지 않는다'] },
+      2: { tag: '②', name: '시그니처 1강점 몰빵형', desc: '한 가지 강점만', eye: 'BEST 1', card: 'hero', cardName: '시그니처 1강점 + 가격 카드',
+           hook: '"이 숙소는 조식 하나로 고르면 된다"처럼 강점 하나로 시작한다',
+           plan: ['0~4초 강점 하나와 결론을 먼저 말한다', '4~16초 강점의 구체적 스펙(종류·시간·규모)', '16~28초 그 강점이 아이·가족에게 왜 중요한지', '28~40초 가격과 포함 항목', '40~50초 다른 시설보다 이 강점으로 고르라고 정리'],
+           caption: '강점 키워드 1개를 크게, 숫자는 보조로', tone: '자신 있게 · 한 가지만 밀어 준다',
+           avoid: ['여러 장점을 나열해 흐리지 않는다', '확인하지 않은 편의시설을 말하지 않는다'] },
+      3: { tag: '③', name: '주말 나들이 코스형', desc: '시간대 3곳 코스', eye: 'WEEKEND', card: 'course', cardName: '시간대 3곳 코스 카드',
+           hook: '"차로 40분, 주말 코스 3곳"처럼 이동 시간과 장소 수로 시작한다',
+           plan: ['0~4초 이동 시간 + 장소 3곳 예고', '4~15초 1곳 · 시간과 비용', '15~27초 2곳 · 시간과 비용(식사)', '27~40초 3곳 · 시간과 비용', '40~50초 1인 합계 비용 + 출발 시간 팁'],
+           caption: '시간은 "10:00" 형식으로, 비용은 1인 기준', tone: '편안한 안내 · 계획표처럼',
+           avoid: ['운영 시간·가격을 지어내지 않는다', '가지 않은 곳을 다녀온 것처럼 쓰지 않는다'] }
+    }
+  };
+
+  function roleOf() { var d = designOf(); return ROLE[d] ? d : null; }
+  /* 🎙️ 템플릿별 무료 성우 자동 매칭 — 사용자가 직접 고른 성우는 디자인별로 기억해 유지한다 */
+  var VOICE_PRESET = {
+    fox: { voice: 'ko:ko-KR-InJoonNeural:cute', speed: 1.06, label: '인준 · 귀여운 남자 톤 1.06x' },
+    shiba: { voice: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12, label: '선히 · 밝은 톤 1.12x' },
+    bunny: { voice: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12, label: '선히 · 밝은 톤 1.12x' },
+    penguin: { voice: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12, label: '선히 · 밝은 톤 1.12x' }
+  };
+  function applyVoicePreset(d) {
+    var p = VOICE_PRESET[d];
+    if (!p) return '';
+    var pick = S.cfg.voicePick && S.cfg.voicePick[d];
+    if (pick) { S.cfg.voice = pick; saveCfg(); return ''; }
+    S.cfg.voice = p.voice;
+    S.cfg.speed = clampSpeed(p.speed);
+    saveCfg();
+    return p.label;
+  }
+  var DESIGN_CHIP = { fox: '🦊 폭스시그널', shiba: '🐶 시바딜', bunny: '🐰 피치홈', penguin: '🐧 펭귄특가' };
+  function designChip() { var d = designOf(); return d === 'dark' ? (TPL_NAME[tplOf()] || '') : (DESIGN_CHIP[d] || ''); }
+  function designName() { var d = designOf(); return d === 'dark' ? (TPL_NAME[tplOf()] || '') : (DESIGN[d] || ''); }
+  function formulaKey(d) {
+    d = d || designOf();
+    var f = (S.cfg && S.cfg.formula && S.cfg.formula[d]) || '1';
+    return (FORMULA[d] && FORMULA[d][f]) ? f : '1';
+  }
+  function formulaDesign() {
+    var d = designOf();
+    return (FORMULA[d] && (ROLE[d] || d === 'fox')) ? d : '';
+  }
+  function formulaTitle(d) {
+    d = d || designOf();
+    return ROLE[d] ? ROLE[d].name : (DESIGN[d] || '');
+  }
+  function formulaOf(d) {
+    d = d || designOf();
+    if (!FORMULA[d]) return null;
+    return FORMULA[d][formulaKey(d)] || null;
+  }
+  function formulaTag() { var f = formulaOf(); return f ? f.tag : ''; }
+  function formulaName() { var f = formulaOf(); return f ? f.name : ''; }
+  function setFormula(v) {
+    var d = formulaDesign();
+    if (!d) return;
+    S.cfg.formula = S.cfg.formula || {};
+    S.cfg.formula[d] = FORMULA[d][v] ? v : '1';
+    saveCfg();
+    syncUi();
+    redraw();
+    var f = formulaOf(d);
+    if (!f) return;
+    if (d === 'fox') {
+      say('🎯 <b>🦊 폭스시그널 · ' + f.tag + ' ' + f.name + '</b> — 대본 구조와 샘플 5컷이 이 공식으로 바뀝니다. <b>[🧪 샘플로 바로 만들기]</b>로 확인하세요.');
+    } else {
+      say('🎯 <b>' + formulaTitle(d) + ' · ' + f.tag + ' ' + f.name + '</b> — 대본 프롬프트·샘플 5컷·카드 모양이 모두 이 공식으로 바뀝니다.');
+    }
+  }
+  function formulaSummary() {
+    var d = formulaDesign();
+    if (!d) return '';
+    var f = formulaOf(d);
+    if (!f) return '';
+    return '🎯 대본 공식: ' + formulaTitle(d) + ' · ' + f.tag + ' ' + f.name + ' — [🎬 쇼츠 대본 생성]에 구조 지침으로 들어갑니다';
+  }
+  /* 대본 생성 프롬프트에 들어갈 구조 지침 (다크 시네마는 빈 문자열 = 회귀 0) */
+  function formulaPrompt() {
+    var d = formulaDesign();
+    if (!d) return '';
+    var f = formulaOf(d);
+    if (!f) return '';
+    var nm = ROLE[d] ? ROLE[d].short : '폭스시그널';
+    return [
+      '[분야 흥행 공식 — 이번 대본은 「' + formulaTitle(d) + ' · ' + f.name + '」 구조로 쓴다. 아래 순서를 컷 전개에 그대로 옮긴다]',
+      '- 첫 훅: ' + f.hook,
+      '- 컷 전개(이 순서·구성을 그대로):',
+      f.plan.map(function (x, i) { return '  ' + (i + 1) + ') ' + x; }).join('\n'),
+      '- 자막: ' + f.caption + ' · 카드가 읽을 수 있게 항목은 「 · 」로 끊고 한 컷에 숫자·항목 3개까지만',
+      '- 말투: ' + f.tone,
+      f.avoid && f.avoid.length ? '- 금지: ' + f.avoid.join(' / ') : '',
+      '- 화면 카드: 이 공식은 「' + f.cardName + '」 카드로 그려진다. 카드에 들어갈 숫자·항목이 각 컷 자막에 실제로 있게 쓴다.',
+      f.signal ? '- 갭·방향 판단은 각 컷에 🔴 주의 / 🟡 관망 / 🟢 우위 중 하나로 표시한다.' : '',
+      '- seriesBadge 는 「' + nm + ' · ' + f.tag + '」 형태로.'
+    ].filter(Boolean).join('\n');
+  }
+
+  /* ---------- 캐릭터 로딩 · 배경 실측 ---------- */
+  var CHARST = {};
+  function charSt(d) { if (!CHARST[d]) CHARST[d] = { img: {}, bg: {}, tried: {} }; return CHARST[d]; }
+  function charLoad(d) {
+    d = d || designOf();
+    var R = ROLE[d];
+    if (!R) return;
+    var st = charSt(d);
+    Object.keys(R.src).forEach(function (k) {
+      if (st.tried[k]) return;
+      st.tried[k] = true;
+      var im = new Image();
+      im.onload = function () {
+        st.img[k] = im;
+        try {
+          var c = D.createElement('canvas'); c.width = 8; c.height = 8;
+          var cx = c.getContext('2d');
+          cx.drawImage(im, 0, 0, 16, 16, 0, 0, 8, 8);
+          var a = cx.getImageData(1, 1, 1, 1).data, b = cx.getImageData(6, 1, 1, 1).data, e = cx.getImageData(1, 6, 1, 1).data;
+          st.bg[k] = 'rgb(' + Math.round((a[0] + b[0] + e[0]) / 3) + ',' + Math.round((a[1] + b[1] + e[1]) / 3) + ',' + Math.round((a[2] + b[2] + e[2]) / 3) + ')';
+        } catch (err) {}
+        redraw();
+      };
+      im.onerror = function () { st.tried[k] = false; };
+      im.src = R.src[k];
+    });
+  }
+  function roleBg(d, pose) {
+    var st = charSt(d);
+    return st.bg[pose] || st.bg.main || (ROLE[d] ? ROLE[d].bg : '#ffffff');
+  }
+  function drawRoleChar(ctx, d, pose, x, y, size) {
+    var st = charSt(d), im = st.img[pose] || st.img.main;
+    if (!im) { charLoad(d); return; }
+    ctx.drawImage(im, x, y, size, size);
+    rec(x, y, size, size, 'role-char');
+  }
+
+  /* ---------- 포즈 저장 · 자동 매칭 (디자인별로 따로 기억) ---------- */
+  function posesOf(d) { return (ROLE[d] && ROLE[d].poses) || FOX_POSES; }
+  function poseStore(d) {
+    if (!S.poses) S.poses = {};
+    if (!S.poses[d]) S.poses[d] = {};
+    return S.poses[d];
+  }
+  function autoPose(d, cut) {
+    var keys = (ROLE[d] && ROLE[d].keys) || FOX_KEYS;
+    var txt = String(((cut && cut.text) || '') + ' ' + ((cut && cut.hook) || '')).replace(/\s+/g, ' ');
+    var best = 'main', bestN = 0;
+    Object.keys(keys).forEach(function (k) {
+      var n = 0;
+      keys[k].forEach(function (w) { if (txt.indexOf(w) > -1) n++; });
+      if (n > bestN) { bestN = n; best = k; }
+    });
+    return best;
+  }
+  function poseOfCut(d, cut, idx) {
+    var o = poseStore(d)[idx], P = posesOf(d);
+    if (o && P[o] && o !== 'auto') return o;
+    return (d === 'fox') ? foxAuto(cut, idx) : autoPose(d, cut);
+  }
+
+  /* ---------- 색 유틸 ---------- */
+  function rgb3(c) {
+    var s = String(c || '').trim();
+    var m = /rgba?\(([^)]+)\)/.exec(s);
+    if (m) { var p = m[1].split(','); return [parseFloat(p[0]) || 0, parseFloat(p[1]) || 0, parseFloat(p[2]) || 0]; }
+    var h = s.replace('#', '');
+    if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2];
+    var n = parseInt(h, 16);
+    if (!isFinite(n)) return [255, 255, 255];
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
+  function inkA(R, a) { var p = rgb3(R.ink); return 'rgba(' + Math.round(p[0]) + ',' + Math.round(p[1]) + ',' + Math.round(p[2]) + ',' + a + ')'; }
+  function mixc(c1, c2, t) {
+    var a = rgb3(c1), b = rgb3(c2);
+    return 'rgb(' + Math.round(a[0] + (b[0] - a[0]) * t) + ',' + Math.round(a[1] + (b[1] - a[1]) * t) + ',' + Math.round(a[2] + (b[2] - a[2]) * t) + ')';
+  }
+  function bandOf(d, pose) { return mixc(roleBg(d, pose), ROLE[d].band, 0.55); }
+  function roleBands(ctx, d, pose) {
+    var bg = roleBg(d, pose), band = bandOf(d, pose);
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, CW, CH);
+    ctx.fillStyle = band;
+    ctx.fillRect(0, 0, CW, SAFE.y);
+    ctx.fillRect(0, SAFE.b, CW, CH - SAFE.b);
+    ctx.fillStyle = 'rgba(0,0,0,.055)';
+    ctx.fillRect(0, SAFE.y - 1, CW, 2);
+    ctx.fillRect(0, SAFE.b - 1, CW, 2);
+  }
+
+  /* ---------- 상단 — 브랜드 필 · 컷 카운터 · 진행 바 ---------- */
+  function drawRoleHead(ctx, d, spec, idx, n, t, total, cuts) {
+    var R = ROLE[d], y = SAFE.y + 14, h = 64;
+    var label = R.badge;
+    var f = '900 30px ' + FF;
+    ctx.font = f;
+    var tw = ctx.measureText(label).width;
+    var w = Math.min(SAFE.w - 250, Math.max(200, tw + 52));
+    var lf = f, fs = 30;
+    while (fs > 19 && ctx.measureText(label).width + 52 > w) { fs -= 2; lf = '900 ' + fs + 'px ' + FF; ctx.font = lf; }
+    var lg = null;
+    try {
+      lg = ctx.createLinearGradient(SAFE.x, y, SAFE.x + w, y + h);
+      lg.addColorStop(0, R.pill || R.accent);
+      lg.addColorStop(1, R.pill2 || R.accent);
+    } catch (e) { lg = null; }
+    panel(ctx, SAFE.x, y, w, h, h / 2, lg || R.accent, null, 0, 'role-brand');
+    txLine(ctx, label, SAFE.x + 26, y + h / 2 + 1, lf, '#FFFFFF', 'left', 'role-brand-text');
+    txLine(ctx, ('0' + (idx + 1)).slice(-2) + ' / ' + ('0' + n).slice(-2), SAFE.r, y + 21,
+      '800 24px ' + FF, inkA(R, .58), 'right', 'role-counter');
+    var wm = String((spec && spec.watermark) || '').trim();
+    if (!wm || wm === '연오랑의 3분 시황') wm = R.wm;
+    if (wm) {
+      ctx.font = '700 21px ' + FF;
+      var wmMax = Math.max(0, SAFE.w - w - 30);
+      if (wmMax > 60) txLine(ctx, trimTo(ctx, wm, wmMax), SAFE.r, y + 50, '700 21px ' + FF, inkA(R, .42), 'right', 'role-wm');
+    }
+    var py = y + h + 18;
+    panel(ctx, SAFE.x, py, SAFE.w, 8, 4, inkA(R, .13), null, 0, 'role-prog-track');
+    var den = Math.max(.1, total || 0);
+    var fr = Math.min(1, (t || 0) / den);
+    panel(ctx, SAFE.x, py, Math.max(8, SAFE.w * fr), 8, 4, R.accent, null, 0, 'role-prog');
+    (cuts || []).forEach(function (c) {
+      if (!(c.start > 0)) return;
+      var cx = SAFE.x + SAFE.w * (c.start / den);
+      panel(ctx, cx - 1.5, py - 4, 3, 16, 2, inkA(R, .28), null, 0, 'role-prog-tick');
+    });
+  }
+
+  /* ---------- 숫자·항목 파싱 (카드 공용) ---------- */
+  var WEAK_LABEL = { '오늘': 1, '지금': 1, '현재': 1, '이번': 1, '여기': 1, '이거': 1, '저거': 1, '가격': 1, '기준': 1, '정도': 1, '대비': 1, '할인가': 1, '판매가': 1 };
+  function cleanLabel(raw) {
+    var t = String(raw || '').trim();
+    if (/개당/.test(t)) return '개당';
+    if (/1인|인당/.test(t)) return '1인 기준';
+    t = t.replace(/[0-9]/g, ' ').replace(/[%원개박명일분점배위,·:;\/()\[\]]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!t || t.length < 2 || WEAK_LABEL[t]) return '';
+    return t.slice(0, 14);
+  }
+  function dealInfo(text, prefer) {
+    var src = String(text || '');
+    var re = /([+\-]?\d[\d,]*(?:\.\d+)?)\s*(만\s*원|만원|원|%|퍼센트|개|박|인분|인|명|일|시간|분|점|배)?/g;
+    var out = [], m, guard = 0;
+    while ((m = re.exec(src)) && guard++ < 40) {
+      var raw = m[1], unit = String(m[2] || '').replace(/\s+/g, '');
+      var val = parseFloat(raw.replace(/,/g, ''));
+      if (!isFinite(val)) continue;
+      var kind = '', mult = 1;
+      if (unit === '%' || unit === '퍼센트') kind = 'pct';
+      else if (unit === '원') kind = 'price';
+      else if (unit === '만원') { kind = 'price'; mult = 1e4; }
+      else continue;                          /* 단위 없는 숫자(날짜·시간)는 카드 숫자로 쓰지 않는다 */
+      var pre = src.slice(Math.max(0, m.index - 26), m.index).replace(/[0-9+\-.,()%\[\]{}]/g, ' ').replace(/\s+/g, ' ').trim();
+      var ws = pre.split(' ').filter(Boolean);
+      var label = ws.slice(-2).join(' ');
+      if (ws.length > 1 && /(은|는|이|가|을|를|의|에서|부터|까지|으로|로)$/.test(ws[ws.length - 1])) {
+        label = ws[ws.length - 1].replace(/(은|는|이|가|을|를|의|에서|부터|까지|으로|로)$/, '');
+      }
+      label = cleanLabel(label);
+      var disp = raw + (kind === 'pct' ? '%' : unit);
+      var sc = kind === 'pct' ? 58 : 44 + (/[만천억조]/.test(unit) ? 14 : 0);
+      if (kind === 'pct' && /할인|세일|특가|최저|반값|내렸|떨어/.test(src)) sc += 12;
+      if (/최저|특가|판매가|가격|할인가|정가|금액/.test(pre)) sc += 10;
+      if (prefer === 'pct' && kind === 'pct') sc += 30;
+      if (prefer === 'price' && kind === 'price') sc += 30;
+      out.push({ raw: raw, val: val * mult, unit: unit, kind: kind, disp: disp, label: label, score: sc, at: m.index });
+    }
+    if (!out.length) return { main: null, sub: '', label: '', save: '', compare: null, now: null };
+    out.sort(function (a, b) { return b.score - a.score || a.at - b.at; });
+    var main = out[0];
+    var subs = out.filter(function (t) { return t !== main && t.disp !== main.disp; }).slice(0, 2);
+    var sub = subs.map(function (t) { return (t.label ? t.label + ' ' : '') + t.disp; }).join('  ·  ');
+    var compare = null, now = null;
+    out.forEach(function (t) {
+      if (t.kind !== 'price') return;
+      if (t.disp !== main.disp && (!compare || t.val > compare.val)) compare = t;
+      if (!now || t.val < now.val) now = t;
+    });
+    var save = '';
+    if (main.kind === 'price' && compare && compare.val > main.val && /할인|절약|최저|반값|내렸|떨어/.test(src)) {
+      save = fmtNum(String(Math.round(compare.val - main.val))) + '원';
+    }
+    return { main: main, sub: sub, subs: subs, label: main.label, save: save, compare: compare, now: now };
+  }
+  function splitItems(text) {
+    var str = String(text || '').trim();
+    var A = str.split(/\s*[·•|]\s*|\s+vs\.?\s+/i).map(function (x) { return x.trim(); }).filter(function (x) { return x.length > 0; });
+    if (A.length >= 2) return A;
+    var B = str.split(/,\s+|\.\s+/).map(function (x) { return x.trim(); }).filter(function (x) { return x.length > 0; });
+    if (B.length >= 2) return B;
+    return A.length ? A : [str];
+  }
+  function stripTag(text) {
+    return String(text || '').replace(/^(장점|단점|주의|포인트|체크|가성비|프리미엄|BEFORE|AFTER)\s*[:\-·]?\s*/i, '').trim();
+  }
+  /* '장점 · 세척이 쉽습니다' 처럼 따로 떨어진 라벨은 다음 항목의 태그로 붙인다 */
+  function itemsTagged(text) {
+    var raw = splitItems(text), out = [], pend = '';
+    raw.forEach(function (t) {
+      var s0 = String(t).trim();
+      if (!s0) return;
+      var m = /^(장점|단점|주의|포인트|체크|가성비|프리미엄|BEFORE|AFTER)\s*$/i.exec(s0);
+      if (m) { pend = m[1]; return; }
+      var m2 = /^(장점|단점|주의|포인트|체크|가성비|프리미엄)\s*[:\-]\s*(.+)$/.exec(s0);
+      if (m2) { out.push({ tag: m2[1], text: m2[2] }); pend = ''; return; }
+      out.push({ tag: pend, text: s0 });
+      pend = '';
+    });
+    return out;
+  }
+  function ddayOf(text) {
+    var t = String(text || '');
+    var m = /D\s*[-−–]\s*(\d+)/i.exec(t);
+    if (m) return 'D-' + m[1];
+    if (/오늘\s*마감|당일\s*마감/.test(t)) return '오늘 마감';
+    if (/마감\s*임박|곧\s*마감/.test(t)) return '마감 임박';
+    if (/마감/.test(t)) return '마감';
+    return '타임딜';
+  }
+  /* 장전 시황 — 갭 대응 신호등(🔴 주의 · 🟡 관망 · 🟢 우위) */
+  function signalOf(text) {
+    var t = String(text || '');
+    if (/사이드카|서킷|급락|폭락|하한|경고|위험|악재|쓸어|쏟아|매물|반대매매|이탈/.test(t)) return { txt: '🔴 주의', bg: '#DC2626' };
+    if (/반등|상승|강세|신고가|상한가|돌파|순매수|유입|호재|훈풍|우위/.test(t)) return { txt: '🟢 우위', bg: '#0F766E' };
+    return { txt: '🟡 관망', bg: '#B45309' };
+  }
+  function periodOf(text) {
+    var t = String(text || '');
+    var m = /(\d{1,2})\s*\/\s*(\d{1,2})/.exec(t);
+    if (m) return m[1] + '/' + m[2];
+    m = /(\d{1,2})\s*월\s*(\d{1,2})\s*일/.exec(t);
+    if (m) return m[1] + '/' + m[2];
+    m = /남은\s*(?:객실\s*)?(\d+)\s*(?:개|곳|방)/.exec(t);
+    if (m) return '남은 ' + m[1] + '개';
+    return '타임딜';
+  }
+  function heroWord(spec, cut) {
+    var w = (spec && spec.words) || [], i;
+    for (i = 0; i < w.length; i++) if (String(w[i]).length >= 2) return String(w[i]);
+    var parts = String((cut && cut.text) || '').split(/[\s·,]+/).filter(function (x) { return x.length >= 2 && !/^\d/.test(x); });
+    return parts[0] || '오늘의 특가';
+  }
+  function roleCard(ctx, R, x, y, w, h) {
+    ctx.save();
+    ctx.shadowColor = inkA(R, .13); ctx.shadowBlur = 22; ctx.shadowOffsetY = 8;
+    panel(ctx, x, y, w, h, R.radius || 28, R.paper, inkA(R, .10), 2, 'role-card');
+    ctx.restore();
+  }
+  function roleLabel(ctx, R, text, x, yMid, align, label) {
+    return txLine(ctx, text, x, yMid, '800 25px ' + FF, inkA(R, .56), align || 'left', label || 'role-label');
+  }
+  function numColor(R) { return function (tok) { return /\d/.test(tok) ? R.accent : R.ink; }; }
+  function priceName(text, info) {
+    var t = String(text || '');
+    if (info && info.main) t = t.replace(info.main.disp, ' ');
+    if (info && info.compare) t = t.replace(info.compare.disp, ' ');
+    return t.replace(/[·,:;]+/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+
+  /* ① 가격 충격 비교형 — 정가 취소선 + 오늘가 빅넘버 */
+  function cardShock(ctx, R, cut, spec, x, y, w, h) {
+    var info = dealInfo(cut.text, 'pct');
+    roleCard(ctx, R, x, y, w, h);
+    panel(ctx, x + 20, y + 24, 8, h - 48, 4, R.accent, null, 0, 'shock-spine');
+    var lx = x + 48, right = x + w - 42;
+    roleLabel(ctx, R, '💰 ' + (info.label || '오늘 최저가'), lx, y + 42);
+    if (info.save) {
+      var sf = '900 23px ' + FF;
+      ctx.font = sf;
+      var sw = Math.min(w - 380, ctx.measureText(info.save + ' 절약').width + 32);
+      panel(ctx, right - sw, y + 24, sw, 38, 19, inkA(R, .07), null, 0, 'shock-save');
+      txLine(ctx, info.save + ' 절약', right - sw / 2, y + 44, sf, R.accent, 'center', 'shock-save-text');
+    }
+    var txt = info.main ? info.main.disp : trimTo(ctx, cut.text, w - 130);
+    var bf = fitText(ctx, txt, { w: w - 190, h: 126, base: 104, min: 44, weight: 900, lh: 1.04 });
+    var by = y + 64 + Math.max(0, (126 - bf.height) / 2);
+    for (var i = 0; i < bf.lines.length; i++) {
+      txLine(ctx, bf.lines[i], lx, by + i * bf.lineH + bf.lineH / 2, bf.font, R.accent, 'left', 'shock-num');
+    }
+    var ry = Math.min(y + h - 40, by + bf.height + 34);
+    var cmp = info.compare, now = info.now;
+    if (cmp && now && cmp.disp !== now.disp) {
+      var struck = (cmp.label ? cmp.label + ' ' : '') + cmp.disp;
+      var f2 = '900 34px ' + FF;
+      ctx.font = f2;
+      var sw2 = ctx.measureText(struck).width;
+      txLine(ctx, struck, lx, ry, f2, inkA(R, .42), 'left', 'shock-orig');
+      ctx.strokeStyle = inkA(R, .50); ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(lx, ry + 1); ctx.lineTo(lx + sw2, ry + 1); ctx.stroke();
+      txLine(ctx, '→ 지금 ' + now.disp, lx + sw2 + 26, ry, f2, R.accent, 'left', 'shock-now');
+    } else if (cmp) {
+      var struck2 = (cmp.label ? cmp.label + ' ' : '') + cmp.disp;
+      var f3 = '900 34px ' + FF;
+      ctx.font = f3;
+      var sw3 = ctx.measureText(struck2).width;
+      txLine(ctx, struck2, lx, ry, f3, inkA(R, .42), 'left', 'shock-orig');
+      ctx.strokeStyle = inkA(R, .50); ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(lx, ry + 1); ctx.lineTo(lx + sw3, ry + 1); ctx.stroke();
+    } else if (info.sub) {
+      var sf2 = fitText(ctx, info.sub, { w: w - 120, h: 34, base: 30, min: 18, weight: 800, lh: 1.1 });
+      txWords(ctx, sf2.lines[0] || '', lx, ry, sf2.font, numColor(R), 'shock-sub');
+    }
+  }
+
+  /* ② 2열 대결(VS) — 가성비 vs 프리미엄 */
+  function cardDuel(ctx, R, cut, spec, x, y, w, h) {
+    var items = itemsTagged(cut.text);
+    roleCard(ctx, R, x, y, w, h);
+    roleLabel(ctx, R, '⚖️ 가성비 vs 프리미엄', x + 44, y + 42);
+    var a = items[0] || { tag: '', text: cut.text };
+    var b = items[1] || null;
+    var ia = dealInfo(a.text, 'price'), ib = b ? dealInfo(b.text, 'price') : { main: null };
+    var single = !b;
+    var va = ia.main ? ia.main.val : 0, vb = ib.main ? ib.main.val : 0;
+    var aFirst = !(va > 0 && vb > 0 && vb < va);
+    if (!aFirst) { var tmpA = a, tmpI = ia; a = b; b = tmpA; ia = ib; ib = tmpI; }
+    var tagA = /프리/.test(a.tag || '') ? '프리미엄' : '가성비';
+    var tagB = /프리/.test((b && b.tag) || '') ? '프리미엄' : '프리미엄';
+    var cy = y + 64, ch = h - 64 - 24;
+    var cw = single ? (w - 88) : Math.floor((w - 96 - 64) / 2);
+    function col(cx, cwid, tag, info, text) {
+      var hot = tag === '가성비';
+      panel(ctx, cx, cy, cwid, ch, 20, inkA(R, hot ? .05 : .03), hot ? R.accent : inkA(R, .14), hot ? 3 : 2, 'duel-col');
+      var tf = '900 22px ' + FF;
+      ctx.font = tf;
+      var twd = Math.min(cwid - 40, ctx.measureText(tag).width + 30);
+      panel(ctx, cx + 20, cy + 16, twd, 34, 17, hot ? R.accent : inkA(R, .10), null, 0, 'duel-tag');
+      txLine(ctx, tag, cx + 20 + twd / 2, cy + 34, tf, hot ? '#FFFFFF' : inkA(R, .70), 'center', 'duel-tag-text');
+      var nm = priceName(text, info) || text;
+      if (nm === '가성비' || nm === '프리미엄') nm = '';
+      if (info.main) {
+        if (nm) {
+          var nf = fitText(ctx, nm, { w: cwid - 44, h: 58, base: 26, min: 17, weight: 800, lh: 1.16 });
+          for (var k = 0; k < nf.lines.length; k++) {
+            txLine(ctx, nf.lines[k], cx + 22, cy + 72 + k * nf.lineH, nf.font, inkA(R, .68), 'left', 'duel-name');
+          }
+        }
+        var pf = fitText(ctx, info.main.disp, { w: cwid - 44, h: 88, base: 64, min: 30, weight: 900, lh: 1.06 });
+        var py = cy + ch - 58 - pf.height + 8;
+        for (var j = 0; j < pf.lines.length; j++) {
+          txLine(ctx, pf.lines[j], cx + 22, py + j * pf.lineH + pf.lineH / 2, pf.font, hot ? R.accent : R.ink, 'left', 'duel-price');
+        }
+      } else {
+        var nf2 = fitText(ctx, nm, { w: cwid - 44, h: ch - 92, base: 34, min: 18, weight: 800, lh: 1.3 });
+        var ny2 = cy + 66 + Math.max(0, (ch - 92 - nf2.height) / 2);
+        for (var k2 = 0; k2 < nf2.lines.length; k2++) {
+          txWords(ctx, nf2.lines[k2], cx + 22, ny2 + k2 * nf2.lineH + nf2.lineH / 2, nf2.font,
+            function (tok) { return /\d/.test(tok) ? R.accent : R.ink; }, 'duel-text');
+        }
+      }
+      panel(ctx, cx + 22, cy + ch - 26, 56, 6, 3, hot ? R.accent : inkA(R, .25), null, 0, 'duel-foot');
+    }
+    if (single) {
+      col(x + 44, cw, tagA, ia, a.text);
+    } else {
+      col(x + 44, cw, tagA, ia, a.text);
+      col(x + 44 + cw + 64, cw, tagB, ib, b.text);
+      var vx = x + 44 + cw + 32, vy = cy + ch / 2;
+      ctx.beginPath(); ctx.arc(vx, vy, 34, 0, Math.PI * 2); ctx.fillStyle = R.ink; ctx.fill();
+      rec(vx - 34, vy - 34, 68, 68, 'duel-vs');
+      txLine(ctx, 'VS', vx, vy + 1, '900 26px ' + FF, '#FFFFFF', 'center', 'duel-vs-text');
+    }
+  }
+
+  /* ③ 꿀템 TOP3 — 이번 컷의 아이템 1개를 순위와 함께 크게 */
+  function cardRank(ctx, R, cut, spec, x, y, w, h) {
+    var info = dealInfo(cut.text, 'price');
+    var m = /(^|[^0-9])([1-3])\s*위/.exec(String(cut.text || ''));
+    var rank = m ? m[2] : '';
+    var i0 = Number(cut.idx) || 0;
+    if (!rank && i0 >= 1 && i0 <= 3 && info.main) rank = String(4 - i0);
+    /* 예고 컷 — 아직 아이템이 없는 첫 컷은 다음 세 컷을 3·2·1위로 미리 보여 준다 */
+    if (!info.main && i0 === 0 && spec && spec.cuts && spec.cuts.length >= 4) {
+      roleCard(ctx, R, x, y, w, h);
+      roleLabel(ctx, R, '🏆 이번 주 꿀템 TOP 3', x + 44, y + 42);
+      var rows = spec.cuts.slice(1, 4);
+      var top0 = y + 66, avail0 = h - 66 - 22;
+      var rh0 = Math.min(70, Math.floor(avail0 / 3));
+      rows.forEach(function (c2, i) {
+        var rk = 3 - i;
+        var inf2 = dealInfo(c2.text, 'price');
+        var cyc2 = top0 + rh0 * i + rh0 / 2;
+        panel(ctx, x + 44, cyc2 - 20, 40, 40, 12, rk === 1 ? R.accent : inkA(R, .09), null, 0, 'rank-badge');
+        txLine(ctx, String(rk), x + 64, cyc2 + 1, '900 24px ' + FF, rk === 1 ? '#FFFFFF' : inkA(R, .70), 'center', 'rank-no');
+        var nm2 = priceName(String(c2.text || '').replace(/[1-3]\s*위/g, ' '), inf2);
+        var nf2 = fitText(ctx, nm2 || c2.text, { w: w - 360, h: 42, base: 29, min: 18, weight: 800, lh: 1.1 });
+        txLine(ctx, nf2.lines[0] || '', x + 100, cyc2 + 1, nf2.font, R.ink, 'left', 'rank-name');
+        if (inf2.main) txLine(ctx, inf2.main.disp, x + w - 44, cyc2 + 1, '900 34px ' + FF, rk === 1 ? R.accent : inkA(R, .80), 'right', 'rank-price');
+      });
+      return;
+    }
+    roleCard(ctx, R, x, y, w, h);
+    roleLabel(ctx, R, '🏆 꿀템 TOP 3', x + 44, y + 42);
+    var cyc = y + 60 + (h - 60 - 24) / 2;
+    var hot = rank === '1';
+    panel(ctx, x + 44, cyc - 44, 124, 88, 24, hot ? R.accent : inkA(R, .09), null, 0, 'rank-badge');
+    txLine(ctx, rank ? rank + '위' : 'TOP', x + 106, cyc + 2, '900 46px ' + FF, hot ? '#FFFFFF' : inkA(R, .72), 'center', 'rank-no');
+    var nm = priceName(String(cut.text || '').replace(/[1-3]\s*위\s*(부터|까지|째)?/g, ' '), info);
+    var nf = fitText(ctx, nm || cut.text, { w: w - 400, h: 100, base: 40, min: 22, weight: 800, lh: 1.18 });
+    var ny = cyc - (nf.height - nf.lineH) / 2 - nf.lineH / 2;
+    for (var i = 0; i < nf.lines.length; i++) {
+      txLine(ctx, nf.lines[i], x + 196, ny + i * nf.lineH + nf.lineH / 2, nf.font, R.ink, 'left', 'rank-name');
+    }
+    txLine(ctx, info.main ? info.main.disp : '—', x + w - 44, cyc - 14, '900 56px ' + FF, R.accent, 'right', 'rank-price');
+    var subp = info.sub || '';
+    if (subp) txLine(ctx, subp, x + w - 44, cyc + 42, '800 26px ' + FF, inkA(R, .55), 'right', 'rank-sub');
+  }
+
+  /* ④ BEFORE → AFTER */
+  function cardBimbo(ctx, R, cut, spec, x, y, w, h) {
+    var raw = String(cut.text || '');
+    var parts = raw.split(/\s*(?:→|->|⇒)\s*/).map(function (v) { return stripTag(v); }).filter(Boolean);
+    roleCard(ctx, R, x, y, w, h);
+    var lx = x + 44, rw = w - 88;
+    var rh = 76;
+    if (parts.length >= 2) {
+      roleLabel(ctx, R, '🔄 바뀐 것', lx, y + 42);
+      var by = y + 64;
+      panel(ctx, lx, by, rw, rh, 18, inkA(R, .05), inkA(R, .12), 2, 'bimbo-before');
+      txLine(ctx, 'BEFORE', lx + 22, by + rh / 2, '900 21px ' + FF, inkA(R, .48), 'left', 'bimbo-tag1');
+      var bf = fitText(ctx, parts[0], { w: rw - 210, h: 42, base: 30, min: 19, weight: 800, lh: 1.1 });
+      txLine(ctx, bf.lines[0] || '', lx + 128, by + rh / 2, bf.font, inkA(R, .70), 'left', 'bimbo-before-text');
+      txLine(ctx, '↓', lx + rw / 2, by + rh + 20, '900 30px ' + FF, R.accent, 'center', 'bimbo-arrow');
+      var ay = by + rh + 40;
+      panel(ctx, lx, ay, rw, rh, 18, inkA(R, .05), R.accent, 3, 'bimbo-after');
+      txLine(ctx, 'AFTER', lx + 22, ay + rh / 2, '900 21px ' + FF, R.accent, 'left', 'bimbo-tag2');
+      var af = fitText(ctx, parts[1], { w: rw - 210, h: 42, base: 32, min: 20, weight: 900, lh: 1.1 });
+      txWords(ctx, af.lines[0] || '', lx + 128, ay + rh / 2, af.font, numColor(R), 'bimbo-after-text');
+    } else {
+      roleLabel(ctx, R, '🔄 지금 상태', lx, y + 42);
+      var fit = fitText(ctx, raw, { w: rw - 150, h: 150, base: 42, min: 24, weight: 800, lh: 1.3 });
+      var yy = y + 70 + (h - 70 - 26 - fit.height) / 2;
+      ctx.beginPath(); ctx.arc(lx + 40, yy + fit.height / 2, 26, 0, Math.PI * 2); ctx.fillStyle = R.accent; ctx.fill();
+      rec(lx + 14, yy + fit.height / 2 - 26, 52, 52, 'bimbo-dot');
+      txLine(ctx, '↻', lx + 40, yy + fit.height / 2 + 1, '900 28px ' + FF, '#FFFFFF', 'center', 'bimbo-mark');
+      for (var i = 0; i < fit.lines.length; i++) {
+        txWords(ctx, fit.lines[i], lx + 92, yy + i * fit.lineH + fit.lineH / 2, fit.font, numColor(R), 'bimbo-line');
+      }
+    }
+  }
+
+  /* ⑤ 장점 2 + 솔직 단점 1 */
+  function cardProsCons(ctx, R, cut, spec, x, y, w, h) {
+    var items = itemsTagged(cut.text).slice(0, 3);
+    var teaser = (!items.length || !dealInfo(cut.text, 'price').main) && Number(cut.idx) === 0 && spec && spec.cuts && spec.cuts.length >= 4;
+    if (teaser) {
+      items = spec.cuts.slice(1, 4).map(function (c2, i2) {
+        var inf2 = dealInfo(c2.text, 'price');
+        return { tag: i2 === 2 ? '단점' : '장점', text: priceName(c2.text, inf2) || c2.text };
+      });
+    }
+    if (!items.length) items = [{ tag: '', text: cut.text }];
+    roleCard(ctx, R, x, y, w, h);
+    var n = items.length;
+    var cons = 0;
+    items.forEach(function (it) { if (/단점|주의|아쉬/.test(it.tag || '')) cons++; });
+    if (!cons) cons = 1;
+    roleLabel(ctx, R, '✅ 장점 ' + Math.max(0, n - cons) + ' · ⚠️ 단점 ' + cons, x + 44, y + 42);
+    var top = y + 66, avail = h - 66 - 26;
+    var rh = Math.min(72, Math.floor(avail / n));
+    var off = Math.max(0, Math.floor((avail - rh * n) / 2));
+    items.forEach(function (it, i) {
+      var last = /단점|주의|아쉬/.test(it.tag || '') || (!it.tag && i === n - 1 && n > 1 && cons > 0);
+      var cyc = top + off + rh * i + rh / 2;
+      ctx.beginPath(); ctx.arc(x + 66, cyc, 22, 0, Math.PI * 2);
+      ctx.fillStyle = last ? inkA(R, .10) : R.accent; ctx.fill();
+      rec(x + 44, cyc - 22, 44, 44, 'pc-dot');
+      txLine(ctx, last ? '!' : '✓', x + 66, cyc + 1, '900 24px ' + FF, last ? inkA(R, .55) : '#FFFFFF', 'center', 'pc-mark');
+      var tf = fitText(ctx, it.text, { w: w - 260, h: 42, base: 31, min: 19, weight: 800, lh: 1.1 });
+      txWords(ctx, tf.lines[0] || '', x + 106, cyc + 1, tf.font, numColor(R), 'pc-row');
+      txLine(ctx, last ? '단점' : '장점', x + w - 44, cyc + 1, '900 22px ' + FF, last ? inkA(R, .50) : R.accent, 'right', 'pc-tag');
+    });
+  }
+  /* ⑥ 체크리스트 3 */
+  function cardCheck(ctx, R, cut, spec, x, y, w, h) {
+    var items = itemsTagged(cut.text).slice(0, 3);
+    /* 예고 컷(첫 컷·숫자 없음)은 다음 세 컷을 체크리스트로 미리 보여 준다 */
+    var teaser = (!items.length || !dealInfo(cut.text, 'price').main) && Number(cut.idx) === 0 && spec && spec.cuts && spec.cuts.length >= 4;
+    if (teaser) {
+      items = spec.cuts.slice(1, 4).map(function (c2) {
+        var i2 = dealInfo(c2.text, 'price');
+        return { tag: '', text: priceName(c2.text, i2) || c2.text };
+      });
+    }
+    if (!items.length) items = [{ tag: '', text: cut.text }];
+    roleCard(ctx, R, x, y, w, h);
+    roleLabel(ctx, R, '✅ 구매 전 체크 ' + items.length, x + 44, y + 42);
+    var top = y + 66, avail = h - 66 - 26;
+    var n = items.length;
+    var rh = Math.min(72, Math.floor(avail / n));
+    var off = Math.max(0, Math.floor((avail - rh * n) / 2));
+    items.forEach(function (it, i) {
+      var cyc = top + off + rh * i + rh / 2;
+      ctx.beginPath(); ctx.arc(x + 66, cyc, 22, 0, Math.PI * 2);
+      ctx.fillStyle = i === 0 ? R.accent : inkA(R, .09); ctx.fill();
+      rec(x + 44, cyc - 22, 44, 44, 'chk-dot');
+      txLine(ctx, '✓', x + 66, cyc + 1, '900 23px ' + FF, i === 0 ? '#FFFFFF' : R.accent, 'center', 'chk-mark');
+      var tf = fitText(ctx, it.text, { w: w - 150, h: 42, base: 32, min: 20, weight: 800, lh: 1.1 });
+      txWords(ctx, tf.lines[0] || '', x + 106, cyc + 1, tf.font, numColor(R), 'chk-row');
+    });
+  }
+  /* ⑦ 보딩패스 + D-day (타임딜) */
+  function cardTicket(ctx, R, cut, spec, x, y, w, h) {
+    var info = dealInfo(cut.text, 'price');
+    var stub = 236, xd = x + w - stub;
+    roleCard(ctx, R, x, y, w, h);
+    ctx.save();
+    ctx.setLineDash([9, 10]); ctx.strokeStyle = inkA(R, .22); ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(xd, y + 20); ctx.lineTo(xd, y + h - 20); ctx.stroke();
+    ctx.restore();
+    var bgc = roleBg(designOf(), 'main');
+    [[xd, y], [xd, y + h]].forEach(function (pt) {
+      ctx.beginPath(); ctx.arc(pt[0], pt[1], 14, 0, Math.PI * 2); ctx.fillStyle = bgc; ctx.fill();
+    });
+    var lx = x + 46, lw = xd - lx - 36;
+    roleLabel(ctx, R, '✈️ ' + (info.label || '타임딜 특가'), lx, y + 44);
+    var bf = fitText(ctx, info.main ? info.main.disp : '특가', { w: lw, h: 112, base: 92, min: 40, weight: 900, lh: 1.06 });
+    var by = y + 64 + Math.max(0, (112 - bf.height) / 2);
+    for (var i = 0; i < bf.lines.length; i++) {
+      txLine(ctx, bf.lines[i], lx, by + i * bf.lineH + bf.lineH / 2, bf.font, R.accent, 'left', 'tk-price');
+    }
+    var subTxt = info.sub || trimTo(ctx, cut.text, lw);
+    if (subTxt) {
+      var sf = fitText(ctx, subTxt, { w: lw, h: 34, base: 28, min: 17, weight: 800, lh: 1.1 });
+      txWords(ctx, sf.lines[0] || '', lx, y + h - 40, sf.font, numColor(R), 'tk-sub');
+    }
+    var dd = ddayOf(String(cut.text || '') + ' ' + String(cut.hook || ''));
+    var dfs = dd.length > 5 ? 26 : (dd.length > 3 ? 34 : 42);
+    var df = '900 ' + dfs + 'px ' + FF;
+    ctx.font = df;
+    var dw = Math.min(stub - 44, ctx.measureText(dd).width + 44);
+    panel(ctx, xd + (stub - dw) / 2, y + 52, dw, 66, 16, R.hot, null, 0, 'tk-dday');
+    txLine(ctx, dd, xd + stub / 2, y + 86, df, '#FFFFFF', 'center', 'tk-dday-text');
+    var cap = periodOf(cut.text);
+    txLine(ctx, cap, xd + stub / 2, y + 146, '900 24px ' + FF, inkA(R, .60), 'center', 'tk-cap');
+    txLine(ctx, '✈', xd + stub / 2, y + h - 48, '900 30px ' + FF, inkA(R, .30), 'center', 'tk-icon');
+  }
+
+  /* ⑧ 시그니처 1강점 몰빵 */
+  function cardHero(ctx, R, cut, spec, x, y, w, h) {
+    var info = dealInfo(cut.text, 'price');
+    var word = heroWord(spec, cut);
+    roleCard(ctx, R, x, y, w, h);
+    roleLabel(ctx, R, '⭐ 시그니처 1강점', x + 46, y + 44);
+    var split = x + w - 300;
+    panel(ctx, split, y + 70, 2, h - 118, 1, inkA(R, .12), null, 0, 'hero-rule');
+    var wf = fitText(ctx, word, { w: split - x - 90, h: 132, base: 74, min: 34, weight: 900, lh: 1.08 });
+    var wy = y + 66 + Math.max(0, (132 - wf.height) / 2);
+    for (var i = 0; i < wf.lines.length; i++) {
+      txLine(ctx, wf.lines[i], x + 46, wy + i * wf.lineH + wf.lineH / 2, wf.font, R.ink, 'left', 'hero-word');
+    }
+    var px = split + 34, pw2 = x + w - px - 40;
+    if (info.main) {
+      var pf = fitText(ctx, info.main.disp, { w: pw2, h: 92, base: 64, min: 28, weight: 900, lh: 1.06 });
+      var py = y + 78 + Math.max(0, (92 - pf.height) / 2);
+      for (var k = 0; k < pf.lines.length; k++) {
+        txLine(ctx, pf.lines[k], px, py + k * pf.lineH + pf.lineH / 2, pf.font, R.accent, 'left', 'hero-price');
+      }
+      if (info.sub) {
+        var sf = fitText(ctx, info.sub, { w: pw2, h: 58, base: 24, min: 16, weight: 800, lh: 1.14 });
+        for (var j = 0; j < Math.min(2, sf.lines.length); j++) {
+          txLine(ctx, sf.lines[j], px, y + 184 + j * sf.lineH + sf.lineH / 2, sf.font, inkA(R, .58), 'left', 'hero-sub');
+        }
+      }
+    } else {
+      var rf = fitText(ctx, priceName(cut.text, info) || cut.text, { w: pw2, h: h - 120, base: 32, min: 18, weight: 800, lh: 1.3 });
+      var ry2 = y + 70 + Math.max(0, (h - 120 - rf.height) / 2);
+      for (var k2 = 0; k2 < rf.lines.length; k2++) {
+        txWords(ctx, rf.lines[k2], px, ry2 + k2 * rf.lineH + rf.lineH / 2, rf.font,
+          function (tok) { return /\d/.test(tok) ? R.accent : inkA(R, .72); }, 'hero-text');
+      }
+    }
+  }
+
+  /* ⑨ 주말 나들이 코스 (시간대 3곳) */
+  function cardCourse(ctx, R, cut, spec, x, y, w, h) {
+    var items = itemsTagged(cut.text).slice(0, 3);
+    var teaser = (!items.length || !/\d{1,2}:\d{2}/.test(String(cut.text || ''))) && Number(cut.idx) === 0 && spec && spec.cuts && spec.cuts.length >= 4;
+    if (teaser) items = spec.cuts.slice(1, 4).map(function (c2) { return { tag: '', text: c2.text }; });
+    if (!items.length) items = [{ tag: '', text: cut.text }];
+    roleCard(ctx, R, x, y, w, h);
+    roleLabel(ctx, R, '🗺️ 주말 코스 ' + items.length + '곳', x + 44, y + 42);
+    var top = y + 66, avail = h - 66 - 26;
+    var n = items.length;
+    var rh = Math.min(72, Math.floor(avail / n));
+    var off = Math.max(0, Math.floor((avail - rh * n) / 2));
+    items.forEach(function (it, i) {
+      var cyc = top + off + rh * i + rh / 2;
+      var m = /(\d{1,2}:\d{2})/.exec(it.text);
+      var time = m ? m[1] : ('코스 ' + (i + 1));
+      var tfx = '900 24px ' + FF;
+      ctx.font = tfx;
+      var tw = Math.min(170, ctx.measureText(time).width + 34);
+      panel(ctx, x + 44, cyc - 21, tw, 42, 12, i === 0 ? R.accent : inkA(R, .08), null, 0, 'course-time');
+      txLine(ctx, time, x + 44 + tw / 2, cyc + 1, tfx, i === 0 ? '#FFFFFF' : inkA(R, .72), 'center', 'course-time-text');
+      var body = m ? it.text.replace(m[1], '').replace(/^[·,:;\s]+/, '') : it.text;
+      var f = fitText(ctx, body, { w: w - 280, h: 42, base: 30, min: 18, weight: 800, lh: 1.1 });
+      txWords(ctx, f.lines[0] || '', x + 44 + tw + 22, cyc + 1, f.font, numColor(R), 'course-row');
+    });
+  }
+  var CARD_FN = { shock: cardShock, duel: cardDuel, rank: cardRank, bimbo: cardBimbo,
+    proscons: cardProsCons, check: cardCheck, ticket: cardTicket, hero: cardHero, course: cardCourse };
+
+  /* ---------- 중단 — 훅 + 캐릭터 + 공식 카드 ---------- */
+  function drawRoleMain(ctx, d, spec, cut, idx, pose) {
+    var R = ROLE[d], slot = SLOTS.main, f = formulaOf(d);
+    var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (cut.hook || spec.hookTitle || '');
+    var eye = (f ? f.eye : 'DEAL') + ' ' + ('0' + ((cut.idx || 0) + 1)).slice(-2);
+    var y = slot.y + 12;
+    txLine(ctx, eye, slot.x, y + 12, '900 23px ' + FF, R.accent, 'left', 'role-eyebrow');
+    ctx.font = '900 23px ' + FF;
+    var ew = ctx.measureText(eye).width;
+    panel(ctx, slot.x + ew + 16, y + 11, Math.max(20, 420 - ew), 3, 1.5, inkA(R, .16), null, 0, 'role-rule');
+    if (title) {
+      var tfit = fitText(ctx, title, { w: 520, h: 196, base: 72, min: 28, weight: 800, lh: 1.2 });
+      var ty = y + 36;
+      for (var i = 0; i < tfit.lines.length; i++) {
+        txWords(ctx, tfit.lines[i], slot.x, ty + i * tfit.lineH + tfit.lineH / 2, tfit.font, numColor(R), 'role-title');
+      }
+    }
+    drawRoleChar(ctx, d, pose, 604, slot.y + 4, 350);
+    var cy = slot.y + 360, chh = slot.y + slot.h - cy - 6;
+    var fn = CARD_FN[f ? f.card : 'shock'] || cardShock;
+    fn(ctx, R, cut, spec, slot.x, cy, slot.w, chh);
+  }
+
+  /* ---------- 하단 — 자막 카드 ---------- */
+  function drawRoleCaption(ctx, d, cut, p, spec) {
+    var R = ROLE[d], slot = SLOTS.cap;
+    var fit = fitText(ctx, cut.text, { w: slot.w - 104, h: slot.h - 96, base: 58, min: 30, weight: 800, lh: 1.26 });
+    var cardH = Math.min(slot.h, fit.height + 78);
+    var cy = slot.y + (slot.h - cardH) / 2;
+    ctx.save();
+    ctx.shadowColor = inkA(R, .16); ctx.shadowBlur = 26; ctx.shadowOffsetY = 10;
+    panel(ctx, slot.x, cy, slot.w, cardH, R.radius || 26, R.paper, inkA(R, .12), 2, 'role-cap-card');
+    ctx.restore();
+    panel(ctx, slot.x + 30, cy + 26, 60, 7, 3.5, R.accent, null, 0, 'role-cap-rule');
+    var words = (spec && spec.words) || [];
+    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
+    var y0 = cy + cardH - 32 - fit.height;
+    for (var i = 0; i < fit.lines.length; i++) {
+      txWords(ctx, fit.lines[i], slot.x + 52, y0 + i * fit.lineH + fit.lineH / 2, fit.font, function (tok) {
+        var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
+        var on = (seen / total) <= p + 0.0001;
+        seen += String(tok).length;
+        if (!on) return inkA(R, .48);
+        if (words.indexOf(clean) >= 0 || /\d/.test(tok)) return R.mark || R.accent;
+        return R.ink;
+      }, 'role-cap');
+    }
+  }
+
+  function drawRoleFrame(t) {
+    var cv = $('#wvCanvas');
+    if (!cv) return;
+    var ctx = ctxOf(cv);
+    var d = designOf(), spec = S.spec, cuts = S.cuts;
+    if (!spec || !cuts.length) { drawRoleIdle(ctx, d); return; }
+    var idx = 0;
+    while (idx < cuts.length - 1 && t >= cuts[idx].end) idx++;
+    var cut = cuts[idx];
+    var tIn = Math.max(0, t - cut.start);
+    var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
+    var pose = poseOfCut(d, cut, idx);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    roleBands(ctx, d, pose);
+    var ein = Math.min(1, tIn / .32);
+    var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
+    ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
+    drawRoleHead(ctx, d, spec, idx, cuts.length, t, S.total, cuts);
+    drawRoleMain(ctx, d, spec, cut, idx, pose);
+    drawRoleCaption(ctx, d, cut, p, spec);
+    ctx.restore();
+  }
+
+  /* 대본이 없을 때 — 지금 고른 템플릿·공식 그대로의 샘플 프레임 */
+  function drawRoleIdle(ctx, d) {
+    charLoad(d);
+    var R = ROLE[d];
+    var sp = sampleFor(d, formulaKey(d));
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    var spec = { hookTitle: sp.hook_title, watermark: R.wm, words: sp.highlight_words || [], badge: R.badge };
+    var cut = { text: sp.cuts[0].text, hook: sp.hook_title, idx: 0, dur: 5, start: 0 };
+    var pose = autoPose(d, cut);
+    roleBands(ctx, d, pose);
+    drawRoleHead(ctx, d, spec, 0, sp.cuts.length, 2.2, sp.cuts.length * 5, []);
+    drawRoleMain(ctx, d, spec, cut, 0, pose);
+    drawRoleCaption(ctx, d, { text: cut.text }, .72, spec);
+    txLine(ctx, '샘플 미리보기 · [🧪 샘플로 바로 만들기] → 이 ' + sp.cuts.length + '컷 그대로 녹화', CW / 2, SAFE.b + 74,
+      '800 27px ' + FF, inkA(R, .55), 'center', 'role-note');
+    txLine(ctx, R.name + ' · ' + (formulaOf(d) ? formulaOf(d).tag + ' ' + formulaOf(d).name : '') + ' · 1080 × 1920',
+      CW / 2, SAFE.b + 120, '700 24px ' + FF, inkA(R, .40), 'center', 'role-note2');
+    ctx.restore();
+  }
+
+  /* ---------- 샘플 대본 — 템플릿 × 공식 9종 ---------- */
+  function mkSample(cuts, title, hook, words) {
+    return { title: title, hook_title: hook, series_badge: '샘플', highlight_words: words || [], cuts: cuts };
+  }
+  var SAMPLE_F = {
+    'shiba:1': mkSample([
+      { text: '정가 29,900원 · 오늘 9,900원, 67% 내렸습니다', hook: '정가 29,900원이 9,900원' },
+      { text: '행사는 11월 24일까지 · 재고 300개 남았습니다', hook: '왜 이 가격인지' },
+      { text: '무게 1.2kg · 흡입력 12,000Pa · 3주 써봤습니다', hook: '3주 써본 체감' },
+      { text: '쿠팡 12,400원 · 네이버 11,900원 · 오늘 9,900원', hook: '3곳 가격 비교' },
+      { text: '9,900원은 오늘 밤까지, 내일은 29,900원 복귀', hook: '마감 전에 담으세요' }
+    ], '정가 29,900원 → 오늘 9,900원', '정가 29,900원짜리가 9,900원', ['무선청소기', '9,900원', '67%']),
+    'shiba:2': mkSample([
+      { text: '가성비 9,900원 vs 프리미엄 39,000원', hook: '9,900원 vs 39,000원' },
+      { text: '가성비 · 무게 1.2kg · 흡입 12,000Pa', hook: '가성비 쪽 스펙' },
+      { text: '프리미엄 · 무게 2.1kg · 흡입 25,000Pa', hook: '프리미엄 쪽 스펙' },
+      { text: '청소 시간은 4분 vs 3분, 차이는 1분입니다', hook: '실사용 차이는 1분' },
+      { text: '원룸은 9,900원 · 30평 이상은 39,000원', hook: '우리 집엔 어느 쪽' }
+    ], '가성비 9,900원 vs 프리미엄 39,000원', '9,900원 vs 39,000원, 뭐가 다를까', ['가성비', '프리미엄', '1분']),
+    'shiba:3': mkSample([
+      { text: '이번 주 최저가 꿀템 3개, 1위부터 갑니다', hook: '이번 주 꿀템 TOP3' },
+      { text: '주방세제 6개 묶음 9,900원 · 개당 1,650원', hook: '3위 개당 1,650원' },
+      { text: '무선청소기 29,900원 → 11,900원', hook: '2위 11,900원' },
+      { text: '캡슐세제 100개 12,900원 · 개당 129원', hook: '1위 개당 129원' },
+      { text: '3개 합쳐 34,700원, 오늘 밤 12시까지', hook: '합쳐 34,700원' }
+    ], '이번 주 꿀템 TOP3', '이번 주 최저가 꿀템 3개', ['꿀템', 'TOP3', '개당']),
+    'bunny:1': mkSample([
+      { text: '매일 아침 12분, 아이 둘 등원 준비에 지쳤어요', hook: '아침마다 12분씩' },
+      { text: '원인은 물건 찾기 · 옷 고르기 · 신발 신기', hook: '원인은 세 가지' },
+      { text: '현관 앞 3칸 수납과 전날 옷 세팅으로 바꿨어요', hook: '현관 3칸으로 해결' },
+      { text: '준비 시간 12분 → 4분, 8분이 줄었습니다', hook: '12분 → 4분' },
+      { text: '같은 고민이면 오늘 밤 현관부터 정리해 보세요', hook: '오늘 밤 현관부터' }
+    ], '등원 준비 12분 → 4분', '등원 준비 12분 → 4분, 아침이 바뀐 이유', ['등원', '12분', '4분']),
+    'bunny:2': mkSample([
+      { text: '석 달 써본 육아템, 장점 둘과 단점 하나만 말할게요', hook: '장점 2 · 단점 1' },
+      { text: '장점 · 세척 부품이 3개뿐이라 5분이면 끝납니다', hook: '세척 5분' },
+      { text: '장점 · 소음 42dB, 둘째 낮잠에도 안 깨워요', hook: '소음 42dB' },
+      { text: '단점 · 물통 분리 세척이 조금 번거롭습니다', hook: '단점도 있어요' },
+      { text: '단점 감수할 수 있으면 추천, 아니면 패스하세요', hook: '이럴 때만 추천' }
+    ], '육아템 장점 2 · 단점 1', '석 달 써본 육아템, 장점 둘 단점 하나', ['육아템', '장점', '단점']),
+    'bunny:3': mkSample([
+      { text: '육아템 살 때 꼭 확인할 것 3가지, 순서대로 갑니다', hook: '사기 전 3가지' },
+      { text: '부품이 3개 이하인지 보세요, 세척이 쉬워집니다', hook: '부품 3개 이하' },
+      { text: '소음 45dB 아래, 낮잠 시간에 틀어도 됩니다', hook: '소음 45dB 아래' },
+      { text: 'A/S 2년 이상, 물통만 따로 사는지 확인', hook: 'A/S 2년 이상' },
+      { text: '이 세 개만 보면 광고에 안 속습니다', hook: '저장해 두세요' }
+    ], '육아템 사기 전 체크 3', '사기 전에 이 3개만 보세요', ['체크', '부품', 'A/S']),
+    'penguin:1': mkSample([
+      { text: '제주 오션뷰 호텔, 1박 98,000원 · D-2 마감입니다', hook: '1박 98,000원 D-2' },
+      { text: '원래 21만원이던 방, 오늘 53% 내렸습니다', hook: '53% 내렸어요' },
+      { text: '조식 2인 포함 · 수영장 무료 · 주차 무료', hook: '조식·수영장 포함' },
+      { text: '11월 22일~24일, 남은 객실 4개뿐입니다', hook: '남은 방 4개' },
+      { text: '취소는 3일 전까지 무료, D-2 안에 결정하세요', hook: 'D-2 안에 결정' }
+    ], '제주 오션뷰 1박 98,000원 · D-2', '제주 오션뷰 호텔 1박 98,000원', ['제주', '98,000원', 'D-2']),
+    'penguin:2': mkSample([
+      { text: '이 호텔 하나만 보세요, 이유는 조식 한 가지입니다', hook: '이유는 조식 하나' },
+      { text: '조식 뷔페 40종 · 07시부터 10시까지 · 오션뷰', hook: '조식 40종 오션뷰' },
+      { text: '1박 129,000원, 조식 2인 44,000원이 포함된 가격', hook: '조식 포함 129,000원' },
+      { text: '아이 의자 · 이유식 데우기 무료로 준비됩니다', hook: '아이 의자 무료' },
+      { text: '수영장보다 조식 하나로 고르셔도 됩니다', hook: '조식으로 고르세요' }
+    ], '조식 하나로 고르는 호텔', '이 호텔은 조식 하나로 고르면 됩니다', ['조식', '오션뷰', '129,000원']),
+    'penguin:3': mkSample([
+      { text: '동탄에서 차로 40분, 주말 코스 3곳 정리했습니다', hook: '차로 40분 코스' },
+      { text: '10:00 · 수목원 산책 2시간, 입장 5,000원', hook: '10시 수목원' },
+      { text: '12:30 · 국수 한 그릇 9,000원, 대기 20분', hook: '12시 반 국수' },
+      { text: '15:00 · 키즈카페 2시간 12,000원, 주차 무료', hook: '3시 키즈카페' },
+      { text: '세 곳 합쳐 1인 26,000원, 오전에 출발하세요', hook: '1인 26,000원' }
+    ], '동탄 주말 코스 3곳', '동탄에서 차로 40분, 주말 코스 3곳', ['동탄', '주말', '26,000원']),
+    /* 🦊 폭스시그널 — 장마감 / 장전 / 점심 (샘플 수치는 예시값) */
+    'fox:1': mkSample([
+      { text: '코스피 4,869.96, -5.21%로 오늘 장을 마쳤습니다', hook: '코스피 -5.21% 마감' },
+      { text: '외인 -1조 2,311억 · 기관 -7,863계약 · 개인 +1조 6,618억', hook: '오늘의 수급' },
+      { text: '바이오 · 화장품이 올랐고 반도체는 밀렸습니다', hook: '돈이 간 섹터' },
+      { text: '사이드카 발동 · 상한가 0종 · 신고가 3종', hook: '오늘의 신호' },
+      { text: '다음 거래일은 4,831 지지와 외인 선물만 보세요', hook: '내일 체크포인트' }
+    ], '코스피 -5.21% 마감 결산', '코스피 -5.21%, 오늘 수급이 말하는 것', ['코스피', '쌍매도', '사이드카']),
+    'fox:2': mkSample([
+      { text: '간밤 야간선물 -0.4%, 미 증시 반도체가 약했습니다', hook: '야간선물 -0.4%' },
+      { text: '나스닥 -0.8% · 빅테크는 금리 부담에 밀렸습니다', hook: '빅테크가 밀린 이유' },
+      { text: '어제 국내는 바이오 · 화장품이 강했습니다', hook: '어제 강한 테마' },
+      { text: '장전 뉴스는 환율과 반도체 수출 두 개입니다', hook: '장전 뉴스 두 개' },
+      { text: '시초가 갭 대응은 🔴 주의 · 🟡 관망 · 🟢 우위로 봅니다', hook: '갭 대응 신호등' }
+    ], '장전 시황 · 야간선물 -0.4%', '밤사이 야간선물과 미 증시 정리', ['야간선물', '나스닥', '갭']),
+    'fox:3': mkSample([
+      { text: '오전 코스피는 4,890, +0.4%로 오전을 마쳤습니다', hook: '오전 +0.4%' },
+      { text: '외인 3,200억 순매수 · 기관 1,100억 매도', hook: '오전 수급' },
+      { text: '주도 섹터는 반도체 · 2차전지, 대금 1위 삼성전자', hook: '오전 주도 섹터' },
+      { text: '선물 +0.6%, 새로 편입된 뉴스는 없습니다', hook: '선물 +0.6%' },
+      { text: '오후장은 반도체 대금과 외인 프로그램만 보세요', hook: '오후 관전 포인트' }
+    ], '점심 시황 · 오전 +0.4%', '오전 마감 +0.4%, 오후에 볼 것', ['오전', '수급', '반도체'])
+  };
+  function sampleFor(d, f) { return SAMPLE_F[d + ':' + f] || SAMPLE_F[d + ':1'] || SAMPLE_SPEC; }
+
   function setDesign(name) {
     S.cfg.design = DESIGN[name] ? name : 'dark';
     saveCfg();
     if (S.cfg.design === 'fox') foxLoad();
+    if (ROLE[S.cfg.design]) charLoad(S.cfg.design);
+    var vLabel = applyVoicePreset(S.cfg.design);
     syncUi();
     redraw();
-    say(S.cfg.design === 'fox'
-      ? '🦊 <b>폭스시그널 에디토리얼</b> — 크림 아이보리 바탕 · 빅넘버 카드 · 여우 4종 자동 매칭 · 에디토리얼 자막으로 그립니다.'
-      : '🌙 <b>다크 시네마</b> — 기존 3양식(카드·차트·사진)으로 그립니다.');
+    var d = S.cfg.design, R = ROLE[d];
+    var vNote = vLabel ? ' · 🎙️ ' + vLabel : '';
+    if (R) {
+      var f = formulaOf(d);
+      say(R.name + ' — ' + (f ? f.tag + ' ' + f.name + ' · ' : '') + '빅넘버·카드·캐릭터 4종 자동 매칭' + vNote + '. 아래 <b>🎯 분야 흥행 공식</b>을 고르면 대본 구조와 카드까지 함께 바뀝니다.');
+    } else if (d === 'fox') {
+      var ff = formulaOf(d);
+      say('🦊 <b>폭스시그널 에디토리얼</b> — 크림 아이보리 바탕 · 빅넘버 카드 · 여우 4종 자동 매칭' + vNote + '. 아래 <b>🎯 분야 흥행 공식</b>에서 장마감·장전·점심을 고릅니다.');
+    } else {
+      say('🌙 <b>다크 시네마</b> — 기존 3양식(카드·차트·사진)으로 그립니다.');
+    }
   }
 
   /* ---------- UI sync ---------- */
@@ -14952,18 +16042,52 @@ var CSVoice = (function () {
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
     var tg = $('#wvTplTag');
-    if (tg) tg.textContent = designOf() === 'fox' ? '🦊 폭스시그널' : (TPL_NAME[c.tpl || 'card'] || TPL_NAME.card);
+    if (tg) tg.textContent = designChip();
     $$('#wvPanel [data-wvdesign]').forEach(function (btn) {
       var on = btn.getAttribute('data-wvdesign') === (c.design || 'dark');
       btn.classList.toggle('on', on);
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
     var isFox = (c.design || 'dark') === 'fox';
-    var fbx = $('#wvFoxBox'); if (fbx) fbx.hidden = !isFox;
+    var roleD = ROLE[c.design] ? c.design : '';
+    var fbx = $('#wvFoxBox');
+    if (fbx) {
+      fbx.hidden = !(isFox || roleD);
+      if (roleD || isFox) fbx.setAttribute('data-design', roleD || 'fox');
+    }
+    var flb = $('#wvFoxLabel');
+    if (flb) {
+      var who = isFox ? '🦊 여우' : roleD === 'shiba' ? '🐶 시바견' : roleD === 'bunny' ? '🐰 토끼' : roleD === 'penguin' ? '🐧 펭귄' : '🦊 여우';
+      flb.innerHTML = who + ' 컷별 포즈 <span class="bdg info">자동 = 컷 내용으로 선택</span>';
+    }
+    var fb = $('#wvFormulaBox'), fs = $('#wvFormulas');
+    var fD = FORMULA[c.design] ? c.design : '';
+    if (fb) {
+      fb.hidden = !fD;
+      if (fD) fb.setAttribute('data-design', fD);
+    }
+    if (fs) {
+      if (fD) {
+        var curF = formulaKey(fD);
+        fs.innerHTML = Object.keys(FORMULA[fD]).map(function (k) {
+          var f = FORMULA[fD][k];
+          return '<button class="wvformula' + (k === curF ? ' on' : '') + '" type="button" data-wvformula="' + k + '" aria-pressed="' + (k === curF ? 'true' : 'false') + '"><b>' + f.tag + ' ' + f.name + '</b><span>' + f.desc + '</span></button>';
+        }).join('');
+      } else fs.innerHTML = '';
+    }
     var lh = $('#wvLayoutHint');
-    if (lh) lh.innerHTML = isFox
-      ? '🦊 <b>폭스시그널 에디토리얼</b>은 브랜드 필 → <b>빅넘버 + 여우</b> → <b>에디토리얼 자막</b> 고정 레이아웃으로 그립니다. 아래 양식 3종·테마색·자막색·내 사진은 🌙 다크 시네마에서 적용됩니다.'
-      : '쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.';
+    if (lh) {
+      if (roleD) {
+        var rf = formulaOf(roleD);
+        lh.innerHTML = ROLE[roleD].name + ' · <b>' + (rf ? rf.tag + ' ' + rf.name : '') + '</b> — 브랜드 필 → <b>훅 + ' + (rf ? rf.cardName : '카드') + ' + ' + (roleD === 'shiba' ? '시바견' : roleD === 'bunny' ? '토끼' : '펭귄') + '</b> → <b>자막 카드</b> 고정 레이아웃입니다. 대본·샘플·카드가 모두 이 공식으로 그려집니다(테마색·내 사진은 🌙 다크 시네마 전용).';
+      } else if (isFox) {
+        var xf = formulaOf('fox');
+        lh.innerHTML = '🦊 <b>폭스시그널 에디토리얼</b>' + (xf ? ' · <b>' + xf.tag + ' ' + xf.name + '</b>' : '') + ' — 브랜드 필 → <b>빅넘버 + 여우</b> → <b>에디토리얼 자막</b> 고정 레이아웃입니다. 아래 <b>🎯 분야 흥행 공식</b>에서 장마감·장전·점심을 고르면 대본·샘플이 함께 바뀝니다.';
+      } else {
+        lh.innerHTML = '쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.';
+      }
+    }
+    try { if (window.CS2_FORMULA_NOTE) window.CS2_FORMULA_NOTE(formulaSummary()); } catch (e) {}
     buildFoxCuts();
     var tag = $('#wvMusic');
     if (tag) {
@@ -15484,6 +16608,7 @@ var CSVoice = (function () {
     var spec = S.spec, cuts = S.cuts;
     if (!spec || !cuts.length) return;
     if (designOf() === 'fox') { drawFoxFrame(t); return; }
+    if (ROLE[designOf()]) { drawRoleFrame(t); return; }
     var idx = 0;
     while (idx < cuts.length - 1 && t >= cuts[idx].end) idx++;
     var cut = cuts[idx];
@@ -15574,6 +16699,7 @@ var CSVoice = (function () {
     S.tplForce = opt.tpl || null;
     S.designForce = opt.design || null;
     if (opt.design === 'fox') foxLoad();
+    if (ROLE[opt.design]) charLoad(opt.design);
     if (opt.chartData != null) S.cfg.chartData = String(opt.chartData);
     pv.cuts.forEach(function (c) { c._items = null; });
     var frames = [], viol = [], boxCount = 0;
@@ -15804,7 +16930,7 @@ var CSVoice = (function () {
     if (dl) { dl.hidden = false; dl.href = S.url; dl.download = 'shorts_' + stamp() + '.' + ext; dl.textContent = '⬇ 영상 저장 (' + ext.toUpperCase() + ')'; }
     var mb = (blob.size / 1048576).toFixed(1);
     setBar(1); setState('완성', true);
-    say('✅ 완성 — ' + Math.round(S.total) + '초 · ' + mb + 'MB · ' + ext.toUpperCase() + ' · ' + (designOf() === 'fox' ? '🦊 폭스시그널 에디토리얼' : (TPL_NAME[tplOf()] || '')) +
+    say('✅ 완성 — ' + Math.round(S.total) + '초 · ' + mb + 'MB · ' + ext.toUpperCase() + ' · ' +       designName() + (ROLE[designOf()] && formulaOf() ? ' · ' + formulaOf().tag + ' ' + formulaOf().name : '') +
       (S.photos.length ? ' · 사진 ' + S.photos.length + '장' : '') +
       ' · ' + ((window.CSVoice && CSVoice.ready(S.cfg.voice)) ? ('성우 ' + CSVoice.label(S.cfg.voice) + ' ' + clampSpeed(S.cfg.speed).toFixed(2) + 'x') : '성우 없음(ElevenLabs 키 없음 · 한국어 무료 성우를 고르면 키 없이 됩니다)') +
       (S.cfg.bgm !== 'none' ? ' · BGM 포함' : '') +
@@ -15904,6 +17030,7 @@ var CSVoice = (function () {
     }
     S.spec = spec;
     S.foxPose = {};
+    S.poses = {};
     var pv = previewCuts(spec);
     S.cuts = pv.cuts; S.total = pv.total;
     applyPhotos();
@@ -16171,12 +17298,20 @@ var CSVoice = (function () {
       say('녹화 중입니다 — [■ 중지]를 누른 뒤 샘플을 불러와 주세요.', 'bad');
       return null;
     }
-    var applied = adoptSpec(SAMPLE_SPEC, '샘플 5컷');
+    var d0 = designOf(), rf = formulaOf(d0), fd0 = formulaDesign();
+    var sp = fd0 ? sampleFor(fd0, formulaKey(fd0)) : SAMPLE_SPEC;
+    var nm0 = fd0 ? formulaTitle(fd0) : '';
+    var lbl = fd0 ? ('샘플 · ' + nm0 + ' ' + rf.tag) : '샘플 5컷';
+    var applied = adoptSpec(sp, lbl);
     if (!applied) return null;
     var ta = $('#wvPasteTa'); if (ta) ta.value = '';   /* 샘플로 바꿨으니 이전에 붙여 둔 글은 비운다 */
     renderPasteList(applied);
-    pasteSay('🧪 오늘(11/20) 시황 5컷 샘플을 불러왔습니다 — [▶ 생성]만 누르면 그대로 녹화합니다.', 'good');
-    say('🧪 <b>샘플 5컷</b>을 불러왔습니다 — <b>🦊 폭스시그널 에디토리얼</b>을 골랐다면 여우 포즈까지 자동으로 맞춰집니다. <b>[▶ 생성]</b>을 누르세요.', 'good');
+    pasteSay(fd0
+      ? '🧪 ' + nm0 + ' · ' + rf.tag + ' ' + rf.name + ' 샘플 ' + sp.cuts.length + '컷을 불러왔습니다 — [▶ 생성]만 누르면 그대로 녹화합니다.'
+      : '🧪 오늘(11/20) 시황 5컷 샘플을 불러왔습니다 — [▶ 생성]만 누르면 그대로 녹화합니다.', 'good');
+    say(fd0
+      ? '🧪 <b>' + nm0 + ' · ' + rf.tag + ' ' + rf.name + '</b> 샘플 ' + sp.cuts.length + '컷을 불러왔습니다 — 카드 모양과 포즈까지 그 공식으로 그립니다. <b>[▶ 생성]</b>을 누르세요.'
+      : '🧪 <b>샘플 5컷</b>을 불러왔습니다 — <b>[▶ 생성]</b>을 누르세요.', 'good');
     return applied;
   }
 
@@ -16213,10 +17348,17 @@ var CSVoice = (function () {
       if (!t || !t.getAttribute) return;
       var k = t.getAttribute('data-wvfox');
       if (k == null) return;
-      if (!S.foxPose) S.foxPose = {};
-      if (t.value === 'auto') delete S.foxPose[k];
-      else S.foxPose[k] = t.value;
+      var st = poseStore(designOf());
+      if (t.value === 'auto') delete st[k];
+      else st[k] = t.value;
+      if (designOf() === 'fox') S.foxPose = st;
       redraw();
+    });
+    var fml = $('#wvFormulas');
+    if (fml) fml.addEventListener('click', function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest('[data-wvformula]') : null;
+      if (!b) return;
+      setFormula(b.getAttribute('data-wvformula'));
     });
     var pbtn = $('#wvPasteBtn');
     if (pbtn) pbtn.addEventListener('click', function () {
@@ -16241,6 +17383,8 @@ var CSVoice = (function () {
     var v = $('#wvVoice');
     if (v) v.addEventListener('change', function () {
       S.cfg.voice = v.value;
+      S.cfg.voicePick = S.cfg.voicePick || {};
+      S.cfg.voicePick[designOf()] = v.value;      /* 이 템플릿에서는 내가 고른 성우를 계속 쓴다 */
       if (window.CSVoice) { var vv = CSVoice.resolve(v.value); if (vv && vv.speedHint) S.cfg.speed = vv.speedHint; }
       saveCfg(); syncUi(); redraw();
     });
@@ -16287,6 +17431,7 @@ var CSVoice = (function () {
     var cv = $('#wvCanvas'); if (!cv) return;
     var ctx = ctxOf(cv);
     if (designOf() === 'fox') { try { drawFoxIdle(ctx); return; } catch (e) {} }
+    if (ROLE[designOf()]) { try { drawRoleIdle(ctx, designOf()); return; } catch (e) {} }
     var g = ctx.createLinearGradient(0, 0, 0, CH);
     g.addColorStop(0, '#0a1424'); g.addColorStop(1, '#060a12');
     ctx.fillStyle = g; ctx.fillRect(0, 0, CW, CH);
@@ -16310,6 +17455,7 @@ var CSVoice = (function () {
     bind();
     syncUi();
     if ((S.cfg.design || 'dark') === 'fox') foxLoad();
+    if (ROLE[S.cfg.design]) charLoad(S.cfg.design);
   }
   if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', init);
   else init();
@@ -16331,6 +17477,15 @@ var CSVoice = (function () {
     setDesign: setDesign,
     design: function () { return designOf(); },
     foxOf: function (cut, idx) { return foxPoseOf(cut, idx || 0); },
+    poseOf: function (d, cut, idx) { return poseOfCut(d || designOf(), cut, idx || 0); },
+    setFormula: setFormula,
+    formula: function () { return ROLE[designOf()] ? { design: designOf(), key: formulaKey(), name: formulaName(), tag: formulaTag() } : null; },
+    formulaPrompt: formulaPrompt,
+    formulaSummary: formulaSummary,
+    formulaDefs: function () { return FORMULA; },
+    sampleOf: function (d, f) { return sampleFor(d || designOf(), f || formulaKey()); },
+    dealInfo: dealInfo,
+    charOf: function (d) { var st = charSt(d || designOf()); return { loaded: Object.keys(st.img).length, bg: st.bg }; },
     bigOf: function (text) { return foxBig(text); },
     tpl: function () { return tplOf(); },
     render: function (t) { if (t == null) redraw(); else { try { drawFrame(t); } catch (e) {} } },
