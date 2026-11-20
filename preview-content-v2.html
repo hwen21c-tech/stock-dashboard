@@ -2241,7 +2241,9 @@
           <label class="flabel" for="wvVoice" style="flex:0 0 auto">성우</label>
           <select id="wvVoice" aria-label="성우 (한국어 무료 · ElevenLabs)"></select>
           <button class="btn small ghost" id="wvVoiceRefresh" type="button" title="ElevenLabs 키로 내 계정 보이스 다시 불러오기">🔄 내 보이스</button>
+          <button class="btn small" id="wvVoiceSample" type="button" title="지금 고른 성우와 말 속도 그대로 짧은 샘플을 바로 들어봅니다">🔊 들어보기</button>
         </div>
+        <div class="hint" id="wvVoiceSampleNote" hidden></div>
         <div class="wvrow" style="flex-wrap:nowrap;align-items:center">
           <label class="flabel" for="wvSpeed" style="flex:0 0 auto">말 속도</label>
           <input type="range" id="wvSpeed" min="0.90" max="1.25" step="0.01" value="1" style="flex:1 1 120px;min-width:0;accent-color:#38bdf8" aria-label="성우 말 속도">
@@ -17402,6 +17404,56 @@ var CSVoice = (function () {
         .catch(function (e) { flash('보이스 목록을 불러오지 못했습니다 — ' + ((e && e.message) || '')); })
         .then(function () { vrf.disabled = false; });
     });
+    /* 🔊 들어보기 — 지금 고른 성우 + 지금 말 속도 그대로 짧은 샘플을 읽어 준다 */
+    var vsb = $('#wvVoiceSample');
+    var wvSmp = { url: '', audio: null, busy: false };
+    function smpNote(txt, bad) {
+      var nEl = $('#wvVoiceSampleNote');
+      if (!nEl) return;
+      nEl.hidden = !txt;
+      nEl.textContent = txt || '';
+      nEl.style.color = bad ? '#fda4af' : '';
+    }
+    function smpStop() {
+      if (wvSmp.audio) { try { wvSmp.audio.pause(); } catch (e) {} }
+      wvSmp.audio = null;
+      if (wvSmp.url) { try { URL.revokeObjectURL(wvSmp.url); } catch (e) {} }
+      wvSmp.url = '';
+    }
+    function smpLine() {
+      var d = designOf();
+      if (d === 'fox') return '코스피 4,869, 오늘 수급은 외국인이 키를 쥐고 있습니다.';
+      if (d === 'shiba') return '정가 2만 9천 원짜리, 오늘만 9,900원입니다.';
+      return '안녕하세요, 선택하신 성우 목소리와 속도 샘플입니다.';
+    }
+    function smpSpeak() {
+      if (wvSmp.busy) return;
+      if (!window.CSVoice) { flash('성우 엔진을 불러오지 못했습니다 — 새로 고침 후 다시 시도해 주세요.'); return; }
+      var vsel = $('#wvVoice');
+      var key = (vsel && vsel.value) || (S.cfg && S.cfg.voice) || '';
+      var spdEl = $('#wvSpeed');
+      var spd = clampSpeed((spdEl && spdEl.value != null && spdEl.value !== '') ? spdEl.value : ((S.cfg && S.cfg.speed) || 1));
+      var vv = CSVoice.resolve(key);
+      var line = smpLine();
+      smpStop();                       /* 이미 재생 중이면 멈추고 새로 만든다 */
+      wvSmp.busy = true;
+      if (vsb) { vsb.disabled = true; vsb.textContent = '⏳ 생성 중…'; }
+      CSVoice.request(line, key, spd, 'blob').then(function (blob) {
+        wvSmp.url = URL.createObjectURL(blob);
+        var au = new Audio(wvSmp.url);
+        wvSmp.audio = au;
+        return au.play();
+      }).then(function () {
+        smpNote('🔊 ' + (vv.n || vv.name || '한국어 무료 성우') + ' · ' + spd.toFixed(2) + 'x — ' + line);
+      }).catch(function (e) {
+        smpNote('⚠️ 샘플을 만들지 못했습니다 — ' + ((e && e.message) || '알 수 없는 오류'), true);
+        flash('성우 샘플 호출에 실패했습니다 — 사유를 성우 칸 아래에 적었습니다.');
+      }).then(function () {
+        wvSmp.busy = false;
+        if (vsb) { vsb.disabled = false; vsb.textContent = '🔊 들어보기'; }
+      });
+    }
+    if (vsb) vsb.addEventListener('click', smpSpeak);
     var b2 = $('#wvBgm'); if (b2) b2.addEventListener('change', function () { S.cfg.bgm = b2.value; saveCfg(); syncUi(); });
     var s2 = $('#wvSfx'); if (s2) s2.addEventListener('change', function () { S.cfg.sfx = !!s2.checked; saveCfg(); });
     var a2 = $('#wvAccent'); if (a2) a2.addEventListener('input', function () { S.cfg.accent = a2.value; saveCfg(); if (S.spec) S.spec.accent = a2.value; redraw(); });
