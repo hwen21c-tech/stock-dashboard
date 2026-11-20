@@ -5,19 +5,56 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>🎁 핫템 최저가 · 연오랑 PICK | SNS 핫템 최저가 비교</title>
 <meta name="description" content="SNS에서 본 핫템, 인스타 판매가 대신 쿠팡·직구 최저가로 사는 곳을 한눈에 비교합니다. 쇼츠에 나온 번호(#12)만 검색하세요.">
-<meta name="theme-color" content="#faf7f2">
+<meta name="theme-color" content="#faf7f2" id="themeColorMeta">
+<script>
+/* 테마 선초기화 — 첫 페인트 전에 review-zip.html·deals.html 과 같은 키(review_zip_theme)를 읽어 깜빡임 없이 적용 */
+(function () {
+  try {
+    var t = localStorage.getItem('review_zip_theme');
+    if (t === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+    else if (t === 'light') document.documentElement.setAttribute('data-theme', 'light');
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m && t === 'dark') m.setAttribute('content', '#0d1117');
+  } catch (e) {}
+})();
+</script>
 <meta property="og:title" content="🎁 핫템 최저가 · 연오랑 PICK | SNS 핫템 최저가 비교">
 <meta property="og:description" content="쇼츠에 나온 번호만 검색하면 인스타 판매가 vs 쿠팡·직구 최저가를 바로 비교할 수 있어요.">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff5a3c'/%3E%3Ctext x='32' y='44' font-size='34' text-anchor='middle'%3E%F0%9F%9B%8D%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <style>
 :root{
-  --bg:#faf7f2; --card:#ffffff; --ink:#1b1814; --ink2:#5c554c; --line:#e8e1d6;
-  --accent:#ff5a3c; --accent2:#ffefe9; --gold:#ffb020; --ok:#0f9d58; --warn:#b45309;
+  /* ── 라이트(기본) 팔레트 ── */
+  --bg:#faf7f2; --card:#ffffff; --soft:#f4efe7; --inset:#f7f3ec;
+  --ink:#1b1814; --on-ink:#ffffff; --ink2:#5c554c; --body:#3d3830;
+  --mut:#8a8074; --mut2:#9c9287; --mut3:#a89e92;
+  --line:#e8e1d6;
+  --accent:#ff5a3c; --on-accent:#ffffff; --accent2:#ffefe9;
+  --gold:#ffb020; --ok:#0f9d58; --warn:#b45309; --danger:#d63a1e;
+  --notice-bg:#fff8e8; --notice-bd:#ffe2a8; --notice-tx:#7a5200; --notice-tx2:#5d3e00;
+  --hero-a:#ffffff; --hero-b:#fff6f2; --save-bd:#ffd3c6;
+  --pill-bg:#fff5f2; --pill-tx:#c2410c; --pill-bd:#ffd3c6;
+  --toast-bg:#1b1814; --toast-tx:#ffffff; --disc-bg:#1b1814; --disc-tx:#ffe9c9; --disc-b:#ffd071;
   --radius:16px; --shadow:0 2px 10px rgba(27,24,20,.06), 0 10px 28px rgba(27,24,20,.05);
+}
+/* ── 🌙 다크 팔레트 (review-zip.html·deals.html 과 동일 톤) ── */
+html[data-theme="dark"]{
+  --bg:#0d1117; --card:#161c24; --soft:#1c232d; --inset:#1a212b;
+  --ink:#eef2f7; --on-ink:#0d1117; --ink2:#aab6c4; --body:#c9d2de;
+  --mut:#93a0b0; --mut2:#8b97a6; --mut3:#93a0b0;
+  --line:#28313d;
+  --accent:#ff5a3c; --on-accent:#ffffff; --accent2:#3a1d16;
+  --gold:#f5b544; --ok:#34d399; --warn:#f0b429; --danger:#ff9d85;
+  --notice-bg:#2b2412; --notice-bd:#5d4a17; --notice-tx:#f2cd7d; --notice-tx2:#f8e0ae;
+  --hero-a:#161c24; --hero-b:#1b2029; --save-bd:#5a2c22;
+  --pill-bg:#2a1a14; --pill-tx:#ffb59e; --pill-bd:#5a2c22;
+  --toast-bg:#e9e3d9; --toast-tx:#161c24; --disc-bg:#11151b; --disc-tx:#ffe9c9; --disc-b:#ffd071;
+  --shadow:0 2px 10px rgba(0,0,0,.34), 0 10px 28px rgba(0,0,0,.28);
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
 html,body{margin:0; padding:0; max-width:100%; overflow-x:hidden}
+html{color-scheme:light}
+html[data-theme="dark"]{color-scheme:dark}
 body{
   background:var(--bg); color:var(--ink);
   font-family:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -33,12 +70,12 @@ input,select,textarea{font:inherit; color:inherit}
 /* ── 상단 고정 대가성 고지 ── */
 .disc{
   position:sticky; top:0; z-index:60;
-  background:#1b1814; color:#ffe9c9;
+  background:var(--disc-bg); color:var(--disc-tx);
   font-size:11.5px; line-height:1.35; letter-spacing:-.01em;
   padding:7px 12px calc(7px + env(safe-area-inset-bottom,0px));
   padding-bottom:7px; text-align:center;
 }
-.disc b{color:#ffd071}
+.disc b{color:var(--disc-b)}
 .disc .dot{color:var(--accent)}
 
 /* ── 헤더 ── */
@@ -48,24 +85,26 @@ input,select,textarea{font:inherit; color:inherit}
 .pn a{flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; gap:4px;
   padding:9px 6px; border-radius:12px; font-size:12px; font-weight:800; letter-spacing:-.02em;
   text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-  color:var(--ink2); background:#fff; border:1px solid var(--line); transition:transform .12s ease}
+  color:var(--ink2); background:var(--card); border:1px solid var(--line); transition:transform .12s ease}
 .pn a:active{transform:scale(.98)}
 .pn a.on{color:#fff; background:var(--accent); border-color:var(--accent); box-shadow:0 6px 16px rgba(255,90,60,.26)}
 .hd-row{display:flex; align-items:center; gap:10px; min-width:0}
-.logo{font-weight:900; font-size:20px; letter-spacing:-.03em; text-decoration:none; display:flex; align-items:center; gap:6px; min-width:0}
+.logo{font-weight:900; font-size:20px; letter-spacing:-.03em; text-decoration:none; display:flex; align-items:center; gap:6px; min-width:0; white-space:nowrap}
 .logo .sub{font-size:10.5px; font-weight:800; color:#fff; background:var(--accent); border-radius:999px; padding:2px 7px; letter-spacing:0}
 .hd-row .grow{flex:1 1 auto; min-width:0}
 .icon-btn{
-  border:1px solid var(--line); background:#fff; border-radius:999px;
+  border:1px solid var(--line); background:var(--card); border-radius:999px;
   padding:7px 11px; font-size:12px; font-weight:800; color:var(--ink2); white-space:nowrap;
 }
 .icon-btn:active{transform:scale(.97)}
+.theme-btn{display:inline-flex; align-items:center; gap:4px}
+@media (max-width:430px){ .theme-btn{padding:7px 9px} .theme-btn .tt{display:none} }
 .subl{font-size:13px; color:var(--ink2); margin:6px 0 12px; letter-spacing:-.01em}
 
 .search{display:flex; gap:8px; min-width:0}
 .search .box{position:relative; flex:1 1 auto; min-width:0}
 .search input{
-  width:100%; border:1.5px solid var(--line); background:#fff; border-radius:13px;
+  width:100%; border:1.5px solid var(--line); background:var(--card); border-radius:13px;
   padding:13px 14px 13px 38px; font-size:15px; outline:none;
   transition:border-color .15s, box-shadow .15s;
 }
@@ -76,31 +115,31 @@ input,select,textarea{font:inherit; color:inherit}
   border-radius:13px; padding:0 16px; font-size:14px; box-shadow:0 4px 12px rgba(255,90,60,.25);
 }
 .search button:active{transform:translateY(1px)}
-.hintline{font-size:11.5px; color:#8a8074; margin:7px 2px 0}
+.hintline{font-size:11.5px; color:var(--mut); margin:7px 2px 0}
 .hintline b{color:var(--accent)}
 
 /* ── 카테고리 칩 ── */
 .chips{display:flex; gap:7px; overflow-x:auto; padding:12px 0 2px; margin:0 -14px; padding-left:14px; padding-right:14px; scrollbar-width:none; -webkit-overflow-scrolling:touch}
 .chips::-webkit-scrollbar{display:none}
 .chip{
-  flex:0 0 auto; border:1.5px solid var(--line); background:#fff; color:var(--ink2);
+  flex:0 0 auto; border:1.5px solid var(--line); background:var(--card); color:var(--ink2);
   border-radius:999px; padding:8px 13px; font-size:13px; font-weight:800; white-space:nowrap;
 }
-.chip[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:#fff}
+.chip[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:var(--on-ink)}
 .chip .n{opacity:.55; font-weight:700; margin-left:3px; font-size:11.5px}
 
 /* ── 본문 ── */
 main{max-width:1080px; margin:0 auto; padding:2px 14px 30px}
 .notice{
   display:flex; gap:8px; align-items:flex-start;
-  background:#fff8e8; border:1px solid #ffe2a8; color:#7a5200;
+  background:var(--notice-bg); border:1px solid var(--notice-bd); color:var(--notice-tx);
   border-radius:13px; padding:10px 12px; font-size:12px; line-height:1.45; margin:10px 0 0;
 }
-.notice b{color:#5d3e00}
-.notice button{margin-left:auto; border:0; background:transparent; color:#a97700; font-size:15px; line-height:1; padding:2px 0 0}
+.notice b{color:var(--notice-tx2)}
+.notice button{margin-left:auto; border:0; background:transparent; color:var(--notice-tx); font-size:15px; line-height:1; padding:2px 0 0}
 
 .hero{
-  background:linear-gradient(135deg,#fff 0%,#fff6f2 100%);
+  background:linear-gradient(135deg,var(--hero-a) 0%,var(--hero-b) 100%);
   border:1px solid var(--line); border-radius:var(--radius); padding:16px 15px; margin:14px 0 0;
   box-shadow:var(--shadow);
 }
@@ -108,7 +147,7 @@ main{max-width:1080px; margin:0 auto; padding:2px 14px 30px}
 .hero p{margin:0; font-size:12.8px; color:var(--ink2); line-height:1.55}
 .hero .steps{display:flex; gap:8px; margin-top:11px; flex-wrap:wrap}
 .hero .step{
-  flex:1 1 130px; min-width:0; background:#fff; border:1px dashed var(--line);
+  flex:1 1 130px; min-width:0; background:var(--card); border:1px dashed var(--line);
   border-radius:11px; padding:8px 10px; font-size:11.5px; color:var(--ink2); line-height:1.4;
 }
 .hero .step b{display:block; color:var(--ink); font-size:12.5px; margin-bottom:1px}
@@ -116,16 +155,16 @@ main{max-width:1080px; margin:0 auto; padding:2px 14px 30px}
 /* ── TOP3 ── */
 .top3{margin:18px 0 0}
 .top3 h2{font-size:15px; margin:0 0 9px; letter-spacing:-.02em; display:flex; align-items:center; gap:6px}
-.top3 h2 small{font-size:11px; font-weight:700; color:#8a8074}
+.top3 h2 small{font-size:11px; font-weight:700; color:var(--mut)}
 .top3 .row{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
 .t3{
-  background:#fff; border:1px solid var(--line); border-radius:13px; padding:9px 9px 8px;
+  background:var(--card); border:1px solid var(--line); border-radius:13px; padding:9px 9px 8px;
   text-align:left; min-width:0; box-shadow:var(--shadow); display:flex; flex-direction:column; gap:3px;
 }
 .t3 .rank{font-size:15px; line-height:1}
 .t3 .nm{font-size:11.8px; font-weight:800; line-height:1.3; letter-spacing:-.02em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
 .t3 .ct{font-size:10.5px; color:var(--accent); font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.top3 .empty{font-size:12px; color:#8a8074; background:#fff; border:1px dashed var(--line); border-radius:12px; padding:11px 12px}
+.top3 .empty{font-size:12px; color:var(--mut); background:var(--card); border:1px dashed var(--line); border-radius:12px; padding:11px 12px}
 
 /* ── 카드 그리드 ── */
 .grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:16px}
@@ -138,37 +177,37 @@ main{max-width:1080px; margin:0 auto; padding:2px 14px 30px}
   scroll-margin-top:52px;
 }
 .card:target, .card.flash{box-shadow:0 0 0 3px rgba(255,90,60,.35), var(--shadow)}
-.thumb{position:relative; aspect-ratio:16/10; overflow:hidden; background:#f0ebe2}
+.thumb{position:relative; aspect-ratio:16/10; overflow:hidden; background:var(--soft)}
 .thumb img{width:100%; height:100%; object-fit:cover}
 .thumb .emoji{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:52px; filter:saturate(1.05)}
 .thumb .cat{position:absolute; left:9px; top:9px; background:rgba(27,24,20,.82); color:#fff; font-size:10.5px; font-weight:800; padding:4px 8px; border-radius:999px; letter-spacing:-.01em}
 .thumb .sample{position:absolute; right:9px; top:9px; background:#ffd79a; color:#6b3f00; font-size:10px; font-weight:900; padding:4px 7px; border-radius:6px}
 .thumb .no{
-  position:absolute; left:9px; bottom:9px; background:#fff; color:var(--ink);
+  position:absolute; left:9px; bottom:9px; background:var(--card); color:var(--ink);
   font-size:13px; font-weight:900; padding:4px 9px; border-radius:9px; letter-spacing:-.02em;
   box-shadow:0 2px 8px rgba(0,0,0,.14);
 }
-.thumb .no small{font-size:9.5px; font-weight:800; color:#8a8074; margin-right:3px}
+.thumb .no small{font-size:9.5px; font-weight:800; color:var(--mut); margin-right:3px}
 .body{padding:12px 12px 11px; display:flex; flex-direction:column; gap:8px; min-width:0; flex:1 1 auto}
 .body h3{margin:0; font-size:14.5px; line-height:1.35; letter-spacing:-.03em; font-weight:800}
 .price{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px; min-width:0}
-.price s{color:#9c9287; font-size:11.5px; font-weight:700}
+.price s{color:var(--mut2); font-size:11.5px; font-weight:700}
 .price .now{font-size:19px; font-weight:900; letter-spacing:-.04em; color:var(--ink)}
 .price .now small{font-size:11px; font-weight:800; color:var(--ink2); margin-left:2px}
 .save{
-  background:var(--accent2); color:#d63a1e; border:1px solid #ffd3c6;
+  background:var(--accent2); color:var(--danger); border:1px solid var(--save-bd);
   font-size:11px; font-weight:900; padding:3px 8px; border-radius:999px; letter-spacing:-.02em;
   white-space:nowrap;
 }
 .save.hot{background:var(--accent); color:#fff; border-color:var(--accent)}
 .pros{list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:4px}
-.pros li{position:relative; padding-left:15px; font-size:12.3px; color:#3d3830; line-height:1.45}
+.pros li{position:relative; padding-left:15px; font-size:12.3px; color:var(--body); line-height:1.45}
 .pros li:before{content:"✓"; position:absolute; left:0; top:0; color:var(--ok); font-weight:900; font-size:11.5px}
 .pass-t{
   align-self:flex-start; border:0; background:transparent; padding:2px 0;
-  font-size:11.5px; color:#8a8074; font-weight:800; text-decoration:underline; text-underline-offset:3px;
+  font-size:11.5px; color:var(--mut); font-weight:800; text-decoration:underline; text-underline-offset:3px;
 }
-.pass{margin:0; font-size:11.8px; color:#7a6f63; background:#f7f3ec; border-left:3px solid #d9cfc0; border-radius:8px; padding:8px 10px; line-height:1.5}
+.pass{margin:0; font-size:11.8px; color:var(--ink2); background:var(--inset); border-left:3px solid var(--line); border-radius:8px; padding:8px 10px; line-height:1.5}
 .acts{display:flex; gap:7px; margin-top:auto; padding-top:3px; min-width:0}
 .buy{
   flex:1 1 0; min-width:0; text-decoration:none; text-align:center; white-space:nowrap;
@@ -176,27 +215,27 @@ main{max-width:1080px; margin:0 auto; padding:2px 14px 30px}
   font-size:12.8px; font-weight:900; letter-spacing:-.02em; border:1.5px solid transparent;
 }
 .buy.rocket{background:var(--accent); color:#fff; box-shadow:0 4px 12px rgba(255,90,60,.22)}
-.buy.direct{background:#fff; color:var(--ink); border-color:var(--ink)}
+.buy.direct{background:var(--card); color:var(--ink); border-color:var(--ink)}
 .buy:active{transform:translateY(1px)}
 .buy[aria-disabled="true"]{opacity:.45}
-.meta{display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:10.8px; color:#9c9287; min-width:0}
+.meta{display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:10.8px; color:var(--mut2); min-width:0}
 .meta .ct{margin-left:auto; white-space:nowrap}
 .meta > *{min-width:0; overflow:hidden; text-overflow:ellipsis}
-.meta a{color:#9c9287; text-decoration:none; border-bottom:1px dotted #c9c0b4; white-space:nowrap}
-.linkcopy{border:0; background:transparent; color:#9c9287; font-size:11px; padding:0 0 0 2px}
+.meta a{color:var(--mut2); text-decoration:none; border-bottom:1px dotted var(--line); white-space:nowrap}
+.linkcopy{border:0; background:transparent; color:var(--mut2); font-size:11px; padding:0 0 0 2px}
 
-.empty{text-align:center; padding:34px 16px; color:#8a8074; font-size:13px}
+.empty{text-align:center; padding:34px 16px; color:var(--mut); font-size:13px}
 .empty b{display:block; color:var(--ink); font-size:15px; margin-bottom:5px}
-.empty .clear{margin-top:12px; border:1.5px solid var(--ink); background:#fff; border-radius:11px; padding:9px 14px; font-weight:800; font-size:12.5px}
+.empty .clear{margin-top:12px; border:1.5px solid var(--ink); background:var(--card); border-radius:11px; padding:9px 14px; font-weight:800; font-size:12.5px}
 
-footer{max-width:1080px; margin:0 auto; padding:6px 14px 34px; color:#8a8074; font-size:11.5px; line-height:1.6}
+footer{max-width:1080px; margin:0 auto; padding:6px 14px 34px; color:var(--mut); font-size:11.5px; line-height:1.6}
 footer .fbox{border-top:1px solid var(--line); padding-top:14px; margin-top:8px}
 footer b{color:var(--ink2)}
 footer .frow{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
-footer .frow button{border:1px solid var(--line); background:#fff; border-radius:10px; padding:8px 11px; font-size:11.5px; font-weight:800; color:var(--ink2)}
+footer .frow button{border:1px solid var(--line); background:var(--card); border-radius:10px; padding:8px 11px; font-size:11.5px; font-weight:800; color:var(--ink2)}
 .fab{
   position:fixed; right:14px; bottom:calc(16px + env(safe-area-inset-bottom,0px)); z-index:50;
-  width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:#fff;
+  width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:var(--card);
   box-shadow:0 6px 18px rgba(27,24,20,.16); font-size:17px; display:none; align-items:center; justify-content:center;
 }
 .fab.on{display:flex}
@@ -206,7 +245,7 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
 .modal[hidden]{display:none}
 .modal .back{position:absolute; inset:0; background:rgba(20,17,14,.55); backdrop-filter:blur(2px)}
 .modal .panel{
-  position:relative; width:100%; max-width:380px; background:#fff; border-radius:18px;
+  position:relative; width:100%; max-width:380px; background:var(--card); border-radius:18px;
   padding:20px 18px 16px; box-shadow:0 24px 60px rgba(0,0,0,.3);
 }
 .modal h2{margin:0 0 4px; font-size:16px; letter-spacing:-.02em}
@@ -216,10 +255,10 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
   letter-spacing:.5em; text-align:center; font-weight:900; outline:none;
 }
 .pin-in:focus{border-color:var(--accent)}
-.pin-err{color:#d63a1e; font-size:12px; font-weight:800; margin-top:8px; min-height:16px}
+.pin-err{color:var(--danger); font-size:12px; font-weight:800; margin-top:8px; min-height:16px}
 .pin-acts{display:flex; gap:8px; margin-top:10px}
 .pin-acts .b1{flex:1; border:0; background:var(--accent); color:#fff; border-radius:12px; padding:12px; font-weight:900; font-size:14px}
-.pin-acts .b2{flex:0 0 auto; border:1px solid var(--line); background:#fff; border-radius:12px; padding:12px 14px; font-weight:800; font-size:13px; color:var(--ink2)}
+.pin-acts .b2{flex:0 0 auto; border:1px solid var(--line); background:var(--card); border-radius:12px; padding:12px 14px; font-weight:800; font-size:13px; color:var(--ink2)}
 
 /* ── 관리자 시트 ── */
 .sheet{position:fixed; inset:0; z-index:80; display:flex; align-items:flex-end; justify-content:center}
@@ -231,19 +270,19 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
   overflow:hidden;
 }
 .sheet .shead{
-  display:flex; align-items:center; gap:8px; padding:13px 14px; background:#fff; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; gap:8px; padding:13px 14px; background:var(--card); border-bottom:1px solid var(--line);
   position:sticky; top:0; z-index:2;
 }
 .sheet .shead h2{margin:0; font-size:14.5px; letter-spacing:-.02em}
-.sheet .shead .st{margin-left:auto; font-size:10.5px; font-weight:800; color:#8a8074; white-space:nowrap}
+.sheet .shead .st{margin-left:auto; font-size:10.5px; font-weight:800; color:var(--mut); white-space:nowrap}
 .sheet .sbody{overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px 14px 40px}
-.sec{background:#fff; border:1px solid var(--line); border-radius:13px; padding:12px; margin-bottom:11px}
+.sec{background:var(--card); border:1px solid var(--line); border-radius:13px; padding:12px; margin-bottom:11px}
 .sec h3{margin:0 0 8px; font-size:12.5px; letter-spacing:-.01em; display:flex; align-items:center; gap:6px}
-.sec h3 .sp{margin-left:auto; font-weight:700; color:#8a8074; font-size:10.5px}
+.sec h3 .sp{margin-left:auto; font-weight:700; color:var(--mut); font-size:10.5px}
 .row-btns{display:flex; gap:7px; flex-wrap:wrap}
-.btn{border:1.5px solid var(--ink); background:var(--ink); color:#fff; border-radius:10px; padding:9px 13px; font-size:12.5px; font-weight:900}
-.btn.ghost{background:#fff; color:var(--ink)}
-.btn.danger{background:#fff; color:#d63a1e; border-color:#ffc9bb}
+.btn{border:1.5px solid var(--ink); background:var(--ink); color:var(--on-ink); border-radius:10px; padding:9px 13px; font-size:12.5px; font-weight:900}
+.btn.ghost{background:var(--card); color:var(--ink)}
+.btn.danger{background:var(--card); color:var(--danger); border-color:var(--save-bd)}
 .btn.sm{padding:7px 10px; font-size:11.5px; border-radius:9px}
 .btn:active{transform:translateY(1px)}
 .alist{display:flex; flex-direction:column; gap:6px; max-height:260px; overflow:auto}
@@ -252,23 +291,23 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
 .arow{display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:10px; padding:8px 9px; min-width:0}
 .arow .an{flex:1 1 auto; min-width:0; font-size:12px; font-weight:800; line-height:1.35; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .arow .ac{font-size:10.5px; color:var(--accent); font-weight:800; white-space:nowrap}
-.arow .num{font-size:10.5px; color:#8a8074; font-weight:800; white-space:nowrap}
+.arow .num{font-size:10.5px; color:var(--mut); font-weight:800; white-space:nowrap}
 .formgrid{display:grid; grid-template-columns:1fr; gap:9px}
 @media(min-width:560px){ .formgrid{grid-template-columns:1fr 1fr} .formgrid .full{grid-column:1/-1} }
 .fld{display:flex; flex-direction:column; gap:4px; min-width:0}
 .fld label{font-size:11px; font-weight:800; color:var(--ink2)}
 .fld input,.fld select,.fld textarea{
   width:100%; border:1.5px solid var(--line); border-radius:10px; padding:10px 11px; font-size:13px;
-  background:#fff; outline:none;
+  background:var(--card); outline:none;
 }
 .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--accent)}
 .fld textarea{resize:vertical; min-height:62px; line-height:1.45}
-.fld .tip{font-size:10px; color:#9c9287; line-height:1.4}
+.fld .tip{font-size:10px; color:var(--mut2); line-height:1.4}
 .thumb-prev{width:100%; max-height:120px; object-fit:cover; border-radius:9px; border:1px solid var(--line); display:none; margin-top:4px}
 .thumb-prev.on{display:block}
 .toast{
   position:fixed; left:50%; bottom:calc(22px + env(safe-area-inset-bottom,0px)); transform:translate(-50%,20px);
-  background:#1b1814; color:#fff; font-size:12.5px; font-weight:800; padding:11px 16px; border-radius:999px;
+  background:var(--toast-bg); color:var(--toast-tx); font-size:12.5px; font-weight:800; padding:11px 16px; border-radius:999px;
   z-index:120; opacity:0; pointer-events:none; transition:opacity .18s, transform .18s; max-width:calc(100vw - 32px); text-align:center;
 }
 .toast.on{opacity:1; transform:translate(-50%,0)}
@@ -280,16 +319,16 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
   display:flex; align-items:center; gap:6px; letter-spacing:-.01em;
 }
 .guide-sec summary::-webkit-details-marker{display:none}
-.guide-sec summary .arw{margin-left:auto; color:#8a8074; font-size:11px; transition:transform .15s}
+.guide-sec summary .arw{margin-left:auto; color:var(--mut); font-size:11px; transition:transform .15s}
 .guide-sec[open] summary .arw{transform:rotate(180deg)}
 .guide-bd{padding:0 12px 12px; display:flex; flex-direction:column; gap:8px}
-.gstep{display:flex; gap:8px; align-items:flex-start; font-size:11.5px; line-height:1.5; color:#3d3830}
+.gstep{display:flex; gap:8px; align-items:flex-start; font-size:11.5px; line-height:1.5; color:var(--body)}
 .gstep .gn{
   flex:0 0 auto; width:19px; height:19px; border-radius:50%; background:var(--accent); color:#fff;
   font-size:10.5px; font-weight:900; display:flex; align-items:center; justify-content:center; margin-top:1px;
 }
 .gstep b{font-weight:900}
-.gstep code{background:#f2ede5; border-radius:5px; padding:1px 4px; font-size:10.5px; word-break:break-all}
+.gstep code{background:var(--inset); border-radius:5px; padding:1px 4px; font-size:10.5px; word-break:break-all}
 
 /* ── 🔍 4대 몰 검색 ── */
 .name-row{display:flex; gap:6px; min-width:0}
@@ -297,27 +336,27 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
 .name-row .btn{flex:0 0 auto; white-space:nowrap}
 .mallbar{display:flex; gap:5px; flex-wrap:wrap; align-items:center; margin-top:6px}
 .mallbar a{
-  text-decoration:none; border:1px solid var(--line); background:#fff; border-radius:8px;
+  text-decoration:none; border:1px solid var(--line); background:var(--card); border-radius:8px;
   padding:5px 8px; font-size:11px; font-weight:800; color:var(--ink2); white-space:nowrap;
 }
 .mallbar a:active{transform:translateY(1px)}
-.mallbar .mtip{font-size:10px; color:#9c9287; line-height:1.35; flex:1 1 100%}
+.mallbar .mtip{font-size:10px; color:var(--mut2); line-height:1.35; flex:1 1 100%}
 
 /* ── 🚨 방문자 제보 ── */
 .rep{margin-top:-3px}
 .repbtn{
-  border:0; background:transparent; color:#a89e92; font-size:10.5px; font-weight:800;
+  border:0; background:transparent; color:var(--mut3); font-size:10.5px; font-weight:800;
   padding:2px 0; text-decoration:underline; text-underline-offset:2px;
 }
 .repbtn:active{color:var(--accent)}
 .rep-opts{display:flex; flex-direction:column; gap:7px}
 .rep-opt{
   display:flex; align-items:center; gap:9px; text-align:left; width:100%;
-  border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:11px 12px;
+  border:1.5px solid var(--line); background:var(--card); border-radius:12px; padding:11px 12px;
   font-size:13px; font-weight:900; line-height:1.3;
 }
 .rep-opt .em{font-size:17px; line-height:1}
-.rep-opt small{display:block; font-size:10.5px; font-weight:700; color:#9c9287; margin-top:2px}
+.rep-opt small{display:block; font-size:10.5px; font-weight:700; color:var(--mut2); margin-top:2px}
 .rep-opt:active{transform:scale(.99); border-color:var(--accent)}
 
 /* ── 관리자 상품 행 · 보조 버튼 ── */
@@ -325,7 +364,7 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
 .arow .an{flex:1 1 110px}
 .arow2{flex:1 1 100%; display:flex; gap:5px; flex-wrap:wrap; margin-top:3px}
 .arow2 .btn{padding:6px 8px; font-size:10.5px; border-radius:8px}
-.arow2 .rep-pill{background:#fff5f2; color:#c2410c; border-color:#ffd3c6}
+.arow2 .rep-pill{background:var(--pill-bg); color:var(--pill-tx); border-color:var(--pill-bd)}
 
 /* ── 🎬 쇼츠 대본 모달 ── */
 .modal .panel.wide{max-width:560px; max-height:90vh; display:flex; flex-direction:column}
@@ -336,7 +375,7 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
 .ta-wrap .th .btn{margin-left:auto}
 .ta-wrap textarea{
   width:100%; border:1.5px solid var(--line); border-radius:11px; padding:10px 11px;
-  font-size:11.8px; line-height:1.6; font-family:inherit; background:#fff; resize:vertical; min-height:120px;
+  font-size:11.8px; line-height:1.6; font-family:inherit; background:var(--card); resize:vertical; min-height:120px;
 }
 .ta-wrap textarea:focus{border-color:var(--accent); outline:none}
 .wide-acts{display:flex; gap:7px; flex-wrap:wrap; margin-top:2px}
@@ -349,17 +388,17 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
 .ls-tools{display:flex; gap:6px; align-items:center; flex-wrap:wrap}
 .ls-tools .btn{padding:5px 8px; font-size:10.5px; border-radius:8px}
 .ls-list{display:flex; flex-direction:column; gap:7px; margin-top:8px}
-.ls-card{display:flex; gap:9px; border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:8px; min-width:0}
-.ls-card .th{flex:0 0 64px; width:64px; height:64px; border-radius:9px; overflow:hidden; background:#f4efe7; display:flex; align-items:center; justify-content:center; font-size:20px}
+.ls-card{display:flex; gap:9px; border:1.5px solid var(--line); background:var(--card); border-radius:12px; padding:8px; min-width:0}
+.ls-card .th{flex:0 0 64px; width:64px; height:64px; border-radius:9px; overflow:hidden; background:var(--soft); display:flex; align-items:center; justify-content:center; font-size:20px}
 .ls-card .th img{width:100%; height:100%; object-fit:cover}
 .ls-card .bd{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px}
 .ls-card .nm{font-size:11.8px; font-weight:900; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
-.ls-card .pr{font-size:12.5px; font-weight:900; color:#d63a1e}
-.ls-card .pr small{font-size:10px; font-weight:800; color:#9c9287; margin-left:4px; text-decoration:line-through}
+.ls-card .pr{font-size:12.5px; font-weight:900; color:var(--danger)}
+.ls-card .pr small{font-size:10px; font-weight:800; color:var(--mut2); margin-left:4px; text-decoration:line-through}
 .ls-card .mt{font-size:10.5px; font-weight:800; color:var(--ink2); line-height:1.4}
 .ls-card .acts{display:flex; gap:5px; margin-top:3px; flex-wrap:wrap}
 .ls-card .acts .btn, .ls-card .acts a.btn{padding:5px 8px; font-size:10.5px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center}
-.ls-empty{font-size:11px; font-weight:800; color:#9c9287; padding:6px 2px; line-height:1.5; word-break:keep-all}
+.ls-empty{font-size:11px; font-weight:800; color:var(--mut2); padding:6px 2px; line-height:1.5; word-break:keep-all}
 @media (min-width:720px){
   .ls-card{align-items:center}
   .ls-card .bd{display:grid; grid-template-columns:1fr auto; grid-template-areas:"nm acts" "pr acts" "mt acts"; column-gap:14px; align-items:center}
@@ -385,6 +424,7 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
   <div class="hd-row">
     <a class="logo" href="./picks.html">🎁 핫템 최저가 <span class="sub">연오랑 PICK</span></a>
     <span class="grow"></span>
+    <button class="icon-btn theme-btn" id="themeBtn" type="button" aria-label="다크 테마로 전환" aria-pressed="false"><span class="ti" id="themeIco" aria-hidden="true">🌙</span><span class="tt" id="themeTxt">다크 테마</span></button>
     <button class="icon-btn" id="btnAdmin" type="button" aria-label="관리자 모드 열기">🔒 관리자</button>
   </div>
   <div class="subl">쇼츠·릴스에서 본 그 물건, 같은 물건을 더 싸게 사는 곳만 모았습니다.</div>
@@ -484,7 +524,7 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
           <span class="ls-empty" style="padding:0; font-size:10.5px">에누리 가격비교 실시간 · 상세의 최저가 판매처까지 확인</span>
         </div>
         <div class="ls-list" id="lsList"><div class="ls-empty">상품명을 넣고 [🔍 최저가 검색]을 누르면 실제 최저가·판매처가 나옵니다.</div></div>
-        <div class="tip" style="margin-top:8px; font-size:10.5px; color:#9c9287">[✅ 선택해 채우기]를 누르면 아래 등록 폼(상품명·최저가·판매처·이미지·상세 링크)에 자동 입력됩니다. 제휴 링크만 넣고 [💾 저장]하세요.</div>
+        <div class="tip" style="margin-top:8px; font-size:10.5px; color:var(--mut2)">[✅ 선택해 채우기]를 누르면 아래 등록 폼(상품명·최저가·판매처·이미지·상세 링크)에 자동 입력됩니다. 제휴 링크만 넣고 [💾 저장]하세요.</div>
       </div>
 
       <details class="sec guide-sec" id="opGuide">
@@ -508,7 +548,7 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
         <div class="row-btns" style="margin-top:9px">
           <button class="btn ghost sm" type="button" id="btnRepClearAll">🧹 제보 전체 초기화</button>
         </div>
-        <div class="tip" style="margin-top:6px; font-size:10.5px; color:#9c9287">방문자가 남긴 '가격 다름·품절·링크 오류'가 쌓이면 여기서 바로 확인하고, 상품을 고친 뒤 초기화하세요.</div>
+        <div class="tip" style="margin-top:6px; font-size:10.5px; color:var(--mut2)">방문자가 남긴 '가격 다름·품절·링크 오류'가 쌓이면 여기서 바로 확인하고, 상품을 고친 뒤 초기화하세요.</div>
       </div>
 
       <div class="sec">
@@ -526,7 +566,7 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
           <div class="fld"><label for="f_no">쇼츠 번호</label><input id="f_no" placeholder="12"><div class="tip">영상에 쓴 번호. #은 빼고 숫자만</div></div>
           <div class="fld"><label for="f_cat">카테고리</label><select id="f_cat"></select></div>
           <div class="fld full">
-            <label for="f_name">상품명 <span style="color:#d63a1e">*</span></label>
+            <label for="f_name">상품명 <span style="color:var(--danger)">*</span></label>
             <div class="name-row">
               <input id="f_name" placeholder="휴대용 미니 블렌더">
               <button class="btn sm" type="button" id="btnMall4" title="쿠팡·테무·알리·네이버 가격비교를 새 창으로 엽니다">🔍 4대 몰 검색</button>
@@ -566,7 +606,7 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
           <textarea id="importBox" placeholder='{"items":[{"name":"...","price":18900}]}'></textarea>
           <div class="row-btns"><button class="btn sm" type="button" id="btnImportGo">가져오기</button></div>
         </div>
-        <div class="tip" style="margin-top:8px; font-size:10.5px; color:#9c9287">
+        <div class="tip" style="margin-top:8px; font-size:10.5px; color:var(--mut2)">
           서버 저장은 같은 Supabase의 <b>picks_store_public</b> 행만 사용합니다(포켓몬 0623·사주 saju_·eBook ebook_ 키와 완전히 분리).
         </div>
       </div>
@@ -577,7 +617,7 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
           <div class="fld"><label for="pinNew">새 PIN (4~8자리)</label><input id="pinNew" type="password" inputmode="numeric" maxlength="8" autocomplete="new-password"></div>
           <div class="fld" style="justify-content:flex-end"><button class="btn sm" type="button" id="btnPinSave">PIN 변경</button></div>
         </div>
-        <div class="tip" style="margin-top:6px; font-size:10.5px; color:#9c9287">PIN은 해시로만 저장되며, 바꾸면 다른 기기에서도 새 PIN을 써야 합니다.</div>
+        <div class="tip" style="margin-top:6px; font-size:10.5px; color:var(--mut2)">PIN은 해시로만 저장되며, 바꾸면 다른 기기에서도 새 PIN을 써야 합니다.</div>
       </div>
 
     </div>
@@ -725,6 +765,34 @@ var pendingRep = {}; // 아직 서버에 못 올린 제보 수
 var flushing = false;
 var flushingRep = false;
 
+/* ══════════════════════════════════════════════════════
+   🌓 테마 — review-zip.html 과 같은 키(review_zip_theme, 'light'|'dark')를 공유한다.
+   기본값은 이 페이지의 원래 모습인 라이트. 다크를 고르면 세 페이지 모두 다크로 유지된다.
+   ══════════════════════════════════════════════════════ */
+var THEME_KEY = 'review_zip_theme';
+function currentTheme(){ return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
+function applyTheme(t){
+  var html = document.documentElement;
+  html.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
+  var b = $('#themeBtn');
+  if (b){
+    var ic = $('#themeIco'), tx = $('#themeTxt');
+    if (ic) ic.textContent = t === 'dark' ? '☀️' : '🌙';
+    if (tx) tx.textContent = t === 'dark' ? '밝은 테마' : '다크 테마';
+    b.setAttribute('aria-label', t === 'dark' ? '밝은 테마로 전환' : '다크 테마로 전환');
+    b.setAttribute('aria-pressed', t === 'dark' ? 'true' : 'false');
+  }
+  var m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.setAttribute('content', t === 'dark' ? '#0d1117' : '#faf7f2');
+}
+function toggleTheme(){
+  var next = currentTheme() === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+  return next;
+}
+window.__picksTheme = { current: currentTheme, apply: applyTheme, toggle: toggleTheme };
+
 /* ── 작은 도구 ── */
 function $(s){ return document.querySelector(s); }
 function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
@@ -807,7 +875,7 @@ function lsRender(){
     return '<div class="ls-card">' +
       '<div class="th">' + (it.image ? '<img src="' + esc(it.image) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '🛍️') + '</div>' +
       '<div class="bd">' +
-        '<div class="nm">' + esc(it.name) + (it.condi ? ' <span style="color:#9c9287;font-weight:800">· ' + esc(it.condi) + '</span>' : '') + '</div>' +
+        '<div class="nm">' + esc(it.name) + (it.condi ? ' <span style="color:var(--mut2);font-weight:800">· ' + esc(it.condi) + '</span>' : '') + '</div>' +
         '<div class="pr">' + lsWon(it.price) + '원' + (it.listPrice && it.listPrice > it.price ? '<small>' + lsWon(it.listPrice) + '원</small>' : '') + '</div>' +
         '<div class="mt">' + esc(meta.join(' · ')) + '</div>' +
         '<div class="acts">' +
@@ -1597,7 +1665,7 @@ function renderAdmin(){
           '<span class="an">' + esc(x.it.name) + '</span>' +
           '<span class="ac">👆 ' + x.c + '</span></div>';
       }).join('')
-    : '<div class="an" style="color:#9c9287; font-weight:700; padding:4px">아직 상품이 없습니다.</div>';
+    : '<div class="an" style="color:var(--mut2); font-weight:700; padding:4px">아직 상품이 없습니다.</div>';
 
   // 상품 목록
   var items = state.items.slice().sort(byRecent);
@@ -1606,7 +1674,7 @@ function renderAdmin(){
     var rc = repCount(it.id);
     return '<div class="arow">' +
       '<span class="num">#' + esc(it.no || '-') + '</span>' +
-      '<span class="an">' + esc(it.name) + (it.sample ? ' <span style="color:#b45309;font-size:10px">예시</span>' : '') + '</span>' +
+      '<span class="an">' + esc(it.name) + (it.sample ? ' <span style="color:var(--warn);font-size:10px">예시</span>' : '') + '</span>' +
       '<button class="btn ghost sm" type="button" data-edit="' + esc(it.id) + '">수정</button>' +
       '<button class="btn danger sm" type="button" data-delitem="' + esc(it.id) + '">삭제</button>' +
       '<div class="arow2">' +
@@ -1616,7 +1684,7 @@ function renderAdmin(){
         (rc ? '<span class="btn rep-pill sm" style="display:inline-flex;align-items:center;cursor:default">🚨 ' + rc + '</span>' : '') +
       '</div>' +
     '</div>';
-  }).join('') || '<div class="an" style="color:#9c9287;font-weight:700;padding:4px">상품이 없습니다. “새 상품 추가”를 누르세요.</div>';
+  }).join('') || '<div class="an" style="color:var(--mut2);font-weight:700;padding:4px">상품이 없습니다. “새 상품 추가”를 누르세요.</div>';
 
   renderReports();
 
@@ -1643,11 +1711,11 @@ function renderReports(){
     return '<div class="arow">' +
       '<span class="num">#' + esc(x.it ? (x.it.no || '-') : '-') + '</span>' +
       '<span class="an">' + esc(x.it ? x.it.name : '(삭제된 상품)') + '</span>' +
-      '<span class="ac" style="color:#c2410c">🚨 ' + esc(bits.join(' · ')) + '</span>' +
+      '<span class="ac" style="color:var(--pill-tx)">🚨 ' + esc(bits.join(' · ')) + '</span>' +
       (x.it ? '<button class="btn ghost sm" type="button" data-repedit="' + esc(x.id) + '">수정</button>' : '') +
       '<button class="btn danger sm" type="button" data-repclear="' + esc(x.id) + '">초기화</button>' +
     '</div>';
-  }).join('') : '<div class="an" style="color:#9c9287; font-weight:700; padding:4px">아직 제보가 없습니다.</div>';
+  }).join('') : '<div class="an" style="color:var(--mut2); font-weight:700; padding:4px">아직 제보가 없습니다.</div>';
 }
 
 function renderMallBar(){
@@ -1855,6 +1923,7 @@ $('#top3row').addEventListener('click', function(e){
 });
 
 $('#sampleClose').addEventListener('click', function(){ state.sampleNoticeClosed = true; renderSampleNotice(); });
+$('#themeBtn').addEventListener('click', toggleTheme);
 $('#btnAdmin').addEventListener('click', openPin);
 $('#btnAdmin2').addEventListener('click', openPin);
 $('#btnRefresh').addEventListener('click', function(){
@@ -1992,6 +2061,7 @@ window.addEventListener('pagehide', function(){ flushClicks(true); flushReports(
    시작
    ══════════════════════════════════════════════════════ */
 function boot(){
+  applyTheme(currentTheme());
   var saved = lsGet(LS.store, null);
   if (saved && Array.isArray(saved.items)){
     state.items = saved.items; state.pin = saved.pin || null;
