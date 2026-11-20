@@ -2,7 +2,7 @@
    · 셸(HTML·manifest·아이콘)은 미리 캐시, 캠페인 데이터는 네트워크 우선 + 캐시 폴백
    · 파일을 고칠 때는 CACHE 이름의 버전을 올려 주세요.
 */
-var CACHE = 'revu-studio-v2';
+var CACHE = 'revu-studio-v3';
 var SHELL = [
   './revu-studio.html',
   './revu-studio-manifest.json',

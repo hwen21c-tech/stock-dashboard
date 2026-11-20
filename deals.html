@@ -19,6 +19,37 @@
     } catch (e) {}
   })();
   </script>
+
+<script>
+/* 알뜰 포털 공통 상단 바 — 테마 아이콘 동기 · 높이 측정 (세 페이지 동일) */
+(function () {
+  function paint() {
+    var t = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    var ic = document.getElementById('themeIco');
+    if (ic) ic.textContent = t === 'light' ? '🌙' : '☀️';
+    var b = document.getElementById('themeBtn');
+    if (b) {
+      var lbl = t === 'light' ? '다크 테마로 전환' : '밝은 테마로 전환';
+      b.setAttribute('aria-label', lbl); b.title = lbl;
+      b.setAttribute('aria-pressed', t === 'light' ? 'true' : 'false');
+    }
+  }
+  function syncH() {
+    var bar = document.getElementById('pubbar');
+    if (!bar) return;
+    document.documentElement.style.setProperty('--pubbar-h', bar.offsetHeight + 'px');
+  }
+  function boot() { paint(); syncH(); }
+  window.__pubbarThemePaint = paint;
+  window.__pubbarSyncH = syncH;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+  window.addEventListener('load', boot);
+  window.addEventListener('resize', syncH);
+  window.addEventListener('orientationchange', boot);
+  window.addEventListener('pageshow', boot);
+})();
+</script>
   <style>
     :root {
       /* ── 기본(다크) 팔레트 ── */
@@ -207,22 +238,6 @@
       background: rgba(56, 189, 248, 0.15);
     }
 
-    /* 3대 알뜰 포털 왕복 내비 (체험단 · 가족 특가 · 핫템 최저가) */
-    .pn { display: flex; gap: 6px; margin: 0 0 10px; }
-    .pn a {
-      flex: 1 1 0; min-width: 0;
-      display: flex; align-items: center; justify-content: center; gap: 4px;
-      padding: 9px 6px; border-radius: 10px;
-      font-size: 12px; font-weight: 800; letter-spacing: -0.02em;
-      text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      color: var(--body); background: var(--nav-bg); border: 1px solid var(--line-mid);
-      transition: all 0.2s;
-    }
-    .pn a:active { transform: scale(0.98); }
-    .pn a.on {
-      color: #04121f; background: linear-gradient(135deg, #7dd3fc, #34d399);
-      border-color: var(--sky-ink); box-shadow: 0 6px 18px rgba(56, 189, 248, 0.28);
-    }
 
     /* MULTI-SOURCE RADAR STRIP */
     .source-strip {
@@ -894,15 +909,60 @@
     }
     .fdr-pin-x:hover { background: rgba(248, 113, 113, 0.35); }
 
+/* ══════════════════════════════════════════════════════════════════════
+   알뜰 포털 공통 상단 바 — 오늘의 체험단 · 가족 특가 · 핫템 최저가 동일 규격
+   (세 페이지에 같은 CSS 를 복제해 두었습니다. 고칠 때는 셋을 함께 고쳐 주세요)
+   ══════════════════════════════════════════════════════════════════════ */
+:root{ --pubbar-h: 52px; }
+.pubbar{ position:sticky; top:0; z-index:55; width:100%;
+  background:rgba(9,13,22,.93); border-bottom:1px solid rgba(148,163,184,.18);
+  -webkit-backdrop-filter:saturate(140%) blur(14px); backdrop-filter:saturate(140%) blur(14px); }
+html[data-theme="light"] .pubbar{ background:rgba(255,255,255,.95);
+  border-bottom:1px solid #e6e0d6; box-shadow:0 1px 0 rgba(27,24,20,.05); }
+.pubbar-in{ display:flex; align-items:center; gap:6px; width:100%; max-width:1080px; margin:0 auto;
+  padding:8px 12px; padding-top:calc(8px + env(safe-area-inset-top,0px)); }
+.pubtab{ flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; gap:4px;
+  height:36px; padding:0 8px; border-radius:11px; text-decoration:none; white-space:nowrap;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Segoe UI",sans-serif;
+  font-size:12px; font-weight:800; letter-spacing:-.03em; line-height:1; -webkit-tap-highlight-color:transparent;
+  color:#c9d5e7; background:rgba(148,163,184,.09); border:1px solid rgba(148,163,184,.20);
+  transition:transform .12s ease, background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease; }
+.pubtab .pe{ font-size:13px; line-height:1; flex:0 0 auto; }
+.pubtab .pl{ min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.pubtab:active{ transform:scale(.97); }
+.pubtab.on,.pubtab[aria-current="page"]{ color:#062231; font-weight:900;
+  background:linear-gradient(135deg,#7dd3fc,#34d399); border-color:#38bdf8;
+  box-shadow:0 6px 16px rgba(56,189,248,.26); }
+.pubtheme{ flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;
+  width:40px; height:36px; padding:0; border-radius:11px; font-size:15px; line-height:1;
+  color:#c9d5e7; background:rgba(148,163,184,.09); border:1px solid rgba(148,163,184,.20);
+  transition:transform .12s ease, background .15s ease, border-color .15s ease; }
+.pubtheme:active{ transform:scale(.95); }
+html[data-theme="light"] .pubtab{ color:#4a4438; background:#f7f3ec; border-color:#e8e1d6; }
+html[data-theme="light"] .pubtab.on,html[data-theme="light"] .pubtab[aria-current="page"]{
+  color:#062231; background:linear-gradient(135deg,#7dd3fc,#34d399); border-color:#38bdf8; }
+html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-color:#e8e1d6; }
+@media (max-width:430px){
+  .pubbar-in{ padding:7px 9px; padding-top:calc(7px + env(safe-area-inset-top,0px)); gap:5px; }
+  .pubtab{ height:34px; font-size:11px; padding:0 5px; gap:3px; }
+  .pubtab .pe{ font-size:12px; }
+  .pubtheme{ height:34px; width:38px; font-size:14px; }
+}
+
+    /* 공통 상단 바가 body 좌우 패딩(12px)을 넘어 화면 폭을 꽉 채우도록 */
+    .pubbar { margin: -12px -12px 0; width: calc(100% + 24px); }
 </style>
 </head>
 <body>
 
-  <nav class="pn" aria-label="알뜰 포털 바로가기">
-    <a href="./review-zip.html">🍯 오늘의 체험단</a>
-    <a class="on" href="./deals.html" aria-current="page">✈️ 가족 특가</a>
-    <a href="./picks.html">🎁 핫템 최저가</a>
-  </nav>
+<nav class="pubbar" id="pubbar" aria-label="알뜰 포털 상단 메뉴">
+  <div class="pubbar-in">
+    <a class="pubtab" href="./review-zip.html"><span class="pe" aria-hidden="true">🍯</span><span class="pl">오늘의 체험단</span></a>
+    <a class="pubtab on" href="./deals.html" aria-current="page"><span class="pe" aria-hidden="true">✈️</span><span class="pl">가족 특가</span></a>
+    <a class="pubtab" href="./picks.html"><span class="pe" aria-hidden="true">🎁</span><span class="pl">핫템 최저가</span></a>
+    <button class="pubtheme" id="themeBtn" type="button" aria-label="테마 전환" aria-pressed="false" title="테마 전환"><span id="themeIco" aria-hidden="true">🌙</span></button>
+  </div>
+</nav>
 
   <!-- HEADER -->
   <header>
@@ -914,7 +974,6 @@
       </div>
     </div>
     <div class="hdr-actions" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-      <button id="themeBtn" class="btn-nav" type="button" onclick="toggleTheme()" aria-label="밝은 테마로 전환" aria-pressed="false" style="padding: 6px 11px; white-space: nowrap;">☀️ 밝은 테마</button>
       <div id="dealsSyncWrap" style="display: flex; align-items: center; gap: 8px;">
         <span id="dealsSyncBadge" style="font-size: 10.5px; font-weight: 800; color: var(--good-ink); background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); padding: 4px 8px; border-radius: 4px;">⚡ 하루 3회 정기 자동 갱신 (다음: 내일 08:00)</span>
         <span id="dealsLastSync" style="font-size: 10.5px; color: var(--good-ink2); font-weight:700;">최근 동기화: 2026-11-20 08:15 🟢 [🌅 아침 특가 & 카톡 톡딜 모니터링] · 여행 46 · 키즈 31건 교체</span>
@@ -1087,12 +1146,7 @@
     function applyTheme(t) {
       var html = document.documentElement;
       html.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
-      var b = document.getElementById('themeBtn');
-      if (b) {
-        b.textContent = t === 'light' ? '🌙 다크 테마' : '☀️ 밝은 테마';
-        b.setAttribute('aria-label', t === 'light' ? '다크 테마로 전환' : '밝은 테마로 전환');
-        b.setAttribute('aria-pressed', t === 'light' ? 'true' : 'false');
-      }
+      if (window.__pubbarThemePaint) window.__pubbarThemePaint();
       var meta = document.querySelector('meta[name="theme-color"]');
       if (meta) meta.setAttribute('content', t === 'light' ? '#f4f7fb' : '#070c14');
     }
@@ -1132,6 +1186,8 @@
     window.srcLight = srcLight;
 
     applyTheme(currentTheme());
+    var __pubThemeBtn = document.getElementById('themeBtn');
+    if (__pubThemeBtn) __pubThemeBtn.addEventListener('click', function () { toggleTheme(); });
 
     function headCount(type) {
       if (type === 'adult') return numAdult;

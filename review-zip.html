@@ -9,6 +9,37 @@
 <meta property="og:title" content="오늘의 체험단 · 특가 포털">
 <meta property="og:description" content="5대 체험단 플랫폼 통합 큐레이션 — 경쟁률 신호등과 빈집털이로 오늘 넣을 캠페인을 고릅니다.">
 <meta property="og:type" content="website">
+
+<script>
+/* 알뜰 포털 공통 상단 바 — 테마 아이콘 동기 · 높이 측정 (세 페이지 동일) */
+(function () {
+  function paint() {
+    var t = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    var ic = document.getElementById('themeIco');
+    if (ic) ic.textContent = t === 'light' ? '🌙' : '☀️';
+    var b = document.getElementById('themeBtn');
+    if (b) {
+      var lbl = t === 'light' ? '다크 테마로 전환' : '밝은 테마로 전환';
+      b.setAttribute('aria-label', lbl); b.title = lbl;
+      b.setAttribute('aria-pressed', t === 'light' ? 'true' : 'false');
+    }
+  }
+  function syncH() {
+    var bar = document.getElementById('pubbar');
+    if (!bar) return;
+    document.documentElement.style.setProperty('--pubbar-h', bar.offsetHeight + 'px');
+  }
+  function boot() { paint(); syncH(); }
+  window.__pubbarThemePaint = paint;
+  window.__pubbarSyncH = syncH;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+  window.addEventListener('load', boot);
+  window.addEventListener('resize', syncH);
+  window.addEventListener('orientationchange', boot);
+  window.addEventListener('pageshow', boot);
+})();
+</script>
 <link rel="manifest" href="review-zip-manifest.json">
 <link rel="icon" type="image/png" sizes="192x192" href="review-zip-icon-192.png">
 <link rel="apple-touch-icon" href="review-zip-icon-192.png">
@@ -133,7 +164,7 @@ p{margin:0}
 .chan .badge{margin-left:auto;font-size:9.5px;font-weight:900;padding:2px 6px;border-radius:6px;background:rgba(251,191,36,.18);color:#fde68a;border:1px solid rgba(251,191,36,.36)}
 
 /* ============ controls ============ */
-.controls{position:sticky;top:0;z-index:40;margin-top:22px;padding:10px 0 8px;
+.controls{position:sticky;top:var(--pubbar-h,52px);z-index:40;margin-top:22px;padding:10px 0 8px;
   background:linear-gradient(180deg,rgba(7,10,18,.97),rgba(7,10,18,.86) 76%,rgba(7,10,18,0));
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .searchrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -444,10 +475,58 @@ html[data-theme="light"] .pb.mrblog{background:#fdf0d5;color:#94650a;border-colo
 html[data-theme="light"] .pb.gangnam{background:#e6f7ee;color:#0f7a53;border-color:#b7e4cb}
 html[data-theme="light"] .empty{color:#6b6355}
 html[data-theme="light"] .themeBtn{background:#fff;border-color:var(--line2);color:#3a352c}
+
+/* ══════════════════════════════════════════════════════════════════════
+   알뜰 포털 공통 상단 바 — 오늘의 체험단 · 가족 특가 · 핫템 최저가 동일 규격
+   (세 페이지에 같은 CSS 를 복제해 두었습니다. 고칠 때는 셋을 함께 고쳐 주세요)
+   ══════════════════════════════════════════════════════════════════════ */
+:root{ --pubbar-h: 52px; }
+.pubbar{ position:sticky; top:0; z-index:55; width:100%;
+  background:rgba(9,13,22,.93); border-bottom:1px solid rgba(148,163,184,.18);
+  -webkit-backdrop-filter:saturate(140%) blur(14px); backdrop-filter:saturate(140%) blur(14px); }
+html[data-theme="light"] .pubbar{ background:rgba(255,255,255,.95);
+  border-bottom:1px solid #e6e0d6; box-shadow:0 1px 0 rgba(27,24,20,.05); }
+.pubbar-in{ display:flex; align-items:center; gap:6px; width:100%; max-width:1080px; margin:0 auto;
+  padding:8px 12px; padding-top:calc(8px + env(safe-area-inset-top,0px)); }
+.pubtab{ flex:1 1 0; min-width:0; display:flex; align-items:center; justify-content:center; gap:4px;
+  height:36px; padding:0 8px; border-radius:11px; text-decoration:none; white-space:nowrap;
+  font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR","Segoe UI",sans-serif;
+  font-size:12px; font-weight:800; letter-spacing:-.03em; line-height:1; -webkit-tap-highlight-color:transparent;
+  color:#c9d5e7; background:rgba(148,163,184,.09); border:1px solid rgba(148,163,184,.20);
+  transition:transform .12s ease, background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease; }
+.pubtab .pe{ font-size:13px; line-height:1; flex:0 0 auto; }
+.pubtab .pl{ min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.pubtab:active{ transform:scale(.97); }
+.pubtab.on,.pubtab[aria-current="page"]{ color:#062231; font-weight:900;
+  background:linear-gradient(135deg,#7dd3fc,#34d399); border-color:#38bdf8;
+  box-shadow:0 6px 16px rgba(56,189,248,.26); }
+.pubtheme{ flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center;
+  width:40px; height:36px; padding:0; border-radius:11px; font-size:15px; line-height:1;
+  color:#c9d5e7; background:rgba(148,163,184,.09); border:1px solid rgba(148,163,184,.20);
+  transition:transform .12s ease, background .15s ease, border-color .15s ease; }
+.pubtheme:active{ transform:scale(.95); }
+html[data-theme="light"] .pubtab{ color:#4a4438; background:#f7f3ec; border-color:#e8e1d6; }
+html[data-theme="light"] .pubtab.on,html[data-theme="light"] .pubtab[aria-current="page"]{
+  color:#062231; background:linear-gradient(135deg,#7dd3fc,#34d399); border-color:#38bdf8; }
+html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-color:#e8e1d6; }
+@media (max-width:430px){
+  .pubbar-in{ padding:7px 9px; padding-top:calc(7px + env(safe-area-inset-top,0px)); gap:5px; }
+  .pubtab{ height:34px; font-size:11px; padding:0 5px; gap:3px; }
+  .pubtab .pe{ font-size:12px; }
+  .pubtheme{ height:34px; width:38px; font-size:14px; }
+}
 </style>
 </head>
 
 <body>
+<nav class="pubbar" id="pubbar" aria-label="알뜰 포털 상단 메뉴">
+  <div class="pubbar-in">
+    <a class="pubtab on" href="./review-zip.html" aria-current="page"><span class="pe" aria-hidden="true">🍯</span><span class="pl">오늘의 체험단</span></a>
+    <a class="pubtab" href="./deals.html"><span class="pe" aria-hidden="true">✈️</span><span class="pl">가족 특가</span></a>
+    <a class="pubtab" href="./picks.html"><span class="pe" aria-hidden="true">🎁</span><span class="pl">핫템 최저가</span></a>
+    <button class="pubtheme" id="themeBtn" type="button" aria-label="테마 전환" aria-pressed="false" title="테마 전환"><span id="themeIco" aria-hidden="true">🌙</span></button>
+  </div>
+</nav>
 <header class="mast">
   <div class="wrap mastrow">
     <div class="brand">
@@ -457,12 +536,9 @@ html[data-theme="light"] .themeBtn{background:#fff;border-color:var(--line2);col
         <p>체험단 · 가족 특가 · 핫템 최저가</p>
       </div>
     </div>
-    <nav class="navpills">
-      <a class="pill" href="deals.html" title="가족 특가 · 여행·키즈 특가 레이더">✈️ 가족 특가</a>
-      <a class="pill" href="picks.html" title="핫템 최저가 · 연오랑 PICK">🎁 핫템 최저가</a>
-      <button class="pill themeBtn" id="themeBtn" type="button" aria-label="테마 전환">☀️ 밝은 테마</button>
-      <button class="pill hide" id="installBtn" type="button">📲 설치</button>
-    </nav>
+    <div class="navpills">
+      <button class="pill hide" id="installBtn" type="button">📲 홈 화면에 설치</button>
+    </div>
   </div>
   <div class="wrap">
     <div class="dateline">
@@ -1035,8 +1111,7 @@ html[data-theme="light"] .themeBtn{background:#fff;border-color:var(--line2);col
   var THEME_KEY = 'review_zip_theme';
   function applyTheme(t) {
     document.documentElement.setAttribute('data-theme', t);
-    var b = $('themeBtn');
-    if (b) b.textContent = t === 'light' ? '🌙 다크 테마' : '☀️ 밝은 테마';
+    if (window.__pubbarThemePaint) window.__pubbarThemePaint();
     var meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', t === 'light' ? '#faf8f4' : '#070b12');
   }
@@ -1151,7 +1226,7 @@ html[data-theme="light"] .themeBtn{background:#fff;border-color:var(--line2);col
       });
       return;
     }
-    if (el && el.id === 'themeBtn') {
+    if (el && (el.id === 'themeBtn' || (el.closest && el.closest('#themeBtn')))) {
       var next = currentTheme() === 'light' ? 'dark' : 'light';
       applyTheme(next);
       try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
