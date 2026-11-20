@@ -449,6 +449,10 @@
   .slotrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:9px}
   .slotrow .flabel{margin:0}
   .wvslotrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;padding:7px 9px;border:1px solid rgba(245,158,11,.28);border-radius:10px;background:rgba(245,158,11,.07)}
+  .feedbanner{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:9px 0 0;padding:9px 11px;border:1px solid rgba(245,158,11,.38);border-radius:12px;background:rgba(245,158,11,.10);font-size:12.5px;line-height:1.62;color:#fde68a}
+  .feedbanner[hidden]{display:none}
+  .feedbanner #feedBannerText{flex:1 1 220px;min-width:0;color:#fef3c7}
+  .feedbanner #feedBannerText b{color:#fff}
 
   /* ---------- 🎬 웹 영상 생성기 (Canvas + MediaRecorder · 크레딧 0) ---------- */
   .wvhead{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
@@ -1425,6 +1429,12 @@
   <button class="tab" id="tabSum" role="tab" aria-selected="false" aria-controls="panelSum">📋 요약</button>
 </nav>
 
+<div class="feedbanner" id="feedBanner" hidden role="status" aria-live="polite">
+  <span id="feedBannerText"></span>
+  <button class="btn small primary" id="feedBannerGo" type="button">📥 피클 최신 초안 다시 불러오기</button>
+  <button class="linkbtn" id="feedBannerClose" type="button">닫기</button>
+</div>
+
 <details class="shelf" id="routinePanel">
   <summary><span>📅 주간 발행 루틴표 (월~일)</span><span class="n" id="routineToday">오늘</span><span class="arw">▾</span></summary>
   <div class="shelfbody">
@@ -1701,6 +1711,11 @@
       <div class="matsep"></div>
       <div class="field" style="margin-top:0">
         <div class="flabel">오늘 관제탑 시황 1클릭 <span class="bdg info">지수 · 수급 · 주도 테마 · 대장주</span></div>
+        <div class="matpanel-row" style="margin-top:0">
+          <span class="flabel" style="margin:0">📥 피클 자동 초안</span>
+          <button class="btn small primary" id="feedDraftBtn" type="button" title="피클이 시간대별로 만들어 둔 최신 초안(data/content_auto_latest.json)을 읽어 제목·본문·태그를 결과 카드에 채우고 크림 그래프까지 갱신합니다 (지금 작업 중인 본문은 최신본으로 덮어씁니다)">📥 피클 최신 초안 다시 불러오기</button>
+          <span class="hint" id="feedDraftHint">장전(07:45)·점심(12:20)·정규마감(16:15)·통합 마감(20:10)마다 피클이 만들어 두는 초안입니다. 페이지를 열면 최신 초안이 자동으로 채워지고, 이 버튼은 언제든 최신본으로 다시 불러옵니다.</span>
+        </div>
         <div class="matpanel-row" style="margin-top:0">
           <span class="flabel" style="margin:0">🦊 폭스시그널 시간대 1클릭</span>
           <button class="btn small primary" id="slotPreBtn" type="button" title="장전 재료(밤사이 미 증시·야간선물·원달러)를 채우고 📈 주식 시황 + 🦊 장전 양식(5번)으로 바꿉니다">🌅 장전</button>
@@ -2173,6 +2188,7 @@
             <button class="btn small primary" type="button" data-cs-slot="noon">☀️ 점심</button>
             <button class="btn small primary" type="button" data-cs-slot="close">🌆 정규마감</button>
             <button class="btn small primary" type="button" data-cs-slot="after">🌙 애프터장</button>
+            <button class="btn small" type="button" data-feed-draft="shorts" title="피클이 만들어 둔 최신 초안(블로그·쇼츠)을 이 화면에 다시 불러옵니다">📥 피클 최신 초안 다시 불러오기</button>
           </div>
           <div class="slotstate" id="shSlotState" hidden></div>
           <p class="hint" style="margin-top:6px">누르면 그 시간대 <b>관제탑 실측·NXT 애프터마켓·뉴스</b>를 읽어 참고 자료와 주제를 채우고, <b>폭스시그널 공식</b>과 <b>🎬 영상 레이아웃</b>을 그 시간대로 바꿉니다. <b>블로그 글을 쓰지 않아도</b> 바로 동작합니다.</p>
@@ -2294,7 +2310,8 @@
       <button class="btn small" type="button" data-cs-slot="noon" data-cs-slot-mode="wvid">☀️ 점심</button>
       <button class="btn small" type="button" data-cs-slot="close" data-cs-slot-mode="wvid">🌆 정규마감</button>
       <button class="btn small" type="button" data-cs-slot="after" data-cs-slot-mode="wvid">🌙 애프터장</button>
-      <span class="hint" style="margin:0;flex:1 1 200px;min-width:0">누르면 그 시간대 실측을 읽어 <b>폭스시그널 공식·카드 레이아웃·5컷 미리보기</b>까지 세팅합니다(성우 고정값 유지).</span>
+      <button class="btn small primary" type="button" data-feed-draft="shorts" title="피클이 만들어 둔 최신 쇼츠 대본을 컷으로 나눠 이 생성기에 올립니다">📥 피클 최신 초안 다시 불러오기</button>
+      <span class="hint" style="margin:0;flex:1 1 200px;min-width:0">누르면 그 시간대 <b>피클 초안</b>이 있으면 먼저 불러오고, 없으면 실측을 읽어 <b>폭스시그널 공식·카드 레이아웃·5컷 미리보기</b>까지 세팅합니다(성우 고정값 유지).</span>
     </div>
     <div class="wvpaste" id="wvPaste" hidden>
       <div class="wvrow" style="gap:6px">
@@ -11494,10 +11511,26 @@ var CSVoice = (function () {
     if (!def) return Promise.resolve(false);
     var m = (mode === 'shorts' || mode === 'wvid') ? mode : 'blog';
     var st = $('#matState'), sst = $('#shSlotState');
-    if (st) st.textContent = '읽는 중…';
-    if (sst){ sst.hidden = false; sst.className = 'slotstate'; sst.textContent = def.icon + ' ' + def.name + ' 실측 읽는 중…'; }
+    if (m === 'blog'){
+      if (st) st.textContent = '읽는 중…';
+      if (sst) sst.hidden = true;
+    } else {
+      if (st) st.textContent = '읽는 중…';
+      if (sst){ sst.hidden = false; sst.className = 'slotstate'; sst.textContent = def.icon + ' ' + def.name + ' 초안·실측 읽는 중…'; }
+    }
     if (btn) spinner(btn, true, '관제탑 읽는 중…');
-    return Promise.all([cvReload(true), slotExtra(true)]).then(function(){
+    /* ① 그 슬롯의 '오늘자' 피클 초안이 있으면 그것을 먼저 불러온다 (없으면 실측 흐름) */
+    return feedSlotHit(slot, m).then(function(hit){
+      if (hit){
+        if (st) st.textContent = def.icon + ' ' + def.name + ' 피클 초안';
+        if (sst && m !== 'blog'){
+          sst.hidden = false;
+          sst.className = 'slotstate ok';
+          sst.innerHTML = def.icon + ' <b>' + esc(def.name + ' 시황') + '</b> — 📥 피클이 작성한 초안을 불러왔습니다';
+        }
+        return true;
+      }
+      return Promise.all([cvReload(true), slotExtra(true)]).then(function(){
       var mat = buildSlotMaterial(slot, m);
       var src = $('#srcMaterial');
       if (src){ src.value = mat.text; try { src.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
@@ -11536,18 +11569,19 @@ var CSVoice = (function () {
       var vname = (wv && wv.voice) ? wv.voice : '';
       if (sst){
         sst.className = 'slotstate ok';
-        sst.innerHTML = def.icon + ' <b>' + esc(def.label) + '</b> 실측 준비됨 — 참고 자료 <b>' + charLen(mat.text) + '자</b> · 주제 자동 입력' +
+        sst.innerHTML = def.icon + ' <b>' + esc(def.name + ' 시황') + '</b> 실측 준비됨 — 참고 자료 <b>' + charLen(mat.text) + '자</b> · 주제 자동 입력' +
           (wv ? ' · 폭스시그널 공식 <b>' + esc(wv.name || '') + '</b>' + (vname ? ' · 성우 <b>' + esc(vname) + '</b>' : '') + ' · 미리보기 5컷 로드' : '');
       }
       if (st) st.textContent = def.icon + ' ' + def.name + ' 재료 준비됨';
       toast(def.icon + ' ' + def.name + ' 실측으로 세팅했습니다' +
         (wv ? ' — 폭스시그널 공식 ' + (wv.name || '') + ' · 5컷 미리보기까지' : '') + ' · [🎬 쇼츠 대본 생성]으로 바로 이어가세요.');
       return true;
-    }).catch(function(e){
-      if (st) st.textContent = '실패';
-      if (sst){ sst.hidden = false; sst.className = 'slotstate bad'; sst.textContent = def.icon + ' ' + def.name + ' 실측을 불러오지 못했습니다 — ' + ((e && e.message) || ''); }
-      toast('재료를 불러오지 못했습니다 — ' + ((e && e.message) || ''));
-      return false;
+      }).catch(function(e){
+        if (st) st.textContent = '실패';
+        if (sst){ sst.hidden = false; sst.className = 'slotstate bad'; sst.textContent = def.icon + ' ' + def.name + ' 실측을 불러오지 못했습니다 — ' + ((e && e.message) || ''); }
+        toast('재료를 불러오지 못했습니다 — ' + ((e && e.message) || ''));
+        return false;
+      });
     }).then(function(r){
       if (btn) spinner(btn, false);
       return r;
@@ -11568,6 +11602,206 @@ var CSVoice = (function () {
       var mode = b.getAttribute('data-cs-slot-mode') || 'shorts';
       runSlot(slot, mode, b);
     });
+  })();
+
+  /* ---------- 📥 피클 자동 초안 (data/content_auto_latest.json) ----------
+     구조: { updatedAt, date, latestSlot, slots:{ pre|lunch|close|after:{ slot, slotLabel, updatedAt,
+              blog?:{title, markdown, tags[], chartFiles[]}, shorts?:{title, formulaKey, script, ...} } } }
+       · top-level blog/shorts 는 latestSlot 의 사본(하위 호환) — 없으면 slots 쪽을 읽는다.
+     동작:
+       · 페이지를 열면 최신 슬롯(latestSlot)의 블로그 초안 + 쇼츠 대본을 1회 자동 세팅
+         (작업 중인 본문·대본이 있으면 덮지 않고 배너만).
+       · [🌅][☀️][🌆][🌙] 시간대 버튼 — 그 슬롯의 '오늘자' 피클 초안이 있으면 그것을 먼저 불러오고,
+         없을 때만 관제탑 실측 재료 → Gemini 흐름으로 넘어간다.
+       · [📥 피클 최신 초안 다시 불러오기] — 언제든 최신본으로 덮어쓴다.
+     · 파일이 없거나 형식이 다르면 값을 지어내지 않고 안내만 한다. */
+  var FEED_PATH = './data/content_auto_latest.json';
+  var FEED = { at: 0, data: null };
+  function feedToday(){
+    var d = new Date();
+    return d.getFullYear() + '-' + pad2n(d.getMonth() + 1) + '-' + pad2n(d.getDate());
+  }
+  function feedFetch(force){
+    if (!force && FEED.data && (Date.now() - FEED.at) < 60000) return Promise.resolve(FEED.data);
+    var urls = [FEED_PATH, V2.ORIGIN + '/data/content_auto_latest.json'];
+    function one(i){
+      return fetchJsonT(urls[i], 9000).then(function (j) {
+        if (!j || typeof j !== 'object') throw new Error('빈 초안');
+        FEED.data = j;
+        FEED.at = Date.now();
+        return j;
+      }, function (e) {
+        if (i + 1 < urls.length) return one(i + 1);
+        throw e;
+      });
+    }
+    return one(0);
+  }
+  function feedSlotWord(slot){
+    return ({ pre: '🌅 장전', lunch: '☀️ 점심', noon: '☀️ 점심', close: '🌆 정규마감', after: '🌙 통합 마감(정규+애프터)' })[slot] || '📥 초안';
+  }
+  /* 슬롯 하나를 꺼낸다 — slots[slot] 우선, 없으면 최신 슬롯의 top-level 사본 */
+  function feedNode(j, slot){
+    if (!j) return null;
+    var s = (j.slots && slot) ? j.slots[slot] : null;
+    if (s && (s.blog || s.shorts)) return s;
+    var latest = j.latestSlot || j.slot || '';
+    if (slot && latest && slot !== latest) return null;
+    if (j.blog || j.shorts){
+      return { slot: latest || slot, slotLabel: j.slotLabel, updatedAt: j.updatedAt, date: j.date, blog: j.blog, shorts: j.shorts };
+    }
+    return null;
+  }
+  function feedIsToday(node){
+    var d = String((node && (node.date || node.updatedAt)) || '');
+    return d.indexOf(feedToday()) === 0;
+  }
+  function feedBlogFormNo(slot){ return (slot === 'pre') ? 5 : 6; }
+  function feedApplyBlog(node, force){
+    var b = (node && node.blog) || null;
+    if (!b || !String(b.markdown || '').trim()) return { ok: false, why: 'no-blog' };
+    if (!force && String(currentDraftText() || '').trim()) return { ok: false, why: 'busy' };
+    var slot = node.slot || 'after';
+    var chip = document.querySelector('#formChips .fchip[data-id="stock"]');
+    if (chip) chip.click();
+    bloggerPick['stock'] = feedBlogFormNo(slot);
+    savePick();
+    try { renderStyle(); } catch (e) {}
+    var title = String(b.title || '').trim();
+    var body = String(b.markdown || '');
+    if (title && !/^#{1,3}\s/.test(body)) body = '## ' + title + '\n\n' + body;
+    if (title && topicEl){
+      topicEl.value = title;
+      try { topicEl.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+    }
+    state.titles = [{ type: '피클 초안', text: title || '오늘 시황' }];
+    state.titleIdx = 0;
+    try { renderTitles(); } catch (e) {}
+    try {
+      fillBlogOutput(title, getForm(state.selectedFormId), body, '📥 피클 초안 · ' + (node.slotLabel || feedSlotWord(slot)));
+    } catch (e) { return { ok: false, why: 'render' }; }
+    var tags = (b.tags || []).filter(Boolean);
+    if (tags.length){ try { renderSeo({ keywords: tags, hashtags: tags }, '피클 초안'); } catch (e) {} }
+    try { cvReload(false); } catch (e) {}
+    var tt = $('#thumbTitle'); if (tt && title) tt.value = title;
+    return { ok: true, slot: slot, title: title, chars: body.length, tags: tags.length, charts: (b.chartFiles || []) };
+  }
+  function feedApplyShorts(node, force, quiet){
+    var s = (node && node.shorts) || null;
+    var script = String((s && s.script) || '').trim();
+    if (!script) return { ok: false, why: 'no-shorts' };
+    if (!force){
+      var cur = String((($('#shOutText') || {}).textContent) || '').trim();
+      if (cur) return { ok: false, why: 'busy' };
+    }
+    var slotKey = s.slot || node.slot || 'after';
+    var chipEl = document.querySelector('#shThemeChips [data-sh-theme="economy"]');
+    if (chipEl) chipEl.click();
+    else { SH.theme = 'economy'; lsSet(SH_KEYS.theme, 'economy'); try { shRenderAll(); } catch (e) {} }
+    var title = String(s.title || '').trim();
+    if (title){
+      var sq = $('#shTopic');
+      if (sq){ sq.value = title; try { sq.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} }
+    }
+    try { shShowOut(script, '📥 피클 초안' + (s.formulaLabel ? ' · ' + s.formulaLabel : '')); } catch (e) {}
+    var wv = null;
+    try {
+      if (window.WVID && window.WVID.feed) wv = window.WVID.feed(slotKey, s.formulaKey, script, '피클 초안 · ' + feedSlotWord(slotKey), !!quiet);
+    } catch (e) { wv = null; }
+    return { ok: true, slot: slotKey, title: title, cuts: (wv && wv.cuts) || 0, formula: (wv && wv.name) || '', voice: (wv && wv.voice) || '' };
+  }
+  function feedBanner(html){
+    var box = $('#feedBanner'), txt = $('#feedBannerText');
+    if (!box || !txt) return;
+    txt.innerHTML = html;
+    box.hidden = false;
+  }
+  /* 시간대 버튼 — 오늘자 피클 초안이 있으면 우선 로드, 없으면 false 를 돌려 실측 흐름으로 넘긴다 */
+  function feedSlotHit(slot, mode){
+    return feedFetch(true).then(function (j) {
+      var node = feedNode(j, slot);
+      if (!node || !feedIsToday(node)) return false;
+      if (mode === 'blog'){
+        if (!node.blog) return false;
+        var r = feedApplyBlog(node, true);
+        if (!r.ok) return false;
+        toast('📥 피클이 작성한 ' + (node.slotLabel || feedSlotWord(slot)) + ' 초안을 불러왔습니다 — 블로그 ' +
+          Number(r.chars || 0).toLocaleString('ko-KR') + '자 · 태그 ' + r.tags + '개' + (r.charts.length ? ' · 차트 ' + r.charts.join(' · ') : '') + '.');
+        return true;
+      }
+      if (!node.shorts) return false;
+      var r2 = feedApplyShorts(node, true, true);
+      if (!r2.ok) return false;
+      toast('📥 피클이 작성한 ' + (node.slotLabel || feedSlotWord(slot)) + ' 초안을 불러왔습니다 — 쇼츠 ' +
+        r2.cuts + '컷 · 폭스시그널 ' + (r2.formula || '') + ' · 성우 ' + (r2.voice || '고정값') + '.');
+      return true;
+    }).catch(function () { return false; });
+  }
+  var FEED_BUSY = false;
+  /* [📥 피클 최신 초안 다시 불러오기] — 최신본으로 덮어쓴다 */
+  function feedLatest(btn){
+    if (FEED_BUSY) return Promise.resolve(false);
+    FEED_BUSY = true;
+    if (btn) spinner(btn, true, '초안 읽는 중…');
+    return feedFetch(true).then(function (j) {
+      var node = feedNode(j, j.latestSlot || j.slot);
+      if (!node) throw new Error('초안 없음');
+      var rb = feedApplyBlog(node, true);
+      var rs = feedApplyShorts(node, true, false);
+      var got = [];
+      if (rb.ok) got.push('블로그 ' + Number(rb.chars || 0).toLocaleString('ko-KR') + '자 · 태그 ' + rb.tags + '개');
+      if (rs.ok) got.push('쇼츠 ' + rs.cuts + '컷 · 폭스시그널 ' + (rs.formula || ''));
+      var why = [];
+      if (!rb.ok) why.push(rb.why === 'no-blog' ? '이 슬롯 초안에는 블로그 본문이 없습니다' : '블로그를 채우지 못했습니다');
+      if (!rs.ok) why.push(rs.why === 'no-shorts' ? '이 슬롯 초안에는 쇼츠 대본이 없습니다' : '쇼츠를 채우지 못했습니다');
+      if (got.length) toast('📥 ' + (node.slotLabel || feedSlotWord(node.slot)) + ' — ' + got.join(' · ') + ' 를 불러왔습니다.');
+      if (why.length) toast('📥 ' + why.join(' · '));
+      return got.length > 0;
+    }).catch(function () {
+      toast('📥 피클 최신 초안을 읽지 못했습니다 — data/content_auto_latest.json 이 아직 없거나 형식이 다릅니다.');
+      return false;
+    }).then(function (r) {
+      FEED_BUSY = false;
+      if (btn) spinner(btn, false);
+      return r;
+    });
+  }
+  /* 페이지를 열면 1회 — 작업 중인 내용이 없을 때만 조용히 채운다 */
+  function feedAuto(){
+    feedFetch(true).then(function (j) {
+      var node = feedNode(j, j.latestSlot || j.slot);
+      if (!node) return;
+      var rb = feedApplyBlog(node, false);
+      var rs = feedApplyShorts(node, false, true);
+      var got = [];
+      if (rb.ok) got.push('블로그 본문 ' + Number(rb.chars || 0).toLocaleString('ko-KR') + '자 · 태그 ' + rb.tags + '개');
+      if (rs.ok) got.push('쇼츠 ' + rs.cuts + '컷 · 폭스시그널 ' + (rs.formula || ''));
+      var when = node.updatedAt || j.updatedAt ? String(node.updatedAt || j.updatedAt).replace('T', ' ').slice(5, 16) : '';
+      if (got.length){
+        feedBanner('📥 <b>피클이 만든 ' + esc(node.slotLabel || feedSlotWord(node.slot)) + '</b> 초안' + (when ? ' (' + esc(when) + ')' : '') +
+          '을 열자마자 채웠습니다 — ' + esc(got.join(' · ')) + '. 최신본으로 다시 덮으려면 <b>[📥 피클 최신 초안 다시 불러오기]</b>를 누르세요.');
+      } else if (rb.why === 'busy' || rs.why === 'busy'){
+        feedBanner('📥 <b>피클 최신 초안이 준비되어 있습니다</b>(' + esc(node.slotLabel || feedSlotWord(node.slot)) + ') — 지금 작업 중인 내용은 그대로 두었습니다. 최신본으로 바꾸려면 <b>[📥 피클 최신 초안 다시 불러오기]</b>를 누르세요.');
+      }
+    }).catch(function () {
+      var box = $('#feedBanner');
+      if (box) box.hidden = true;
+    });
+  }
+  (function(){
+    var b = document.getElementById('feedDraftBtn');
+    if (b) b.addEventListener('click', function(){ feedLatest(b); });
+    document.addEventListener('click', function(ev){
+      var x = ev.target && ev.target.closest ? ev.target.closest('[data-feed-draft]') : null;
+      if (!x) return;
+      ev.preventDefault();
+      feedLatest(x);
+    });
+    var g = document.getElementById('feedBannerGo');
+    if (g) g.addEventListener('click', function(){ feedLatest(g); });
+    var c = document.getElementById('feedBannerClose');
+    if (c) c.addEventListener('click', function(){ var box = $('#feedBanner'); if (box) box.hidden = true; });
+    setTimeout(function(){ try { feedAuto(); } catch (e) {} }, 1500);
   })();
 
   /* ---------- ② 오늘 관제탑 시황 1클릭 ---------- */
@@ -18383,20 +18617,21 @@ var CSVoice = (function () {
   }
 
   /* ---------- launch ---------- */
-  function openPanel() {
-    /* 📱 쇼츠 스튜디오 탭 안으로 들어왔으므로, 그 탭을 먼저 연다 */
-    if (window.CS2_TAB) { try { window.CS2_TAB('shorts'); } catch (e) {} }
+  function openPanel(quiet) {
+    /* 📱 쇼츠 스튜디오 탭 안으로 들어왔으므로, 그 탭을 먼저 연다.
+       quiet=true 는 피클 초안 자동 로드 — 탭 이동·스크롤 없이 조용히 채운다. */
+    if (!quiet && window.CS2_TAB) { try { window.CS2_TAB('shorts'); } catch (e) {} }
     var p = $('#wvPanel');
-    if (p) { p.open = true; try { p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
+    if (p) { p.open = true; if (!quiet) { try { p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} } }
   }
   function setSrcTag(spec, label) {
     var src = $('#wvSrc');
     if (!src) return;
     src.textContent = '📄 ' + (label ? label + ' · ' : '') + (spec.title || spec.hookTitle || '쇼츠') + ' · ' + spec.cuts.length + '컷';
   }
-  function adoptSpec(raw, label) {
+  function adoptSpec(raw, label, quiet) {
     var spec = normSpec(raw);
-    openPanel();
+    openPanel(quiet);
     if (!spec) {
       say('대본을 읽지 못했습니다 — 먼저 해당 카드에서 <b>대본 생성</b>을 눌러 주세요.', 'bad');
       return null;
@@ -18664,6 +18899,25 @@ var CSVoice = (function () {
     say('📋 붙여넣은 대본을 <b>' + applied.cuts.length + '컷</b>으로 바꿨습니다 — 미리보기를 확인하고 <b>[▶ 생성]</b>을 누르세요.', 'good');
     return applied;
   }
+  /* 📥 피클 초안·외부 대본 — 타임스탬프 대본을 컷으로 나눠 바로 올린다 (quiet = 자동 로드, 탭 이동 없음) */
+  function loadScript(raw, label, quiet) {
+    if (S.running) {
+      if (!quiet) say('녹화 중에는 대본을 바꿀 수 없습니다 — [■ 중지]를 누른 뒤 다시 시도해 주세요.', 'bad');
+      return null;
+    }
+    var spec = parseScriptText(raw);
+    if (!spec) {
+      if (!quiet) say('대본을 컷으로 나누지 못했습니다 — [00:00~00:03] 형태의 타임스탬프나 줄바꿈으로 컷이 나뉘어 있는지 확인해 주세요.', 'bad');
+      return null;
+    }
+    var ta = $('#wvPasteTa'); if (ta) ta.value = String(raw || '');
+    var applied = adoptSpec(spec, label || '피클 초안', quiet);
+    if (!applied) return null;
+    try { renderPasteList(applied); } catch (e) {}
+    if (!quiet) pasteSay('📥 ' + (label || '피클 초안') + ' — ' + applied.cuts.length + '컷으로 나눴습니다. [▶ 생성]만 누르면 그대로 녹화합니다.', 'good');
+    return applied;
+  }
+
   /* [🧪 샘플로 바로 만들기] — 오늘(11/20) 시황 5컷을 실제 컷으로 올린다 */
   function loadSample() {
     if (S.running) {
@@ -18704,6 +18958,24 @@ var CSVoice = (function () {
     var vName = '';
     try { vName = voiceShort(S.cfg.voice) + ' ' + clampSpeed(S.cfg.speed).toFixed(2) + 'x'; } catch (e) { vName = ''; }
     return { key: k, name: formulaName(), tag: formulaTag(), voice: vName, applied: !!applied };
+  }
+
+  /* ---------- 📥 피클 초안 — 폭스시그널 + 그 슬롯 공식 + 대본 컷 분할 ----------
+     · slotKey: pre | lunch | noon | close | after, formulaKey: '1'~'4'
+     · 디자인·성우는 이 컨셉의 고정값(현수 1.20x 등)을 그대로 두고 공식만 그 시간대로 바꾼다. */
+  function feedDraftWv(slotKey, formulaKey, script, label, quiet) {
+    var map = { pre: '1', lunch: '2', noon: '2', close: '3', after: '4' };
+    var k = String(formulaKey == null ? '' : formulaKey).trim();
+    if (!FORMULA.fox[k]) k = map[slotKey] || '1';
+    setDesign('fox');
+    S.cfg.formula = S.cfg.formula || {};
+    S.cfg.formula.fox = FORMULA.fox[k] ? k : '1';
+    saveCfg();
+    syncUi();
+    var applied = loadScript(script, label || '피클 초안', quiet);
+    var vName = '';
+    try { vName = voiceShort(S.cfg.voice) + ' ' + clampSpeed(S.cfg.speed).toFixed(2) + 'x'; } catch (e) { vName = ''; }
+    return { key: k, name: formulaName(), tag: formulaTag(), voice: vName, cuts: applied ? applied.cuts.length : 0 };
   }
 
   /* ---------- 템플릿 선택 ---------- */
@@ -18969,6 +19241,8 @@ var CSVoice = (function () {
     poseOf: function (d, cut, idx) { return poseOfCut(d || designOf(), cut, idx || 0); },
     setFormula: setFormula,
     slot: slotApply,
+    feed: feedDraftWv,
+    loadScript: loadScript,
     formula: function () { return ROLE[designOf()] ? { design: designOf(), key: formulaKey(), name: formulaName(), tag: formulaTag() } : null; },
     formulaPrompt: formulaPrompt,
     formulaSummary: formulaSummary,
