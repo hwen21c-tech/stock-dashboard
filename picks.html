@@ -333,6 +333,33 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
 .ta-wrap textarea:focus{border-color:var(--accent); outline:none}
 .wide-acts{display:flex; gap:7px; flex-wrap:wrap; margin-top:2px}
 .wide-acts .btn{flex:1 1 auto; text-align:center}
+
+/* ── 🔍 실시간 최저가 검색(관리자) ── */
+.ls-row{display:flex; gap:6px; min-width:0}
+.ls-row input{flex:1 1 auto; min-width:0}
+.ls-row .btn{flex:0 0 auto; white-space:nowrap}
+.ls-tools{display:flex; gap:6px; align-items:center; flex-wrap:wrap}
+.ls-tools .btn{padding:5px 8px; font-size:10.5px; border-radius:8px}
+.ls-list{display:flex; flex-direction:column; gap:7px; margin-top:8px}
+.ls-card{display:flex; gap:9px; border:1.5px solid var(--line); background:#fff; border-radius:12px; padding:8px; min-width:0}
+.ls-card .th{flex:0 0 64px; width:64px; height:64px; border-radius:9px; overflow:hidden; background:#f4efe7; display:flex; align-items:center; justify-content:center; font-size:20px}
+.ls-card .th img{width:100%; height:100%; object-fit:cover}
+.ls-card .bd{flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:3px}
+.ls-card .nm{font-size:11.8px; font-weight:900; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.ls-card .pr{font-size:12.5px; font-weight:900; color:#d63a1e}
+.ls-card .pr small{font-size:10px; font-weight:800; color:#9c9287; margin-left:4px; text-decoration:line-through}
+.ls-card .mt{font-size:10.5px; font-weight:800; color:var(--ink2); line-height:1.4}
+.ls-card .acts{display:flex; gap:5px; margin-top:3px; flex-wrap:wrap}
+.ls-card .acts .btn, .ls-card .acts a.btn{padding:5px 8px; font-size:10.5px; border-radius:8px; text-decoration:none; display:inline-flex; align-items:center}
+.ls-empty{font-size:11px; font-weight:800; color:#9c9287; padding:6px 2px; line-height:1.5; word-break:keep-all}
+@media (min-width:720px){
+  .ls-card{align-items:center}
+  .ls-card .bd{display:grid; grid-template-columns:1fr auto; grid-template-areas:"nm acts" "pr acts" "mt acts"; column-gap:14px; align-items:center}
+  .ls-card .nm{grid-area:nm}
+  .ls-card .pr{grid-area:pr}
+  .ls-card .mt{grid-area:mt}
+  .ls-card .acts{grid-area:acts; margin-top:0; flex-wrap:nowrap}
+}
 </style>
 </head>
 <body>
@@ -433,11 +460,25 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
     </div>
     <div class="sbody">
 
+      <div class="sec" id="lsSec">
+        <h3>🔍 상품명 최저가 검색 &amp; 자동 채우기 <span class="sp" id="lsState">실시간</span></h3>
+        <div class="ls-row">
+          <input id="lsQ" type="search" inputmode="search" autocomplete="off" enterkeyhint="search" placeholder="예: 휴대용 미니 블렌더" aria-label="최저가로 찾을 상품명">
+          <button class="btn sm" type="button" id="btnLs">🔍 최저가 검색</button>
+        </div>
+        <div class="ls-tools" style="margin-top:7px">
+          <button class="btn ghost sm" type="button" id="btnLsSort" aria-pressed="false">↕︎ 가격 낮은 순</button>
+          <span class="ls-empty" style="padding:0; font-size:10.5px">에누리 가격비교 실시간 · 상세의 최저가 판매처까지 확인</span>
+        </div>
+        <div class="ls-list" id="lsList"><div class="ls-empty">상품명을 넣고 [🔍 최저가 검색]을 누르면 실제 최저가·판매처가 나옵니다.</div></div>
+        <div class="tip" style="margin-top:8px; font-size:10.5px; color:#9c9287">[✅ 선택해 채우기]를 누르면 아래 등록 폼(상품명·최저가·판매처·이미지·상세 링크)에 자동 입력됩니다. 제휴 링크만 넣고 [💾 저장]하세요.</div>
+      </div>
+
       <details class="sec guide-sec" id="opGuide">
         <summary>📖 운영 4단계 가이드 <span class="arw">▾</span></summary>
         <div class="guide-bd">
-          <div class="gstep"><span class="gn">1</span><span><b>🔍 4대 몰 검색</b> — 상품명을 넣고 [🔍 4대 몰 검색]을 누르면 쿠팡·테무·알리·네이버 가격비교가 한 번에 열립니다. 같은 상품의 최저가를 먼저 확인하세요.</span></div>
-          <div class="gstep"><span class="gn">2</span><span><b>실제 가격·내 제휴 단축링크 입력 후 저장</b> — 정가·최저가와 쿠팡 파트너스(또는 테무·알리) 단축링크를 넣고 [💾 저장]. 링크를 비우면 상품명 검색 결과로 연결됩니다.</span></div>
+          <div class="gstep"><span class="gn">1</span><span><b>🔍 최저가 검색 → ✅ 선택해 채우기</b> — 상품명을 넣고 [🔍 최저가 검색]을 누르면 실제 최저가·판매처가 뜹니다. [✅ 선택해 채우기]로 등록 폼을 자동 입력하세요. (4대 몰 검색은 쿠팡·테무·알리·네이버를 한 번에 여는 보조 버튼입니다)</span></div>
+          <div class="gstep"><span class="gn">2</span><span><b>제휴 링크 확인 후 저장</b> — 쿠팡 파트너스·테무 어필리에이트 단축링크를 넣고 [💾 저장]. 링크를 비우면 상품명 검색 결과로 연결됩니다.</span></div>
           <div class="gstep"><span class="gn">3</span><span><b>🎬 쇼츠 대본 복사 · 🖼️ 9:16 카드 PNG</b> — 상품 행의 버튼으로 15초 대본·고정 댓글을 한 번에 복사하고, 1080×1920 요약 이미지를 저장해 릴스·스토리에 붙입니다.</span></div>
           <div class="gstep"><span class="gn">4</span><span><b>고정 댓글·프로필에 직통 링크</b> — <code>picks.html?q=12</code>처럼 번호를 넣어 두면 방문자가 영상 번호만 검색해 바로 그 카드로 옵니다. 대가성 고지는 페이지 상단에 항상 떠 있습니다.</span></div>
         </div>
@@ -483,9 +524,9 @@ footer .frow button{border:1px solid var(--line); background:#fff; border-radius
           <div class="fld"><label for="f_price">최저가 (원)</label><input id="f_price" inputmode="numeric" placeholder="18900"></div>
           <div class="fld"><label for="f_store">판매처 표기</label><input id="f_store" placeholder="쿠팡"></div>
           <div class="fld"><label for="f_emoji">이미지 없을 때 이모지</label><input id="f_emoji" placeholder="🥤" maxlength="4"></div>
-          <div class="fld full"><label for="f_rocket">🚀 로켓/빠른배송 링크 (쿠팡 파트너스)</label><input id="f_rocket" placeholder="https://link.coupang.com/a/..."><div class="tip">비우면 상품명으로 쿠팡 검색 링크가 들어갑니다</div></div>
-          <div class="fld full"><label for="f_direct">💸 직구 최저가 링크 (테무·알리 등)</label><input id="f_direct" placeholder="https://..."><div class="tip">비우면 상품명으로 테무 검색 링크가 들어갑니다</div></div>
-          <div class="fld full"><label for="f_naver">🔎 네이버 최저가 링크 (선택)</label><input id="f_naver" placeholder="https://search.shopping.naver.com/..."></div>
+          <div class="fld full"><label for="f_rocket">🚀 제휴 링크 ① 쿠팡 파트너스</label><input id="f_rocket" placeholder="https://link.coupang.com/a/..."><div class="tip">비우면 상품명으로 쿠팡 검색 링크가 들어갑니다</div></div>
+          <div class="fld full"><label for="f_direct">💸 제휴 링크 ② 테무·알리 어필리에이트</label><input id="f_direct" placeholder="https://..."><div class="tip">비우면 상품명으로 테무 검색 링크가 들어갑니다</div></div>
+          <div class="fld full"><label for="f_naver">🔎 상품 상세·최저가 링크 (선택)</label><input id="f_naver" placeholder="최저가 검색에서 자동 입력 · 네이버/에누리 상세 URL"></div>
           <div class="fld full"><label for="f_pros">장점 2줄 (줄바꿈으로 구분)</label><textarea id="f_pros" placeholder="30초면 스무디 완성&#10;무선이라 캠핑에서도 사용"></textarea></div>
           <div class="fld full"><label for="f_pass">이런 분은 패스</label><textarea id="f_pass" placeholder="한 번에 4인분 이상 갈아야 한다면 패스"></textarea></div>
           <div class="fld full"><label for="f_tags">검색 태그 (쉼표)</label><input id="f_tags" placeholder="미니블렌더,휴대용믹서"></div>
@@ -721,6 +762,101 @@ function openMall4(name, popFallbackMsg){
   return true;
 }
 
+/* ══════════════════════════════════════════════════════
+   🔍 실시간 최저가 검색 (Vercel /api/picks-search)
+   ══════════════════════════════════════════════════════ */
+var LS_API_ABS = 'https://stock-dashboard-live-6frm.vercel.app/api/picks-search';
+function picksApiBase(){
+  try {
+    var ov = new URLSearchParams(location.search).get('picksapi');
+    if (ov) return ov;
+  } catch(e){}
+  return /(^|\.)vercel\.app$/.test(location.hostname) ? '/api/picks-search' : LS_API_ABS;
+}
+var lsState = { q:'', items:[], busy:false, sortLow:false };
+function lsWon(n){ var v = Number(n); return v > 0 ? v.toLocaleString('ko-KR') : '-'; }
+function lsSetState(txt){ var el = $('#lsState'); if (el) el.textContent = txt; }
+function lsRender(){
+  var box = $('#lsList'); if (!box) return;
+  var items = lsState.items.slice();
+  if (lsState.sortLow) items.sort(function(a, b){ return (a.price || 0) - (b.price || 0); });
+  if (!items.length){
+    box.innerHTML = '<div class="ls-empty">' + (lsState.q ? '실제 판매 중인 상품을 찾지 못했습니다. 상품명을 조금 바꿔 보세요.' : '상품명을 넣고 [🔍 최저가 검색]을 누르면 실제 최저가·판매처가 나옵니다.') + '</div>';
+    return;
+  }
+  box.innerHTML = items.map(function(it){
+    var idx = lsState.items.indexOf(it);
+    var meta = [];
+    if (it.seller) meta.push('🏪 ' + it.seller);
+    if (it.delivery) meta.push(it.delivery);
+    if (it.mallCount) meta.push(it.mallCount + '개 몰 비교');
+    if (it.rating) meta.push('★' + it.rating + (it.reviewCount ? ' (' + it.reviewCount + ')' : ''));
+    return '<div class="ls-card">' +
+      '<div class="th">' + (it.image ? '<img src="' + esc(it.image) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '🛍️') + '</div>' +
+      '<div class="bd">' +
+        '<div class="nm">' + esc(it.name) + (it.condi ? ' <span style="color:#9c9287;font-weight:800">· ' + esc(it.condi) + '</span>' : '') + '</div>' +
+        '<div class="pr">' + lsWon(it.price) + '원' + (it.listPrice && it.listPrice > it.price ? '<small>' + lsWon(it.listPrice) + '원</small>' : '') + '</div>' +
+        '<div class="mt">' + esc(meta.join(' · ')) + '</div>' +
+        '<div class="acts">' +
+          '<button class="btn sm" type="button" data-lspick="' + idx + '">✅ 선택해 채우기</button>' +
+          (it.buyUrl ? '<a class="btn ghost sm" href="' + esc(it.buyUrl) + '" target="_blank" rel="noopener nofollow sponsored">구매</a>' : '') +
+          '<a class="btn ghost sm" href="' + esc(it.url) + '" target="_blank" rel="noopener nofollow">상세</a>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('') + '<div class="ls-empty" style="padding:2px">총 ' + items.length + '개 · 가격은 확인 시점 기준입니다</div>';
+}
+function lsSearch(){
+  var q = ($('#lsQ').value || '').trim();
+  if (!q){ toast('상품명을 입력하세요'); $('#lsQ').focus(); return; }
+  if (lsState.busy) return;
+  lsState.busy = true; lsState.q = q; lsState.items = [];
+  lsSetState('검색 중…');
+  $('#lsList').innerHTML = '<div class="ls-empty">실제 최저가를 확인하는 중입니다… (2~6초)</div>';
+  var ctl = null;
+  try { ctl = new AbortController(); setTimeout(function(){ try{ ctl.abort(); }catch(e){} }, 25000); } catch(e){}
+  fetch(picksApiBase() + '?q=' + encodeURIComponent(q), { cache:'no-store', signal: ctl ? ctl.signal : undefined })
+    .then(function(r){
+      return r.json().then(function(j){ return { status:r.status, j:j }; })
+        .catch(function(){ throw new Error('응답을 읽지 못했습니다 (HTTP ' + r.status + ')'); });
+    })
+    .then(function(res){
+      lsState.busy = false;
+      var j = res.j || {};
+      lsState.items = Array.isArray(j.items) ? j.items : [];
+      lsState.q = j.q || q;
+      if (!j.ok){
+        lsSetState(' 실패');
+        $('#lsList').innerHTML = '<div class="ls-empty">' + esc(j.message || ('검색 실패 (HTTP ' + res.status + ')')) + '</div>';
+        return;
+      }
+      lsSetState(lsState.items.length ? ('실시간 · ' + lsState.items.length + '건') : '결과 없음');
+      lsRender();
+    })
+    .catch(function(err){
+      lsState.busy = false;
+      lsSetState(' 연결 실패');
+      var m = (err && err.name === 'AbortError') ? '응답이 늦어 취소했습니다. 다시 시도해 주세요.' : ('검색에 실패했습니다: ' + ((err && err.message) || err));
+      $('#lsList').innerHTML = '<div class="ls-empty">' + esc(m) + '</div>';
+    });
+}
+function lsPick(idx){
+  var it = lsState.items[idx];
+  if (!it){ toast('상품을 찾지 못했습니다'); return; }
+  if ($('#formSec').hidden) openForm(null);
+  $('#f_name').value = it.name || '';
+  $('#f_price').value = it.price || '';
+  $('#f_sns').value = (it.listPrice && it.listPrice > it.price) ? it.listPrice : '';
+  $('#f_store').value = it.seller || '';
+  $('#f_img').value = it.image || '';
+  if (it.url) $('#f_naver').value = it.url;
+  var prev = $('#imgPrev');
+  if (it.image){ prev.src = it.image; prev.classList.add('on'); } else { prev.removeAttribute('src'); prev.classList.remove('on'); }
+  renderMallBar();
+  $('#formSec').scrollIntoView({ behavior:'smooth', block:'start' });
+  toast('폼에 채웠습니다 · 제휴 링크만 확인하고 [💾 저장]', 3200);
+}
+
 /* ── 상품 링크 ── */
 function searchUrl(kind, name){
   return mallUrl(kind, name);
@@ -847,7 +983,7 @@ function cardHtml(it){
       '</div>' +
       '<div class="meta">' +
         (save ? '<span>' + refLabel + ' ' + won(ref) + '원</span>' : '<span>' + esc(it.store || '판매처') + ' 기준</span>') +
-        '<a href="' + esc(linkOf(it, 'naver')) + '" target="_blank" rel="noopener nofollow">🔎 네이버 최저가</a>' +
+        '<a href="' + esc(linkOf(it, 'naver')) + '" target="_blank" rel="noopener nofollow">🔎 최저가 비교</a>' +
         '<span class="ct">' + (clicks > 0 ? '👆 ' + clicks + '회' : '') + '</span>' +
       '</div>' +
       '<div class="rep"><button class="repbtn" type="button" data-rep="' + esc(it.id) + '">🚨 가격·품절 제보</button></div>' +
@@ -1786,7 +1922,21 @@ $('#shortsModal').addEventListener('click', function(e){
 $('#btnMall4').addEventListener('click', function(){
   openMall4(($('#f_name').value || '').trim(), '팝업이 차단됐습니다');
 });
+$('#btnMall4').title = '쿠팡·테무·알리·네이버 가격비교를 새 창으로 엽니다 (보조)';
 $('#f_name').addEventListener('input', renderMallBar);
+$('#btnLs').addEventListener('click', lsSearch);
+$('#lsQ').addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); lsSearch(); } });
+$('#btnLsSort').addEventListener('click', function(){
+  lsState.sortLow = !lsState.sortLow;
+  this.setAttribute('aria-pressed', lsState.sortLow ? 'true' : 'false');
+  this.textContent = lsState.sortLow ? '↕︎ 인기순' : '↕︎ 가격 낮은 순';
+  lsRender();
+});
+$('#lsList').addEventListener('click', function(e){
+  var b = e.target.closest('[data-lspick]');
+  if (!b) return;
+  lsPick(parseInt(b.getAttribute('data-lspick'), 10));
+});
 $('#btnHideSamples').addEventListener('click', function(){
   state.hideSamples = !state.hideSamples;
   saveStore(true);
