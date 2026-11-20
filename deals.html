@@ -93,6 +93,23 @@
       background: rgba(56, 189, 248, 0.15);
     }
 
+    /* 3대 알뜰 포털 왕복 내비 (체험단 · 가족 특가 · 핫템 최저가) */
+    .pn { display: flex; gap: 6px; margin: 0 0 10px; }
+    .pn a {
+      flex: 1 1 0; min-width: 0;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      padding: 9px 6px; border-radius: 10px;
+      font-size: 12px; font-weight: 800; letter-spacing: -0.02em;
+      text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      color: #cbd5e1; background: #0e1729; border: 1px solid rgba(148, 163, 184, 0.24);
+      transition: all 0.2s;
+    }
+    .pn a:active { transform: scale(0.98); }
+    .pn a.on {
+      color: #04121f; background: linear-gradient(135deg, #7dd3fc, #34d399);
+      border-color: #7dd3fc; box-shadow: 0 6px 18px rgba(56, 189, 248, 0.28);
+    }
+
     /* MULTI-SOURCE RADAR STRIP */
     .source-strip {
       display: flex;
@@ -328,7 +345,13 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      gap: 4px 6px;
+      flex-wrap: wrap;
       margin-bottom: 8px;
+    }
+    .card-top > span {
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
     .card-tags {
       display: flex;
@@ -732,6 +755,12 @@
 </style>
 </head>
 <body>
+
+  <nav class="pn" aria-label="알뜰 포털 바로가기">
+    <a href="./review-zip.html">🍯 오늘의 체험단</a>
+    <a class="on" href="./deals.html" aria-current="page">✈️ 가족 특가</a>
+    <a href="./picks.html">🎁 핫템 최저가</a>
+  </nav>
 
   <!-- HEADER -->
   <header>

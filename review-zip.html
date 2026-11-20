@@ -263,7 +263,7 @@ section.block{margin-top:36px;padding-top:22px;border-top:1px solid var(--rule)}
 .dcard .dnote{font-size:10px;font-weight:700;color:var(--mut2);line-height:1.55}
 
 /* ============ portal + ads ============ */
-.money3{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}
+.money3{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
 .money{display:grid;gap:10px;grid-template-columns:1fr 1fr}
 .promo{display:flex;align-items:center;gap:12px;padding:16px;border-radius:15px;text-decoration:none;
   background:linear-gradient(140deg,rgba(56,189,248,.12),rgba(129,140,248,.1));
@@ -458,10 +458,8 @@ html[data-theme="light"] .themeBtn{background:#fff;border-color:var(--line2);col
       </div>
     </div>
     <nav class="navpills">
-      <a class="pill mine" href="revu-studio.html" title="내 전용 리뷰 스튜디오">🛍️ 내 리뷰 스튜디오</a>
-      <a class="pill" href="deals.html" title="패밀리 특가 레이더">✈️ 특가 레이더</a>
-      <a class="pill" href="picks.html" title="SNS 핫템 최저가">🎁 핫템 PICK</a>
-      <a class="pill" href="index.html" title="증시 관제탑">📈 관제탑</a>
+      <a class="pill" href="deals.html" title="가족 특가 · 여행·키즈 특가 레이더">✈️ 가족 특가</a>
+      <a class="pill" href="picks.html" title="핫템 최저가 · 연오랑 PICK">🎁 핫템 최저가</a>
       <button class="pill themeBtn" id="themeBtn" type="button" aria-label="테마 전환">☀️ 밝은 테마</button>
       <button class="pill hide" id="installBtn" type="button">📲 설치</button>
     </nav>
@@ -583,8 +581,8 @@ html[data-theme="light"] .themeBtn{background:#fff;border-color:var(--line2);col
     <div class="shead">
       <span class="no">04</span>
       <h3>오늘의 가족 특가</h3>
-      <span class="sub" id="dealSub">패밀리 특가 레이더에서 가져옵니다</span>
-      <a class="btn act" href="deals.html" style="padding:8px 13px;font-size:11.5px">특가 레이더 전체보기 →</a>
+      <span class="sub" id="dealSub">가족 특가에서 가져옵니다</span>
+      <a class="btn act" href="deals.html" style="padding:8px 13px;font-size:11.5px">가족 특가 전체보기 →</a>
     </div>
     <div class="dgrid" id="dealGrid">
       <div class="adslot" style="grid-column:1/-1">
@@ -598,22 +596,17 @@ html[data-theme="light"] .themeBtn{background:#fff;border-color:var(--line2);col
     <div class="shead">
       <span class="no">05</span>
       <h3>함께 쓰는 페이지</h3>
-      <span class="sub">체험단 · 가족 특가 · 핫템 최저가</span>
+      <span class="sub">가족 특가 · 핫템 최저가</span>
     </div>
     <div class="money3">
-      <a class="promo" href="revu-studio.html">
-        <span class="ic" aria-hidden="true">🛍️</span>
-        <span class="tx"><b>내 리뷰 스튜디오</b><span>당첨 확률 · 신청 멘트 · 리뷰 초안 · 마감 트래커</span></span>
-        <span class="arw" aria-hidden="true">↗</span>
-      </a>
       <a class="promo" href="deals.html">
         <span class="ic" aria-hidden="true">✈️</span>
-        <span class="tx"><b>패밀리 특가 레이더</b><span>여행·키즈·글램핑 실시간 특가를 매일 아침 스캔</span></span>
+        <span class="tx"><b>가족 특가</b><span>여행·키즈·글램핑 실시간 특가를 매일 아침 스캔</span></span>
         <span class="arw" aria-hidden="true">↗</span>
       </a>
       <a class="promo" href="picks.html">
         <span class="ic" aria-hidden="true">🎁</span>
-        <span class="tx"><b>연오랑 PICK</b><span>SNS 핫템을 인스타 판매가 대신 쿠팡·직구 최저가로</span></span>
+        <span class="tx"><b>핫템 최저가</b><span>SNS 핫템을 인스타 판매가 대신 쿠팡·직구 최저가로</span></span>
         <span class="arw" aria-hidden="true">↗</span>
       </a>
     </div>
@@ -1016,7 +1009,7 @@ html[data-theme="light"] .themeBtn{background:#fff;border-color:var(--line2);col
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(renderDeals)
       .catch(function () {
-        $('dealGrid').innerHTML = '<div class="empty" style="grid-column:1/-1">특가 데이터를 불러오지 못했습니다. <a href="deals.html">특가 레이더</a>에서 직접 보세요.</div>';
+        $('dealGrid').innerHTML = '<div class="empty" style="grid-column:1/-1">특가 데이터를 불러오지 못했습니다. <a href="deals.html">가족 특가</a>에서 직접 보세요.</div>';
       });
   }
 
