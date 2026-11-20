@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-20T11:19:45+09:00",
+ "updatedAt": "2026-11-20T11:49:53+09:00",
  "basisDate": "2026-11-20",
  "collector": "scripts/fetch_ipo_data.py",
  "scope": "2026-11-01 ~ 2026-12-31 청약·상장 공모주",
@@ -1021,12 +1021,19 @@
    "demandStage": "수요예측 완료",
    "isSpac": false,
    "sources": [
-    "38co.kr 공모주청약일정",
     "https://ipokorea.kr/ipo-calendar/2026/11",
-    "38co.kr 종목상세 no=2345",
     "ipokorea.kr 종목상세"
    ],
    "no38": "2345",
+   "stickyFields": [
+    "code",
+    "offerShares",
+    "amountEok",
+    "refundDate",
+    "listingDate",
+    "managers",
+    "no38"
+   ],
    "bandPosition": null,
    "score": null,
    "scoreParts": null,
@@ -1986,6 +1993,7 @@
   "유통금액은 ipokorea 상장일 유통주식수 × (확정공모가, 없으면 밴드 상단)으로 계산한 값입니다.",
   "예상 시총(mcapFixedEok)은 상장예정주식수 × 확정공모가 계산값이며, 확정 전에는 null 입니다.",
   "상장일 유통물량 공개 전이면 점수는 확인된 3개 항목을 100점으로 환산한 값입니다(scoreBasis 표기).",
-  "스팩(SPAC)은 변별력이 없어 기본 목록에서 숨기고 '스팩 포함' 칩으로만 봅니다."
+  "스팩(SPAC)은 변별력이 없어 기본 목록에서 숨기고 '스팩 포함' 칩으로만 봅니다.",
+  "38 일정에서 빠진 종목은 이미 확인된 값(종목코드·공모주식수·환불일·상장일)을 유지하며, 새 값이 확인되면 교체합니다."
  ]
 }
