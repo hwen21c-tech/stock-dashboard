@@ -11534,8 +11534,11 @@ var CSVoice = (function () {
       var mat = buildSlotMaterial(slot, m);
       var src = $('#srcMaterial');
       if (src){ src.value = mat.text; try { src.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
-      var tp = $('#topic');
-      if (tp){ tp.value = mat.topic; try { tp.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
+      /* 주제 칸은 블로그 모드에서만 — 쇼츠는 shTopic 을 쓴다(블로그 초안 주제 보존) */
+      if (m === 'blog'){
+        var tp = $('#topic');
+        if (tp){ tp.value = mat.topic; try { tp.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
+      }
       if (m === 'blog'){
         var chip = document.querySelector('#formChips .fchip[data-id="stock"]');
         if (chip) chip.click();
