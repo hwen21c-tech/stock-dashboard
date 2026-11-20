@@ -504,6 +504,13 @@
   .wvformulabox[data-design="fox"] .wvformula.on b{color:#fecdd3}
   .wvformulabox[data-design="fox"] .wvformula.on span{color:#ffe4e6}
   .wvformulas{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+  /* 🏷️ 상단 배지 문구 직접 수정 */
+  .wvbadgerow{display:flex;flex-wrap:nowrap;gap:6px;align-items:center;min-width:0}
+  .wvbadgerow[hidden]{display:none}
+  .wvbadgerow input[type=text]{min-width:0;flex:1 1 120px;width:auto;background:#08111f;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:11.6px;font-weight:800;color:#e2e8f0}
+  .wvbadgerow .btn{flex:0 0 auto}
+  .wvbadgehint{margin:0;font-size:10.6px;font-weight:700;color:#94a3b8;line-height:1.45}
+  .wvbadgehint[hidden]{display:none}
   .wvformula{flex:1 1 172px;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left;cursor:pointer;border:1px solid var(--line);border-radius:9px;background:#0a1424;padding:7px 9px}
   .wvformula b{font-size:11.2px;font-weight:900;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .wvformula span{font-size:9.6px;font-weight:700;color:var(--faint);line-height:1.3}
@@ -2337,6 +2344,12 @@
     <div class="wvformulabox" id="wvFormulaBox" data-design="shiba" hidden>
       <div class="flabel" style="margin:0">🎯 분야 흥행 공식 <span class="bdg info">대본·샘플 5컷·카드에 함께 적용</span></div>
       <div class="wvformulas" id="wvFormulas" role="group" aria-label="흥행 공식 선택"></div>
+      <div class="wvbadgerow" id="wvBadgeRow" hidden>
+        <label class="flabel" for="wvSlotBadge" style="margin:0;flex:0 0 auto">🏷️ 상단 배지</label>
+        <input type="text" id="wvSlotBadge" maxlength="18" autocomplete="off" placeholder="🚨 긴급 장분석" aria-label="영상 상단 배지 문구 — 직접 입력하면 미리보기·녹화에 바로 반영됩니다">
+        <button class="btn small ghost" id="wvSlotBadgeReset" type="button" title="이 공식의 기본 배지 문구로 되돌립니다">↺ 기본값</button>
+      </div>
+      <p class="wvbadgehint" id="wvBadgeHint" hidden>배지 문구는 직접 고칠 수 있습니다 — 예) <b>📣 채널 소개</b> (18자 이내). 입력 즉시 미리보기·녹화 상단 배지에 반영됩니다.</p>
     </div>
     <div class="wvfoxbox" id="wvFoxBox" hidden>
       <div class="flabel" id="wvFoxLabel" style="margin:0">🦊 컷별 여우 포즈 <span class="bdg info">자동 = 컷 내용으로 선택</span></div>
@@ -16356,12 +16369,26 @@ var CSVoice = (function () {
     ctx.fillRect(0, SAFE.b - 1, CW, 2);
   }
   /* 🏷️ 시간대 배지 — 지금 선택된 폭스시그널 공식을 상단에 한 글자로 못 박는다 */
-  var FOX_SLOT_LABEL = { '1': '🌅 장전', '2': '☀️ 점심', '3': '🌆 정규마감', '4': '🌙 애프터장' };
-  function foxSlotBadge() {
+  var FOX_SLOT_LABEL = { '1': '🌅 장전', '2': '☀️ 점심', '3': '🌆 정규마감', '4': '🌙 애프터장', '5': '🚨 긴급 장분석' };
+  /* 🏷️ 상단 배지 — 사용자가 직접 쓴 문구(자유 배지)가 있으면 그 값이, 없으면 그 공식의 기본 배지가 나온다 */
+  function foxBadgeMax() { return 18; }
+  function foxBadgeOverride() {
+    var b = S.cfg && S.cfg.badge;
+    return String((b && b.fox) || '').replace(/\s+/g, ' ').trim().slice(0, foxBadgeMax());
+  }
+  function foxSlotDefault() {
     var k = formulaKey('fox');
     if (FOX_SLOT_LABEL[k]) return FOX_SLOT_LABEL[k];
     var f = formulaOf('fox');
     return f ? String(f.tag + ' ' + f.name).trim() : '';
+  }
+  function foxSlotBadge() { return foxBadgeOverride() || foxSlotDefault(); }
+  /* 입력값 → 저장값 (그 공식의 기본 문구와 같으면 비워 기본값을 따라가게 한다) */
+  function foxBadgeStore(val) {
+    var v = String(val == null ? '' : val).replace(/\s+/g, ' ').trim().slice(0, foxBadgeMax());
+    S.cfg.badge = (S.cfg.badge && typeof S.cfg.badge === 'object') ? S.cfg.badge : {};
+    S.cfg.badge.fox = (v && v !== foxSlotDefault()) ? v : '';
+    return S.cfg.badge.fox;
   }
   /* 상단 — 🦊 폭스시그널 브랜드 필 + 시간대 배지 + 컷 카운터 + 진행 프로그레스 바 */
   function drawFoxHead(ctx, spec, idx, n, t, total, cuts) {
@@ -16656,7 +16683,16 @@ var CSVoice = (function () {
                   '20~35초 야간선물·미 선물·환율과 오늘/내일/이번 주 핵심 일정',
                   '35~50초 다음 거래일 시초가 대응(지지·저항·조건) + 티스토리 연결 CTA'],
            caption: '시간외 수치는 종가 대비(종가比)로, 종목 옆 리스크는 괄호로', tone: '마감 뒤 정리하는 톤 · 유지/이탈을 분명히',
-           avoid: ['NXT 체결이 확인되지 않은 종목을 시간외 급등으로 쓰지 않는다', '지정 여부를 확인하지 않고 (투자주의)로 쓰지 않는다'] }
+           avoid: ['NXT 체결이 확인되지 않은 종목을 시간외 급등으로 쓰지 않는다', '지정 여부를 확인하지 않고 (투자주의)로 쓰지 않는다'] },
+      5: { tag: '🚨', name: '긴급 장분석', desc: '속보·사이드카·급변 대응', eye: 'BREAKING', card: 'fox', cardName: '빅넘버 + 여우 카드 + 급변 신호등', signal: true,
+           hook: '지금 장에서 무슨 일이 났는지 한 문장으로 먼저 알리며 시작한다',
+           plan: ['0~4초 속보 훅 — 사이드카·급락·급등·거래정지 중 무엇이 언제 났는지 한 문장으로',
+                  '4~14초 원인 — 야간선물·미 증시·환율·수급·재료 중 실제로 확인된 것만 골라 짚는다',
+                  '14~26초 지금 숫자 — 지수·선물·해당 종목의 현재가와 등락률(체결 기준, 시각 함께)',
+                  '26~38초 대응 3단 — 🔴 비중 축소 / 🟡 관망 / 🟢 분할 대응, 각각 지지·저항 조건과 함께',
+                  '38~50초 다음 확인 시각·지표 — 사이드카 해제·선물·수급, 추측은 추측이라고 밝히고 정리'],
+           caption: '시각·수치는 실제 체결 그대로, 대응은 🔴🟡🟢로', tone: '속보 톤 · 짧고 단호하게, 추측은 추측이라고',
+           avoid: ['확인되지 않은 속보·사이드카 발동 여부를 단정하지 않는다', '손실·수익을 보장하는 표현을 쓰지 않는다'] }
     },
     shiba: {
       1: { tag: '①', name: '가격 충격 비교형', desc: '정가 → 오늘가 낙차', eye: 'DEAL', card: 'shock', cardName: '정가 취소선 + 오늘가 빅넘버 카드',
@@ -16771,6 +16807,13 @@ var CSVoice = (function () {
     var d = formulaDesign();
     if (!d) return;
     S.cfg.formula = S.cfg.formula || {};
+    if (d === 'fox') {
+      /* 🏷️ 배지 문구 — 손대지 않았으면 새 공식의 기본 배지로 따라가고, 직접 쓴 문구는 그대로 둔다 */
+      var prevDef = FOX_SLOT_LABEL[formulaKey('fox')] || '';
+      var curB = foxBadgeOverride();
+      if (!curB || curB === prevDef) S.cfg.badge = (S.cfg.badge && typeof S.cfg.badge === 'object') ? S.cfg.badge : {};
+      if (!curB || curB === prevDef) S.cfg.badge.fox = FOX_SLOT_LABEL[FORMULA[d][v] ? v : '1'] || '';
+    }
     S.cfg.formula[d] = FORMULA[d][v] ? v : '1';
     saveCfg();
     syncUi();
@@ -17606,7 +17649,15 @@ var CSVoice = (function () {
       { text: '바이오니아는 +20%로 올랐다가 애프터 -6.31%로 밀렸습니다', hook: '이탈한 강세주' },
       { text: '야간선물 745.05 -1.02% · 나스닥100 선물 -1.13% · 원/달러 1,338.78', hook: '밤사이 지표' },
       { text: '월요일 08:00 NXT 프리마켓에서 25,000과 9,000을 먼저 보세요', hook: '시초가 대응' }
-    ], '애프터장 결산 · 큐로셀만 살아남았다', '코스피 -5.21%, 애프터에서 살아남은 종목', ['NXT', '큐로셀', '야간선물'])
+    ], '애프터장 결산 · 큐로셀만 살아남았다', '코스피 -5.21%, 애프터에서 살아남은 종목', ['NXT', '큐로셀', '야간선물']),
+    /* 🚨 긴급 장분석 — 사이드카·야간선물 급변 대응 흐름 (샘플 수치는 11/20 실측) */
+    'fox:5': mkSample([
+      { text: '지금 코스피 -5.21%, 14시 34분에 사이드카가 발동됐습니다', hook: '지금 사이드카 발동' },
+      { text: '원인은 야간선물 -2.19%와 미 반도체 -3.83% 동반 급락입니다', hook: '원인은 밤사이 선물' },
+      { text: '지금 코스피 4,869.96 · 야간선물 736.30 · 원/달러 1,338.78', hook: '지금 숫자 세 개' },
+      { text: '대응은 🔴 추격 매도 금지 · 🟡 4,831 지지 확인 · 🟢 분할 대응', hook: '🔴🟡🟢 대응 3단' },
+      { text: '다음 확인은 15시 20분 사이드카 해제와 외인 선물 수급입니다', hook: '다음 확인 시각' }
+    ], '긴급 장분석 · 사이드카 발동', '지금 사이드카, 무엇을 봐야 하나', ['사이드카', '선물', '대응'])
   };
   function sampleFor(d, f) { return SAMPLE_F[d + ':' + f] || SAMPLE_F[d + ':1'] || SAMPLE_SPEC; }
 
@@ -17625,7 +17676,7 @@ var CSVoice = (function () {
       say(R.name + ' — ' + (f ? f.tag + ' ' + f.name + ' · ' : '') + '빅넘버·카드·캐릭터 4종 자동 매칭' + vNote + '. 아래 <b>🎯 분야 흥행 공식</b>을 고르면 대본 구조와 카드까지 함께 바뀝니다.');
     } else if (d === 'fox') {
       var ff = formulaOf(d);
-      say('🦊 <b>폭스시그널 에디토리얼</b> — 크림 아이보리 바탕 · 빅넘버 카드 · 여우 4종 자동 매칭' + vNote + '. 아래 <b>🎯 분야 흥행 공식</b>에서 장전·점심·정규마감·애프터장을 고릅니다.');
+      say('🦊 <b>폭스시그널 에디토리얼</b> — 크림 아이보리 바탕 · 빅넘버 카드 · 여우 4종 자동 매칭' + vNote + '. 아래 <b>🎯 분야 흥행 공식</b>에서 장전·점심·정규마감·애프터장·긴급 장분석을 고르고, <b>🏷️ 상단 배지</b>는 직접 고칠 수 있습니다.');
     } else {
       say('🌙 <b>다크 시네마</b> — 기존 3양식(카드·차트·사진)으로 그립니다.');
     }
@@ -17717,6 +17768,18 @@ var CSVoice = (function () {
         }).join('');
       } else fs.innerHTML = '';
     }
+    /* 🏷️ 상단 배지 입력칸 — 폭스시그널에서만 보이고, 지금 실제로 그려지는 배지 문구를 그대로 보여 준다 */
+    var isFoxB = (fD === 'fox');
+    var bRow = $('#wvBadgeRow'), bHint = $('#wvBadgeHint'), bIn = $('#wvSlotBadge');
+    if (bRow) bRow.hidden = !isFoxB;
+    if (bHint) bHint.hidden = !isFoxB;
+    if (bIn && isFoxB) {
+      bIn.placeholder = foxSlotDefault() || '🚨 긴급 장분석';
+      if (D.activeElement !== bIn) {
+        var effB = foxSlotBadge();
+        if (bIn.value !== effB) bIn.value = effB;
+      }
+    }
     var lh = $('#wvLayoutHint');
     if (lh) {
       if (roleD) {
@@ -17724,7 +17787,7 @@ var CSVoice = (function () {
         lh.innerHTML = ROLE[roleD].name + ' · <b>' + (rf ? rf.tag + ' ' + rf.name : '') + '</b> — 브랜드 필 → <b>훅 + ' + (rf ? rf.cardName : '카드') + ' + ' + (roleD === 'shiba' ? '시바견' : roleD === 'bunny' ? '토끼' : '펭귄') + '</b> → <b>자막 카드</b> 고정 레이아웃입니다. 대본·샘플·카드가 모두 이 공식으로 그려집니다(테마색·내 사진은 🌙 다크 시네마 전용).';
       } else if (isFox) {
         var xf = formulaOf('fox');
-        lh.innerHTML = '🦊 <b>폭스시그널 에디토리얼</b>' + (xf ? ' · <b>' + xf.tag + ' ' + xf.name + '</b>' : '') + ' — 브랜드 필 → <b>빅넘버 + 여우</b> → <b>에디토리얼 자막</b> 고정 레이아웃입니다. 아래 <b>🎯 분야 흥행 공식</b>에서 장전·점심·정규마감·애프터장을 고르면 대본·샘플이 함께 바뀝니다.';
+        lh.innerHTML = '🦊 <b>폭스시그널 에디토리얼</b>' + (xf ? ' · <b>' + xf.tag + ' ' + xf.name + '</b>' : '') + ' — 브랜드 필 → <b>빅넘버 + 여우</b> → <b>에디토리얼 자막</b> 고정 레이아웃입니다. 아래 <b>🎯 분야 흥행 공식</b>에서 장전·점심·정규마감·애프터장·긴급 장분석을 고르면 대본·샘플이 함께 바뀌고, <b>🏷️ 상단 배지</b> 문구는 직접 고칠 수 있습니다.';
       } else {
         lh.innerHTML = '쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.';
       }
@@ -19060,6 +19123,24 @@ var CSVoice = (function () {
       var b = ev.target && ev.target.closest ? ev.target.closest('[data-wvformula]') : null;
       if (!b) return;
       setFormula(b.getAttribute('data-wvformula'));
+    });
+    /* 🏷️ 상단 배지 문구 직접 수정 — 입력 즉시 미리보기·녹화 상단 배지에 반영 */
+    var bIn = $('#wvSlotBadge');
+    if (bIn) bIn.addEventListener('input', function () {
+      foxBadgeStore(bIn.value);
+      saveCfg();
+      redraw();
+    });
+    if (bIn) bIn.addEventListener('blur', function () {
+      bIn.value = foxSlotBadge();
+    });
+    var bReset = $('#wvSlotBadgeReset');
+    if (bReset) bReset.addEventListener('click', function () {
+      var keep = foxBadgeStore('');
+      saveCfg();
+      if (bIn) bIn.value = foxSlotBadge();
+      redraw();
+      say('🏷️ 상단 배지를 <b>' + esc(foxSlotDefault()) + '</b>로 되돌렸습니다' + (keep ? '' : '.'));
     });
     var pbtn = $('#wvPasteBtn');
     if (pbtn) pbtn.addEventListener('click', function () {
