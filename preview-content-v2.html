@@ -494,6 +494,21 @@
   .wvfoxcuts{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
   .wvfoxcut{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;background:#0a1424;padding:3px 7px;font-size:10.4px;font-weight:900;color:#cbd5e1}
   .wvfoxcut select{flex:0 0 auto;width:auto;min-width:0;max-width:104px;background:#08111f;border:1px solid var(--line);border-radius:7px;padding:3px 5px;font-size:10.4px;font-weight:800;color:#e2e8f0}
+  /* 📝 컷별 화면 배치 메모 */
+  .wvcutbox{border:1px solid rgba(56,189,248,.26);border-radius:11px;background:rgba(56,189,248,.05);padding:9px 11px;display:grid;gap:7px;min-width:0}
+  .wvcutnotes{display:grid;gap:5px;min-width:0}
+  .wvcutnote{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 7px;align-items:center;border:1px solid var(--line);border-radius:9px;background:#0a1424;padding:6px 8px;min-width:0}
+  .wvcutnote .n{font-size:10px;font-weight:900;color:#7dd3fc;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  .wvcutnote .t{font-size:10.6px;font-weight:800;color:#cbd5e1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wvcutnote .t i{font-style:normal;color:var(--faint);font-weight:800;font-variant-numeric:tabular-nums}
+  .wvcutnote input{grid-column:1/-1;width:100%;min-width:0;background:#08111d;border:1px solid rgba(148,163,184,.28);border-radius:7px;padding:6px 8px;font-size:11.4px;font-weight:700;color:#e2e8f0;letter-spacing:0}
+  .wvcutnote input:focus{outline:2px solid rgba(56,189,248,.42);outline-offset:1px}
+  /* ✍️ 쇼츠 대본 접기(4번 주제 + 결과 카드) */
+  .shfold{margin-bottom:12px}
+  /* 접힌 동안은 오른쪽 열이 비어 보이지 않게 한 줄로 — 펼치면 원래 두 칸으로 돌아온다 */
+  .shfoldclosed>.blog-cols{grid-template-columns:minmax(0,1fr)}
+  .shfold>.shelfbody{gap:11px;padding-top:2px}
+  .shfold .card{margin-bottom:0}
   /* 🐶🐰🐧 역할별 템플릿 · 분야별 흥행 공식 */
   .wvformulabox{border:1px solid rgba(234,88,12,.30);border-radius:11px;background:rgba(234,88,12,.05);padding:9px 11px;display:grid;gap:7px;min-width:0}
   .wvformulabox[hidden]{display:none}
@@ -2241,59 +2256,64 @@
           <button class="btn small ghost" id="shRefAll" style="margin-top:9px" aria-expanded="false">전체 테마 모아보기 (14개 · 42곳)</button>
         </div>
 
-        <div class="card">
-          <div class="card-head"><span class="num">4</span><h2>쇼츠 주제 · 키워드</h2></div>
-          <div class="field">
-            <input type="text" id="shTopic" placeholder="예) 컴백 무대에서 킬링파트 3초 만에 찾는 법" maxlength="80">
-            <div class="quick" id="shTopicQuick"></div>
-          </div>
-          <div class="field" style="margin-top:12px">
-            <label class="flabel" for="shNote">내 경험 메모 (선택) <span class="bdg info">1인칭 경험은 이 칸만</span></label>
-            <textarea id="shNote" rows="2" maxlength="1200" placeholder="직접 해본 것만 적으세요. 비우면 경험담 없이 정보만 정리합니다."></textarea>
-          </div>
-          <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:11px">
-            <button class="btn primary big" id="shGenBtn" style="flex:1 1 150px">🎬 쇼츠 대본 생성</button>
-            <div class="hint" id="shFormulaNote" hidden style="margin-top:7px"></div>
-            <button class="btn small ghost" id="shClearBtn" type="button">대본 지우기</button>
-          </div>
-          <p class="hint" style="margin-top:8px">선택한 테마·1~4번 양식(<b>3초 훅 · 컷 리듬 · 자막 길이 · 말투 · 금지 규칙</b>)을 그대로 넣어 <b>약 50초 대본</b>(훅 → 4~7컷 → 엔딩)을 씁니다. 확인 못 한 수치는 [확인 필요]로 남깁니다.</p>
-        </div>
       </div>
 
       <div>
         <div id="shAiNote"></div>
-        <div class="card" id="shOutCard" hidden style="padding:0;background:none;border:none">
-          <div class="out-card">
-            <div class="out-head">
-              <h3>🎬 쇼츠 대본</h3>
-              <span class="bdg real" id="shOutStat">생성됨</span>
-              <span class="spacer"></span>
-              <button class="btn small" id="shEditBtn" type="button">✎ 편집</button>
-              <button class="btn small primary" id="shCopyBtn" type="button">복사</button>
+        <details class="shelf shfold" id="shScriptFold">
+          <summary><span>✍️ AI 쇼츠 대본 직접 만들기</span><span class="n" id="shFoldTag">접힘</span><span class="arw">▾</span></summary>
+          <div class="shelfbody">
+            <div class="card">
+              <div class="card-head"><span class="num">4</span><h2>쇼츠 주제 · 키워드</h2></div>
+              <div class="field">
+                <input type="text" id="shTopic" placeholder="예) 컴백 무대에서 킬링파트 3초 만에 찾는 법" maxlength="80">
+                <div class="quick" id="shTopicQuick"></div>
+              </div>
+              <div class="field" style="margin-top:12px">
+                <label class="flabel" for="shNote">내 경험 메모 (선택) <span class="bdg info">1인칭 경험은 이 칸만</span></label>
+                <textarea id="shNote" rows="2" maxlength="1200" placeholder="직접 해본 것만 적으세요. 비우면 경험담 없이 정보만 정리합니다."></textarea>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:11px">
+                <button class="btn primary big" id="shGenBtn" style="flex:1 1 150px">🎬 쇼츠 대본 생성</button>
+                <div class="hint" id="shFormulaNote" hidden style="margin-top:7px"></div>
+                <button class="btn small ghost" id="shClearBtn" type="button">대본 지우기</button>
+              </div>
+              <p class="hint" style="margin-top:8px">선택한 테마·1~4번 양식(<b>3초 훅 · 컷 리듬 · 자막 길이 · 말투 · 금지 규칙</b>)을 그대로 넣어 <b>약 50초 대본</b>(훅 → 4~7컷 → 엔딩)을 씁니다. 확인 못 한 수치는 [확인 필요]로 남깁니다.</p>
             </div>
-            <div class="outact" style="padding:0 11px 9px;border-bottom:1px solid var(--line)">
-              <button class="btn small primary" id="shProofBtn" type="button" title="쇼츠 전용 5기준으로 다시 점검합니다: 3초 훅 강도·자막 15~20자·구어체·양식 리듬·과장 제거">✨ 2차 검수·다듬기</button>
-              <button class="btn small" id="shPickleBtn" type="button" title="쇼츠 테마·1~4번 양식·대본 전체·점검 포인트를 복사합니다">📋 피클 점검용 복사</button>
-              <button class="btn small" id="shTtsBtn" type="button" title="저장한 ElevenLabs 키로 이 대본을 바로 읽어 봅니다">🔊 ElevenLabs 미리듣기</button>
-              <button class="btn small ghost" id="shTtsMp3" type="button" title="미리듣기로 만든 음성을 .mp3로 저장합니다" disabled>⬇ MP3</button>
-              <button class="btn small primary" id="shVideoBtn" type="button" title="이 대본을 브라우저에서 1080×1920 영상으로 바로 만듭니다 (크레딧 0)">🎬 영상 생성 (크레딧 0)</button>
-              <button class="btn small" id="shMp4Btn" type="button" title="make_shorts_mp4.py 스펙 JSON(AB 훅·고정 댓글·릴스/클립 문구·컷)을 클립보드에 복사합니다">📦 고퀄리티 MP4용 JSON 복사</button>
-              <button class="btn small mon" id="shAffilBtn" type="button" title="제휴 링크·필수 고지를 넣은 고정 댓글 초안을 만듭니다">💰 제휴·고지</button>
+            <div class="card" id="shOutCard" hidden style="padding:0;background:none;border:none">
+              <div class="out-card">
+                <div class="out-head">
+                  <h3>🎬 쇼츠 대본</h3>
+                  <span class="bdg real" id="shOutStat">생성됨</span>
+                  <span class="spacer"></span>
+                  <button class="btn small" id="shEditBtn" type="button">✎ 편집</button>
+                  <button class="btn small primary" id="shCopyBtn" type="button">복사</button>
+                </div>
+                <div class="outact" style="padding:0 11px 9px;border-bottom:1px solid var(--line)">
+                  <button class="btn small primary" id="shProofBtn" type="button" title="쇼츠 전용 5기준으로 다시 점검합니다: 3초 훅 강도·자막 15~20자·구어체·양식 리듬·과장 제거">✨ 2차 검수·다듬기</button>
+                  <button class="btn small" id="shPickleBtn" type="button" title="쇼츠 테마·1~4번 양식·대본 전체·점검 포인트를 복사합니다">📋 피클 점검용 복사</button>
+                  <button class="btn small" id="shTtsBtn" type="button" title="저장한 ElevenLabs 키로 이 대본을 바로 읽어 봅니다">🔊 ElevenLabs 미리듣기</button>
+                  <button class="btn small ghost" id="shTtsMp3" type="button" title="미리듣기로 만든 음성을 .mp3로 저장합니다" disabled>⬇ MP3</button>
+                  <button class="btn small primary" id="shVideoBtn" type="button" title="이 대본을 브라우저에서 1080×1920 영상으로 바로 만듭니다 (크레딧 0)">🎬 영상 생성 (크레딧 0)</button>
+                  <button class="btn small" id="shMp4Btn" type="button" title="make_shorts_mp4.py 스펙 JSON(AB 훅·고정 댓글·릴스/클립 문구·컷)을 클립보드에 복사합니다">📦 고퀄리티 MP4용 JSON 복사</button>
+                  <button class="btn small mon" id="shAffilBtn" type="button" title="제휴 링크·필수 고지를 넣은 고정 댓글 초안을 만듭니다">💰 제휴·고지</button>
+                </div>
+                <div class="proofbadge" id="shProofNote" hidden></div>
+                <div id="shPin"></div>
+                <div class="ttsbox" id="shTtsBox" hidden></div>
+                <pre class="out" id="shOutText"></pre>
+                <textarea class="outedit" id="shOutEdit" hidden aria-label="쇼츠 대본 직접 편집"></textarea>
+                <div class="out-foot"><b>Gemini가 쓴 쇼츠 대본입니다.</b> 대사·자막을 고쳐 쓰면 그대로 복사·검수에 쓰입니다. 수치·가격·업체명은 발행 전에 직접 확인하세요.</div>
+              </div>
             </div>
-            <div class="proofbadge" id="shProofNote" hidden></div>
-            <div id="shPin"></div>
-            <div class="ttsbox" id="shTtsBox" hidden></div>
-            <pre class="out" id="shOutText"></pre>
-            <textarea class="outedit" id="shOutEdit" hidden aria-label="쇼츠 대본 직접 편집"></textarea>
-            <div class="out-foot"><b>Gemini가 쓴 쇼츠 대본입니다.</b> 대사·자막을 고쳐 쓰면 그대로 복사·검수에 쓰입니다. 수치·가격·업체명은 발행 전에 직접 확인하세요.</div>
+            <div class="card" id="shOutEmpty">
+              <div class="empty">
+                <b>아직 쇼츠 대본이 없습니다.</b><br>
+                테마와 1~4번 양식을 고르고 주제를 입력한 뒤 <b>[🎬 쇼츠 대본 생성]</b>을 눌러 주세요.
+              </div>
+            </div>
           </div>
-        </div>
-        <div class="card" id="shOutEmpty">
-          <div class="empty">
-            <b>아직 쇼츠 대본이 없습니다.</b><br>
-            테마와 1~4번 양식을 고르고 주제를 입력한 뒤 <b>[🎬 쇼츠 대본 생성]</b>을 눌러 주세요.
-          </div>
-        </div>
+        </details>
       </div>
     </div>
   </div><!-- /#shortsMain -->
@@ -2354,6 +2374,15 @@
     <div class="wvfoxbox" id="wvFoxBox" hidden>
       <div class="flabel" id="wvFoxLabel" style="margin:0">🦊 컷별 여우 포즈 <span class="bdg info">자동 = 컷 내용으로 선택</span></div>
       <div class="wvfoxcuts" id="wvFoxCuts"></div>
+    </div>
+    <div class="wvcutbox" id="wvCutBox">
+      <div class="wvrow" style="gap:6px;align-items:baseline"><span class="flabel" style="margin:0">📝 컷별 화면 배치 메모</span></div>
+      <div class="hint" id="wvCutTag" style="margin:0">컷마다 「여기에 이걸」을 적어 두고 <b>[📋 피클 수정요청 복사]</b>로 전달하세요.</div>
+      <div class="wvcutnotes" id="wvCutNotes"><span class="hint">대본을 만들면 컷별 메모 칸이 생깁니다.</span></div>
+      <div class="wvrow" style="gap:6px">
+        <button class="btn small primary" id="wvPickleCopy" type="button" title="지금 대본·컷별 배치 메모·디자인/양식을 한 덩어리로 복사합니다 — 채팅에 붙여넣으면 그대로 반영합니다">📋 피클 수정요청 복사</button>
+      </div>
+      <div class="hint" style="margin:0">메모는 이 브라우저에 저장됩니다. 새 모션·요소가 필요하면 복사해서 채팅에 붙여넣어 주세요.</div>
     </div>
     <div class="wvtplrow" role="group" aria-label="영상 양식 선택 — 3종 모두 세이프 존·자동 줄바꿈·3단 그리드 동일">
       <button class="wvtpl on" type="button" data-wvtpl="card" aria-pressed="true"><b>📊 정보/시황 카드형</b><span>훅 + 핵심 포인트 카드 + 자막</span></button>
@@ -2541,6 +2570,7 @@
         </div>
         <div class="wvrow">
           <button class="btn small" id="wvUpBtn" type="button" title="제목 + 설명글 + 해시태그 + 고정 댓글을 한 번에 복사">📋 업로드 세트 복사</button>
+          <button class="btn small" id="wvSrtBtn" type="button" title="지금 컷들의 타임스탬프·자막을 표준 .srt 형식으로 복사 — 캡컷·프리미어에서 바로 불러옵니다">📝 자막 SRT 복사</button>
           <a class="btn small ghost" id="wvDl" hidden download>⬇ 영상 저장</a>
         </div>
         <div class="hint">MP4 우선, 브라우저가 못 만들면 WebM으로 저장합니다. 생성 중에는 이 탭을 닫지 마세요.</div>
@@ -2581,10 +2611,10 @@
         <div class="gd-note">🛍️ 추천샵 웹: <b>picks.html</b> · 영상 번호는 고정 댓글과 프로필에 <b>picks.html?q=번호</b>로 넣습니다.</div>
       </section>
       <section class="gd-sec" data-gdpane="wvid" role="tabpanel">
-        <div class="gd-step"><span class="n">1</span><span class="t"><b>대본 생성</b> — <span class="k">🎬 쇼츠 대본 생성</span>으로 대본을 만들고, 결과 카드의 <span class="k">🎬 영상 생성 (크레딧 0)</span>을 누르면 대본이 영상 생성기로 넘어갑니다.</span></div>
+        <div class="gd-step"><span class="n">1</span><span class="t"><b>대본 생성</b> — <span class="k">✍️ AI 쇼츠 대본 직접 만들기</span>를 눌러 펼친 뒤 <span class="k">🎬 쇼츠 대본 생성</span>으로 대본을 만들고, 결과 카드의 <span class="k">🎬 영상 생성 (크레딧 0)</span>을 누르면 대본이 영상 생성기로 넘어갑니다.</span></div>
         <div class="gd-step"><span class="n">2</span><span class="t"><b>생성기 열기</b> — <span class="k">📱 쇼츠 스튜디오</span> 탭의 맨 아래 <span class="k">🎬 웹 영상 생성기</span>에서 이어서 만듭니다(대본·붙여넣기 → 🦊 폭스시그널 → ▶ 생성).</span></div>
         <div class="gd-step"><span class="n">3</span><span class="t"><b>양식·옵션</b> — <span class="k">📊 정보/시황 카드형</span> · <span class="k">📈 모션 차트/비교표형</span> · <span class="k">🖼️ 사진 줌인/캡처형</span> 중 하나를 고르고, <span class="k">⚙ 옵션</span>에서 채널 프리셋(<span class="k">📈 주식 채널</span>·<span class="k">🏷️ 특가·핫템 채널</span>)·성우·BGM을 정합니다.</span></div>
-        <div class="gd-step"><span class="n">4</span><span class="t"><b>생성·저장</b> — <span class="k">▶ 생성</span>을 누르고 끝나면 <span class="k">⬇ 영상 저장</span>(MP4, 안 되면 WebM)과 <span class="k">📋 업로드 세트 복사</span>(제목·해시태그·고정 댓글)를 씁니다.</span></div>
+        <div class="gd-step"><span class="n">4</span><span class="t"><b>생성·저장</b> — <span class="k">▶ 생성</span>을 누르고(진행률 % 표시) 끝나면 <span class="k">⬇ 영상 저장</span>(MP4, 안 되면 WebM)·<span class="k">📋 업로드 세트 복사</span>(제목·해시태그·고정 댓글)·<span class="k">📝 자막 SRT 복사</span>(캡컷에서 자막으로 불러오기)를 씁니다.</span></div>
         <div class="gd-note">모든 양식은 쇼츠 <b>세이프 존</b>(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 그립니다 — 저장 전에 미리보기로 가려지는 곳이 없는지 확인하세요.</div>
       </section>
     </div>
@@ -2593,6 +2623,7 @@
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.9 — ✍️ <b>쇼츠 대본 영역 접기</b>(기본 접힘 · [🎬 쇼츠 대본 생성]·[📱 쇼츠로 변환] 때 자동 펼침) · 🎬 웹 영상 생성기 <b>📝 컷별 화면 배치 메모 + 📋 피클 수정요청 복사</b> · 🦊 폭스시그널에서 <b>📈 모션 차트/비교표형이 실제 막대 차트</b>로 그려짐(수치 없으면 빅넘버 카드) · 녹화 <b>진행률 %</b> 0.5초 갱신 · <b>📝 자막 SRT 복사</b>(캡컷용)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.8 — ✍️ 블로그 <b>2종</b>(🌅 장전 · 🌙 통합 마감(정규+애프터): ① 정규장 결산 → ② NXT 애프터장 15:30~20:00 유지/이탈·신규 재료 → ③ 야간선물·미 선물·환율 → ④ 중요 일정 → ⑤ 리스크 괄호 표기) · 📱 쇼츠·🎬 영상 생성기 <b>4종</b>(🌅 장전 · ☀️ 점심 · 🌆 정규마감 · 🌙 애프터장) <b>1클릭</b> — 실측·NXT·뉴스로 공식·레이아웃 자동 전환, 블로그 글 없이도 동작</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.7 — <b>역할별 3탭</b>(🎬 AI 영상 스튜디오=클립 편집 · 📱 쇼츠 스튜디오=대본→영상 · ✍️ 블로그 작성) — <b>🎬 웹 영상 생성기를 📱 쇼츠 스튜디오 탭 안으로 통합</b>(대본·붙여넣기 → 🦊 폭스시그널 → ▶ 생성) · 블로그 결과 카드 <b>[📱 쇼츠로 변환]</b>(글 → 50초 5컷 · 복사 + 쇼츠 스튜디오 + 웹 영상 생성기 동시 전송)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.6 — 🎬 웹 영상 생성기 <b>📋 대본 직접 붙여넣기</b>(타임스탬프·컷·SRT·문장 대본을 컷 3~8로 자동 변환 · 해시태그·음성 노트 자동 정리) · <b>🧪 샘플로 바로 만들기</b>(11/20 시황 5컷 즉시 로드 → 바로 [▶ 생성])</div>
@@ -11719,7 +11750,7 @@ var CSVoice = (function () {
       var sq = $('#shTopic');
       if (sq){ sq.value = title; try { sq.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {} }
     }
-    try { shShowOut(script, '📥 피클 초안' + (s.formulaLabel ? ' · ' + s.formulaLabel : '')); } catch (e) {}
+    try { shShowOut(script, '📥 피클 초안' + (s.formulaLabel ? ' · ' + s.formulaLabel : ''), { noOpen: !!quiet }); } catch (e) {}
     var wv = null;
     try {
       if (window.WVID && window.WVID.feed) wv = window.WVID.feed(slotKey, s.formulaKey, script, '피클 초안 · ' + feedSlotWord(slotKey), !!quiet);
@@ -13100,7 +13131,7 @@ var CSVoice = (function () {
     if ((d.warnings || []).length) L.push('확인 필요: ' + d.warnings.join(' / '));
     return L.join('\n');
   }
-  function shShowOut(text, badge){
+  function shShowOut(text, badge, opt){
     var t = $('#shOutText'), e = $('#shOutEdit');
     if (!t) return;
     SH.editOn = false;
@@ -13112,6 +13143,23 @@ var CSVoice = (function () {
     $('#shOutCard').hidden = false;
     $('#shOutEmpty').hidden = true;
     if (badge){ var st = $('#shOutStat'); if (st) st.textContent = badge; }
+    try { shFold((opt && opt.noOpen) ? null : true); } catch (e) {}     /* 대본이 나오면 접힌 영역을 자동으로 펼친다(자동 초안 로드는 접은 채 배지만 갱신) */
+  }
+  /* ✍️ 쇼츠 대본 영역(4번 주제·경험 메모 + 결과 카드) — 기본은 접힘 */
+  function shFold(open) {
+    var d = $('#shScriptFold');
+    if (!d) return;
+    if (open != null) d.open = !!open;
+    var box = $('#shortsMain');
+    if (box) box.classList.toggle('shfoldclosed', !d.open);
+    var tag = $('#shFoldTag');
+    if (!tag) return;
+    var has = false;
+    try {
+      var t = $('#shOutText'), c = $('#shOutCard');
+      has = !!(c && !c.hidden && t && String(t.textContent || '').trim());
+    } catch (e) { has = false; }
+    tag.textContent = d.open ? '펼침' : (has ? '대본 있음' : '접힘');
   }
   function shShowProofNote(fixes, d, beforeLen){
     var el = $('#shProofNote');
@@ -13233,6 +13281,7 @@ var CSVoice = (function () {
 
   /* ---------- 생성 · 검수 · 복사 ---------- */
   async function shGenerate(){
+    try { shFold(true); } catch (e) {}     /* [🎬 쇼츠 대본 생성] → 접힌 영역을 펼친다 */
     var topicEl = $('#shTopic');
     var topic = (topicEl && topicEl.value || '').trim();
     if (!topic){ toast('쇼츠 주제를 먼저 입력해 주세요.'); if (topicEl) topicEl.focus(); return; }
@@ -13590,6 +13639,9 @@ var CSVoice = (function () {
     }
     var gen = $('#shGenBtn');
     if (gen) gen.addEventListener('click', function(){ shGenerate(); });
+    var foldEl = $('#shScriptFold');
+    if (foldEl) foldEl.addEventListener('toggle', function(){ shFold(); });
+    try { shFold(); } catch (e) {}          /* 첫 화면도 기본 '접힘' 상태로 맞춘다 */
     var topicEl = $('#shTopic');
     if (topicEl) topicEl.addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); shGenerate(); } });
     var cl = $('#shClearBtn');
@@ -16469,13 +16521,59 @@ var CSVoice = (function () {
     ctx.drawImage(im, x, y, size, size);
     rec(x, y, size, size, 'fx-fox');
   }
-  function drawFoxMain(ctx, spec, cut, idx, pose) {
+  /* 📈 폭스시그널 모션 차트 — 크림 아이보리 카드 위 딥네이비·버건디 막대(컷 진행에 맞춰 자란다) */
+  function drawFoxChart(ctx, cut, p, x, y, w, h) {
+    var items = (chartItems(cut) || []).slice(0, 5);
+    if (!items.length) return false;
+    var n = items.length, anim = ease(p == null ? .7 : p), i;
+    var pad = 22, headH = 50;
+    /* 단위가 다르면(조 vs 억 vs %) 한 눈금으로 비교하면 왜곡된다 → 같은 단위끼리 각자의 최대값으로 */
+    var maxBy = {}, same = true;
+    for (i = 0; i < n; i++) {
+      var uk = items[i].unit || '';
+      if (uk !== (items[0].unit || '')) same = false;
+      maxBy[uk] = Math.max(maxBy[uk] || 1, Math.abs(items[i].value));
+    }
+    if (!same) maxBy[''] = Math.max(maxBy[''] || 1, 1);
+    panel(ctx, x, y, w, h, 22, FX.paper, 'rgba(16,32,47,.18)', 2, 'fx-chart-card');
+    panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, 'rgba(16,32,47,.92)', null, 0, 'fx-chart-spine');
+    txLine(ctx, 'DATA · ' + (n === 1 ? '지표' : (n === 2 ? '두 수치 비교' : '수치 비교')), x + 38, y + 27,
+      '800 22px ' + FF, FX.wine, 'left', 'fx-chart-label');
+    var bx = x + 38, bw = w - 76;
+    if (n === 1) {
+      /* 값이 하나뿐 — 빅넘버 카드처럼 큰 숫자 + 막대 */
+      var one = items[0];
+      var olf = fitText(ctx, one.label, { w: bw - 20, h: 34, base: 27, min: 17, weight: 800, lh: 1.1 });
+      txLine(ctx, olf.lines[0] || '', bx, y + 70, olf.font, 'rgba(16,32,47,.58)', 'left', 'fx-chart-name');
+      var ovf = fitText(ctx, one.disp, { w: bw - 20, h: Math.max(70, h - 176), base: 104, min: 46, weight: 900, lh: 1.08 });
+      txLine(ctx, ovf.lines[0] || '', bx, y + 70 + Math.round(ovf.lineH * (ovf.lines.length + 1) / 2) + 6, ovf.font, FX.wine, 'left', 'fx-chart-value');
+      var oth = 20;
+      panel(ctx, bx, y + h - pad - oth, bw, oth, oth / 2, 'rgba(16,32,47,.10)', null, 0, 'fx-chart-track');
+      panel(ctx, bx, y + h - pad - oth, Math.max(10, bw * anim), oth, oth / 2, FX.wine, null, 0, 'fx-chart-bar');
+      return true;
+    }
+    var rowH = Math.max(58, Math.min(150, Math.floor((h - headH - pad) / n)));
+    for (i = 0; i < n; i++) {
+      var it = items[i], ry = y + headH + i * rowH + Math.max(0, Math.round((rowH - 58) / 2));
+      var lf = fitText(ctx, it.label, { w: bw - 132, h: 30, base: 25, min: 15, weight: 800, lh: 1.1 });
+      txLine(ctx, lf.lines[0] || '', bx, ry + 14, lf.font, 'rgba(16,32,47,.60)', 'left', 'fx-chart-name');
+      var vf = fitText(ctx, it.disp, { w: 128, h: 30, base: 28, min: 16, weight: 900, lh: 1.1 });
+      txLine(ctx, vf.lines[0] || '', bx + bw, ry + 14, vf.font, i === 0 ? FX.wine : FX.navy, 'right', 'fx-chart-value');
+      var th = 24;
+      panel(ctx, bx, ry + 32, bw, th, th / 2, 'rgba(16,32,47,.10)', null, 0, 'fx-chart-track');
+      panel(ctx, bx, ry + 32, Math.max(8, bw * (Math.abs(it.value) / (maxBy[it.unit || ''] || 1)) * anim), th, th / 2,
+        i === 0 ? FX.wine : 'rgba(16,32,47,.72)', null, 0, 'fx-chart-bar');
+    }
+    return true;
+  }
+  function drawFoxMain(ctx, spec, cut, idx, pose, p) {
     var slot = SLOTS.main;
     var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (cut.hook || spec.hookTitle || '');
     var big = foxBig(cut.text) || foxBig(title);
     var tfit = title ? fitText(ctx, title, { w: 512, h: 190, base: 54, min: 30, weight: 800, lh: 1.22 }) : null;
-    var cardH = big ? 296 : 0;
-    var blockH = 34 + (tfit ? tfit.height + 24 : 0) + cardH;
+    /* 📈 모션 차트/비교표형 — 컷 수치(또는 ⚙ 차트 데이터 직접 입력)를 막대로. 수치가 없으면 빅넘버 카드로 폴백 */
+    var chart = tplOf() === 'chart' ? (chartItems(cut) || []).slice(0, 5) : null;
+    if (chart && !chart.length) chart = null;
     var y = slot.y + 12;
     var fx = formulaOf('fox');
     var ex = ((fx && fx.eye) || 'SIGNAL') + ' ' + ('0' + ((cut.idx || 0) + 1)).slice(-2);
@@ -16500,8 +16598,20 @@ var CSVoice = (function () {
       }
       ty += tfit.height + 24;
     }
-    if (big) drawFoxNumber(ctx, big, slot.x, ty, 512, cardH);
-    drawFox(ctx, pose, 596, Math.round(y + Math.max(0, (blockH - 360) / 2)), 360);
+    var cardH = 0;
+    if (chart) {
+      var avail = Math.max(180, slot.y + slot.h - ty - 6);
+      if (chart.length === 1) cardH = Math.min(avail, 330);
+      else {
+        var rowH = Math.max(58, Math.min(150, Math.floor((avail - 72) / chart.length)));
+        cardH = Math.min(avail, 72 + rowH * chart.length);
+      }
+      drawFoxChart(ctx, cut, p == null ? .7 : p, slot.x, ty, 512, cardH);
+    } else if (big) {
+      cardH = 296;
+      drawFoxNumber(ctx, big, slot.x, ty, 512, cardH);
+    }
+    drawFox(ctx, pose, 596, Math.round(y + Math.max(0, (34 + (tfit ? tfit.height + 24 : 0) + cardH - 360) / 2)), 360);
   }
   /* 하단 — 그림자·명암 대비 확보한 에디토리얼 자막 카드 */
   function drawFoxCaption(ctx, cut, p, spec) {
@@ -16550,7 +16660,7 @@ var CSVoice = (function () {
     var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
     ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
     drawFoxHead(ctx, spec, idx, cuts.length, t, S.total, cuts);
-    drawFoxMain(ctx, spec, cut, idx, pose);
+    drawFoxMain(ctx, spec, cut, idx, pose, p);
     drawFoxCaption(ctx, cut, p, spec);
     ctx.restore();
   }
@@ -16573,7 +16683,7 @@ var CSVoice = (function () {
       hook: spec.hookTitle, idx: 0, dur: 5, start: 0
     };
     drawFoxHead(ctx, spec, 0, fsp.cuts.length, 2.2, fsp.cuts.length * 5, []);
-    drawFoxMain(ctx, spec, cut, 0, 'surprise');
+    drawFoxMain(ctx, spec, cut, 0, 'surprise', 0.72);
     drawFoxCaption(ctx, { text: fcut.text, idx: 0 }, 0.7, spec);
     txLine(ctx, '샘플 미리보기 · [🧪 샘플로 바로 만들기] → 이 ' + fsp.cuts.length + '컷 그대로 녹화', CW / 2, SAFE.b + 74,
       '800 27px ' + FF, 'rgba(16,32,47,.52)', 'center', 'fx-sample-note');
@@ -17736,6 +17846,7 @@ var CSVoice = (function () {
     });
     var tg = $('#wvTplTag');
     if (tg) tg.textContent = designChip();
+    try { renderCutNotes(); } catch (e) {}
     $$('#wvPanel [data-wvdesign]').forEach(function (btn) {
       var on = btn.getAttribute('data-wvdesign') === (c.design || 'dark');
       btn.classList.toggle('on', on);
@@ -18599,15 +18710,27 @@ var CSVoice = (function () {
     var t0 = performance.now() + 280;
     S.t0 = t0;
     rec.start(1000);
-    setState2('녹화 중');
-    say('🔴 녹화 중 — ' + Math.round(plan.total) + '초 · 이 탭을 닫지 마세요.');
+    var totalSec = Math.max(1, Math.round(plan.total));
+    setState2('녹화 중 0%');
+    say('🔴 녹화 중 — 0초 / ' + totalSec + '초 (0%) · 이 탭을 닫지 마세요.');
+    var lastTick = 0;
 
     S.timer = setInterval(function () {
       if (!S.running) return;
       var t = (performance.now() - t0) / 1000;
       if (t < 0) t = 0;
       drawFrame(Math.min(t, S.total));
-      setBar(Math.min(1, t / Math.max(.1, S.total)));
+      var frac = Math.min(1, t / Math.max(.1, S.total));
+      setBar(frac);
+      /* 진행률 — 0.5초마다 경과 초·% 를 다시 써서 멈춘 것처럼 보이지 않게 한다 */
+      var now = performance.now();
+      if (now - lastTick >= 500 || t >= S.total + .15) {
+        lastTick = now;
+        var pct = Math.min(100, Math.round(frac * 100));
+        var el = Math.max(0, Math.round(Math.min(t, S.total)));
+        setState2('녹화 중 ' + pct + '%');
+        say('🔴 녹화 중 — ' + el + '초 / ' + totalSec + '초 (' + pct + '%) · 이 탭을 닫지 마세요.');
+      }
       if (t >= S.total + .15) {
         clearInterval(S.timer); S.timer = null; S.running = false;
         if (rec.state !== 'inactive') rec.stop();
@@ -18675,6 +18798,92 @@ var CSVoice = (function () {
         design: S.cfg.design || 'dark'
       }
     });
+  }
+
+  /* ---------- 📝 자막 SRT · 컷별 화면 배치 메모 · 📋 피클 수정요청 ---------- */
+  function srtTime(sec) {
+    var t = Math.max(0, Number(sec) || 0);
+    var h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = Math.floor(t % 60);
+    var ms = Math.round((t - Math.floor(t)) * 1000);
+    if (ms >= 1000) { ms = 0; s += 1; }
+    if (s >= 60) { s -= 60; m += 1; }
+    return ('0' + h).slice(-2) + ':' + ('0' + m).slice(-2) + ':' + ('0' + s).slice(-2) + ',' + ('00' + ms).slice(-3);
+  }
+  function srtText() {
+    var cuts = S.cuts || [];
+    if (!cuts.length) return '';
+    return cuts.map(function (c, i) {
+      var line = String(c.text || '').replace(/\s+/g, ' ').trim();
+      return (i + 1) + '\n' + srtTime(c.start) + ' --> ' + srtTime(c.end) + '\n' + (line || '(자막 없음)') + '\n';
+    }).join('\n');
+  }
+  function clip(s, n) { s = String(s == null ? '' : s); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+  /* 컷 메모 키 — 같은 순번이라도 대본이 바뀌면 다른 메모로 본다 */
+  function noteKey(cut, i) {
+    return i + '|' + String((cut && cut.text) || '').replace(/\s+/g, ' ').trim().slice(0, 24);
+  }
+  function cutNote(cut, i) {
+    var m = S.cfg && S.cfg.cutNotes;
+    return (m && typeof m === 'object' && m[noteKey(cut, i)]) || '';
+  }
+  function setCutNote(cut, i, val) {
+    if (!S.cfg) return;
+    if (!S.cfg.cutNotes || typeof S.cfg.cutNotes !== 'object') S.cfg.cutNotes = {};
+    var k = noteKey(cut, i), v = String(val == null ? '' : val).replace(/\s+/g, ' ').trim().slice(0, 160);
+    if (v) S.cfg.cutNotes[k] = v; else delete S.cfg.cutNotes[k];
+    /* 대본을 자주 바꿔도 localStorage 가 무한정 커지지 않게 오래된 메모는 덜어낸다 */
+    var keys = Object.keys(S.cfg.cutNotes);
+    if (keys.length > 120) keys.slice(0, keys.length - 120).forEach(function (kk) { delete S.cfg.cutNotes[kk]; });
+    saveCfg();
+  }
+  function renderCutNotes() {
+    var box = $('#wvCutNotes');
+    if (!box) return;
+    var cuts = S.cuts || [];
+    var tag = $('#wvCutTag');
+    if (tag) tag.innerHTML = '지금 <b>' + esc(designName()) + '</b> · <b>' + esc(TPL_NAME[tplOf()] || '') + '</b> — 컷마다 「여기에 이걸」을 적어 두고 <b>[📋 피클 수정요청 복사]</b>로 전달하세요.';
+    var ae = D.activeElement;   /* 메모를 입력하는 중이면 목록은 다시 그리지 않는다(커서·포커스 유지) */
+    if (ae && ae.getAttribute && ae.getAttribute('data-wvnote') != null && box.contains(ae)) return;
+    if (!cuts.length) {
+      box.innerHTML = '<span class="hint">대본을 만들면 컷별 메모 칸이 생깁니다 — 위의 [📋 대본 붙여넣기]·[🧪 샘플로 바로 만들기]로도 바로 채울 수 있습니다.</span>';
+      return;
+    }
+    var h = '';
+    cuts.forEach(function (c, i) {
+      var v = cutNote(c, i), txt = String(c.text || '').replace(/\s+/g, ' ').trim();
+      h += '<label class="wvcutnote"><span class="n">' + ('0' + (i + 1)).slice(-2) + '</span>'
+        + '<span class="t"><i>' + (Number(c.start) || 0).toFixed(1) + '~' + (Number(c.end) || 0).toFixed(1) + '초</i> · ' + esc(clip(txt, 44)) + '</span>'
+        + '<input type="text" data-wvnote="' + i + '" maxlength="160" value="' + esc(v) + '" placeholder="예: 가운데 24시간 시계 · 여우 인사 · 차트 크게" aria-label="' + (i + 1) + '번 컷 화면 배치 메모">'
+        + '</label>';
+    });
+    box.innerHTML = h;
+  }
+  function pickleRequestText() {
+    var spec = S.spec || (W.WVID_SRC && W.WVID_SRC.shorts ? normSpec(W.WVID_SRC.shorts()) : null);
+    var cuts = S.cuts || [];
+    if (!spec && !cuts.length) return '';
+    var L = [];
+    L.push('[스튜디오 v2 · 🎬 웹 영상 생성기 수정 요청]');
+    L.push('제목: ' + ((spec && (spec.title || spec.hookTitle)) || '—'));
+    L.push('디자인: ' + designName() + ' / 양식: ' + (TPL_NAME[tplOf()] || ''));
+    var f = formulaOf();
+    if (f) L.push('흥행 공식: ' + f.tag + ' ' + f.name);
+    L.push('컷: ' + cuts.length + '개 · 총 ' + Math.round(S.total || 0) + '초');
+    if (String(S.cfg && S.cfg.chartData || '').trim()) L.push('차트 데이터(직접 입력): ' + String(S.cfg.chartData).replace(/\n+/g, ' / '));
+    L.push('');
+    L.push('[대본]');
+    if (!cuts.length) L.push('(아직 컷이 없습니다 — 아래 메모만 봐 주세요)');
+    cuts.forEach(function (c, i) {
+      L.push(('0' + (i + 1)).slice(-2) + ' · ' + (Number(c.start) || 0).toFixed(1) + '~' + (Number(c.end) || 0).toFixed(1) + '초 · '
+        + String(c.text || '').replace(/\s+/g, ' ').trim());
+      var m = cutNote(c, i);
+      if (m) L.push('     ↳ 배치 메모: ' + m);
+    });
+    L.push('');
+    L.push('[요청]');
+    L.push('- 위 컷별 배치 메모대로 화면을 그려 주세요. 지금 없는 요소(모션 그래픽·시계·표 등)도 이 메모 기준으로 새로 만들어 주세요.');
+    L.push('- 대본·수치는 그대로 두고 배치·모션만 바꿔 주세요.');
+    return L.join('\n');
   }
 
   /* ---------- 업로드 세트 ---------- */
@@ -19296,6 +19505,24 @@ var CSVoice = (function () {
       var txt = uploadSetText();
       if (!txt) { say('먼저 쇼츠 대본이 필요합니다.', 'bad'); return; }
       copy(txt, '업로드 세트(제목·설명·해시태그·고정 댓글)를 복사했습니다.');
+    });
+    var srtBtn = $('#wvSrtBtn'); if (srtBtn) srtBtn.addEventListener('click', function () {
+      var txt = srtText();
+      if (!txt) { say('먼저 쇼츠 대본이 필요합니다.', 'bad'); return; }
+      copy(txt, '자막 SRT(' + (S.cuts || []).length + '컷)를 복사했습니다 — 캡컷 [가져오기]에서 .srt로 불러오세요.');
+    });
+    var pkBtn = $('#wvPickleCopy'); if (pkBtn) pkBtn.addEventListener('click', function () {
+      var txt = pickleRequestText();
+      if (!txt) { say('먼저 쇼츠 대본이 필요합니다.', 'bad'); return; }
+      copy(txt, '피클 수정요청(대본 + 컷별 배치 메모 + 디자인/양식)을 복사했습니다 — 채팅에 붙여넣어 주세요.');
+    });
+    var noteBox = $('#wvCutNotes');
+    if (noteBox) noteBox.addEventListener('input', function (ev) {
+      var t = ev.target;
+      var inp = (t && t.getAttribute && t.getAttribute('data-wvnote') != null) ? t : (t && t.closest ? t.closest('[data-wvnote]') : null);
+      if (!inp) return;
+      var ni = Number(inp.getAttribute('data-wvnote'));
+      if (S.cuts[ni]) setCutNote(S.cuts[ni], ni, inp.value);
     });
     var opt = $('#wvSetBtn'); if (opt) opt.addEventListener('click', function () {
       var d = $('#wvOpt'); if (d) { d.open = !d.open; if (d.open) d.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
