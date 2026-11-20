@@ -167,6 +167,32 @@ main{padding:6px 0 40px;min-height:60vh}
 .chip.off{opacity:.66}
 .chip .c{font-size:10.5px;font-weight:900;padding:1px 6px;border-radius:8px;background:rgba(148,163,184,.18);color:#dbe6f6}
 .chip.on .c{background:rgba(4,18,31,.35);color:#04121f}
+/* [11/20] 지역 드롭다운 — 칩 10개가 모바일에서 두 줄로 터지지 않게 선택창으로 */
+.filterrow{display:flex;align-items:center;gap:8px;min-width:0}
+.filterrow .flabel{flex:0 0 auto;font-size:10px;font-weight:900;letter-spacing:.14em;color:var(--mut2);text-transform:uppercase;white-space:nowrap}
+.rsel{position:relative;flex:1 1 0;min-width:0;max-width:100%}
+.rselbtn{display:flex;align-items:center;gap:7px;width:100%;min-width:0;padding:8px 12px;border-radius:999px;
+  border:1px solid var(--line);background:rgba(148,163,184,.07);color:#c3d0e2;font-size:12px;font-weight:800;text-align:left;
+  transition:all .14s ease}
+.rselbtn:hover{background:rgba(148,163,184,.13)}
+.rselbtn.on{background:linear-gradient(135deg,rgba(56,189,248,.24),rgba(129,140,248,.22));border-color:rgba(125,211,252,.5);color:#f0f9ff}
+.rselbtn #regionBtnTx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rselbtn .c{flex:0 0 auto;font-size:10.5px;font-weight:900;padding:1px 6px;border-radius:8px;background:rgba(148,163,184,.18);color:#dbe6f6}
+.rselbtn.on .c{background:rgba(4,18,31,.35);color:#04121f}
+.rselbtn .ch{flex:0 0 auto;margin-left:auto;font-size:9px;opacity:.7;transition:transform .15s ease}
+.rsel.open .rselbtn .ch{transform:rotate(180deg)}
+.rselmenu{position:absolute;z-index:70;top:calc(100% + 6px);left:0;display:none;
+  width:min(280px,calc(100vw - 40px));max-height:min(60vh,400px);overflow-y:auto;overscroll-behavior:contain;padding:6px;
+  background:#0b1324;border:1px solid var(--line2);border-radius:14px;box-shadow:var(--sh)}
+.rsel.open .rselmenu{display:block}
+.rsel.up .rselmenu{top:auto;bottom:calc(100% + 6px)}
+.ropt{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:0;border-radius:9px;background:none;
+  color:#c3d0e2;font-size:12.5px;font-weight:800;text-align:left}
+.ropt:hover{background:rgba(148,163,184,.13)}
+.ropt.on{background:rgba(56,189,248,.18);color:#f0f9ff}
+.ropt.z{opacity:.45}
+.ropt .rl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ropt .rc{margin-left:auto;font-size:10px;font-weight:900;opacity:.8}
 .field{display:flex;align-items:center;gap:7px;padding:8px 11px;border-radius:12px;border:1px solid var(--line);background:rgba(6,11,21,.6)}
 .field input{border:0;background:transparent;color:var(--txt);font:inherit;font-size:12.5px;outline:none;width:100%;min-width:0}
 .field input::placeholder{color:var(--mut2)}
@@ -501,6 +527,14 @@ html[data-theme="light"] .chip.on{
 html[data-theme="light"] .chip.on:hover{background:linear-gradient(135deg,rgba(56,189,248,.26),rgba(129,140,248,.22))}
 html[data-theme="light"] .chip .c{background:rgba(16,44,78,.08);color:#33485e}
 html[data-theme="light"] .chip.on .c{background:rgba(56,189,248,.22);color:#075985}
+html[data-theme="light"] .rselbtn{background:rgba(255,255,255,.92);border-color:var(--line);color:#2b3f55}
+html[data-theme="light"] .rselbtn:hover{background:#f2f7fd}
+html[data-theme="light"] .rselbtn.on{background:linear-gradient(135deg,rgba(56,189,248,.20),rgba(129,140,248,.18));border-color:#a7d8f5;color:#075985}
+html[data-theme="light"] .rselbtn .c{background:rgba(16,44,78,.10);color:#33475c}
+html[data-theme="light"] .rselmenu{background:#fff;border-color:var(--line2);box-shadow:0 16px 34px rgba(16,44,78,.16)}
+html[data-theme="light"] .ropt{color:#2b3f55}
+html[data-theme="light"] .ropt:hover{background:#f2f7fd}
+html[data-theme="light"] .ropt.on{background:#e0f2fe;color:#075985}
 html[data-theme="light"] .chip.plat-on{
   background:linear-gradient(135deg,rgba(56,189,248,.18),rgba(129,140,248,.16));
   border-color:#7dd3fc;color:#075985;
@@ -750,7 +784,17 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
           <button class="chip" data-type="페이백" type="button">💰 페이백만</button>
           <button class="chip" data-type="기자단" type="button">📰 기자단만</button>
         </div>
-        <div class="chips" id="regionChips" style="margin-top:7px"></div>
+        <div class="filterrow" style="margin-top:7px">
+          <span class="flabel">지역</span>
+          <div class="rsel" id="regionSel">
+            <button class="rselbtn" id="regionBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="regionMenu">
+              <span id="regionBtnTx">🗺️ 지역 전체</span>
+              <span class="c" id="regionBtnN">0</span>
+              <span class="ch" aria-hidden="true">▾</span>
+            </button>
+            <div class="rselmenu" id="regionMenu" role="listbox" aria-label="지역 선택"></div>
+          </div>
+        </div>
         <div class="metaline" style="margin-top:4px"><span id="regionHint">지역은 플랫폼이 밝힌 표기(주소·지역 필드·제목) 기준 — 집으로 오는 캠페인은 전국·배송입니다.</span></div>
         <div class="chips" id="flagChips" style="margin-top:7px">
           <button class="chip" data-flag="cost" type="button">💰 자부담 제외</button>
@@ -922,40 +966,46 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     { k: '미확인', label: '❓ 미확인' }
   ];
   var KNOWN_TYPES = ['배송형', '방문형', '페이백', '기자단'];
-  var REGION_ORDER = ['서울', '경기·인천', '충청', '강원', '영남', '호남', '제주', '전국·배송', '지역 미표기'];
+  /* [11/20] '경기도·강원도'처럼 광역 단위로 고를 수 있게 권역을 8개로 나눴다.
+     예전 데이터의 '경기·인천'·'영남'·'호남' 표기는 각각 경기/인천 · 경상 · 전라로 다시 계산된다. */
+  var REGION_ORDER = ['서울', '경기', '인천', '강원', '충청', '전라', '경상', '제주', '전국·배송', '지역 미표기'];
   var REGION_ALL = '전국·배송', REGION_UNKNOWN = '지역 미표기';
   var REGION_LABEL = {
-    '서울': '📍 서울', '경기·인천': '📍 경기·인천', '충청': '📍 충청', '강원': '📍 강원',
-    '영남': '📍 영남', '호남': '📍 호남', '제주': '📍 제주',
+    '서울': '📍 서울', '경기': '📍 경기', '인천': '📍 인천', '강원': '📍 강원',
+    '충청': '📍 충청', '전라': '📍 전라', '경상': '📍 경상', '제주': '📍 제주',
     '전국·배송': '📦 전국·배송', '지역 미표기': '❓ 지역 미표기'
   };
+  function regionLabel(k) { return k === 'all' ? '🗺️ 지역 전체' : (REGION_LABEL[k] || String(k || '')); }
   var CITY_ALL = ['재택', '전국', '전국배송', '전국 배송', '온라인'];
   var COST_KW = ['배송비', '초과', '자부담', '본인부담', '페이백'];
   var COST_NEG = ['배송비 포함', '배송비포함', '배송비 무료', '무료배송', '배송비 없음',
                   '자부담 없음', '본인부담 없음', '추가금액 발생없음', '추가금 발생없음'];
   var RG1 = {
     '서울': '서울',
-    '경기·인천': '경기,인천',
-    '충청': '충남,충북,충청',
+    '경기': '경기',
+    '인천': '인천',
     '강원': '강원',
-    '영남': '경남,경북,경상,대구,부산,영남,울산',
-    '호남': '광주,전남,전라,전북,호남',
+    '충청': '충남,충북,충청',
+    '전라': '광주,전남,전라,전북,호남',
+    '경상': '경남,경북,경상,대구,부산,영남,울산',
     '제주': '제주'
   };
   var RG2 = {
     '서울': '가로수길,건대입구,성신여대,건국대,삼성동,압구정,여의도,왕십리,이태원,강남,강서,건대,관악,노원,논현,대치,마포,목동,사당,상암,서초,선릉,성수,송파,신사,신촌,역삼,용산,익선,잠실,종로,청담,한남,합정,홍대',
-    '경기·인천': '남양주,의정부,검단,고양,과천,광명,구리,군포,김포,동탄,미사,부천,부평,분당,성남,송도,수원,시흥,안산,안성,안양,양주,여주,오산,용인,의왕,이천,일산,파주,판교,평택,포천,하남,화성',
+    '경기': '남양주,의정부,고양,과천,광명,구리,군포,김포,동탄,미사,부천,분당,성남,수원,시흥,안산,안성,안양,양주,여주,오산,용인,의왕,이천,일산,파주,판교,평택,포천,하남,화성',
+    '인천': '검단,부평,송도,강화,영종,계양,미추홀',
     '충청': '계룡,공주,논산,당진,대전,보령,서산,세종,아산,제천,천안,청주,충주',
     '강원': '강릉,동해,삼척,속초,양양,영월,원주,인제,정선,철원,춘천,태백,평창,홍천,횡성',
-    '영남': '거제,거창,경산,경주,구미,김천,김해,남해,마산,문경,밀양,봉화,사천,상주,안동,양산,영주,영천,울주,울진,의성,진주,진해,창원,통영,포항,하동,함안',
-    '호남': '강진,고창,고흥,곡성,광양,구례,군산,김제,나주,남원,담양,목포,무안,무주,보성,부안,순창,순천,신안,여수,영광,영암,완도,완주,익산,임실,장성,장수,장흥,전주,정읍,진도,진안,함평,해남,화순',
+    '경상': '거제,거창,경산,경주,구미,김천,김해,남해,마산,문경,밀양,봉화,사천,상주,안동,양산,영주,영천,울주,울진,의성,진주,진해,창원,통영,포항,하동,함안',
+    '전라': '강진,고창,고흥,곡성,광양,구례,군산,김제,나주,남원,담양,목포,무안,무주,보성,부안,순창,순천,신안,여수,영광,영암,완도,완주,익산,임실,장성,장수,장흥,전주,정읍,진도,진안,함평,해남,화순',
     '제주': '서귀포,추자도,구좌,김녕,사계,성산,애월,우도,조천,중문,표선,함덕,협재'
   };
   var RG3 = {
     '서울': '디지털단지,영등포구,노량진,논현동,답십리,동대문,서대문,서소문,신도림,연신내,영등포,을지로,장한평,청량리,충무로,충정로,가락,가산,강북,개포,고덕,공덕,공릉,광진,구로,군자,금천,금호,길동,당산,대림,도봉,도산,돈암,동작,둔촌,뚝섬,마곡,면목,명동,무악,문래,문정,미아,반포,발산,방배,방이,불광,상봉,성동,성북,수유,신당,신천,안암,약수,양재,양천,여의,옥수,용답,월계,은평,잠원,장안,중곡,중구,중랑,중화,창동,천호,태릉,하계,한티,홍제,화곡,회기,흑석',
-    '경기·인천': '광교,기흥,동백,별내,병점,봉담,산본,상동,수지,위례,죽전,중동,탄현,향남',
-    '영남': '부산진,해운대,광안,금정,기장,달서,동래,북구,사상,서면,수성,수영,연제,영도',
-    '호남': '둔산,상무,수완,유성,첨단'
+    '경기': '광교,기흥,동백,별내,병점,봉담,산본,상동,수지,위례,죽전,중동,탄현,향남',
+    '인천': '논현동,구월,만수,부개,작전',
+    '경상': '부산진,해운대,광안,금정,기장,달서,동래,북구,사상,서면,수성,수영,연제,영도',
+    '전라': '둔산,상무,수완,유성,첨단'
   };
   var RG_TOKENS = [];
   [RG1, RG2, RG3].forEach(function (tbl, i) {
@@ -1031,16 +1081,46 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     return REGION_ALL;
   }
 
-  var DEFAULT_FLAGS = { cost: true, payback: true, jigan: true };   /* 기본으로 빼고 보는 3종 */
-  var DEFAULT_FLAGS_KEYS = ['cost', 'payback', 'jigan'];
-  var UI_SCHEMA = 2;
+  /* 목록에 뜨는 문구에서 '얼굴이 사진·영상에 나와야 하는' 요건을 찾는다.
+     '얼굴' 한 글자만 보면 '얼굴or바디 케어' 같은 시술 문구까지 걸리므로, 노출·공개·촬영을 뜻하는
+     결합어와 초상권·셀카·착용샷만 본다. ('얼굴 노출 없음'처럼 부정한 문구는 먼저 지운다.) */
+  var FACE_KW = ['얼굴노출', '얼굴 노출', '얼굴공개', '얼굴 공개', '얼굴정면', '얼굴 정면',
+                 '얼굴나오', '얼굴 나오', '얼굴이 나', '얼굴사진', '얼굴 사진', '얼굴포함', '얼굴 포함',
+                 '얼굴출연', '얼굴 출연', '셀카', '셀피', 'selfie', '인물촬영', '인물 촬영',
+                 '인물사진', '인물 사진', '초상권', '본인출연', '본인 출연', '착용샷', '착용 컷', '착용컷',
+                 '정면사진', '정면 사진', '프로필사진', '프로필 사진'];
+  var FACE_NEG = ['얼굴노출 없음', '얼굴 노출 없음', '얼굴공개 없음', '얼굴 공개 없음',
+                  '얼굴없이', '얼굴 없이', '얼굴 필요없', '얼굴 필요 없', '얼굴미노출', '얼굴 미노출',
+                  '얼굴 제외', '얼굴제외', '얼굴가리', '얼굴 가리', '얼굴안나', '얼굴 안 나'];
+  function faceText(r) {
+    var m = r.missions, ms = '';
+    if (m && typeof m === 'object') ms = String(m.summary || '');
+    return [r.title, r.offer, r.missionSummary, r.caution, r.note, ms]
+      .filter(function (v) { return !!v; }).join(' ');
+  }
+  function detectFace(r) {
+    var txt = faceText(r);
+    if (!txt) return false;
+    var probe = txt;
+    FACE_NEG.forEach(function (neg) { probe = probe.split(neg).join(' '); });
+    for (var i = 0; i < FACE_KW.length; i++) { if (probe.indexOf(FACE_KW[i]) >= 0) return true; }
+    return false;
+  }
+  function faceHit(r) {
+    /* 플랫폼이 준 초상권 동의 항목(레뷰 isPortraitRights → flags.faceRequired) 또는 문구 판별 */
+    return (r.flags || {}).faceRequired === true || detectFace(r);
+  }
+
+  var DEFAULT_FLAGS = { cost: true, payback: true, jigan: true, face: true };   /* 기본으로 빼고 보는 4종 */
+  var DEFAULT_FLAGS_KEYS = ['cost', 'payback', 'jigan', 'face'];
+  var UI_SCHEMA = 2;   /* 스키마 2 유지 — 저장값에 없던 face 는 아래 DEFAULT_FLAGS_KEYS 로만 채운다(기존 선택 보존) */
 
   var S = {
     rows: [], meta: null, loaded: false, fallback: false,
     cart: [], status: {}, checks: {}, picked: {}, msgs: {}, reviews: {},
     photos: {}, photoBusy: {}, capBusy: {},
     ui: { tab: 'main', sorts: { popular: true, rate: true, value: true }, cat: 'all', plat: 'all', type: 'all', region: 'all',
-          flags: { cost: true, payback: true, jigan: true }, q: '' },
+          flags: { cost: true, payback: true, jigan: true, face: true }, q: '' },
     savings: { manual: 0 }, prices: {},
     blogSpec: { posts: null, visitors: null, last: null },
     due: {}, kwCache: {}, kwBusy: {},
@@ -1234,6 +1314,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     for (var fk in cf) { if (Object.prototype.hasOwnProperty.call(cf, fk)) row.flags[fk] = cf[fk]; }
     row.type = typeOf(c);                       /* 원문·보정 규칙으로 유형 확정 */
     if (row.flags.extraCost !== true && detectCost(row)) row.flags.extraCost = true;
+    if (row.flags.faceRequired !== true && detectFace(row)) row.flags.faceRequired = true;
     if (row.flags.visitRequired === undefined || row.flags.visitRequired === null) {
       row.flags.visitRequired = (row.type === '방문형');
     }
@@ -1421,6 +1502,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     if (flagActive('visit') && skip !== 'flag:visit' && r.type === '방문형') return false;
     if (flagActive('payback') && skip !== 'flag:payback' && r.type === '페이백') return false;
     if (flagActive('jigan') && skip !== 'flag:jigan' && r.type === '기자단') return false;
+    if (flagActive('face') && skip !== 'flag:face' && faceHit(r)) return false;
     if (flagActive('applied') && skip !== 'flag:applied' && S.status[r.id]) return false;
     if (skip !== 'q' && q) {
       var hay = [r.title, r.brand, r.category, r.offer, r.missionSummary, r.platformName,
@@ -1436,6 +1518,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     if (k === 'visit') return r.type === '방문형';
     if (k === 'payback') return r.type === '페이백';
     if (k === 'jigan') return r.type === '기자단';
+    if (k === 'face') return faceHit(r);
     if (k === 'applied') return !!S.status[r.id];
     return false;
   }
@@ -1481,24 +1564,45 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
   }
 
   function renderRegionChips() {
-    var box = $('regionChips');
-    if (!box) return;
-    var html = '<button class="chip' + (S.ui.region === 'all' ? ' on' : '') + '" data-region="all" type="button">🗺️ 지역 전체 <span class="c">' +
-      countExcept('region') + '</span></button>';
+    /* 지역은 드롭다운 — 8개 권역을 항상 같은 순서로 보여 주고, 다른 조건까지 반영한 건수를 붙인다.
+       (0건 권역도 회색으로 남겨 둔다: 목록이 조건마다 들쭉날쭉하지 않게) */
+    var menu = $('regionMenu'), btn = $('regionBtn');
+    if (!menu || !btn) return;
+    var cur = S.ui.region, nAll = countExcept('region');
+    var html = '<button class="ropt' + (cur === 'all' ? ' on' : '') + '" data-region="all" type="button"' +
+      ' role="option" aria-selected="' + (cur === 'all' ? 'true' : 'false') + '">' +
+      '<span class="rl">🗺️ 지역 전체</span><span class="rc">' + nAll + '</span></button>';
     REGION_ORDER.forEach(function (rg) {
-      var n = facetCount('region', rg);
-      if (!n && S.ui.region !== rg) return;         /* 실제 데이터에 있는 지역만 노출 */
-      html += '<button class="chip' + (S.ui.region === rg ? ' on' : (n ? '' : ' off')) +
-        '" data-region="' + esc(rg) + '" type="button">' + (REGION_LABEL[rg] || esc(rg)) +
-        ' <span class="c">' + n + '</span></button>';
+      var n = facetCount('region', rg), on = cur === rg;
+      html += '<button class="ropt' + (on ? ' on' : '') + (n ? '' : ' z') + '" data-region="' + esc(rg) + '" type="button"' +
+        ' role="option" aria-selected="' + (on ? 'true' : 'false') + '">' +
+        '<span class="rl">' + (REGION_LABEL[rg] || esc(rg)) + '</span>' +
+        '<span class="rc">' + n + '</span></button>';
     });
-    box.innerHTML = html;
+    menu.innerHTML = html;
+    var tx = $('regionBtnTx'), cnt = $('regionBtnN');
+    if (tx) tx.textContent = regionLabel(cur);
+    if (cnt) cnt.textContent = (cur === 'all' ? nAll : facetCount('region', cur));
+    btn.classList.toggle('on', cur !== 'all');
+  }
+  function regionOpen(open) {
+    var box = $('regionSel'), btn = $('regionBtn');
+    if (!box || !btn) return;
+    /* 화면 아래 공간이 모자라면 선택창을 위로 펼친다(필터 줄이 화면 아래쪽에 있을 때) */
+    if (open) {
+      var r = btn.getBoundingClientRect();
+      var need = Math.min(400, window.innerHeight * 0.6);
+      box.classList.toggle('up', (window.innerHeight - r.bottom) < need && r.top > (window.innerHeight - r.bottom));
+    }
+    box.classList.toggle('open', !!open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
   function renderFlagChips() {
     var box = $('flagChips');
     if (!box) return;
     var defs = [['cost', '💰 자부담 제외'], ['payback', '💰 페이백 제외'], ['jigan', '📰 기자단 제외'],
+                ['face', '🙂 얼굴노출 제외'],
                 ['ai', '⚠️ AI 금지 제외'], ['visit', '🚗 방문형 제외'], ['applied', '✅ 신청완료 숨기기']];
     var html = '';
     defs.forEach(function (d) {
@@ -2700,6 +2804,11 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     var el = ev.target;
     function closest(sel) { return el.closest ? el.closest(sel) : null; }
 
+    /* 지역 드롭다운 — 바깥을 누르면 닫고, 버튼을 누르면 접고 편다 */
+    var selBox = $('regionSel');
+    if (selBox && selBox.classList.contains('open') && !(el.closest && el.closest('#regionSel'))) regionOpen(false);
+    if (el && (el.id === 'regionBtn' || (closest('#regionBtn')))) { regionOpen(!(selBox && selBox.classList.contains('open'))); return; }
+
     var c;
     if ((c = closest('[data-close]'))) { closeModal(c.getAttribute('data-close')); return; }
     if (el.id === 'mDetail' || el.id === 'mDaily' || el.id === 'mKey') { closeModal(el.id); return; }
@@ -2795,11 +2904,11 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     }
     if ((c = closest('[data-type]'))) {
       S.ui.type = c.getAttribute('data-type');
-      renderMain(); return;
+      save(); renderMain(); return;
     }
     if ((c = closest('[data-region]'))) {
       S.ui.region = c.getAttribute('data-region');
-      save(); renderMain(); return;
+      regionOpen(false); save(); renderMain(); return;
     }
 
     /* ---- 황금 키워드 ---- */
@@ -2876,9 +2985,11 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     }
     if (el.id === 'resetBtn') {
       S.ui = { tab: S.ui.tab, sorts: { popular: true, rate: true, value: true }, cat: 'all', plat: 'all', type: 'all', region: 'all',
-               flags: { cost: true, payback: true, jigan: true }, q: '' };
+               flags: { cost: true, payback: true, jigan: true, face: true }, q: '' };
       $('q').value = '';
       document.querySelectorAll('#sortChips .chip').forEach(function (b) { b.classList.add('on'); });
+      regionOpen(false);
+      save();
       renderPlatChips(); renderCatChips(); renderMain();
       return;
     }
@@ -2954,7 +3065,8 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
   document.addEventListener('keydown', function (ev) {
     if (ev.key === 'Escape') {
       var any = document.querySelector('.modal.on');
-      if (any) closeModal(any.id);
+      if (any) { closeModal(any.id); return; }
+      regionOpen(false);
     }
   });
 

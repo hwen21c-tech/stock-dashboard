@@ -1,13 +1,14 @@
 /* 리뷰단 스튜디오 — 오프라인/독립 설치용 서비스 워커
    · 셸(HTML·manifest·아이콘)은 미리 캐시, 캠페인 데이터는 네트워크 우선 + 캐시 폴백
    · 파일을 고칠 때는 CACHE 이름의 버전을 올려 주세요.
+   · [11/20] v7: 지역 드롭다운(서울·경기·인천·강원·충청·전라·경상·제주) · 얼굴노출 제외 · 유형/지역 선택 저장(셸 재캐시).
    · [11/20] v6: 유형(배송·방문·페이백·기자단) 자동 판별 · 기본 제외 3종(자부담·페이백·기자단) · 지역 필터 반영(셸 재캐시).
    · [11/20] v5: revu-studio.html 밝은 테마 토글 반영(셸 재캐시).
    · [11/20] PWA 스코프 분리: 등록 스코프를 ./revu-studio.html 하나로 좁혔다.
      같은 오리진(관제탑·체험단ZIP·사주 등)의 다른 앱 캐시는 activate에서도 건드리지 않는다.
 */
 var PREFIX = 'revu-studio-';
-var CACHE = PREFIX + 'v6';
+var CACHE = PREFIX + 'v7';
 var SHELL = [
   './revu-studio.html',
   './revu-studio-manifest.json',

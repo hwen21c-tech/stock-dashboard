@@ -3,11 +3,12 @@
    · 파일을 고칠 때는 CACHE 이름의 버전을 올려 주세요.
    · [11/20] PWA 스코프 분리: 등록 스코프를 ./review-zip.html 하나로 좁혔다.
      같은 오리진(관제탑·리뷰 스튜디오·사주 등)의 다른 앱 캐시는 activate에서도 건드리지 않는다.
+   · [11/20] v10: 지역 드롭다운(서울·경기·인천·강원·충청·전라·경상·제주) · 얼굴노출 제외 · 필터 줄 localStorage 저장.
    · [11/20] 제외 토글(자부담·페이백·기자단 기본 ON) · 지역 필터 반영으로 v9.
    · [11/20] 유형 필터·필터 접기·sticky 해제 반영으로 v8.
 */
 var PREFIX = 'review-zip-';
-var CACHE = PREFIX + 'v9';
+var CACHE = PREFIX + 'v10';
 var SHELL = [
   './review-zip.html',
   './review-zip-manifest.json',

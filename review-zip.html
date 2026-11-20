@@ -202,6 +202,34 @@ p{margin:0}
 .chip.z{opacity:.4}
 .chip.z:hover{opacity:.62}
 
+/* [11/20] 지역 드롭다운 — 400px 외부액정에서 지역 칩 10개가 두 줄로 터지던 자리를 선택창으로 바꿨다 */
+.rsel{position:relative;flex:1 1 0;min-width:0;max-width:100%}
+.rselbtn{display:flex;align-items:center;gap:7px;width:100%;min-width:0;padding:6px 11px;border-radius:9px;
+  background:rgba(148,163,184,.07);border:1px solid var(--line);color:#c6d2e4;font-size:11.5px;font-weight:800;
+  text-align:left;transition:background .15s ease,border-color .15s ease,transform .12s ease}
+.rselbtn:hover{background:rgba(148,163,184,.14)}
+.rselbtn:active{transform:scale(.99)}
+.rselbtn.on{background:linear-gradient(135deg,rgba(251,191,36,.2),rgba(251,113,133,.16));border-color:rgba(251,191,36,.44);color:#fff7e6}
+.rselbtn #regionBtnTx{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rselbtn .c{flex:0 0 auto;font-size:9.5px;font-weight:900;padding:1px 5px;border-radius:6px;background:rgba(148,163,184,.14);color:#dbe6f6}
+.rselbtn.on .c{background:rgba(10,8,2,.3);color:#fff7e6}
+.rselbtn .ch{flex:0 0 auto;margin-left:auto;font-size:9px;opacity:.68;transition:transform .15s ease}
+.rsel.open .rselbtn .ch{transform:rotate(180deg)}
+.rselmenu{position:absolute;z-index:70;top:calc(100% + 6px);left:0;display:none;
+  width:min(280px,calc(100vw - 46px));max-height:min(60vh,400px);overflow-y:auto;overscroll-behavior:contain;padding:6px;
+  background:#0c1322;border:1px solid var(--line2);border-radius:14px;box-shadow:var(--sh)}
+.rsel.open .rselmenu{display:block}
+.rsel.up .rselmenu{top:auto;bottom:calc(100% + 6px)}
+.ropt{display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border:0;border-radius:9px;
+  background:none;color:#c6d2e4;font-size:12px;font-weight:800;text-align:left}
+.ropt:hover{background:rgba(148,163,184,.13)}
+.ropt:active{transform:none}
+.ropt.on{background:rgba(251,191,36,.16);color:#fff7e6}
+.ropt.z{opacity:.45}
+.ropt .rl{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ropt .rc{margin-left:auto;font-size:10px;font-weight:900;opacity:.8}
+.flag.face{background:rgba(251,113,133,.12);color:#fecdd3;border-color:rgba(251,113,133,.3)}
+
 /* ============ section frame (매거진) ============ */
 section.block{margin-top:36px;padding-top:22px;border-top:1px solid var(--rule)}
 .shead{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;margin-bottom:14px}
@@ -453,6 +481,16 @@ html[data-theme="light"] .chip.on{background:linear-gradient(135deg,#fdf3e0,#ffe
 html[data-theme="light"] .chip .c{background:rgba(28,25,20,.07);color:#5b5446}
 html[data-theme="light"] .chip.on .c{background:rgba(255,255,255,.75);color:#8a4b06}
 html[data-theme="light"] .filterlabel span{color:#a2988a}
+html[data-theme="light"] .rselbtn{background:#fff;border-color:var(--line);color:#4a4438}
+html[data-theme="light"] .rselbtn:hover{background:#f6f2e9}
+html[data-theme="light"] .rselbtn.on{background:linear-gradient(135deg,#fdf3e0,#ffe9ec);border-color:#ecc98f;color:#8a4b06}
+html[data-theme="light"] .rselbtn .c{background:rgba(28,25,20,.07);color:#5b5446}
+html[data-theme="light"] .rselbtn.on .c{background:rgba(255,255,255,.75);color:#8a4b06}
+html[data-theme="light"] .rselmenu{background:#fff;border-color:var(--line2);box-shadow:0 18px 36px rgba(28,25,20,.18)}
+html[data-theme="light"] .ropt{color:#4a4438}
+html[data-theme="light"] .ropt:hover{background:#f6f2e9}
+html[data-theme="light"] .ropt.on{background:#fdf3e0;color:#8a4b06}
+html[data-theme="light"] .flag.face{background:#ffe9ec;color:#9f1239;border-color:#f6c2ca}
 html[data-theme="light"] .honey{background:linear-gradient(152deg,#fffdf6,#fff4f1);border-color:#f0d9a6;box-shadow:0 16px 36px rgba(180,98,10,.10)}
 html[data-theme="light"] .honey .hhead h3{color:#7a3d05}
 html[data-theme="light"] .honey .hhead .tag{background:#fdecc8;border-color:#ecc98f;color:#8a4b06}
@@ -652,7 +690,14 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       <div class="chips" id="typeChips" style="flex:1"></div>
     </div>
     <div class="filterlabel"><span>지역</span>
-      <div class="chips" id="regionChips" style="flex:1"></div>
+      <div class="rsel" id="regionSel">
+        <button class="rselbtn" id="regionBtn" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="regionMenu">
+          <span id="regionBtnTx">🗺️ 지역 전체</span>
+          <span class="c" id="regionBtnN">0</span>
+          <span class="ch" aria-hidden="true">▾</span>
+        </button>
+        <div class="rselmenu" id="regionMenu" role="listbox" aria-label="지역 선택"></div>
+      </div>
     </div>
     <div class="filterlabel"><span>플랫폼</span>
       <div class="chips" id="platChips" style="flex:1"></div>
@@ -812,40 +857,46 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 
   /* ===== 유형·자부담·지역 정규화 — scripts/review_normalize.py 와 같은 규칙 ===== */
   var KNOWN_TYPES = ['배송형', '방문형', '페이백', '기자단'];
-  var REGION_ORDER = ['서울', '경기·인천', '충청', '강원', '영남', '호남', '제주', '전국·배송', '지역 미표기'];
+  /* [11/20] 사용자가 '경기도·강원도'처럼 광역 단위로 고를 수 있게 권역을 8개로 나눴다.
+     예전 데이터의 '경기·인천'·'영남'·'호남' 표기는 각각 경기/인천 · 경상 · 전라로 다시 계산된다. */
+  var REGION_ORDER = ['서울', '경기', '인천', '강원', '충청', '전라', '경상', '제주', '전국·배송', '지역 미표기'];
   var REGION_ALL = '전국·배송', REGION_UNKNOWN = '지역 미표기';
   var REGION_LABEL = {
-    '서울': '📍 서울', '경기·인천': '📍 경기·인천', '충청': '📍 충청', '강원': '📍 강원',
-    '영남': '📍 영남', '호남': '📍 호남', '제주': '📍 제주',
+    '서울': '📍 서울', '경기': '📍 경기', '인천': '📍 인천', '강원': '📍 강원',
+    '충청': '📍 충청', '전라': '📍 전라', '경상': '📍 경상', '제주': '📍 제주',
     '전국·배송': '📦 전국·배송', '지역 미표기': '❓ 지역 미표기'
   };
+  function regionLabel(k) { return k === 'all' ? '🗺️ 지역 전체' : (REGION_LABEL[k] || String(k || '')); }
   var CITY_ALL = ['재택', '전국', '전국배송', '전국 배송', '온라인'];
   var COST_KW = ['배송비', '초과', '자부담', '본인부담', '페이백'];
   var COST_NEG = ['배송비 포함', '배송비포함', '배송비 무료', '무료배송', '배송비 없음',
                   '자부담 없음', '본인부담 없음', '추가금액 발생없음', '추가금 발생없음'];
   var RG1 = {
     '서울': '서울',
-    '경기·인천': '경기,인천',
-    '충청': '충남,충북,충청',
+    '경기': '경기',
+    '인천': '인천',
     '강원': '강원',
-    '영남': '경남,경북,경상,대구,부산,영남,울산',
-    '호남': '광주,전남,전라,전북,호남',
+    '충청': '충남,충북,충청',
+    '전라': '광주,전남,전라,전북,호남',
+    '경상': '경남,경북,경상,대구,부산,영남,울산',
     '제주': '제주'
   };
   var RG2 = {
     '서울': '가로수길,건대입구,성신여대,건국대,삼성동,압구정,여의도,왕십리,이태원,강남,강서,건대,관악,노원,논현,대치,마포,목동,사당,상암,서초,선릉,성수,송파,신사,신촌,역삼,용산,익선,잠실,종로,청담,한남,합정,홍대',
-    '경기·인천': '남양주,의정부,검단,고양,과천,광명,구리,군포,김포,동탄,미사,부천,부평,분당,성남,송도,수원,시흥,안산,안성,안양,양주,여주,오산,용인,의왕,이천,일산,파주,판교,평택,포천,하남,화성',
+    '경기': '남양주,의정부,고양,과천,광명,구리,군포,김포,동탄,미사,부천,분당,성남,수원,시흥,안산,안성,안양,양주,여주,오산,용인,의왕,이천,일산,파주,판교,평택,포천,하남,화성',
+    '인천': '검단,부평,송도,강화,영종,계양,미추홀',
     '충청': '계룡,공주,논산,당진,대전,보령,서산,세종,아산,제천,천안,청주,충주',
     '강원': '강릉,동해,삼척,속초,양양,영월,원주,인제,정선,철원,춘천,태백,평창,홍천,횡성',
-    '영남': '거제,거창,경산,경주,구미,김천,김해,남해,마산,문경,밀양,봉화,사천,상주,안동,양산,영주,영천,울주,울진,의성,진주,진해,창원,통영,포항,하동,함안',
-    '호남': '강진,고창,고흥,곡성,광양,구례,군산,김제,나주,남원,담양,목포,무안,무주,보성,부안,순창,순천,신안,여수,영광,영암,완도,완주,익산,임실,장성,장수,장흥,전주,정읍,진도,진안,함평,해남,화순',
+    '경상': '거제,거창,경산,경주,구미,김천,김해,남해,마산,문경,밀양,봉화,사천,상주,안동,양산,영주,영천,울주,울진,의성,진주,진해,창원,통영,포항,하동,함안',
+    '전라': '강진,고창,고흥,곡성,광양,구례,군산,김제,나주,남원,담양,목포,무안,무주,보성,부안,순창,순천,신안,여수,영광,영암,완도,완주,익산,임실,장성,장수,장흥,전주,정읍,진도,진안,함평,해남,화순',
     '제주': '서귀포,추자도,구좌,김녕,사계,성산,애월,우도,조천,중문,표선,함덕,협재'
   };
   var RG3 = {
     '서울': '디지털단지,영등포구,노량진,논현동,답십리,동대문,서대문,서소문,신도림,연신내,영등포,을지로,장한평,청량리,충무로,충정로,가락,가산,강북,개포,고덕,공덕,공릉,광진,구로,군자,금천,금호,길동,당산,대림,도봉,도산,돈암,동작,둔촌,뚝섬,마곡,면목,명동,무악,문래,문정,미아,반포,발산,방배,방이,불광,상봉,성동,성북,수유,신당,신천,안암,약수,양재,양천,여의,옥수,용답,월계,은평,잠원,장안,중곡,중구,중랑,중화,창동,천호,태릉,하계,한티,홍제,화곡,회기,흑석',
-    '경기·인천': '광교,기흥,동백,별내,병점,봉담,산본,상동,수지,위례,죽전,중동,탄현,향남',
-    '영남': '부산진,해운대,광안,금정,기장,달서,동래,북구,사상,서면,수성,수영,연제,영도',
-    '호남': '둔산,상무,수완,유성,첨단'
+    '경기': '광교,기흥,동백,별내,병점,봉담,산본,상동,수지,위례,죽전,중동,탄현,향남',
+    '인천': '논현동,구월,만수,부개,작전',
+    '경상': '부산진,해운대,광안,금정,기장,달서,동래,북구,사상,서면,수성,수영,연제,영도',
+    '전라': '둔산,상무,수완,유성,첨단'
   };
   var RG_TOKENS = [];
   [RG1, RG2, RG3].forEach(function (tbl, i) {
@@ -898,20 +949,51 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     return REGION_ALL;
   }
 
-  /* 기본으로 빼고 보는 3종(자부담·페이백·기자단) — 사용자가 해제하면 그 선택을 localStorage 에 기억 */
-  var DEFAULT_EXCL = { ai: false, cost: true, visit: false, payback: true, jigan: true };
+  /* 목록에 뜨는 문구에서 '얼굴이 사진·영상에 나와야 하는' 요건을 찾는다.
+     '얼굴' 한 글자만 보면 '얼굴or바디 케어' 같은 시술 문구까지 걸리므로, 노출·공개·촬영을 뜻하는
+     결합어와 초상권·셀카·착용샷만 본다. ('얼굴 노출 없음'처럼 부정한 문구는 먼저 지운다.) */
+  var FACE_KW = ['얼굴노출', '얼굴 노출', '얼굴공개', '얼굴 공개', '얼굴정면', '얼굴 정면',
+                 '얼굴나오', '얼굴 나오', '얼굴이 나', '얼굴사진', '얼굴 사진', '얼굴포함', '얼굴 포함',
+                 '얼굴출연', '얼굴 출연', '셀카', '셀피', 'selfie', '인물촬영', '인물 촬영',
+                 '인물사진', '인물 사진', '초상권', '본인출연', '본인 출연', '착용샷', '착용 컷', '착용컷',
+                 '정면사진', '정면 사진', '프로필사진', '프로필 사진'];
+  var FACE_NEG = ['얼굴노출 없음', '얼굴 노출 없음', '얼굴공개 없음', '얼굴 공개 없음',
+                  '얼굴없이', '얼굴 없이', '얼굴 필요없', '얼굴 필요 없', '얼굴미노출', '얼굴 미노출',
+                  '얼굴 제외', '얼굴제외', '얼굴가리', '얼굴 가리', '얼굴안나', '얼굴 안 나'];
+  function faceText(r) {
+    var m = r.missions, ms = '';
+    if (m && typeof m === 'object') ms = String(m.summary || '');
+    return [r.title, r.offer, r.missionSummary, r.caution, r.note, ms]
+      .filter(function (v) { return !!v; }).join(' ');
+  }
+  function detectFace(r) {
+    var txt = faceText(r);
+    if (!txt) return false;
+    var probe = txt;
+    FACE_NEG.forEach(function (neg) { probe = probe.split(neg).join(' '); });
+    for (var i = 0; i < FACE_KW.length; i++) { if (probe.indexOf(FACE_KW[i]) >= 0) return true; }
+    return false;
+  }
+  function faceHit(r) {
+    /* 플랫폼이 준 초상권 동의 항목(레뷰 isPortraitRights → flags.faceRequired) 또는 문구 판별 */
+    return (r.flags || {}).faceRequired === true || detectFace(r);
+  }
+
+  /* 기본으로 빼고 보는 4종(자부담·페이백·기자단·얼굴노출) — 사용자가 해제하면 그 선택을 localStorage 에 기억 */
+  var DEFAULT_EXCL = { ai: false, cost: true, visit: false, payback: true, jigan: true, face: true };
   var EXCL_DEF = [
     { k: 'cost', label: '💰 자부담 제외' },
     { k: 'payback', label: '💰 페이백 제외' },
     { k: 'jigan', label: '📰 기자단 제외' },
+    { k: 'face', label: '🙂 얼굴노출 제외' },
     { k: 'ai', label: '⚠️ AI 금지 제외' },
     { k: 'visit', label: '🚗 방문형 제외' }
   ];
   var EXCL_KEY = 'review_zip_excl';
-  var EXCL_SCHEMA = 2;
+  var EXCL_SCHEMA = 3;   /* 3: 얼굴노출 제외 추가 — 2에서 저장한 사용자 선택은 그대로 살린다 */
 
   var S = { rows: [], meta: null, ui: { type: 'all', plat: 'all', cat: 'all', region: 'all', q: '', sort: 'deadline', wish: false },
-            excl: { ai: false, cost: true, visit: false, payback: true, jigan: true }, wish: [], limit: 24 };
+            excl: { ai: false, cost: true, visit: false, payback: true, jigan: true, face: true }, wish: [], limit: 24 };
   var WISH_KEY = 'review_zip_wish';
   var PORTAL_URL = 'https://hwen21c-tech.github.io/stock-dashboard/review-zip.html';
 
@@ -926,14 +1008,15 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 
   /* 빼고 보기(제외) 기본값 — 자부담·페이백·기자단은 ON으로 시작한다.
      사용자가 직접 끄면 그 선택을 localStorage 에 저장하고, 구버전 저장값(스키마 없음)은 기본 ON으로 올린다. */
-  function defaultExcl() { return { ai: false, cost: true, visit: false, payback: true, jigan: true }; }
+  function defaultExcl() { return { ai: false, cost: true, visit: false, payback: true, jigan: true, face: true }; }
   function loadExcl() {
     var base = defaultExcl();
     try {
       var raw = localStorage.getItem(EXCL_KEY);
       if (raw) {
         var o = JSON.parse(raw) || {};
-        if (o.schema === EXCL_SCHEMA) {
+        /* 스키마 2(얼굴노출 이전)에 저장한 사용자 선택도 그대로 살린다 — 없던 얼굴노출만 기본 ON */
+        if (o.schema === EXCL_SCHEMA || o.schema === 2) {
           EXCL_DEF.forEach(function (d) { if (typeof o[d.k] === 'boolean') base[d.k] = o[d.k]; });
         }
       }
@@ -944,18 +1027,59 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     try {
       localStorage.setItem(EXCL_KEY, JSON.stringify({
         schema: EXCL_SCHEMA, ai: !!S.excl.ai, cost: !!S.excl.cost, visit: !!S.excl.visit,
-        payback: !!S.excl.payback, jigan: !!S.excl.jigan
+        payback: !!S.excl.payback, jigan: !!S.excl.jigan, face: !!S.excl.face
       }));
     } catch (e) {}
   }
-  /* 필터 초기화 — 첫 진입과 같은 상태(지역·유형 전체, 기본 제외 3종 ON)로 돌린다 */
+  /* 필터 줄 상태 — 유형·플랫폼·분류·지역은 마지막으로 고른 값을 localStorage 에 남겨
+     새로고침·재방문해도 그대로 복원한다. 저장값이 지금 목록에 없는 값이면 조용히 '전체'로 돌린다.
+     (검색어·정렬은 이 줄이 아니라서 저장하지 않는다) */
+  var UI_KEY = 'review_zip_ui';
+  var UI_SCHEMA = 1;
+  function loadUi() {
+    try {
+      var o = JSON.parse(localStorage.getItem(UI_KEY) || 'null');
+      if (!o || typeof o !== 'object' || o.schema !== UI_SCHEMA) return;
+      if (typeof o.type === 'string' &&
+          (o.type === 'all' || TYPES.some(function (t) { return t.k === o.type; }))) S.ui.type = o.type;
+      if (typeof o.plat === 'string' &&
+          (o.plat === 'all' || PLAT_ORDER.indexOf(o.plat) >= 0)) S.ui.plat = o.plat;
+      if (typeof o.cat === 'string' &&
+          (o.cat === 'all' || CAT_ORDER.indexOf(o.cat) >= 0)) S.ui.cat = o.cat;
+      if (typeof o.region === 'string' &&
+          (o.region === 'all' || REGION_ORDER.indexOf(o.region) >= 0)) S.ui.region = o.region;
+    } catch (e) {}
+  }
+  function saveUi() {
+    try {
+      localStorage.setItem(UI_KEY, JSON.stringify({
+        schema: UI_SCHEMA, type: S.ui.type, plat: S.ui.plat, cat: S.ui.cat, region: S.ui.region
+      }));
+    } catch (e) {}
+  }
+  /* 지역 드롭다운 열기/닫기 */
+  function regionOpen(open) {
+    var box = $('regionSel'), btn = $('regionBtn');
+    if (!box || !btn) return;
+    /* 화면 아래 공간이 모자라면 선택창을 위로 펼친다(스튜디오처럼 필터 줄이 아래쪽에 있을 때) */
+    if (open) {
+      var r = btn.getBoundingClientRect();
+      var need = Math.min(400, window.innerHeight * 0.6);
+      box.classList.toggle('up', (window.innerHeight - r.bottom) < need && r.top > (window.innerHeight - r.bottom));
+    }
+    box.classList.toggle('open', !!open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  /* 필터 초기화 — 첫 진입과 같은 상태(지역·유형 전체, 기본 제외 4종 ON)로 돌린다 */
   function resetFilters(sort) {
     S.ui = { type: 'all', plat: 'all', cat: 'all', region: 'all', q: '', sort: sort || S.ui.sort || 'deadline', wish: false };
     S.excl = defaultExcl();
     S.limit = 24;
     var qq = $('q'); if (qq) qq.value = '';
     var ss = $('sortSel'); if (ss) ss.value = S.ui.sort;
-    saveExcl();
+    regionOpen(false);
+    saveExcl(); saveUi();
     renderAll();
   }
 
@@ -1044,10 +1168,12 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       ? '<span class="flag reg" title="' + esc(r.regionDetail || r.region) + '">📍 ' + esc(r.region) + '</span>' : '';
     var under = (r.applicants !== null && r.capacity > 0 && r.applicants < r.capacity)
       ? '<span class="flag under">미달</span>' : '';
+    var faceFlag = faceHit(r)
+      ? '<span class="flag face" title="플랫폼 초상권 동의 항목 또는 얼굴 노출 문구가 있는 캠페인">🙂 얼굴노출</span>' : '';
     var newFlag = r.isNew ? '<span class="new">🆕 NEW</span>' : '';
     return '<a class="card" href="' + esc(r.url || '#') + '" target="_blank" rel="noopener nofollow">' +
       '<div class="ctop">' + platBadge(r) +
-        '<span class="cat">' + esc(r.category || '기타') + '</span>' + typeFlag + regFlag + under + newFlag +
+        '<span class="cat">' + esc(r.category || '기타') + '</span>' + typeFlag + regFlag + faceFlag + under + newFlag +
         '<span class="dd ' + ddayCls(r.d) + '">' + ddayText(r.d) + '</span>' +
         '<button class="wish' + (isWished(r) ? ' on' : '') + '" type="button" data-wish="' + esc(r.key) + '" ' +
           'aria-label="찜하기" title="' + (isWished(r) ? '찜 해제' : '찜하기') + '">♥</button>' +
@@ -1078,6 +1204,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       for (var fk in cf) { if (Object.prototype.hasOwnProperty.call(cf, fk)) r.flags[fk] = cf[fk]; }
       r.type = typeOf(r);                       /* 원문·보정 규칙으로 유형 확정 */
       if (r.flags.extraCost !== true && detectCost(r)) r.flags.extraCost = true;
+      if (r.flags.faceRequired !== true && detectFace(r)) r.flags.faceRequired = true;
       r.region = (c.region && REGION_ORDER.indexOf(c.region) >= 0) ? c.region : regionOf(r, r.type);
       r.regionDetail = c.regionDetail || null;
       r.applicants = (c.applicants === null || c.applicants === undefined) ? null : num(c.applicants);
@@ -1125,6 +1252,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     if (k === 'visit') return typeOf(r) === '방문형';
     if (k === 'payback') return typeOf(r) === '페이백';
     if (k === 'jigan') return typeOf(r) === '기자단';
+    if (k === 'face') return faceHit(r);
     return false;
   }
   /* offFlag: 이 제외 토글 하나만 빼고 판단(칩 건수 계산용) */
@@ -1267,15 +1395,26 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   }
 
   function renderRegionChips() {
-    var el = $('regionChips');
-    if (!el) return;
-    var html = chipHtml('region', 'all', '🗺️ 지역 전체', countExcept('region'), S.ui.region === 'all');
+    /* 지역은 드롭다운 — 8개 권역을 항상 같은 순서로 보여 주고, 다른 조건까지 반영한 건수를 붙인다.
+       (0건 권역도 회색으로 남겨 둔다: 목록이 조건마다 들쭉날쭉하지 않게) */
+    var menu = $('regionMenu'), btn = $('regionBtn');
+    if (!menu || !btn) return;
+    var cur = S.ui.region, nAll = countExcept('region');
+    var html = '<button class="ropt' + (cur === 'all' ? ' on' : '') + '" data-region="all" type="button"' +
+      ' role="option" aria-selected="' + (cur === 'all' ? 'true' : 'false') + '">' +
+      '<span class="rl">🗺️ 지역 전체</span><span class="rc">' + nAll + '</span></button>';
     REGION_ORDER.forEach(function (rg) {
-      var s = facetStats('region', rg);
-      if (!s.base && S.ui.region !== rg) return;   /* 실제 데이터에 있는 지역만 노출 */
-      html += chipHtml('region', rg, REGION_LABEL[rg] || esc(rg), s.n, S.ui.region === rg);
+      var st = facetStats('region', rg), on = cur === rg;
+      html += '<button class="ropt' + (on ? ' on' : '') + (st.n ? '' : ' z') + '" data-region="' + esc(rg) + '" type="button"' +
+        ' role="option" aria-selected="' + (on ? 'true' : 'false') + '">' +
+        '<span class="rl">' + (REGION_LABEL[rg] || esc(rg)) + '</span>' +
+        '<span class="rc">' + st.n + '</span></button>';
     });
-    el.innerHTML = html;
+    menu.innerHTML = html;
+    var tx = $('regionBtnTx'), cnt = $('regionBtnN');
+    if (tx) tx.textContent = regionLabel(cur);
+    if (cnt) cnt.textContent = (cur === 'all' ? nAll : facetStats('region', cur).n);
+    btn.classList.toggle('on', cur !== 'all');
   }
 
   function renderExclChips() {
@@ -1555,8 +1694,18 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   document.addEventListener('change', function (ev) {
     if (ev.target && ev.target.id === 'sortSel') { S.ui.sort = ev.target.value; S.limit = 24; renderList(); }
   });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') regionOpen(false);
+  });
   document.addEventListener('click', function (ev) {
     var el = ev.target;
+    /* 지역 드롭다운 — 바깥을 누르면 닫고, 버튼을 누르면 접고 편다 */
+    var selBox = $('regionSel');
+    if (selBox && selBox.classList.contains('open') && !(el.closest && el.closest('#regionSel'))) regionOpen(false);
+    if (el && (el.id === 'regionBtn' || (el.closest && el.closest('#regionBtn')))) {
+      regionOpen(!(selBox && selBox.classList.contains('open')));
+      return;
+    }
     var wb = el.closest ? el.closest('[data-wish]') : null;
     if (wb) {
       ev.preventDefault(); ev.stopPropagation();
@@ -1577,11 +1726,11 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     }
     if (c && c.hasAttribute('data-type')) {
       S.ui.type = c.getAttribute('data-type'); S.limit = 24;
-      renderAll(); return;
+      saveUi(); renderAll(); return;
     }
     if (c && c.hasAttribute('data-region')) {
       S.ui.region = c.getAttribute('data-region'); S.limit = 24;
-      renderAll(); return;
+      regionOpen(false); saveUi(); renderAll(); return;
     }
     if (c && c.hasAttribute('data-excl')) {
       var ek = c.getAttribute('data-excl');
@@ -1591,11 +1740,11 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     }
     if (c && c.hasAttribute('data-plat')) {
       S.ui.plat = c.getAttribute('data-plat'); S.limit = 24;
-      renderAll(); return;
+      saveUi(); renderAll(); return;
     }
     if (c && c.hasAttribute('data-cat')) {
       S.ui.cat = c.getAttribute('data-cat'); S.limit = 24;
-      renderAll(); return;
+      saveUi(); renderAll(); return;
     }
     if (c && c.hasAttribute('data-kw')) {
       S.ui.q = c.getAttribute('data-kw');
@@ -1637,7 +1786,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       } else if (what === 'cat') { S.ui.cat = 'all'; }
       else if (what === 'type') { S.ui.type = 'all'; }
       else if (what === 'region') { S.ui.region = 'all'; }
-      else if (what === 'excl') { S.excl = { ai: false, cost: false, visit: false, payback: false, jigan: false }; saveExcl(); }
+      else if (what === 'excl') { S.excl = { ai: false, cost: false, visit: false, payback: false, jigan: false, face: false }; saveExcl(); }
       else if (what === 'plat') { S.ui.plat = 'all'; }
       else if (what === 'wish') { S.ui.wish = false; }
       else if (what === 'q') { S.ui.q = ''; var q4 = $('q'); if (q4) q4.value = ''; }
@@ -1660,6 +1809,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   applyTheme(currentTheme());
   loadWish();
   loadExcl();
+  loadUi();          /* 마지막으로 고른 유형·플랫폼·분류·지역 복원 */
   loadDeals();
 
   fetch(CONFIG.dataUrl, { cache: 'no-store' })
