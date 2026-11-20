@@ -16,6 +16,15 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="체험단ZIP">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>
+/* 테마 선초기화 — 첫 페인트 전에 적용해 깜빡임 방지 */
+(function () {
+  try {
+    var t = localStorage.getItem('review_zip_theme');
+    if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+  } catch (e) {}
+})();
+</script>
 <style>
 :root{
   --bg:#070b14; --bg2:#0b1220; --panel:rgba(15,23,42,.66); --panel2:rgba(10,16,28,.92);
@@ -206,6 +215,8 @@ section.block{margin-top:20px}
 
 /* monetize */
 .money{display:grid;gap:10px;grid-template-columns:1.25fr 1fr;margin-top:20px}
+.money3{display:grid;gap:10px;grid-template-columns:repeat(3,1fr)}
+@media (max-width:900px){.money3{grid-template-columns:1fr}}
 @media (max-width:760px){.money{grid-template-columns:1fr}.statrow{grid-template-columns:repeat(2,1fr)}}
 .adslot{
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center;
@@ -256,6 +267,120 @@ footer .ln b{color:#a9bdd6}
   .st .v{font-size:17px}
 }
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+
+/* ================= ☀️ 라이트 테마 ================= */
+html[data-theme="light"]{
+  --bg:#f4f6fb; --bg2:#e9eef7; --panel:rgba(255,255,255,.94); --panel2:#ffffff;
+  --line:rgba(15,23,42,.10); --line2:rgba(15,23,42,.18);
+  --txt:#151d2a; --mut:#5a6a80; --mut2:#7b8ba0;
+  --cy:#0b6fc4; --cy2:#0b8ede; --vi:#6d4ce0; --am:#b45309; --rs:#e11d48;
+  --ok:#059669; --warn:#b45309; --bad:#dc2626;
+  --sh:0 16px 34px rgba(15,23,42,.10);
+}
+html[data-theme="light"] body{background:var(--bg);color:var(--txt)}
+html[data-theme="light"] body::before{
+  background:
+    radial-gradient(110% 70% at 50% -10%,#ffffff 0%,#eef3fb 45%,#f4f6fb 100%),
+    radial-gradient(60% 45% at 92% 4%,rgba(251,191,36,.20),transparent 70%),
+    radial-gradient(55% 40% at 4% 18%,rgba(167,139,250,.16),transparent 70%);
+}
+html[data-theme="light"] body::after{opacity:.5;background-image:radial-gradient(rgba(15,23,42,.10) 1px,transparent 1px)}
+html[data-theme="light"] .logo{background:linear-gradient(150deg,#fde68a,#fecdd3);border-color:#fcd34d;box-shadow:0 10px 22px rgba(251,191,36,.22) inset}
+html[data-theme="light"] .brand h1 span{color:#b45309}
+html[data-theme="light"] .brand p{color:var(--mut)}
+html[data-theme="light"] .pill{background:#fff;border-color:var(--line2);color:#33415a}
+html[data-theme="light"] .pill:hover{background:#eff6fd;border-color:#93c5fd;color:#0b4f86}
+html[data-theme="light"] .pill.mine{background:linear-gradient(135deg,#e0f2fe,#ede9fe);border-color:#bfdbfe;color:#0b4f86}
+html[data-theme="light"] .hero h2 em{background:linear-gradient(120deg,#b45309,#e11d48 70%);-webkit-background-clip:text;background-clip:text;color:transparent}
+html[data-theme="light"] .st{background:#fff;border-color:var(--line);box-shadow:0 8px 20px rgba(15,23,42,.06)}
+html[data-theme="light"] .st .v{color:#16202e}
+html[data-theme="light"] .st.hot .v{color:#b45309}
+html[data-theme="light"] .st.cool .v{color:#047857}
+html[data-theme="light"] .controls{background:linear-gradient(180deg,rgba(244,246,251,.97),rgba(244,246,251,.86) 72%,rgba(244,246,251,0))}
+html[data-theme="light"] .field,html[data-theme="light"] .sel{background:#fff;border-color:var(--line2);color:#1f2a3a}
+html[data-theme="light"] .field input{color:#1f2a3a}
+html[data-theme="light"] .field input::placeholder{color:#94a3b8}
+html[data-theme="light"] .btn{background:#fff;border-color:var(--line2);color:#33415a}
+html[data-theme="light"] .btn:hover{background:#eef2f8}
+html[data-theme="light"] .chip{background:#fff;border-color:var(--line);color:#3c4b60}
+html[data-theme="light"] .chip:hover{background:#eef2f8}
+html[data-theme="light"] .chip.on{background:linear-gradient(135deg,#fef3c7,#ffe4e6);border-color:#fbbf24;color:#7c2d12}
+html[data-theme="light"] .chip .c{background:rgba(15,23,42,.07);color:#475569}
+html[data-theme="light"] .chip.on .c{background:rgba(255,255,255,.7);color:#7c2d12}
+html[data-theme="light"] .card{background:#fff;border-color:var(--line);box-shadow:0 8px 20px rgba(15,23,42,.07)}
+html[data-theme="light"] .card:hover{border-color:#fbbf24;box-shadow:0 14px 28px rgba(15,23,42,.12)}
+html[data-theme="light"] .card h4{color:#16202e}
+html[data-theme="light"] .card .offer{color:#5a6a80}
+html[data-theme="light"] .card .m{color:#5a6a80}
+html[data-theme="light"] .card .m b{color:#16202e}
+html[data-theme="light"] .card .m.cool b{color:#047857}
+html[data-theme="light"] .card .m.hot b{color:#be123c}
+html[data-theme="light"] .card .go{color:#94a3b8}
+html[data-theme="light"] .card:hover .go{color:#b45309}
+html[data-theme="light"] .honey{background:linear-gradient(150deg,#fffbeb,#fff1f2);border-color:#fcd34d;box-shadow:0 14px 30px rgba(251,191,36,.16)}
+html[data-theme="light"] .honey .hhead h3{color:#7c2d12}
+html[data-theme="light"] .honey .hhead .tag{background:#fef3c7;border-color:#fbbf24;color:#92400e}
+html[data-theme="light"] .honey .hsub{color:#9a6b1f}
+html[data-theme="light"] .shead h3{color:#16202e}
+html[data-theme="light"] .shead .n{background:#fef3c7;border-color:#fbbf24;color:#92400e}
+html[data-theme="light"] .kwtag{background:#f5f0ff;border-color:#ddd6fe;color:#4c1d95}
+html[data-theme="light"] .kwtag:hover{background:#ede9fe}
+html[data-theme="light"] .adslot{background:#fff;border-color:#cbd5e1}
+html[data-theme="light"] .adslot .lbl{color:#94a3b8}
+html[data-theme="light"] .adslot .txt{color:#475569}
+html[data-theme="light"] .adslot .small{color:#94a3b8}
+html[data-theme="light"] .promo{background:linear-gradient(140deg,#e0f2fe,#ede9fe);border-color:#bfdbfe}
+html[data-theme="light"] .promo .tx b{color:#0b4f86}
+html[data-theme="light"] .promo .tx span{color:#4b5b70}
+html[data-theme="light"] .promo .arw{color:#0b6fc4}
+html[data-theme="light"] .promo .ic{background:#fff;border-color:#bfdbfe}
+html[data-theme="light"] .notice{background:#eef2f8;border-color:var(--line);color:#4b5b70}
+html[data-theme="light"] footer{border-color:var(--line)}
+html[data-theme="light"] footer .ln{color:#5a6a80}
+html[data-theme="light"] footer .ln b{color:#33415a}
+html[data-theme="light"] .src{background:#fff;border-color:var(--line);color:#4b5b70}
+html[data-theme="light"] #toast .t{background:#fff;border-color:var(--line2);color:#16202e;box-shadow:0 12px 30px rgba(15,23,42,.16)}
+html[data-theme="light"] .cat{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+html[data-theme="light"] .dd{background:#eef2f8;color:#475569;border-color:var(--line)}
+html[data-theme="light"] .dd.s0{background:#fee2e2;color:#b91c1c;border-color:#fca5a5}
+html[data-theme="light"] .dd.s1{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+html[data-theme="light"] .dd.s3{background:#fef9c3;color:#854d0e;border-color:#fde68a}
+html[data-theme="light"] .flag.visit{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
+html[data-theme="light"] .flag.ship{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+html[data-theme="light"] .flag.under{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
+html[data-theme="light"] .pb.revu{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+html[data-theme="light"] .pb.reviewnote{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
+html[data-theme="light"] .pb.dinnerqueen{background:#ffe4e6;color:#9f1239;border-color:#fecdd3}
+html[data-theme="light"] .pb.mrblog{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+html[data-theme="light"] .pb.gangnam{background:#dcfce7;color:#166534;border-color:#bbf7d0}
+html[data-theme="light"] .empty{color:#5a6a80}
+html[data-theme="light"] .themeBtn{background:#fff;border-color:var(--line2);color:#33415a}
+
+/* ---------- ✈️ 가족 특가 섹션 ---------- */
+.dgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(232px,1fr))}
+.dcard{display:flex;flex-direction:column;gap:5px;padding:12px;border-radius:15px;text-decoration:none;color:inherit;
+  background:linear-gradient(160deg,rgba(14,26,42,.92),rgba(9,15,26,.94));border:1px solid var(--line);
+  transition:transform .14s ease,border-color .16s ease,box-shadow .18s ease}
+.dcard:hover{transform:translateY(-2px);border-color:rgba(56,189,248,.45);box-shadow:0 14px 28px rgba(0,0,0,.3)}
+.dcard .dtop{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.dcard .dcat{font-size:9.5px;font-weight:900;padding:2.5px 7px;border-radius:7px;background:rgba(56,189,248,.13);color:#bae6fd;border:1px solid rgba(56,189,248,.24)}
+.dcard .dpct{margin-left:auto;font-size:10px;font-weight:900;padding:2.5px 7px;border-radius:7px;background:rgba(248,113,113,.16);color:#fecaca;border:1px solid rgba(248,113,113,.34)}
+.dcard h4{font-size:13px;font-weight:900;letter-spacing:-.03em;line-height:1.36;color:#eaf2fd;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:keep-all}
+.dcard .dprice{display:flex;align-items:baseline;gap:6px;margin-top:2px}
+.dcard .dprice b{font-size:15px;font-weight:900;color:#fde68a;letter-spacing:-.03em}
+.dcard .dprice s{font-size:10.5px;color:var(--mut2);font-weight:700}
+.dcard .dplace{font-size:10.5px;font-weight:700;color:var(--mut)}
+.dcard .dnote{font-size:10px;font-weight:700;color:var(--mut2);line-height:1.5}
+html[data-theme="light"] .dcard{background:#fff;border-color:var(--line);box-shadow:0 8px 20px rgba(15,23,42,.07)}
+html[data-theme="light"] .dcard:hover{border-color:#7dd3fc;box-shadow:0 14px 28px rgba(15,23,42,.12)}
+html[data-theme="light"] .dcard .dcat{background:#e0f2fe;color:#075985;border-color:#bae6fd}
+html[data-theme="light"] .dcard .dpct{background:#ffe4e6;color:#9f1239;border-color:#fecdd3}
+html[data-theme="light"] .dcard h4{color:#16202e}
+html[data-theme="light"] .dcard .dprice b{color:#b45309}
+html[data-theme="light"] .dcard .dprice s{color:#94a3b8}
+html[data-theme="light"] .dcard .dplace{color:#5a6a80}
+html[data-theme="light"] .dcard .dnote{color:#7b8ba0}
 </style>
 </head>
 
@@ -272,7 +397,9 @@ footer .ln b{color:#a9bdd6}
     <nav class="navpills">
       <a class="pill mine" href="revu-studio.html" title="내 전용 리뷰 스튜디오">🛍️ 내 리뷰 스튜디오</a>
       <a class="pill" href="deals.html" title="패밀리 특가 레이더">✈️ 특가 레이더</a>
+      <a class="pill" href="picks.html" title="SNS 핫템 최저가">🎁 핫템 PICK</a>
       <a class="pill" href="index.html" title="증시 관제탑">📈 관제탑</a>
+      <button class="pill themeBtn" id="themeBtn" type="button" aria-label="테마 전환">☀️ 밝은 테마</button>
       <button class="pill hide" id="installBtn" type="button">📲 설치</button>
     </nav>
   </div>
@@ -354,26 +481,49 @@ footer .ln b{color:#a9bdd6}
     <div class="notice" id="srcNotice">데이터를 불러오는 중…</div>
   </section>
 
-  <!-- 광고/제휴 슬롯 -->
+  <!-- ✈️ 오늘의 가족 특가 (패밀리 특가 레이더 실제 데이터) -->
+  <section class="block" id="dealSec">
+    <div class="shead">
+      <h3>✈️ 오늘의 가족 특가</h3>
+      <span class="sub" id="dealSub">패밀리 특가 레이더에서 가져옵니다</span>
+      <a class="btn" href="deals.html" style="margin-left:auto;padding:7px 12px;font-size:11.5px">특가 레이더 전체보기 →</a>
+    </div>
+    <div class="dgrid" id="dealGrid">
+      <div class="adslot" style="grid-column:1/-1">
+        <span class="lbl">Loading</span><span class="txt">특가 데이터를 불러오는 중…</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 같이 쓰는 페이지 + 광고/제휴 슬롯 -->
   <section class="block">
-    <div class="money">
+    <div class="shead">
+      <h3>🧭 함께 쓰는 페이지</h3>
+      <span class="sub">체험단 · 가족 특가 · 핫템 최저가</span>
+    </div>
+    <div class="money3">
+      <a class="promo" href="revu-studio.html">
+        <span class="ic" aria-hidden="true">🛍️</span>
+        <span class="tx"><b>내 리뷰 스튜디오</b><span>당첨 확률 · 신청 멘트 · 리뷰 초안 · 마감 트래커</span></span>
+        <span class="arw" aria-hidden="true">↗</span>
+      </a>
+      <a class="promo" href="deals.html">
+        <span class="ic" aria-hidden="true">✈️</span>
+        <span class="tx"><b>패밀리 특가 레이더</b><span>여행·키즈·글램핑 실시간 특가를 매일 아침 스캔</span></span>
+        <span class="arw" aria-hidden="true">↗</span>
+      </a>
+      <a class="promo" href="picks.html">
+        <span class="ic" aria-hidden="true">🎁</span>
+        <span class="tx"><b>연오랑 PICK</b><span>SNS 핫템을 인스타 판매가 대신 쿠팡·직구 최저가로</span></span>
+        <span class="arw" aria-hidden="true">↗</span>
+      </a>
+    </div>
+    <div class="money" style="margin-top:10px">
       <div class="adslot" id="adTop">
         <span class="lbl">Advertisement</span>
         <span class="txt">구글 애드센스 광고 자리</span>
         <span class="small">승인 후 이 영역에 광고가 표시됩니다</span>
       </div>
-      <a class="promo" href="deals.html">
-        <span class="ic" aria-hidden="true">✈️</span>
-        <span class="tx"><b>패밀리 특가 레이더</b><span>동탄 4인 가족 여행·키즈·식품 특가를 매일 아침 갱신</span></span>
-        <span class="arw" aria-hidden="true">↗</span>
-      </a>
-    </div>
-    <div class="money" style="grid-template-columns:1fr 1.25fr">
-      <a class="promo" href="revu-studio.html">
-        <span class="ic" aria-hidden="true">🛍️</span>
-        <span class="tx"><b>내 리뷰 스튜디오</b><span>당첨 확률 계산 · 신청 한마디 · 리뷰 초안 · 마감 트래커</span></span>
-        <span class="arw" aria-hidden="true">↗</span>
-      </a>
       <div class="adslot" id="adBottom">
         <span class="lbl">Advertisement</span>
         <span class="txt">쿠팡 파트너스 추천 상품 자리</span>
@@ -700,6 +850,52 @@ footer .ln b{color:#a9bdd6}
     }
   }
 
+  /* ---------------------------------------------------------------- 가족 특가 */
+  function escNum(s) { return String(s == null ? '' : s); }
+  function renderDeals(data) {
+    var items = (data && data.items) || [];
+    if (!items.length) {
+      $('dealSec').classList.add('hide');
+      return;
+    }
+    var list = items.slice().sort(function (a, b) { return num(b.discountPct) - num(a.discountPct); }).slice(0, 6);
+    var at = data.updatedAt ? String(data.updatedAt).slice(5, 16).replace('T', ' ') : '';
+    $('dealSub').textContent = (at ? at + ' 갱신 · ' : '') + '할인율 높은 순 ' + list.length + '개 · ' + (data.total || items.length) + '건 중';
+    $('dealGrid').innerHTML = list.map(function (it) {
+      var pct = num(it.discountPct);
+      return '<a class="dcard" href="' + esc(it.url || 'deals.html') + '" target="_blank" rel="noopener nofollow">' +
+        '<div class="dtop"><span class="dcat">' + esc(it.category || '특가') + '</span>' +
+          (pct ? '<span class="dpct">-' + (Math.round(pct * 10) / 10) + '%</span>' : '') + '</div>' +
+        '<h4>' + esc(it.title || '') + '</h4>' +
+        '<div class="dprice"><b>' + esc(it.price || '가격 확인') + '</b>' +
+          (it.origPrice ? '<s>' + esc(it.origPrice) + '</s>' : '') + '</div>' +
+        (it.place ? '<div class="dplace">' + esc(it.place) + '</div>' : '') +
+        (it.note ? '<div class="dnote">' + esc(it.note) + '</div>' : '') +
+      '</a>';
+    }).join('');
+  }
+  function loadDeals() {
+    fetch('data/latest-deals.json', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(renderDeals)
+      .catch(function () {
+        $('dealGrid').innerHTML = '<div class="empty" style="grid-column:1/-1">특가 데이터를 불러오지 못했습니다. <a href="deals.html">특가 레이더</a>에서 직접 보세요.</div>';
+      });
+  }
+
+  /* ---------------------------------------------------------------- 테마 */
+  var THEME_KEY = 'review_zip_theme';
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    var b = $('themeBtn');
+    if (b) b.textContent = t === 'light' ? '🌙 다크 테마' : '☀️ 밝은 테마';
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', t === 'light' ? '#f4f6fb' : '#070b14');
+  }
+  function currentTheme() {
+    return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+  }
+
   /* ---------------------------------------------------------------- 이벤트 */
   var qTimer = null;
   document.addEventListener('input', function (ev) {
@@ -731,6 +927,12 @@ footer .ln b{color:#a9bdd6}
       return;
     }
     if (el && el.id === 'moreBtn') { S.limit += 24; renderList(); return; }
+    if (el && el.id === 'themeBtn') {
+      var next = currentTheme() === 'light' ? 'dark' : 'light';
+      applyTheme(next);
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) {}
+      return;
+    }
     if (el && el.id === 'resetBtn') {
       S.ui = { plat: 'all', cat: 'all', q: '', sort: 'deadline' };
       S.limit = 24;
@@ -751,8 +953,7 @@ footer .ln b{color:#a9bdd6}
 
   fetch(CONFIG.dataUrl, { cache: 'no-store' })
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(boot)
-    .catch(function () {
+    .then(boot)    .catch(function () {
       try {
         var cached = localStorage.getItem('review_zip_cache');
         if (cached) { boot(JSON.parse(cached)); return; }
@@ -764,6 +965,9 @@ footer .ln b{color:#a9bdd6}
     .then(function () {
       if (S.rows.length) { try { localStorage.setItem('review_zip_cache', JSON.stringify({ meta: S.meta, campaigns: S.rows })); } catch (e) {} }
     });
+
+  applyTheme(currentTheme());
+  loadDeals();
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
