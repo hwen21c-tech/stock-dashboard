@@ -1307,14 +1307,16 @@
     </div>
     <div class="elrow">
       <label class="flabel" for="elVoice">성우</label>
-      <select id="elVoice" aria-label="ElevenLabs 성우"></select>
+      <select id="elVoice" aria-label="성우 (한국어 무료 · ElevenLabs)"></select>
+      <button class="btn small ghost" id="elVoiceRefresh" type="button" title="ElevenLabs 키로 내 계정 보이스 다시 불러오기">🔄</button>
       <label class="flabel" for="elModel">모델</label>
       <select id="elModel" aria-label="ElevenLabs 모델">
         <option value="eleven_multilingual_v2">eleven_multilingual_v2 · 자연스러움(기본)</option>
         <option value="eleven_flash_v2_5">eleven_flash_v2_5 · 빠르고 저렴</option>
       </select>
     </div>
-    <div class="keyhint">키는 이 브라우저(<code>localStorage</code>)에만 저장되고 <b>api.elevenlabs.io</b> 로만 전송됩니다. 서버·GitHub 저장소에는 저장되지 않습니다.</div>
+    <div class="keyhint">🇰🇷 <b>한국어 무료 성우</b>는 위 목록 첫 줄에서 고르면 <b>키 없이·크레딧 0</b>으로 바로 나옵니다. 파일은 <code>/api/tts</code> 로 만들어지고 <b>서버에 저장되지 않습니다</b>.</div>
+    <div class="keyhint">키는 이 브라우저(<code>localStorage</code>)에만 저장되고 <b>api.elevenlabs.io</b> 로만 전송됩니다. 서버·GitHub 저장소에는 저장되지 않습니다. 키를 저장하면 <b>내 계정 보이스</b>를 자동으로 불러옵니다([🔄]로 새로고침).</div>
   </div>
 </div>
 
@@ -2254,7 +2256,13 @@
         </div>
         <div class="wvrow">
           <label class="flabel" for="wvVoice" style="flex:0 0 auto">성우</label>
-          <select id="wvVoice" aria-label="ElevenLabs 성우"></select>
+          <select id="wvVoice" aria-label="성우 (한국어 무료 · ElevenLabs)"></select>
+          <button class="btn small ghost" id="wvVoiceRefresh" type="button" title="ElevenLabs 키로 내 계정 보이스 다시 불러오기">🔄 내 보이스</button>
+        </div>
+        <div class="wvrow" style="flex-wrap:nowrap;align-items:center">
+          <label class="flabel" for="wvSpeed" style="flex:0 0 auto">말 속도</label>
+          <input type="range" id="wvSpeed" min="0.90" max="1.25" step="0.01" value="1" style="flex:1 1 120px;min-width:0;accent-color:#38bdf8" aria-label="성우 말 속도">
+          <output id="wvSpeedTag" for="wvSpeed" style="flex:0 0 auto;margin-left:8px;font-weight:900;font-variant-numeric:tabular-nums">1.00x</output>
         </div>
         <div class="wvrow">
           <label class="flabel" for="wvBgm" style="flex:0 0 auto">BGM</label>
@@ -2280,7 +2288,7 @@
         <div class="flabel">📈 차트 데이터 (선택 · 모션 차트형에서만 사용)</div>
         <textarea id="wvChartData" rows="3" placeholder="코스피, 5092&#10;코스닥, 671" aria-label="모션 차트 데이터 수동 입력"></textarea>
         <div class="hint">한 줄에 <b>이름, 값</b> (예: <b>코스피, 5092</b>). 입력하면 대본 자동 파싱보다 우선하며 모든 컷에 같은 비교표를 씁니다. 비우면 컷의 숫자를 읽고, 수치가 없는 컷은 카드형으로 대체합니다.</div>
-        <div class="flabel">📷 컷 배경 사진 (최대 3장 · 컷 순서대로 돌아가며 Ken Burns 줌인)</div>
+        <div class="flabel">📷 컷 배경 사진 (최대 4장 · 컷마다 자동 순환 배분 · 부드러운 Ken Burns 줌인/패닝)</div>
         <div class="wvrow">
           <button class="btn small" id="wvPhotoBtn" type="button">사진 고르기</button>
           <button class="btn small ghost" id="wvPhotoClear" type="button">비우기</button>
@@ -4596,6 +4604,261 @@ const GEN_ACTIONS = [
     primary: MODEL_ORDER[0]
   };
 })();
+</script>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   🎙️ CSVoice — 스튜디오 v2 통합 성우 엔진
+   ─ 1) 🇰🇷 한국어 무료 성우 (Microsoft Edge 신경망 · /api/tts · 키 없이 무제한)
+   ─ 2) 🎙️ ElevenLabs 성우 (내 키 · 기본 6종 + 내 계정 보이스 자동 불러오기)
+   ─ 드롭다운은 <optgroup> 두 줄로 나뉘고, 두 엔진 모두 같은 함수로 합성한다.
+   ══════════════════════════════════════════════════════════════════ */
+var CSVoice = (function () {
+  'use strict';
+  var ORIGIN = 'https://stock-dashboard-live-6frm.vercel.app';
+  /* 정적(GitHub Pages)은 동적 서버 /api/tts 를 부르고, 동적(content-v2)은 같은 도메인을 쓴다 */
+  var HAS_SERVER = !(window.CSAI && typeof window.CSAI.run === 'function');
+  var EL_KEY = 'cs_elevenlabs_api_key';
+  var EL_CACHE = 'cs_elevenlabs_voices_v1';
+
+  function base() { return HAS_SERVER ? '' : ORIGIN; }
+  function elKey() {
+    try { return String(localStorage.getItem(EL_KEY) || '').trim(); } catch (e) { return ''; }
+  }
+
+  /* 한국어 무료 성우 — /api/tts?voices=1 실측 검증 3종 (+ 어제 쇼핑 쇼츠 v2 톤 프리셋) */
+  var KO = [
+    { key: 'ko:ko-KR-SunHiNeural:bright', voice: 'ko-KR-SunHiNeural', pitch: '+2Hz', speed: 1.12,
+      name: '선히 · 릴스·쇼핑 밝은 톤 (어제 쇼츠 v2 · 속도 1.12x)' },
+    { key: 'ko:ko-KR-SunHiNeural', voice: 'ko-KR-SunHiNeural', pitch: '+0Hz',
+      name: '선히 · 기본 (맑고 밝은 여성)' },
+    { key: 'ko:ko-KR-InJoonNeural', voice: 'ko-KR-InJoonNeural', pitch: '+0Hz',
+      name: '인준 · 차분한 남성 (시황·정보)' },
+    { key: 'ko:ko-KR-HyunsuMultilingualNeural', voice: 'ko-KR-HyunsuMultilingualNeural', pitch: '+0Hz',
+      name: '현수 · 또렷한 남성 (다국어)' }
+  ];
+
+  /* ElevenLabs 기본 6종 (계정 보이스는 /v1/voices 로 추가된다) */
+  var EL_DEF = [
+    { a: 'charlie', id: 'IKne3meq5aSn9XLyUdCD', n: 'Charlie · 깊고 자신감 있는 남성' },
+    { a: 'liam', id: 'TX3LPaxmHKxFdv7VOQHJ', n: 'Liam · 에너지 넘치는 크리에이터' },
+    { a: 'brian', id: 'nPczCjzI2devNBz1zQrb', n: 'Brian · 낮고 안정적인 목소리' },
+    { a: 'george', id: 'JBFqnCBsd6RMkjVDRZzb', n: 'George · 따뜻한 스토리텔러' },
+    { a: 'jessica', id: 'cgSgspJ2msm6clMCkdW9', n: 'Jessica · 밝고 경쾌한 여성' },
+    { a: 'sarah', id: 'EXAVITQu4vr4xnSDxMaL', n: 'Sarah · 성숙하고 단단한 여성' }
+  ];
+
+  function cacheGet() {
+    try {
+      var v = JSON.parse(localStorage.getItem(EL_CACHE) || 'null');
+      return Array.isArray(v) ? v : [];
+    } catch (e) { return []; }
+  }
+  function cacheSet(list) {
+    try { localStorage.setItem(EL_CACHE, JSON.stringify(list)); } catch (e) {}
+  }
+  function elList() {
+    var out = EL_DEF.map(function (v) { return { id: v.id, n: v.n, a: v.a, mine: false }; });
+    cacheGet().forEach(function (v) {
+      if (!v || !v.id || !v.n) return;
+      if (out.some(function (o) { return o.id === v.id; })) return;
+      out.push({ id: v.id, n: v.n, mine: true, lang: v.lang || '' });
+    });
+    return out;
+  }
+
+  function koFind(key) {
+    for (var i = 0; i < KO.length; i++) if (KO[i].key === key) return KO[i];
+    return null;
+  }
+  function elFind(id) {
+    var list = elList();
+    for (var i = 0; i < list.length; i++) if (list[i].id === id) return list[i];
+    return null;
+  }
+
+  /* 어떤 키(새 형식·예전 별칭·예전 voice_id)든 하나의 성우 객체로 */
+  function resolve(key) {
+    var k = String(key == null ? '' : key).trim();
+    var ko = koFind(k);
+    if (ko) return { engine: 'ko', key: ko.key, id: ko.voice, voice: ko.voice, pitch: ko.pitch || '+0Hz', name: ko.name, speedHint: ko.speed || 0, n: ko.name };
+    if (k.indexOf('ko:') === 0) {
+      var v0 = k.slice(3);
+      var hit = null;
+      for (var i = 0; i < KO.length; i++) if (KO[i].voice === v0) hit = KO[i];
+      if (hit) return { engine: 'ko', key: hit.key, id: hit.voice, voice: hit.voice, pitch: hit.pitch || '+0Hz', name: hit.name, speedHint: hit.speed || 0, n: hit.name };
+    }
+    if (k.indexOf('el:') === 0) {
+      var id = k.slice(3);
+      var v = elFind(id);
+      return { engine: 'el', key: 'el:' + id, id: id, name: v ? v.n : id, n: v ? v.n : id };
+    }
+    var byId = elFind(k);
+    if (byId) return { engine: 'el', key: 'el:' + byId.id, id: byId.id, name: byId.n, n: byId.n };
+    for (var j = 0; j < EL_DEF.length; j++) if (EL_DEF[j].a === k) {
+      return { engine: 'el', key: 'el:' + EL_DEF[j].id, id: EL_DEF[j].id, name: EL_DEF[j].n, n: EL_DEF[j].n };
+    }
+    return { engine: 'ko', key: KO[0].key, id: KO[0].voice, voice: KO[0].voice, pitch: KO[0].pitch, name: KO[0].name, speedHint: KO[0].speed, n: KO[0].name };
+  }
+
+  function selectValueFor(key) {
+    var v = resolve(key);
+    return v.engine === 'ko' ? v.key : ('el:' + v.id);
+  }
+
+  /* 드롭다운 채우기 — <optgroup> 2줄 */
+  function fill(sel, curKey) {
+    if (!sel) return;
+    sel.setAttribute('data-csv', '1');
+    var want = selectValueFor(curKey == null ? sel.value : curKey);
+    var doc = sel.ownerDocument || document;
+    while (sel.firstChild) sel.removeChild(sel.firstChild);
+
+    var g1 = doc.createElement('optgroup');
+    g1.label = '🇰🇷 한국어 무료 성우 (키 없이 무제한)';
+    KO.forEach(function (v) {
+      var o = doc.createElement('option');
+      o.value = v.key; o.textContent = v.name;
+      g1.appendChild(o);
+    });
+    sel.appendChild(g1);
+
+    var g2 = doc.createElement('optgroup');
+    g2.label = '🎙️ ElevenLabs 성우 (API 키 필요)';
+    elList().forEach(function (v) {
+      var o = doc.createElement('option');
+      o.value = 'el:' + v.id;
+      o.textContent = v.n + (v.mine ? ' · 내 계정' : '');
+      g2.appendChild(o);
+    });
+    sel.appendChild(g2);
+
+    sel.value = want;
+    if (sel.selectedIndex < 0) sel.value = KO[0].key;
+  }
+
+  function refreshAll() {
+    var list = document.querySelectorAll('select[data-csv]');
+    for (var i = 0; i < list.length; i++) fill(list[i], list[i].value);
+  }
+
+  /* 내 계정 보이스 불러오기 (GET /v1/voices) */
+  var loading = null;
+  function loadEl(force) {
+    var key = elKey();
+    if (!key) return Promise.reject(new Error('no_key'));
+    if (loading) return loading;
+    /* 캐시가 있으면 먼저 보여 주고, force 또는 캐시 없음일 때만 서버로 간다 */
+    if (!force && cacheGet().length) { refreshAll(); }
+    loading = fetch('https://api.elevenlabs.io/v1/voices', {
+      headers: { 'xi-api-key': key },
+      cache: 'no-store'
+    }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      var list = (j && j.voices) || [];
+      var slim = list.slice(0, 120).map(function (v) {
+        var lb = v.labels || {};
+        var bits = [];
+        if (lb.language) bits.push(lb.language);
+        if (lb.gender) bits.push(lb.gender);
+        if (lb.accent) bits.push(lb.accent);
+        return { id: v.voice_id, n: (v.name || '내 보이스') + (bits.length ? ' · ' + bits.join(' · ') : ''), lang: lb.language || '' };
+      }).filter(function (v) { return v.id; });
+      cacheSet(slim);
+      refreshAll();
+      loading = null;
+      return slim.length;
+    }).catch(function (e) { loading = null; throw e; });
+    return loading;
+  }
+
+  /* 1.12 → "+12%" */
+  function pct(speed) {
+    var s = Number(speed);
+    if (!isFinite(s) || s <= 0) s = 1;
+    var p = Math.round((s - 1) * 100);
+    return (p >= 0 ? '+' : '') + p + '%';
+  }
+
+  function friendly(res) {
+    if (res.status === 401) return 'ElevenLabs 키가 올바르지 않습니다(401).';
+    if (res.status === 402) return 'ElevenLabs 무료 크레딧을 다 썼습니다(402).';
+    if (res.status === 429) return '요청이 너무 잦습니다(429). 잠시 뒤 다시 시도해 주세요.';
+    return '음성 서버 오류 ' + res.status;
+  }
+
+  /* 합성 — kind: 'blob' | 'arraybuffer' */
+  function request(text, key, speed, kind) {
+    var v = resolve(key);
+    var body = String(text == null ? '' : text).replace(/\*\*/g, '').trim();
+    if (!body) return Promise.reject(new Error('읽을 문장이 없습니다.'));
+    var want = kind === 'arraybuffer' ? 'arrayBuffer' : 'blob';
+
+    if (v.engine === 'ko') {
+      return fetch(base() + '/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: body, voice: v.voice, rate: pct(speed), pitch: v.pitch || '+0Hz' })
+      }).then(function (r) {
+        if (!r.ok) return r.text().then(function (t) {
+          var reason = '';
+          try { reason = JSON.parse(t).reason || ''; } catch (e) { reason = String(t).slice(0, 80); }
+          throw new Error('한국어 성우 오류 ' + r.status + (reason ? ' (' + reason + ')' : ''));
+        });
+        return r[want]();
+      }).then(function (out) {
+        if ((kind === 'arraybuffer' && out.byteLength < 800) || (want === 'blob' && out.size < 800)) {
+          throw new Error('음성이 비어 있습니다. 잠시 뒤 다시 시도해 주세요.');
+        }
+        return out;
+      });
+    }
+
+    var k = elKey();
+    if (!k) return Promise.reject(new Error('ElevenLabs API 키가 없습니다 — 한국어 무료 성우를 고르면 키 없이 됩니다.'));
+    return fetch('https://api.elevenlabs.io/v1/text-to-speech/' + v.id + '?output_format=mp3_44100_128', {
+      method: 'POST',
+      headers: { 'xi-api-key': k, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text: body.slice(0, 4500),
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: { stability: 0.42, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
+      })
+    }).then(function (r) {
+      if (!r.ok) throw new Error(friendly(r));
+      return r[want]();
+    });
+  }
+
+  function ready(key) {
+    var v = resolve(key);
+    return v.engine === 'ko' ? true : !!elKey();
+  }
+  function label(key) {
+    var v = resolve(key);
+    return v.engine === 'ko' ? '한국어 무료 성우' : 'ElevenLabs';
+  }
+
+  /* 키가 저장돼 있으면 내 보이스 목록을 한 번 불러온다 */
+  function autoInit() {
+    var list = document.querySelectorAll('select[data-csv]');
+    for (var i = 0; i < list.length; i++) fill(list[i], list[i].value);
+    if (elKey()) {
+      try { loadEl(false).catch(function () {}); } catch (e) {}
+    }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', autoInit);
+  else setTimeout(autoInit, 0);
+
+  return {
+    KO: KO, EL_DEF: EL_DEF, resolve: resolve, selectValueFor: selectValueFor,
+    fill: fill, refreshAll: refreshAll, loadEl: loadEl, request: request,
+    ready: ready, label: label, elKey: elKey, pct: pct, list: elList
+  };
+})();
+
 </script>
 
 <script>
@@ -12726,7 +12989,9 @@ const GEN_ACTIONS = [
     return o;
   }
   function v2Voice(){
-    var a = v2GetRaw(V2.VOICE) || 'charlie', i;
+    var a = v2GetRaw(V2.VOICE) || 'ko:ko-KR-SunHiNeural';
+    if (window.CSVoice) return CSVoice.resolve(a);
+    var i;
     for (i = 0; i < V2.voices.length; i++) if (V2.voices[i].a === a) return V2.voices[i];
     return V2.voices[0];
   }
@@ -12752,14 +13017,16 @@ const GEN_ACTIONS = [
     if (mk) mk.textContent = v2Mask(k);
     var vs = $('#elVoice');
     if (vs){
-      if (!vs.options.length){
+      var saved = v2GetRaw(V2.VOICE) || 'ko:ko-KR-SunHiNeural';
+      if (window.CSVoice) CSVoice.fill(vs, saved);
+      else if (!vs.options.length){
         V2.voices.forEach(function (v) {
           var op = document.createElement('option');
           op.value = v.a; op.textContent = v.n;
           vs.appendChild(op);
         });
+        vs.value = v2Voice().a;
       }
-      vs.value = v2Voice().a;
     }
     var ms = $('#elModel');
     if (ms) ms.value = v2Model();
@@ -12800,6 +13067,18 @@ const GEN_ACTIONS = [
     });
     var vs = $('#elVoice');
     if (vs) vs.addEventListener('change', function () { v2SetRaw(V2.VOICE, vs.value); });
+    var vr = $('#elVoiceRefresh');
+    if (vr) vr.addEventListener('click', function () {
+      if (!v2Key()) { toast('ElevenLabs 키를 먼저 저장해 주세요 — 🇰🇷 한국어 무료 성우는 키 없이도 됩니다.'); return; }
+      if (!window.CSVoice) return;
+      vr.disabled = true;
+      CSVoice.loadEl(true).then(function (n) {
+        v2RenderSettings();
+        toast('내 보이스 ' + n + '개를 불러왔습니다.');
+      }).catch(function (e) {
+        toast('보이스 목록을 불러오지 못했습니다 — ' + ((e && e.message) || ''));
+      }).then(function () { vr.disabled = false; });
+    });
     var ms = $('#elModel');
     if (ms) ms.addEventListener('change', function () { v2SetRaw(V2.MODEL, ms.value); });
     var wm = $('#cvWmInput');
@@ -12827,49 +13106,53 @@ const GEN_ACTIONS = [
     return 'ElevenLabs 오류 ' + status + (msg ? ' — ' + msg : '');
   }
   function v2Speak(text, boxId, btn){
-    var key = v2Key();
     var box = boxId ? $('#' + boxId) : null;
     text = String(text == null ? '' : text).replace(/\*\*/g, '').replace(/[ \t]+/g, ' ').trim();
-    if (!key){
-      toast('ElevenLabs API 키를 먼저 넣어 주세요.');
+    var v = v2Voice();
+    var isEl = !(v && v.engine === 'ko');
+    if (isEl && !v2Key()){
+      toast('ElevenLabs API 키를 먼저 넣어 주세요 — 위 성우 목록 첫 줄의 🇰🇷 한국어 무료 성우는 키 없이 됩니다.');
       var g = $('#apiGuide'); if (g) { g.hidden = false; }
       var inp = $('#elKeyInput'); if (inp) inp.focus();
       if (box){
         box.hidden = false;
         box.innerHTML = '<div class="ttsh">🔑 ElevenLabs 키가 없습니다</div>' +
-          '<div class="ttsn">위 <b>Gemini 연결 안내</b> 안의 <b>ElevenLabs 성우 키</b> 칸에 <b>sk_…</b> 키를 붙여넣고 [저장]을 누르세요. 키는 이 브라우저에만 저장됩니다.</div>';
+          '<div class="ttsn">위 <b>Gemini 연결 안내</b> 안의 <b>ElevenLabs 성우 키</b> 칸에 <b>sk_…</b> 키를 붙여넣고 [저장]을 누르세요. 키는 이 브라우저에만 저장됩니다. 아니면 성우 목록에서 <b>🇰🇷 한국어 무료 성우</b>를 고르면 키 없이 바로 나옵니다.</div>';
       }
       return;
     }
     if (!text){ toast('읽을 대본이 없습니다.'); return; }
-    var chars = Array.from(text).length, LIMIT = 4500, cut = false;
+    var chars = Array.from(text).length, LIMIT = isEl ? 4500 : 4000, cut = false;
     if (chars > LIMIT){ text = Array.from(text).slice(0, LIMIT).join(''); cut = true; }
-    var v = v2Voice(), model = v2Model();
+    var model = isEl ? v2Model() : '한국어 무료 성우';
     if (btn && btn.dataset.orig == null){ btn.dataset.orig = btn.innerHTML; }
     if (btn){ btn.disabled = true; btn.innerHTML = '<span class="spin" aria-hidden="true"></span> 성우 녹음 중…'; }
-    fetch('https://api.elevenlabs.io/v1/text-to-speech/' + v.id + '?output_format=mp3_44100_128', {
-      method: 'POST',
-      headers: { 'xi-api-key': key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: text,
-        model_id: model,
-        voice_settings: { stability: 0.42, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
-      })
-    }).then(function (r) {
-      if (!r.ok){
-        return r.text().then(function (raw) {
-          var msg = '';
-          try { var j = JSON.parse(raw); msg = (j && j.detail && (j.detail.message || j.detail.status)) || (j && j.message) || ''; } catch (e) { msg = String(raw || '').slice(0, 120); }
-          throw new Error(v2TtsErr(r.status, msg));
-        });
-      }
-      return r.blob();
-    }).then(function (blob) {
+    var send = isEl
+      ? fetch('https://api.elevenlabs.io/v1/text-to-speech/' + v.id + '?output_format=mp3_44100_128', {
+          method: 'POST',
+          headers: { 'xi-api-key': v2Key(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text: text,
+            model_id: v2Model(),
+            voice_settings: { stability: 0.42, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
+          })
+        }).then(function (r) {
+          if (!r.ok){
+            return r.text().then(function (raw) {
+              var msg = '';
+              try { var j = JSON.parse(raw); msg = (j && j.detail && (j.detail.message || j.detail.status)) || (j && j.message) || ''; } catch (e) { msg = String(raw || '').slice(0, 120); }
+              throw new Error(v2TtsErr(r.status, msg));
+            });
+          }
+          return r.blob();
+        })
+      : (window.CSVoice ? CSVoice.request(text, v.key || '', 1, 'blob') : Promise.reject(new Error('성우 엔진을 불러오지 못했습니다.')));
+    send.then(function (blob) {
       if (V2.url){ try { URL.revokeObjectURL(V2.url); } catch (e) {} }
       V2.blob = blob; V2.url = URL.createObjectURL(blob);
       if (box){
         box.hidden = false;
-        box.innerHTML = '<div class="ttsh">🔊 ElevenLabs 미리듣기 — ' + esc(v.n) + ' · ' + esc(model) + '</div>' +
+        box.innerHTML = '<div class="ttsh">🔊 ' + (isEl ? 'ElevenLabs' : '🇰🇷 한국어 무료 성우') + ' 미리듣기 — ' + esc(v.n || v.name || '') + ' · ' + esc(model) + '</div>' +
           '<audio id="v2Audio" controls preload="auto" src="' + V2.url + '"></audio>' +
           '<div class="ttsn">' + chars + '자' + (cut ? ' → 4,500자까지만 읽었습니다(무료 크레딧 보호)' : '') +
           ' · 음성은 이 브라우저에서만 만들어지고 서버에 저장되지 않습니다.</div>';
@@ -12885,7 +13168,7 @@ const GEN_ACTIONS = [
         box.innerHTML = '<div class="ttsh" style="color:#fda4af">⚠️ 음성을 만들지 못했습니다</div>' +
           '<div class="ttsn">' + esc(err && err.message ? err.message : '알 수 없는 오류') + '</div>';
       }
-      toast('ElevenLabs 호출에 실패했습니다 — 사유를 카드에 적었습니다.');
+      toast('성우 호출에 실패했습니다 — 사유를 카드에 적었습니다.');
     }).then(function () {
       if (btn && btn.dataset.orig != null){ btn.disabled = false; btn.innerHTML = btn.dataset.orig; delete btn.dataset.orig; }
     });
@@ -13864,10 +14147,15 @@ const GEN_ACTIONS = [
     { id: 'EXAVITQu4vr4xnSDxMaL', n: 'Sarah · 성숙하고 단단한 여성' }
   ];
   var PRESETS = {
-    stock: { name: '📈 주식 채널', accent: '#38bdf8', cap: '#fde047', bgm: 'news', voice: 'IKne3meq5aSn9XLyUdCD', wm: '연오랑의 3분 시황' },
-    deal: { name: '🏷️ 특가·핫템 채널', accent: '#f472b6', cap: '#fbbf24', bgm: 'bright', voice: 'cgSgspJ2msm6clMCkdW9', wm: '연오랑의 특가 레이더' }
+    stock: { name: '📈 주식 채널', accent: '#38bdf8', cap: '#fde047', bgm: 'news', wm: '연오랑의 3분 시황',
+             voiceKo: 'ko:ko-KR-InJoonNeural', speed: 1.00 },
+    deal: { name: '🏷️ 특가·핫템 채널', accent: '#f472b6', cap: '#fbbf24', bgm: 'bright', wm: '연오랑의 특가 레이더',
+            voiceKo: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12 }
   };
-  var DEF = { preset: '', tpl: 'card', chartData: '', accent: '#38bdf8', cap: '#fde047', bgm: 'news', sfx: true, voice: VOICES[0].id, wm: '연오랑의 3분 시황', numNorm: true };
+  var DEF = { preset: '', tpl: 'card', chartData: '', accent: '#38bdf8', cap: '#fde047', bgm: 'news', sfx: true,
+    voice: 'ko:ko-KR-SunHiNeural', speed: 1, wm: '연오랑의 3분 시황', numNorm: true };
+  function clampSpeed(v) { var n = Number(v); if (!isFinite(n)) n = 1; return Math.min(1.25, Math.max(0.90, Math.round(n * 100) / 100)); }
+  function voiceOf() { return window.CSVoice ? CSVoice.resolve(S.cfg.voice) : null; }
 
   var S = { cfg: null, spec: null, cuts: [], total: 0, running: false, abort: false, rec: null,
     chunks: [], url: '', blob: null, photos: [], t0: 0, timer: null, actx: null, dest: null, mime: '', tplForce: null };
@@ -13929,27 +14217,48 @@ const GEN_ACTIONS = [
 
   /* 숫자 → 한글 발음 정규화 (TTS가 '3,200'을 '삼천이백'으로 읽도록) */
   var KOD = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+  /* 1~9999 — 십·백·천 앞의 '일'은 읽지 않는다(일십 X → 십) */
   function ko4(n) {
     var out = '', p = 0, unit = ['', '십', '백', '천'];
-    while (n > 0) { var d = n % 10; if (d) out = KOD[d] + unit[p] + out; n = (n - d) / 10; p++; }
+    while (n > 0) {
+      var d = n % 10;
+      if (d) out = (d === 1 && p > 0 ? '' : KOD[d]) + unit[p] + out;
+      n = Math.floor(n / 10); p++;
+    }
     return out;
   }
+  /* 만 단위로 끊어 읽는다 — 12,578 → '만 이천오백칠십팔' (일만/일십 금지) */
   function koInt(n) {
     if (!isFinite(n) || n <= 0) return '영';
-    var units = ['', '만', '억', '조', '경'], out = '', i = 0;
-    while (n > 0) { var part = n % 10000; if (part) out = ko4(part) + units[i] + out; n = Math.floor(n / 10000); i++; }
-    return out;
+    var units = ['', '만', '억', '조', '경'], groups = [], i = 0;
+    while (n > 0) {
+      var part = n % 10000;
+      if (part) {
+        if (part === 1 && units[i] === '만') groups.unshift('만');
+        else groups.unshift(ko4(part) + units[i]);
+      }
+      n = Math.floor(n / 10000); i++;
+    }
+    return groups.join(' ');
   }
   function numToKo(s) {
-    var p = String(s).split('.');
-    var out = koInt(parseInt(p[0].replace(/,/g, ''), 10));
-    if (p[1]) out += '점' + p[1].split('').map(function (d) { return KOD[Number(d)] || d; }).join('');
+    var p = String(s).replace(/,/g, '').split('.');
+    var out = koInt(parseInt(p[0], 10));
+    if (p[1]) out += ' 점 ' + p[1].split('').map(function (d) { return KOD[Number(d)] || d; }).join('');
     return out;
   }
+  /* 화면 자막은 숫자 그대로, 성우에게 넘기는 글자만 자연스러운 구어체로 */
   function koNumNormalize(text) {
     var s = String(text == null ? '' : text);
     s = s.replace(/(\d[\d,]*(?:\.\d+)?)\s*(%|퍼센트)/g, function (m, a) { return numToKo(a) + ' 퍼센트'; });
-    s = s.replace(/(\d[\d,]*(?:\.\d+)?)\s*(원|만원|억원|조원)/g, function (m, a, u) { return numToKo(a) + ' ' + u; });
+    s = s.replace(/(\d[\d,]*(?:\.\d+)?)\s*(만\s*원|억\s*원|조\s*원|원)/g, function (m, a, u) {
+      var mult = /만/.test(u) ? 1e4 : /억/.test(u) ? 1e8 : /조/.test(u) ? 1e12 : 1;
+      var n = parseFloat(String(a).replace(/,/g, '')) * mult;
+      return numToKo(String(Math.round(n))) + ' 원';
+    });
+    s = s.replace(/(\d[\d,]*(?:\.\d+)?)\s*(배|개|명|초|분|시간|일|회|위|년|월|가지)/g, function (m, a, u) {
+      return numToKo(a) + ' ' + u;
+    });
     s = s.replace(/(\d[\d,]*(?:\.\d+)?)/g, function (m, a) { return numToKo(a); });
     s = s.replace(/\+/g, ' 플러스 ').replace(/(^|\s)-(\d)/g, '$1마이너스 $2');
     return s.replace(/\s{2,}/g, ' ').trim();
@@ -13980,6 +14289,16 @@ const GEN_ACTIONS = [
     if (next.cap) S.cfg.cap = next.cap;
     if (next.bgm) S.cfg.bgm = next.bgm;
     if (next.voice) S.cfg.voice = next.voice;
+    if (next.voiceKo) {
+      var hasEl = !!(window.CSVoice && CSVoice.elKey());
+      S.cfg.voice = next.voiceKo;
+      if (hasEl && window.CSVoice && elKey()) S.cfg.voice = 'el:' + ('stock' === name ? 'IKne3meq5aSn9XLyUdCD' : 'cgSgspJ2msm6clMCkdW9');
+    }
+    if (next.speed != null) S.cfg.speed = clampSpeed(next.speed);
+    if (window.CSVoice) {
+      var pv = CSVoice.resolve(S.cfg.voice);
+      if (pv && pv.speedHint && !next.speed) S.cfg.speed = pv.speedHint;
+    }
     if (next.wm) S.cfg.wm = next.wm;
     saveCfg(); syncUi();
     if (S.spec) { S.spec.accent = S.cfg.accent; S.spec.capColor = S.cfg.cap; S.spec.watermark = S.cfg.wm; }
@@ -14088,7 +14407,7 @@ const GEN_ACTIONS = [
     return w;
   }
   /* 단어별 색(숫자·키워드 하이라이트)을 섞어 한 줄을 그린다 */
-  function txWords(ctx, line, x, yMid, font, colorFn, label, alpha, align) {
+  function txWords(ctx, line, x, yMid, font, colorFn, label, alpha, align, outline) {
     var s = String(line == null ? '' : line);
     if (!s) return 0;
     ctx.font = font; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
@@ -14097,6 +14416,13 @@ const GEN_ACTIONS = [
     var x0 = align === 'center' ? x - total / 2 : align === 'right' ? x - total : x;
     var cx = x0;
     if (alpha != null) ctx.globalAlpha = alpha;
+    if (outline && outline.width) {
+      ctx.lineJoin = 'round'; ctx.miterLimit = 2;
+      ctx.strokeStyle = outline.color || 'rgba(3,6,12,.9)';
+      ctx.lineWidth = outline.width;
+      for (i = 0; i < parts.length; i++) { ctx.strokeText(parts[i], cx, yMid); cx += ws[i] + sp; }
+      cx = x0;
+    }
     for (i = 0; i < parts.length; i++) {
       ctx.fillStyle = colorFn(parts[i], i) || '#f1f5f9';
       ctx.fillText(parts[i], cx, yMid);
@@ -14117,7 +14443,18 @@ const GEN_ACTIONS = [
   }
   function syncUi() {
     var c = S.cfg;
-    var v = $('#wvVoice'); if (v) { if (!v.options.length) VOICES.forEach(function (o) { var op = D.createElement('option'); op.value = o.id; op.textContent = o.n; v.appendChild(op); }); v.value = c.voice; }
+    var v = $('#wvVoice');
+    if (v) {
+      if (window.CSVoice) CSVoice.fill(v, c.voice);
+      else if (!v.options.length) {
+        VOICES.forEach(function (o) { var op = D.createElement('option'); op.value = o.id; op.textContent = o.n; v.appendChild(op); });
+        v.value = c.voice;
+      }
+    }
+    var sp = $('#wvSpeed');
+    if (sp) { var sv = clampSpeed(c.speed); if (sp.value !== sv.toFixed(2)) sp.value = sv.toFixed(2); }
+    var spt = $('#wvSpeedTag');
+    if (spt) spt.textContent = clampSpeed(c.speed).toFixed(2) + 'x';
     var b = $('#wvBgm'); if (b) b.value = c.bgm;
     var s = $('#wvSfx'); if (s) s.checked = !!c.sfx;
     var a = $('#wvAccent'); if (a) a.value = /^#[0-9a-f]{6}$/i.test(c.accent) ? c.accent : '#38bdf8';
@@ -14132,7 +14469,13 @@ const GEN_ACTIONS = [
     });
     var tg = $('#wvTplTag'); if (tg) tg.textContent = TPL_NAME[c.tpl || 'card'] || TPL_NAME.card;
     var tag = $('#wvMusic');
-    if (tag) tag.textContent = (c.bgm === 'news' ? 'BGM 차분한 뉴스' : c.bgm === 'tense' ? 'BGM 긴장감 비트' : c.bgm === 'bright' ? 'BGM 밝은 리뷰' : 'BGM 없음') + (elKey() ? ' · 성우 ElevenLabs' : ' · 무음(키 없음)');
+    if (tag) {
+      var vv = voiceOf();
+      var vtxt = !vv ? (elKey() ? ' · 성우 ElevenLabs' : ' · 무음(키 없음)')
+        : (vv.engine === 'ko' ? ' · 🇰🇷 성우 무료' + ' ' + clampSpeed(c.speed).toFixed(2) + 'x'
+          : (CSVoice.elKey() ? ' · 성우 ElevenLabs ' + clampSpeed(c.speed).toFixed(2) + 'x' : ' · 무음(ElevenLabs 키 없음)'));
+      tag.textContent = (c.bgm === 'news' ? 'BGM 차분한 뉴스' : c.bgm === 'tense' ? 'BGM 긴장감 비트' : c.bgm === 'bright' ? 'BGM 밝은 리뷰' : 'BGM 없음') + vtxt;
+    }
     $$('#wvPreStock,#wvPreDeal').forEach(function (btn) {
       btn.classList.toggle('primary', btn.getAttribute('data-wvpre') === c.preset);
     });
@@ -14198,15 +14541,15 @@ const GEN_ACTIONS = [
 
   /* ---------- photos ---------- */
   function addPhotos(files) {
-    var list = Array.prototype.slice.call(files || []).slice(0, 3 - S.photos.length);
-    if (!list.length) { flash('사진은 최대 3장까지 넣을 수 있습니다.'); return; }
+    var list = Array.prototype.slice.call(files || []).slice(0, 4 - S.photos.length);
+    if (!list.length) { flash('사진은 최대 4장까지 넣을 수 있습니다.'); return; }
     list.forEach(function (f) {
       if (!/^image\//.test(f.type)) return;
       var fr = new FileReader();
       fr.onload = function () {
         var im = new Image();
         im.onload = function () {
-          if (S.photos.length < 3) { S.photos.push(im); syncUi(); applyPhotos(); redraw(); }
+          if (S.photos.length < 4) { S.photos.push(im); syncUi(); applyPhotos(); redraw(); }
         };
         im.src = fr.result;
       };
@@ -14216,20 +14559,10 @@ const GEN_ACTIONS = [
 
   /* ---------- ElevenLabs ---------- */
   function ttsBuf(actx, text) {
-    var key = elKey();
-    if (!key || !text) return Promise.resolve(null);
-    return fetch('https://api.elevenlabs.io/v1/text-to-speech/' + S.cfg.voice + '?output_format=mp3_44100_128', {
-      method: 'POST',
-      headers: { 'xi-api-key': key, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: String(text).slice(0, 900),
-        model_id: elModel(),
-        voice_settings: { stability: 0.42, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
-      })
-    }).then(function (r) {
-      if (!r.ok) throw new Error('ElevenLabs ' + r.status);
-      return r.arrayBuffer();
-    }).then(function (ab) {
+    if (!text || !window.CSVoice) return Promise.resolve(null);
+    if (!CSVoice.ready(S.cfg.voice)) return Promise.resolve(null);
+    var body = String(text).slice(0, 900);
+    return CSVoice.request(body, S.cfg.voice, S.cfg.speed, 'arraybuffer').then(function (ab) {
       return new Promise(function (res, rej) { actx.decodeAudioData(ab, res, rej); });
     });
   }
@@ -14258,6 +14591,44 @@ const GEN_ACTIONS = [
         o.start(t0); o.stop(t0 + n[2] + 0.05);
       }
     }
+    return g;
+  }
+  /* 컷 전환 Whoosh — 노이즈 스윕 */
+  function whooshSfx(ctx, out, at, vol) {
+    if (at < ctx.currentTime) at = ctx.currentTime + 0.01;
+    var len = 0.26, sr = ctx.sampleRate, n = Math.max(64, Math.floor(sr * len));
+    var buf = ctx.createBuffer(1, n, sr), d = buf.getChannelData(0), i;
+    for (i = 0; i < n; i++) { var x = i / n; d[i] = (Math.random() * 2 - 1) * Math.pow(1 - x, 2.2); }
+    var src = ctx.createBufferSource(); src.buffer = buf;
+    var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 1.1;
+    bp.frequency.setValueAtTime(420, at);
+    bp.frequency.exponentialRampToValueAtTime(3200, at + len);
+    var g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(vol || 0.09, at + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+    src.connect(bp); bp.connect(g); g.connect(out);
+    src.start(at); src.stop(at + len + 0.03);
+  }
+  /* 성우가 말하는 구간만 BGM 을 15% 로 낮춘다 */
+  function duckUnderVoice(ctx, gain, base, buses) {
+    var lvl = Math.pow(10, -22 / 20);
+    try {
+      gain.gain.cancelScheduledValues(base);
+      gain.gain.setValueAtTime(lvl, base);
+    } catch (e) {}
+    (buses || []).forEach(function (b) {
+      if (!b || !b.c || !b.c.buf) return;
+      var st = base + b.c.start;
+      var en = st + b.c.buf.duration / (b.c.pbr || 1);
+      if (en <= st) return;
+      try {
+        gain.gain.setValueAtTime(lvl, st - 0.12);
+        gain.gain.linearRampToValueAtTime(lvl * 0.15, st + 0.08);
+        gain.gain.setValueAtTime(lvl * 0.15, Math.max(st + 0.08, en - 0.10));
+        gain.gain.linearRampToValueAtTime(lvl, en + 0.20);
+      } catch (e) {}
+    });
   }
   function popSfx(ctx, out, at, vol) {
     var o = ctx.createOscillator(), e = ctx.createGain();
@@ -14496,6 +14867,46 @@ const GEN_ACTIONS = [
     });
   }
   /* 3) 🖼️ 사진 줌인/캡처형 — 풀스크린 Ken Burns + 상단 배지·하단 자막 */
+  /* 첫 1.5초 — 시선 고정용 큰 하이라이트 배지(🔥 훅 키워드/가격) */
+  function hookKeyword(spec, cut) {
+    var w = (spec && spec.words) || [], i;
+    for (i = 0; i < w.length; i++) if (w[i] && String(w[i]).length > 1) return String(w[i]);
+    var t = String((cut && (cut.text || cut.hook)) || (spec && spec.hookTitle) || '');
+    var m = t.match(/[\d,]+(?:\.\d+)?\s*(?:만\s*원|원|%|퍼센트|배|개)/);
+    if (m) return m[0].replace(/\s+/g, '');
+    var parts = t.split(/\s+/).filter(function (x) { return String(x).length > 1; });
+    if (parts.length) return parts[0];
+    return String((spec && spec.hookTitle) || '').slice(0, 14);
+  }
+  function drawFirstHookBadge(ctx, spec, cut, tIn, ac) {
+    if (tIn > 1.5) return;
+    var txt = String(hookKeyword(spec, cut) || '').trim();
+    if (!txt) return;
+    if (txt.indexOf('🔥') !== 0) txt = '🔥 ' + txt;
+    var fade = tIn > 1.22 ? Math.min(1, Math.max(0, (1.5 - tIn) / 0.28)) : 1;
+    var grow = ease(Math.min(1, tIn / 0.22));
+    var baseFs = 54, fs = baseFs, w = 0, tries = 0;
+    do {
+      ctx.font = '900 ' + fs + 'px ' + FF;
+      w = ctx.measureText(txt).width + 64;
+      if (w <= SAFE.w || fs <= 28) break;
+      fs -= 2; tries++;
+    } while (tries < 20);
+    var scale = 0.86 + 0.14 * grow;
+    var h = Math.round(fs * 1.72 * scale), bw = Math.round(w * scale);
+    var cx = SAFE.x + SAFE.w / 2, cy = SLOTS.hook.y + SLOTS.hook.h - 44;
+    ctx.save();
+    ctx.globalAlpha = fade;
+    panel(ctx, cx - bw / 2, cy - h / 2, bw, h, h / 2, hexA(ac, .94), 'rgba(255,255,255,.92)', 3, 'hook-badge');
+    ctx.font = '900 ' + Math.round(fs * scale) + 'px ' + FF;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round'; ctx.strokeStyle = 'rgba(3,6,12,.85)'; ctx.lineWidth = Math.max(4, fs * scale * 0.14);
+    ctx.strokeText(txt, cx, cy + 2);
+    ctx.fillStyle = '#08101f';
+    ctx.fillText(txt, cx, cy + 2);
+    ctx.restore();
+    rec(cx - bw / 2, cy - h / 2, bw, h, 'hook-badge-text');
+  }
   function drawPhotoBackdrop(ctx, cut, idx, p) {
     var img = cut.img || S.photos[0] || null;
     if (!img) return false;
@@ -14526,22 +14937,29 @@ const GEN_ACTIONS = [
     }
   }
   function drawCaption(ctx, cut, p, spec, soft) {
-    var slot = SLOTS.cap, pad = 26;
-    var fit = fitText(ctx, cut.text, { w: slot.w - pad * 2, h: slot.h - pad * 2 - 10, base: 74, min: 38, weight: 900, lh: 1.26 });
-    var boxH = Math.min(slot.h, fit.height + pad * 2);
-    var y = slot.y + slot.h - boxH;
-    panel(ctx, slot.x, y, slot.w, boxH, 26, soft ? 'rgba(6,10,18,.46)' : 'rgba(6,10,18,.62)', null, 0, 'cap-panel');
-    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
+    var slot = SLOTS.cap, pad = 18;
+    var fit = fitText(ctx, cut.text, { w: slot.w - 30, h: slot.h - pad * 2 - 8, base: 70, min: 36, weight: 900, lh: 1.24 });
     var capC = spec.capColor || '#fde047', words = spec.words || [], ac = spec.accent || '#38bdf8';
+    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
+    var fs = fontPx(fit.font), outW = Math.max(6, fs * 0.18);
+    /* 줄마다 실제 글자 폭을 재서 딱 맞는 라운드 배지를 깐다(겹침 없음) */
+    var y0 = slot.y + slot.h - pad - fit.height;
     for (var i = 0; i < fit.lines.length; i++) {
-      var yMid = y + pad + i * fit.lineH + fit.lineH / 2;
+      ctx.font = fit.font; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+      var lw = ctx.measureText(fit.lines[i]).width;
+      var bh = Math.min(fit.lineH - 4, fs * 1.34);
+      var bw = Math.min(slot.w, lw + 34);
+      var yMid = y0 + i * fit.lineH + fit.lineH / 2;
+      var bx = SAFE.x + (SAFE.w - bw) / 2;
+      panel(ctx, bx, yMid - bh / 2, bw, bh, bh / 2.2,
+        soft ? 'rgba(4,8,16,.72)' : 'rgba(4,8,16,.86)', hexA(ac, .42), 2, 'cap-badge');
       txWords(ctx, fit.lines[i], SAFE.x + SAFE.w / 2, yMid, fit.font, function (tok) {
         var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
         var on = (seen / total) <= p + 0.0001;
         seen += String(tok).length;
         if (on && words.indexOf(clean) >= 0) return ac;
-        return on ? capC : 'rgba(241,245,249,.62)';
-      }, 'cap', null, 'center');
+        return on ? capC : 'rgba(241,245,249,.55)';
+      }, 'cap', null, 'center', { color: 'rgba(2,5,10,.95)', width: outW });
     }
   }
   function drawProgress(ctx, t, ac) {
@@ -14585,6 +15003,12 @@ const GEN_ACTIONS = [
     ctx.fillStyle = bg; ctx.fillRect(0, 0, CW, CH);
     var photoOn = false;
     if (tpl === 'photo') photoOn = drawPhotoBackdrop(ctx, cut, idx, p);
+    else if (S.photos.length && cut.img) {
+      /* 카드·차트형에서도 내 사진을 배경으로 깔아 컷마다 Ken Burns 줌인/패닝 */
+      photoOn = drawPhotoBackdrop(ctx, cut, idx, p);
+      ctx.fillStyle = 'rgba(6,10,18,.5)';
+      ctx.fillRect(0, 0, CW, CH);
+    }
     if (!photoOn) {
       var glow = ctx.createRadialGradient(CW * .5, CH * .22, 40, CW * .5, CH * .22, 860);
       glow.addColorStop(0, hexA(ac, .26)); glow.addColorStop(1, hexA(ac, 0));
@@ -14603,6 +15027,7 @@ const GEN_ACTIONS = [
       else drawCardMain(ctx, cut, p, spec, ac);
     }
     drawCaption(ctx, cut, p, spec, tpl === 'photo');
+    if (idx === 0) drawFirstHookBadge(ctx, spec, cut, tIn, ac);
     drawProgress(ctx, t, ac);
     ctx.restore();
   }
@@ -14770,18 +15195,19 @@ const GEN_ACTIONS = [
   function setState2(t) { var s = $('#wvState'); if (s) { s.textContent = t; s.style.color = '#fbbf24'; } }
 
   function buildPlan(actx) {
-    var spec = S.spec, key = elKey(), failed = [], out = [], t = 0;
+    var spec = S.spec, hasVoice = window.CSVoice ? CSVoice.ready(S.cfg.voice) : !!elKey(), failed = [], out = [], t = 0;
+    var spd = clampSpeed(S.cfg.speed), kv = voiceOf(), isKo = !!(kv && kv.engine === 'ko');
     var seq = Promise.resolve();
     spec.cuts.forEach(function (c, i) {
       seq = seq.then(function () {
         if (S.abort) return;
         say('🎙 ' + (i + 1) + ' / ' + spec.cuts.length + '컷 음성 준비 중…');
         var ttsText = S.cfg.numNorm ? koNumNormalize(c.tts) : c.tts;
-        var p = key ? ttsBuf(actx, ttsText).catch(function () { failed.push(i + 1); return null; }) : Promise.resolve(null);
+        var p = hasVoice ? ttsBuf(actx, ttsText).catch(function () { failed.push(i + 1); return null; }) : Promise.resolve(null);
         return p.then(function (buf) {
-          var d = buf ? Math.max(1.5, buf.duration + .34) : c.d;
+          var d = buf ? Math.max(1.5, buf.duration / spd + .34) : c.d;
           var img = S.photos.length ? S.photos[i % S.photos.length] : null;
-          out.push({ text: c.text, tts: ttsText, hook: c.hook, dur: d, start: t, end: t + d, buf: buf, img: img, idx: i });
+          out.push({ text: c.text, tts: ttsText, hook: c.hook, dur: d, start: t, end: t + d, buf: buf, img: img, idx: i, pbr: isKo ? 1 : spd });
           t += d + GAP;
         });
       });
@@ -14798,20 +15224,27 @@ const GEN_ACTIONS = [
     S.dest = dest;
     var base = actx.currentTime + 0.28;
     /* 음성 */
+    var voiceBuses = [];
     plan.cuts.forEach(function (c) {
       if (!c.buf) return;
       var src = actx.createBufferSource();
       src.buffer = c.buf;
-      src.connect(dest);
+      try { if (c.pbr && Math.abs(c.pbr - 1) > 0.001) src.playbackRate.value = c.pbr; } catch (e) {}
+      var vg = actx.createGain(); vg.gain.value = 1;
+      src.connect(vg); vg.connect(dest);
       src.start(base + c.start);
+      voiceBuses.push({ c: c, g: vg });
     });
-    /* 효과음 */
+    /* 효과음 — 첫 컷은 훅 Pop, 컷 전환은 Whoosh */
     if (S.cfg.sfx) {
-      popSfx(actx, dest, base, .13);
-      plan.cuts.forEach(function (c, i) { if (i > 0) popSfx(actx, dest, base + c.start, .09); });
+      popSfx(actx, dest, base, .14);
+      plan.cuts.forEach(function (c, i) { if (i > 0) whooshSfx(actx, dest, base + c.start - 0.16, .085); });
     }
-    /* BGM */
-    if (S.cfg.bgm !== 'none') bgm(actx, dest, S.cfg.bgm, base, plan.total);
+    /* BGM — 성우가 말하는 동안 자동 덕킹(15%) */
+    if (S.cfg.bgm !== 'none') {
+      var bgmGain = bgm(actx, dest, S.cfg.bgm, base, plan.total);
+      if (bgmGain) duckUnderVoice(actx, bgmGain, base, voiceBuses);
+    }
 
     var tracks = vStream.getVideoTracks().concat(dest.stream.getAudioTracks());
     var stream = new MediaStream(tracks);
@@ -14873,7 +15306,8 @@ const GEN_ACTIONS = [
     setBar(1); setState('완성', true);
     say('✅ 완성 — ' + Math.round(S.total) + '초 · ' + mb + 'MB · ' + ext.toUpperCase() + ' · ' + (TPL_NAME[tplOf()] || '') +
       (S.photos.length ? ' · 사진 ' + S.photos.length + '장' : '') +
-      (elKey() ? ' · 성우 음성' : (' · 성우 없음(ElevenLabs 키 없음' + (S.cfg.bgm !== 'none' ? ' · BGM 포함' : '') + ')')) +
+      ' · ' + ((window.CSVoice && CSVoice.ready(S.cfg.voice)) ? ('성우 ' + CSVoice.label(S.cfg.voice) + ' ' + clampSpeed(S.cfg.speed).toFixed(2) + 'x') : '성우 없음(ElevenLabs 키 없음 · 한국어 무료 성우를 고르면 키 없이 됩니다)') +
+      (S.cfg.bgm !== 'none' ? ' · BGM 포함' : '') +
       '. 아래 [⬇ 영상 저장]으로 내려받으세요.', 'good');
     S.running = false; S.abort = false;
     try { recordMake(blob, ext); } catch (e) {}
@@ -15013,7 +15447,26 @@ const GEN_ACTIONS = [
     $$('#wvPreStock,#wvPreDeal').forEach(function (b) {
       b.addEventListener('click', function () { applyPreset(b.getAttribute('data-wvpre')); });
     });
-    var v = $('#wvVoice'); if (v) v.addEventListener('change', function () { S.cfg.voice = v.value; saveCfg(); syncUi(); });
+    var v = $('#wvVoice');
+    if (v) v.addEventListener('change', function () {
+      S.cfg.voice = v.value;
+      if (window.CSVoice) { var vv = CSVoice.resolve(v.value); if (vv && vv.speedHint) S.cfg.speed = vv.speedHint; }
+      saveCfg(); syncUi(); redraw();
+    });
+    var spdEl = $('#wvSpeed');
+    if (spdEl) spdEl.addEventListener('input', function () {
+      S.cfg.speed = clampSpeed(spdEl.value); saveCfg();
+      var t = $('#wvSpeedTag'); if (t) t.textContent = S.cfg.speed.toFixed(2) + 'x';
+      syncUi();
+    });
+    var vrf = $('#wvVoiceRefresh');
+    if (vrf) vrf.addEventListener('click', function () {
+      if (!window.CSVoice || !CSVoice.elKey()) { flash('ElevenLabs 키를 저장하면 내 계정 보이스를 불러올 수 있어요 — 🇰🇷 한국어 무료 성우는 키 없이 됩니다.'); return; }
+      vrf.disabled = true;
+      CSVoice.loadEl(true).then(function (n) { syncUi(); flash('내 보이스 ' + n + '개를 불러왔습니다.'); })
+        .catch(function (e) { flash('보이스 목록을 불러오지 못했습니다 — ' + ((e && e.message) || '')); })
+        .then(function () { vrf.disabled = false; });
+    });
     var b2 = $('#wvBgm'); if (b2) b2.addEventListener('change', function () { S.cfg.bgm = b2.value; saveCfg(); syncUi(); });
     var s2 = $('#wvSfx'); if (s2) s2.addEventListener('change', function () { S.cfg.sfx = !!s2.checked; saveCfg(); });
     var a2 = $('#wvAccent'); if (a2) a2.addEventListener('input', function () { S.cfg.accent = a2.value; saveCfg(); if (S.spec) S.spec.accent = a2.value; redraw(); });
