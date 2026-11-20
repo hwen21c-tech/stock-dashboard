@@ -472,6 +472,17 @@
   .wvtpl.on{border-color:rgba(56,189,248,.55);background:linear-gradient(135deg,rgba(56,189,248,.14),rgba(168,85,247,.08))}
   .wvtpl.on b{color:#e0f2fe}
   .wvtpl.on span{color:#7dd3fc}
+  .wvdesignrow{display:flex;flex-wrap:wrap;gap:7px}
+  .wvdesign{flex:1 1 158px;min-width:0;display:flex;flex-direction:column;gap:3px;padding:9px 11px;border-radius:11px;border:1px solid var(--line);background:#0a1424;text-align:left;cursor:pointer}
+  .wvdesign b{font-size:12px;font-weight:900;color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wvdesign span{font-size:9.9px;font-weight:700;color:var(--faint);line-height:1.35;white-space:normal}
+  .wvdesign.on{border-color:rgba(159,18,57,.74);background:linear-gradient(135deg,#f8f3ea,#efe7d8);box-shadow:0 6px 18px rgba(0,0,0,.28)}
+  .wvdesign.on b{color:#10202f}
+  .wvdesign.on span{color:#8a2233}
+  .wvfoxbox{border:1px solid rgba(159,18,57,.3);border-radius:11px;background:rgba(247,243,233,.05);padding:9px 11px;display:grid;gap:7px;min-width:0}
+  .wvfoxcuts{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+  .wvfoxcut{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;background:#0a1424;padding:3px 7px;font-size:10.4px;font-weight:900;color:#cbd5e1}
+  .wvfoxcut select{flex:0 0 auto;width:auto;min-width:0;max-width:104px;background:#08111f;border:1px solid var(--line);border-radius:7px;padding:3px 5px;font-size:10.4px;font-weight:800;color:#e2e8f0}
   .wvbody textarea{width:100%;min-width:0;max-width:100%;background:#08111f;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:11.4px;font-weight:700;color:#e2e8f0;resize:vertical;font-family:inherit}
   footer .shelf{background:#0a1424;margin:0;font-size:10.9px;font-weight:600;line-height:1.66;color:var(--faint)}
   @media (max-width:430px){
@@ -2240,12 +2251,21 @@
       <span class="spacer"></span>
       <button class="btn small ghost" id="wvSetBtn" type="button">⚙ 옵션</button>
     </div>
+    <div class="wvrow" style="gap:6px"><span class="flabel" style="margin:0">🎨 영상 디자인 템플릿</span><span class="hint" id="wvDesignHint" style="margin:0">선택값은 이 브라우저에 저장됩니다</span></div>
+    <div class="wvdesignrow" role="group" aria-label="영상 디자인 템플릿 선택 — 다크 시네마 / 폭스시그널 에디토리얼">
+      <button class="wvdesign on" type="button" data-wvdesign="dark" aria-pressed="true"><b>🌙 다크 시네마</b><span>기본 — 딥 네이비 바탕 · 카드/차트/사진 3양식</span></button>
+      <button class="wvdesign" type="button" data-wvdesign="fox" aria-pressed="false"><b>🦊 폭스시그널 에디토리얼</b><span>크림 아이보리 · 빅넘버 · 여우 4종 · 에디토리얼 자막</span></button>
+    </div>
+    <div class="wvfoxbox" id="wvFoxBox" hidden>
+      <div class="flabel" style="margin:0">🦊 컷별 여우 포즈 <span class="bdg info">자동 = 컷 내용으로 선택</span></div>
+      <div class="wvfoxcuts" id="wvFoxCuts"></div>
+    </div>
     <div class="wvtplrow" role="group" aria-label="영상 양식 선택 — 3종 모두 세이프 존·자동 줄바꿈·3단 그리드 동일">
       <button class="wvtpl on" type="button" data-wvtpl="card" aria-pressed="true"><b>📊 정보/시황 카드형</b><span>훅 + 핵심 포인트 카드 + 자막</span></button>
       <button class="wvtpl" type="button" data-wvtpl="chart" aria-pressed="false"><b>📈 모션 차트/비교표형</b><span>수치를 움직이는 바·좌우 비교로</span></button>
       <button class="wvtpl" type="button" data-wvtpl="photo" aria-pressed="false"><b>🖼️ 사진 줌인/캡처형</b><span>내 사진 Ken Burns + 배지·자막</span></button>
     </div>
-    <div class="hint">쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.</div>
+    <div class="hint" id="wvLayoutHint">쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.</div>
     <details class="wvopt" id="wvOpt">
       <summary>⚙ 채널 프리셋 · 성우 · 자막색 · BGM · 내 사진</summary>
       <div class="wvbody">
@@ -14137,6 +14157,105 @@ var CSVoice = (function () {
     cap:  { x: 60, y: 1228, w: 900, h: 312 }   /* 하단 자막 */
   };
   var TPL_NAME = { card: '📊 카드형', chart: '📈 차트형', photo: '🖼️ 사진형' };
+  /* ---------- 🎨 영상 디자인 템플릿 (🌙 다크 시네마 / 🦊 폭스시그널 에디토리얼) ---------- */
+  var DESIGN = { dark: '🌙 다크 시네마', fox: '🦊 폭스시그널 에디토리얼' };
+  var FOX_POSES = { main: '기본', surprise: '놀람·경고', analyze: '분석', cheer: '환호' };
+  var FX = { cream: '#F8F3EA', band: '#F1E8D8', navy: '#10202F', wine: '#9F1239', paper: '#FFFFFF' };
+  var FOX = {
+    SRC: { main: 'assets/fox/fox_main.png', surprise: 'assets/fox/fox_surprise.png',
+           analyze: 'assets/fox/fox_analyze.png', cheer: 'assets/fox/fox_cheer.png' },
+    img: {}, bg: {}, tried: {}, loading: false
+  };
+  /* 컷 내용 → 여우 표정 자동 매칭 (하락·경고 / 수급·분석 / 상승·호재) */
+  var FOX_KEYS = {
+    surprise: ['하락', '급락', '폭락', '떨어', '빠졌', '밀렸', '내렸', '매도', '경고', '위험', '주의', '리스크',
+      '사이드카', '서킷', '붕괴', '충격', '악재', '손실', '하한', '이탈', '약세', '공포', '조정', '경계', '실망',
+      '매물', '반대매매', '미수', '폭탄', '빨간불'],
+    analyze: ['수급', '분석', '지표', '데이터', '통계', '과거', '비교', '차트', '거래대금', '외인', '기관', '개인',
+      '프로그램', '공매도', '잔고', '기록', '추이', '패턴', '확인', '근거', '숫자', '집계', '비중', '평균', '역대'],
+    cheer: ['상승', '반등', '급등', '수혜', '추천', '완료', '호재', '신고가', '최고', '성공', '매수', '강세',
+      '회복', '돌파', '기대', '훈풍', '상한가', '불타', '웃', '흑자', '공략']
+  };
+  function designOf() {
+    var d = S.designForce || (S.cfg && S.cfg.design) || 'dark';
+    return DESIGN[d] ? d : 'dark';
+  }
+  function foxBg(pose) { return FOX.bg[pose] || FX.cream; }
+  /* 여우 PNG 4종은 이 디자인을 처음 켤 때만 불러온다(다크 시네마는 0바이트 추가) */
+  function foxLoad() {
+    Object.keys(FOX.SRC).forEach(function (k) {
+      if (FOX.tried[k]) return;
+      FOX.tried[k] = true;
+      var im = new Image();
+      im.onload = function () {
+        FOX.img[k] = im;
+        try {
+          var c = D.createElement('canvas');
+          c.width = 8; c.height = 8;
+          var cx = c.getContext('2d');
+          cx.drawImage(im, 0, 0, 16, 16, 0, 0, 8, 8);
+          var p = cx.getImageData(1, 1, 1, 1).data;
+          FOX.bg[k] = 'rgb(' + p[0] + ',' + p[1] + ',' + p[2] + ')';
+        } catch (e) {}
+        redraw();
+      };
+      im.onerror = function () { FOX.tried[k] = false; };
+      im.src = FOX.SRC[k];
+    });
+  }
+  function foxAuto(cut, idx) {
+    var txt = String(((cut && cut.text) || '') + ' ' + ((cut && cut.hook) || '')).replace(/\s+/g, ' ');
+    var best = 'main', bestN = 0;
+    ['surprise', 'cheer', 'analyze'].forEach(function (k) {
+      var n = 0;
+      FOX_KEYS[k].forEach(function (w) { if (txt.indexOf(w) > -1) n++; });
+      if (n > bestN) { bestN = n; best = k; }
+    });
+    return best;
+  }
+  function foxPoseOf(cut, idx) {
+    var o = S.foxPose && S.foxPose[idx];
+    if (o && FOX_POSES[o] && o !== 'auto') return o;
+    return foxAuto(cut, idx);
+  }
+  /* 컷 문장에서 가장 센 숫자 1개를 빅넘버로 뽑는다 (조·억·%·pt·배·원 단위가 있는 것만) */
+  function foxBig(src) {
+    var text = String(src || '');
+    if (!text) return null;
+    var re = /[+\-]?\d[\d,]*(?:\.\d+)?(?:\s*(?:조|억|만|천)\s*\d[\d,]*(?:\.\d+)?)*\s*(?:조|억|만|천)?\s*(?:원|%|퍼센트|pt|배|계약|종목|개|명|위|건)?/g;
+    var m, best = null;
+    while ((m = re.exec(text))) {
+      var tok = String(m[0]).replace(/\s+/g, ' ').trim();
+      if (!tok) continue;
+      var hasUnit = /[조억만천]|%|퍼센트|pt|배|계약|종목|개|명|위|건/.test(tok);
+      var hasWon = /원/.test(tok);
+      if (!hasUnit && !hasWon && tok.indexOf(',') < 0 && tok.indexOf('.') < 0) continue;
+      var score = hasUnit ? 40 : 0;
+      if (/[조억]/.test(tok)) score += 30;
+      if (hasWon) score += 33;
+      if (/%|퍼센트/.test(tok)) score += 8;
+      if (tok.indexOf(',') > -1) score += 5;
+      score += Math.min(12, tok.replace(/[^\d]/g, '').length * 2);
+      var clean = text.slice(0, m.index)
+        .replace(/[+\-]?\d[\d,]*(?:\.\d+)?/g, ' ')
+        .replace(/[%()\[\]{}·:;,\/|~]/g, ' ');
+      var words = clean.split(/\s+/).filter(function (w) {
+        return w && ['원', '조', '억', '만', '천', 'pt', '퍼센트', '계약', 'vs', '그리고', '이'].indexOf(w) < 0;
+      });
+      /* 마지막 단어에 조사가 붙어 있으면 그 한 단어만 라벨로 쓴다 (예: '상승 하나에어로는' → '하나에어로') */
+      if (words.length > 1 && /(은|는|이|가|을|를|의)$/.test(words[words.length - 1])) {
+        words = [words[words.length - 1].replace(/(은|는|이|가|을|를|의)$/, '')];
+      } else {
+        words = words.slice(-2);
+      }
+      var label = words.join(' ').slice(0, 20);
+      if (!best || score > best.score) {
+        best = { disp: tok, label: label, score: score, neg: /^\s*-/.test(tok) };
+      }
+    }
+    /* 단위(조·억·%·원)가 없어도 쉼표·소수점이 있는 숫자(지수·가격)는 빅넘버로 쓴다 */
+    return best && best.score >= 10 ? best : null;
+  }
 
   var VOICES = [
     { id: 'IKne3meq5aSn9XLyUdCD', n: 'Charlie · 깊고 자신감 있는 남성' },
@@ -14152,13 +14271,13 @@ var CSVoice = (function () {
     deal: { name: '🏷️ 특가·핫템 채널', accent: '#f472b6', cap: '#fbbf24', bgm: 'bright', wm: '연오랑의 특가 레이더',
             voiceKo: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12 }
   };
-  var DEF = { preset: '', tpl: 'card', chartData: '', accent: '#38bdf8', cap: '#fde047', bgm: 'news', sfx: true,
+  var DEF = { preset: '', design: 'dark', tpl: 'card', chartData: '', accent: '#38bdf8', cap: '#fde047', bgm: 'news', sfx: true,
     voice: 'ko:ko-KR-SunHiNeural', speed: 1, wm: '연오랑의 3분 시황', numNorm: true };
   function clampSpeed(v) { var n = Number(v); if (!isFinite(n)) n = 1; return Math.min(1.25, Math.max(0.90, Math.round(n * 100) / 100)); }
   function voiceOf() { return window.CSVoice ? CSVoice.resolve(S.cfg.voice) : null; }
 
   var S = { cfg: null, spec: null, cuts: [], total: 0, running: false, abort: false, rec: null,
-    chunks: [], url: '', blob: null, photos: [], t0: 0, timer: null, actx: null, dest: null, mime: '', tplForce: null };
+    chunks: [], url: '', blob: null, photos: [], t0: 0, timer: null, actx: null, dest: null, mime: '', tplForce: null, designForce: null, foxPose: {} };
 
   /* ---------- utils ---------- */
   function $(s) { return D.querySelector(s); }
@@ -14270,6 +14389,7 @@ var CSVoice = (function () {
     try { c = JSON.parse(ls(CFG_KEY, '{}')) || {}; } catch (e) { c = {}; }
     for (var k in DEF) if (Object.prototype.hasOwnProperty.call(DEF, k) && c[k] === undefined) c[k] = DEF[k];
     if (!TPL_NAME[c.tpl]) c.tpl = 'card';
+    if (!DESIGN[c.design]) c.design = 'dark';
     return c;
   }
   function saveCfg() { lsSet(CFG_KEY, JSON.stringify(S.cfg)); }
@@ -14434,6 +14554,199 @@ var CSVoice = (function () {
     return total;
   }
 
+  /* ---------- 🦊 폭스시그널 에디토리얼 렌더러 ---------- */
+  function foxBands(ctx, pose) {
+    ctx.fillStyle = foxBg(pose);
+    ctx.fillRect(0, 0, CW, CH);
+    ctx.fillStyle = FX.band;
+    ctx.fillRect(0, 0, CW, SAFE.y);
+    ctx.fillRect(0, SAFE.b, CW, CH - SAFE.b);
+    ctx.fillStyle = 'rgba(16,32,47,.10)';
+    ctx.fillRect(0, SAFE.y - 1, CW, 2);
+    ctx.fillRect(0, SAFE.b - 1, CW, 2);
+  }
+  /* 상단 — 🦊 폭스시그널 브랜드 필 + 컷 카운터 + 진행 프로그레스 바 */
+  function drawFoxHead(ctx, spec, idx, n, t, total, cuts) {
+    var y = SAFE.y + 14, h = 64;
+    var label = '🦊 폭스시그널';
+    var f = '900 30px ' + FF;
+    ctx.font = f;
+    var tw = ctx.measureText(label).width;
+    var w = tw + 52;
+    panel(ctx, SAFE.x, y, w, h, h / 2, FX.navy, null, 0, 'fx-brand');
+    txLine(ctx, label, SAFE.x + 26, y + h / 2 + 1, f, FX.cream, 'left', 'fx-brand-text');
+    txLine(ctx, ('0' + (idx + 1)).slice(-2) + ' / ' + ('0' + n).slice(-2), SAFE.r, y + 21,
+      '800 24px ' + FF, 'rgba(16,32,47,.62)', 'right', 'fx-counter');
+    var wm = String((spec && spec.watermark) || '').trim();
+    /* 폭스시그널 템플릿은 채널 기본 워터마크를 쓴다(옵션에서 직접 바꾸면 그 값이 우선) */
+    if (!wm || wm === '연오랑의 3분 시황') wm = '폭스시그널 · 오늘의 시장 신호';
+    if (wm) txLine(ctx, wm, SAFE.r, y + 50, '700 21px ' + FF, 'rgba(16,32,47,.40)', 'right', 'fx-wm');
+    var py = y + h + 18;
+    panel(ctx, SAFE.x, py, SAFE.w, 8, 4, 'rgba(16,32,47,.12)', null, 0, 'fx-prog-track');
+    var den = Math.max(.1, total || 0);
+    var fr = Math.min(1, (t || 0) / den);
+    panel(ctx, SAFE.x, py, Math.max(8, SAFE.w * fr), 8, 4, FX.wine, null, 0, 'fx-prog');
+    (cuts || []).forEach(function (c) {
+      if (!(c.start > 0)) return;
+      var cx = SAFE.x + SAFE.w * (c.start / den);
+      panel(ctx, cx - 1.5, py - 4, 3, 16, 2, 'rgba(16,32,47,.30)', null, 0, 'fx-prog-tick');
+    });
+  }
+  /* 중단 — 빅넘버 카드 + 여우 캐릭터 (컷 문장은 하단 에디토리얼 자막이 맡는다) */
+  function drawFoxNumber(ctx, big, x, y, maxW, h) {
+    var col = big.neg ? FX.wine : FX.navy;
+    var fit = fitText(ctx, big.disp, { w: maxW - 116, h: h - 130, base: 112, min: 44, weight: 900, lh: 1.06 });
+    var tw = 0;
+    ctx.font = fit.font;
+    for (var k = 0; k < fit.lines.length; k++) tw = Math.max(tw, ctx.measureText(fit.lines[k]).width);
+    var w = Math.min(maxW, Math.max(300, Math.ceil(tw) + 116));
+    panel(ctx, x, y, w, h, 22, FX.paper, 'rgba(16,32,47,.18)', 2, 'fx-num-card');
+    panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, 'rgba(16,32,47,.92)', null, 0, 'fx-num-spine');
+    txLine(ctx, big.label || '오늘의 숫자', x + 38, y + 44, '800 26px ' + FF, 'rgba(16,32,47,.56)', 'left', 'fx-num-label');
+    var areaTop = y + 72, areaH = h - 72 - 30;
+    var by = areaTop + Math.max(0, (areaH - fit.height) / 2);
+    for (var i = 0; i < fit.lines.length; i++) {
+      txLine(ctx, fit.lines[i], x + 38, by + i * fit.lineH + fit.lineH / 2, fit.font, col, 'left', 'fx-num-value');
+    }
+    panel(ctx, x + 38, y + h - 24, 88, 8, 4, FX.wine, null, 0, 'fx-num-rule');
+  }
+  function drawFox(ctx, pose, x, y, size) {
+    var im = FOX.img[pose] || FOX.img.main;
+    if (!im) { foxLoad(); return; }
+    ctx.drawImage(im, x, y, size, size);
+    rec(x, y, size, size, 'fx-fox');
+  }
+  function drawFoxMain(ctx, spec, cut, idx, pose) {
+    var slot = SLOTS.main;
+    var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (cut.hook || spec.hookTitle || '');
+    var big = foxBig(cut.text) || foxBig(title);
+    var tfit = title ? fitText(ctx, title, { w: 512, h: 190, base: 54, min: 30, weight: 800, lh: 1.22 }) : null;
+    var cardH = big ? 296 : 0;
+    var blockH = 34 + (tfit ? tfit.height + 24 : 0) + cardH;
+    var y = slot.y + 12;
+    var ex = 'SIGNAL ' + ('0' + ((cut.idx || 0) + 1)).slice(-2);
+    var ef = '900 23px ' + FF;
+    txLine(ctx, ex, slot.x, y + 12, ef, FX.wine, 'left', 'fx-eyebrow');
+    ctx.font = ef;
+    var ew = ctx.measureText(ex).width;
+    panel(ctx, slot.x + ew + 16, y + 11, Math.max(20, 560 - ew - 16), 3, 1.5, 'rgba(16,32,47,.16)', null, 0, 'fx-rule');
+    var ty = y + 34;
+    if (tfit) {
+      for (var i = 0; i < tfit.lines.length; i++) {
+        txWords(ctx, tfit.lines[i], slot.x, ty + i * tfit.lineH + tfit.lineH / 2, tfit.font,
+          function (tok) { return /\d/.test(tok) ? FX.wine : FX.navy; }, 'fx-title');
+      }
+      ty += tfit.height + 24;
+    }
+    if (big) drawFoxNumber(ctx, big, slot.x, ty, 512, cardH);
+    drawFox(ctx, pose, 596, Math.round(y + Math.max(0, (blockH - 360) / 2)), 360);
+  }
+  /* 하단 — 그림자·명암 대비 확보한 에디토리얼 자막 카드 */
+  function drawFoxCaption(ctx, cut, p, spec) {
+    var slot = SLOTS.cap;
+    var fit = fitText(ctx, cut.text, { w: slot.w - 104, h: slot.h - 96, base: 58, min: 30, weight: 800, lh: 1.26 });
+    var cardH = Math.min(slot.h, fit.height + 78);
+    var cy = slot.y + (slot.h - cardH) / 2;
+    ctx.save();
+    ctx.shadowColor = 'rgba(16,32,47,.22)';
+    ctx.shadowBlur = 26;
+    ctx.shadowOffsetY = 10;
+    panel(ctx, slot.x, cy, slot.w, cardH, 26, FX.paper, 'rgba(16,32,47,.16)', 2, 'fx-cap-card');
+    ctx.restore();
+    panel(ctx, slot.x + 30, cy + 26, 60, 7, 3.5, FX.wine, null, 0, 'fx-cap-rule');
+    var words = (spec && spec.words) || [];
+    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
+    var y0 = cy + cardH - 32 - fit.height;
+    for (var i = 0; i < fit.lines.length; i++) {
+      txWords(ctx, fit.lines[i], slot.x + 52, y0 + i * fit.lineH + fit.lineH / 2, fit.font, function (tok) {
+        var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
+        var on = (seen / total) <= p + 0.0001;
+        seen += String(tok).length;
+        if (!on) return 'rgba(16,32,47,.55)';
+        if (words.indexOf(clean) >= 0 || /\d/.test(tok)) return FX.wine;
+        return FX.navy;
+      }, 'fx-cap');
+    }
+  }
+  function drawFoxFrame(t) {
+    var cv = $('#wvCanvas');
+    if (!cv) return;
+    var ctx = ctxOf(cv);
+    var spec = S.spec, cuts = S.cuts;
+    if (!spec || !cuts.length) { drawFoxIdle(ctx); return; }
+    var idx = 0;
+    while (idx < cuts.length - 1 && t >= cuts[idx].end) idx++;
+    var cut = cuts[idx];
+    var tIn = Math.max(0, t - cut.start);
+    var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
+    var pose = foxPoseOf(cut, idx);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    foxBands(ctx, pose);
+    var ein = Math.min(1, tIn / .32);
+    var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
+    ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
+    drawFoxHead(ctx, spec, idx, cuts.length, t, S.total, cuts);
+    drawFoxMain(ctx, spec, cut, idx, pose);
+    drawFoxCaption(ctx, cut, p, spec);
+    ctx.restore();
+  }
+  /* 대본이 없을 때도 템플릿이 어떻게 나오는지 보여 주는 샘플 프레임 */
+  function drawFoxIdle(ctx) {
+    foxLoad();
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    foxBands(ctx, 'surprise');
+    var spec = {
+      hookTitle: '외인 -1조2,380억, 오늘 수급이 말하는 것',
+      watermark: '폭스시그널 · 오늘의 시장 신호',
+      words: ['외인', '쌍매도', '수급'], cutCount: 5
+    };
+    var cut = {
+      text: '개인 +1조6,618억 vs 외인·기관 쌍매도 — 오늘은 숫자 3개로 읽습니다.',
+      hook: spec.hookTitle, idx: 0, dur: 5, start: 0
+    };
+    drawFoxHead(ctx, spec, 0, 5, 2.2, 5, []);
+    drawFoxMain(ctx, spec, cut, 0, 'surprise');
+    drawFoxCaption(ctx, { text: '숫자 3개로 오늘을 읽습니다.', idx: 0 }, 0.7, spec);
+    txLine(ctx, '샘플 미리보기 · 쇼츠 대본을 넣으면 이 디자인으로 그대로 녹화합니다', CW / 2, SAFE.b + 74,
+      '800 27px ' + FF, 'rgba(16,32,47,.52)', 'center', 'fx-sample-note');
+    txLine(ctx, '🦊 폭스시그널 에디토리얼 · 1080 × 1920', CW / 2, SAFE.b + 120,
+      '700 24px ' + FF, 'rgba(16,32,47,.36)', 'center', 'fx-sample-note2');
+    ctx.restore();
+  }
+  function buildFoxCuts() {
+    var box = $('#wvFoxCuts');
+    if (!box) return;
+    var cuts = (S.spec && S.spec.cuts) || [];
+    if (!cuts.length) {
+      box.innerHTML = '<span class="hint">대본을 만들면 컷마다 포즈를 바꿀 수 있습니다 — 지금은 샘플 레이아웃입니다.</span>';
+      return;
+    }
+    var h = '';
+    cuts.forEach(function (c, i) {
+      var cur = (S.foxPose && S.foxPose[i]) || 'auto';
+      var opts = '<option value="auto"' + (cur === 'auto' ? ' selected' : '') + '>자동 · ' + FOX_POSES[foxAuto(c, i)] + '</option>';
+      ['main', 'surprise', 'analyze', 'cheer'].forEach(function (k) {
+        opts += '<option value="' + k + '"' + (cur === k ? ' selected' : '') + '>' + FOX_POSES[k] + '</option>';
+      });
+      h += '<label class="wvfoxcut">컷 ' + (i + 1) + '<select data-wvfox="' + i + '" aria-label="' + (i + 1) + '번 컷 여우 포즈">' + opts + '</select></label>';
+    });
+    box.innerHTML = h;
+  }
+  function setDesign(name) {
+    S.cfg.design = DESIGN[name] ? name : 'dark';
+    saveCfg();
+    if (S.cfg.design === 'fox') foxLoad();
+    syncUi();
+    redraw();
+    say(S.cfg.design === 'fox'
+      ? '🦊 <b>폭스시그널 에디토리얼</b> — 크림 아이보리 바탕 · 빅넘버 카드 · 여우 4종 자동 매칭 · 에디토리얼 자막으로 그립니다.'
+      : '🌙 <b>다크 시네마</b> — 기존 3양식(카드·차트·사진)으로 그립니다.');
+  }
+
   /* ---------- UI sync ---------- */
   function tplOf() {
     var t = S.tplForce || S.cfg.tpl || 'card';
@@ -14467,7 +14780,20 @@ var CSVoice = (function () {
       btn.classList.toggle('on', on);
       btn.setAttribute('aria-pressed', on ? 'true' : 'false');
     });
-    var tg = $('#wvTplTag'); if (tg) tg.textContent = TPL_NAME[c.tpl || 'card'] || TPL_NAME.card;
+    var tg = $('#wvTplTag');
+    if (tg) tg.textContent = designOf() === 'fox' ? '🦊 폭스시그널' : (TPL_NAME[c.tpl || 'card'] || TPL_NAME.card);
+    $$('#wvPanel [data-wvdesign]').forEach(function (btn) {
+      var on = btn.getAttribute('data-wvdesign') === (c.design || 'dark');
+      btn.classList.toggle('on', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    var isFox = (c.design || 'dark') === 'fox';
+    var fbx = $('#wvFoxBox'); if (fbx) fbx.hidden = !isFox;
+    var lh = $('#wvLayoutHint');
+    if (lh) lh.innerHTML = isFox
+      ? '🦊 <b>폭스시그널 에디토리얼</b>은 브랜드 필 → <b>빅넘버 + 여우</b> → <b>에디토리얼 자막</b> 고정 레이아웃으로 그립니다. 아래 양식 3종·테마색·자막색·내 사진은 🌙 다크 시네마에서 적용됩니다.'
+      : '쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.';
+    buildFoxCuts();
     var tag = $('#wvMusic');
     if (tag) {
       var vv = voiceOf();
@@ -14986,6 +15312,7 @@ var CSVoice = (function () {
     var ctx = ctxOf(cv);
     var spec = S.spec, cuts = S.cuts;
     if (!spec || !cuts.length) return;
+    if (designOf() === 'fox') { drawFoxFrame(t); return; }
     var idx = 0;
     while (idx < cuts.length - 1 && t >= cuts[idx].end) idx++;
     var cut = cuts[idx];
@@ -15070,10 +15397,12 @@ var CSVoice = (function () {
     var raw = opt.spec || (W.WVID_SRC && W.WVID_SRC.shorts ? W.WVID_SRC.shorts() : null);
     var spec = normSpec(raw);
     if (!spec) return { error: 'no-spec' };
-    var prev = { spec: S.spec, cuts: S.cuts, total: S.total, force: S.tplForce, cd: S.cfg.chartData };
+    var prev = { spec: S.spec, cuts: S.cuts, total: S.total, force: S.tplForce, cd: S.cfg.chartData, design: S.designForce };
     var pv = previewCuts(spec);
     S.spec = spec; S.cuts = pv.cuts; S.total = pv.total;
     S.tplForce = opt.tpl || null;
+    S.designForce = opt.design || null;
+    if (opt.design === 'fox') foxLoad();
     if (opt.chartData != null) S.cfg.chartData = String(opt.chartData);
     pv.cuts.forEach(function (c) { c._items = null; });
     var frames = [], viol = [], boxCount = 0;
@@ -15098,9 +15427,9 @@ var CSVoice = (function () {
         frames.push({ cut: i + 1, at: +at.toFixed(2), boxes: boxes.length, violations: v.length });
       });
     });
-    S.spec = prev.spec; S.cuts = prev.cuts; S.total = prev.total; S.tplForce = prev.force; S.cfg.chartData = prev.cd;
+    S.spec = prev.spec; S.cuts = prev.cuts; S.total = prev.total; S.tplForce = prev.force; S.cfg.chartData = prev.cd; S.designForce = prev.design;
     return {
-      tpl: opt.tpl || S.cfg.tpl, cuts: pv.cuts.length, frames: frames.length,
+      tpl: opt.tpl || S.cfg.tpl, design: opt.design || designOf(), cuts: pv.cuts.length, frames: frames.length,
       boxes: boxCount, violations: viol.length, detail: viol.slice(0, 10),
       bounds: { minX: +bnd.minX.toFixed(1), minY: +bnd.minY.toFixed(1), maxR: +bnd.maxR.toFixed(1), maxB: +bnd.maxB.toFixed(1) },
       safe: { x: SAFE.x, y: SAFE.y, r: SAFE.r, b: SAFE.b }
@@ -15304,7 +15633,7 @@ var CSVoice = (function () {
     if (dl) { dl.hidden = false; dl.href = S.url; dl.download = 'shorts_' + stamp() + '.' + ext; dl.textContent = '⬇ 영상 저장 (' + ext.toUpperCase() + ')'; }
     var mb = (blob.size / 1048576).toFixed(1);
     setBar(1); setState('완성', true);
-    say('✅ 완성 — ' + Math.round(S.total) + '초 · ' + mb + 'MB · ' + ext.toUpperCase() + ' · ' + (TPL_NAME[tplOf()] || '') +
+    say('✅ 완성 — ' + Math.round(S.total) + '초 · ' + mb + 'MB · ' + ext.toUpperCase() + ' · ' + (designOf() === 'fox' ? '🦊 폭스시그널 에디토리얼' : (TPL_NAME[tplOf()] || '')) +
       (S.photos.length ? ' · 사진 ' + S.photos.length + '장' : '') +
       ' · ' + ((window.CSVoice && CSVoice.ready(S.cfg.voice)) ? ('성우 ' + CSVoice.label(S.cfg.voice) + ' ' + clampSpeed(S.cfg.speed).toFixed(2) + 'x') : '성우 없음(ElevenLabs 키 없음 · 한국어 무료 성우를 고르면 키 없이 됩니다)') +
       (S.cfg.bgm !== 'none' ? ' · BGM 포함' : '') +
@@ -15337,7 +15666,8 @@ var CSVoice = (function () {
         pinned_comment: spec.pinned,
         platform_captions: spec.captions,
         loop_ending: spec.loop,
-        template: S.cfg.tpl
+        template: S.cfg.tpl,
+        design: S.cfg.design || 'dark'
       }
     });
   }
@@ -15400,10 +15730,12 @@ var CSVoice = (function () {
       return null;
     }
     S.spec = spec;
+    S.foxPose = {};
     var pv = previewCuts(spec);
     S.cuts = pv.cuts; S.total = pv.total;
     applyPhotos();
     syncUi();
+    if (designOf() === 'fox') foxLoad();
     setSrcTag(spec, label || '');
     redraw();
     return spec;
@@ -15446,6 +15778,20 @@ var CSVoice = (function () {
     });
     $$('#wvPreStock,#wvPreDeal').forEach(function (b) {
       b.addEventListener('click', function () { applyPreset(b.getAttribute('data-wvpre')); });
+    });
+    $$('#wvPanel [data-wvdesign]').forEach(function (b) {
+      b.addEventListener('click', function () { setDesign(b.getAttribute('data-wvdesign')); });
+    });
+    var fcuts = $('#wvFoxCuts');
+    if (fcuts) fcuts.addEventListener('change', function (ev) {
+      var t = ev.target;
+      if (!t || !t.getAttribute) return;
+      var k = t.getAttribute('data-wvfox');
+      if (k == null) return;
+      if (!S.foxPose) S.foxPose = {};
+      if (t.value === 'auto') delete S.foxPose[k];
+      else S.foxPose[k] = t.value;
+      redraw();
     });
     var v = $('#wvVoice');
     if (v) v.addEventListener('change', function () {
@@ -15495,6 +15841,7 @@ var CSVoice = (function () {
   function drawIdle() {
     var cv = $('#wvCanvas'); if (!cv) return;
     var ctx = ctxOf(cv);
+    if (designOf() === 'fox') { try { drawFoxIdle(ctx); return; } catch (e) {} }
     var g = ctx.createLinearGradient(0, 0, 0, CH);
     g.addColorStop(0, '#0a1424'); g.addColorStop(1, '#060a12');
     ctx.fillStyle = g; ctx.fillRect(0, 0, CW, CH);
@@ -15517,6 +15864,7 @@ var CSVoice = (function () {
     S.cfg = loadCfg();
     bind();
     syncUi();
+    if ((S.cfg.design || 'dark') === 'fox') foxLoad();
   }
   if (D.readyState === 'loading') D.addEventListener('DOMContentLoaded', init);
   else init();
@@ -15535,6 +15883,10 @@ var CSVoice = (function () {
     uploadSet: uploadSetText,
     preset: applyPreset,
     setTpl: setTpl,
+    setDesign: setDesign,
+    design: function () { return designOf(); },
+    foxOf: function (cut, idx) { return foxPoseOf(cut, idx || 0); },
+    bigOf: function (text) { return foxBig(text); },
     tpl: function () { return tplOf(); },
     render: function (t) { if (t == null) redraw(); else { try { drawFrame(t); } catch (e) {} } },
     audit: audit,
@@ -15542,7 +15894,7 @@ var CSVoice = (function () {
       var o = opt || {}, out = {}, seq = Promise.resolve();
       ['card', 'chart', 'photo'].forEach(function (t) {
         seq = seq.then(function () {
-          return audit({ tpl: t, spec: o.spec, photos: o.photos, chartData: o.chartData, fractions: o.fractions }).then(function (r) { out[t] = r; });
+          return audit({ tpl: t, design: o.design || 'dark', spec: o.spec, photos: o.photos, chartData: o.chartData, fractions: o.fractions }).then(function (r) { out[t] = r; });
         });
       });
       return seq.then(function () { return out; });
