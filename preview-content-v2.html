@@ -1198,6 +1198,15 @@
   .elrow .flabel{margin:0;flex:0 0 auto}
   .elrow select{flex:1 1 150px;min-width:0}
   .elkey .keyhint{font-size:10.8px;color:var(--faint);margin-top:6px;line-height:1.5}
+  /* 좁은 화면(폰)에서는 성우/모델 줄을 라벨·선택·버튼 3열로 — '모델' 라벨이 줄 끝에 떠는 것 방지 */
+  @media (max-width:560px){
+    .elkey .elrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px;align-items:center}
+    .elkey .elrow .flabel{margin:0}
+    .elkey .elrow select{min-width:0;width:100%}
+  }
+  .elkey.flash{animation:elkeyFlash 1.7s ease-out 1}
+  @keyframes elkeyFlash{0%{box-shadow:0 0 0 0 rgba(56,189,248,.62)}30%{box-shadow:0 0 0 7px rgba(56,189,248,.20)}100%{box-shadow:0 0 0 0 rgba(56,189,248,0)}}
+  .elkey .keyhint b.sk{color:#c4b5fd}
   .ttsbox{margin-top:9px;padding:10px 12px;border:1px solid rgba(56,189,248,.28);border-radius:11px;background:rgba(56,189,248,.06)}
   .ttsbox audio{width:100%;margin-top:6px}
   .ttsbox .ttsh{font-size:12px;font-weight:800;color:#7dd3fc;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
@@ -1354,7 +1363,7 @@
   <div class="elkey" id="elKeyRow">
     <div class="elkey-h">🎙 ElevenLabs 성우 키 <span class="bdg wait" id="elKeyState">미설정</span></div>
     <div class="keyrow" id="elKeyInputRow">
-      <input type="password" id="elKeyInput" placeholder="sk_… (ElevenLabs API 키 붙여넣기)" autocomplete="off" spellcheck="false" aria-label="ElevenLabs API 키">
+      <input type="password" id="elKeyInput" placeholder="sk_… (ElevenLabs API 키 붙여넣기)" autocomplete="off" spellcheck="false" maxlength="200" aria-label="ElevenLabs API 키">
       <button class="btn primary" id="elKeySave" type="button">저장</button>
     </div>
     <div class="keyrow" id="elKeySavedRow" hidden>
@@ -1374,6 +1383,7 @@
     </div>
     <div class="keyhint">🇰🇷 <b>한국어 무료 성우</b>는 위 목록 첫 줄에서 고르면 <b>키 없이·크레딧 0</b>으로 바로 나옵니다. 파일은 <code>/api/tts</code> 로 만들어지고 <b>서버에 저장되지 않습니다</b>.</div>
     <div class="keyhint">키는 이 브라우저(<code>localStorage</code>)에만 저장되고 <b>api.elevenlabs.io</b> 로만 전송됩니다. 서버·GitHub 저장소에는 저장되지 않습니다. 키를 저장하면 <b>내 계정 보이스</b>를 자동으로 불러옵니다([🔄]로 새로고침).</div>
+    <div class="keyhint">🧹 붙여넣은 키에 <b class="sk">줄바꿈·탭·특수공백·한글</b>이 섞여 있어도 저장할 때 <b>자동으로 걷어 냅니다</b>(<code>sk_…</code> 영문·숫자만 남김). 성우 칸의 <b>🔑 API 키</b> 버튼으로 이 칸을 바로 열 수 있습니다.</div>
   </div>
 </div>
 
@@ -2242,7 +2252,9 @@
           <select id="wvVoice" aria-label="성우 (한국어 무료 · ElevenLabs)"></select>
           <button class="btn small ghost" id="wvVoiceRefresh" type="button" title="ElevenLabs 키로 내 계정 보이스 다시 불러오기">🔄 내 보이스</button>
           <button class="btn small" id="wvVoiceSample" type="button" title="지금 고른 성우와 말 속도 그대로 짧은 샘플을 바로 들어봅니다">🔊 들어보기</button>
+          <button class="btn small ghost" id="wvVoiceKeyBtn" type="button" title="ElevenLabs API 키를 넣는 칸을 열고 바로 입력할 수 있게 이동합니다">🔑 API 키</button>
         </div>
+        <div class="hint" id="wvVoiceKeyState">🔑 ElevenLabs 키 <b>미설정</b> — <b>🇰🇷 한국어 무료 성우</b>는 키 없이 됩니다.</div>
         <div class="hint" id="wvVoiceSampleNote" hidden></div>
         <div class="wvrow" style="flex-wrap:nowrap;align-items:center">
           <label class="flabel" for="wvSpeed" style="flex:0 0 auto">말 속도</label>
@@ -4720,8 +4732,68 @@ var CSVoice = (function () {
   var EL_CACHE = 'cs_elevenlabs_voices_v1';
 
   function base() { return HAS_SERVER ? '' : ORIGIN; }
+
+  /* ── 🔑 키 정제 ─────────────────────────────────────────────────────
+     키를 붙여넣을 때 딸려 들어오는 줄바꿈·탭·특수공백(NBSP)·한글·이모지·
+     보이지 않는 폭 문자는 fetch 헤더('xi-api-key')가 ISO-8859-1 만 받기
+     때문에 "String contains non ISO-8859-1 code point" 오류를 낸다.
+     저장할 때와 보낼 때 모두 이 함수 하나를 거쳐 영문·숫자만 남긴다. */
+  function cleanKey(raw) {
+    var s = String(raw == null ? '' : raw);
+    s = s.replace(/[\u200B-\u200F\u2028\u2029\uFEFF]/g, '');              /* 폭 0·줄 구분 문자 */
+    s = s.replace(/^\s*(?:xi-api-key|authorization)\s*[:=]\s*/i, '');        /* 헤더째 붙여넣은 경우 */
+    s = s.replace(/^bearer\s+/i, '');                                        /* 'Bearer sk_…' */
+    s = s.replace(/[\u2018\u2019\u201C\u201D]/g, '');                      /* 스마트 따옴표 */
+    return s.trim().replace(/[^\x21-\x7E]/g, '');                            /* 공백·비 ASCII 전부 제거 */
+  }
+  function elKeyRaw() {
+    try { return String(localStorage.getItem(EL_KEY) || ''); } catch (e) { return ''; }
+  }
+  var EL_HEAL = { done: false, empty: false };
+  function elSay(msg) {   /* 토스트는 뒤 스크립트에 있다 — 있으면 띄우고 없으면 조용히 */
+    try { if (typeof window.csToast === 'function') window.csToast(msg); } catch (e) {}
+  }
   function elKey() {
-    try { return String(localStorage.getItem(EL_KEY) || '').trim(); } catch (e) { return ''; }
+    var raw = elKeyRaw(), k = cleanKey(raw);
+    if (raw && raw !== k) {
+      if (k) {
+        /* 예전에 숨은 문자와 함께 저장된 키 → 정제본으로 고쳐 두고 알린다(같은 오류 재발 방지) */
+        try { localStorage.setItem(EL_KEY, k); } catch (e) {}
+        if (!EL_HEAL.done) { EL_HEAL.done = true; elSay('저장된 ElevenLabs 키에 섞여 있던 공백·줄바꿈 등 숨은 문자를 자동으로 정리했습니다.'); }
+      } else if (!EL_HEAL.empty) {
+        EL_HEAL.empty = true;
+        elSay('저장된 ElevenLabs 키에 쓸 수 있는 문자가 없습니다 — 성우 칸의 🔑 API 키 버튼으로 다시 넣어 주세요.');
+      }
+    }
+    return k;
+  }
+
+  /* 🔑 성우 칸 → 키 저장 칸 바로가기
+     상단 접힘 패널(#apiGuide)을 열고 #elKeyInput 으로 스크롤·포커스한다.
+     이미 키가 저장돼 있으면 [키 변경]과 같은 상태로 입력 줄을 보여 준다. */
+  function openKeyPanel() {
+    var g = document.getElementById('apiGuide');
+    var gb = document.getElementById('apiGuideBtn');
+    if (g) g.hidden = false;
+    if (gb) gb.setAttribute('aria-expanded', 'true');
+    var row = document.getElementById('elKeyRow');
+    var ir = document.getElementById('elKeyInputRow');
+    var sr = document.getElementById('elKeySavedRow');
+    var inp = document.getElementById('elKeyInput');
+    if (elKey() && ir && sr) { ir.hidden = false; sr.hidden = true; }
+    if (row) {
+      row.classList.add('flash');
+      window.setTimeout(function () { try { row.classList.remove('flash'); } catch (e) {} }, 1750);
+      window.setTimeout(function () {
+        try { row.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+        catch (e) { try { row.scrollIntoView(); } catch (e2) {} }
+      }, 60);
+    }
+    window.setTimeout(function () {
+      if (!inp) return;
+      try { inp.focus({ preventScroll: true }); } catch (e) { try { inp.focus(); } catch (e2) {} }
+    }, 520);
+    return true;
   }
 
   /* 한국어 무료 성우 — /api/tts?voices=1 실측 검증 3종 (+ 어제 쇼핑 쇼츠 v2 톤 프리셋) */
@@ -4853,7 +4925,7 @@ var CSVoice = (function () {
     /* 캐시가 있으면 먼저 보여 주고, force 또는 캐시 없음일 때만 서버로 간다 */
     if (!force && cacheGet().length) { refreshAll(); }
     loading = fetch('https://api.elevenlabs.io/v1/voices', {
-      headers: { 'xi-api-key': key },
+      headers: { 'xi-api-key': cleanKey(key) },
       cache: 'no-store'
     }).then(function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -4918,17 +4990,24 @@ var CSVoice = (function () {
       });
     }
 
-    var k = elKey();
-    if (!k) return Promise.reject(new Error('ElevenLabs API 키가 없습니다 — 한국어 무료 성우를 고르면 키 없이 됩니다.'));
-    return fetch('https://api.elevenlabs.io/v1/text-to-speech/' + v.id + '?output_format=mp3_44100_128', {
-      method: 'POST',
-      headers: { 'xi-api-key': k, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        text: body.slice(0, 4500),
-        model_id: 'eleven_multilingual_v2',
-        voice_settings: { stability: 0.42, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
-      })
-    }).then(function (r) {
+    var k = cleanKey(elKey());
+    if (!k) return Promise.reject(new Error('ElevenLabs API 키가 없습니다 — 성우 칸의 🔑 API 키 버튼으로 넣거나, 한국어 무료 성우를 고르면 키 없이 됩니다.'));
+    var elReq;
+    try {
+      elReq = fetch('https://api.elevenlabs.io/v1/text-to-speech/' + v.id + '?output_format=mp3_44100_128', {
+        method: 'POST',
+        headers: { 'xi-api-key': k, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: body.slice(0, 4500),
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: { stability: 0.42, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
+        })
+      });
+    } catch (e) {
+      /* 헤더에 ISO-8859-1 밖의 문자가 남아 있으면 fetch 가 동기 예외를 던진다 → 그대로 보여 주지 않고 사유를 알린다 */
+      return Promise.reject(new Error('API 키에 쓸 수 없는 문자(줄바꿈·한글·특수공백)가 섞여 있었습니다 — 키를 다시 복사해 저장해 주세요.'));
+    }
+    return elReq.then(function (r) {
       if (!r.ok) throw new Error(friendly(r));
       return r[want]();
     });
@@ -4957,7 +5036,8 @@ var CSVoice = (function () {
   return {
     KO: KO, EL_DEF: EL_DEF, resolve: resolve, selectValueFor: selectValueFor,
     fill: fill, refreshAll: refreshAll, loadEl: loadEl, request: request,
-    ready: ready, label: label, elKey: elKey, pct: pct, list: elList
+    ready: ready, label: label, elKey: elKey, pct: pct, list: elList,
+    cleanKey: cleanKey, openKeyPanel: openKeyPanel
   };
 })();
 
@@ -5174,6 +5254,7 @@ var CSVoice = (function () {
     clearTimeout(toastTimer);
     toastTimer = setTimeout(function(){ toastEl.classList.remove('on'); }, 2400);
   }
+  try { window.csToast = toast; } catch (e) {}   /* 앞쪽 CSVoice(성우 엔진)도 같은 토스트를 쓴다 */
 
   /* ================= tabs + guide ================= */
   var tabVideo = $('#tabVideo'), tabBlog = $('#tabBlog'), tabSum = $('#tabSum'), tabShorts = $('#tabShorts');
@@ -13248,7 +13329,11 @@ var CSVoice = (function () {
     var m = v2GetRaw(V2.MODEL) || 'eleven_multilingual_v2';
     return m === 'eleven_flash_v2_5' ? m : 'eleven_multilingual_v2';
   }
-  function v2Key(){ return String(v2GetRaw(V2.KEY) || '').trim(); }
+  function v2CleanKey(raw){
+    if (window.CSVoice && typeof CSVoice.cleanKey === 'function') return CSVoice.cleanKey(raw);
+    return String(raw == null ? '' : raw).trim().replace(/[^\x21-\x7E]/g, '');
+  }
+  function v2Key(){ return v2CleanKey(v2GetRaw(V2.KEY)); }
   function v2Mask(k){ return k ? ('••••••••' + k.slice(-4)) : ''; }
   function v2Watermark(){ var w = String(v2GetRaw(V2.WM) || '').trim(); return w || V2.WM_DEF; }
 
@@ -13264,6 +13349,10 @@ var CSVoice = (function () {
     if (ir) ir.hidden = !!k;
     if (sr) sr.hidden = !k;
     if (mk) mk.textContent = v2Mask(k);
+    var ks = $('#wvVoiceKeyState');
+    if (ks) ks.innerHTML = k
+      ? ('🔑 ElevenLabs 키 <b style="color:#86efac">저장됨</b> ' + v2Mask(k) + ' — 성우 목록의 <b>🎙️ ElevenLabs 성우</b>를 고르면 이 키로 합성합니다.')
+      : '🔑 ElevenLabs 키 <b>미설정</b> — <b>🇰🇷 한국어 무료 성우</b>는 키 없이 됩니다. 오른쪽 <b>🔑 API 키</b>로 바로 넣을 수 있습니다.';
     var vs = $('#elVoice');
     if (vs){
       var saved = v2GetRaw(V2.VOICE) || 'ko:ko-KR-SunHiNeural';
@@ -13293,13 +13382,24 @@ var CSVoice = (function () {
     var save = $('#elKeySave');
     if (save) save.addEventListener('click', function () {
       var inp = $('#elKeyInput');
-      var v = String((inp && inp.value) || '').trim();
-      if (!v) { toast('ElevenLabs 키를 붙여넣어 주세요.'); return; }
+      var raw = String((inp && inp.value) || '');
+      var v = v2CleanKey(raw);
+      var dropped = Math.max(0, raw.length - v.length);
+      if (!v) { toast(raw ? '붙여넣은 값에서 쓸 수 있는 글자를 찾지 못했습니다 — ElevenLabs API 키(sk_…)를 다시 복사해 주세요.' : 'ElevenLabs 키를 붙여넣어 주세요.'); return; }
+      if (v.indexOf('sk_') !== 0) { toast('ElevenLabs API 키는 sk_ 로 시작합니다 — ElevenLabs → API Keys 에서 다시 복사해 주세요.'); return; }
       if (v.length < 20) { toast('키가 너무 짧습니다 — sk_… 전체를 붙여넣어 주세요.'); return; }
       if (!v2SetRaw(V2.KEY, v)) { toast('저장에 실패했습니다(브라우저 저장 공간 확인).'); return; }
       if (inp) inp.value = '';
       v2RenderSettings();
-      toast('ElevenLabs 키를 이 브라우저에만 저장했습니다.');
+      toast(dropped ? ('키에서 공백·줄바꿈 등 숨은 문자 ' + dropped + '개를 걷어 내고 저장했습니다 — 이제 [🔊 들어보기]를 눌러 보세요.') : 'ElevenLabs 키를 이 브라우저에만 저장했습니다.');
+    });
+    /* 붙여넣는 순간 숨은 문자를 걷어 내 — 저장 전에 눈으로 확인할 수 있게 */
+    var pin = $('#elKeyInput');
+    if (pin) pin.addEventListener('paste', function () {
+      setTimeout(function () {
+        var raw = String(pin.value || ''), v = v2CleanKey(raw);
+        if (v !== raw) { pin.value = v; toast('붙여넣은 키에서 공백·줄바꿈 등 숨은 문자를 걷어 냈습니다.'); }
+      }, 0);
     });
     var ch = $('#elKeyChange');
     if (ch) ch.addEventListener('click', function () {
@@ -13361,8 +13461,11 @@ var CSVoice = (function () {
     var isEl = !(v && v.engine === 'ko');
     if (isEl && !v2Key()){
       toast('ElevenLabs API 키를 먼저 넣어 주세요 — 위 성우 목록 첫 줄의 🇰🇷 한국어 무료 성우는 키 없이 됩니다.');
-      var g = $('#apiGuide'); if (g) { g.hidden = false; }
-      var inp = $('#elKeyInput'); if (inp) inp.focus();
+      if (window.CSVoice && typeof CSVoice.openKeyPanel === 'function') CSVoice.openKeyPanel();
+      else {
+        var g = $('#apiGuide'); if (g) { g.hidden = false; }
+        var inp = $('#elKeyInput'); if (inp) inp.focus();
+      }
       if (box){
         box.hidden = false;
         box.innerHTML = '<div class="ttsh">🔑 ElevenLabs 키가 없습니다</div>' +
@@ -14515,7 +14618,10 @@ var CSVoice = (function () {
     return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
   function ls(k, d) { try { var v = localStorage.getItem(k); return v == null ? d : v; } catch (e) { return d; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
-  function elKey() { return String(ls(EL_KEY, '') || '').trim(); }
+  function elKey() {
+    var raw = ls(EL_KEY, '') || '';
+    return (window.CSVoice && typeof CSVoice.cleanKey === 'function') ? CSVoice.cleanKey(raw) : String(raw).trim().replace(/[^\x21-\x7E]/g, '');
+  }
   function elModel() { return 'eleven_multilingual_v2'; }
   function hexA(hex, a) {
     var h = String(hex || '#38bdf8').replace('#', '');
@@ -17403,6 +17509,17 @@ var CSVoice = (function () {
       CSVoice.loadEl(true).then(function (n) { syncUi(); flash('내 보이스 ' + n + '개를 불러왔습니다.'); })
         .catch(function (e) { flash('보이스 목록을 불러오지 못했습니다 — ' + ((e && e.message) || '')); })
         .then(function () { vrf.disabled = false; });
+    });
+    /* 🔑 API 키 — 성우 칸에서 상단 키 저장 칸을 열고 바로 입력하게 이동 */
+    var vkb = $('#wvVoiceKeyBtn');
+    if (vkb) vkb.addEventListener('click', function () {
+      if (window.CSVoice && typeof CSVoice.openKeyPanel === 'function') { CSVoice.openKeyPanel(); return; }
+      var g = $('#apiGuide'); if (g) g.hidden = false;
+      var gi = $('#elKeyInput');
+      if (gi) {
+        try { gi.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+        gi.focus();
+      }
     });
     /* 🔊 들어보기 — 지금 고른 성우 + 지금 말 속도 그대로 짧은 샘플을 읽어 준다 */
     var vsb = $('#wvVoiceSample');
