@@ -484,6 +484,17 @@
   .wvfoxcut{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;background:#0a1424;padding:3px 7px;font-size:10.4px;font-weight:900;color:#cbd5e1}
   .wvfoxcut select{flex:0 0 auto;width:auto;min-width:0;max-width:104px;background:#08111f;border:1px solid var(--line);border-radius:7px;padding:3px 5px;font-size:10.4px;font-weight:800;color:#e2e8f0}
   .wvbody textarea{width:100%;min-width:0;max-width:100%;background:#08111f;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:11.4px;font-weight:700;color:#e2e8f0;resize:vertical;font-family:inherit}
+  /* 📋 대본 직접 붙여넣기 · 🧪 샘플 */
+  .wvpaste{border:1px solid rgba(56,189,248,.30);border-radius:11px;background:rgba(56,189,248,.06);padding:9px 11px;display:grid;gap:7px;min-width:0}
+  .wvpaste[hidden]{display:none}
+  .wvpaste textarea{width:100%;min-width:0;max-width:100%;background:#08111f;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:11.4px;font-weight:700;color:#e2e8f0;resize:vertical;font-family:inherit;line-height:1.55;height:104px}
+  .wvpasteacts{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+  .wvpastelist{list-style:none;margin:0;padding:0;display:grid;gap:3px;min-width:0}
+  .wvpastelist[hidden]{display:none}
+  .wvpastelist li{display:flex;align-items:baseline;gap:6px;min-width:0;font-size:10.6px;font-weight:800;color:#cbd5e1}
+  .wvpastelist li b{flex:0 0 auto;font-size:9.8px;font-weight:900;color:#7dd3fc;font-variant-numeric:tabular-nums}
+  .wvpastelist li span{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .wvpastelist li i{flex:0 0 auto;font-style:normal;font-size:9.6px;font-weight:900;color:var(--faint);font-variant-numeric:tabular-nums}
   footer .shelf{background:#0a1424;margin:0;font-size:10.9px;font-weight:600;line-height:1.66;color:var(--faint)}
   @media (max-width:430px){
     #wvCanvas{width:126px}
@@ -2249,7 +2260,22 @@
       <span class="wvchip" id="wvTplTag">📊 카드형</span>
       <span class="wvchip" id="wvMusic">BGM —</span>
       <span class="spacer"></span>
+      <button class="btn small" id="wvPasteBtn" type="button" aria-expanded="false" aria-controls="wvPaste">📋 대본 붙여넣기</button>
+      <button class="btn small ghost" id="wvSampleBtn" type="button" data-wvsample="1">🧪 샘플로 바로 만들기</button>
       <button class="btn small ghost" id="wvSetBtn" type="button">⚙ 옵션</button>
+    </div>
+    <div class="wvpaste" id="wvPaste" hidden>
+      <div class="wvrow" style="gap:6px">
+        <span class="flabel" style="margin:0">📋 대본 직접 붙여넣기</span>
+        <span class="hint" id="wvPasteHint" style="margin:0;flex:1 1 180px;min-width:0">타임스탬프([00:00~00:03])·컷 대본·SRT·3~7문장을 그대로 붙여넣으면 컷으로 나눕니다. 해시태그·음성 노트·기준 줄은 자동으로 걷어냅니다.</span>
+      </div>
+      <textarea id="wvPasteTa" spellcheck="false" rows="6" aria-label="붙여넣을 쇼츠 대본" placeholder="예)&#10;[0~3.4초 · 후킹]&#10;  자막: 코스피 5.2% 폭락 (-5.21%)&#10;  나레이션: 코스피 5.2퍼센트 폭락.&#10;&#10;[3.4~16.1초 · 컷 1 — 지수와 하루 흐름]&#10;  자막: 종가 4,869.96 · 코스닥 645(-5.71%) · 사이드카&#10;  나레이션: 종가 4,869. 장중 4,831까지 밀렸다가 되돌렸습니다."></textarea>
+      <div class="wvpasteacts">
+        <button class="btn small primary" id="wvPasteApply" type="button">✅ 이 대본 적용</button>
+        <button class="btn small ghost" id="wvPasteClear" type="button">지우기</button>
+        <span class="hint" id="wvPasteMsg" style="margin:0;flex:1 1 160px;min-width:0">붙여넣고 [✅ 이 대본 적용]을 누르면 미리보기가 바로 바뀝니다. (Ctrl+Enter)</span>
+      </div>
+      <ul class="wvpastelist" id="wvPasteList" hidden></ul>
     </div>
     <div class="wvrow" style="gap:6px"><span class="flabel" style="margin:0">🎨 영상 디자인 템플릿</span><span class="hint" id="wvDesignHint" style="margin:0">선택값은 이 브라우저에 저장됩니다</span></div>
     <div class="wvdesignrow" role="group" aria-label="영상 디자인 템플릿 선택 — 다크 시네마 / 폭스시그널 에디토리얼">
@@ -2380,6 +2406,7 @@
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.6 — 🎬 웹 영상 생성기 <b>📋 대본 직접 붙여넣기</b>(타임스탬프·컷·SRT·문장 대본을 컷 3~8로 자동 변환 · 해시태그·음성 노트 자동 정리) · <b>🧪 샘플로 바로 만들기</b>(11/20 시황 5컷 즉시 로드 → 바로 [▶ 생성])</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.5 — 🎬 웹 영상 생성기 <b>쇼츠 세이프 존 잠금</b>(상단 180·하단 380·좌 60·우 120 · 안전 영역 x 60~960 · y 180~1540) · <b>글자 폭 실측 자동 줄바꿈·자동 축소</b>(칸 밖 이탈 0) · <b>3단 고정 그리드</b>(훅 → 메인 → 자막, gap 28) · <b>영상 양식 3종</b>(📊 정보 카드형 · 📈 모션 차트/비교표형 · 🖼️ 사진 줌인형)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.5 — 🛍️ 추천샵(picks) 연동 — 보관함의 [🛍️ 추천샵] 버튼으로 상품 카드 초안을 <b>JSON 복사</b>하거나 <b>원클릭 업로드</b></div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.4 — 🔍 쇼츠 탐색기 50초 대본 → 🎬 웹 영상 생성기 / ✍️ 쇼츠 스튜디오 <b>원클릭 전송</b> · 🖼️ 블로그 <b>1:1 대표 썸네일(1080×1080)</b> PNG(제목+배지+워터마크 · 스타일 3종) · 🎬 영상 편집기 ↔ 웹 쇼츠 생성기 연결 · 웹 영상 제작 이력(<b>제목·생성일·컷 수</b>)을 보관함에 자동 기록</div>
@@ -14701,18 +14728,18 @@ var CSVoice = (function () {
     ctx.globalAlpha = 1;
     foxBands(ctx, 'surprise');
     var spec = {
-      hookTitle: '외인 -1조2,380억, 오늘 수급이 말하는 것',
+      hookTitle: SAMPLE_SPEC.hook_title,
       watermark: '폭스시그널 · 오늘의 시장 신호',
       words: ['외인', '쌍매도', '수급'], cutCount: 5
     };
     var cut = {
-      text: '개인 +1조6,618억 vs 외인·기관 쌍매도 — 오늘은 숫자 3개로 읽습니다.',
+      text: SAMPLE_SPEC.cuts[0].text,
       hook: spec.hookTitle, idx: 0, dur: 5, start: 0
     };
     drawFoxHead(ctx, spec, 0, 5, 2.2, 5, []);
     drawFoxMain(ctx, spec, cut, 0, 'surprise');
-    drawFoxCaption(ctx, { text: '숫자 3개로 오늘을 읽습니다.', idx: 0 }, 0.7, spec);
-    txLine(ctx, '샘플 미리보기 · 쇼츠 대본을 넣으면 이 디자인으로 그대로 녹화합니다', CW / 2, SAFE.b + 74,
+    drawFoxCaption(ctx, { text: SAMPLE_SPEC.cuts[0].text, idx: 0 }, 0.7, spec);
+    txLine(ctx, '샘플 미리보기 · [🧪 샘플로 바로 만들기] → 이 5컷 그대로 녹화', CW / 2, SAFE.b + 74,
       '800 27px ' + FF, 'rgba(16,32,47,.52)', 'center', 'fx-sample-note');
     txLine(ctx, '🦊 폭스시그널 에디토리얼 · 1080 × 1920', CW / 2, SAFE.b + 120,
       '700 24px ' + FF, 'rgba(16,32,47,.36)', 'center', 'fx-sample-note2');
@@ -15756,6 +15783,258 @@ var CSVoice = (function () {
     return spec;
   }
 
+  /* ---------- 📋 외부 대본 직접 붙여넣기 · 🧪 샘플 5컷 ---------- */
+  var PASTE_MAX = 8;
+  var SAMPLE_SPEC = {
+    title: '코스피 -5.21% 폭락 · 외인 사흘 연속 쌍매도',
+    hook_title: '코스피 -5.21%, 오늘 수급이 말하는 것',
+    series_badge: '샘플 5컷',
+    highlight_words: ['코스피', '쌍매도', '바이오', '상한가'],
+    platform_captions: { instagram_reels: { hashtags: ['#주식', '#코스피', '#마감시황', '#폭스시그널', '#11월20일증시'] } },
+    cuts: [
+      { text: '코스피 -5.21% · 4,869.96', duration: 4.2,
+        tts_text: '코스피 5.2퍼센트 폭락.' },
+      { text: '저 4,831.69(14:34) → 종가 4,869.96 · 코스닥 645(-5.71%) · 사이드카', duration: 8.6,
+        tts_text: '종가 4,869. 장중 4,831까지 밀렸다가 되돌렸습니다. 코스닥은 645, 사이드카가 걸린 날입니다.',
+        hook: '지수와 하루 흐름' },
+      { text: '외인 현물 -1조 2,311억 · 선물 -7,863계약 · 3일 연속 쌍매도', duration: 8.6,
+        tts_text: '외국인은 현물 1조 2천억, 선물 7,863계약. 사흘 연속 쌍매도입니다.',
+        hook: '오늘의 수급' },
+      { text: '한미약품 +6.52% · 마녀공장 +18.66% · 한진칼 +9.26% 신고가', duration: 9.2,
+        tts_text: '그런데 오른 건 반도체가 아니라 바이오와 화장품. 한미약품, 마녀공장, 한진칼 신고가.',
+        hook: '오늘 돈이 간 곳' },
+      { text: '진성 상한가 0종 · 이번 주 -7.95% · 다음 주 4,831', duration: 10.9,
+        tts_text: '대금 100억을 넘긴 상한가는 한 건도 없었습니다. 이번 주 코스피는 7.95퍼센트 하락. 다음 주는 외국인 선물과 4,831만 보세요.',
+        hook: '주간 결산' }
+    ]
+  };
+  function patchText(s) { return String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); }
+  function secOf(tok) {
+    var t = String(tok || '').trim().replace(',', '.');
+    if (!t) return null;
+    if (t.indexOf(':') > -1) {
+      var p = t.split(':'), v = 0, ok = true;
+      p.forEach(function (x) { var n = parseFloat(x); if (!isFinite(n)) ok = false; else v = v * 60 + n; });
+      return ok ? v : null;
+    }
+    var n2 = parseFloat(t);
+    return isFinite(n2) ? n2 : null;
+  }
+  /* 컷 첫 줄 — [00:00~00:03] · [3.4~16.1초 · 컷 1] · SRT 의 00:00:00,000 --> 00:00:03,408 · '컷 2. ...' */
+  function headOf(line) {
+    var s = String(line || '').trim();
+    if (!s) return null;
+    var t = s.replace(/^[-•*·]\s+/, '').replace(/^[\[\(【]\s*/, '');
+    var m = /^(\d{1,2}:\d{2}(?::\d{2})?(?:[.,]\d+)?|\d+(?:[.,]\d+)?)\s*초?\s*(-->|→|~|–|—|-)\s*(\d{1,2}:\d{2}(?::\d{2})?(?:[.,]\d+)?|\d+(?:[.,]\d+)?)\s*초?\s*[\]\)】]?\s*(.*)$/.exec(t);
+    if (m) {
+      var a = secOf(m[1]), b = secOf(m[3]);
+      if (a == null || b == null || b <= a) return null;
+      var rest = patchText(m[4]).replace(/^[·|:,–—-]\s*/, '').replace(/[\]\)】]\s*$/, '').trim();
+      /* 문장 속 시간 표기(예: '09:00 → 10:08 상승')를 컷 머리로 오인하지 않게 */
+      if (/[.!?。！？]$/.test(rest) || rest.length > 40) return null;
+      var isSrt = m[2] === '-->' || /^\d{1,2}:\d{2}:\d{2}/.test(m[1]);
+      return { start: a, end: b, label: rest, text: '', srt: isSrt };
+    }
+    var mc = /^(?:[■▣▶▸●]\s*)?(?:컷|cut|씬|scene)\s*#?\s*(\d+)\s*[.:)\-–—]?\s*(.*)$/i.exec(t);
+    if (mc && mc[2].length <= 120) return { start: null, end: null, label: '컷 ' + mc[1], text: patchText(mc[2]), srt: false };
+    return null;
+  }
+  function hookOf(label) {
+    var t = patchText(label)
+      .replace(/^(?:컷|cut|씬|scene)\s*#?\s*\d+\s*[.:)\-–—]?\s*/i, '')
+      .replace(/^[—–\-:|·]\s*/, '').trim();
+    return (t.length >= 2 && t.length <= 40) ? t : '';
+  }
+  /* 화면 자막으로 쓰기 좋게 다듬는다 — 따옴표·꼬리 구분자 정리, 110자 넘으면 단어 경계에서 자름 */
+  function tidyCut(s) {
+    var t = patchText(s)
+      .replace(/^[-–—·:|]\s*/, '')
+      .replace(/^["'“”‘’\[\]]+|["'“”‘’\[\]]+$/g, '')
+      .replace(/\s*[·|]\s*/g, ' · ')
+      .replace(/\s*[·|]\s*$/, '')
+      .trim();
+    if (t.length > 110) {
+      var cut = t.slice(0, 110);
+      var at = Math.max(cut.lastIndexOf(' · '), cut.lastIndexOf(' '));
+      t = (at > 40 ? cut.slice(0, at) : cut).replace(/\s*[·|]\s*$/, '').trim();
+    }
+    return t;
+  }
+  var RE_FIELD = /^(자막|자막문구|화면|나레이션|내레이션|대사|보이스|음성|tts|TTS|텍스트)\s*[:：]\s*(.*)$/;
+  var RE_META = /^\s*(?:[■▣●]\s*)?(?:해시\s*태그|태그|음성\s*생성\s*노트|음성\s*노트|나레이션\s*본문|타임스탬프|업로드\s*세트|고정\s*댓글|설명|구간\s*경계|출처|주의)\b/;
+  /* 붙여넣은 글 → spec (cuts 3~8) */
+  function parseScriptText(raw) {
+    var src = String(raw || '').replace(/\r\n?/g, '\n').replace(/[\u200B-\u200D\uFEFF]/g, '');
+    if (!patchText(src)) return null;
+    var lines = src.split('\n');
+    var blocks = [], cur = null, lastField = '', skip = false, free = [], title = '', tags = [];
+    function close() { if (cur) { blocks.push(cur); cur = null; lastField = ''; } }
+    lines.forEach(function (line) {
+      var s = String(line || '');
+      var tr = s.trim();
+      if (!tr) { lastField = ''; return; }
+      if (/^#/.test(tr)) {                                    /* 해시태그 줄 */
+        tr.split(/\s+/).forEach(function (w) { if (/^#[^\s#?]+$/.test(w)) tags.push(w); });
+        return;
+      }
+      var mt = /^\[?\s*제목\s*[:：]\s*(.+?)\s*\]?\s*$/.exec(tr);
+      if (mt && !title) { title = patchText(mt[1]).slice(0, 46); return; }
+      var hd = headOf(tr);
+      if (hd) { close(); cur = { start: hd.start, end: hd.end, label: hd.label, srt: !!hd.srt, fields: {}, lines: hd.text ? [hd.text] : [] }; skip = false; return; }
+      if (/^\d{1,4}$/.test(tr)) return;                        /* SRT 번호 줄 */
+      var bracket = /^\[[^\]]{0,60}\]\s*$/.test(tr);
+      if (bracket || RE_META.test(tr) || /^[■▣]/.test(tr) || /^※/.test(tr) ||
+          /^(?:[-•*]?\s*)?(?:기준|조회|출처|주의)\s*[:：]/.test(tr)) {
+        close(); skip = true; return;                          /* 섹션 머리 — 이후 메타 줄은 버린다 */
+      }
+      if (skip) return;
+      var mf = RE_FIELD.exec(tr);
+      if (mf) {
+        var k = mf[1].toLowerCase().replace('내레이션', '나레이션');
+        if (!cur) { free.push(patchText(mf[2])); return; }
+        cur.fields[k] = patchText(mf[2]);
+        lastField = k;
+        return;
+      }
+      if (!cur) { free.push(tr); return; }
+      if (lastField) cur.fields[lastField] = (cur.fields[lastField] + ' ' + tr).trim();
+      else cur.lines.push(tr);
+    });
+    close();
+    /* 타임스탬프 대본과 SRT 자막이 같이 붙어 있으면 앞의 타임스탬프 대본만 쓴다 */
+    if (blocks.some(function (b) { return !b.srt; })) {
+      blocks = blocks.filter(function (b) { return !b.srt; });
+    }
+    /* 같은 컷이 두 번 들어 있는 경우 한 번만 */
+    function keyOf(t) { return String(t || '').replace(/[^0-9A-Za-z가-힣]/g, '').slice(0, 16); }
+    var seen = {}, cuts = [];
+    blocks.forEach(function (b) {
+      var f = b.fields || {};
+      var sub = f['자막'] || f['자막문구'] || f['텍스트'] || '';
+      var nar = f['나레이션'] || f['보이스'] || f['음성'] || f['tts'] || '';
+      var plain = patchText((b.lines || []).join(' '));
+      var text = tidyCut(sub || nar || plain);
+      var tts = tidyCut(nar || sub || plain);
+      if (!text) return;                                       /* 화면 지시만 있는 블록은 버린다 */
+      var k = keyOf(text);
+      if (k && seen[k]) return;
+      seen[k] = 1;
+      cuts.push({
+        text: text, tts_text: tts || text,
+        duration: Math.max(1.6, Math.min(24, (b.end - b.start) || estDur(text))),
+        hook: hookOf(b.label)
+      });
+    });
+    if (!cuts.length) {                                        /* 타임스탬프 없는 일반 대본 → 문장 단위 */
+      var sents = [];
+      free.forEach(function (l) {
+        l.replace(/([.!?。！？])(?=\s|$)/g, '$1\n').split('\n').forEach(function (x) {
+          var t2 = tidyCut(x);
+          if (t2.length >= 8) sents.push(t2);
+        });
+      });
+      if (sents.length > PASTE_MAX) {
+        sents = sents.slice(0, PASTE_MAX - 1).concat([patchText(sents.slice(PASTE_MAX - 1).join(' '))]);
+      }
+      sents.forEach(function (t3) {
+        cuts.push({ text: t3, tts_text: t3, duration: Math.max(2.2, Math.min(12, estDur(t3))), hook: '' });
+      });
+    }
+    if (!cuts.length) return null;
+    if (cuts.length > PASTE_MAX) {                             /* 8컷을 넘으면 뒤쪽을 마지막 컷으로 합친다 */
+      var rest = cuts.slice(PASTE_MAX - 1);
+      var merged = {
+        text: tidyCut(rest.map(function (c) { return c.text; }).join(' · ')),
+        tts_text: rest.map(function (c) { return c.tts_text; }).join(' '),
+        duration: Math.min(24, rest.reduce(function (a, c) { return a + c.duration; }, 0)),
+        hook: rest[0].hook
+      };
+      cuts = cuts.slice(0, PASTE_MAX - 1).concat([merged]);
+    }
+    if (!title) {
+      var h0 = cuts[0].text || '쇼츠 대본';
+      title = h0.length > 46 ? h0.slice(0, 46).trim() : h0;
+    }
+    var uniq = [];
+    tags.forEach(function (t) { if (uniq.indexOf(t) < 0) uniq.push(t); });
+    uniq = uniq.slice(0, 20);
+    return {
+      title: title,
+      hook_title: title.slice(0, 60),
+      series_badge: '붙여넣은 대본',
+      highlight_words: uniq.slice(0, 8).map(function (t) { return t.replace(/^#/, ''); }),
+      platform_captions: uniq.length ? { instagram_reels: { hashtags: uniq } } : {},
+      cuts: cuts
+    };
+  }
+  /* 붙여넣기 칸 UI */
+  function pasteSay(html, kind) {
+    var el = $('#wvPasteMsg');
+    if (!el) return;
+    el.innerHTML = html;
+    el.style.color = kind === 'bad' ? '#fda4af' : kind === 'good' ? '#86efac' : '';
+  }
+  function setPasteOpen(open) {
+    var box = $('#wvPaste'), btn = $('#wvPasteBtn');
+    if (box) box.hidden = !open;
+    if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) { var ta = $('#wvPasteTa'); if (ta) { try { ta.focus(); } catch (e) {} } }
+  }
+  function renderPasteList(spec) {
+    var ul = $('#wvPasteList');
+    if (!ul) return;
+    if (!spec || !spec.cuts || !spec.cuts.length) { ul.hidden = true; ul.innerHTML = ''; return; }
+    ul.innerHTML = spec.cuts.map(function (c, i) {
+      return '<li><b>' + ('0' + (i + 1)).slice(-2) + '</b><span>' + esc(c.text) + '</span><i>' + Math.round(c.d) + 's</i></li>';
+    }).join('');
+    ul.hidden = false;
+  }
+  /* [✅ 이 대본 적용] — 붙여넣은 글을 컷으로 바꿔 미리보기에 바로 올린다 */
+  function applyPasted() {
+    var ta = $('#wvPasteTa');
+    var raw = ta ? ta.value : '';
+    if (S.running) {
+      setPasteOpen(true);
+      pasteSay('녹화 중에는 대본을 바꿀 수 없습니다 — [■ 중지]를 누른 뒤 다시 시도해 주세요.', 'bad');
+      say('녹화 중입니다 — [■ 중지]를 누른 뒤 대본을 바꿔 주세요.', 'bad');
+      return null;
+    }
+    if (!patchText(raw)) {
+      setPasteOpen(true);
+      pasteSay('대본이 비어 있습니다 — 쇼츠 대본을 그대로 붙여넣어 주세요.', 'bad');
+      return null;
+    }
+    var spec = parseScriptText(raw);
+    if (!spec) {
+      setPasteOpen(true);
+      pasteSay('대본을 읽지 못했습니다 — [00:00~00:03] 타임스탬프 · 컷 나누기 · 문장 중 하나로 되어 있어야 합니다.', 'bad');
+      say('대본을 컷으로 나누지 못했습니다 — 타임스탬프나 줄바꿈으로 컷이 나뉘어 있는지 확인해 주세요.', 'bad');
+      return null;
+    }
+    var applied = adoptSpec(spec, '붙여넣은 대본');
+    if (!applied) return null;
+    setPasteOpen(true);
+    renderPasteList(applied);
+    pasteSay('✅ ' + applied.cuts.length + '컷으로 변환했습니다 · 제목 “' + esc(applied.title || '') + '” · [▶ 생성]을 누르면 이 대본으로 녹화합니다.', 'good');
+    say('📋 붙여넣은 대본을 <b>' + applied.cuts.length + '컷</b>으로 바꿨습니다 — 미리보기를 확인하고 <b>[▶ 생성]</b>을 누르세요.', 'good');
+    return applied;
+  }
+  /* [🧪 샘플로 바로 만들기] — 오늘(11/20) 시황 5컷을 실제 컷으로 올린다 */
+  function loadSample() {
+    if (S.running) {
+      pasteSay('녹화 중에는 대본을 바꿀 수 없습니다 — [■ 중지]를 누른 뒤 다시 시도해 주세요.', 'bad');
+      say('녹화 중입니다 — [■ 중지]를 누른 뒤 샘플을 불러와 주세요.', 'bad');
+      return null;
+    }
+    var applied = adoptSpec(SAMPLE_SPEC, '샘플 5컷');
+    if (!applied) return null;
+    var ta = $('#wvPasteTa'); if (ta) ta.value = '';   /* 샘플로 바꿨으니 이전에 붙여 둔 글은 비운다 */
+    renderPasteList(applied);
+    pasteSay('🧪 오늘(11/20) 시황 5컷 샘플을 불러왔습니다 — [▶ 생성]만 누르면 그대로 녹화합니다.', 'good');
+    say('🧪 <b>샘플 5컷</b>을 불러왔습니다 — <b>🦊 폭스시그널 에디토리얼</b>을 골랐다면 여우 포즈까지 자동으로 맞춰집니다. <b>[▶ 생성]</b>을 누르세요.', 'good');
+    return applied;
+  }
+
   /* ---------- 템플릿 선택 ---------- */
   function setTpl(name) {
     S.cfg.tpl = TPL_NAME[name] ? name : 'card';
@@ -15793,6 +16072,26 @@ var CSVoice = (function () {
       if (t.value === 'auto') delete S.foxPose[k];
       else S.foxPose[k] = t.value;
       redraw();
+    });
+    var pbtn = $('#wvPasteBtn');
+    if (pbtn) pbtn.addEventListener('click', function () {
+      var box = $('#wvPaste');
+      setPasteOpen(!(box && !box.hidden));
+    });
+    var papply = $('#wvPasteApply'); if (papply) papply.addEventListener('click', applyPasted);
+    var pclear = $('#wvPasteClear');
+    if (pclear) pclear.addEventListener('click', function () {
+      var ta = $('#wvPasteTa'); if (ta) ta.value = '';
+      renderPasteList(null);
+      pasteSay('붙여넣고 [✅ 이 대본 적용]을 누르면 미리보기가 바로 바뀝니다. (Ctrl+Enter)');
+      var ta2 = $('#wvPasteTa'); if (ta2) { try { ta2.focus(); } catch (e) {} }
+    });
+    var pta = $('#wvPasteTa');
+    if (pta) pta.addEventListener('keydown', function (ev) {
+      if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') { ev.preventDefault(); applyPasted(); }
+    });
+    $$('#wvPanel [data-wvsample]').forEach(function (b) {
+      b.addEventListener('click', function () { loadSample(); });
     });
     var v = $('#wvVoice');
     if (v) v.addEventListener('change', function () {
@@ -15901,7 +16200,10 @@ var CSVoice = (function () {
       return seq.then(function () { return out; });
     },
     layout: function () { return { safe: SAFE, slots: SLOTS, gap: SLOT_GAP, cw: CW, ch: CH }; },
-    parseNums: parseNums
+    parseNums: parseNums,
+    paste: applyPasted,
+    sample: loadSample,
+    parseScript: parseScriptText
   };
 })();
 </script>
