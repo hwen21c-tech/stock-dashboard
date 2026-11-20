@@ -17454,6 +17454,10 @@ var CSVoice = (function () {
       });
     }
     if (vsb) vsb.addEventListener('click', smpSpeak);
+    /* 성우·말 속도·템플릿이 바뀌면 방금 들은 샘플 안내는 지금 설정과 다르므로 지운다 */
+    if (v) v.addEventListener('change', function () { smpNote(''); });
+    if (spdEl) spdEl.addEventListener('input', function () { smpNote(''); });
+    $$('#wvPanel [data-wvdesign]').forEach(function (el) { el.addEventListener('click', function () { smpNote(''); }); });
     var b2 = $('#wvBgm'); if (b2) b2.addEventListener('change', function () { S.cfg.bgm = b2.value; saveCfg(); syncUi(); });
     var s2 = $('#wvSfx'); if (s2) s2.addEventListener('change', function () { S.cfg.sfx = !!s2.checked; saveCfg(); });
     var a2 = $('#wvAccent'); if (a2) a2.addEventListener('input', function () { S.cfg.accent = a2.value; saveCfg(); if (S.spec) S.spec.accent = a2.value; redraw(); });
