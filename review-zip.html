@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>오늘의 체험단 · 특가 포털 | 5대 플랫폼 체험단 큐레이션</title>
-<meta name="description" content="레뷰·리뷰노트·디너의여왕·미블의 모집 중 체험단을 경쟁률 신호등으로 한눈에. 오늘 마감·경쟁률 2:1 이하 빈집털이부터 육아·살림·가전 실속 캠페인까지 매일 아침 갱신합니다.">
+<meta name="description" content="레뷰·리뷰노트·디너의여왕·미블의 모집 중 체험단을 경쟁률 신호등으로 한눈에. 배송형·방문형 유형별 필터로 오늘 마감·경쟁률 2:1 이하 빈집털이부터 생활·식품 캠페인까지 매일 아침 갱신합니다.">
 <meta name="theme-color" content="#070b14">
 <meta property="og:title" content="오늘의 체험단 · 특가 포털">
 <meta property="og:description" content="5대 체험단 플랫폼 통합 큐레이션 — 경쟁률 신호등과 빈집털이로 오늘 넣을 캠페인을 고릅니다.">
@@ -164,9 +164,9 @@ p{margin:0}
 .chan .badge{margin-left:auto;font-size:9.5px;font-weight:900;padding:2px 6px;border-radius:6px;background:rgba(251,191,36,.18);color:#fde68a;border:1px solid rgba(251,191,36,.36)}
 
 /* ============ controls ============ */
-.controls{position:sticky;top:var(--pubbar-h,52px);z-index:40;margin-top:22px;padding:10px 0 8px;
-  background:linear-gradient(180deg,rgba(7,10,18,.97),rgba(7,10,18,.86) 76%,rgba(7,10,18,0));
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+/* [11/20] 상단 고정 해제 — 폴드8 가로화면에서 검색+필터 3줄이 sticky로 카드 절반을 가리던 문제.
+   위 맨 위 포털 탭(.pubbar)만 fixed/sticky로 남기고 이 영역은 본문과 함께 스크롤된다. */
+.controls{position:relative;z-index:40;margin-top:20px;padding:12px 0 6px;border-top:1px solid var(--line);scroll-margin-top:58px}
 .searchrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .field{display:flex;align-items:center;gap:8px;flex:1 1 230px;min-width:0;padding:10px 13px;border-radius:12px;
   background:rgba(8,13,24,.86);border:1px solid var(--line2)}
@@ -186,6 +186,21 @@ p{margin:0}
 .chip.on .c{background:rgba(10,8,2,.3);color:#fff7e6}
 .filterlabel{display:flex;align-items:center;gap:8px;margin-top:9px}
 .filterlabel span{font-size:9.5px;font-weight:900;letter-spacing:.16em;color:var(--mut2);text-transform:uppercase;white-space:nowrap}
+.typehint{margin-top:9px;font-size:10.5px;font-weight:700;color:var(--mut2);line-height:1.7;letter-spacing:-.01em}
+
+/* 필터 접기/펴기 바 + 선택 요약 */
+.fbar{display:flex;align-items:center;gap:8px;margin-top:10px}
+.fbtn{display:inline-flex;align-items:center;gap:7px;min-width:0;max-width:100%;padding:8px 12px;border-radius:11px;
+  background:rgba(148,163,184,.08);border:1px solid var(--line);color:#c9d5e7;font-size:11.5px;font-weight:800;
+  letter-spacing:-.02em;transition:background .15s ease,border-color .15s ease,transform .12s ease}
+.fbtn:hover{background:rgba(148,163,184,.14)}
+.fbtn:active{transform:scale(.98)}
+.fbtn .chev{font-size:10px;opacity:.7;transition:transform .15s ease}
+.fbtn.folded .chev{transform:rotate(-90deg)}
+.fbtn .fsum{font-size:10.5px;font-weight:800;color:var(--am);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56vw}
+.fbtn.folded{border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)}
+.chip.z{opacity:.4}
+.chip.z:hover{opacity:.62}
 
 /* ============ section frame (매거진) ============ */
 section.block{margin-top:36px;padding-top:22px;border-top:1px solid var(--rule)}
@@ -343,6 +358,14 @@ html[data-theme="light"] .chip.wishchip.on{background:linear-gradient(135deg,#ff
 .notice{margin-top:10px;font-size:11px;font-weight:700;color:var(--mut2);line-height:1.8;
   padding:11px 13px;border-radius:10px;background:rgba(148,163,184,.05);border:1px solid var(--line)}
 .empty{padding:34px 16px;text-align:center;font-size:12.5px;font-weight:700;color:var(--mut)}
+.empty.zero{display:flex;flex-direction:column;align-items:center;gap:7px;padding:30px 16px}
+.empty.zero .zt{font-size:13.5px;font-weight:900;color:var(--txt);letter-spacing:-.03em;line-height:1.55}
+.empty.zero .zs{font-size:11.5px;font-weight:700;color:var(--mut2);line-height:1.7}
+.empty.zero .acts{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:8px}
+.empty.zero .acts .btn{padding:8px 13px;font-size:11.5px;border-radius:10px}
+.btn.primary{background:linear-gradient(135deg,rgba(125,211,252,.24),rgba(52,211,153,.18));
+  border-color:rgba(125,211,252,.46);color:#eaf6ff}
+.btn.primary:hover{background:linear-gradient(135deg,rgba(125,211,252,.34),rgba(52,211,153,.26))}
 #toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,16px);z-index:200;opacity:0;pointer-events:none;
   transition:opacity .2s ease,transform .2s ease;max-width:90vw}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -406,7 +429,15 @@ html[data-theme="light"] .chan .ci{background:#f6f2e9;border-color:var(--line)}
 html[data-theme="light"] .chan.on{background:linear-gradient(140deg,#fdf3e0,#ffeef0);border-color:#ecc98f}
 html[data-theme="light"] .chan.on .ct b{color:#8a4b06}
 html[data-theme="light"] .chan .badge{background:#fdecc8;border-color:#ecc98f;color:#8a4b06}
-html[data-theme="light"] .controls{background:linear-gradient(180deg,rgba(250,248,244,.97),rgba(250,248,244,.88) 76%,rgba(250,248,244,0))}
+html[data-theme="light"] .controls{border-top-color:#e6e0d6}
+html[data-theme="light"] .fbtn{background:#fff;border-color:var(--line2);color:#3a352c}
+html[data-theme="light"] .fbtn:hover{background:#f6f2e9}
+html[data-theme="light"] .fbtn.folded{border-color:#ecc98f;background:#fffaf0}
+html[data-theme="light"] .fbtn .fsum{color:#b4620a}
+html[data-theme="light"] .typehint{color:#a2988a}
+html[data-theme="light"] .empty.zero .zt{color:#191713}
+html[data-theme="light"] .empty.zero .zs{color:#8a8072}
+html[data-theme="light"] .btn.primary{background:linear-gradient(135deg,#e0f2fd,#e4f8ee);border-color:#9dc9ea;color:#0b5c8f}
 html[data-theme="light"] .field,html[data-theme="light"] .sel{background:#fff;border-color:var(--line2);color:#23201a}
 html[data-theme="light"] .field input{color:#23201a}
 html[data-theme="light"] .field input::placeholder{color:#a2988a}
@@ -599,14 +630,24 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       <button class="btn" id="shareBtn" type="button">📤 꿀캠페인 TOP3 복사</button>
       <button class="btn" id="resetBtn" type="button">초기화</button>
     </div>
-    <div class="filterlabel"><span>실속</span>
-      <div class="chips" id="quickChips" style="flex:1"></div>
+    <div class="fbar">
+      <button class="fbtn" id="filterToggle" type="button" aria-expanded="true" aria-controls="filterBody">
+        <span aria-hidden="true">🎛️</span><span id="filterToggleTx">필터 접기</span>
+        <span class="chev" aria-hidden="true">▾</span>
+        <span class="fsum hide" id="filterSum"></span>
+      </button>
+    </div>
+    <div id="filterBody">
+    <div class="filterlabel"><span>유형</span>
+      <div class="chips" id="typeChips" style="flex:1"></div>
     </div>
     <div class="filterlabel"><span>플랫폼</span>
       <div class="chips" id="platChips" style="flex:1"></div>
     </div>
     <div class="filterlabel"><span>분류</span>
       <div class="chips" id="catChips" style="flex:1"></div>
+    </div>
+    <div class="typehint">유형은 각 플랫폼이 공개한 원문 분류(배송 / 방문·지역 방문)로 판별했습니다. · 건수는 다른 조건을 반영한 실제 남는 수량입니다.</div>
     </div>
   </div>
 </div>
@@ -747,14 +788,15 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   };
   var PLAT_ORDER = ['revu', 'reviewnote', 'dinnerqueen', 'mrblog', 'gangnam'];
   var CAT_ORDER = ['맛집', '식품', '뷰티', '생활', '디지털', '여가', '패션', '육아', '도서', '기타'];
-  var QUICK = [
-    { k: '육아', label: '🍼 육아' },
-    { k: '생활', label: '🧺 살림' },
-    { k: '디지털', label: '🔌 가전·디지털' },
-    { k: '여가', label: '🎡 여가·체험' }
+  var TYPES = [
+    { k: 'all', label: '전체 유형' },
+    { k: '배송형', label: '📦 배송형' },
+    { k: '방문형', label: '🏃 방문형' },
+    { k: '페이백', label: '💰 페이백' },
+    { k: '미확인', label: '❓ 미확인' }
   ];
 
-  var S = { rows: [], meta: null, ui: { plat: 'all', cat: 'all', q: '', sort: 'deadline', wish: false }, wish: [], limit: 24 };
+  var S = { rows: [], meta: null, ui: { type: 'all', plat: 'all', cat: 'all', q: '', sort: 'deadline', wish: false }, wish: [], limit: 24 };
   var WISH_KEY = 'review_zip_wish';
   var PORTAL_URL = 'https://hwen21c-tech.github.io/stock-dashboard/review-zip.html';
 
@@ -892,18 +934,65 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     return soon || easy;
   }
 
+  /* 유형 — 플랫폼이 공개한 원문 분류만으로 판별한다(추정으로 채우지 않음).
+     · type 필드가 있으면 그대로
+     · 없으면 categoryRaw 의 '배송' 표기 → 배송형, 지역명(예: '성남 판교') → 현장 방문형
+     · flags.visitRequired 가 명시된 경우 그 값을 우선 적용
+     · 어느 것도 없으면 '미확인'으로 남김 */
+  function typeOf(r) {
+    if (r.type === '배송형' || r.type === '방문형' || r.type === '페이백') return r.type;
+    var raw = String(r.categoryRaw || '');
+    var f = (r.flags || {}).visitRequired;
+    if (raw.indexOf('배송') >= 0) return '배송형';
+    if (f === true) return '방문형';
+    if (f === false) return '배송형';
+    if (raw) return '방문형';
+    return '미확인';
+  }
+  function typeLabel(k) {
+    for (var i = 0; i < TYPES.length; i++) { if (TYPES[i].k === k) return TYPES[i].label; }
+    return k;
+  }
+
+  /* skip 에 넣은 필터는 무시하고 나머지 조건을 모두 통과하는지 — 칩 건수 계산용 */
+  function pass(r, skip) {
+    var u = S.ui, q = String(u.q || '').trim().toLowerCase();
+    if (skip !== 'wish' && u.wish && !isWished(r)) return false;
+    if (skip !== 'type' && u.type !== 'all' && typeOf(r) !== u.type) return false;
+    if (skip !== 'plat' && u.plat !== 'all' && r.platform !== u.plat) return false;
+    if (skip !== 'cat' && u.cat !== 'all' && (r.category || '기타') !== u.cat) return false;
+    if (skip !== 'q' && q) {
+      var hay = [r.title, r.brand, r.category, r.offer, r.platformName, r.city].join(' ').toLowerCase();
+      if (hay.indexOf(q) < 0) return false;
+    }
+    return true;
+  }
   function filtered() {
-    var q = String(S.ui.q || '').trim().toLowerCase();
-    return S.rows.filter(function (r) {
-      if (S.ui.wish && !isWished(r)) return false;
-      if (S.ui.plat !== 'all' && r.platform !== S.ui.plat) return false;
-      if (S.ui.cat !== 'all' && r.category !== S.ui.cat) return false;
-      if (q) {
-        var hay = [r.title, r.brand, r.category, r.offer, r.platformName, r.city].join(' ').toLowerCase();
-        if (hay.indexOf(q) < 0) return false;
-      }
-      return true;
-    });
+    return S.rows.filter(function (r) { return pass(r, null); });
+  }
+  function facetHit(facet, r, val) {
+    if (facet === 'plat') return r.platform === val;
+    if (facet === 'cat') return (r.category || '기타') === val;
+    if (facet === 'type') return typeOf(r) === val;
+    return false;
+  }
+  /* n: 다른 조건을 반영한 실제 남는 건수 · base: 필터와 무관한 전체 보유량 */
+  function facetStats(facet, val) {
+    var n = 0, base = 0;
+    for (var i = 0; i < S.rows.length; i++) {
+      var r = S.rows[i];
+      if (!facetHit(facet, r, val)) continue;
+      base++;
+      if (pass(r, facet)) n++;
+    }
+    return { n: n, base: base };
+  }
+  function countExcept(facet) {
+    return S.rows.filter(function (r) { return pass(r, facet); }).length;
+  }
+  function chipHtml(facet, val, label, n, on) {
+    return '<button class="chip' + (on ? ' on' : (n ? '' : ' z')) + '" data-' + facet + '="' + esc(val) +
+      '" type="button">' + label + ' <span class="c">' + n + '</span></button>';
   }
   function sortRows(list) {
     var a = list.slice();
@@ -946,40 +1035,35 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     if (S.meta && S.meta.collectedAt) $('dlAt').textContent = String(S.meta.collectedAt).slice(11, 16);
   }
 
-  function renderQuick() {
-    var counts = {};
-    S.rows.forEach(function (r) { counts[r.category || '기타'] = (counts[r.category || '기타'] || 0) + 1; });
-    var html = '<button class="chip' + (S.ui.cat === 'all' ? ' on' : '') + '" data-cat="all" type="button">전체 실속</button>';
-    QUICK.forEach(function (q) {
-      var n = counts[q.k] || 0;
-      html += '<button class="chip' + (S.ui.cat === q.k ? ' on' : '') + '" data-cat="' + q.k + '" type="button">' +
-        q.label + ' <span class="c">' + n + '</span></button>';
+  function renderTypeChips() {
+    var html = chipHtml('type', 'all', '전체 유형', countExcept('type'), S.ui.type === 'all');
+    TYPES.forEach(function (t) {
+      if (t.k === 'all') return;
+      var s = facetStats('type', t.k);
+      if (!s.base && S.ui.type !== t.k) return; /* 데이터에 없는 유형은 숨김 */
+      html += chipHtml('type', t.k, t.label, s.n, S.ui.type === t.k);
     });
-    $('quickChips').innerHTML = html;
+    $('typeChips').innerHTML = html;
   }
 
   function renderPlatChips() {
-    var counts = {};
-    S.rows.forEach(function (r) { counts[r.platform] = (counts[r.platform] || 0) + 1; });
-    var html = '<button class="chip wishchip' + (S.ui.wish ? ' on' : '') + '" data-wishonly="1" type="button">♥ 찜한 캠페인 <span class="c">' + S.wish.length + '</span></button>';
-    html += '<button class="chip' + (S.ui.plat === 'all' ? ' on' : '') + '" data-plat="all" type="button">전체 <span class="c">' + S.rows.length + '</span></button>';
+    var html = '<button class="chip wishchip' + (S.ui.wish ? ' on' : (S.wish.length ? '' : ' z')) +
+      '" data-wishonly="1" type="button">♥ 찜한 캠페인 <span class="c">' + S.wish.length + '</span></button>';
+    html += chipHtml('plat', 'all', '전체', countExcept('plat'), S.ui.plat === 'all');
     PLAT_ORDER.forEach(function (k) {
-      var n = counts[k] || 0;
-      if (!n) return;
-      html += '<button class="chip' + (S.ui.plat === k ? ' on' : '') + '" data-plat="' + k + '" type="button">' +
-        esc(PLAT[k].name) + ' <span class="c">' + n + '</span></button>';
+      var s = facetStats('plat', k);
+      if (!s.base && S.ui.plat !== k) return;
+      html += chipHtml('plat', k, esc(PLAT[k].name), s.n, S.ui.plat === k);
     });
     $('platChips').innerHTML = html;
   }
 
   function renderCatChips() {
-    var counts = {};
-    S.rows.forEach(function (r) { counts[r.category || '기타'] = (counts[r.category || '기타'] || 0) + 1; });
-    var html = '<button class="chip' + (S.ui.cat === 'all' ? ' on' : '') + '" data-cat="all" type="button">전체 분류</button>';
+    var html = chipHtml('cat', 'all', '전체 분류', countExcept('cat'), S.ui.cat === 'all');
     CAT_ORDER.forEach(function (c) {
-      if (!counts[c]) return;
-      html += '<button class="chip' + (S.ui.cat === c ? ' on' : '') + '" data-cat="' + esc(c) + '" type="button">' +
-        esc(c) + ' <span class="c">' + counts[c] + '</span></button>';
+      var s = facetStats('cat', c);
+      if (!s.base && S.ui.cat !== c) return;
+      html += chipHtml('cat', c, esc(c), s.n, S.ui.cat === c);
     });
     $('catChips').innerHTML = html;
   }
@@ -1028,19 +1112,61 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       : '<div class="empty">키워드를 뽑을 만큼 데이터가 쌓이지 않았습니다.</div>';
   }
 
+  /* 현재 걸린 조건 요약 — 칩 옆 요약·0건 안내·접힘 상태 문구에 공통으로 쓴다 */
+  function filterSummary() {
+    var parts = [];
+    var q = String(S.ui.q || '').trim();
+    if (q) parts.push('검색 ‘' + q + '’');
+    if (S.ui.type !== 'all') parts.push('유형 ‘' + S.ui.type + '’');
+    if (S.ui.plat !== 'all') parts.push('플랫폼 ‘' + ((PLAT[S.ui.plat] || {}).name || S.ui.plat) + '’');
+    if (S.ui.cat !== 'all') parts.push('분류 ‘' + S.ui.cat + '’');
+    if (S.ui.wish) parts.push('찜한 캠페인만');
+    return parts;
+  }
+  function renderFilterSum() {
+    var el = $('filterSum');
+    if (!el) return;
+    var parts = filterSummary();
+    if (!parts.length) { el.textContent = ''; el.classList.add('hide'); return; }
+    el.textContent = '필터 ' + parts.length + '개 적용 중 · ' + parts.join(' · ');
+    var body = $('filterBody');
+    var open = !body || !body.classList.contains('hide');
+    el.classList.toggle('hide', open); /* 펼쳐 있으면 칩이 이미 보여줌 */
+  }
+
   function renderList() {
     var list = sortRows(filtered());
     var show = list.slice(0, S.limit);
     var sortName = S.ui.sort === 'rate' ? '경쟁률 낮은 순' : S.ui.sort === 'popular' ? '신청자 많은 순'
       : S.ui.sort === 'new' ? '최근 등록 순' : '마감 임박 순';
-    var catName = S.ui.cat === 'all' ? '' : (S.ui.cat + ' · ');
+    var parts = filterSummary().filter(function (p) { return p.indexOf('검색') !== 0; });
+    var catName = parts.length ? (parts.join(' · ') + ' · ') : '';
     $('listCount').textContent = (S.ui.wish ? '♥ 찜 ' : '') + catName + list.length + '건 · ' + sortName;
-    $('listGrid').innerHTML = show.length ? show.map(cardHtml).join('')
-      : '<div class="empty" style="grid-column:1/-1">' + (S.ui.wish
-          ? '아직 찜한 캠페인이 없습니다. 카드 오른쪽 <b>♥</b>를 누르면 여기에 모입니다.'
-          : '조건에 맞는 캠페인이 없습니다. 검색어를 지우거나 필터를 풀어 보세요.') + '</div>';
+    if (show.length) {
+      $('listGrid').innerHTML = show.map(cardHtml).join('');
+    } else if (S.ui.wish && !S.wish.length) {
+      $('listGrid').innerHTML = '<div class="empty" style="grid-column:1/-1">아직 찜한 캠페인이 없습니다. 카드 오른쪽 <b>♥</b>를 누르면 여기에 모입니다.</div>';
+    } else {
+      var on = filterSummary();
+      var acts = '';
+      if (S.ui.cat !== 'all') acts += '<button class="btn" data-reset="cat" type="button">전체 분류로 보기</button>';
+      if (S.ui.type !== 'all') acts += '<button class="btn" data-reset="type" type="button">전체 유형으로 보기</button>';
+      if (S.ui.plat !== 'all') acts += '<button class="btn" data-reset="plat" type="button">플랫폼 전체</button>';
+      if (String(S.ui.q || '').trim()) acts += '<button class="btn" data-reset="q" type="button">검색어 지우기</button>';
+      if (S.ui.wish) acts += '<button class="btn" data-reset="wish" type="button">찜 필터 끄기</button>';
+      acts += '<button class="btn primary" data-reset="all" type="button">조건 초기화</button>';
+      $('listGrid').innerHTML = '<div class="empty zero" style="grid-column:1/-1">' +
+        '<div class="zt">현재 선택한 조건' + (on.length ? '(' + esc(on.join(' · ')) + ')' : '') + '에 맞는 캠페인이 0건입니다.</div>' +
+        '<div class="zs">위 카드의 ♥ 찜이나 아래 ‘오늘의 빈집털이’는 조건과 상관없는 추천입니다.<br>조건을 하나씩 풀면 바로 보입니다.</div>' +
+        '<div class="acts">' + acts + '</div></div>';
+    }
     $('moreBtn').classList.toggle('hide', list.length <= S.limit);
     $('moreBtn').textContent = '더 보기 (' + Math.max(0, list.length - S.limit) + '건)';
+    renderFilterSum();
+  }
+
+  function renderAll() {
+    renderTypeChips(); renderPlatChips(); renderCatChips(); renderList();
   }
 
   function renderMeta() {
@@ -1170,13 +1296,29 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     return lines.join('\n');
   }
 
+  /* ---------------------------------------------------------------- 필터 접기/펴기 */
+  var FOPEN_KEY = 'review_zip_filter_open';
+  function filterOpen() {
+    try { var v = localStorage.getItem(FOPEN_KEY); return v === null ? true : v === '1'; } catch (e) { return true; }
+  }
+  function applyFilterOpen(open, save) {
+    var body = $('filterBody'), btn = $('filterToggle'), tx = $('filterToggleTx');
+    if (!body || !btn) return;
+    body.classList.toggle('hide', !open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.classList.toggle('folded', !open);
+    if (tx) tx.textContent = open ? '필터 접기' : '필터 펼치기';
+    renderFilterSum();
+    if (save) { try { localStorage.setItem(FOPEN_KEY, open ? '1' : '0'); } catch (e) {} }
+  }
+
   /* ---------------------------------------------------------------- 이벤트 */
   var qTimer = null;
   document.addEventListener('input', function (ev) {
     if (ev.target && ev.target.id === 'q') {
       clearTimeout(qTimer);
       var v = ev.target.value;
-      qTimer = setTimeout(function () { S.ui.q = v; S.limit = 24; renderList(); }, 160);
+      qTimer = setTimeout(function () { S.ui.q = v; S.limit = 24; renderAll(); }, 160);
     }
   });
   document.addEventListener('change', function (ev) {
@@ -1195,25 +1337,29 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       renderPlatChips(); renderHoney(); renderList();
       return;
     }
-    var c = el.closest ? el.closest('[data-plat],[data-cat],[data-kw],[data-wishonly]') : null;
+    var c = el.closest ? el.closest('[data-type],[data-plat],[data-cat],[data-kw],[data-wishonly]') : null;
     if (c && c.hasAttribute('data-wishonly')) {
       S.ui.wish = !S.ui.wish; S.limit = 24;
-      renderPlatChips(); renderList();
+      renderAll();
       if (S.ui.wish && !S.wish.length) toast('아직 찜한 캠페인이 없어요 — 카드의 ♥를 눌러 보세요');
       return;
     }
+    if (c && c.hasAttribute('data-type')) {
+      S.ui.type = c.getAttribute('data-type'); S.limit = 24;
+      renderAll(); return;
+    }
     if (c && c.hasAttribute('data-plat')) {
       S.ui.plat = c.getAttribute('data-plat'); S.limit = 24;
-      renderPlatChips(); renderList(); return;
+      renderAll(); return;
     }
     if (c && c.hasAttribute('data-cat')) {
       S.ui.cat = c.getAttribute('data-cat'); S.limit = 24;
-      renderQuick(); renderCatChips(); renderList(); return;
+      renderAll(); return;
     }
     if (c && c.hasAttribute('data-kw')) {
       S.ui.q = c.getAttribute('data-kw');
       var qi = $('q'); if (qi) qi.value = S.ui.q;
-      S.limit = 24; renderList();
+      S.limit = 24; renderAll();
       document.querySelector('.controls').scrollIntoView({ block: 'start' });
       return;
     }
@@ -1233,11 +1379,31 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       return;
     }
     if (el && el.id === 'resetBtn') {
-      S.ui = { plat: 'all', cat: 'all', q: '', sort: 'deadline', wish: false };
+      S.ui = { type: 'all', plat: 'all', cat: 'all', q: '', sort: 'deadline', wish: false };
       S.limit = 24;
       var qq = $('q'); if (qq) qq.value = '';
       var ss = $('sortSel'); if (ss) ss.value = 'deadline';
-      renderQuick(); renderPlatChips(); renderCatChips(); renderList();
+      renderAll();
+      return;
+    }
+    if (el && (el.id === 'filterToggle' || (el.closest && el.closest('#filterToggle')))) {
+      var fb = $('filterBody');
+      applyFilterOpen(!!(fb && fb.classList.contains('hide')), true);
+      return;
+    }
+    var rz = el.closest ? el.closest('[data-reset]') : null;
+    if (rz) {
+      var what = rz.getAttribute('data-reset');
+      if (what === 'all') {
+        S.ui = { type: 'all', plat: 'all', cat: 'all', q: '', sort: S.ui.sort, wish: false };
+        var q3 = $('q'); if (q3) q3.value = '';
+      } else if (what === 'cat') { S.ui.cat = 'all'; }
+      else if (what === 'type') { S.ui.type = 'all'; }
+      else if (what === 'plat') { S.ui.plat = 'all'; }
+      else if (what === 'wish') { S.ui.wish = false; }
+      else if (what === 'q') { S.ui.q = ''; var q4 = $('q'); if (q4) q4.value = ''; }
+      S.limit = 24;
+      renderAll();
       return;
     }
   });
@@ -1246,8 +1412,9 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   function boot(data) {
     S.meta = data.meta || {};
     S.rows = prepare(data.campaigns || []);
-    renderStats(); renderQuick(); renderPlatChips(); renderCatChips();
-    renderHoney(); renderKeywords(); renderList(); renderMeta();
+    renderStats(); renderAll();
+    renderHoney(); renderKeywords(); renderMeta();
+    applyFilterOpen(filterOpen(), false);
     mountAds();
   }
 
