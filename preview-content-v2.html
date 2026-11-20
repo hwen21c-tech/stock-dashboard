@@ -11047,6 +11047,13 @@ var CSVoice = (function () {
   function slotBreadthLine(){
     var b = creamBreadth();
     if (!b) return { text: '', basis: '' };
+    if (b.all && !b.kospi && !b.kosdaq){
+      var au = Number(b.all.up), ad = Number(b.all.down);
+      var ar = (au + ad) ? (au / (au + ad) * 100) : null;
+      return { text: '코스피+코스닥 상승 ' + (isFinite(au) ? au.toLocaleString('ko-KR') : '—') +
+        ' / 하락 ' + (isFinite(ad) ? ad.toLocaleString('ko-KR') : '—') +
+        (ar != null ? ' → 상승 비율 ' + ar.toFixed(1) + '%' : ''), basis: b.basis || '' };
+    }
     function one(o, nm){
       if (!o) return nm + ' —';
       var up = Number(o.up) , dn = Number(o.down), fl = o.flat;
@@ -14536,6 +14543,11 @@ var CSVoice = (function () {
         return { kospi: k, kosdaq: q || null, basis: '네이버 상승·하락 종목 수 ' + (api.generatedAtKst ? String(api.generatedAtKst).slice(11, 16) : '') };
       }
     }
+    /* /api/breadth 가 아직 배포 전일 때 — 관제탑 페이지가 이미 계산해 둔 시장 폭(코스피+코스닥 합산)을 읽는다 */
+    var ix = V2.breadthIndex;
+    if (ix && isFinite(ix.up) && isFinite(ix.down)){
+      return { kospi: null, kosdaq: null, all: ix, basis: '관제탑 만쥬 시장 폭(코스피+코스닥 합산) ' + (ix.at ? String(ix.at).slice(11, 16) : '') };
+    }
     var b = V2.data && V2.data.brief;
     if (b){
       var txt = String((b.bodyExcerpt || '') + '\n' + (b.summaryLine || ''));
@@ -14555,7 +14567,35 @@ var CSVoice = (function () {
     return v2Json([v2Api('/api/breadth')]).then(function(j){
       if (j && j.ok && j.markets) V2.breadth = { at: Date.now(), data: j };
       return V2.breadth || null;
-    }).catch(function(){ return null; });
+    }).catch(function(){ return null; }).then(function(r){
+      if (r) return r;
+      return loadBreadthFromDashboard().then(function(x){ return x ? { at: Date.now(), fallback: true } : null; }).catch(function(){ return null; });
+    });
+  }
+  /* 관제탑(index.html)이 만쥬 시장분위기 계산에 쓰는 window.MANJU_DATA.breadth 를 읽어 온다.
+     · 같은 출처(GitHub Pages)의 파일이라 CORS 없이 읽힌다. 하루 한 번만 sessionStorage 에 캐시한다.
+     · 파일이 크므로(수 MB) 실패하면 조용히 포기하고 값 없음으로 남긴다 — 지어내지 않는다. */
+  function loadBreadthFromDashboard(){
+    if (V2.breadthIndex) return Promise.resolve(V2.breadthIndex);
+    var key = 'cs2_breadth_v1_' + new Date().toISOString().slice(0, 10);
+    try {
+      var c = sessionStorage.getItem(key);
+      if (c){ var cj = JSON.parse(c); if (cj && isFinite(cj.up)){ V2.breadthIndex = cj; return Promise.resolve(cj); } }
+    } catch(e){}
+    if (!window.fetch) return Promise.resolve(null);
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var tm = setTimeout(function(){ try { if (ctrl) ctrl.abort(); } catch(e){} }, 15000);
+    return fetch('./index.html', { cache: 'force-cache', signal: ctrl ? ctrl.signal : undefined })
+      .then(function(r){ clearTimeout(tm); if (!r.ok) throw new Error('HTTP ' + r.status); return r.text(); })
+      .then(function(txt){
+        var m = /"breadth"\s*:\s*\{\s*"up"\s*:\s*(\d+)\s*,\s*"down"\s*:\s*(\d+)\s*(?:,\s*"ratio"\s*:\s*([\d.]+))?/.exec(txt);
+        if (!m) return null;
+        var j = { up: Number(m[1]), down: Number(m[2]), ratio: m[3] ? Number(m[3]) : null, at: new Date().toISOString() };
+        V2.breadthIndex = j;
+        try { sessionStorage.setItem(key, JSON.stringify(j)); } catch(e){}
+        return j;
+      })
+      .catch(function(){ clearTimeout(tm); return null; });
   }
   function creamEmpty(g, W, H, msg, hint){
     cvText(g, msg, 42, Math.round(H / 2) - 6, Math.round(W / 46), CREAM.mute, 'left', 800, W - 90);
@@ -14631,15 +14671,15 @@ var CSVoice = (function () {
     var d = creamBreadth();
     var sq = (W === H);
     creamBase(g, W, H, '상승 vs 하락 종목 — 오늘 시장 폭', d ? (d.basis + ' · 단위 종목 수') : '시장 폭 데이터 대기');
-    var k = d && d.kospi, q = d && d.kosdaq;
-    if (!k && !q){
+    var k = d && d.kospi, q = d && d.kosdaq, allOnly = !!(d && d.all && !k && !q);
+    if (!k && !q && !allOnly){
       creamEmpty(g, W, H, '상승·하락 종목 수를 받지 못했습니다.',
         '[🔄 실데이터 새로고침]을 누르면 /api/breadth(네이버 상승·하락 종목 수)를 다시 읽습니다 — 없는 값은 만들지 않습니다.');
       creamMark(g, W, H);
       return;
     }
     var sum = { up: 0, down: 0, flat: 0 }, have = 0;
-    [k, q].forEach(function(o){
+    (allOnly ? [d.all] : [k, q]).forEach(function(o){
       if (!o) return;
       have += 1;
       sum.up += Number(o.up) || 0;
@@ -14648,10 +14688,11 @@ var CSVoice = (function () {
     });
     var denom = sum.up + sum.down;
     var ratio = denom ? (sum.up / denom) * 100 : null;
-    var rows = [{ o: k, name: '코스피' }, { o: q, name: '코스닥' }];
+    var rows = allOnly ? [{ o: d.all, name: '코스피+코스닥' }] : [{ o: k, name: '코스피' }, { o: q, name: '코스닥' }];
     var top = sq ? 268 : 214;
     var rowGap = sq ? 150 : 112;
     var x0 = 42 + Math.round(W / 12), x1 = W - 42 - Math.round(W / 9);
+    if (allOnly){ top = sq ? 260 : 230; rowGap = 0; }
     rows.forEach(function(r, i){
       var y = top + i * rowGap;
       cvText(g, r.name, 42, y + 20, Math.round(W / 54), CREAM.ink, 'left', 900);
