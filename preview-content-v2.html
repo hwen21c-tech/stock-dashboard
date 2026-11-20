@@ -993,6 +993,14 @@
     .out-card .out-head h3{flex:1 1 100%}
     .out-card .out-head .spacer{display:none}
     .out-card .out-head .btn{flex:1 1 auto;justify-content:center;min-width:0}
+    /* 서식 복사·글쓰기 링크 4개는 2×2로 — 400px에서도 가로 넘침 0 */
+    .out-card .out-head #copyHtmlBtn,
+    .out-card .out-head #copyTistoryBtn,
+    .out-card .out-head .wlink{flex:1 1 calc(50% - 4px);white-space:normal;line-height:1.25;text-align:center;justify-content:center;min-width:0}
+    .out-card .pubbar .btn,
+    .out-card .pubbar .ptoggle{flex:1 1 100%;justify-content:center;white-space:normal;line-height:1.3;text-align:center}
+    .imgitem{flex-wrap:wrap}
+    .imgitem .btn{margin-left:0;flex:1 1 100%}
   }
 
   /* ---------- 🎬 콘텐츠 모드 세그먼트 (블로그 / 쇼츠) ---------- */
@@ -1221,6 +1229,22 @@
   .cvh{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:900;margin-bottom:8px;flex-wrap:wrap}
   .cvh .btn{margin-left:auto}
   .cvitem canvas{width:100%;height:auto;display:block;border-radius:9px;background:#070c14}
+  .cvitem canvas.cream{background:#F7F3E9}
+  .imgset{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin:6px 0 12px}
+  .imgitem{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:var(--panel2)}
+  .imgitem b{font-size:12.5px;color:#f8fafc}
+  .imgitem span{font-size:11.5px;color:#94a3b8;font-family:ui-monospace,monospace}
+  .imgitem .btn{margin-left:auto}
+  .wlink{text-decoration:none}
+  .pubbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:8px 11px;border-bottom:1px solid var(--line);background:rgba(246,225,153,.05)}
+  .pubbar .ptoggle{margin:0;font-size:11.5px;gap:5px}
+  .btn.tistory{background:rgba(244,114,182,.14);color:#f9a8d4;border-color:rgba(244,114,182,.42)}
+  .btn.tistory:hover{filter:brightness(1.18)}
+  .tagstrip{display:flex;flex-wrap:wrap;gap:6px;padding:8px 11px;border-bottom:1px solid var(--line)}
+  .tagstrip .tg{font-size:12px;font-weight:800;color:#3a2c10;background:#f6e199;border-radius:999px;padding:3px 9px;border:1px solid #e8cf8a}
+  .outwhite{padding:16px 15px;background:#ffffff;color:#1f2937;max-height:72vh;overflow:auto}
+  .outwhite .wbnote{font-size:11.5px;color:#64748b;margin:0 0 12px;font-weight:700;line-height:1.6}
+  .outwhite img{max-width:100%}
   .cvrow{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
   .cvrow input{flex:1 1 150px;min-width:0}
   .cvrow select{flex:0 0 auto}
@@ -1670,6 +1694,15 @@
       <div class="matsep"></div>
       <div class="field" style="margin-top:0">
         <div class="flabel">오늘 관제탑 시황 1클릭 <span class="bdg info">지수 · 수급 · 주도 테마 · 대장주</span></div>
+        <div class="matpanel-row" style="margin-top:0">
+          <span class="flabel" style="margin:0">🦊 폭스시그널 시간대 1클릭</span>
+          <button class="btn small primary" id="slotPreBtn" type="button" title="장전 시황 재료를 채우고 📈 주식 시황 + 🦊 장전 양식(5번)으로 바꿉니다">🌅 장전</button>
+          <button class="btn small primary" id="slotNoonBtn" type="button" title="점심 시황 재료를 채우고 📈 주식 시황 + 🦊 점심 양식(6번)으로 바꿉니다">☀️ 점심</button>
+          <button class="btn small primary" id="slotCloseBtn" type="button" title="장마감 결산 재료를 채우고 📈 주식 시황 + 🦊 장마감 양식(7번)으로 바꿉니다">🌆 장마감</button>
+        </div>
+        <div class="matpanel-row" style="margin-top:4px">
+          <span class="hint" id="slotHint">누르면 그 시간대 <b>관제탑 실측</b>으로 [참고 자료]·[주제]를 채우고, <b>📈 주식 시황 + 폭스시그널 양식</b>으로 바꾼 뒤 <b>크림 그래프·대표 썸네일</b>까지 다시 그립니다. 받지 못한 값은 비워 둡니다.</span>
+        </div>
         <div class="matpanel-row">
           <button class="btn small primary" id="mktBtn">📡 오늘 시황 불러오기</button>
           <button class="btn small ghost" id="mktCopyBtn" hidden>요약 복사</button>
@@ -1728,7 +1761,13 @@
             <span class="stbadge">🏆 블로거 양식</span>
             <label class="stswitch" for="styleToggle"><input type="checkbox" id="styleToggle" checked> 자동 적용 (ON)</label>
           </div>
-          <div class="bpickrow" id="bloggerPick" role="group" aria-label="블로거 양식 1·2·3·4번 선택"></div>
+          <div class="bpickrow" id="bloggerPick" role="group" aria-label="블로거 양식 선택(1·2·3번 · 폭스시그널 시간대 · 4번 내 블로거)"></div>
+          <div class="quick" style="margin-top:7px">
+            <span class="hint" style="margin:0 6px 0 0">🦊 시간대 1클릭 →</span>
+            <button class="btn small" id="slotPreBtn2" type="button">🌅 장전</button>
+            <button class="btn small" id="slotNoonBtn2" type="button">☀️ 점심</button>
+            <button class="btn small" id="slotCloseBtn2" type="button">🌆 장마감</button>
+          </div>
           <div class="stnow" id="styleNow">적용 중인 양식: —</div>
           <div class="stbody" id="styleBody"></div>
           <div class="mybox" id="myBlogBox" hidden>
@@ -1900,6 +1939,26 @@
             <canvas id="cvSt" role="img" aria-label="종목 차트 미리보기"></canvas>
           </div>
         </div>
+        <div class="cvcream">
+          <div class="cvh" style="margin:16px 0 6px">🖼️ 블로그 그래프 3종 — 크림 아이보리(#F7F3E9) 에디토리얼 <button class="btn small primary" id="creamAllSave" type="button">🖼️ 3장 한 번에 저장</button></div>
+          <p class="hint">위 다크 차트와 별개로, <b>흰·밝은 블로그 본문</b>에 어울리는 <b>크림 아이보리(#F7F3E9)</b> 바탕 차트입니다. 값은 관제탑 실측(<b>/api/breadth</b> · 수급 타임라인 · 확정 브리핑)에서 읽고, 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다. <b>본문의 [📸 그래프 자리]와 아래 ②③은 같은 PNG입니다.</b></p>
+          <div class="imgset">
+            <div class="imgitem"><b>① 대표 썸네일</b><span>thumbnail.png · 1200×630</span><button class="btn small" type="button" data-imgsave="thumb">📥 저장</button></div>
+            <div class="imgitem"><b>② 수급 그래프</b><span>flow.png · 크림</span><button class="btn small" type="button" data-imgsave="sup">📥 저장</button></div>
+            <div class="imgitem"><b>③ 종목 대비 그래프</b><span>sectors.png · 크림</span><button class="btn small" type="button" data-imgsave="breadth">📥 저장</button></div>
+          </div>
+          <div class="cvgrid">
+            <div class="cvitem">
+              <div class="cvh">② 수급 그래프 — 투자자별 순매수(개인 · 외국인 · 기관 × 코스피/코스닥) <button class="btn small primary" type="button" data-cvdl="sup">📥 flow.png 저장</button></div>
+              <canvas id="cvCreamSup" class="cream" role="img" aria-label="크림 아이보리 투자자별 수급 막대 차트 미리보기"></canvas>
+            </div>
+            <div class="cvitem">
+              <div class="cvh">③ 종목 대비 그래프 — 상승 vs 하락 종목(오늘 시장 폭) <button class="btn small primary" type="button" data-cvdl="breadth">📥 sectors.png 저장</button></div>
+              <canvas id="cvCreamBreadth" class="cream" role="img" aria-label="크림 아이보리 상승·하락 종목 대비 막대 차트 미리보기"></canvas>
+            </div>
+          </div>
+          <div class="cvnote" id="cvCreamNote">관제탑 실데이터로 그립니다.</div>
+        </div>
         <div class="t11wrap">
           <div class="card-head" style="margin-bottom:6px">
             <span class="num">🖼️</span><h2>블로그 1:1 대표 썸네일(표지)</h2>
@@ -1933,7 +1992,10 @@
             <button class="btn small" id="editOutBtn">✎ 편집</button>
             <button class="btn small ghost" id="saveBlogBtn">보관함에 저장</button>
             <button class="btn small primary" id="copyBtn">복사</button>
-            <button class="btn small naver" id="copyHtmlBtn" title="네이버 스마트에디터·티스토리·워드에 붙여넣으면 굵은 소제목·인용구·표·불릿 서식이 그대로 살아 있는 HTML로 복사합니다">📋 네이버 서식 복사</button>
+            <button class="btn small naver" id="copyHtmlBtn" title="네이버 스마트에디터에 붙여넣으면 굵은 소제목·인용구·표·형광펜·수치 색이 그대로 살아 있는 HTML로 복사합니다">📋 네이버 서식 복사</button>
+            <button class="btn small tistory" id="copyTistoryBtn" title="티스토리 글쓰기(HTML 모드·기본 모드)에 붙여넣어도 색·형광펜·표·인용구가 깨지지 않도록 인라인 스타일을 맞춘 HTML로 복사합니다">📋 티스토리 서식 복사</button>
+            <a class="btn small ghost wlink" href="https://foxsignal.tistory.com/manage/newpost" target="_blank" rel="noopener noreferrer" title="내 티스토리 글쓰기 페이지를 새 창으로 엽니다">🦊 티스토리 글쓰기 ↗</a>
+            <a class="btn small naver wlink" href="https://blog.naver.com/GoBlogWrite.naver" target="_blank" rel="noopener noreferrer" title="내 네이버 블로그 글쓰기 페이지를 새 창으로 엽니다">💚 네이버 글쓰기 ↗</a>
           </div>
           <div class="outact" style="padding:0 11px 9px;border-bottom:1px solid var(--line)">
             <button class="btn small primary" id="proofBtn" type="button" title="편집장 관점으로 한 번 더 점검합니다: 거짓 경험담·AI 문구·양식 누락·맞춤법">✨ 2차 검수·다듬기</button>
@@ -1943,6 +2005,14 @@
             <button class="btn small primary" id="msBtn" type="button" title="이 한 편을 네이버·티스토리·인스타·쇼츠 4채널로 한 번에 바꿉니다">🚀 4채널 동시 변환</button>
             <button class="btn small primary" id="blogToShortsBtn" type="button" title="이 글을 50초 5컷 쇼츠 대본으로 바꿔 복사하고, 📱 쇼츠 스튜디오 대본 칸과 🎬 웹 영상 생성기에 바로 넣습니다">📱 쇼츠로 변환</button>
           </div>
+          <div class="pubbar">
+            <button class="btn small ghost" id="whitePrevBtn" type="button" aria-pressed="false" title="티스토리·네이버 흰 바탕에 붙여넣었을 때의 색·형광펜·표·인용구 모습을 그대로 확인합니다(복사본과 같은 HTML)">📄 흰 배경 미리보기</button>
+            <label class="ptoggle"><input type="checkbox" id="ytBoxOn" checked> 📺 유튜브 @폭스시그널 박스</label>
+            <button class="btn small" id="tagCopyBtn" type="button" title="검색 태그 10개를 만들어 한 번에 복사합니다(SEO 태그가 있으면 그 값을 씁니다)">🏷️ 태그 10개 복사</button>
+            <button class="btn small primary" id="saveAllGraphs" type="button" title="대표 썸네일 + 크림 수급 차트 + 상승·하락 차트를 PNG로 한 번에 저장합니다">🖼️ 그래프 전체 저장</button>
+          </div>
+          <div class="tagstrip" id="tagStrip" hidden></div>
+          <div class="outwhite" id="outWhite" hidden></div>
           <div class="proofbadge" id="proofNote" hidden></div>
           <pre class="out" id="outText"></pre>
           <textarea class="outedit" id="outEdit" hidden aria-label="초안 직접 편집"></textarea>
@@ -6832,6 +6902,9 @@ var CSVoice = (function () {
     if (info) info.textContent = charLen(el.value || '') + '자 · 이 브라우저에 저장 · AI가 지어낸 경험담은 쓰지 않습니다';
   }
 
+  /* 모든 블로그 생성 프롬프트에 붙는 표기 규칙 — 형광펜 + 수치 부호 강조 */
+  var BLOG_FMT_RULE = '표기 규칙(반드시 지킨다): ① 중요 결론·핵심 문장 3~5곳을 ==문장== 으로 감싼다(형광펜으로 칠해진다). ② 수치는 부호를 붙여 쓴다 — 상승·유입은 +(예: +12.31%, +1,240억, +1조2,950억), 하락·유출은 -(예: -5.21%, -980억). ③ 부호 없이 숫자만 쓰거나 단위를 바꾸지 않는다.';
+
   function blogPayload(topic, f){
     var th = guessTheme(f);
     var pk = pickOf(themeOfForm(f));
@@ -6844,7 +6917,8 @@ var CSVoice = (function () {
         name: st.name, who: st.who, structure: st.structure, rhythm: st.rhythm,
         symbols: st.symbols, voice: st.voice, rules: st.rules
       } : null,
-      form: { name: f.name, tone: f.tone, sections: f.sections, highlight: f.highlight },
+      form: { name: f.name, tone: f.tone, sections: f.sections,
+              highlight: [f.highlight, BLOG_FMT_RULE].filter(Boolean).join('\n') },
       toneSample: getSample(f.id),
       experienceNote: expNoteText(),
       sourceMaterial: srcText(),
@@ -7121,8 +7195,8 @@ var CSVoice = (function () {
      - 썸네일: Canvas 1200×630 PNG. 외부 API·키 없이 100% 동작.
      ================================================================ */
   var PHOTO = { slots: [], cache: {}, includeInRich: true, style: 0 };
-  var PHOTO_TAG_RE = /\[(?:📸|📷)\s*(?:내\s*)?(?:사진|책\s*표지)[^\]]{0,240}\]/g;
-  var PHOTO_LINE_RE = /^[\s>*\-]*\[(?:📸|📷)\s*(?:내\s*)?(?:사진|책\s*표지)[^\]]*\]\s*$/;
+  var PHOTO_TAG_RE = /\[(?:📸|📷)\s*(?:내\s*)?(?:사진|책\s*표지|여기에)[^\]]{0,240}\]/g;
+  var PHOTO_LINE_RE = /^[\s>*\-]*\[(?:📸|📷)\s*(?:내\s*)?(?:사진|책\s*표지|여기에)[^\]]*\]\s*$/;
   var THUMB_STYLES = [
     { bg: ['#071019', '#0d2033'], accent: '#38bdf8', glow: 'rgba(56,189,248,.22)', chip: 'rgba(56,189,248,.16)', chipText: '#bae6fd' },
     { bg: ['#0b1512', '#123024'], accent: '#22c55e', glow: 'rgba(34,197,94,.20)', chip: 'rgba(34,197,94,.16)', chipText: '#bbf7d0' },
@@ -7136,6 +7210,11 @@ var CSVoice = (function () {
       .replace(/^(📸|📷)/, '')
       .replace(/^\s*/, '');
     var mine = 0, cover = '', kind = 'search';
+    /* [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] — 사진 검색이 아니라 '그래프 첨부 자리' */
+    if (/^여기에/.test(inner) || /^(그래프|[①-③])/.test(inner)){
+      var gdesc = inner.replace(/^여기에\s*/, '').trim();
+      if (/그래프|flow\.png|sectors\.png|png/i.test(gdesc)) return { desc: gdesc.slice(0, 140), q: '', legacy: false, mine: 0, cover: '', kind: 'graph' };
+    }
     var mm = /^내\s*사진\s*(\d+)/.exec(inner);
     if (mm){
       mine = Number(mm[1]) || 1;
@@ -7198,6 +7277,15 @@ var CSVoice = (function () {
   }
 
   function photoCardHtml(slot, i){
+    if (slot.kind === 'graph'){
+      var gdesc = String(slot.desc || '').replace(/^여기에\s*/, '');
+      var gf = /수급|flow/i.test(gdesc);
+      return '<div class="pslot" data-i="' + i + '">' +
+        '<div class="phead"><span class="pnum">📊 그래프 자리</span><span class="pdesc">' + esc(gdesc.slice(0, 80)) + '</span></div>' +
+        '<div class="pwait">본문 이 자리에 <b>' + (gf ? '② 수급 그래프(flow.png)' : '③ 종목 대비 그래프(sectors.png)') + '</b>를 첨부하세요.</div>' +
+        '<div class="quick"><button type="button" class="btn small primary" data-graphdl="' + (gf ? 'sup' : 'breadth') + '">📥 ' + (gf ? 'flow.png' : 'sectors.png') + ' 저장</button>' +
+        '<button type="button" class="btn small ghost" data-goto-chart="1">📊 그래프 카드로</button></div></div>';
+    }
     if (slot.mine){
       var mp = MINE.list[slot.mine - 1] || null;
       var mhead = '<div class="phead"><span class="pnum">내 사진 ' + slot.mine + '</span>' +
@@ -7881,14 +7969,15 @@ var CSVoice = (function () {
     var stat = $('#photoStat');
     var nm = PHOTO.slots.filter(function(s){ return s.mine; }).length;
     var cv = PHOTO.slots.filter(function(s){ return s.cover; }).length;
+    var gp = PHOTO.slots.filter(function(s){ return s.kind === 'graph'; }).length;
     if (stat) stat.textContent = PHOTO.slots.length
-      ? '사진 ' + PHOTO.slots.length + '곳' + (nm ? ' · 내 사진 ' + nm : '') + (cv ? ' · 표지 ' + cv : '')
+      ? '사진 ' + PHOTO.slots.length + '곳' + (nm ? ' · 내 사진 ' + nm : '') + (cv ? ' · 표지 ' + cv : '') + (gp ? ' · 그래프 ' + gp : '')
       : '사진 자리 없음';
     card.hidden = false;
     drawThumb();
     if (autoSearch){
       /* 내 사진·표지 자리는 검색하지 않는다 — 실제 사진이 이미 정해져 있다. */
-      PHOTO.slots.forEach(function(s, i){ if (!s.mine && !s.cover) searchPhotoSlot(i); });
+      PHOTO.slots.forEach(function(s, i){ if (!s.mine && !s.cover && s.kind !== 'graph') searchPhotoSlot(i); });
     }
   }
 
@@ -8463,32 +8552,57 @@ var CSVoice = (function () {
      (동적 웹 sd_live 전환 시에도 이 블록을 그대로 재사용: window.CS_RICH)
      ================================================================ */
   var RICH = (function(){
-    function inline(s){
+    var MK = { mark: '#f6e199', up: '#781b33', down: '#1a5490' };
+    /* +상승·유입 / -하락·유출 수치만 색칠한다 — 날짜(2026-11-20)·범위(3~5)·단순 마이너스 목록은 건드리지 않는다 */
+    var NUM_RE = /(^|[\s(\[·,|>~→←–—=])([+\-−])(\d[\d,]*(?:\.\d+)?(?:(?:조|억|만)\d[\d,]*(?:\.\d+)?)*(?:%|p|pt|bp|억|조|만|계약|원|배|개|건|틱|포인트)?)/g;
+    function paintNums(t){
+      return t.replace(NUM_RE, function(m, pre, sign, body){
+        var c = sign === '+' ? MK.up : MK.down;
+        return pre + '<span style="color:' + c + ';font-weight:700">' + sign + body + '</span>';
+      });
+    }
+    function inline(s, opt){
+      var noColor = !!(opt && opt.noColor);
       var t = esc(s);
-      t = t.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:13px">$1</code>');
+      var slot = [];
+      function hold(html){ slot.push(html); return '\u0000' + (slot.length - 1) + '\u0001'; }
+      /* ① 코드·URL 은 먼저 빼 둔다 — 안쪽까지 색칠·형광펜이 들어가지 않게 */
+      t = t.replace(/`([^`]+)`/g, function(m, c){
+        return hold('<code style="background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:13px">' + c + '</code>');
+      });
+      t = t.replace(/(https?:\/\/|www\.)[^\s<)\]}」』"']+/g, function(m){ return hold(m); });
+      /* ② 굵게·기울임 */
       t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
       t = t.replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s).,!?:]|$)/g, '$1<em>$2</em>');
-      return t;
+      /* ③ 수치 색칠 (제목 안쪽은 건너뛴다) */
+      if (!noColor) t = paintNums(t);
+      /* ④ 형광펜 ==핵심 문장== */
+      t = t.replace(/==([^=\n]{2,200}?)==/g, function(m, c){
+        return '<span style="background-color:' + MK.mark + ';font-weight:700">' + c + '</span>';
+      });
+      return t.replace(/\u0000(\d+)\u0001/g, function(m, i){ return slot[Number(i)] || ''; });
     }
     function isTableRow(t){ return t.length > 2 && t.charAt(0) === '|' && t.charAt(t.length - 1) === '|'; }
     function isSep(cells){ return cells.length > 0 && cells.every(function(c){ return /^:?-{2,}:?$/.test(c); }); }
     function splitRow(t){
       return t.replace(/^\|/, '').replace(/\|$/, '').split('|').map(function(c){ return c.trim(); });
     }
-    function tableHtml(rows){
+    function tableHtml(rows, flavor){
       var cells = rows.map(splitRow);
       var hasHead = cells.length > 1 && isSep(cells[1]);
       var head = hasHead ? cells[0] : null;
       var body = (hasHead ? cells.slice(2) : cells).filter(function(r){ return !isSep(r); });
-      var h = '<table style="border-collapse:collapse;width:100%;margin:6px 0 16px;font-size:13.5px;background-color:#ffffff">';
+      var tis = flavor === 'tistory';
+      var h = '<table' + (tis ? ' border="1" cellspacing="0" cellpadding="0"' : '') +
+        ' style="border-collapse:collapse;width:100%;margin:6px 0 16px;font-size:' + (tis ? '14px' : '13.5px') + ';background-color:#ffffff">';
       if (head){
         h += '<thead><tr>' + head.map(function(c){
-          return '<th style="border:1px solid #cbd5e1;background-color:#f1f5f9;padding:7px 9px;font-size:13px;font-weight:800;text-align:left;color:#0f172a">' + (inline(c) || '&nbsp;') + '</th>';
+          return '<th' + (tis ? ' align="left"' : '') + ' style="border:1px solid #cbd5e1;background-color:#f1f5f9;padding:7px 9px;font-size:13px;font-weight:800;text-align:left;color:#0f172a">' + (inline(c) || '&nbsp;') + '</th>';
         }).join('') + '</tr></thead>';
       }
       h += '<tbody>' + body.map(function(r){
         return '<tr>' + r.map(function(c){
-          return '<td style="border:1px solid #cbd5e1;background-color:#ffffff;padding:7px 9px;font-size:13.5px;line-height:1.6;color:#1f2937;vertical-align:top">' + (inline(c) || '&nbsp;') + '</td>';
+          return '<td' + (tis ? ' align="left"' : '') + ' style="border:1px solid #cbd5e1;background-color:#ffffff;padding:7px 9px;font-size:' + (tis ? '14px' : '13.5px') + ';line-height:1.7;color:#1f2937;vertical-align:top">' + (inline(c) || '&nbsp;') + '</td>';
         }).join('') + '</tr>';
       }).join('') + '</tbody></table>';
       return h;
@@ -8538,6 +8652,13 @@ var CSVoice = (function () {
       return h.join('');
     }
     function photoSlotRich(p){
+      if (p.kind === 'graph'){
+        var gd = String(p.desc || '').replace(/^여기에\s*/, '').replace(/\s*첨부\s*$/, '');
+        var isFlow = /수급|flow/i.test(gd);
+        return '<div style="margin:18px 0;padding:13px 15px;border:2px dashed #b08d57;border-radius:10px;background-color:#fdf8ec;color:#4a453c;font-size:13.5px;line-height:1.7;text-align:center">' +
+          '📊 <b style="color:#781b33">그래프 첨부 자리</b> — ' + inline(gd) +
+          '<br><span style="font-size:12px;color:#8a7a5c">위 [🖼️ 블로그 그래프 3종]에서 ' + (isFlow ? '<b>② 수급 그래프(flow.png)</b>' : '<b>③ 종목 대비 그래프(sectors.png)</b>') + '를 저장해 이 자리에 올리세요.</span></div>';
+      }
       if (p.mine){
         var mp = MINE.list[p.mine - 1];
         if (!mp) return '<div style="margin:16px 0;padding:12px 14px;border:1px dashed #f59e0b;border-radius:9px;background-color:#fffbeb;color:#92400e;font-size:13px;line-height:1.6">📷 <b>내 사진 ' + p.mine + '번</b> — 올린 사진을 찾지 못했습니다. 사진을 다시 올리고 번호를 확인하세요.</div>';
@@ -8560,7 +8681,7 @@ var CSVoice = (function () {
         '<b style="color:#0f172a">📸 사진 자리</b>' + (p.desc ? ' — ' + inline(p.desc) : ' — 이 위치에 사진을 넣으세요') +
         (p.q ? '<br><span style="color:#64748b;font-size:12px">검색어: ' + inline(p.q) + '</span>' : '') + '</div>';
     }
-    function mdToHtml(md){
+    function mdToHtml(md, flavor){
       var lines = String(md == null ? '' : md).replace(/\r\n?/g, '\n').split('\n');
       var out = [], i = 0;
       while (i < lines.length){
@@ -8578,7 +8699,7 @@ var CSVoice = (function () {
         if (isTableRow(t)){
           var rows = [];
           while (i < lines.length && isTableRow(lines[i].trim())){ rows.push(lines[i].trim()); i++; }
-          out.push(tableHtml(rows));
+          out.push(tableHtml(rows, flavor));
           continue;
         }
         var hm = /^(#{1,4})\s+(.+)$/.exec(t);
@@ -8588,7 +8709,7 @@ var CSVoice = (function () {
           var st = 'font-size:' + fs + ';font-weight:800;line-height:1.45;color:#0f172a;background-color:#ffffff;margin:' + (lv === 1 ? '0 0 14px' : '22px 0 10px');
           if (lv === 1) st += ';padding-bottom:8px;border-bottom:2px solid #e2e8f0';
           if (lv === 2) st += ';padding:2px 0 2px 10px;border-left:4px solid #03c75a';
-          out.push('<h' + lv + ' style="' + st + '">' + inline(hm[2]) + '</h' + lv + '>');
+          out.push('<h' + lv + ' style="' + st + '">' + inline(hm[2], { noColor: true }) + '</h' + lv + '>');
           i++; continue;
         }
         if (t.charAt(0) === '>'){
@@ -8651,13 +8772,30 @@ var CSVoice = (function () {
         t = t.replace(/^([-*])\s+/, '· ');
         t = t.replace(/^(\d+)[.)]\s+/, '$1. ');
         t = t.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/`([^`]+)`/g, '$1');
+        t = t.replace(/==([^=\n]+?)==/g, '$1');
         t = t.replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s).,!?:]|$)/g, '$1$2');
         return t;
       }).join('\n');
       return body.replace(/\n{3,}/g, '\n\n').trim();
     }
-    function copyRich(md, okMsg){
-      var html = '<div style="font-family:-apple-system,BlinkMacSystemFont,\'Malgun Gothic\',\'맑은 고딕\',sans-serif;font-size:14px;line-height:1.85;color:#1f2937;background-color:#ffffff">' + mdToHtml(md) + '</div>';
+    var YT_URL = 'https://www.youtube.com/@폭스시그널';
+    function ytBoxHtml(flavor){
+      var tis = flavor === 'tistory';
+      return '<div style="margin:26px 0 10px;padding:14px 16px;border:1px solid #e5d8bd;border-left:4px solid ' + MK.up + ';border-radius:10px;background-color:#fdf8ec;color:#2b2b2b">' +
+        '<div style="font-size:12px;font-weight:800;color:#8a7a5c;letter-spacing:.02em">📺 영상으로도 봅니다</div>' +
+        '<div style="margin-top:5px;font-size:15.5px;font-weight:800;color:#2b2b2b">🦊 폭스시그널 — 오늘의 시장 신호</div>' +
+        '<div style="margin-top:5px;font-size:13.5px;line-height:1.7;color:#4a453c">장전 · 점심 · 장마감 시황을 영상으로 정리합니다. 글에서 못 다한 수급·재료는 영상에서 이어집니다.</div>' +
+        '<div style="margin-top:9px"><a href="' + YT_URL + '"' + (tis ? ' target="_blank" rel="noopener"' : '') + ' style="font-size:13.5px;font-weight:800;color:#781b33;text-decoration:none;border-bottom:1px solid #781b33;padding-bottom:1px">▶ youtube.com/@폭스시그널</a></div>' +
+        '</div>';
+    }
+    function ytOn(){
+      var el = document.getElementById('ytBoxOn');
+      return !el || !!el.checked;
+    }
+    function ytBlock(flavor){ return ytOn() ? ytBoxHtml(flavor) : ''; }
+    function copyRich(md, okMsg, flavor){
+      flavor = flavor === 'tistory' ? 'tistory' : 'naver';
+      var html = '<div style="font-family:-apple-system,BlinkMacSystemFont,\'Malgun Gothic\',\'맑은 고딕\',sans-serif;font-size:14px;line-height:1.85;color:#1f2937;background-color:#ffffff">' + mdToHtml(md, flavor) + ytBlock(flavor) + '</div>';
       var plain = mdToPlain(md);
       var DEMOTE = '서식 복사가 차단되어 일반 텍스트로 복사했습니다.';
       function done(){ toast(okMsg || '네이버 서식(HTML)으로 복사했습니다. 스마트에디터에 바로 붙여넣으세요.'); }
@@ -8689,7 +8827,7 @@ var CSVoice = (function () {
       } catch(e){}
       fallback();
     }
-    return { mdToHtml: mdToHtml, mdToPlain: mdToPlain, copyRich: copyRich };
+    return { mdToHtml: mdToHtml, mdToPlain: mdToPlain, copyRich: copyRich, ytBoxHtml: ytBoxHtml, ytBlock: ytBlock, ytOn: ytOn };
   })();
   try { window.CS_RICH = RICH; } catch(e){}
 
@@ -8714,13 +8852,134 @@ var CSVoice = (function () {
     } else fallback();
   });
 
-  $('#copyHtmlBtn').addEventListener('click', function(){
+  function copyDraftRich(flavor){
     var txt = currentDraftText();
-    if (!txt || !txt.trim()){ toast('복사할 내용이 없습니다. 먼저 뼈대를 생성해 주세요.'); return; }
+    if (!txt || !txt.trim()){ toast('복사할 내용이 없습니다. 먼저 본문을 생성해 주세요.'); return; }
     if (!PHOTO.includeInRich) txt = stripPhotoSlots(txt);
-    RICH.copyRich(txt, '네이버 서식(HTML)으로 복사했습니다. 스마트에디터에 바로 붙여넣으세요.');
-    outStat.textContent = '서식 복사됨';
-  });
+    var msg = flavor === 'tistory'
+      ? '티스토리용 서식을 복사했습니다 — 티스토리 글쓰기에서 [HTML] 모드에 붙여넣으세요(기본 모드도 서식 유지).'
+      : '네이버 서식(HTML)으로 복사했습니다. 스마트에디터에 바로 붙여넣으세요.';
+    RICH.copyRich(txt, msg, flavor);
+    outStat.textContent = flavor === 'tistory' ? '티스토리 복사됨' : '네이버 복사됨';
+    renderWhitePreview();
+  }
+  $('#copyHtmlBtn').addEventListener('click', function(){ copyDraftRich('naver'); });
+  (function(){
+    var t = $('#copyTistoryBtn');
+    if (t) t.addEventListener('click', function(){ copyDraftRich('tistory'); });
+  })();
+
+  /* 📄 흰 배경 미리보기 — 실제 티스토리·네이버 흰 바탕에서의 모습(복사본과 같은 HTML) */
+  function syncDraftView(){
+    var w = $('#outWhite'), p = outText, e = outEdit;
+    if (!w || !p || !e) return;
+    if (!w.hidden){ p.hidden = true; e.hidden = true; }
+    else { p.hidden = !!editOn; e.hidden = !editOn; }
+  }
+  function renderWhitePreview(){
+    var box = $('#outWhite');
+    if (!box || box.hidden) return;
+    var txt = currentDraftText();
+    if (!txt || !txt.trim()){ box.innerHTML = '<p class="wbnote">아직 본문이 없습니다 — [AI 본문 생성]을 먼저 눌러 주세요.</p>'; return; }
+    box.innerHTML = '<p class="wbnote">📄 흰 바탕 미리보기 — 복사 버튼과 <b>같은 HTML</b>입니다. 형광펜·버건디(상승)/네이비(하락) 수치·표·인용구가 티스토리·네이버에서 이렇게 보입니다.</p>' +
+      RICH.mdToHtml(txt, 'naver') + RICH.ytBlock('naver');
+  }
+  (function(){
+    var b = $('#whitePrevBtn'), box = $('#outWhite');
+    if (!b || !box) return;
+    b.addEventListener('click', function(){
+      var on = box.hidden;
+      box.hidden = !on;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      if (on){ renderWhitePreview(); toast('흰 배경 미리보기 — 실제 블로그 바탕에서의 모습입니다.'); }
+      syncDraftView();
+    });
+    var y = $('#ytBoxOn');
+    if (y) y.addEventListener('change', renderWhitePreview);
+    var t = $('#outText');
+    if (t && window.MutationObserver){
+      var mo = new MutationObserver(function(){ renderWhitePreview(); });
+      mo.observe(t, { childList: true, characterData: true, subtree: true });
+    }
+    var e = $('#outEdit');
+    if (e) e.addEventListener('input', renderWhitePreview);
+  })();
+
+  /* 🏷️ 검색 태그 10개 — SEO 태그가 있으면 그 값, 없으면 제목·본문에서 간이 추출 */
+  function draftTagList(){
+    var tags = (SEO.hashtags && SEO.hashtags.length)
+      ? SEO.hashtags.map(function(x){ return String(x).replace(/^#/, ''); })
+      : [];
+    if (!tags.length){
+      var loc = null;
+      try { loc = seoLocal(); } catch(e){ loc = null; }
+      tags = ((loc && loc.hashtags) || []).map(function(x){ return String(x).replace(/^#/, ''); });
+    }
+    var seen = {}, out = [];
+    tags.concat(['주식', '코스피', '코스닥', '시황', '폭스시그널']).forEach(function(t){
+      var v = String(t == null ? '' : t).replace(/^#/, '').trim();
+      if (!v || seen[v]) return;
+      seen[v] = 1; out.push(v);
+    });
+    return out.slice(0, 10);
+  }
+  (function(){
+    var b = $('#tagCopyBtn');
+    if (!b) return;
+    b.addEventListener('click', function(){
+      var list = draftTagList();
+      if (!list.length){ toast('태그를 만들 본문이 없습니다.'); return; }
+      var strip = $('#tagStrip');
+      if (strip){
+        strip.hidden = false;
+        strip.innerHTML = list.map(function(t){ return '<span class="tg">#' + esc(t) + '</span>'; }).join('');
+      }
+      copyText(list.map(function(t){ return '#' + t; }).join(' '),
+        '태그 ' + list.length + '개를 복사했습니다 — 네이버·티스토리 태그 칸에 붙여넣으세요.');
+    });
+  })();
+
+  /* 🖼️ 그래프 저장 — 대표 썸네일 + 크림 수급 + 상승·하락 */
+  function saveCanvasList(list, label){
+    if (!list.length){ toast('저장할 그래프가 없습니다 — [🔄 실데이터 새로고침]을 먼저 눌러 주세요.'); return; }
+    var i = 0;
+    function next(){
+      if (i >= list.length){ toast(label + ' ' + list.length + '장을 PNG로 저장했습니다.'); return; }
+      var it = list[i++];
+      it.c.toBlob(function(b){
+        if (b){
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(b);
+          a.download = it.n + '.png';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          setTimeout(function(){ try { URL.revokeObjectURL(a.href); } catch(e){} }, 5000);
+        }
+        setTimeout(next, 450);
+      }, 'image/png');
+    }
+    next();
+  }
+  function creamCanvasList(){
+    var out = [];
+    var s = $('#cvCreamSup'); if (s && s.width) out.push({ c: s, n: 'flow' });
+    var b = $('#cvCreamBreadth'); if (b && b.width) out.push({ c: b, n: 'sectors' });
+    return out;
+  }
+  function graphCanvasByName(kind){
+    var map = { sup: 'cvCreamSup', breadth: 'cvCreamBreadth', thumb: 'thumbCanvas' };
+    return map[kind] ? $('#' + map[kind]) : null;
+  }
+  (function(){
+    var all = $('#saveAllGraphs'), cream = $('#creamAllSave');
+    if (all) all.addEventListener('click', function(){
+      var list = [];
+      var th = $('#thumbCanvas');
+      if (th && th.width) list.push({ c: th, n: 'thumbnail' });
+      creamCanvasList().forEach(function(x){ list.push(x); });
+      saveCanvasList(list, '그래프');
+    });
+    if (cream) cream.addEventListener('click', function(){ saveCanvasList(creamCanvasList(), '크림 차트'); });
+  })();
 
   /* ================================================================
      v2 upgrade — 참고 블로그 · 문체 샘플 · 금지 상투어 · 제목 3종 ·
@@ -9093,6 +9352,33 @@ var CSVoice = (function () {
         symbols:['종목명 : 결론 한 줄(첫 줄)', '| 종목 | 실적 | 근거 | 표', '📊 지표 불릿', '"각자 판단해야 한다" 단서 문장'],
         voice:'"~로 본다", "~다" 단정형 분석체. 확신과 단서를 한 문단 안에 같이 둔다.',
         rules:['확정 실적과 추정치를 구분한다', '매수 권유로 읽히는 단정은 피하고 판단 근거만 준다']
+      },
+      5: {
+        id:'stockFoxPre', fox:'pre', name:'🦊 폭스시그널 · 🌅 장전 시황', label:'5번 🦊 폭스시그널 장전 시황',
+        who:'밤사이 미 증시와 야간선물을 먼저 정리하고, 오늘 시초가에서 볼 테마 2~3개로 압축하는 장전 브리핑',
+        structure:['밤사이 미 증시 — 나스닥·S&P500·반도체(SOX) 마감과 선물','야간선물·원/달러·유가 — 숫자 3줄','오늘 시초가 주목 테마 2~3개와 그 이유','개장 전 체크 — 오늘 일정·공시·지수 위치','강세·약세 두 갈래 대응 시나리오'],
+        rhythm:'첫 3줄은 결론과 숫자로 끊는다. 소제목마다 2~3문장, 표는 한 개만.',
+        symbols:['📌 장전 3줄 요약','| 지표 | 밤사이 | 시초가 기준 | 표','==오늘의 핵심 문장== 형광펜 3~5곳','[📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부]','[📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부]','🦊 폭스시그널 장전 시황'],
+        voice:'건조한 브리핑체. "~입니다"로 끝내고 감탄사는 쓰지 않는다. 숫자는 소수점까지 그대로 옮긴다.',
+        rules:['확정 종가와 프리마켓·장중 값을 구분한다','전망은 추정이라고 밝힌다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','수급을 다룬 문단 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','상승·하락 종목을 다룬 문단 바로 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','없는 종목·수치를 만들지 않고 모르는 값은 [확인 필요]로 둔다']
+      },
+      6: {
+        id:'stockFoxNoon', fox:'noon', name:'🦊 폭스시그널 · ☀️ 점심 시황', label:'6번 🦊 폭스시그널 점심 시황',
+        who:'오전장 주도 테마와 실시간 수급을 정리하고 오후 관전 포인트로 넘기는 점심 브리핑',
+        structure:['오전장 한 줄 결론 — 지수와 수급','오전 주도 테마와 대장주(돈이 들어온 곳)','실시간 수급 — 외국인·기관·개인 숫자','오후 관전 포인트 2~3개','오후 리스크와 대응'],
+        rhythm:'결론 한 문장 → 근거 2~3문장. 표와 불릿으로 끊고, 감탄 없이 숫자로 말한다.',
+        symbols:['📌 오전 요약 3줄','| 구분 | 코스피 | 코스닥 | 표','==오후의 핵심 문장== 형광펜 3~5곳','[📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부]','[📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부]','🦊 폭스시그널 점심 시황'],
+        voice:'현장 중계체. "~하는 중입니다", "~로 보입니다". 장중 값에는 반드시 시각을 붙인다.',
+        rules:['장중 값에는 기준 시각을 붙인다','확정치와 잠정치를 섞지 않는다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','수급을 다룬 문단 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','상승·하락 종목을 다룬 문단 바로 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','오후 전망은 시나리오로만 쓴다']
+      },
+      7: {
+        id:'stockFoxClose', fox:'close', name:'🦊 폭스시그널 · 🌆 장마감 결산(오늘 첫 글 표준)', label:'7번 🦊 폭스시그널 장마감 결산',
+        who:'확정 지수·수급을 표로 못 박고 돈이 들어온 곳과 빠진 곳을 갈라 다음 거래일 체크포인트로 닫는 장마감 결산',
+        structure:['확정 지수·거래대금 한 줄 정리','확정 수급 — 외국인·기관·개인 표','💰 돈이 들어온 곳 vs 🚪 빠진 곳','오늘의 재료 — 공시·뉴스 정리','다음 거래일 체크포인트 3개','한 줄 총평'],
+        rhythm:'결론 → 표 → 해석 2~3문장. 소제목마다 같은 형식을 반복해 훑기 쉽게 만든다.',
+        symbols:['| 구분 | 코스피 | 코스닥 | 표','💰 들어온 곳 / 🚪 빠진 곳','==오늘의 결론== 형광펜 3~5곳','[📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부]','[📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부]','🦊 폭스시그널 장마감 결산'],
+        voice:'정리하는 해설체. "~로 마감했습니다", "~가 남았습니다". 확정치는 소수점까지 그대로.',
+        rules:['확정 종가·확정 수급만 단정하고 장중 값은 시각과 함께 쓴다','다음 거래일 전망은 조건(가격·수급)과 함께 쓴다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','확정 수급 표 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','돈이 들어온 곳·빠진 곳 문단 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','없는 종목·수치를 만들지 않고 모르는 값은 [확인 필요]로 둔다']
       }
     },
     living: {
@@ -9239,7 +9525,17 @@ var CSVoice = (function () {
   }
   function pickOf(theme){
     var n = Number(bloggerPick[theme]);
-    return (n >= 1 && n <= 4) ? n : 1;
+    if (n === 4) return 4;
+    if (n >= 1 && STYLE_PRESETS[theme] && STYLE_PRESETS[theme][n]) return n;
+    return 1;
+  }
+  /** 이 테마가 가진 양식 번호 — 4번(내 블로거)은 항상 마지막에 둔다. */
+  function presetNos(theme){
+    var t = STYLE_PRESETS[theme] || {};
+    var nums = Object.keys(t).map(Number).filter(function(n){ return n > 0 && n !== 4; }).sort(function(a, b){ return a - b; });
+    if (!nums.length) nums = [1, 2, 3];
+    nums.push(4);
+    return nums;
   }
   /** 4번(내 블로거) 저장본을 1·2·3번과 같은 모양의 프리셋으로 바꾼다. */
   function myStyleAsPreset(theme){
@@ -9271,13 +9567,13 @@ var CSVoice = (function () {
     var row = $('#bloggerPick');
     if (!row) return;
     var h = '';
-    for (var n = 1; n <= 4; n++){
+    presetNos(theme).forEach(function(n){
       var st = styleOf(theme, n);
       var on = (n === pick);
       var label = (n === 4) ? '4번 · 내 블로거' : (n + '번 · ' + ((presetOf(theme, n) || {}).name || '—'));
       h += '<button type="button" class="bpick' + (n === 4 ? ' mine' : '') + '" data-n="' + n + '" aria-pressed="' + (on ? 'true' : 'false') + '" title="' + esc(label) + (st ? '' : ' (아직 없음)') + '">' +
         esc(label) + '<span class="dot' + (st ? '' : ' off') + '" aria-hidden="true"></span></button>';
-    }
+    });
     row.innerHTML = h;
   }
 
@@ -9353,7 +9649,7 @@ var CSVoice = (function () {
         if (!b) return;
         var n = Number(b.getAttribute('data-n'));
         var theme = themeOfForm(getForm(state.selectedFormId));
-        if (!(n >= 1 && n <= 4)) return;
+        if (!(n === 4 || (n >= 1 && STYLE_PRESETS[theme] && STYLE_PRESETS[theme][n]))) return;
         bloggerPick[theme] = n;
         savePick();
         renderStyle();
@@ -10168,6 +10464,7 @@ var CSVoice = (function () {
     $('#editOutBtn').textContent = editOn ? '✓ 편집 끝내기' : '✎ 편집';
     if (editOn){ outEdit.value = outText.textContent; outEdit.focus(); }
     else if (outText.textContent !== outEdit.value){ outText.textContent = outEdit.value; }
+    syncDraftView();
   }
   $('#editOutBtn').addEventListener('click', function(){
     if (!editOn){ setEditMode(true); return; }
@@ -10699,6 +10996,163 @@ var CSVoice = (function () {
       }
     });
   }
+
+  /* ---------- 🦊 폭스시그널 시간대 1클릭 (🌅 장전 · ☀️ 점심 · 🌆 장마감) ----------
+     · 그 시간대 관제탑 실측(/api/stock-live · /api/tabs-live · /api/breadth ·
+       data/supply-latest.json · data/latest-briefing.json · data/flow_timeline_today.json)을 읽어
+       [참고 자료]·[주제]를 채운다. 받지 못한 값은 지어내지 않고 '—'로 남긴다.
+     · 📈 주식 시황 + 폭스시그널 양식(5 장전 / 6 점심 / 7 장마감)으로 자동 전환한다.
+     · 크림 그래프 3종(수급 · 종목 대비)과 대표 썸네일을 다시 그려 바로 저장할 수 있게 한다. */
+  var SLOT_DEF = {
+    pre:   { no: 5, icon: '🌅', name: '장전',       label: '장전 시황' },
+    noon:  { no: 6, icon: '☀️', name: '점심',       label: '점심 시황' },
+    close: { no: 7, icon: '🌆', name: '장마감 결산', label: '장마감 결산' }
+  };
+  function pad2n(n){ return (n < 10 ? '0' : '') + n; }
+  function slotStamp(){
+    var d = new Date(), days = ['일', '월', '화', '수', '목', '금', '토'];
+    return d.getFullYear() + '-' + pad2n(d.getMonth() + 1) + '-' + pad2n(d.getDate()) + '(' + days[d.getDay()] + ') ' +
+      pad2n(d.getHours()) + ':' + pad2n(d.getMinutes()) + ' KST';
+  }
+  function eokKo(v){
+    if (v == null || !isFinite(v)) return '—';
+    var n = Math.round(Number(v));
+    var s = (n > 0 ? '+' : (n < 0 ? '-' : ''));
+    var a = Math.abs(n);
+    var jo = Math.floor(a / 10000), rest = a % 10000;
+    return s + (jo ? jo.toLocaleString('ko-KR') + '조' : '') + (rest || !jo ? rest.toLocaleString('ko-KR') + '억' : '');
+  }
+  function slotIndexLine(){
+    var L = [], ids = (V2.data && V2.data.live && V2.data.live.indices) || [];
+    ids.forEach(function(x){
+      if (!x) return;
+      if (!(/KOSPI|KOSDAQ/.test(x.key || '') || /코스피|코스닥/.test(x.name || ''))) return;
+      L.push((x.name || x.key) + ' ' + Number(x.price).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) +
+        ' (' + (x.changePct > 0 ? '+' : '') + Number(x.changePct).toFixed(2) + '%)' +
+        (x.high != null ? ' 고 ' + Number(x.high).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) : '') +
+        (x.low != null ? ' / 저 ' + Number(x.low).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) : '') +
+        (x.valueText ? ' · 대금 ' + x.valueText : ''));
+    });
+    return L.join(' · ');
+  }
+  function slotSupplyLine(){
+    var s = creamSupply();
+    function one(o){
+      if (!o) return '—';
+      return '개인 ' + eokKo(o.indiv) + ' / 외국인 ' + eokKo(o.foreign) + ' / 기관 ' + eokKo(o.organ);
+    }
+    var t = '코스피 ' + one(s.kospi) + ' · 코스닥 ' + one(s.kosdaq);
+    return { text: t, basis: s.basis || '' };
+  }
+  function slotBreadthLine(){
+    var b = creamBreadth();
+    if (!b) return { text: '', basis: '' };
+    function one(o, nm){
+      if (!o) return nm + ' —';
+      var up = Number(o.up) , dn = Number(o.down), fl = o.flat;
+      if (!isFinite(up) && !isFinite(dn)) return nm + ' —';
+      return nm + ' 상승 ' + (isFinite(up) ? up.toLocaleString('ko-KR') : '—') +
+        ' / 하락 ' + (isFinite(dn) ? dn.toLocaleString('ko-KR') : '—') +
+        (fl != null ? ' / 보합 ' + Number(fl).toLocaleString('ko-KR') : '');
+    }
+    var up = (b.kospi && isFinite(b.kospi.up) ? b.kospi.up : 0) + (b.kosdaq && isFinite(b.kosdaq.up) ? b.kosdaq.up : 0);
+    var dn = (b.kospi && isFinite(b.kospi.down) ? b.kospi.down : 0) + (b.kosdaq && isFinite(b.kosdaq.down) ? b.kosdaq.down : 0);
+    var ratio = (up + dn) ? (up / (up + dn) * 100) : null;
+    return {
+      text: one(b.kospi, '코스피') + ' · ' + one(b.kosdaq, '코스닥') + (ratio != null ? ' → 상승 비율 ' + ratio.toFixed(1) + '%' : ''),
+      basis: b.basis || ''
+    };
+  }
+  function slotThemeLines(n){
+    var t = (V2.data && V2.data.tabs && V2.data.tabs.themes) || [];
+    return t.slice(0, n || 3).map(function(x, i){
+      var pct = x.top4Avg != null ? x.top4Avg : x.avgPct;
+      var lead = (x.stocks || []).filter(function(s){ return /대장/.test(String(s.role || '')); })[0] || (x.stocks || [])[0];
+      return (i + 1) + ') ' + (x.name || x.keyword || '테마') +
+        (pct != null ? ' ' + (pct > 0 ? '+' : '') + Number(pct).toFixed(2) + '%' : '') +
+        (lead && lead.name ? ' — ' + lead.name + (lead.changePct != null ? ' ' + (lead.changePct > 0 ? '+' : '') + Number(lead.changePct).toFixed(2) + '%' : '') : '');
+    }).join(' / ');
+  }
+  function slotFuturesLine(){
+    var L = [], f = (V2.data && V2.data.live && V2.data.live.futures) || [];
+    f.slice(0, 3).forEach(function(x){
+      if (!x || x.price == null) return;
+      L.push((x.name || '') + ' ' + Number(x.price).toLocaleString('ko-KR') + ' (' + (x.changePct > 0 ? '+' : '') + Number(x.changePct).toFixed(2) + '%)' + (x.asOfKst ? ' ' + x.asOfKst : ''));
+    });
+    var fx = V2.data && V2.data.live && V2.data.live.fx;
+    if (fx && fx.price != null) L.push('원/달러 ' + Number(fx.price).toLocaleString('ko-KR') + '원 (' + (fx.changePct > 0 ? '+' : '') + Number(fx.changePct).toFixed(2) + '%)');
+    return L.join(' · ');
+  }
+  function buildSlotMaterial(slot){
+    var d = SLOT_DEF[slot], b = (V2.data && V2.data.brief) || {};
+    var L = [];
+    L.push('[🦊 폭스시그널 ' + d.icon + ' ' + d.label + ' 재료 — ' + slotStamp() + ']');
+    var idx = slotIndexLine();
+    L.push('지수(네이버 폴링 · 마감 뒤에는 직전 마감값): ' + (idx || '값을 받지 못했습니다'));
+    if (b.slotLabel) L.push('관제탑 최신 브리핑: ' + b.slotLabel + (b.dateLabel ? ' · ' + b.dateLabel : ''));
+    var sp = slotSupplyLine();
+    L.push('수급(' + (sp.basis || '기준 불명') + '): ' + sp.text);
+    var bw = slotBreadthLine();
+    if (bw.text) L.push('시장 폭(' + (bw.basis || '') + '): ' + bw.text);
+    var th = slotThemeLines(3);
+    if (th) L.push('주도 테마(관제탑 실시간): ' + th);
+    var fu = slotFuturesLine();
+    if (fu) L.push('선물·환율: ' + fu);
+    if (slot === 'pre') L.push('※ 장전 글: 밤사이 미 증시·야간선물은 위 선물 값과 브리핑 문장에서만 인용하고, 시초가 예상 등락률은 쓰지 않습니다.');
+    if (slot === 'noon') L.push('※ 점심 글: 장중 수급은 위 기준 시각 값이며 확정치가 아닙니다 — 문장마다 시각을 붙입니다.');
+    if (slot === 'close') L.push('※ 장마감 글: 확정 종가·확정 수급만 단정하고, 다음 거래일 전망은 조건과 함께 씁니다.');
+    L.push('※ 숫자는 관제탑 API·파일이 준 값 그대로입니다. 받지 못한 값은 비워 두었습니다.');
+    var topicBits = [];
+    var k0 = ((V2.data && V2.data.live && V2.data.live.indices) || []).filter(function(x){ return /KOSPI/.test(x.key || '') || /코스피/.test(x.name || ''); })[0];
+    if (k0 && k0.price != null) topicBits.push('코스피 ' + Number(k0.price).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) + '(' + (k0.changePct > 0 ? '+' : '') + Number(k0.changePct).toFixed(2) + '%)');
+    var t1 = ((V2.data && V2.data.tabs && V2.data.tabs.themes) || [])[0];
+    if (t1 && (t1.name || t1.keyword)) topicBits.push(t1.name || t1.keyword);
+    var topic = (d.dateLabel || '') ;
+    var dt = new Date(), wd = ['일', '월', '화', '수', '목', '금', '토'][dt.getDay()];
+    topic = (dt.getMonth() + 1) + '/' + dt.getDate() + '(' + wd + ') ' + d.label + (topicBits.length ? ' — ' + topicBits.join(' · ') : '');
+    return { text: L.join('\n'), topic: topic, thumb: (dt.getMonth() + 1) + '/' + dt.getDate() + ' ' + d.name + (k0 && k0.price != null ? ' 코스피 ' + Number(k0.price).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) : '') };
+  }
+  function runSlot(slot, btn){
+    var def = SLOT_DEF[slot];
+    if (!def) return;
+    var st = $('#matState');
+    if (st) st.textContent = '읽는 중…';
+    if (btn) spinner(btn, true, '관제탑 읽는 중…');
+    return cvReload(true).then(function(){
+      var mat = buildSlotMaterial(slot);
+      var src = $('#srcMaterial');
+      if (src){ src.value = mat.text; try { src.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
+      var tp = $('#topic');
+      if (tp){ tp.value = mat.topic; try { tp.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
+      /* 📈 주식 시황 양식으로 전환 + 폭스시그널 시간대 양식 */
+      var chip = document.querySelector('#formChips .fchip[data-id="stock"]');
+      if (chip) chip.click();
+      bloggerPick['stock'] = def.no;
+      savePick();
+      try { renderStyle(); } catch(e){}
+      /* 그래프·썸네일 다시 그리기 */
+      try { cvDrawAll(); } catch(e){}
+      var tt = $('#thumbTitle');
+      if (tt){ tt.value = mat.thumb; try { tt.dispatchEvent(new Event('input', { bubbles: true })); } catch(e){} }
+      try { if (window.CS2_PHOTO && window.CS2_PHOTO.draw) window.CS2_PHOTO.draw(); } catch(e){}
+      if (st) st.textContent = def.icon + ' ' + def.name + ' 재료 준비됨';
+      var card = $('#chartCard');
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toast(def.icon + ' ' + def.name + ' 재료로 바꿨습니다 — 📈 주식 시황 · ' + def.no + '번 폭스시그널 양식 · 크림 그래프·썸네일까지 다시 그렸습니다.');
+    }).catch(function(e){
+      if (st) st.textContent = '실패';
+      toast('재료를 불러오지 못했습니다 — ' + ((e && e.message) || ''));
+    }).then(function(){
+      if (btn) spinner(btn, false);
+    });
+  }
+  (function(){
+    [['slotPreBtn', 'pre'], ['slotNoonBtn', 'noon'], ['slotCloseBtn', 'close'],
+     ['slotPreBtn2', 'pre'], ['slotNoonBtn2', 'noon'], ['slotCloseBtn2', 'close']].forEach(function(pair){
+      var el = document.getElementById(pair[0]);
+      if (el) el.addEventListener('click', function(){ runSlot(pair[1], el); });
+    });
+  })();
 
   /* ---------- ② 오늘 관제탑 시황 1클릭 ---------- */
   var mktBtn = $('#mktBtn'), mktBox = $('#mktBox'), mktCopyBtn = $('#mktCopyBtn');
@@ -13584,12 +14038,13 @@ var CSVoice = (function () {
   function cvEnsure(force){
     var d = V2.data;
     if (d && !force && (Date.now() - d.at) < 60000) return Promise.resolve(d);
-    var out = { at: Date.now(), live: null, tabs: null, supply: null, brief: null, err: [] };
+    var out = { at: Date.now(), live: null, tabs: null, supply: null, brief: null, flow: null, err: [] };
     var jobs = [
       ['live', [v2Api('/api/stock-live')]],
       ['tabs', [v2Api('/api/tabs-live')]],
       ['supply', [v2Api('/data/supply-latest.json'), './data/supply-latest.json']],
-      ['brief', ['./data/latest-briefing.json', v2Api('/data/latest-briefing.json')]]
+      ['brief', ['./data/latest-briefing.json', v2Api('/data/latest-briefing.json')]],
+      ['flow', ['./data/flow_timeline_today.json', v2Api('/data/flow_timeline_today.json')]]
     ];
     return Promise.all(jobs.map(function (j) {
       return v2Json(j[1]).then(function (x) { return [j[0], x]; }).catch(function () { return [j[0], null]; });
@@ -13977,10 +14432,275 @@ var CSVoice = (function () {
     cvText(g, '┈ 피보나치', mid + Math.round(W / 10), H - 16, 11.5, 'rgba(251,191,36,.75)', 'left', 800);
     cvWatermark(g, W, H);
   }
+  /* ================================================================
+     🖼️ 크림 아이보리(#F7F3E9) 에디토리얼 차트 — 티스토리·밝은 블로그용
+     ① 투자자별 순매수(개인·외국인·기관 × 코스피/코스닥)
+     ② 상승 vs 하락 종목(시장 폭)
+     · 값은 /api/breadth · data/flow_timeline_today.json · 확정 브리핑 문장에서만 읽는다.
+     · 받지 못한 값은 0으로 채우지 않고 — 로 남긴다(=지어내지 않는다).
+     ================================================================ */
+  var CREAM = { bg:'#F7F3E9', card:'#FFFDF7', ink:'#241f19', sub:'#7b6f5c', line:'#e3d9c4',
+                up:'#781b33', down:'#1a5490', gold:'#b08d57', flat:'#a8a094', mute:'#8a8172' };
+  function creamSize(){ return V2.size === '1080x1080' ? [1080, 1080] : [1200, 675]; }
+  function creamBase(g, W, H, title, sub){
+    g.fillStyle = CREAM.bg; g.fillRect(0, 0, W, H);
+    g.fillStyle = CREAM.up; g.fillRect(0, 0, W, 7);
+    g.strokeStyle = CREAM.line; g.lineWidth = 2; g.strokeRect(1, 1, W - 2, H - 2);
+    var ts = Math.round(W / 33), ss = Math.round(W / 78);
+    cvText(g, '🦊 폭스시그널 · 시황', 42, 44 + Math.round(W / 96), Math.round(W / 92), CREAM.gold, 'left', 900);
+    cvText(g, title, 42, 44 + Math.round(W / 96) + ts + 8, ts, CREAM.ink, 'left', 900, W - 90);
+    if (sub) cvText(g, sub, 42, 44 + Math.round(W / 96) + ts + ss + 16, ss, CREAM.sub, 'left', 700, W - 90);
+    g.fillStyle = CREAM.gold; g.fillRect(42, 44 + Math.round(W / 96) + ts + ss + 26, 64, 3);
+  }
+  function creamMark(g, W, H){
+    cvFont(g, Math.max(12, Math.round(W / 68)), 800);
+    g.fillStyle = CREAM.mute; g.textAlign = 'right'; g.textBaseline = 'alphabetic';
+    g.fillText((v2Watermark() || '폭스시그널') + ' · 관제탑 실측', W - 38, H - 20);
+    g.textAlign = 'left';
+  }
+  /* " +1조5,730억 " → 15730 (억원 단위 숫자) */
+  function krEok(v){
+    if (v == null) return null;
+    var t = String(v).replace(/\s/g, '');
+    var sign = t.charAt(0) === '-' ? -1 : 1;
+    t = t.replace(/^[+\-−]/, '');
+    var jo = /([\d,]+)조/.exec(t), eok = /([\d,]+)억/.exec(t), sum = 0, got = false;
+    if (jo){ sum += Number(jo[1].replace(/,/g, '')) * 10000; got = true; }
+    if (eok){ sum += Number(eok[1].replace(/,/g, '')); got = true; }
+    if (!got){
+      var n = Number(t.replace(/[^\d.]/g, ''));
+      if (!isFinite(n)) return null;
+      sum = n;
+    }
+    return sign * sum;
+  }
+  function invIn(seg, label){
+    if (!seg) return null;
+    var m = new RegExp(label + '\\s*([+\\-−]?[\\d,]+(?:\\s*조)?\\s*(?:[\\d,]+)?\\s*억)').exec(seg);
+    return m ? krEok(m[1]) : null;
+  }
+  function hasInv(o){ return !!(o && (o.indiv != null || o.foreign != null || o.organ != null)); }
+  function cvFlowSlotBest(){
+    var f = V2.data && V2.data.flow, best = null;
+    if (f && f.slots){
+      f.slots.forEach(function(s){
+        var sp = s && s.supply; if (!sp) return;
+        var k = sp.kospi || {}, q = sp.kosdaq || {};
+        var any = function(o){ return typeof o.foreign === 'number' || typeof o.organ === 'number' || typeof o.personal === 'number'; };
+        if (any(k) || any(q)) best = s;
+      });
+    }
+    return best;
+  }
+  /* ① 확정 브리핑 문장 → ② 관제탑 장중 실측 타임라인 순서로 읽는다 */
+  function creamSupply(){
+    var out = { kospi: null, kosdaq: null, basis: '' };
+    var b = V2.data && V2.data.brief;
+    if (b){
+      var txt = String((b.bodyExcerpt || '') + '\n' + (b.summaryLine || ''));
+      var mi = txt.search(/수급\s*\(?\s*확정/);
+      var seg = mi > -1 ? txt.slice(mi, mi + 460) : txt;
+      var kp = seg.indexOf('코스피'), sk = seg.indexOf('코스닥');
+      if (kp > -1){
+        var kSeg = seg.slice(kp, sk > kp ? sk : kp + 220);
+        out.kospi = { indiv: invIn(kSeg, '개인'), foreign: invIn(kSeg, '외국인'), organ: invIn(kSeg, '기관') };
+      }
+      if (sk > -1){
+        var sSeg = seg.slice(sk, sk + 220);
+        out.kosdaq = { indiv: invIn(sSeg, '개인'), foreign: invIn(sSeg, '외국인'), organ: invIn(sSeg, '기관') };
+      }
+      if (hasInv(out.kospi) || hasInv(out.kosdaq)){
+        out.basis = (b.dateLabel ? b.dateLabel + ' ' : '') + '확정 수급 · 억원';
+        return out;
+      }
+    }
+    var s = cvFlowSlotBest();
+    if (s && s.supply){
+      var k = s.supply.kospi || {}, q = s.supply.kosdaq || {};
+      out.kospi = { indiv: typeof k.personal === 'number' ? k.personal : null,
+                    foreign: typeof k.foreign === 'number' ? k.foreign : null,
+                    organ: typeof k.organ === 'number' ? k.organ : null };
+      out.kosdaq = { indiv: typeof q.personal === 'number' ? q.personal : null,
+                     foreign: typeof q.foreign === 'number' ? q.foreign : null,
+                     organ: typeof q.organ === 'number' ? q.organ : null };
+      out.basis = '관제탑 실측 ' + (s.supply.at || s.t || '') + ' 장중 수급 · 억원';
+      return out;
+    }
+    return out;
+  }
+  function creamBreadth(){
+    var api = V2.breadth && V2.breadth.data;
+    if (api && api.markets){
+      var k = api.markets.KOSPI, q = api.markets.KOSDAQ;
+      if (k && (k.up != null || k.down != null)){
+        return { kospi: k, kosdaq: q || null, basis: '네이버 상승·하락 종목 수 ' + (api.generatedAtKst ? String(api.generatedAtKst).slice(11, 16) : '') };
+      }
+    }
+    var b = V2.data && V2.data.brief;
+    if (b){
+      var txt = String((b.bodyExcerpt || '') + '\n' + (b.summaryLine || ''));
+      var re = /(코스피|코스닥)[^\n]{0,40}?상승\s*([\d,]+)\s*\/\s*하락\s*([\d,]+)(?:\s*\/\s*보합\s*([\d,]+))?/g, m, res = {};
+      while ((m = re.exec(txt))){
+        var nm = m[1] === '코스피' ? 'kospi' : 'kosdaq';
+        if (res[nm]) continue;
+        res[nm] = { up: Number(m[2].replace(/,/g, '')), down: Number(m[3].replace(/,/g, '')),
+                    flat: m[4] ? Number(m[4].replace(/,/g, '')) : null };
+      }
+      if (res.kospi || res.kosdaq) return { kospi: res.kospi || null, kosdaq: res.kosdaq || null, basis: '브리핑 실측 문장' };
+    }
+    return null;
+  }
+  function cvBreadthLoad(force){
+    if (V2.breadth && !force && (Date.now() - V2.breadth.at) < 120000) return Promise.resolve(V2.breadth);
+    return v2Json([v2Api('/api/breadth')]).then(function(j){
+      if (j && j.ok && j.markets) V2.breadth = { at: Date.now(), data: j };
+      return V2.breadth || null;
+    }).catch(function(){ return null; });
+  }
+  function creamEmpty(g, W, H, msg, hint){
+    cvText(g, msg, 42, Math.round(H / 2) - 6, Math.round(W / 46), CREAM.mute, 'left', 800, W - 90);
+    if (hint) cvText(g, hint, 42, Math.round(H / 2) + Math.round(W / 40), Math.round(W / 74), CREAM.mute, 'left', 700, W - 90);
+  }
+  function cvDrawCreamSupply(){
+    var wh = creamSize(), W = wh[0], H = wh[1];
+    var g = cvPrep('cvCreamSup', W, H);
+    if (!g) return;
+    var d = creamSupply();
+    var sq = (W === H);
+    creamBase(g, W, H, '투자자별 순매수 — 코스피 · 코스닥', (d.basis || '수급 데이터 대기') + ' · 막대는 0선 기준');
+    var panels = [{ key: 'kospi', name: '코스피' }, { key: 'kosdaq', name: '코스닥' }];
+    var labels = [['indiv', '개인'], ['foreign', '외국인'], ['organ', '기관']];
+    var maxAbs = 0, any = false;
+    panels.forEach(function(p){
+      var o = d[p.key] || {};
+      labels.forEach(function(l){
+        var v = o[l[0]];
+        if (v == null) return;
+        any = true;
+        if (Math.abs(v) > maxAbs) maxAbs = Math.abs(v);
+      });
+    });
+    if (!any){
+      creamEmpty(g, W, H, '수급 데이터를 받지 못했습니다.',
+        '[🔄 실데이터 새로고침]을 누르면 관제탑 수급 타임라인과 확정 브리핑을 다시 읽습니다.');
+      creamMark(g, W, H);
+      return;
+    }
+    var top = sq ? 236 : 188;
+    var panelH = sq ? 300 : 250;
+    var gapP = 22;
+    var panelW = sq ? (W - 84) : Math.round((W - 84 - gapP) / 2);
+    var rowH = Math.min(62, Math.floor((panelH - 74) / 3));
+    panels.forEach(function(p, pi){
+      var px = 42 + (sq ? 0 : pi * (panelW + gapP));
+      var py = sq ? (top + pi * (panelH + 20)) : top;
+      g.fillStyle = CREAM.card; g.strokeStyle = CREAM.line; g.lineWidth = 1.5;
+      cvRR(g, px, py, panelW, panelH, 14); g.fill(); g.stroke();
+      cvText(g, p.name, px + 20, py + 38, Math.round(W / 54), CREAM.ink, 'left', 900);
+      var o = d[p.key] || {};
+      var barX = px + 92, barMax = panelW - 92 - 104;
+      var zero = barX + Math.round(barMax * 0.46);
+      g.strokeStyle = CREAM.line; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(zero, py + 54); g.lineTo(zero, py + panelH - 16); g.stroke();
+      labels.forEach(function(l, li){
+        var v = o[l[0]];
+        var by = py + 62 + li * rowH;
+        var cy = by + rowH * 0.34;
+        cvText(g, l[1], px + 20, cy + 5, Math.round(W / 78), CREAM.sub, 'left', 800);
+        if (v == null){ cvText(g, '—', px + panelW - 20, cy + 5, Math.round(W / 82), CREAM.mute, 'right', 800); return; }
+        var col = v >= 0 ? CREAM.up : CREAM.down;
+        var w = Math.max(4, Math.round(Math.abs(v) / (maxAbs || 1) * (barMax * 0.46)));
+        g.fillStyle = col;
+        cvRR(g, v >= 0 ? zero : zero - w, cy - rowH * 0.20, w, rowH * 0.44, 5); g.fill();
+        cvText(g, (v > 0 ? '+' : '-') + Math.round(Math.abs(v)).toLocaleString('ko-KR') + '억',
+          px + panelW - 20, cy + 5, Math.round(W / 82), col, 'right', 900);
+      });
+    });
+    var ly = sq ? (H - 92) : (top + panelH + 40);
+    g.fillStyle = CREAM.up; cvRR(g, 44, ly - 12, 18, 13, 3); g.fill();
+    cvText(g, '순매수(유입)', 70, ly, Math.round(W / 84), CREAM.ink, 'left', 800);
+    g.fillStyle = CREAM.down; cvRR(g, 184, ly - 12, 18, 13, 3); g.fill();
+    cvText(g, '순매도(유출)', 210, ly, Math.round(W / 84), CREAM.ink, 'left', 800);
+    cvText(g, '막대 길이는 이 화면 최대 절대값 기준', 330, ly, Math.round(W / 92), CREAM.mute, 'left', 700, W - 400);
+    creamMark(g, W, H);
+  }
+  function cvDrawCreamBreadth(){
+    var wh = creamSize(), W = wh[0], H = wh[1];
+    var g = cvPrep('cvCreamBreadth', W, H);
+    if (!g) return;
+    var d = creamBreadth();
+    var sq = (W === H);
+    creamBase(g, W, H, '상승 vs 하락 종목 — 오늘 시장 폭', d ? (d.basis + ' · 단위 종목 수') : '시장 폭 데이터 대기');
+    var k = d && d.kospi, q = d && d.kosdaq;
+    if (!k && !q){
+      creamEmpty(g, W, H, '상승·하락 종목 수를 받지 못했습니다.',
+        '[🔄 실데이터 새로고침]을 누르면 /api/breadth(네이버 상승·하락 종목 수)를 다시 읽습니다 — 없는 값은 만들지 않습니다.');
+      creamMark(g, W, H);
+      return;
+    }
+    var sum = { up: 0, down: 0, flat: 0 }, have = 0;
+    [k, q].forEach(function(o){
+      if (!o) return;
+      have += 1;
+      sum.up += Number(o.up) || 0;
+      sum.down += Number(o.down) || 0;
+      sum.flat += Number(o.flat) || 0;
+    });
+    var denom = sum.up + sum.down;
+    var ratio = denom ? (sum.up / denom) * 100 : null;
+    var rows = [{ o: k, name: '코스피' }, { o: q, name: '코스닥' }];
+    var top = sq ? 268 : 214;
+    var rowGap = sq ? 150 : 112;
+    var x0 = 42 + Math.round(W / 12), x1 = W - 42 - Math.round(W / 9);
+    rows.forEach(function(r, i){
+      var y = top + i * rowGap;
+      cvText(g, r.name, 42, y + 20, Math.round(W / 54), CREAM.ink, 'left', 900);
+      if (!r.o){ cvText(g, '이 시장 값이 없습니다', 42, y + 48, Math.round(W / 84), CREAM.mute, 'left', 700); return; }
+      var u = Number(r.o.up) || 0, dn = Number(r.o.down) || 0, fl = Number(r.o.flat) || 0;
+      var tot = u + dn + fl || 1;
+      var barH = sq ? 46 : 38;
+      var wUp = Math.round((u / tot) * (x1 - x0));
+      var wFl = Math.round((fl / tot) * (x1 - x0));
+      var wDn = Math.max(0, (x1 - x0) - wUp - wFl);
+      g.fillStyle = CREAM.up; cvRR(g, x0, y, Math.max(2, wUp), barH, 5); g.fill();
+      g.fillStyle = CREAM.flat; g.fillRect(x0 + wUp, y, wFl, barH);
+      g.fillStyle = CREAM.down; cvRR(g, x0 + wUp + wFl, y, Math.max(2, wDn), barH, 5); g.fill();
+      g.strokeStyle = CREAM.line; g.lineWidth = 1; g.strokeRect(x0, y, x1 - x0, barH);
+      /* 안쪽 라벨 — 폭이 충분할 때만 */
+      if (wUp > 62) cvText(g, '상승 ' + u.toLocaleString('ko-KR'), x0 + 10, y + barH * 0.66, Math.round(W / 92), '#ffffff', 'left', 900, wUp - 16);
+      if (wDn > 92) cvText(g, '하락 ' + dn.toLocaleString('ko-KR'), x1 - 10, y + barH * 0.66, Math.round(W / 92), '#ffffff', 'right', 900, wDn - 16);
+      var rr = (u + dn) ? Math.round(u / (u + dn) * 1000) / 10 : null;
+      cvText(g, '상승 ' + u.toLocaleString('ko-KR') + ' · 하락 ' + dn.toLocaleString('ko-KR') +
+        (fl ? ' · 보합 ' + fl.toLocaleString('ko-KR') : '') +
+        (rr != null ? '  (상승 비율 ' + rr.toFixed(1) + '%)' : ''),
+        42, y + barH + Math.round(W / 62), Math.round(W / 88), CREAM.sub, 'left', 700, W - 84);
+    });
+    if (ratio != null){
+      var big = Math.round(W / 12);
+      cvText(g, ratio.toFixed(1) + '%', W - 44, sq ? 214 : 200, big, CREAM.up, 'right', 900);
+      cvText(g, '전체 상승 비율', W - 44, sq ? 214 + Math.round(W / 58) : 200 + Math.round(W / 66), Math.round(W / 84), CREAM.sub, 'right', 800);
+    }
+    creamMark(g, W, H);
+  }
+  function creamNote(dSup, dBreadth){
+    var el = $('#cvCreamNote');
+    if (!el) return;
+    var parts = [];
+    parts.push(dSup && dSup.basis ? ('② 수급 그래프(flow.png) — ' + dSup.basis) : '② 수급 그래프(flow.png) — 값 없음(새로고침)');
+    if (dBreadth && dBreadth.basis) parts.push('③ 종목 대비 그래프(sectors.png) — ' + dBreadth.basis);
+    else parts.push('③ 종목 대비 그래프(sectors.png) — 값 없음(새로고침)');
+    el.innerHTML = esc(parts.join(' · ')) + ' · 크림 차트는 <b>#F7F3E9</b> 바탕 · 티스토리·밝은 블로그용입니다.';
+  }
+  function cvDrawCreamAll(){
+    cvDrawCreamSupply();
+    cvDrawCreamBreadth();
+    creamNote(creamSupply(), creamBreadth());
+  }
   function cvDrawAll(){
     cvDrawMarket('cvMk');
     cvDrawThemes('cvTh');
     cvDrawStock('cvSt');
+    cvDrawCreamAll();
     var src = $('#cvSrc');
     if (src){
       var d = V2.data;
@@ -14010,21 +14730,28 @@ var CSVoice = (function () {
     }).catch(function () {
       V2.loading = false;
       cvDrawAll();
+    }).then(function () {
+      return cvBreadthLoad(force);
+    }).then(function () {
+      cvDrawCreamAll();
     });
   }
   function cvSave(kind){
-    var map = { mk: 'cvMk', th: 'cvTh', st: 'cvSt' };
+    var map = { mk: 'cvMk', th: 'cvTh', st: 'cvSt', sup: 'cvCreamSup', breadth: 'cvCreamBreadth' };
     var c = $('#' + (map[kind] || 'cvMk'));
     if (!c) return;
-    if (!V2.data){ toast('먼저 실데이터를 불러와 주세요.'); return; }
+    if (!V2.data && kind !== 'sup' && kind !== 'breadth'){ toast('먼저 실데이터를 불러와 주세요.'); return; }
     if (kind === 'st' && (!V2.stock || !V2.stock.candles)){ toast('③은 종목을 먼저 [불러오기] 해 주세요.'); return; }
-    var nm = { mk: '시황요약', th: '주도테마', st: (V2.stock && V2.stock.name ? V2.stock.name : '종목차트') }[kind] || 'chart';
+    var nm = { mk: '시황요약', th: '주도테마', st: (V2.stock && V2.stock.name ? V2.stock.name : '종목차트'),
+               sup: 'flow', breadth: 'sectors' }[kind] || 'chart';
     c.toBlob(function (b) {
       if (!b){ toast('PNG로 만들지 못했습니다.'); return; }
       var dt = new Date(), p = function (n) { return ('0' + n).slice(-2); };
       var a = document.createElement('a');
       a.href = URL.createObjectURL(b);
-      a.download = nm + '_' + dt.getFullYear() + p(dt.getMonth() + 1) + p(dt.getDate()) + '_' + V2.size + '.png';
+      a.download = (kind === 'sup' || kind === 'breadth')
+        ? nm + '.png'
+        : nm + '_' + dt.getFullYear() + p(dt.getMonth() + 1) + p(dt.getDate()) + '_' + V2.size + '.png';
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       toast('PNG로 저장했습니다 · ' + nm);
     }, 'image/png');
@@ -14216,6 +14943,19 @@ var CSVoice = (function () {
     document.addEventListener('click', function (e) {
       var b = e.target.closest('[data-cvdl]');
       if (b){ cvSave(b.getAttribute('data-cvdl')); return; }
+      var gd = e.target.closest('[data-graphdl]');
+      if (gd){ cvSave(gd.getAttribute('data-graphdl')); return; }
+      var gs = e.target.closest('[data-imgsave]');
+      if (gs){
+        var gc = graphCanvasByName(gs.getAttribute('data-imgsave'));
+        var k2 = gs.getAttribute('data-imgsave');
+        var nm2 = k2 === 'thumb' ? 'thumbnail' : (k2 === 'sup' ? 'flow' : (k2 === 'breadth' ? 'sectors' : k2));
+        if (gc && gc.width) saveCanvasList([{ c: gc, n: nm2 }], '그래프');
+        else toast('먼저 [🔄 실데이터 새로고침]을 눌러 차트를 그려 주세요.');
+        return;
+      }
+      var gt = e.target.closest('[data-goto-chart]');
+      if (gt){ var cc = $('#chartCard'); if (cc) cc.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
       var o = e.target.closest('[data-osdl]');
       if (o){ osSave(o.getAttribute('data-osdl')); return; }
     });
