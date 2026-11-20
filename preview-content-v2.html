@@ -14595,7 +14595,8 @@ var CSVoice = (function () {
   /* 중단 — 빅넘버 카드 + 여우 캐릭터 (컷 문장은 하단 에디토리얼 자막이 맡는다) */
   function drawFoxNumber(ctx, big, x, y, maxW, h) {
     var col = big.neg ? FX.wine : FX.navy;
-    var fit = fitText(ctx, big.disp, { w: maxW - 116, h: h - 130, base: 112, min: 44, weight: 900, lh: 1.06 });
+    /* 숫자는 원칙적으로 한 줄 — 길면 글자를 줄인다(두 줄로 쪼개지 않게 h 를 한 줄 높이로 준다) */
+    var fit = fitText(ctx, big.disp, { w: maxW - 116, h: 122, base: 112, min: 40, weight: 900, lh: 1.06 });
     var tw = 0;
     ctx.font = fit.font;
     for (var k = 0; k < fit.lines.length; k++) tw = Math.max(tw, ctx.measureText(fit.lines[k]).width);
