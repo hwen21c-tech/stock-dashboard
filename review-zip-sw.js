@@ -2,7 +2,7 @@
    · 셸(HTML·manifest·아이콘)은 설치 시 캐시, 캠페인 데이터는 네트워크 우선 + 캐시 폴백
    · 파일을 고칠 때는 CACHE 이름의 버전을 올려 주세요.
 */
-var CACHE = 'review-zip-v2';
+var CACHE = 'review-zip-v3';
 var SHELL = [
   './review-zip.html',
   './review-zip-manifest.json',
