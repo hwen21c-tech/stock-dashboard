@@ -1312,6 +1312,12 @@
   .t11chip:hover{background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.42);color:#e0f2fe}
   #t11Canvas{width:100%;max-width:520px;height:auto;display:block;border-radius:13px;border:1px solid var(--line);background:#070c14;margin:6px auto 0}
   .t11row{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+  /* 🦊 3초 요약 대표 카드 */
+  .sum3wrap{margin-top:15px;border-top:1px solid var(--line);padding-top:13px;min-width:0}
+  .sum3wrap input{width:100%;background:#08111d;border:1px solid rgba(148,163,184,.28);border-radius:9px;padding:8px 10px;font-size:12.5px;color:#e2e8f0;letter-spacing:0;margin:9px 0 3px}
+  .sum3wrap input:focus{outline:2px solid rgba(56,189,248,.4);outline-offset:1px}
+  .sum3row{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+  #sum3Canvas{width:100%;max-width:520px;height:auto;display:block;border-radius:13px;border:1px solid var(--line);background:#F8F3EA;margin:8px auto 0}
 
   /* ---------- 🎬 영상 편집기 ↔ 웹 쇼츠 생성기 연결 ---------- */
   .wvbridge{display:flex;flex-wrap:wrap;align-items:center;gap:9px;border:1px solid rgba(56,189,248,.34);border-radius:12px;padding:11px 12px;margin:0 0 12px;background:linear-gradient(135deg,rgba(56,189,248,.13),rgba(168,85,247,.09));min-width:0}
@@ -2022,6 +2028,22 @@
           </div>
           <p class="hint" style="margin-top:7px">저장 파일명은 <b>제목-1080x1080.png</b>. 배지·워터마크·스타일은 이 브라우저에 저장돼 다음 글에도 그대로 씁니다.</p>
         </div>
+        <div class="sum3wrap" id="sum3Wrap">
+          <div class="card-head" style="margin-bottom:6px">
+            <span class="num">🦊</span><h2>3초 요약 대표 카드</h2>
+            <span class="bdg real" id="sum3Stat">1080×1080 · 지수 실측</span>
+          </div>
+          <p class="hint">티스토리·네이버 글 <b>맨 위 대표 이미지</b>로 쓰는 카드입니다. <b>오늘 핵심 결론 1줄 + 코스피·코스닥 + 신호등 뱃지 + 🦊 폭스시그널</b>만 담아 3초 안에 읽히게 만듭니다. 지수는 <b>관제탑 실측</b>(/api/stock-live)을 그대로 쓰고, 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다.</p>
+          <input type="text" id="sum3Line" maxlength="70" placeholder="핵심 결론 1줄 (비우면 1:1 표지 제목 → 본문 [==오늘의 결론==] → 주제 순서로 자동)" aria-label="3초 요약 카드 핵심 결론 1줄">
+          <div class="sum3row">
+            <button class="btn small" id="sum3Refresh" type="button">↻ 지수·신호 새로고침</button>
+            <button class="btn small primary" id="sum3Dl1" type="button">📥 1080×1080 저장</button>
+            <button class="btn small" id="sum3Dl2" type="button">📥 1200×675 저장</button>
+            <button class="btn small ghost" id="sum3Auto" type="button">↺ 결론 자동 채우기</button>
+          </div>
+          <canvas id="sum3Canvas" width="1080" height="1080" role="img" aria-label="3초 요약 대표 카드 1080×1080 미리보기"></canvas>
+          <p class="hint" style="margin-top:6px">저장 파일명은 <b>제목-3초요약-1080x1080.png</b>. 결론 문구는 이 브라우저에 저장됩니다.</p>
+        </div>
         <div class="cvnote" id="cvNote">값은 관제탑이 준 실측치 그대로입니다.</div>
       </div>
 
@@ -2052,6 +2074,7 @@
             <label class="ptoggle"><input type="checkbox" id="ytBoxOn" checked> 📺 유튜브 @폭스시그널 박스</label>
             <button class="btn small" id="tagCopyBtn" type="button" title="검색 태그 10개를 만들어 한 번에 복사합니다(SEO 태그가 있으면 그 값을 씁니다)">🏷️ 태그 10개 복사</button>
             <button class="btn small primary" id="saveAllGraphs" type="button" title="대표 썸네일 + 크림 수급 차트 + 상승·하락 차트를 PNG로 한 번에 저장합니다">🖼️ 그래프 전체 저장</button>
+            <button class="btn small primary" id="sum3Btn" type="button" title="오늘 핵심 결론 1줄 + 코스피·코스닥 + 신호등만 담은 3초 요약 카드(1080×1080)를 바로 저장합니다">🦊 3초 요약 카드 저장</button>
           </div>
           <div class="tagstrip" id="tagStrip" hidden></div>
           <div class="outwhite" id="outWhite" hidden></div>
@@ -2384,9 +2407,10 @@
       </div>
       <div class="hint" style="margin:0">메모는 이 브라우저에 저장됩니다. 새 모션·요소가 필요하면 복사해서 채팅에 붙여넣어 주세요.</div>
     </div>
-    <div class="wvtplrow" role="group" aria-label="영상 양식 선택 — 3종 모두 세이프 존·자동 줄바꿈·3단 그리드 동일">
+    <div class="wvtplrow" role="group" aria-label="영상 양식 선택 — 4종 모두 세이프 존·자동 줄바꿈·3단 그리드 동일">
       <button class="wvtpl on" type="button" data-wvtpl="card" aria-pressed="true"><b>📊 정보/시황 카드형</b><span>훅 + 핵심 포인트 카드 + 자막</span></button>
       <button class="wvtpl" type="button" data-wvtpl="chart" aria-pressed="false"><b>📈 모션 차트/비교표형</b><span>수치를 움직이는 바·좌우 비교로</span></button>
+      <button class="wvtpl" type="button" data-wvtpl="line" aria-pressed="false"><b>📈 꺾은선 추세</b><span>실제 지수 선 드로잉 + 변곡점 줌인</span></button>
       <button class="wvtpl" type="button" data-wvtpl="photo" aria-pressed="false"><b>🖼️ 사진 줌인/캡처형</b><span>내 사진 Ken Burns + 배지·자막</span></button>
     </div>
     <div class="hint" id="wvLayoutHint">쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 3종 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.</div>
@@ -2623,6 +2647,7 @@
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.0 — 🦊 2차 고퀄 연출 6종: ① <b>실제 지수 꺾은선</b>(/api/index-chart) 왼→오 드로잉 + 변곡점 Ring·화살표·2.2배 줌인 렌즈(API 실패 시 컷 수치 흐름 폴백) ② 상단 <b>시장 위험 게이지</b> HUD(신호·등락률 → 빨강/노랑/초록으로 차오름) ③ 핵심 숫자 <b>펀치 줌 1.12→1.00 + 효과음 싱크</b>(0.58초) ④ 여우 <b>눈 깜빡임·호흡·흔들림·점프·끄덕임</b> ⑤ 컷 사이 <b>0.30초 여백 + BGM 덕킹(0.12/0.28)</b> ⑥ 블로그 <b>'3초 요약 대표 카드' PNG</b>(1080×1080 · 1200×675)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.9 — ✍️ <b>쇼츠 대본 영역 접기</b>(기본 접힘 · [🎬 쇼츠 대본 생성]·[📱 쇼츠로 변환] 때 자동 펼침) · 🎬 웹 영상 생성기 <b>📝 컷별 화면 배치 메모 + 📋 피클 수정요청 복사</b> · 🦊 폭스시그널에서 <b>📈 모션 차트/비교표형이 실제 막대 차트</b>로 그려짐(수치 없으면 빅넘버 카드) · 녹화 <b>진행률 %</b> 0.5초 갱신 · <b>📝 자막 SRT 복사</b>(캡컷용)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.8 — ✍️ 블로그 <b>2종</b>(🌅 장전 · 🌙 통합 마감(정규+애프터): ① 정규장 결산 → ② NXT 애프터장 15:30~20:00 유지/이탈·신규 재료 → ③ 야간선물·미 선물·환율 → ④ 중요 일정 → ⑤ 리스크 괄호 표기) · 📱 쇼츠·🎬 영상 생성기 <b>4종</b>(🌅 장전 · ☀️ 점심 · 🌆 정규마감 · 🌙 애프터장) <b>1클릭</b> — 실측·NXT·뉴스로 공식·레이아웃 자동 전환, 블로그 글 없이도 동작</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.7 — <b>역할별 3탭</b>(🎬 AI 영상 스튜디오=클립 편집 · 📱 쇼츠 스튜디오=대본→영상 · ✍️ 블로그 작성) — <b>🎬 웹 영상 생성기를 📱 쇼츠 스튜디오 탭 안으로 통합</b>(대본·붙여넣기 → 🦊 폭스시그널 → ▶ 생성) · 블로그 결과 카드 <b>[📱 쇼츠로 변환]</b>(글 → 50초 5컷 · 복사 + 쇼츠 스튜디오 + 웹 영상 생성기 동시 전송)</div>
@@ -9039,6 +9064,263 @@ var CSVoice = (function () {
       copyText(list.map(function(t){ return '#' + t; }).join(' '),
         '태그 ' + list.length + '개를 복사했습니다 — 네이버·티스토리 태그 칸에 붙여넣으세요.');
     });
+  })();
+
+  /* ══════════════════════════════════════════════════════════════════════
+     🦊 ⑥ 3초 요약 대표 카드 — 티스토리 맨 위 대표 이미지 (1080×1080 · 1200×675)
+     · 오늘 핵심 결론 1줄 + 코스피·코스닥 실측 + 신호등(🔴/🟡/🟢) + 🦊 폭스시그널
+     · 지수는 /api/stock-live(실패 시 /api/index-chart) 실측만 쓴다 — 못 받은 값은 '—'
+     ══════════════════════════════════════════════════════════════════════ */
+  var SUM3 = { idx: null, at: 0, busy: false, pend: null, err: '' };
+  var SUM3_COL = { cream: '#F8F3EA', band: '#F1E8D8', navy: '#10202F', wine: '#9F1239', paper: '#FFFFFF', ink: 'rgba(16,32,47,.55)' };
+  function sum3Base(){ return (typeof MKT_BASE === 'string' && MKT_BASE) ? MKT_BASE : ''; }
+  function sum3Num(v){ var n = Number(v); return isFinite(n) ? n : null; }
+  function sum3Fetch(force){
+    if (SUM3.pend) return SUM3.pend;
+    if (!force && SUM3.idx && Date.now() - SUM3.at < 120000) return Promise.resolve(SUM3.idx);
+    SUM3.busy = true; SUM3.err = '';
+    var B = sum3Base();
+    function grab(j){
+      var out = {};
+      ((j && j.indices) || []).forEach(function(x){
+        var nm = String(x.name || '');
+        var k = /코스피/.test(nm) ? 'K' : (/코스닥/.test(nm) ? 'Q' : '');
+        if (k && !out[k]) out[k] = { name: nm, price: sum3Num(x.price), pct: sum3Num(x.changePct) };
+      });
+      return out;
+    }
+    SUM3.pend = fetchJsonT(B + '/api/stock-live', 9000).then(function(j){
+      var o = grab(j);
+      if (!o.K && !o.Q) throw new Error('indices 없음');
+      SUM3.idx = o; SUM3.at = Date.now(); SUM3.busy = false; SUM3.pend = null;
+      return o;
+    }).catch(function(){
+      return Promise.all([
+        fetchJsonT(B + '/api/index-chart?key=kospi', 8000).catch(function(){ return null; }),
+        fetchJsonT(B + '/api/index-chart?key=kosdaq', 8000).catch(function(){ return null; })
+      ]).then(function(rows){
+        var o = {};
+        if (rows[0] && rows[0].quote) o.K = { name: '코스피', price: sum3Num(rows[0].quote.price), pct: sum3Num(rows[0].quote.changePct) };
+        if (rows[1] && rows[1].quote) o.Q = { name: '코스닥', price: sum3Num(rows[1].quote.price), pct: sum3Num(rows[1].quote.changePct) };
+        SUM3.at = Date.now(); SUM3.busy = false; SUM3.pend = null;
+        if (!o.K && !o.Q) { SUM3.err = '지수 값을 받지 못했습니다'; return SUM3.idx; }
+        SUM3.idx = o; SUM3.err = ''; return o;
+      });
+    });
+    return SUM3.pend;
+  }
+  function sum3Signal(idx){
+    var p = idx && idx.K ? idx.K.pct : null;
+    if (p == null) return { txt: '🟡 관망', color: '#B45309', lv: 52 };
+    if (p <= -1.2) return { txt: '🔴 주의', color: '#B91C1C', lv: Math.round(Math.min(97, 62 + Math.abs(p) * 6.5)) };
+    if (p >= 0.8) return { txt: '🟢 우위', color: '#15803D', lv: Math.round(Math.max(8, 34 - p * 6)) };
+    return { txt: '🟡 관망', color: '#B45309', lv: 50 };
+  }
+  function sum3Val(v){
+    var n = sum3Num(v);
+    return n == null ? '—' : n.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function sum3Pct(v){
+    var n = sum3Num(v);
+    return n == null ? '—' : ((n > 0 ? '+' : '') + n.toFixed(2) + '%');
+  }
+  function sum3Conclusion(){
+    var el = $('#sum3Line');
+    var v = String((el && el.value) || '').replace(/\s+/g, ' ').trim();
+    if (v) return v;
+    try {
+      var t = String(t11TitleText() || '').replace(/\s+/g, ' ').trim();
+      if (t && t !== '블로그 제목' && t.length <= 70) return t;
+    } catch(e){}
+    var out = String(($('#outText') && $('#outText').textContent) || '');
+    var m = /==([^=\n]{4,70})==/.exec(out);
+    if (m) return m[1].replace(/\s+/g, ' ').trim();
+    var tp = String((topicEl && topicEl.value) || '').replace(/\s+/g, ' ').trim();
+    if (tp) return tp;
+    return '';
+  }
+  function sum3PctColor(v){
+    var n = sum3Num(v);
+    if (n == null) return '#475569';
+    return n > 0 ? '#15803D' : (n < 0 ? '#B91C1C' : '#10202F');
+  }
+  function sum3DrawInto(ctx, W, H){
+    var wide = W > H;
+    var C = SUM3_COL;
+    var idx = SUM3.idx || {};
+    var sg = sum3Signal(idx);
+    var line = sum3Conclusion();
+    var padX = wide ? 56 : 72;
+    var bandH = wide ? 104 : 168;
+    var FONT = THUMB_FONT;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = C.cream; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = C.band; ctx.fillRect(0, 0, W, bandH);
+    ctx.fillStyle = 'rgba(16,32,47,.10)'; ctx.fillRect(0, bandH - 2, W, 2);
+
+    /* 브랜드 필 */
+    var bf = '900 ' + (wide ? 32 : 38) + 'px ' + FONT;
+    ctx.font = bf; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    var brand = '🦊 폭스시그널';
+    var bw = ctx.measureText(brand).width + (wide ? 52 : 62);
+    var bh = wide ? 58 : 66, by = (bandH - bh) / 2;
+    roundRectPath(ctx, padX, by, bw, bh, bh / 2);
+    ctx.fillStyle = C.navy; ctx.fill();
+    ctx.fillStyle = C.cream;
+    ctx.fillText(brand, padX + (wide ? 26 : 31), by + bh / 2 + 2);
+    /* 우측 — 3초 요약 · 날짜 */
+    ctx.textAlign = 'right';
+    ctx.font = '900 ' + (wide ? 26 : 30) + 'px ' + FONT;
+    ctx.fillStyle = C.wine;
+    ctx.fillText('3초 요약', W - padX, by + bh / 2 + (wide ? -8 : -10));
+    ctx.font = '700 ' + (wide ? 18 : 21) + 'px ' + FONT;
+    ctx.fillStyle = C.ink;
+    ctx.fillText(t11DateStr() + ' · 🦊 폭스시그널', W - padX, by + bh / 2 + (wide ? 20 : 24));
+    ctx.textAlign = 'left';
+
+    /* 결론 1줄 */
+    var maxW = wide ? Math.round(W * .54) : (W - padX * 2);
+    var cTop = bandH + (wide ? 52 : 76);
+    ctx.fillStyle = C.wine;
+    roundRectPath(ctx, padX, cTop - 42, wide ? 72 : 104, wide ? 8 : 11, 6); ctx.fill();
+    var sizes = wide ? [58, 52, 47, 43, 39, 35] : [82, 74, 68, 62, 56, 50, 44];
+    var size = sizes[sizes.length - 1], lines = [''];
+    for (var i = 0; i < sizes.length; i++){
+      size = sizes[i];
+      ctx.font = '900 ' + size + 'px ' + FONT;
+      lines = wrapCanvasText(ctx, line || '오늘의 시장 결론을 한 줄로', maxW, 3);
+      var lastL = lines[lines.length - 1] || '';
+      if (lines.length <= 3 && lastL.slice(-1) !== '…') break;
+    }
+    ctx.fillStyle = C.navy;
+    ctx.textBaseline = 'top';
+    var ty = cTop;
+    lines.forEach(function(t){
+      ctx.font = '900 ' + size + 'px ' + FONT;
+      ctx.fillText(t, padX, ty);
+      ty += Math.round(size * 1.2);
+    });
+
+    /* 신호등 뱃지 + 위험도 */
+    var pf = '900 ' + (wide ? 28 : 34) + 'px ' + FONT;
+    var ptxt = sg.txt + '   ·   위험 ' + sg.lv + '%';
+    ctx.font = pf;
+    var pw = ctx.measureText(ptxt).width + (wide ? 52 : 68);
+    var ph = wide ? 54 : 66;
+    var py = ty + (wide ? 22 : 30);
+    roundRectPath(ctx, padX, py, pw, ph, ph / 2);
+    ctx.fillStyle = sg.color; ctx.fill();
+    ctx.fillStyle = '#FFFFFF'; ctx.textBaseline = 'middle';
+    ctx.fillText(ptxt, padX + (wide ? 26 : 34), py + ph / 2 + 1);
+    ctx.textBaseline = 'top';
+
+    /* 지수 카드 2개 */
+    function statCard(x, y, w, h, nm, v, pct){
+      roundRectPath(ctx, x, y, w, h, wide ? 20 : 26);
+      ctx.fillStyle = C.paper; ctx.fill();
+      ctx.strokeStyle = 'rgba(16,32,47,.14)'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = 'rgba(16,32,47,.55)'; ctx.font = '800 ' + (wide ? 22 : 27) + 'px ' + FONT;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(nm, x + (wide ? 24 : 30), y + (wide ? 30 : 38));
+      ctx.fillStyle = C.navy; ctx.font = '900 ' + (wide ? 46 : 58) + 'px ' + FONT;
+      ctx.fillText(sum3Val(v), x + (wide ? 24 : 30), y + (wide ? 78 : 106));
+      ctx.fillStyle = sum3PctColor(pct); ctx.font = '900 ' + (wide ? 28 : 34) + 'px ' + FONT;
+      ctx.fillText(sum3Pct(pct), x + (wide ? 24 : 30), y + h - (wide ? 34 : 40));
+      ctx.textBaseline = 'top';
+    }
+    if (wide){
+      var rx = Math.round(W * .61), rw = W - rx - padX, ch = 196, gy = bandH + 46;
+      statCard(rx, gy, rw, ch, '코스피', idx.K && idx.K.price, idx.K && idx.K.pct);
+      statCard(rx, gy + ch + 20, rw, ch, '코스닥', idx.Q && idx.Q.price, idx.Q && idx.Q.pct);
+    } else {
+      var cw = Math.floor((W - padX * 2 - 26) / 2), chh = 214, gy2 = H - 380;
+      statCard(padX, gy2, cw, chh, '코스피', idx.K && idx.K.price, idx.K && idx.K.pct);
+      statCard(padX + cw + 26, gy2, cw, chh, '코스닥', idx.Q && idx.Q.price, idx.Q && idx.Q.pct);
+    }
+
+    /* 하단 워터마크 */
+    ctx.strokeStyle = 'rgba(16,32,47,.16)'; ctx.lineWidth = 2;
+    var ly = H - (wide ? 62 : 84);
+    ctx.beginPath(); ctx.moveTo(padX, ly); ctx.lineTo(W - padX, ly); ctx.stroke();
+    ctx.fillStyle = C.navy; ctx.font = '900 ' + (wide ? 24 : 29) + 'px ' + FONT;
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🦊 폭스시그널', padX, ly + (wide ? 30 : 40));
+    ctx.textAlign = 'right';
+    ctx.fillStyle = C.wine; ctx.font = '800 ' + (wide ? 22 : 26) + 'px ' + FONT;
+    ctx.fillText('youtube.com/@폭스시그널', W - padX, ly + (wide ? 30 : 40));
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  }
+  function sum3Draw(){
+    var cv = $('#sum3Canvas');
+    if (!cv || !cv.getContext) return;
+    try { sum3DrawInto(cv.getContext('2d'), cv.width, cv.height); } catch(e){}
+  }
+  function sum3Name(w, h){
+    var s = String(sum3Conclusion() || 'summary')
+      .replace(/[\\/:*?"<>|!%#&'`]+/g, ' ').replace(/\s+/g, '-').replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '').slice(0, 40);
+    return (s || 'summary') + '-3초요약-' + w + 'x' + h + '.png';
+  }
+  function sum3Save(w, h){
+    w = w || 1080; h = h || 1080;
+    var st = $('#sum3Stat');
+    function go(){
+      var cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      sum3DrawInto(cv.getContext('2d'), w, h);
+      var name = sum3Name(w, h);
+      function ok(){ toast('3초 요약 카드를 저장했습니다 · ' + name); if (st) st.textContent = '저장됨 · ' + w + '×' + h; }
+      function fail(){ toast('카드를 만들지 못했습니다. 다시 한 번 눌러 주세요.'); }
+      try {
+        if (cv.toBlob){ cv.toBlob(function(b){ if (photoBlobSave(b, name)) ok(); else fail(); }, 'image/png'); return; }
+        triggerDownload(cv.toDataURL('image/png'), name); ok();
+      } catch(e){ fail(); }
+    }
+    if (SUM3.idx) { go(); return; }
+    toast('관제탑 지수를 읽는 중…');
+    sum3Fetch(false).then(function(){ sum3Draw(); go(); });
+  }
+  function sum3Auto(){
+    var el = $('#sum3Line');
+    if (el){ el.value = ''; }
+    var line = sum3Conclusion();
+    if (el && line) el.value = line.slice(0, 70);
+    sum3Draw();
+    toast(line ? '결론 1줄을 자동으로 채웠습니다 — 필요하면 직접 고치세요.' : '아직 채울 결론이 없습니다 — 1:1 표지 제목이나 주제를 먼저 정해 주세요.');
+  }
+  function sum3Refresh(){
+    var st = $('#sum3Stat');
+    sum3Fetch(true).then(function(){
+      sum3Draw();
+      if (st) st.textContent = (SUM3.idx ? '1080×1080 · 지수 실측' : '1080×1080 · 지수 미수신');
+      toast(SUM3.idx ? '관제탑 지수·신호를 새로 읽었습니다.' : ('지수를 받지 못했습니다' + (SUM3.err ? ' — ' + SUM3.err : '')));
+    });
+  }
+  (function sum3Init(){
+    var cv = $('#sum3Canvas');
+    if (!cv) return;
+    var ln = $('#sum3Line');
+    if (ln){
+      try { var sv = lsGet('cs2_sum3_line_v1', ''); if (sv) ln.value = sv; } catch(e){}
+      ln.addEventListener('input', function(){
+        try { lsSet('cs2_sum3_line_v1', String(ln.value || '').slice(0, 70)); } catch(e){}
+        sum3Draw();
+      });
+    }
+    var b1 = $('#sum3Dl1'), b2 = $('#sum3Dl2'), b3 = $('#sum3Refresh'), b4 = $('#sum3Auto');
+    if (b1) b1.addEventListener('click', function(){ sum3Save(1080, 1080); });
+    if (b2) b2.addEventListener('click', function(){ sum3Save(1200, 675); });
+    if (b3) b3.addEventListener('click', sum3Refresh);
+    if (b4) b4.addEventListener('click', sum3Auto);
+    var bb = $('#sum3Btn');
+    if (bb) bb.addEventListener('click', function(){
+      try { var w = $('#sum3Wrap'); if (w && w.scrollIntoView) w.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
+      sum3Save(1080, 1080);
+    });
+    sum3Draw();
+    setTimeout(function(){ sum3Fetch(false).then(function(){ sum3Draw(); }); }, 1200);
+    setTimeout(sum3Draw, 2600);
   })();
 
   /* 🖼️ 그래프 저장 — 대표 썸네일 + 크림 수급 + 상승·하락 */
@@ -15985,7 +16267,8 @@ var CSVoice = (function () {
   'use strict';
   var W = window, D = document;
   var CFG_KEY = 'cs_wvid_cfg_v1', PRE_KEY = 'cs_wvid_presets_v1', EL_KEY = 'cs_elevenlabs_api_key';
-  var CW = 1080, CH = 1920, GAP = 0.16;
+  var CW = 1080, CH = 1920, GAP = 0.30;      /* ⑤ 컷 사이 호흡 여백 0.30초 */
+  var BGM_GAP = 0.28, BGM_DUCK = 0.12;       /* ⑤ BGM 덕킹 — 나레이션 0.12 · 컷 사이 여백 0.28 */
   var FF = "'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif";
 
   /* ---------- 쇼츠 세이프 존 · 3단 고정 그리드 ---------- */
@@ -15998,7 +16281,7 @@ var CSVoice = (function () {
     main: { x: 60, y: 528, w: 900, h: 672 },   /* 핵심 카드 · 차트 · 비교표 */
     cap:  { x: 60, y: 1228, w: 900, h: 312 }   /* 하단 자막 */
   };
-  var TPL_NAME = { card: '📊 카드형', chart: '📈 차트형', photo: '🖼️ 사진형' };
+  var TPL_NAME = { card: '📊 카드형', chart: '📈 차트형', line: '📈 꺾은선 추세', photo: '🖼️ 사진형' };
   /* ---------- 🎨 영상 디자인 템플릿 (🌙 다크 시네마 / 🦊 폭스시그널 에디토리얼) ---------- */
   var DESIGN = { dark: '🌙 다크 시네마', fox: '🦊 폭스시그널 에디토리얼',
     shiba: '🐶 시바딜 · 최저가', bunny: '🐰 피치홈 · 리얼리뷰', penguin: '🐧 펭귄특가 · 타임딜' };
@@ -16007,7 +16290,7 @@ var CSVoice = (function () {
   var FOX = {
     SRC: { main: 'assets/fox/fox_main.png', surprise: 'assets/fox/fox_surprise.png',
            analyze: 'assets/fox/fox_analyze.png', cheer: 'assets/fox/fox_cheer.png' },
-    img: {}, bg: {}, tried: {}, loading: false
+    img: {}, bg: {}, fur: {}, tried: {}, loading: false
   };
   /* 컷 내용 → 여우 표정 자동 매칭 (하락·경고 / 수급·분석 / 상승·호재) */
   var FOX_KEYS = {
@@ -16019,6 +16302,50 @@ var CSVoice = (function () {
     cheer: ['상승', '반등', '급등', '수혜', '추천', '완료', '호재', '신고가', '최고', '성공', '매수', '강세',
       '회복', '돌파', '기대', '훈풍', '상한가', '불타', '웃', '흑자', '공략']
   };
+  /* ═══ 📈 ① 실제 지수 꺾은선 데이터 — 관제탑 /api/index-chart (실패하면 컷 수치 흐름으로 폴백) ═══
+     · 없는 주가를 지어내지 않는다: API가 실패하면 IDX.pts 를 비우고 컷 안 수치만 쓴다.
+     · 정적(GitHub Pages)은 관제탑 Vercel 오리진을 부르고, 동적(Vercel)은 같은 오리진 상대경로를 쓴다. */
+  var IDX = { pts: [], name: '', src: '', key: '', at: 0, loading: false, err: '', pend: null };
+  var IDX_LABEL = { kospi: '코스피', kosdaq: '코스닥' };
+  function idxBase() {
+    try { if (/(^|\.)vercel\.app$/.test(location.hostname)) return ''; } catch (e) {}
+    return 'https://stock-dashboard-live-6frm.vercel.app';
+  }
+  function idxPickKey() {
+    var t = String(((S.spec && S.spec.title) || '') + ' ' + ((S.spec && S.spec.hookTitle) || ''));
+    return /코스닥/.test(t) && !/코스피/.test(t) ? 'kosdaq' : 'kospi';
+  }
+  function idxReady() { return IDX.src === 'api' && IDX.pts && IDX.pts.length >= 8; }
+  function idxLoad(key, force) {
+    key = key || (IDX.key || idxPickKey());
+    if (!force && IDX.pend) return IDX.pend;
+    if (!force && IDX.at && Date.now() - IDX.at < 5 * 60000 && IDX.key === key && idxReady()) return null;
+    IDX.loading = true; IDX.key = key; IDX.err = '';
+    var ctrl = null, timer = null;
+    try { ctrl = new AbortController(); timer = setTimeout(function () { ctrl.abort(); }, 7000); } catch (e) {}
+    IDX.pend = fetch(idxBase() + '/api/index-chart?key=' + encodeURIComponent(key),
+      { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+      .then(function (r) { if (timer) clearTimeout(timer); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (j) {
+        IDX.pend = null; IDX.loading = false; IDX.at = Date.now();
+        var cs = (j && j.ok && Array.isArray(j.candles)) ? j.candles.filter(function (c) { return c && isFinite(c.c); }) : [];
+        if (cs.length < 8) { IDX.pts = []; IDX.src = ''; IDX.err = String((j && (j.reason || j.error)) || 'no-data'); return; }
+        IDX.pts = cs.slice(-30).map(function (c) { return { d: String(c.date || '').slice(5), c: +c.c }; });
+        IDX.name = String(j.name || IDX_LABEL[key] || '지수');
+        IDX.src = 'api'; IDX.err = '';
+        try { if (!S.running) redraw(); } catch (e) {}   /* 녹화 중에는 캔버스를 건드리지 않는다 */
+      })
+      .catch(function (e) {
+        IDX.pend = null; IDX.loading = false; IDX.at = Date.now(); IDX.pts = []; IDX.src = '';
+        IDX.err = String((e && e.message) || e || 'fail');
+      });
+    return IDX.pend;
+  }
+  function idxMaybeLoad() {
+    if (IDX.pend || IDX.loading) return;
+    if (idxReady() && Date.now() - IDX.at < 5 * 60000) return;
+    idxLoad(IDX.key || idxPickKey(), false);
+  }
   function designOf() {
     var d = S.designForce || (S.cfg && S.cfg.design) || 'dark';
     return DESIGN[d] ? d : 'dark';
@@ -16039,6 +16366,13 @@ var CSVoice = (function () {
           cx.drawImage(im, 0, 0, 16, 16, 0, 0, 8, 8);
           var p = cx.getImageData(1, 1, 1, 1).data;
           FOX.bg[k] = 'rgb(' + p[0] + ',' + p[1] + ',' + p[2] + ')';
+          /* ④ 눈 깜빡임 덮개 색 — 얼굴 털색을 그림에서 그대로 뽑는다(포즈별) */
+          var c2 = D.createElement('canvas');
+          c2.width = 64; c2.height = 64;
+          var cx2 = c2.getContext('2d');
+          cx2.drawImage(im, 0, 0, 64, 64);
+          var fp = cx2.getImageData(26, 22, 1, 1).data;
+          FOX.fur[k] = 'rgb(' + fp[0] + ',' + fp[1] + ',' + fp[2] + ')';
         } catch (e) {}
         redraw();
       };
@@ -16174,6 +16508,14 @@ var CSVoice = (function () {
   function moSweepP() { return MO.on ? moEase(MO.tIn, .45) : 1; }  /* ③ 형광펜 0.45초 */
   function moInP() { return MO.on ? moEase(MO.tIn, .2) : 1; }      /* ④ 컷 전환 0.2초 */
   function moBreath(ph) { return MO.on ? Math.round(Math.sin(MO.t * 3 + (ph || 0)) * 3) : 0; }  /* ④ 위아래 호흡 ±3px */
+  /* ③ 펀치 줌 — 도착 순간(0.52~0.82초)에 1.00 → 1.12 → 1.00 으로 '쾅' 하고 튄다 */
+  function moPunch() {
+    if (!MO.on) return 1;
+    var t = MO.tIn;
+    if (t < .52 || t > .82) return 1;
+    if (t < .58) return 1 + .12 * moEase(t - .52, .06);
+    return 1.12 - .12 * moEase(t - .58, .24);
+  }
   /* ① 숫자 카운트업 — 문자열의 숫자가 딱 하나일 때만 0 → 목표로 굴린다.
      ('-1조 2,311억'처럼 숫자가 둘이면 한쪽만 0에서 시작해 오독되므로 굴리지 않고 그대로 둔다) */
   function moNums(s) { return String(s == null ? '' : s).match(/[+-]?\d[\d,]*(?:\.\d+)?/g) || []; }
@@ -16528,8 +16870,62 @@ var CSVoice = (function () {
     S.cfg.badge.fox = (v && v !== foxSlotDefault()) ? v : '';
     return S.cfg.badge.fox;
   }
+  /* ═══ ② 시장 위험 게이지 — 컷의 신호(🔴 주의 / 🟡 관망 / 🟢 우위)와 등락률로 위험도를 잰다 ═══
+     · 컷이 바뀌면 게이지가 다시 0 → 목표까지 차오른다(0.9초). 소리 없이 봐도 분위기가 1초에 들어온다. */
+  function foxRisk(cut) {
+    var txt = String(((cut && cut.text) || '') + ' ' + ((cut && cut.hook) || ''));
+    var sg = signalOf(txt);
+    var m = /(-?\d+(?:\.\d+)?)\s*%/.exec(txt);
+    var v = m ? parseFloat(m[1]) : null;
+    /* 큰 등락률은 문장 키워드보다 세다 — -1.5%↓ 는 🔴, +1%↑ 는 🟢
+       (상단 신호 칩도 이 sg 를 그대로 써서 화면 안에서 두 판단이 어긋나지 않는다) */
+    if (isFinite(v) && sg.txt.indexOf('주의') < 0) {
+      if (v <= -1.5) sg = { txt: '🔴 주의', bg: '#DC2626' };
+      else if (v >= 1) sg = { txt: '🟢 우위', bg: '#0F766E' };
+    }
+    var lv = sg.txt.indexOf('주의') > -1 ? 84 : sg.txt.indexOf('우위') > -1 ? 22 : 52;
+    if (isFinite(v)) lv += v < 0 ? Math.min(12, Math.abs(v) * 2.2) : -Math.min(10, v * 2);
+    return { lv: Math.round(Math.max(6, Math.min(97, lv))), sg: sg };
+  }
+  function riskColor(lv) { return lv >= 70 ? '#B91C1C' : lv >= 45 ? '#B45309' : '#15803D'; }
+  function drawFoxGauge(ctx, cut) {
+    var h = 36, y = SAFE.y + 110;
+    var r = foxRisk(cut || {});
+    var col = riskColor(r.lv);
+    var lab = '⚠ 시장 위험', lf = '900 23px ' + FF;
+    ctx.font = lf;
+    var lw = ctx.measureText(lab).width + 26;
+    panel(ctx, SAFE.x, y, lw, h, h / 2, 'rgba(16,32,47,.08)', null, 0, 'fx-risk-pill');
+    txLine(ctx, lab, SAFE.x + 14, y + h / 2 + 1, lf, 'rgba(16,32,47,.70)', 'left', 'fx-risk-label');
+    var x0 = SAFE.x + lw + 18, x1 = SAFE.r - 208;
+    panel(ctx, x0, y + h / 2 - 8, x1 - x0, 16, 8, 'rgba(16,32,47,.13)', null, 0, 'fx-risk-track');
+    var p = MO.on ? moEase(MO.tIn, .9) : 1;
+    /* 값이 차오르는 동안 색도 같이 데워진다 — 초록 → 노랑 → 빨강 */
+    var curLv = r.lv * p, curCol = riskColor(curLv);
+    var fw = Math.max(0, (x1 - x0) * (curLv / 100));
+    if (fw > 3) {
+      ctx.save();
+      var lg = ctx.createLinearGradient(x0, 0, x0 + Math.max(48, fw), 0);
+      lg.addColorStop(0, hexA(curCol, .5)); lg.addColorStop(1, curCol);
+      ctx.fillStyle = lg;
+      rr(ctx, x0, y + h / 2 - 8, fw, 16, 8); ctx.fill();
+      ctx.restore();
+      rec(x0, y + h / 2 - 8, fw, 16, 'fx-risk-fill');
+      ctx.save();
+      ctx.fillStyle = curCol;
+      ctx.beginPath(); ctx.arc(x0 + fw, y + h / 2, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.restore();
+    }
+    [25, 50, 75].forEach(function (t) {
+      var tx = x0 + (x1 - x0) * (t / 100);
+      panel(ctx, tx - 1, y + h / 2 - 13, 2, 26, 1, 'rgba(16,32,47,.16)', null, 0, 'fx-risk-tick');
+    });
+    var vt = '위험 ' + Math.round(curLv) + '% · ' + r.sg.txt;
+    txLine(ctx, vt, SAFE.r, y + h / 2 + 1, '900 24px ' + FF, curCol, 'right', 'fx-risk-val');
+  }
   /* 상단 — 🦊 폭스시그널 브랜드 필 + 시간대 배지 + 컷 카운터 + 진행 프로그레스 바 */
-  function drawFoxHead(ctx, spec, idx, n, t, total, cuts) {
+  function drawFoxHead(ctx, spec, idx, n, t, total, cuts, cut) {
     var y = SAFE.y + 14, h = 64;
     var label = '🦊 폭스시그널';
     var f = '900 30px ' + FF;
@@ -16581,6 +16977,8 @@ var CSVoice = (function () {
       var cx = SAFE.x + SAFE.w * (c.start / den);
       panel(ctx, cx - 1.5, py - 4, 3, 16, 2, 'rgba(16,32,47,.30)', null, 0, 'fx-prog-tick');
     });
+    /* ② 시장 위험 게이지 HUD — 브랜드 필·진행 바 아래 한 줄 */
+    drawFoxGauge(ctx, cut);
   }
   /* 중단 — 빅넘버 카드 + 여우 캐릭터 (컷 문장은 하단 에디토리얼 자막이 맡는다) */
   function drawFoxNumber(ctx, big, x, y, maxW, h) {
@@ -16605,20 +17003,237 @@ var CSVoice = (function () {
       panel(ctx, x + 30, by - 6, Math.min(w - 60, Math.ceil(tw) + 30), fit.height + 12, 14, 'rgba(246,225,153,.75)', null, 0, 'fx-num-flash');
       ctx.restore();
     }
+    /* ③ 펀치 줌 — 숫자가 도착한 순간 1.12배로 튀었다가 제자리(효과음은 renderAll 이 같은 0.58초에 맞춘다) */
+    var pk = moPunch(), pcx = x + 38 + tw / 2, pcy = by + fit.height / 2;
+    if (pk > 1.001) {
+      ctx.save();
+      ctx.translate(pcx, pcy); ctx.scale(pk, pk); ctx.translate(-pcx, -pcy);
+    }
     for (var i = 0; i < fit.lines.length; i++) {
       var lineTxt = fit.lines.length === 1 ? moRoll(fit.lines[i], prog) : fit.lines[i];
       txLine(ctx, lineTxt, x + 38, by + i * fit.lineH + fit.lineH / 2, fit.font, col, 'left', 'fx-num-value');
     }
+    if (pk > 1.001) ctx.restore();
     panel(ctx, x + 38, y + h - 24, Math.max(6, 88 * moPop(MO.tIn, .55)), 8, 4, FX.wine, null, 0, 'fx-num-rule');
+  }
+  /* ═══ ④ 여우 캐릭터 모션 — 호흡 · 좌우 흔들림 · 컷 진입 점프 · 펀치 끄덕임 · 눈 깜빡임 ═══
+     · PNG 4종은 그대로 쓰고, 눈 위치(이미지 1254 기준 비율)에만 털색 덮개를 얹어 0.19초 깜빡인다.
+     · 모든 변형은 세이프 존 안(오른쪽 4px 여유 + 회전 0.55°)에서만 움직인다. */
+  var FOX_EYES = { main: [[.407, .428], [.606, .420]], surprise: [[.413, .422], [.612, .426]],
+    analyze: [[.397, .444], [.571, .411]], cheer: [[.407, .427], [.606, .419]] };
+  function foxEyeSpots(pose) { return FOX_EYES[pose] || FOX_EYES.main; }
+  function foxBlinkK() {
+    if (!MO.on) return 0;
+    var ph = (MO.t + .45) % 3.2;                    /* 3.2초마다 한 번, 0.19초 동안 */
+    if (ph > .19) return 0;
+    var x = ph / .19;
+    return x < .42 ? x / .42 : (1 - x) / .58;
+  }
+  function foxBlink(ctx, pose, x, y, size) {
+    var k = foxBlinkK();
+    if (k < .10) return;
+    var fur = FOX.fur[pose] || FOX.fur.main || 'rgb(234,122,35)';
+    var spots = foxEyeSpots(pose);
+    for (var i = 0; i < spots.length; i++) {
+      var cx = x + size * spots[i][0], cy = y + size * spots[i][1];
+      var rx = size * .056, ry = Math.max(2, size * .052 * k);
+      ctx.save();
+      ctx.fillStyle = fur;
+      ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(58,30,16,.9)';
+      ctx.lineWidth = Math.max(1.4, size * .008);
+      ctx.beginPath(); ctx.ellipse(cx, cy + ry * .62, rx * .9, Math.max(1, ry * .38), 0, 0, Math.PI); ctx.stroke();
+      ctx.restore();
+    }
   }
   function drawFox(ctx, pose, x, y, size) {
     var im = FOX.img[pose] || FOX.img.main;
     if (!im) { foxLoad(); return; }
-    var dy = moBreath(0);                            /* ④ 호흡 — 시간 t 에 따라 위아래 3px */
+    var t = MO.t;
+    var bob = MO.on ? Math.sin(t * 3) * 3 : 0;                        /* 호흡(위아래 3px) */
+    var sway = MO.on ? Math.sin(t * 1.7) * .55 : 0;                   /* 좌우 흔들림(도) */
+    var br = MO.on ? Math.sin(t * 2.15) * .012 : 0;                   /* 몸통 스쿼시 */
+    var hop = MO.on ? (1 - moEase(MO.tIn, .34)) * 9 : 0;              /* 컷 시작 점프 */
+    var nod = MO.on ? Math.sin(Math.min(1, Math.max(0, (MO.tIn - .52) / .3)) * Math.PI) * .02 : 0;  /* 펀치 순간 끄덕임 */
+    var dy = bob - Math.min(hop, Math.max(0, y - SAFE.y));
+    var ccx = x + size / 2, ccy = y + size / 2;
+    ctx.save();
+    ctx.translate(ccx, ccy);
+    ctx.rotate(sway * Math.PI / 180);
+    ctx.scale(1 + br * .5, 1 + br - nod);
+    ctx.translate(-ccx, -ccy);
     ctx.drawImage(im, x, y + dy, size, size);
-    rec(x, y + dy, size, size, 'fx-fox');
+    foxBlink(ctx, pose, x, y + dy, size);
+    ctx.restore();
+    rec(x, Math.max(SAFE.y, y + dy), size, size, 'fx-fox');
   }
   /* 📈 폭스시그널 모션 차트 — 크림 아이보리 카드 위 딥네이비·버건디 막대(컷 진행에 맞춰 자란다) */
+  /* ═══ ① 꺾은선 추세 — 실제 관제탑 지수(실측) 또는 컷 안 수치 흐름을 왼→오로 긋고 변곡점을 줌인 ═══ */
+  function fmtIdxNum(v) {
+    var s = Math.abs(+v || 0).toFixed(2);
+    return (v < 0 ? '-' : '') + s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  function foxTrendPts(cut) {
+    if (idxReady()) {
+      return { real: true, tag: '관제탑 실측', name: IDX.name + ' 최근 ' + IDX.pts.length + '거래일',
+        pts: IDX.pts.map(function (p) { return { d: p.d, c: p.c, disp: fmtIdxNum(p.c) }; }) };
+    }
+    var items = (chartItems(cut) || []).slice(0, 5);
+    if (items.length >= 3) {
+      return { real: false, tag: '컷 내 수치 흐름', name: '컷 수치 비교 ' + items.length + '개',
+        pts: items.map(function (it) { return { d: it.label, c: it.value, disp: it.disp }; }) };
+    }
+    return null;
+  }
+  /* ① 컷 → 메인 카드 모드 ('line' 꺾은선 · 'bar' 막대 · null 빅넘버) */
+  function foxCardMode(cut) {
+    var t = tplOf();
+    if (t !== 'chart' && t !== 'line') return { mode: null, items: [], trend: null };
+    var items = (chartItems(cut) || []).slice(0, 5);
+    var mode = t === 'line' ? 'line' : (items.length >= 2 ? 'bar' : 'line');
+    var trend = mode === 'line' ? foxTrendPts(cut) : null;
+    if (mode === 'line' && !trend) mode = items.length ? 'bar' : null;
+    return { mode: mode, items: items, trend: trend };
+  }
+  function drawFoxLine(ctx, cut, tr, x, y, w, h) {
+    var pts = (tr && tr.pts) || [];
+    var n = pts.length, i;
+    if (n < 3 || h < 300) return false;
+    panel(ctx, x, y, w, h, 22, FX.paper, 'rgba(16,32,47,.18)', 2, 'fx-line-card');
+    panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, 'rgba(16,32,47,.92)', null, 0, 'fx-line-spine');
+    txLine(ctx, 'TREND', x + 38, y + 27, '900 22px ' + FF, FX.wine, 'left', 'fx-line-label');
+    txLine(ctx, tr.tag, x + w - 34, y + 27, '800 19px ' + FF, 'rgba(16,32,47,.40)', 'right', 'fx-line-tag');
+    var nf = fitText(ctx, tr.name, { w: w - 76, h: 32, base: 27, min: 17, weight: 800, lh: 1.12 });
+    txLine(ctx, nf.lines[0] || '', x + 38, y + 58, nf.font, 'rgba(16,32,47,.62)', 'left', 'fx-line-name');
+
+    var px0 = x + 44, px1 = x + w - 62, py0 = y + 92, py1 = y + h - 76;
+    if (py1 - py0 < 60) return false;
+    var lo = Infinity, hi = -Infinity;
+    for (i = 0; i < n; i++) { if (pts[i].c < lo) lo = pts[i].c; if (pts[i].c > hi) hi = pts[i].c; }
+    if (!isFinite(lo) || !isFinite(hi)) return false;
+    if (hi - lo < 1e-9) hi = lo + 1;
+    var padY = (hi - lo) * .18;
+    lo -= padY; hi += padY;
+    function sx(k) { return px0 + (px1 - px0) * (k / (n - 1)); }
+    function sy(v) { return py1 - (py1 - py0) * ((v - lo) / (hi - lo)); }
+
+    /* 눈금 3줄 + 값(우측) */
+    for (i = 0; i < 3; i++) {
+      var gv = lo + (hi - lo) * (i === 0 ? .16 : i === 1 ? .5 : .84);
+      var gy = sy(gv);
+      ctx.save();
+      ctx.globalAlpha = .55; ctx.strokeStyle = 'rgba(16,32,47,.28)'; ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 7]); ctx.beginPath(); ctx.moveTo(px0, gy); ctx.lineTo(px1, gy); ctx.stroke();
+      ctx.restore();
+      txLine(ctx, fmtIdxNum(gv), x + w - 24, gy, '800 17px ' + FF, 'rgba(16,32,47,.38)', 'right', 'fx-line-grid');
+    }
+    /* 변곡점 — 추세 방향의 끝점(저점/고점). 양 끝은 피해서 잡는다 */
+    var down = pts[n - 1].c < pts[0].c;
+    var fi = -1, fv = 0;
+    for (i = 1; i < n - 1; i++) {
+      if (fi < 0 || (down ? pts[i].c < fv : pts[i].c > fv)) { fi = i; fv = pts[i].c; }
+    }
+    if (fi < 0) fi = n - 1;
+
+    /* 꺾은선 — 0 → 1.0초 동안 왼쪽에서 오른쪽으로 그어진다(도착 부근은 보간) */
+    var prog = MO.on ? moEase(MO.tIn, 1.0) : 1;
+    var lastK = (n - 1) * Math.min(1, prog);
+    var upto = Math.floor(lastK), frac = lastK - upto;
+    if (lastK > 0) {
+      ctx.save();
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(sx(0), sy(pts[0].c));
+      for (i = 1; i <= upto; i++) ctx.lineTo(sx(i), sy(pts[i].c));
+      var endX = sx(upto), endY = sy(pts[upto].c);
+      if (frac > 0 && upto + 1 < n) {
+        endX = sx(upto) + (sx(upto + 1) - sx(upto)) * frac;
+        endY = sy(pts[upto].c) + (sy(pts[upto + 1].c) - sy(pts[upto].c)) * frac;
+        ctx.lineTo(endX, endY);
+      }
+      ctx.strokeStyle = FX.wine; ctx.lineWidth = 4.5; ctx.stroke();
+      ctx.lineTo(endX, py1); ctx.lineTo(sx(0), py1); ctx.closePath();
+      ctx.fillStyle = 'rgba(159,18,57,.075)'; ctx.fill();
+      ctx.restore();
+      /* 그려지는 끝점 표시 */
+      if (prog < 1) {
+        ctx.save();
+        ctx.fillStyle = FX.wine;
+        ctx.beginPath(); ctx.arc(endX, endY, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.restore();
+      }
+    }
+    /* 변곡점 강조 원 + 화살표 — 선이 그 지점에 닿는 순간 찍힌다 */
+    var arriveK = fi / (n - 1);
+    var rp = MO.on ? moEase(MO.tIn - 1.0 * arriveK - .06, .3) : 1;
+    var fx0 = sx(fi), fy0 = sy(pts[fi].c);
+    if (rp > .02) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, rp);
+      ctx.strokeStyle = FX.wine; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.arc(fx0, fy0, 13 * (.6 + .4 * rp), 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = FX.navy;
+      ctx.beginPath(); ctx.arc(fx0, fy0, 5 * rp, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = Math.min(1, rp) * .55;
+      ctx.beginPath(); ctx.arc(fx0, fy0, 13 + 7 * rp, 0, Math.PI * 2); ctx.stroke();
+      /* 화살표 — 위에서 변곡점을 가리킨다 */
+      var ay = fy0 - 34 - 8 * rp;
+      ctx.globalAlpha = Math.min(1, rp);
+      ctx.fillStyle = FX.wine;
+      ctx.beginPath();
+      ctx.moveTo(fx0, fy0 - 20);
+      ctx.lineTo(fx0 - 8, ay - 10);
+      ctx.lineTo(fx0 + 8, ay - 10);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+      rec(fx0 - 20, fy0 - 20, 40, 40, 'fx-line-ring');
+    }
+    /* 변곡점 줌인 렌즈 — 선이 다 그려진 뒤(1.05초~) 그 구간만 확대해 옆에 띄운다(변곡점 반대편에 놓는다) */
+    var zq = MO.on ? moEase(MO.tIn - 1.05, .5) : 1;
+    if (zq > .04) {
+      var LW = 206, LH = 150, Z = 1.9;
+      var lw = LW * zq, lh = LH * zq;
+      var lx = fx0 < x + w / 2 ? (x + w - 24 - LW) : (x + 24);
+      var ly = fy0 > y + h / 2 ? (y + 88) : (y + h - 52 - LH);
+      lx = Math.max(x + 20, Math.min(x + w - 20 - lw, lx + (LW - lw) / 2));
+      ly = Math.max(y + 74, Math.min(y + h - 44 - lh, ly + (LH - lh) / 2));
+      /* 연결선 — 렌즈 가장자리에서 변곡점으로 */
+      var nx = Math.max(lx, Math.min(fx0, lx + lw)), ny = Math.max(ly, Math.min(fy0, ly + lh));
+      if (Math.abs(nx - fx0) + Math.abs(ny - fy0) > 8) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(159,18,57,.45)'; ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.moveTo(nx, ny); ctx.lineTo(fx0, fy0); ctx.stroke();
+        ctx.restore();
+      }
+      ctx.save();
+      rr(ctx, lx, ly, lw, lh, Math.min(18, lh / 2)); ctx.clip();
+      ctx.fillStyle = FX.paper; ctx.fillRect(lx, ly, lw, lh);
+      ctx.translate(lx + lw / 2, ly + lh / 2);
+      ctx.scale(Z, Z);
+      ctx.translate(-fx0, -fy0);
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(sx(0), sy(pts[0].c));
+      for (i = 1; i < n; i++) ctx.lineTo(sx(i), sy(pts[i].c));
+      ctx.strokeStyle = FX.wine; ctx.lineWidth = 2.6; ctx.stroke();
+      ctx.fillStyle = FX.navy;
+      ctx.beginPath(); ctx.arc(fx0, fy0, 3.8, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      ctx.save();
+      ctx.strokeStyle = FX.wine; ctx.lineWidth = 3;
+      rr(ctx, lx, ly, lw, lh, Math.min(18, lh / 2)); ctx.stroke();
+      ctx.restore();
+      rec(lx, ly, lw, lh, 'fx-line-lens');
+      if (zq > .55) {
+        txLine(ctx, '×' + Z, lx + lw - 12, ly + 15, '900 15px ' + FF, FX.wine, 'right', 'fx-line-zoomtag');
+      }
+    }
+    /* 하단 — 변곡점 라벨 */
+    var lab = (down ? '저점 ' : '고점 ') + (pts[fi].disp || fmtIdxNum(pts[fi].c)) + (tr.real ? ' · ' + pts[fi].d : '');
+    txLine(ctx, lab, x + 38, y + h - 34, '900 24px ' + FF, FX.wine, 'left', 'fx-line-foot');
+    return true;
+  }
   /* 📈 폭스시그널 모션 차트 — 크림 아이보리 카드 위 딥네이비·버건디 막대(컷 시작 0.8초에 자란다) */
   function drawFoxChart(ctx, cut, p, x, y, w, h) {
     var items = (chartItems(cut) || []).slice(0, 5);
@@ -16671,9 +17286,13 @@ var CSVoice = (function () {
     var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (cut.hook || spec.hookTitle || '');
     var big = foxBig(cut.text) || foxBig(title);
     var tfit = title ? fitText(ctx, title, { w: 512, h: 190, base: 54, min: 30, weight: 800, lh: 1.22 }) : null;
-    /* 📈 모션 차트/비교표형 — 컷 수치(또는 ⚙ 차트 데이터 직접 입력)를 막대로. 수치가 없으면 빅넘버 카드로 폴백 */
-    var chart = tplOf() === 'chart' ? (chartItems(cut) || []).slice(0, 5) : null;
+    /* 📈 모션 차트/비교표형 — 컷 수치(또는 ⚙ 차트 데이터 직접 입력)를 막대로. 수치가 없으면 빅넘버 카드로 폴백
+       ① 꺾은선 추세 — 관제탑 실측 지수(없으면 컷 수치 흐름)를 선으로 긋고 변곡점을 줌인 */
+    var cardMode = foxCardMode(cut);
+    var chart = cardMode.mode === 'bar' ? cardMode.items : null;
+    var trend = cardMode.mode === 'line' ? cardMode.trend : null;
     if (chart && !chart.length) chart = null;
+    if (trend || (tplOf() === 'line' || tplOf() === 'chart')) idxMaybeLoad();
     var y = slot.y + 12;
     var fx = formulaOf('fox');
     var ex = ((fx && fx.eye) || 'SIGNAL') + ' ' + ('0' + ((cut.idx || 0) + 1)).slice(-2);
@@ -16683,7 +17302,7 @@ var CSVoice = (function () {
     var ew = ctx.measureText(ex).width;
     panel(ctx, slot.x + ew + 16, y + 11, Math.max(20, 470 - ew - 16), 3, 1.5, 'rgba(16,32,47,.16)', null, 0, 'fx-rule');
     if (fx && fx.signal) {
-      var sg = signalOf(String(cut.text || '') + ' ' + String(cut.hook || ''));
+      var sg = foxRisk(cut).sg;
       var sgf = '900 24px ' + FF;
       ctx.font = sgf;
       var sgw = ctx.measureText(sg.txt).width + 36;
@@ -16704,23 +17323,30 @@ var CSVoice = (function () {
       }
       ty += tfit.height + 24;
     }
-    var cardH = 0, cardTop = ty;
-    if (chart) {
+    var cardH = 0, cardTop = ty, drew = false;
+    if (chart || trend) {
       var avail = Math.max(180, slot.y + slot.h - ty - 6);
-      if (chart.length === 1) cardH = Math.min(avail, 330);
+      if (trend) cardH = Math.max(300, Math.min(avail, 560));
+      else if (chart.length === 1) cardH = Math.min(avail, 330);
       else {
         var rowH = Math.max(58, Math.min(150, Math.floor((avail - 72) / chart.length)));
         cardH = Math.min(avail, 72 + rowH * chart.length);
       }
       cardTop = ty + Math.max(0, (avail - cardH) / 2);     /* 남는 높이는 위아래로 나눠 카드를 가운데에 */
-      drawFoxChart(ctx, cut, p == null ? .7 : p, slot.x, cardTop, 512, cardH);
-    } else if (big) {
+      if (trend) drew = drawFoxLine(ctx, cut, trend, slot.x, cardTop, 512, cardH);
+      else { drawFoxChart(ctx, cut, p == null ? .7 : p, slot.x, cardTop, 512, cardH); drew = true; }
+      if (!drew) { cardH = 0; cardTop = ty; }
+    }
+    if (!drew && big) {
       cardH = 296;
       drawFoxNumber(ctx, big, slot.x, ty, 512, cardH);
+      drew = true;
     }
-    var foxY = chart ? (cardTop + Math.max(0, (cardH - 360) / 2))
+    var foxY = drew ? (cardTop + Math.max(0, (cardH - 360) / 2))
       : (y + Math.max(0, (34 + (tfit ? tfit.height + 24 : 0) + cardH - 360) / 2));
-    drawFox(ctx, pose, 596, Math.round(foxY), 360);
+    /* 상단 신호 칩(우측)과 여우가 겹치지 않게 — 여우 PNG는 불투명 정사각이라 칩을 덮어 버린다 */
+    if (fx && fx.signal) foxY = Math.max(foxY, y + 62);
+    drawFox(ctx, pose, 594, Math.round(foxY), 360);
   }
   /* 하단 — 그림자·명암 대비 확보한 에디토리얼 자막 카드 */
   function drawFoxCaption(ctx, cut, p, spec) {
@@ -16769,7 +17395,7 @@ var CSVoice = (function () {
     var ein = moInP();                                   /* ④ 컷 전환 — 0.2초 페이드 */
     var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
     ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
-    drawFoxHead(ctx, spec, idx, cuts.length, t, S.total, cuts);
+    drawFoxHead(ctx, spec, idx, cuts.length, t, S.total, cuts, cut);
     ctx.save();
     ctx.translate(0, Math.round((1 - ein) * 12));         /* ④ 아래에서 12px 슬라이드 인 */
     drawFoxMain(ctx, spec, cut, idx, pose, p);
@@ -16796,7 +17422,7 @@ var CSVoice = (function () {
       text: fcut.text,
       hook: spec.hookTitle, idx: 0, dur: 5, start: 0
     };
-    drawFoxHead(ctx, spec, 0, fsp.cuts.length, 2.2, fsp.cuts.length * 5, []);
+    drawFoxHead(ctx, spec, 0, fsp.cuts.length, 2.2, fsp.cuts.length * 5, [], cut);
     drawFoxMain(ctx, spec, cut, 0, 'surprise', 0.72);
     drawFoxCaption(ctx, { text: fcut.text, idx: 0 }, 0.7, spec);
     txLine(ctx, '샘플 미리보기 · [🧪 샘플로 바로 만들기] → 이 ' + fsp.cuts.length + '컷 그대로 녹화', CW / 2, SAFE.b + 74,
@@ -18135,7 +18761,7 @@ var CSVoice = (function () {
   /* ---------- BGM / SFX ---------- */
   function bgm(ctx, out, mood, base, total) {
     var g = ctx.createGain();
-    g.gain.value = Math.pow(10, -22 / 20); /* -22dB */
+    g.gain.value = BGM_GAP;                 /* ⑤ 컷 사이 여백 기준 게인 0.28 */
     g.connect(out);
     var P = {
       news: { step: 2.0, notes: [[220, 0, 1.9, .55, 'sine'], [330, 0, 1.9, .22, 'sine'], [277.2, 1.0, 1.4, .26, 'triangle']] },
@@ -18175,23 +18801,24 @@ var CSVoice = (function () {
     src.connect(bp); bp.connect(g); g.connect(out);
     src.start(at); src.stop(at + len + 0.03);
   }
-  /* 성우가 말하는 구간만 BGM 을 15% 로 낮춘다 */
+  /* ═══ ⑤ BGM 자동 덕킹 — 나레이션이 나오는 동안 0.12, 컷 사이 여백(0.30초)에서는 0.28 ═══
+     · 성우 버스 시작/끝에 맞춰 선형 램프만 예약한다(Web Audio 스케줄러가 오차 없이 처리).
+     · 컷 사이 여백이 0.30초라 목소리 사이에서 BGM 이 살짝 올라왔다 다시 내려간다. */
   function duckUnderVoice(ctx, gain, base, buses) {
-    var lvl = Math.pow(10, -22 / 20);
     try {
       gain.gain.cancelScheduledValues(base);
-      gain.gain.setValueAtTime(lvl, base);
+      gain.gain.setValueAtTime(BGM_GAP, base);
     } catch (e) {}
     (buses || []).forEach(function (b) {
       if (!b || !b.c || !b.c.buf) return;
       var st = base + b.c.start;
-      var en = st + b.c.buf.duration / (b.c.pbr || 1);
+      var en = st + Math.min(b.c.buf.duration / (b.c.pbr || 1), b.c.dur || 1e9);
       if (en <= st) return;
       try {
-        gain.gain.setValueAtTime(lvl, st - 0.12);
-        gain.gain.linearRampToValueAtTime(lvl * 0.15, st + 0.08);
-        gain.gain.setValueAtTime(lvl * 0.15, Math.max(st + 0.08, en - 0.10));
-        gain.gain.linearRampToValueAtTime(lvl, en + 0.20);
+        gain.gain.setValueAtTime(BGM_GAP, Math.max(base, st - 0.14));
+        gain.gain.linearRampToValueAtTime(BGM_DUCK, st + 0.10);
+        gain.gain.setValueAtTime(BGM_DUCK, Math.max(st + 0.10, en - 0.12));
+        gain.gain.linearRampToValueAtTime(BGM_GAP, en + 0.16);
       } catch (e) {}
     });
   }
@@ -18204,6 +18831,41 @@ var CSVoice = (function () {
     e.gain.linearRampToValueAtTime(vol || 0.1, at + 0.02);
     e.gain.exponentialRampToValueAtTime(0.0001, at + 0.16);
     o.connect(e); e.connect(out); o.start(at); o.stop(at + 0.2);
+  }
+
+  /* ③ 펀치 효과음 — 숫자가 도착하는 0.58초에 낮게 '툭' + 짧은 클릭 */
+  function punchSfx(ctx, out, at, vol) {
+    if (at < ctx.currentTime) at = ctx.currentTime + 0.01;
+    var v = vol == null ? 0.2 : vol;
+    var o = ctx.createOscillator(), e = ctx.createGain();
+    o.type = 'triangle';
+    o.frequency.setValueAtTime(220, at);
+    o.frequency.exponentialRampToValueAtTime(72, at + 0.16);
+    e.gain.setValueAtTime(0.0001, at);
+    e.gain.linearRampToValueAtTime(v, at + 0.008);
+    e.gain.exponentialRampToValueAtTime(0.0001, at + 0.20);
+    o.connect(e); e.connect(out);
+    o.start(at); o.stop(at + 0.24);
+    var n = Math.max(32, Math.floor(ctx.sampleRate * 0.02));
+    var buf = ctx.createBuffer(1, n, ctx.sampleRate), d = buf.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 5);
+    var src = ctx.createBufferSource(); src.buffer = buf;
+    var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800;
+    var g2 = ctx.createGain(); g2.gain.value = v * 0.5;
+    src.connect(hp); hp.connect(g2); g2.connect(out);
+    src.start(at); src.stop(at + 0.03);
+  }
+  /* ③ 펀치가 실제로 나는 컷 — 빅넘버 카드가 뜨는 컷(차트·꺾은선 컷은 펀치 없음) */
+  function punchCuts(plan) {
+    var out = [], spec = S.spec || {};
+    if (designOf() !== 'fox') return out;
+    (plan.cuts || []).forEach(function (c, idx) {
+      if (foxCardMode(c).mode) return;                 /* 차트·꺾은선 컷은 펀치 없음 */
+      /* drawFoxMain 과 똑같이 제목을 고른다 — 첫 컷만 hookTitle, 나머지는 그 컷의 hook */
+      var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (c.hook || spec.hookTitle || '');
+      if (foxBig(c.text) || foxBig(title)) out.push(c);
+    });
+    return out;
   }
 
   function cover(img, W0, H0) {
@@ -18823,12 +19485,15 @@ var CSVoice = (function () {
       src.start(base + c.start);
       voiceBuses.push({ c: c, g: vg });
     });
-    /* 효과음 — 첫 컷은 훅 Pop, 컷 전환은 Whoosh */
+    /* 효과음 — 첫 컷은 훅 Pop, 컷 전환은 Whoosh, ③ 빅넘버 도착(0.58초)엔 펀치 */
     if (S.cfg.sfx) {
       popSfx(actx, dest, base, .14);
-      plan.cuts.forEach(function (c, i) { if (i > 0) whooshSfx(actx, dest, base + c.start - 0.16, .085); });
+      plan.cuts.forEach(function (c, i) { if (i > 0) whooshSfx(actx, dest, base + c.start - 0.21, .085); });
+      try {
+        punchCuts(plan).forEach(function (c) { punchSfx(actx, dest, base + c.start + 0.58, .20); });
+      } catch (e) {}
     }
-    /* BGM — 성우가 말하는 동안 자동 덕킹(15%) */
+    /* BGM — ⑤ 나레이션 0.12 · 컷 사이 여백 0.28 자동 덕킹 */
     if (S.cfg.bgm !== 'none') {
       var bgmGain = bgm(actx, dest, S.cfg.bgm, base, plan.total);
       if (bgmGain) duckUnderVoice(actx, bgmGain, base, voiceBuses);
@@ -19752,7 +20417,18 @@ var CSVoice = (function () {
       });
       return seq.then(function () { return out; });
     },
-    layout: function () { return { safe: SAFE, slots: SLOTS, gap: SLOT_GAP, cw: CW, ch: CH }; },
+    idx: function () { return { n: IDX.pts.length, name: IDX.name, src: IDX.src, key: IDX.key, err: IDX.err, loading: IDX.loading }; },
+    idxLoad: idxLoad,
+    risk: foxRisk,
+    trend: function (cut) { return foxTrendPts(cut); },
+    mode: function (cut) { return foxCardMode(cut).mode; },
+    anim: function () {
+      return { blink: +foxBlinkK().toFixed(3), punch: +moPunch().toFixed(3), gap: GAP,
+        bgmGap: BGM_GAP, bgmDuck: BGM_DUCK, on: MO.on, tIn: MO.tIn };
+    },
+    eyes: function (p) { return foxEyeSpots(p); },
+    tplNames: function () { return TPL_NAME; },
+    layout: function () { return { safe: SAFE, slots: SLOTS, gap: SLOT_GAP, gapCut: GAP, cw: CW, ch: CH }; },
     parseNums: parseNums,
     paste: applyPasted,
     sample: loadSample,
