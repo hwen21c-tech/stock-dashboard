@@ -12470,8 +12470,10 @@ var CSVoice = (function () {
       if (rs.ok) got.push('쇼츠 ' + rs.cuts + '컷 · 폭스시그널 ' + (rs.formula || ''));
       if (rb.ok) got.push('블로그 ' + Number(rb.chars || 0).toLocaleString('ko-KR') + '자');
       var who = rs.voice || '현수 1.20x';
+      var stale = !!(node && !feedIsToday(node));
       if (got.length){
-        feedBanner('⚡ <b>?go=shorts 자동 세팅</b> — ' + esc(node.slotLabel || feedSlotWord(node.slot)) + ' 초안을 ' +
+        feedBanner('⚡ <b>?go=shorts 자동 세팅</b>' + (stale ? ' ⚠ 오늘자가 아닌 최신 초안(' + esc(String(node.date || node.updatedAt || '').slice(0, 10)) + ')' : '') +
+          ' — ' + esc(node.slotLabel || feedSlotWord(node.slot)) + ' 초안을 ' +
           esc(got.join(' · ')) + ' 으로 올렸습니다 · 성우 <b>' + esc(who) + '</b> · 양식 <b>📈 꺾은선 추세</b>' +
           (scrollOk ? ' · <b>[▶ 생성]</b>만 누르면 됩니다.' : ' — [▶ 생성] 버튼 자리를 찾지 못했습니다.'));
       } else {
@@ -12481,6 +12483,7 @@ var CSVoice = (function () {
         go: 'shorts', wvid: !!wv, slot: node ? (node.slot || '') : '', slotLabel: node ? (node.slotLabel || '') : '',
         shorts: rs.ok ? { cuts: rs.cuts, formula: rs.formula, voice: rs.voice } : null,
         blog: rb.ok ? { chars: rb.chars, tags: rb.tags } : null,
+        today: node ? feedIsToday(node) : false,
         tpl: 'line', tplOn: !!tplOn, panelOpen: !!(goShPane() && goShPane().open), scroll: !!scrollOk, at: Date.now()
       };
       window.CS2_GO_SHORTS_INFO = info;
