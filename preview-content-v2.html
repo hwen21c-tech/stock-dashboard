@@ -16146,6 +16146,92 @@ var CSVoice = (function () {
     return '' + d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes());
   }
   function ease(p) { p = Math.max(0, Math.min(1, p)); return 1 - Math.pow(1 - p, 3); }
+  /* ═══ ✨ 쇼츠 모션 4종 — ① 숫자 카운트업 ② 차트 드로잉 ③ 형광펜 스윕 ④ 컷 전환·캐릭터 호흡 ═══
+     · 컷이 시작된 뒤 흐른 시간(MO.tIn)만 쓴다 → 녹화(30fps setInterval)에서도 곱셈 몇 번이 전부.
+     · 이징은 전부 easeOutCubic(1-(1-x)^3) — 프레임 드랍 없이 부드럽게 도착한다.
+     · 세이프 존(좌 60·우 120·상 180·하 380)을 넘지 않게 좌표를 자르고, 글자 크기·줄바꿈은 건드리지 않는다. */
+  var MO = { t: 0, tIn: 0, on: false };
+  function moSet(tIn, t) {
+    MO.tIn = Math.max(0, +tIn || 0);
+    MO.t = Math.max(0, +t || 0);
+    MO.on = true;
+  }
+  function moEase(tIn, dur) {
+    var x = dur > 0 ? tIn / dur : 1;
+    if (!(x > 0)) return 0;
+    if (x >= 1) return 1;
+    return 1 - Math.pow(1 - x, 3);
+  }
+  /* 0 → 1 로 자라되 도착 부근에서 18% 넘쳤다가 제자리로 — '살짝 탄성' */
+  function moPop(tIn, dur) {
+    var x = dur > 0 ? tIn / dur : 1;
+    if (!(x > 0)) return 0;
+    if (x >= 1) return 1;
+    return 1 - Math.pow(1 - x, 3) + Math.sin(x * Math.PI) * .18;
+  }
+  function moRollP() { return MO.on ? moEase(MO.tIn, .6) : 1; }    /* ① 카운트업 0.6초 */
+  function moDrawP() { return MO.on ? moEase(MO.tIn, .8) : 1; }    /* ② 차트 드로잉 0.8초 */
+  function moSweepP() { return MO.on ? moEase(MO.tIn, .45) : 1; }  /* ③ 형광펜 0.45초 */
+  function moInP() { return MO.on ? moEase(MO.tIn, .2) : 1; }      /* ④ 컷 전환 0.2초 */
+  function moBreath(ph) { return MO.on ? Math.round(Math.sin(MO.t * 3 + (ph || 0)) * 3) : 0; }  /* ④ 위아래 호흡 ±3px */
+  /* ① 숫자 카운트업 — 문자열의 숫자가 딱 하나일 때만 0 → 목표로 굴린다.
+     ('-1조 2,311억'처럼 숫자가 둘이면 한쪽만 0에서 시작해 오독되므로 굴리지 않고 그대로 둔다) */
+  function moNums(s) { return String(s == null ? '' : s).match(/[+-]?\d[\d,]*(?:\.\d+)?/g) || []; }
+  function moRoll(disp, prog) {
+    var s = String(disp == null ? '' : disp);
+    if (prog >= 1 || moNums(s).length !== 1) return s;
+    var m = /([+-]?)(\d[\d,]*(?:\.\d+)?)/.exec(s);
+    if (!m) return s;
+    var dotI = m[2].indexOf('.'), dec = dotI < 0 ? 0 : m[2].length - dotI - 1;
+    var target = parseFloat(m[2].replace(/,/g, ''));
+    if (!isFinite(target) || !target) return s;
+    var cur = target * prog;
+    var txt = dec ? Math.abs(cur).toFixed(dec) : String(Math.round(Math.abs(cur)));
+    if (m[2].indexOf(',') >= 0) {
+      var pp = txt.split('.');
+      txt = pp[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (pp[1] ? '.' + pp[1] : '');
+    }
+    var half = (dec ? Math.pow(10, -dec) : 1) / 2;
+    var sign = Math.abs(cur) < half ? '' : m[1];
+    return s.slice(0, m.index) + sign + txt + s.slice(m.index + m[0].length);
+  }
+  /* ③ 형광펜 스윕 — 글자 뒤에 크림 옐로가 왼→오 0.45초에 걸쳐 그어진다.
+     · 폭은 실제로 그린 글자 폭, 세이프 존을 넘으면 잘라서 긋는다
+     · thin=true 는 밝은 글자 위(다크 시네마)용 — 뒤를 칠하지 않고 글자 아래 마커 밑줄만 */
+  function moHl(ctx, x, yMid, w, h, sweep, opt) {
+    opt = opt || {};
+    if (!(sweep > 0) || !(w > 0)) return 0;
+    var left = Math.max(SAFE.x, x - 9);
+    var room = Math.min(SAFE.r, opt.maxRight == null ? SAFE.r : opt.maxRight) - left;
+    if (room < 6) return 0;
+    var full = Math.min(w + 18, room, opt.maxW == null ? 1e9 : opt.maxW);
+    var ww = full * Math.min(1, sweep);
+    if (ww < 2) return 0;
+    var bh = Math.max(6, Math.min(h, opt.h == null ? h : opt.h) * .92);
+    var by = yMid - bh / 2;
+    ctx.save();
+    ctx.globalAlpha = opt.alpha == null ? .75 : opt.alpha;
+    ctx.fillStyle = opt.color || 'rgba(246,225,153,.75)';
+    rr(ctx, left, by, ww, bh, Math.min(bh / 2, 7));
+    ctx.fill();
+    ctx.restore();
+    rec(left, by, ww, bh, 'mo-hl');
+    return ww;
+  }
+  /* ② 그려지는 끝점 강조점 — 막대가 자란 끝에 작은 점을 찍어 시선을 붙인다(세이프 존 안으로 자름) */
+  function moTip(ctx, xEnd, yMid, th, col, prog) {
+    if (!(prog > .06)) return;
+    var r = Math.max(3, Math.min(9, th * .42));
+    var cx = Math.min(xEnd + r, SAFE.r - r);
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, prog * 1.6);
+    ctx.fillStyle = col;
+    ctx.beginPath();
+    ctx.arc(cx, yMid, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+    rec(cx - r, yMid - r, r * 2, r * 2, 'mo-tip');
+  }
   function say(msg, kind) {
     var el = $('#wvMsg');
     if (el) { el.innerHTML = msg; el.style.color = kind === 'bad' ? '#fda4af' : kind === 'good' ? '#86efac' : ''; }
@@ -16510,22 +16596,34 @@ var CSVoice = (function () {
     txLine(ctx, big.label || '오늘의 숫자', x + 38, y + 44, '800 26px ' + FF, 'rgba(16,32,47,.56)', 'left', 'fx-num-label');
     var areaTop = y + 72, areaH = h - 72 - 30;
     var by = areaTop + Math.max(0, (areaH - fit.height) / 2);
-    for (var i = 0; i < fit.lines.length; i++) {
-      txLine(ctx, fit.lines[i], x + 38, by + i * fit.lineH + fit.lineH / 2, fit.font, col, 'left', 'fx-num-value');
+    /* ① 카운트업 — 컷 시작 0.6초 동안 0 → 목표 숫자로. 도착하면 아래 룰이 탄성으로 자란다 */
+    var prog = moRollP();
+    var fl = MO.tIn > .55 ? Math.max(0, 1 - (MO.tIn - .55) / .45) : 0;
+    if (fl > .01) {                                  /* 도착 강조 — 숫자 뒤로 크림 워시가 한 번 번진다 */
+      ctx.save();
+      ctx.globalAlpha = .5 * fl;
+      panel(ctx, x + 30, by - 6, Math.min(w - 60, Math.ceil(tw) + 30), fit.height + 12, 14, 'rgba(246,225,153,.75)', null, 0, 'fx-num-flash');
+      ctx.restore();
     }
-    panel(ctx, x + 38, y + h - 24, 88, 8, 4, FX.wine, null, 0, 'fx-num-rule');
+    for (var i = 0; i < fit.lines.length; i++) {
+      var lineTxt = fit.lines.length === 1 ? moRoll(fit.lines[i], prog) : fit.lines[i];
+      txLine(ctx, lineTxt, x + 38, by + i * fit.lineH + fit.lineH / 2, fit.font, col, 'left', 'fx-num-value');
+    }
+    panel(ctx, x + 38, y + h - 24, Math.max(6, 88 * moPop(MO.tIn, .55)), 8, 4, FX.wine, null, 0, 'fx-num-rule');
   }
   function drawFox(ctx, pose, x, y, size) {
     var im = FOX.img[pose] || FOX.img.main;
     if (!im) { foxLoad(); return; }
-    ctx.drawImage(im, x, y, size, size);
-    rec(x, y, size, size, 'fx-fox');
+    var dy = moBreath(0);                            /* ④ 호흡 — 시간 t 에 따라 위아래 3px */
+    ctx.drawImage(im, x, y + dy, size, size);
+    rec(x, y + dy, size, size, 'fx-fox');
   }
   /* 📈 폭스시그널 모션 차트 — 크림 아이보리 카드 위 딥네이비·버건디 막대(컷 진행에 맞춰 자란다) */
+  /* 📈 폭스시그널 모션 차트 — 크림 아이보리 카드 위 딥네이비·버건디 막대(컷 시작 0.8초에 자란다) */
   function drawFoxChart(ctx, cut, p, x, y, w, h) {
     var items = (chartItems(cut) || []).slice(0, 5);
     if (!items.length) return false;
-    var n = items.length, anim = ease(p == null ? .7 : p), i;
+    var n = items.length, anim = moDrawP(), i;       /* ② 차트 드로잉 — 컷 시작 0~0.8초 */
     var pad = 22, headH = 50;
     /* 단위가 다르면(조 vs 억 vs %) 한 눈금으로 비교하면 왜곡된다 → 같은 단위끼리 각자의 최대값으로 */
     var maxBy = {}, same = true;
@@ -16546,10 +16644,11 @@ var CSVoice = (function () {
       var olf = fitText(ctx, one.label, { w: bw - 20, h: 34, base: 27, min: 17, weight: 800, lh: 1.1 });
       txLine(ctx, olf.lines[0] || '', bx, y + 70, olf.font, 'rgba(16,32,47,.58)', 'left', 'fx-chart-name');
       var ovf = fitText(ctx, one.disp, { w: bw - 20, h: Math.max(70, h - 176), base: 104, min: 46, weight: 900, lh: 1.08 });
-      txLine(ctx, ovf.lines[0] || '', bx, y + 70 + Math.round(ovf.lineH * (ovf.lines.length + 1) / 2) + 6, ovf.font, FX.wine, 'left', 'fx-chart-value');
-      var oth = 20;
+      txLine(ctx, moRoll(ovf.lines[0] || '', moRollP()), bx, y + 70 + Math.round(ovf.lineH * (ovf.lines.length + 1) / 2) + 6, ovf.font, FX.wine, 'left', 'fx-chart-value');
+      var oth = 20, obw = Math.max(10, bw * anim);
       panel(ctx, bx, y + h - pad - oth, bw, oth, oth / 2, 'rgba(16,32,47,.10)', null, 0, 'fx-chart-track');
-      panel(ctx, bx, y + h - pad - oth, Math.max(10, bw * anim), oth, oth / 2, FX.wine, null, 0, 'fx-chart-bar');
+      panel(ctx, bx, y + h - pad - oth, obw, oth, oth / 2, FX.wine, null, 0, 'fx-chart-bar');
+      moTip(ctx, bx + obw, y + h - pad - oth + oth / 2, oth, FX.wine, anim);
       return true;
     }
     var rowH = Math.max(58, Math.min(150, Math.floor((h - headH - pad) / n)));
@@ -16558,11 +16657,12 @@ var CSVoice = (function () {
       var lf = fitText(ctx, it.label, { w: bw - 132, h: 30, base: 25, min: 15, weight: 800, lh: 1.1 });
       txLine(ctx, lf.lines[0] || '', bx, ry + 14, lf.font, 'rgba(16,32,47,.60)', 'left', 'fx-chart-name');
       var vf = fitText(ctx, it.disp, { w: 128, h: 30, base: 28, min: 16, weight: 900, lh: 1.1 });
-      txLine(ctx, vf.lines[0] || '', bx + bw, ry + 14, vf.font, i === 0 ? FX.wine : FX.navy, 'right', 'fx-chart-value');
+      txLine(ctx, moRoll(vf.lines[0] || '', moRollP()), bx + bw, ry + 14, vf.font, i === 0 ? FX.wine : FX.navy, 'right', 'fx-chart-value');
       var th = 24;
+      var rw = Math.max(8, bw * (Math.abs(it.value) / (maxBy[it.unit || ''] || 1)) * anim);
       panel(ctx, bx, ry + 32, bw, th, th / 2, 'rgba(16,32,47,.10)', null, 0, 'fx-chart-track');
-      panel(ctx, bx, ry + 32, Math.max(8, bw * (Math.abs(it.value) / (maxBy[it.unit || ''] || 1)) * anim), th, th / 2,
-        i === 0 ? FX.wine : 'rgba(16,32,47,.72)', null, 0, 'fx-chart-bar');
+      panel(ctx, bx, ry + 32, rw, th, th / 2, i === 0 ? FX.wine : 'rgba(16,32,47,.72)', null, 0, 'fx-chart-bar');
+      moTip(ctx, bx + rw, ry + 32 + th / 2, th, i === 0 ? FX.wine : 'rgba(16,32,47,.92)', anim);
     }
     return true;
   }
@@ -16592,7 +16692,13 @@ var CSVoice = (function () {
     }
     var ty = y + 34;
     if (tfit) {
+      /* ③ 형광펜 스윕 — 첫 줄(핵심 훅) 뒤에 크림 옐로가 왼→오 0.45초에 걸쳐 그어진다 */
+      var swp = moSweepP();
       for (var i = 0; i < tfit.lines.length; i++) {
+        if (i === 0 && swp > 0) {
+          ctx.font = tfit.font;
+          moHl(ctx, slot.x, ty + tfit.lineH / 2, ctx.measureText(tfit.lines[i]).width, tfit.lineH, swp, { maxW: 512, alpha: .8 });
+        }
         txWords(ctx, tfit.lines[i], slot.x, ty + i * tfit.lineH + tfit.lineH / 2, tfit.font,
           function (tok) { return /\d/.test(tok) ? FX.wine : FX.navy; }, 'fx-title');
       }
@@ -16655,21 +16761,26 @@ var CSVoice = (function () {
     var tIn = Math.max(0, t - cut.start);
     var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
     var pose = foxPoseOf(cut, idx);
+    moSet(tIn, t);
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
     foxBands(ctx, pose);
-    var ein = Math.min(1, tIn / .32);
+    var ein = moInP();                                   /* ④ 컷 전환 — 0.2초 페이드 */
     var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
     ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
     drawFoxHead(ctx, spec, idx, cuts.length, t, S.total, cuts);
+    ctx.save();
+    ctx.translate(0, Math.round((1 - ein) * 12));         /* ④ 아래에서 12px 슬라이드 인 */
     drawFoxMain(ctx, spec, cut, idx, pose, p);
     drawFoxCaption(ctx, cut, p, spec);
+    ctx.restore();
     ctx.restore();
   }
   /* 대본이 없을 때도 템플릿이 어떻게 나오는지 보여 주는 샘플 프레임 */
   function drawFoxIdle(ctx) {
     foxLoad();
+    moSet(2.2, 2.2);                       /* 샘플 미리보기는 모션이 끝난 상태로 그린다 */
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
@@ -16774,29 +16885,35 @@ var CSVoice = (function () {
   /* 흥행 공식 — 대본 프롬프트·샘플·카드가 모두 이 정의를 함께 쓴다 */
   var FORMULA = {
     fox: {
-      1: { tag: '🌅', name: '장전 시황', desc: '야간선물·미장·갭 대응', eye: 'PRE-MARKET', card: 'fox', cardName: '빅넘버 + 여우 카드 + 갭 신호등', signal: true,
-           hook: '밤사이 야간선물과 미 증시를 한 문장으로 정리하며 시작한다',
-           plan: ['0~3초 야간선물·미 증시 등락을 한 문장으로', '3~13초 미장에서 움직인 빅테크 종목과 오늘 우리장에 끼칠 영향', '13~24초 어제 국내에서 강했던 테마', '24~38초 장전 뉴스·환율·시초가 갭 대응(🔴 주의 / 🟡 관망 / 🟢 우위)', '38~50초 개장 직후 볼 두 가지'],
-           caption: '간밤 수치는 숫자 그대로, 신호는 🔴🟡🟢로', tone: '짧고 또렷하게 · 개장 전 준비하는 톤',
-           avoid: ['간밤 시세를 지어내지 않는다', '갭 방향을 단정하지 않는다'] },
+      1: { tag: '🌅', name: '장전 시황', desc: '어제 우리장 → 밤사이 → 갭 대응', eye: 'PRE-MARKET', card: 'fox', cardName: '빅넘버 + 여우 카드 + 갭 신호등', signal: true,
+           hook: '인사 없이 어제 우리장 지수와 그와중에 강했던 테마·종목을 숫자로 먼저 던지며 시작한다',
+           plan: ['0~10초 어제 우리장 지수(상승/하락 숫자·차트)와 그와중에 강했던 테마·종목',
+                  '10~22초 밤사이 야간선물·미 증시·빅테크 종목 등락과 오늘 우리장에 끼칠 영향',
+                  '22~36초 새 뉴스·환율 + 오늘 우리장 예상 및 시초가 갭 대응(🔴 주의 / 🟡 관망 / 🟢 우위)',
+                  '36~50초 개장 직후 체크포인트 + 마지막 컷에만 감사 인사·티스토리 안내'],
+           caption: '어제 지수·등락은 숫자 그대로, 갭 판단은 🔴🟡🟢로', tone: '첫 인사 없이 현황부터 · 개장 전 준비하는 톤',
+           avoid: ['"안녕하세요 폭스시그널입니다" 같은 첫 인사로 시작하지 않는다(감사 인사는 맨 끝 컷에서만)', '간밤 시세를 지어내지 않는다', '갭 방향을 단정하지 않는다'] },
       2: { tag: '☀️', name: '점심 시황', desc: '오전 주도·오후 관전', eye: 'MIDDAY', card: 'fox', cardName: '빅넘버 + 여우 카드',
            hook: '오전 마감 지수와 오전 수급을 한 문장으로 시작한다',
            plan: ['0~3초 오전 지수·등락률', '3~13초 오전 외인·기관·개인 수급 흐름', '13~24초 오전 주도 섹터와 거래대금 1위', '24~38초 선물·신규 편입 뉴스', '38~50초 오후장 이어서 볼 섹터·흐름'],
            caption: '오전 수치는 그대로, 오후 관전은 한 줄로', tone: '점심에 훑는 톤 · 간결하게',
            avoid: ['오전 데이터를 추정으로 채우지 않는다', '오후 방향을 단정하지 않는다'] },
-      3: { tag: '🌆', name: '정규마감 시황', desc: '종가·수급·주도 섹터 결산', eye: 'SIGNAL', card: 'fox', cardName: '빅넘버 + 여우 카드',
-           hook: '오늘 정규장 종가와 수급을 한 문장으로 결산하며 시작한다',
-           plan: ['0~3초 오늘 종가·등락률·수급을 한 문장으로', '3~12초 외인·기관·개인 수급 숫자', '12~24초 오늘 돈이 간 주도 섹터 2~3개', '24~38초 오늘의 특이 신호(사이드카·신고가·상한가)', '38~50초 다음 거래일 체크포인트 2개'],
-           caption: '지수·수급 숫자는 그대로, 한 컷 15~20자', tone: '차분한 분석 · 숫자는 또렷하게',
-           avoid: ['확인하지 않은 수치를 만들지 않는다', '방향을 단정하지 않는다'] },
-      4: { tag: '🌙', name: '애프터장 결산', desc: 'NXT 15:30 이후 변화', eye: 'AFTER MARKET', card: 'fox', cardName: '빅넘버 + 여우 카드 + NXT 유지/이탈',
-           hook: '15시 30분 이후가 반전이었는지 유지였는지 한 문장으로 던지며 시작한다',
-           plan: ['0~4초 밤사이(15:30 이후) 반전/유지 훅 — 정규장 종가와 NXT 애프터 방향을 한 문장으로',
-                  '4~20초 시간외 강약 — 낮 강세주가 종가 위 유지인지 종가 아래 이탈인지, 장 마감 뒤 새로 뜬 종목·재료, 지정 종목은 (투자주의 지정)·미지정 급등주는 (단기 급등·과열 주의)로 구분',
-                  '20~35초 야간선물·미 선물·환율과 오늘/내일/이번 주 핵심 일정',
-                  '35~50초 다음 거래일 시초가 대응(지지·저항·조건) + 티스토리 연결 CTA'],
+      3: { tag: '🌆', name: '정규마감 시황', desc: '지수 해석 → 테마 교체 → 특이 신호', eye: 'SIGNAL', card: 'fox', cardName: '빅넘버 + 여우 카드',
+           hook: '오늘 정규장 지수·수급을 해석으로 먼저 던진다(예: 외인 매도세에 밀려 하락) — 인사 없이 시작',
+           plan: ['0~12초 정규장 지수·수급 분석 해석(예: 외인 매도세로 하락)',
+                  '12~26초 오전 강세 테마 vs 오후 강세 테마 + 외인 수급 업종 흐름',
+                  '26~38초 오늘의 특이 신호(사이드카·신고가·상한가·거래대금 300억↑)',
+                  '38~50초 대응 전략(약세면 대체거래소·지수 관련주 조심/관망) + 마지막 컷 감사 인사·티스토리 안내'],
+           caption: '지수·수급 숫자는 그대로, 한 컷 15~20자', tone: '차분한 해석 · 숫자는 또렷하게',
+           avoid: ['확인하지 않은 수치를 만들지 않는다', '방향을 단정하지 않는다', '"안녕하세요 폭스시그널입니다" 첫 인사 금지(감사 인사는 맨 끝 컷에서만)'] },
+      4: { tag: '🌙', name: '애프터장 결산', desc: 'NXT 15:30 이후 유지/반전', eye: 'AFTER MARKET', card: 'fox', cardName: '빅넘버 + 여우 카드 + NXT 유지/이탈',
+           hook: '오늘 지수·수급과 15시 30분 이후 애프터장이 유지였는지 반전이었는지를 해석으로 먼저 던진다',
+           plan: ['0~12초 오늘 지수·수급과 애프터장(15:30 이후 유지/반전) 분석 해석',
+                  '12~26초 오전·오후 테마 + 정규장 후 테마·뉴스(종목 옆 투자주의·과열은 괄호로 구분)',
+                  '26~38초 현재 야간선물·미 선물·환율과 핵심 일정',
+                  '38~50초 내일 대응 전략(지수·선물 기준 관련주 조심/관망) + 마지막 컷 감사 인사·티스토리 안내'],
            caption: '시간외 수치는 종가 대비(종가比)로, 종목 옆 리스크는 괄호로', tone: '마감 뒤 정리하는 톤 · 유지/이탈을 분명히',
-           avoid: ['NXT 체결이 확인되지 않은 종목을 시간외 급등으로 쓰지 않는다', '지정 여부를 확인하지 않고 (투자주의)로 쓰지 않는다'] },
+           avoid: ['NXT 체결이 확인되지 않은 종목을 시간외 급등으로 쓰지 않는다', '지정 여부를 확인하지 않고 (투자주의)로 쓰지 않는다', '"안녕하세요 폭스시그널입니다" 첫 인사 금지(감사 인사는 맨 끝 컷에서만)'] },
       5: { tag: '🚨', name: '긴급 장분석', desc: '속보·사이드카·급변 대응', eye: 'BREAKING', card: 'fox', cardName: '빅넘버 + 여우 카드 + 급변 신호등', signal: true,
            hook: '지금 장에서 무슨 일이 났는지 한 문장으로 먼저 알리며 시작한다',
            plan: ['0~4초 속보 훅 — 사이드카·급락·급등·거래정지 중 무엇이 언제 났는지 한 문장으로',
@@ -17001,10 +17118,10 @@ var CSVoice = (function () {
   function drawRoleChar(ctx, d, pose, x, y, size) {
     var st = charSt(d), im = st.img[pose] || st.img.main;
     if (!im) { charLoad(d); return; }
-    ctx.drawImage(im, x, y, size, size);
-    rec(x, y, size, size, 'role-char');
+    var dy = moBreath(1.1);                /* ④ 호흡 — 여우와 살짝 다른 박자 */
+    ctx.drawImage(im, x, y + dy, size, size);
+    rec(x, y + dy, size, size, 'role-char');
   }
-
   /* ---------- 포즈 저장 · 자동 매칭 (디자인별로 따로 기억) ---------- */
   function posesOf(d) { return (ROLE[d] && ROLE[d].poses) || FOX_POSES; }
   function poseStore(d) {
@@ -17583,7 +17700,13 @@ var CSVoice = (function () {
     if (title) {
       var tfit = fitText(ctx, title, { w: 520, h: 196, base: 72, min: 28, weight: 800, lh: 1.2 });
       var ty = y + 36;
+      /* ③ 형광펜 스윕 — 첫 줄(핵심 훅) 뒤로 크림 옐로가 왼→오 0.45초에 걸쳐 그어진다 */
+      var swp = moSweepP();
       for (var i = 0; i < tfit.lines.length; i++) {
+        if (i === 0 && swp > 0) {
+          ctx.font = tfit.font;
+          moHl(ctx, slot.x, ty + tfit.lineH / 2, ctx.measureText(tfit.lines[i]).width, tfit.lineH, swp, { maxW: 520, alpha: .8 });
+        }
         txWords(ctx, tfit.lines[i], slot.x, ty + i * tfit.lineH + tfit.lineH / 2, tfit.font, numColor(R), 'role-title');
       }
     }
@@ -17592,7 +17715,6 @@ var CSVoice = (function () {
     var fn = CARD_FN[f ? f.card : 'shock'] || cardShock;
     fn(ctx, R, cut, spec, slot.x, cy, slot.w, chh);
   }
-
   /* ---------- 하단 — 자막 카드 ---------- */
   function drawRoleCaption(ctx, d, cut, p, spec) {
     var R = ROLE[d], slot = SLOTS.cap;
@@ -17631,22 +17753,26 @@ var CSVoice = (function () {
     var tIn = Math.max(0, t - cut.start);
     var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
     var pose = poseOfCut(d, cut, idx);
+    moSet(tIn, t);
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
     roleBands(ctx, d, pose);
-    var ein = Math.min(1, tIn / .32);
+    var ein = moInP();                                   /* ④ 컷 전환 — 0.2초 페이드 */
     var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
     ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
     drawRoleHead(ctx, d, spec, idx, cuts.length, t, S.total, cuts);
+    ctx.save();
+    ctx.translate(0, Math.round((1 - ein) * 12));         /* ④ 아래에서 12px 슬라이드 인 */
     drawRoleMain(ctx, d, spec, cut, idx, pose);
     drawRoleCaption(ctx, d, cut, p, spec);
     ctx.restore();
+    ctx.restore();
   }
-
   /* 대본이 없을 때 — 지금 고른 템플릿·공식 그대로의 샘플 프레임 */
   function drawRoleIdle(ctx, d) {
     charLoad(d);
+    moSet(2.2, 2.2);                       /* 샘플 미리보기는 모션이 끝난 상태로 그린다 */
     var R = ROLE[d];
     var sp = sampleFor(d, formulaKey(d));
     ctx.save();
@@ -17665,7 +17791,6 @@ var CSVoice = (function () {
       CW / 2, SAFE.b + 120, '700 24px ' + FF, inkA(R, .40), 'center', 'role-note2');
     ctx.restore();
   }
-
   /* ---------- 샘플 대본 — 템플릿 × 공식 9종 ---------- */
   function mkSample(cuts, title, hook, words) {
     return { title: title, hook_title: hook, series_badge: '샘플', highlight_words: words || [], cuts: cuts };
@@ -17736,12 +17861,12 @@ var CSVoice = (function () {
     ], '동탄 주말 코스 3곳', '동탄에서 차로 40분, 주말 코스 3곳', ['동탄', '주말', '26,000원']),
     /* 🦊 폭스시그널 — 장전 / 점심 / 정규마감 / 애프터장 (샘플 수치는 예시값 · 애프터장은 11/20 실측) */
     'fox:1': mkSample([
-      { text: '간밤 야간선물 -0.4%, 미 증시 반도체가 약했습니다', hook: '야간선물 -0.4%' },
-      { text: '나스닥 -0.8% · 빅테크는 금리 부담에 밀렸습니다', hook: '빅테크가 밀린 이유' },
-      { text: '어제 국내는 바이오 · 화장품이 강했습니다', hook: '어제 강한 테마' },
-      { text: '장전 뉴스는 환율과 반도체 수출 두 개입니다', hook: '장전 뉴스 두 개' },
-      { text: '시초가 갭 대응은 🔴 주의 · 🟡 관망 · 🟢 우위로 봅니다', hook: '갭 대응 신호등' }
-    ], '장전 시황 · 야간선물 -0.4%', '밤사이 야간선물과 미 증시 정리', ['야간선물', '나스닥', '갭']),
+      { text: '어제 코스피 4,869.96 · -5.21%로 밀렸습니다', hook: '어제 -5.21% 하락' },
+      { text: '그와중에 바이오 · 화장품은 올랐고 반도체는 약했습니다', hook: '그래도 강했던 테마' },
+      { text: '밤사이 야간선물 -1.78% · 나스닥 선물도 약세였습니다', hook: '야간선물 -1.78%' },
+      { text: '환율 1,346.50원, 미 반도체 약세가 시초가 갭을 누릅니다', hook: '환율·반도체가 변수' },
+      { text: '시초가는 4,831 지지부터, 🔴 주의 / 감사합니다 · 자세한 정리는 티스토리에', hook: '🔴 주의 · 4,831부터' }
+    ], '장전 시황 · 어제 -5.21%', '어제 -5.21%, 오늘 시초가 어디부터 볼까', ['코스피', '야간선물', '갭']),
     'fox:2': mkSample([
       { text: '오전 코스피는 4,890, +0.4%로 오전을 마쳤습니다', hook: '오전 +0.4%' },
       { text: '외인 3,200억 순매수 · 기관 1,100억 매도', hook: '오전 수급' },
@@ -17750,18 +17875,18 @@ var CSVoice = (function () {
       { text: '오후장은 반도체 대금과 외인 프로그램만 보세요', hook: '오후 관전 포인트' }
     ], '점심 시황 · 오전 +0.4%', '오전 마감 +0.4%, 오후에 볼 것', ['오전', '수급', '반도체']),
     'fox:3': mkSample([
-      { text: '코스피 4,869.96, -5.21%로 오늘 장을 마쳤습니다', hook: '코스피 -5.21% 마감' },
+      { text: '코스피 4,869.96 · -5.21%, 외인 매도세에 밀린 하루였습니다', hook: '외인 매도에 -5.21%' },
       { text: '외인 -1조 2,311억 · 기관 -7,863계약 · 개인 +1조 6,618억', hook: '오늘의 수급' },
-      { text: '바이오 · 화장품이 올랐고 반도체는 밀렸습니다', hook: '돈이 간 섹터' },
-      { text: '사이드카 발동 · 상한가 0종 · 신고가 3종', hook: '오늘의 신호' },
-      { text: '다음 거래일은 4,831 지지와 외인 선물만 보세요', hook: '내일 체크포인트' }
-    ], '코스피 -5.21% 마감 결산', '코스피 -5.21%, 오늘 수급이 말하는 것', ['코스피', '쌍매도', '사이드카']),
+      { text: '오전 강세는 바이오, 오후엔 화장품으로 힘이 옮겨 갔습니다', hook: '오전 vs 오후 테마' },
+      { text: '사이드카 발동 · 신고가 3종 · 상한가 0종, 300억↑ 종목도 확인', hook: '오늘의 특이 신호' },
+      { text: '약세장엔 대체거래소·지수 관련주 조심 / 감사합니다 · 티스토리에 정리', hook: '조심할 두 가지' }
+    ], '정규마감 · 코스피 -5.21%', '코스피 -5.21%, 수급이 말하는 것', ['코스피', '수급', '사이드카']),
     'fox:4': mkSample([
-      { text: '코스피 -5.21%로 마감한 뒤, 애프터에서 방향이 갈렸습니다', hook: '마감 뒤 방향이 갈렸다' },
-      { text: '큐로셀 25,350원 종가比 +19.58% 유지 · 금양그린파워 9,260원 +25.14%', hook: '종가 위에 남은 두 종목' },
+      { text: '코스피 -5.21% 마감 뒤, 애프터장에선 방향이 갈렸습니다', hook: '마감 뒤 방향이 갈렸다' },
+      { text: '큐로셀 25,350원 종가比 +19.58% 유지 · 금양그린파워 +25.14%는 과열 주의', hook: '종가 위에 남은 종목' },
       { text: '바이오니아는 +20%로 올랐다가 애프터 -6.31%로 밀렸습니다', hook: '이탈한 강세주' },
-      { text: '야간선물 745.05 -1.02% · 나스닥100 선물 -1.13% · 원/달러 1,338.78', hook: '밤사이 지표' },
-      { text: '월요일 08:00 NXT 프리마켓에서 25,000과 9,000을 먼저 보세요', hook: '시초가 대응' }
+      { text: '야간선물 745.05 -1.02% · 미 선물 -1.13% · 환율 1,338.78 · 일정은 월요일 확인', hook: '밤사이 지표' },
+      { text: '월요일은 25,000과 9,000 지지부터, 지수 관련주는 관망 / 감사합니다 · 티스토리에 정리', hook: '시초가 대응' }
     ], '애프터장 결산 · 큐로셀만 살아남았다', '코스피 -5.21%, 애프터에서 살아남은 종목', ['NXT', '큐로셀', '야간선물']),
     /* 🚨 긴급 장분석 — 사이드카·야간선물 급변 대응 흐름 (샘플 수치는 11/20 실측) */
     'fox:5': mkSample([
@@ -18188,9 +18313,18 @@ var CSVoice = (function () {
     if (!title) return;
     var fit = fitText(ctx, title, { w: slot.w, h: h, base: idx === 0 ? 82 : 54, min: idx === 0 ? 44 : 34, weight: 900, lh: 1.22 });
     var y0 = top + (h - fit.height) / 2;
+    /* ③ 형광펜 스윕 — 첫 줄(핵심 훅) 뒤로 크림 옐로가 왼→오 0.45초에 걸쳐 그어진다.
+       다크 시네마는 크림을 .9 로 진하게 깔고 그 줄 글자만 진한 잉크로 바꿔 가독성을 지킨다. */
+    var swp = moSweepP();
     for (var i = 0; i < fit.lines.length; i++) {
+      var hl = (i === 0 && swp > 0);
+      if (hl) {
+        ctx.font = fit.font;
+        moHl(ctx, slot.x + (slot.w - ctx.measureText(fit.lines[i]).width) / 2, y0 + fit.lineH / 2, ctx.measureText(fit.lines[i]).width, fit.lineH, swp, { alpha: .96 });
+      }
       txWords(ctx, fit.lines[i], slot.x + slot.w / 2, y0 + i * fit.lineH + fit.lineH / 2, fit.font,
-        function (tok) { return /\d/.test(tok) ? ac : (idx === 0 ? '#f8fafc' : 'rgba(226,232,240,.86)'); },
+        hl ? function () { return '#111a29'; }
+           : function (tok) { return /\d/.test(tok) ? ac : (idx === 0 ? '#f8fafc' : 'rgba(226,232,240,.86)'); },
         'hook', null, 'center');
     }
     var uy = y0 + fit.height + 10;
@@ -18227,11 +18361,12 @@ var CSVoice = (function () {
     panel(ctx, ix, cy + cardH - pad - footH, 96, footH, 4, hexA(ac, .9), null, 0, 'card-foot');
   }
   /* 2) 📈 모션 차트/비교표형 — 대본 수치 파싱 또는 수동 입력 */
+  /* 2) 📈 모션 차트/비교표형 — 대본 수치 파싱 또는 수동 입력 */
   function drawChartMain(ctx, cut, p, spec, ac) {
     var slot = SLOTS.main;
     var items = chartItems(cut);
     if (!items || items.length < 1) return drawCardMain(ctx, cut, p, spec, ac);
-    var anim = ease(p);
+    var anim = moDrawP();                         /* ② 차트 드로잉 — 컷 시작 0~0.8초 */
     var same = items.every(function (it) { return it.unit === items[0].unit; });
     var kind = items.length === 2 ? (same ? '가격 비교' : '수치 요약') : '수치 비교';
     txLine(ctx, 'DATA · ' + kind, slot.x, slot.y + 26, '900 28px ' + FF, ac, 'left', 'chart-label');
@@ -18243,7 +18378,7 @@ var CSVoice = (function () {
       var klf = fitText(ctx, only.label, { w: slot.w - 120, h: 56, base: 38, min: 24, weight: 800, lh: 1.15 });
       txLine(ctx, klf.lines[0] || '', slot.x + 50, kTop + 66, klf.font, 'rgba(226,232,240,.80)', 'left', 'kpi-label');
       var kvf = fitText(ctx, only.disp, { w: slot.w - 120, h: kH - 190, base: 150, min: 70, weight: 900, lh: 1.08 });
-      txLine(ctx, kvf.lines[0] || '', slot.x + 50, kTop + 178, kvf.font, ac, 'left', 'kpi-value');
+      txLine(ctx, moRoll(kvf.lines[0] || '', moRollP()), slot.x + 50, kTop + 178, kvf.font, ac, 'left', 'kpi-value');
       panel(ctx, slot.x + 50, kTop + kH - 58, 120, 10, 5, hexA(ac, .9), null, 0, 'kpi-line');
       return;
     }
@@ -18261,11 +18396,12 @@ var CSVoice = (function () {
         }
         var vf = fitText(ctx, it.disp, { w: w - 52, h: 150, base: 84, min: 42, weight: 900, lh: 1.12 });
         for (var vi = 0; vi < vf.lines.length; vi++) {
-          txLine(ctx, vf.lines[vi], x + 26, cTop + 118 + vi * vf.lineH, vf.font, hi ? ac : '#f1f5f9', 'left', 'cmp-value');
+          txLine(ctx, moRoll(vf.lines[vi], moRollP()), x + 26, cTop + 118 + vi * vf.lineH, vf.font, hi ? ac : '#f1f5f9', 'left', 'cmp-value');
         }
         var bw = Math.max(6, (w - 52) * (Math.abs(it.value) / maxV) * anim);
         panel(ctx, x + 26, cTop + cH - 54, w - 52, 14, 7, 'rgba(148,163,184,.18)', null, 0, 'cmp-track');
         panel(ctx, x + 26, cTop + cH - 54, bw, 14, 7, hi ? hexA(ac, .95) : hexA(ac, .55), null, 0, 'cmp-bar');
+        moTip(ctx, x + 26 + bw, cTop + cH - 47, 14, hi ? hexA(ac, .95) : hexA(ac, .80), anim);
       });
       var d = items[0].value - items[1].value;
       var dTxt = '차이 ' + (d > 0 ? '+' : '') + fmtNum(String(Math.abs(d) < 1 ? d.toFixed(2) : Math.round(d))) + (items[0].unit || '');
@@ -18283,7 +18419,7 @@ var CSVoice = (function () {
         var lf = fitText(ctx, it.label, { w: slot.w - 120, h: 50, base: 36, min: 22, weight: 800, lh: 1.15 });
         txLine(ctx, lf.lines[0] || '', slot.x + 46, y + 52, lf.font, 'rgba(226,232,240,.78)', 'left', 'val-label');
         var vf = fitText(ctx, it.disp, { w: slot.w - 120, h: Math.max(70, rh - 110), base: 84, min: 44, weight: 900, lh: 1.1 });
-        txLine(ctx, vf.lines[0] || '', slot.x + 46, y + Math.min(rh - 58, 148), vf.font, i === 0 ? ac : '#f1f5f9', 'left', 'val-value');
+        txLine(ctx, moRoll(vf.lines[0] || '', moRollP()), slot.x + 46, y + Math.min(rh - 58, 148), vf.font, i === 0 ? ac : '#f1f5f9', 'left', 'val-value');
       });
       return;
     }
@@ -18299,11 +18435,12 @@ var CSVoice = (function () {
       var lf = fitText(ctx, it.label, { w: 520, h: 44, base: 38, min: 22, weight: 800, lh: 1.14 });
       txLine(ctx, lf.lines[0] || '', SAFE.x, y + 22, lf.font, 'rgba(226,232,240,.84)', 'left', 'bar-label');
       var vf = fitText(ctx, it.disp, { w: 360, h: 44, base: 42, min: 24, weight: 900, lh: 1.14 });
-      txLine(ctx, vf.lines[0] || '', SAFE.r, y + 22, vf.font, i === 0 ? ac : '#e2e8f0', 'right', 'bar-value');
+      txLine(ctx, moRoll(vf.lines[0] || '', moRollP()), SAFE.r, y + 22, vf.font, i === 0 ? ac : '#e2e8f0', 'right', 'bar-value');
       var by = y + 52;
       panel(ctx, SAFE.x, by, SAFE.w, 24, 12, 'rgba(148,163,184,.16)', null, 0, 'bar-track');
       var fw = Math.max(10, SAFE.w * (Math.abs(it.value) / maxBy[it.unit || '']) * anim);
       panel(ctx, SAFE.x, by, fw, 24, 12, i === 0 ? hexA(ac, .95) : hexA(ac, .55), null, 0, 'bar');
+      moTip(ctx, SAFE.x + fw, by + 12, 24, i === 0 ? hexA(ac, .95) : hexA(ac, .85), anim);
     });
   }
   /* 3) 🖼️ 사진 줌인/캡처형 — 풀스크린 Ken Burns + 상단 배지·하단 자막 */
@@ -18435,7 +18572,8 @@ var CSVoice = (function () {
     var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
     var ac = spec.accent || '#38bdf8';
     var tpl = tplOf();
-    var ein = Math.min(1, tIn / .32);
+    moSet(tIn, t);
+    var ein = moInP();                            /* ④ 컷 전환 — 0.2초 페이드 */
     var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
 
     /* 배경 — 사진형은 풀스크린 Ken Burns */
@@ -18461,6 +18599,8 @@ var CSVoice = (function () {
     ctx.save();
     ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
     drawTopRow(ctx, spec, idx, cuts.length, ac);
+    ctx.save();
+    ctx.translate(0, Math.round((1 - ein) * 12));      /* ④ 아래에서 12px 슬라이드 인 */
     if (tpl === 'photo') {
       drawPhotoHook(ctx, spec, cut, idx);
     } else {
@@ -18469,11 +18609,11 @@ var CSVoice = (function () {
       else drawCardMain(ctx, cut, p, spec, ac);
     }
     drawCaption(ctx, cut, p, spec, tpl === 'photo');
+    ctx.restore();
     if (idx === 0) drawFirstHookBadge(ctx, spec, cut, tIn, ac);
     drawProgress(ctx, t, ac);
     ctx.restore();
   }
-
   function previewTime() {
     if (!S.cuts.length) return 0;
     var c = S.cuts[0];
