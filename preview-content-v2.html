@@ -17251,27 +17251,30 @@ var CSVoice = (function () {
     if (left > 1.5) return;
     var a = Math.min(1, Math.max(0, (1.5 - left) / .24));
     if (a <= 0.01) return;
-    var w = SAFE.w, h = 420, x = SAFE.x, y = 640;     /* 세이프 존 폭 전체 — 본문 카드를 덮는 엔딩 카드 */
+    /* 메인 슬롯을 통째로 덮는 엔딩 카드 — 뒤에 남은 카드·여우가 비쳐 보이지 않게 */
+    var w = SLOTS.main.w, h = SLOTS.main.h - 16, x = SLOTS.main.x, y = SLOTS.main.y + 8;
+    var cy0 = y + Math.max(0, (h - 400) / 2);
     ctx.save();
     ctx.globalAlpha = a;
     ctx.shadowColor = 'rgba(16,32,47,.26)';
     ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
     panel(ctx, x, y, w, h, 26, FX.paper, 'rgba(201,162,94,.92)', 3, 'fx-end-card');
     ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-    panel(ctx, x + 48, y + 52, 8, 104, 4, FX.wine, null, 0, 'fx-end-rule');
+    panel(ctx, x + 48, cy0 + 52, 8, 104, 4, FX.wine, null, 0, 'fx-end-rule');
     var f1 = fitText(ctx, '🦊 오늘도 끝까지 봐주셔서 고마워요', { w: w - 150, h: 56, base: 42, min: 26, weight: 900, lh: 1.2 });
-    txLine(ctx, f1.lines[0] || '', x + 78, y + 86, f1.font, FX.navy, 'left', 'fx-end-1');
+    txLine(ctx, f1.lines[0] || '', x + 78, cy0 + 86, f1.font, FX.navy, 'left', 'fx-end-1');
     var f2 = fitText(ctx, '상세 표·차트는 프로필 링크 티스토리에서', { w: w - 150, h: 44, base: 30, min: 20, weight: 800, lh: 1.2 });
-    txLine(ctx, f2.lines[0] || '', x + 78, y + 142, f2.font, 'rgba(16,32,47,.72)', 'left', 'fx-end-2');
+    txLine(ctx, f2.lines[0] || '', x + 78, cy0 + 142, f2.font, 'rgba(16,32,47,.72)', 'left', 'fx-end-2');
     var lab = 'NEXT ▶ ' + (FX_NEXT[formulaKey('fox')] || '다음 시황');
     ctx.font = '900 30px ' + FF;
     var bw = Math.min(w - 156, ctx.measureText(lab).width + 64);
-    panel(ctx, x + 78, y + 200, bw, 64, 32, FX.navy, null, 0, 'fx-end-next');
-    txLine(ctx, lab, x + 78 + bw / 2, y + 233, '900 30px ' + FF, FX.cream, 'center', 'fx-end-next-t');
-    panel(ctx, x + 78, y + 296, 120, 6, 3, 'rgba(16,32,47,.14)', null, 0, 'fx-end-rule2');
-    txLine(ctx, 'youtube.com/@폭스시그널', x + 78, y + 344, '800 26px ' + FF, FX.wine, 'left', 'fx-end-3');
+    panel(ctx, x + 78, cy0 + 200, bw, 64, 32, FX.navy, null, 0, 'fx-end-next');
+    txLine(ctx, lab, x + 78 + bw / 2, cy0 + 233, '900 30px ' + FF, FX.cream, 'center', 'fx-end-next-t');
+    panel(ctx, x + 78, cy0 + 296, 120, 6, 3, 'rgba(16,32,47,.14)', null, 0, 'fx-end-rule2');
+    txLine(ctx, 'youtube.com/@폭스시그널', x + 78, cy0 + 344, '800 26px ' + FF, FX.wine, 'left', 'fx-end-3');
     ctx.restore();
   }
+
   /* ⑤ 자막 핵심어 자동 컬러 — 숫자·핵심 키워드만 버건디/네이비 + 형광 마커 */
   var CAP_WARN = /급락|폭락|하락|이탈|주의|위험|경고|매도|약세|사이드카|매물|손절|빨간불|충격/;
   var CAP_UP = /급등|상승|돌파|신고가|우위|매수|강세|유입|회복|반등|수혜|호재/;
