@@ -18792,11 +18792,16 @@ var CSVoice = (function () {
     var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
     ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
     drawFoxHead(ctx, spec, idx, cuts.length, t, S.total, cuts, cut);
+    /* 마지막 컷의 엔딩 카드는 헤드라인·KPI·시각물 밴드를 불투명하게 덮는다 —
+       완전히 덮인 뒤(잔여 1.26초 이하)에는 아래 내용을 그리지 않는다(가려진 글자 겹침 0) */
+    var covered = (idx === cuts.length - 1) && (cut.dur - tIn) <= 1.26;
     ctx.save();
     ctx.translate(0, Math.round((1 - ein) * 12));
-    drawFoxTitle(ctx, spec, cut, idx);
-    drawFoxKpiRow(ctx, cut);
-    drawFoxVisual(ctx, spec, cut, idx, pose, hero);
+    if (!covered) {
+      drawFoxTitle(ctx, spec, cut, idx);
+      drawFoxKpiRow(ctx, cut);
+      drawFoxVisual(ctx, spec, cut, idx, pose, hero);
+    }
     drawFoxCaption(ctx, cut, p, spec, idx, cuts.length);
     ctx.restore();
     ctx.restore();
