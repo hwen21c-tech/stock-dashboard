@@ -2430,7 +2430,7 @@
     <div class="wvtplrow" role="group" aria-label="영상 양식 선택 — 4종 모두 세이프 존·자동 줄바꿈·3단 그리드 동일">
       <button class="wvtpl on" type="button" data-wvtpl="card" aria-pressed="true"><b>📊 정보/시황 카드형</b><span>훅 + 핵심 포인트 카드 + 자막</span></button>
       <button class="wvtpl" type="button" data-wvtpl="chart" aria-pressed="false"><b>📈 모션 차트/비교표형</b><span>수치를 움직이는 바·좌우 비교로</span></button>
-      <button class="wvtpl" type="button" data-wvtpl="line" aria-pressed="false"><b>📈 꺾은선 추세</b><span>실제 지수 선 드로잉 + 변곡점 줌인</span></button>
+      <button class="wvtpl" type="button" data-wvtpl="line" aria-pressed="false"><b>📈 꺾은선 추세</b><span>전 채널 · 실측 선 + 변곡점 줌인</span></button>
       <button class="wvtpl" type="button" data-wvtpl="photo" aria-pressed="false"><b>🖼️ 사진 줌인/캡처형</b><span>내 사진 Ken Burns + 배지·자막</span></button>
     </div>
     <div class="hint" id="wvLayoutHint">쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 4종(카드·차트·꺾은선·사진) 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.</div>
@@ -12255,20 +12255,83 @@ var CSVoice = (function () {
     var sp = tag ? String(tag.textContent || '').trim() : '';
     return (nm + (sp ? ' ' + sp : '')).trim();
   }
+  /* 채널별 추천 양식 — 🦊/🎬 은 꺾은선, 특가 3채널은 비교표(수치 없으면 자동 폴백) */
+  var CS_ROLE_TPL = { shiba: 'chart', bunny: 'line', penguin: 'chart' };   /* 채널별 추천 양식 */
+  /* 엔진 내부값은 WVID 공개 API 로만 읽는다(이 블록은 다른 <script> 다) */
+  function csDesign(){ try { return (window.WVID && window.WVID.design()) || 'dark'; } catch (e) { return 'dark'; } }
+  function csIsRole(){ try { return !!(window.WVID && window.WVID.formula && window.WVID.formula()); } catch (e) { return false; } }
+  function csChannelName(d){
+    if (d === 'dark') return '🎬 다크 시네마';
+    try {
+      var lb = window.WVID && window.WVID.designLabel ? window.WVID.designLabel() : '';
+      if (lb) return lb;
+    } catch (e) {}
+    return { shiba: '🐶 시바딜 · 최저가', bunny: '🐰 피치홈 · 리얼리뷰', penguin: '🐧 펭귄특가 · 타임딜' }[d] || '🎬 다크 시네마';
+  }
+  function csTplText(t){
+    if (t === 'photo') return '🖼️ 사진형 그대로';
+    try { var m = window.WVID.tplNames(); if (m && m[t]) return m[t]; } catch (e) {}
+    return t;
+  }
   /* 생성기 쪽 마무리 — 펼침 · 양식 · [▶ 생성] 스크롤 */
   function csGenReady(){
     goShOpen();
     var keepPhoto = csPhotoKept();
-    if (!keepPhoto) goShTpl('line');
+    var d = csDesign();
+    var tpl = keepPhoto ? 'photo' : (CS_ROLE_TPL[d] || 'line');
+    if (!keepPhoto) goShTpl(tpl);
     goShOpen();
     var sc = goShScroll();
     setTimeout(function () { goShOpen(); if (!sc) goShScroll(); }, 600);
-    return { tpl: keepPhoto ? 'photo' : 'line', kept: keepPhoto, scroll: !!sc, voice: csVoice() };
+    return { tpl: tpl, kept: keepPhoto, role: csIsRole() ? d : '', scroll: !!sc, voice: csVoice() };
+  }
+  /* 채널(🐶🐰🐧🎬) 1클릭 — 지금 고른 채널 그대로, 그 채널 샘플/실측 대본 → 추천 양식 → [▶ 생성] */
+  function csAutoChannel(btn, d){
+    var nm = csChannelName(d);
+    var spec = null, src = '';
+    if (d === 'penguin' && window.WVID.penguinScript){
+      try { spec = window.WVID.penguinScript(); } catch (e) { spec = null; }
+      if (spec) src = '🛰 특가 레이더 실측';
+    }
+    var applied = null;
+    try {
+      applied = spec ? window.WVID.load(spec, src) : window.WVID.sample();
+      if (!spec) src = '🧪 채널 샘플';
+    } catch (e2) { applied = null; }
+    var who = '';
+    try { if (window.WVID && window.WVID.voicePreset) who = window.WVID.voicePreset(d) || ''; } catch (e3) { who = ''; }
+    var g = csGenReady();
+    var cuts = applied && applied.cuts ? applied.cuts.length : 0;
+    var tplTxt = csTplText(g.tpl);
+    var okc = !!applied;
+    window.CS2_AUTO_INFO = { channel: d, ok: okc, cuts: cuts, from: (src.indexOf('특가') >= 0) ? 'deals' : 'sample',
+      tpl: g.tpl, tplKept: g.kept, voice: g.voice || who, scroll: g.scroll, at: Date.now() };
+    try { document.documentElement.setAttribute('data-cs-auto', okc ? 'ready' : 'fail'); } catch (e4) {}
+    if (okc){
+      csState('✅ <b>' + esc(nm) + '</b> · ' + src + ' ' + cuts + '컷 — ' + tplTxt +
+        ' · 성우 <b>' + esc(g.voice || who) + '</b>' + (g.scroll ? ' — <b>[▶ 생성]</b>만 누르면 됩니다.' : ''), 'ok');
+      toast('⚡ ' + nm + ' 세팅 완료 — ' + src + ' ' + cuts + '컷 · ' + tplTxt + ' · [▶ 생성]만 누르세요.');
+      feedBanner('⚡ <b>생성 직전까지 원클릭 세팅</b> — <b>' + esc(nm) + '</b> ' + src + ' ' + cuts + '컷을 ' +
+        tplTxt + ' · 성우 <b>' + esc(g.voice || who) + '</b> 으로 올렸습니다' + (g.scroll ? ' · <b>[▶ 생성]</b>만 누르면 됩니다.' : ''));
+    } else {
+      csState('⚠ ' + esc(nm) + ' 대본을 올리지 못했습니다 — [🧪 샘플로 바로 만들기]로 한 번 확인해 주세요.', 'bad');
+      toast('⚡ 채널 샘플을 올리지 못했습니다 — [🧪 샘플로 바로 만들기]를 눌러 주세요.');
+    }
+    return window.CS2_AUTO_INFO;
   }
   function csAutoStart(btn){
     if (CS_AUTO_BUSY) return Promise.resolve(false);
     CS_AUTO_BUSY = true;
     if (btn) spinner(btn, true, '세팅 중…');
+    /* 🐶🐰🐧🎬 — 폭스시그널이 아닌 채널은 그 채널 그대로 샘플/실측 대본으로 세팅한다(fox 4시간대 동작은 그대로) */
+    var _d0 = csDesign();
+    if (_d0 !== 'fox') {
+      return Promise.resolve().then(function () { return csAutoChannel(btn, _d0); }).then(function (r) {
+        CS_AUTO_BUSY = false;
+        if (btn) spinner(btn, false);
+        return r;
+      });
+    }
     csState('⏳ 시간대 초안·관제탑 실측을 읽는 중…', 'busy');
     return feedFetch(true).catch(function () { return null; }).then(function (j) {
       var pick = csPick(j);
@@ -17541,37 +17604,6 @@ var CSVoice = (function () {
       x += ws[i] + gap;
     }
   }
-  /* ⑥ 엔딩 시그니처 카드 — 마지막 컷 끝 1.5초에 여우 인사 + 티스토리 안내 + 다음 방송 예고 */
-  var FX_NEXT = { '1': '☀️ 점심 시황', '2': '🌆 정규마감 시황', '3': '🌙 애프터장 결산', '4': '🌅 내일 장전 시황', '5': '🌙 애프터장 결산' };
-  function drawFoxEnding(ctx, cut, tIn) {
-    var left = (cut && cut.dur ? cut.dur : 0) - tIn;
-    if (left > 1.5) return;
-    var a = Math.min(1, Math.max(0, (1.5 - left) / .24));
-    if (a <= 0.01) return;
-    /* 메인 슬롯을 통째로 덮는 엔딩 카드 — 뒤에 남은 카드·여우가 비쳐 보이지 않게 */
-    var w = SLOTS.main.w, h = SLOTS.main.h - 16, x = SLOTS.main.x, y = SLOTS.main.y + 8;
-    var cy0 = y + Math.max(0, (h - 400) / 2);
-    ctx.save();
-    ctx.globalAlpha = a;
-    ctx.shadowColor = 'rgba(16,32,47,.26)';
-    ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
-    panel(ctx, x, y, w, h, 26, FX.paper, 'rgba(201,162,94,.92)', 3, 'fx-end-card');
-    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-    panel(ctx, x + 48, cy0 + 52, 8, 104, 4, FX.wine, null, 0, 'fx-end-rule');
-    var f1 = fitText(ctx, '🦊 오늘도 끝까지 봐주셔서 고마워요', { w: w - 150, h: 56, base: 42, min: 26, weight: 900, lh: 1.2 });
-    txLine(ctx, f1.lines[0] || '', x + 78, cy0 + 86, f1.font, FX.navy, 'left', 'fx-end-1');
-    var f2 = fitText(ctx, '상세 표·차트는 프로필 링크 티스토리에서', { w: w - 150, h: 44, base: 30, min: 20, weight: 800, lh: 1.2 });
-    txLine(ctx, f2.lines[0] || '', x + 78, cy0 + 142, f2.font, 'rgba(16,32,47,.72)', 'left', 'fx-end-2');
-    var lab = 'NEXT ▶ ' + (FX_NEXT[formulaKey('fox')] || '다음 시황');
-    ctx.font = '900 30px ' + FF;
-    var bw = Math.min(w - 156, ctx.measureText(lab).width + 64);
-    panel(ctx, x + 78, cy0 + 200, bw, 64, 32, FX.navy, null, 0, 'fx-end-next');
-    txLine(ctx, lab, x + 78 + bw / 2, cy0 + 233, '900 30px ' + FF, FX.cream, 'center', 'fx-end-next-t');
-    panel(ctx, x + 78, cy0 + 296, 120, 6, 3, 'rgba(16,32,47,.14)', null, 0, 'fx-end-rule2');
-    txLine(ctx, 'youtube.com/@폭스시그널', x + 78, cy0 + 344, '800 26px ' + FF, FX.wine, 'left', 'fx-end-3');
-    ctx.restore();
-  }
-
   /* ⑤ 자막 핵심어 자동 컬러 — 숫자·핵심 키워드만 버건디/네이비 + 형광 마커 */
   var CAP_WARN = /급락|폭락|하락|이탈|주의|위험|경고|매도|약세|사이드카|매물|손절|빨간불|충격/;
   var CAP_UP = /급등|상승|돌파|신고가|우위|매수|강세|유입|회복|반등|수혜|호재/;
@@ -17668,63 +17700,1084 @@ var CSVoice = (function () {
     var vt = '위험 ' + Math.round(curLv) + '% · ' + r.sg.txt;
     txLine(ctx, vt, SAFE.r, y + h / 2 + 1, '900 24px ' + FF, curCol, 'right', 'fx-risk-val');
   }
-  /* 상단 — 🦊 폭스시그널 브랜드 필 + 시간대 배지 + 컷 카운터 + 진행 프로그레스 바 */
-  function drawFoxHead(ctx, spec, idx, n, t, total, cuts, cut) {
-    var C = fxPal();
-    var y = SAFE.y + 14, h = 64;
-    var label = '🦊 폭스시그널';
-    var f = '900 30px ' + FF;
-    ctx.font = f;
-    var tw = ctx.measureText(label).width;
-    var w = tw + 52;
-    panel(ctx, SAFE.x, y, w, h, h / 2, C.pill, null, 0, 'fx-brand');
-    txLine(ctx, label, SAFE.x + 26, y + h / 2 + 1, f, C.pillInk, 'left', 'fx-brand-text');
-    /* 🏷️ 시간대 배지 — 브랜드 필 바로 오른쪽 · 컷 카운터와 겹치지 않을 때만 그린다 */
-    var slot = foxSlotBadge();
-    if (slot) {
-      var cnt = ('0' + (idx + 1)).slice(-2) + ' / ' + ('0' + n).slice(-2);
-      ctx.font = '800 24px ' + FF;
-      var cntW = ctx.measureText(cnt).width;
-      var bx = SAFE.x + w + 16, room = (SAFE.r - cntW - 18) - bx;
-      var sf = '900 24px ' + FF, spad = 19, bw;
-      if (room >= 74) {
-        ctx.font = sf;
-        bw = ctx.measureText(slot).width + spad * 2;
-        while (bw > room && fontPx(sf) > 17) {                 /* 자리가 좁으면 글자를 줄인다 */
-          sf = '900 ' + Math.round(fontPx(sf) - 2) + 'px ' + FF;
-          ctx.font = sf;
-          bw = ctx.measureText(slot).width + spad * 2;
-        }
-        if (bw <= room) {
-          var bh = 44, by = y + (h - bh) / 2;
-          ctx.save();                                           /* 알약 밖으로 글자가 새지 않게 */
-          rr(ctx, bx, by, bw, bh, bh / 2);
-          ctx.clip();
-          panel(ctx, bx, by, bw, bh, bh / 2, FX.wine, 'rgba(201,162,94,.95)', 2, 'fx-slot');
-          txLine(ctx, slot, bx + bw / 2, by + bh / 2 + 1, sf, FX.cream, 'center', 'fx-slot-text');
-          ctx.restore();
-        }
+  /* ══════════════════════════════════════════════════════════════════════
+     🦊 폭스시그널 v4 — 고밀도 리서치 노트 그리드 (Canvas 1080 × 1920)
+       ① 상단: 시리즈 라벨(폭스시그널 · 날짜) + 위험 게이지(축약) + 배지 + 진행 분수
+       ② 헤드라인: 900 웨이트 · 자간 좁게 · 최대 2~3줄 (컷의 「자막」 줄)
+       ③ 평면 2KPI: 흰 박스·그림자 없이 굵은 숫자 + 밑줄 + 회색 설명 1줄
+       ④ 중앙 시각물: 꺾은선(관제탑 실측 · 전일 종가 점선 · 현재가 도트) /
+          4행 가로 막대표 / 번호 리스트 — 중앙 면적을 비우지 않는다
+       ⑤ 여우: 훅(1컷)·엔딩(마지막 컷)은 크게, 본문 컷은 우하단 136px 스탬프
+       ⑥ 하단 카라오케 자막: 헤드라인과 다른 「나레이션」 문장
+       ⑦ 출처 각주 + 최하단 얇은 티커 띠
+     ─ 글자는 세이프 존(좌 60·우 960·상 180·하 1540) 안. 밴드·티커 장식만 밖.
+     ══════════════════════════════════════════════════════════════════════ */
+  var FXG = {
+    head:  { x: SAFE.x, y: 180, w: SAFE.w, h: 58 },
+    title: { x: SAFE.x, y: 266, w: SAFE.w, h: 150 },
+    kpi:   { x: SAFE.x, y: 424, w: SAFE.w, h: 130 },
+    vis:   { x: SAFE.x, y: 572, w: SAFE.w, h: 710 },
+    cap:   { x: SAFE.x, y: 1324, w: SAFE.w, h: 158 },
+    foot:  { x: SAFE.x, y: 1490, w: SAFE.w, h: 34 },
+    tick:  { y: 1780, h: 48 }
+  };
+  var FX_STAMP = 136;                       /* 본문 컷 우하단 여우 스탬프 */
+  /* 🐶🐰🐧 역할 템플릿 — 같은 4단 리듬을 쓰되 카드는 그 채널 것을 유지한다 */
+  var RLG = {
+    head:  { x: SAFE.x, y: 180, w: SAFE.w, h: 58 },
+    title: { x: SAFE.x, y: 258, w: 600, h: 236 },
+    char:  { x: 676, y: 248, size: 264 },
+    kpi:   { x: SAFE.x, y: 508, w: SAFE.w, h: 120 },
+    vis:   { x: SAFE.x, y: 652, w: SAFE.w, h: 644 },
+    cap:   { x: SAFE.x, y: 1312, w: SAFE.w, h: 168 }
+  };
+  /* 헤드라인 자간 — 브라우저가 letterSpacing 을 지원하면 -1.5px, 아니면 무시(측정값도 같이 바뀐다) */
+  function fxTight(ctx, on) {
+    try { ctx.letterSpacing = on ? '-1.5px' : '0px'; } catch (e) {}
+  }
+  function fxDateLabel() {
+    var d = new Date();
+    return pad(d.getMonth() + 1) + '/' + pad(d.getDate());
+  }
+  function fxHero(idx, n) { return idx === 0 || idx === n - 1 || n <= 2; }
+
+  /* ---------- ③ 컷 문장에서 주요 수치 2개 ---------- */
+  /* KPI 설명 한 줄 — 단위 낱말만 걷어내고 '저점' 같은 낱말은 살린다(cleanLabel 은 '점'까지 지운다) */
+  var FX_WEAK = { '오늘': 1, '지금': 1, '현재': 1, '이번': 1, '여기': 1, '이거': 1, '가격': 1, '기준': 1, '정도': 1, '대비': 1, '이': 1, '그': 1, '저': 1 };
+  function fxKpiLabel(w) {
+    var t = String(w || '').replace(/[0-9+\-−.,()%\[\]{}\/:;]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!t) return '';
+    if (/^(원|개|점|배|위|명|건|일|분|박|주|계약|종목)$/.test(t)) return '';
+    if (FX_WEAK[t]) return '';
+    return t.slice(0, 14);
+  }
+  function foxKpiList(cut) {
+    var text = String((cut && cut.text) || '');
+    var out = [], m, guard = 0;
+    var re = /([+\-−]?\d[\d,]*(?:\.\d+)?)\s*(만원|조|억|만|천)?\s*(원|%|퍼센트|pt|배|계약|종목|개|명|건|위)?/g;
+    while ((m = re.exec(text)) && guard++ < 30) {
+      var raw = String(m[1]).replace('−', '-');
+      var u = m[2] || '', suf = String(m[3] || '').replace('퍼센트', '%');
+      if (!u && !suf && raw.indexOf(',') < 0 && raw.indexOf('.') < 0) continue;   /* 단위 없는 정수(날짜·시간)는 버린다 */
+      var val = parseFloat(raw.replace(/,/g, '')) * (UNIT[u === '만원' ? '만' : u] || 1);
+      if (!isFinite(val)) continue;
+      var pre = text.slice(Math.max(0, m.index - 26), m.index)
+        .replace(/[0-9+\-−.,()%\[\]{}]/g, ' ').replace(/[·:;\/|~→]/g, ' ').replace(/\s+/g, ' ').trim();
+      var ws = pre.split(' ').filter(Boolean);
+      var last0 = ws.length ? ws[ws.length - 1] : '';
+      var strip = last0.replace(/(은|는|이|가|을|를|의|에서|부터|까지|으로|로)$/, '');
+      var last = strip.length >= 2 ? strip : last0;   /* '종가'·'정가'의 '가'는 조사가 아니라 낱말의 일부 */
+      var lab = fxKpiLabel(last);
+      var disp = raw + (u === '만원' ? '만원' : u) + suf;
+      var sc = 20;
+      if (u === '조' || u === '억') sc += 46;
+      if (u === '만원') sc += 38;
+      if (suf === '원') sc += 34;
+      if (suf === '%') sc += 34;
+      if (suf === 'pt') sc += 26;
+      if (suf === '계약' || suf === '종목') sc += 22;
+      if (raw.indexOf(',') >= 0) sc += 10;
+      if (raw.indexOf('.') >= 0) sc += 6;
+      sc += Math.min(10, raw.replace(/[^\d]/g, '').length);
+      out.push({ disp: disp, label: lab, value: val, unit: (u === '만원' ? '만원' : u) + suf, score: sc });
+    }
+    var man = parseManual(S.cfg.chartData);
+    man.forEach(function (it) {
+      out.push({ disp: it.disp, label: it.label, value: it.value, unit: it.unit, score: 62 });
+    });
+    var seen = {}, uniq = [];
+    out.sort(function (a, b) { return b.score - a.score; });
+    out.forEach(function (x) {
+      if (seen[x.disp]) return;
+      seen[x.disp] = 1; uniq.push(x);
+    });
+    return uniq.slice(0, 2);
+  }
+  /* ---------- ③ 평면 2KPI — 박스·그림자 없이 숫자 + 밑줄 + 설명 1줄 ---------- */
+  function drawFlatKpis(ctx, kpis, geo, pal) {
+    var n = Math.min(2, kpis ? kpis.length : 0);
+    if (!n) return false;
+    var gap = n === 2 ? 56 : 0, cw = n === 2 ? (geo.w - gap) / 2 : geo.w;
+    var prog = moRollP(), pk = moPunch();
+    for (var i = 0; i < n; i++) {
+      var k = kpis[i], cx = geo.x + i * (cw + gap);
+      var col = i === 0 ? pal.num : pal.ink;
+      var vSize = pal.vSize || 98;
+      var vf = fitText(ctx, k.disp, { w: cw, h: Math.round(vSize * .94), base: vSize, min: 38, weight: 900, lh: 1.02 });
+      var txt = moRoll(vf.lines[0] || k.disp, prog);
+      if (i === 0 && pk > 1.001) {
+        ctx.save();
+        ctx.translate(cx, geo.y + vf.lineH / 2); ctx.scale(pk, pk); ctx.translate(-cx, -(geo.y + vf.lineH / 2));
+      }
+      txLine(ctx, txt, cx, geo.y + vf.lineH / 2, vf.font, col, 'left', 'fx-kpi-v');
+      if (i === 0 && pk > 1.001) ctx.restore();
+      ctx.font = vf.font;
+      var aw = Math.min(cw, ctx.measureText(txt).width);
+      var uw = Math.max(56, Math.min(cw, aw * 0.62));
+      panel(ctx, cx, geo.y + (pal.ruleDy || 96), Math.max(8, uw * moPop(MO.tIn, .52)), 7, 3.5, i === 0 ? pal.rule1 : pal.rule2, null, 0, 'fx-kpi-rule');
+      var lf = fitText(ctx, k.label || '오늘의 숫자', { w: cw, h: 30, base: 24, min: 15, weight: 800, lh: 1.1 });
+      txLine(ctx, lf.lines[0] || '', cx, geo.y + (pal.labelDy || 122), lf.font, pal.sub, 'left', 'fx-kpi-sub');
+    }
+    return true;
+  }
+  var FX_KPI_PAL = { get num() { return fxPal().num; }, get ink() { return fxPal().ink; }, get sub() { return fxPal().sub; },
+    rule1: FX.wine, get rule2() { return INV ? 'rgba(248,243,234,.34)' : 'rgba(16,32,47,.30)'; } };
+
+  /* ---------- ④ 시각물 — 꺾은선 / 막대표 / 번호 리스트 ---------- */
+  var FX_TREND_PAL = { card: FX.paper, edge: 'rgba(16,32,47,.18)', spine: 'rgba(16,32,47,.92)', label: FX.wine,
+    ink: FX.navy, sub: 'rgba(16,32,47,.60)', num: FX.wine, grid: 'rgba(16,32,47,.26)', line: FX.wine,
+    fill: 'rgba(159,18,57,.075)', prev: 'rgba(16,32,47,.45)', dot: FX.navy, ring: '#FFFFFF',
+    lensBg: FX.paper, lensEdge: FX.wine, zoomTag: FX.wine };
+  var FX_BAR_PAL = { card: FX.paper, edge: 'rgba(16,32,47,.18)', spine: 'rgba(16,32,47,.92)', label: FX.wine,
+    ink: FX.navy, sub: 'rgba(16,32,47,.60)', num: FX.wine, chip: 'rgba(16,32,47,.09)',
+    bar1: FX.wine, bar2: 'rgba(16,32,47,.55)', bar2tip: 'rgba(16,32,47,.82)', rule: 'rgba(16,32,47,.10)' };
+  var FX_LIST_PAL = { card: FX.paper, edge: 'rgba(16,32,47,.18)', spine: 'rgba(16,32,47,.92)', label: FX.wine,
+    ink: FX.navy, sub: 'rgba(16,32,47,.60)', num: FX.wine, rule: 'rgba(16,32,47,.12)' };
+  function roleTrendPal(d) {
+    var R = ROLE[d];
+    return { card: R.paper, edge: inkA(R, .12), spine: R.accent, label: R.accent, ink: R.ink, sub: inkA(R, .58),
+      num: R.accent, grid: inkA(R, .18), line: R.accent, fill: hexA(R.accent, .10), prev: inkA(R, .40),
+      dot: R.ink, ring: '#FFFFFF', lensBg: R.paper, lensEdge: R.accent, zoomTag: R.accent };
+  }
+  function roleBarPal(d) {
+    var R = ROLE[d];
+    return { card: R.paper, edge: inkA(R, .12), spine: R.accent, label: R.accent, ink: R.ink, sub: inkA(R, .58),
+      num: R.accent, chip: inkA(R, .07), bar1: R.accent, bar2: inkA(R, .42), bar2tip: inkA(R, .75), rule: inkA(R, .10) };
+  }
+  function roleListPal(d) {
+    var R = ROLE[d];
+    return { card: R.paper, edge: inkA(R, .12), spine: R.accent, label: R.accent, ink: R.ink,
+      sub: inkA(R, .58), num: R.accent, rule: inkA(R, .12) };
+  }
+  function darkTrendPal(ac) {
+    return { card: 'rgba(9,16,30,.92)', edge: hexA(ac, .40), spine: hexA(ac, .88), label: ac, ink: '#f1f5f9',
+      sub: 'rgba(226,232,240,.62)', num: ac, grid: 'rgba(148,163,184,.22)', line: ac, fill: hexA(ac, .12),
+      prev: 'rgba(226,232,240,.34)', dot: '#f8fafc', ring: '#0b1424', lensBg: '#0b1424', lensEdge: ac, zoomTag: ac };
+  }
+  /* ① 꺾은선 카드 — 왼→오 드로잉 + 변곡점 링·줌인 렌즈 + 전일 종가 점선 + 현재가 도트 */
+  function drawTrendCard(ctx, tr, x, y, w, h, pal) {
+    var pts = (tr && tr.pts) || [], n = pts.length, i;
+    if (n < 3 || h < 240 || w < 260) return false;
+    panel(ctx, x, y, w, h, 22, pal.card, pal.edge, 2, 'fx-line-card');
+    panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, pal.spine, null, 0, 'fx-line-spine');
+    txLine(ctx, 'TREND', x + 38, y + 27, '900 22px ' + FF, pal.label, 'left', 'fx-line-label');
+    var prevC = (tr.real && n >= 2) ? pts[n - 2].c : null;
+    var tag = tr.real ? ('관제탑 실측' + (prevC != null ? ' · 전일 ' + fmtTrendVal(prevC, true) : '')) : tr.tag;
+    var tg = fitText(ctx, tag, { w: w - 200, h: 26, base: 19, min: 13, weight: 800, lh: 1.1 });
+    txLine(ctx, tg.lines[0] || '', x + w - 32, y + 27, tg.font, pal.sub, 'right', 'fx-line-tag');
+    var nf = fitText(ctx, tr.name, { w: w - 76, h: 28, base: 24, min: 15, weight: 800, lh: 1.1 });
+    txLine(ctx, nf.lines[0] || '', x + 38, y + 56, nf.font, pal.sub, 'left', 'fx-line-name');
+
+    var px0 = x + 44, px1 = x + w - 66, py0 = y + 92, py1 = y + h - 74;
+    if (py1 - py0 < 60) return false;
+    var lo = Infinity, hi = -Infinity;
+    for (i = 0; i < n; i++) { if (pts[i].c < lo) lo = pts[i].c; if (pts[i].c > hi) hi = pts[i].c; }
+    if (!isFinite(lo) || !isFinite(hi)) return false;
+    if (hi - lo < 1e-9) hi = lo + 1;
+    var padY = (hi - lo) * .16;
+    lo -= padY; hi += padY;
+    function sx(k) { return px0 + (px1 - px0) * (k / (n - 1)); }
+    function sy(v) { return py1 - (py1 - py0) * ((v - lo) / (hi - lo)); }
+
+    for (i = 0; i < 3; i++) {
+      var gv = lo + (hi - lo) * (i === 0 ? .16 : i === 1 ? .5 : .84);
+      var gy = sy(gv);
+      ctx.save();
+      ctx.globalAlpha = .62; ctx.strokeStyle = pal.grid; ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 7]); ctx.beginPath(); ctx.moveTo(px0, gy); ctx.lineTo(px1, gy); ctx.stroke();
+      ctx.restore();
+      txLine(ctx, fmtTrendVal(gv, tr.real), x + w - 26, gy, '800 18px ' + FF, pal.sub, 'right', 'fx-line-grid');
+    }
+    /* 전일 종가 점선 — 실측 시계열에만(컷 수치 폴백에는 기준일이 없다) */
+    if (prevC != null) {
+      var pcy = sy(prevC);
+      ctx.save();
+      ctx.globalAlpha = .9; ctx.strokeStyle = pal.prev; ctx.lineWidth = 2;
+      ctx.setLineDash([13, 8]);
+      ctx.beginPath(); ctx.moveTo(px0, pcy); ctx.lineTo(px1, pcy); ctx.stroke();
+      ctx.restore();
+    }
+    var down = pts[n - 1].c < pts[0].c, fi = -1, fv = 0;
+    for (i = 1; i < n - 1; i++) {
+      if (fi < 0 || (down ? pts[i].c < fv : pts[i].c > fv)) { fi = i; fv = pts[i].c; }
+    }
+    if (fi < 0) fi = n - 1;
+
+    var prog = MO.on ? moEase(MO.tIn, 1.0) : 1;
+    var lastK = (n - 1) * Math.min(1, prog), upto = Math.floor(lastK), frac = lastK - upto;
+    if (lastK > 0) {
+      ctx.save();
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(sx(0), sy(pts[0].c));
+      for (i = 1; i <= upto; i++) ctx.lineTo(sx(i), sy(pts[i].c));
+      var endX = sx(upto), endY = sy(pts[upto].c);
+      if (frac > 0 && upto + 1 < n) {
+        endX = sx(upto) + (sx(upto + 1) - sx(upto)) * frac;
+        endY = sy(pts[upto].c) + (sy(pts[upto + 1].c) - sy(pts[upto].c)) * frac;
+        ctx.lineTo(endX, endY);
+      }
+      ctx.strokeStyle = pal.line; ctx.lineWidth = 4.5; ctx.stroke();
+      ctx.lineTo(endX, py1); ctx.lineTo(sx(0), py1); ctx.closePath();
+      ctx.fillStyle = pal.fill; ctx.fill();
+      ctx.restore();
+      if (prog < 1) {
+        ctx.save();
+        ctx.fillStyle = pal.line;
+        ctx.beginPath(); ctx.arc(endX, endY, 6, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = pal.ring; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.restore();
       }
     }
-    txLine(ctx, ('0' + (idx + 1)).slice(-2) + ' / ' + ('0' + n).slice(-2), SAFE.r, y + 21,
-      '800 24px ' + FF, C.sub, 'right', 'fx-counter');
-    var wm = String((spec && spec.watermark) || '').trim();
-    /* 폭스시그널 템플릿은 채널 기본 워터마크를 쓴다(옵션에서 직접 바꾸면 그 값이 우선) */
-    if (!wm || wm === '연오랑의 3분 시황') wm = '폭스시그널 · 오늘의 시장 신호';
-    if (wm) txLine(ctx, wm, SAFE.r, y + 50, '700 21px ' + FF, C.wm, 'right', 'fx-wm');
-    var py = y + h + 18;
-    panel(ctx, SAFE.x, py, SAFE.w, 8, 4, C.chip, null, 0, 'fx-prog-track');
+    var arriveK = fi / (n - 1);
+    var rp = MO.on ? moEase(MO.tIn - 1.0 * arriveK - .06, .3) : 1;
+    var fx0 = sx(fi), fy0 = sy(pts[fi].c);
+    if (rp > .02) {
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, rp);
+      ctx.strokeStyle = pal.line; ctx.lineWidth = 3.5;
+      ctx.beginPath(); ctx.arc(fx0, fy0, 13 * (.6 + .4 * rp), 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = pal.dot;
+      ctx.beginPath(); ctx.arc(fx0, fy0, 5 * rp, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = Math.min(1, rp) * .55;
+      ctx.beginPath(); ctx.arc(fx0, fy0, 13 + 7 * rp, 0, Math.PI * 2); ctx.stroke();
+      var ay = fy0 - 34 - 8 * rp;
+      ctx.globalAlpha = Math.min(1, rp);
+      ctx.fillStyle = pal.line;
+      ctx.beginPath();
+      ctx.moveTo(fx0, fy0 - 20);
+      ctx.lineTo(fx0 - 8, ay - 10);
+      ctx.lineTo(fx0 + 8, ay - 10);
+      ctx.closePath(); ctx.fill();
+      ctx.restore();
+      rec(fx0 - 20, fy0 - 20, 40, 40, 'fx-line-ring');
+    }
+    var zq = MO.on ? moEase(MO.tIn - 1.05, .5) : 1;
+    if (zq > .04 && Math.abs(fi - (n - 1)) >= 2) {
+      var LW = 206, LH = 150, Z = 1.9;
+      var lw = LW * zq, lh = LH * zq;
+      var lx = fx0 < x + w / 2 ? (x + w - 24 - LW) : (x + 24);
+      var ly = fy0 > y + h / 2 ? (y + 88) : (y + h - 52 - LH);
+      lx = Math.max(x + 20, Math.min(x + w - 20 - lw, lx + (LW - lw) / 2));
+      ly = Math.max(y + 74, Math.min(y + h - 44 - lh, ly + (LH - lh) / 2));
+      var nx = Math.max(lx, Math.min(fx0, lx + lw)), ny = Math.max(ly, Math.min(fy0, ly + lh));
+      if (Math.abs(nx - fx0) + Math.abs(ny - fy0) > 8) {
+        ctx.save();
+        ctx.strokeStyle = pal.lensEdge; ctx.globalAlpha = .45; ctx.lineWidth = 2;
+        ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.moveTo(nx, ny); ctx.lineTo(fx0, fy0); ctx.stroke();
+        ctx.restore();
+      }
+      ctx.save();
+      rr(ctx, lx, ly, lw, lh, Math.min(18, lh / 2)); ctx.clip();
+      ctx.fillStyle = pal.lensBg; ctx.fillRect(lx, ly, lw, lh);
+      ctx.translate(lx + lw / 2, ly + lh / 2);
+      ctx.scale(Z, Z);
+      ctx.translate(-fx0, -fy0);
+      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(sx(0), sy(pts[0].c));
+      for (i = 1; i < n; i++) ctx.lineTo(sx(i), sy(pts[i].c));
+      ctx.strokeStyle = pal.line; ctx.lineWidth = 2.6; ctx.stroke();
+      ctx.fillStyle = pal.dot;
+      ctx.beginPath(); ctx.arc(fx0, fy0, 3.8, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      ctx.save();
+      ctx.strokeStyle = pal.lensEdge; ctx.lineWidth = 3;
+      rr(ctx, lx, ly, lw, lh, Math.min(18, lh / 2)); ctx.stroke();
+      ctx.restore();
+      rec(lx, ly, lw, lh, 'fx-line-lens');
+      if (zq > .55) txLine(ctx, '×' + Z, lx + lw - 12, ly + 15, '900 15px ' + FF, pal.zoomTag, 'right', 'fx-line-zoomtag');
+    }
+    /* 현재가 도트 — 마지막 점. 변곡점과 같은 점이면 링이 이미 표시했으므로 생략 */
+    if (fi !== n - 1) {
+      var cx2 = sx(n - 1), cy2 = sy(pts[n - 1].c);
+      ctx.save();
+      ctx.fillStyle = pal.line;
+      ctx.beginPath(); ctx.arc(cx2, cy2, 7, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = pal.ring; ctx.lineWidth = 2.5; ctx.stroke();
+      ctx.restore();
+      rec(cx2 - 9, cy2 - 9, 18, 18, 'fx-line-dot');
+    }
+    var lab = (tr.real ? (down ? '저점 ' : '고점 ') : '변곡 ') + (pts[fi].disp || fmtTrendVal(pts[fi].c, tr.real)) + (tr.real ? ' · ' + pts[fi].d : '');
+    var lf = fitText(ctx, lab, { w: w - 76, h: 30, base: 24, min: 14, weight: 900, lh: 1.1 });
+    txLine(ctx, lf.lines[0] || '', x + 38, y + h - 32, lf.font, pal.num, 'left', 'fx-line-foot');
+    return true;
+  }
+  /* ② 4행 가로 막대표 — 라벨 · 값 · 막대가 0.25초 간격으로 순차 등장 */
+  function drawBarCard(ctx, items, x, y, w, h, pal) {
+    var rows = (items || []).slice(0, 4), n = rows.length, i;
+    if (n < 2 || h < 220) return false;
+    panel(ctx, x, y, w, h, 22, pal.card, pal.edge, 2, 'fx-bar-card');
+    panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, pal.spine, null, 0, 'fx-bar-spine');
+    var sameUnit = true;
+    for (i = 1; i < n; i++) { if ((rows[i].unit || '') !== (rows[0].unit || '')) sameUnit = false; }
+    txLine(ctx, sameUnit ? ('DATA · ' + (n === 2 ? '두 수치 비교' : n + '개 수치 비교')) : ('SPEC · 단위가 다른 ' + n + '개'),
+      x + 38, y + 30, '900 22px ' + FF, pal.label, 'left', 'fx-bar-label');
+    var maxBy = {};
+    for (i = 0; i < n; i++) {
+      var uk = rows[i].unit || '';
+      maxBy[uk] = Math.max(maxBy[uk] || 1, Math.abs(rows[i].value));
+    }
+    var headH = 60, footH = 48, avail = h - headH - footH;
+    if (avail < 80) return false;
+    var rowH = Math.floor(avail / n);
+    var labPx = Math.max(24, Math.min(40, Math.round(rowH * 0.16)));
+    var valPx = Math.max(26, Math.min(46, Math.round(rowH * 0.18)));
+    var th = Math.max(24, Math.min(40, Math.round(rowH * 0.15)));
+    for (i = 0; i < n; i++) {
+      var it = rows[i];
+      var t0 = MO.on ? moEase(MO.tIn - i * .25, .34) : 1;
+      if (t0 <= 0) continue;
+      var ry = y + headH + i * rowH;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, t0);
+      var slide = Math.round((1 - t0) * 18);
+      var blockH0 = Math.max(labPx, valPx) + 8 + th + 10;
+      var oy = ry + Math.max(6, Math.round((rowH - blockH0) / 2));
+      var lf = fitText(ctx, it.label || ('항목 ' + (i + 1)), { w: w - 300, h: labPx + 8, base: labPx, min: 15, weight: 800, lh: 1.1 });
+      txLine(ctx, lf.lines[0] || '', x + 38 + slide, oy + Math.max(labPx, valPx) / 2, lf.font, pal.sub, 'left', 'fx-bar-name');
+      var vf = fitText(ctx, it.disp, { w: 260, h: valPx + 8, base: valPx, min: 15, weight: 900, lh: 1.1 });
+      txLine(ctx, moRoll(vf.lines[0] || it.disp, Math.min(1, t0)), x + w - 38, oy + Math.max(labPx, valPx) / 2, vf.font, i === 0 ? pal.num : pal.ink, 'right', 'fx-bar-value');
+      var by = oy + Math.max(labPx, valPx) + 10, bx = x + 38, bw = w - 76;
+      if (sameUnit) {
+        panel(ctx, bx, by, bw, th, th / 2, pal.chip, null, 0, 'fx-bar-track');
+        var rw = Math.max(8, bw * (Math.abs(it.value) / (maxBy[it.unit || ''] || 1)) * t0);
+        panel(ctx, bx, by, rw, th, th / 2, i === 0 ? pal.bar1 : pal.bar2, null, 0, 'fx-bar-fill');
+        moTip(ctx, bx + rw, by + th / 2, th, i === 0 ? pal.bar1 : pal.bar2tip, t0);
+      } else {
+        /* kg·Pa·주처럼 서로 다른 단위를 한 축에 놓으면 거짓 비교가 된다 → 값만 나란히 적는다 */
+        panel(ctx, bx, by + Math.round(th / 2), bw * Math.min(1, t0), 2, 1, i === 0 ? pal.bar1 : pal.rule, null, 0, 'fx-bar-rule2');
+      }
+      if (i < n - 1) panel(ctx, bx, ry + rowH - 10, bw, 2, 1, pal.rule, null, 0, 'fx-bar-rule');
+      ctx.restore();
+    }
+    var f = rows[0], foot = sameUnit ? ('1위 ' + (f.label || '') + ' ' + f.disp) : '단위가 달라 막대 대신 값만 표시';
+    if (sameUnit && n >= 2 && rows[1].unit === f.unit) {
+      var d = Math.abs(f.value - rows[1].value);
+      if (isFinite(d) && d > 0) foot += ' · 2위와 차이 ' + fmtTrendVal(d, false);
+    }
+    var ff = fitText(ctx, foot, { w: w - 76, h: 30, base: 23, min: 14, weight: 800, lh: 1.1 });
+    txLine(ctx, ff.lines[0] || '', x + 38, y + h - 28, ff.font, pal.sub, 'left', 'fx-bar-foot');
+    return true;
+  }
+  /* ③ 번호 리스트 — 수치가 없는 컷도 중앙을 비우지 않는다(풀다 ③ 변주) */
+  function foxListItems(cut) {
+    var src = String((cut && cut.text) || '');
+    var arr = src.split(/\s*[·•|]\s*/).map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 1; });
+    if (arr.length < 2) {
+      arr = String((cut && cut.tts) || '').split(/[.。!?]\s*/).map(function (s) { return s.trim(); }).filter(function (s) { return s.length > 4; });
+    }
+    return arr.slice(0, 4);
+  }
+  function drawListCard(ctx, cut, x, y, w, h, pal) {
+    var rows = foxListItems(cut);
+    if (rows.length < 2 || h < 220) return false;
+    panel(ctx, x, y, w, h, 22, pal.card, pal.edge, 2, 'fx-list-card');
+    panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, pal.spine, null, 0, 'fx-list-spine');
+    txLine(ctx, 'KEY ' + ('0' + rows.length).slice(-2), x + 38, y + 30, '900 22px ' + FF, pal.label, 'left', 'fx-list-label');
+    var n = rows.length, top = y + 56, avail = h - 56 - 22;
+    var rowH = Math.floor(avail / n);
+    var noPx = Math.max(32, Math.min(72, Math.round(rowH * 0.26)));
+    var txPx = Math.max(26, Math.min(56, Math.round(rowH * 0.19)));
+    for (var i = 0; i < n; i++) {
+      var t0 = MO.on ? moEase(MO.tIn - i * .14, .3) : 1;
+      if (t0 <= 0) continue;
+      var ry = top + i * rowH;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, t0);
+      var tx0 = x + Math.max(116, noPx + 78);
+      var tf = fitText(ctx, rows[i], { w: x + w - 38 - tx0, h: Math.min(rowH - 20, txPx * 2.5), base: txPx, min: 17, weight: 800, lh: 1.16 });
+      var blockH = Math.max(noPx, tf.height);
+      var cy0 = ry + Math.max(10, (rowH - blockH) / 2);
+      txLine(ctx, ('0' + (i + 1)).slice(-2), x + 38, cy0 + blockH / 2, '900 ' + noPx + 'px ' + FF, pal.num, 'left', 'fx-list-no');
+      var ty = cy0 + blockH / 2 - tf.height / 2;
+      for (var k = 0; k < tf.lines.length; k++) {
+        txWords(ctx, tf.lines[k], tx0, ty + k * tf.lineH + tf.lineH / 2, tf.font,
+          function (tok) { return /\d/.test(tok) ? pal.num : pal.ink; }, 'fx-list-row');
+      }
+      if (i < n - 1) panel(ctx, x + 38, ry + rowH - 8, w - 76, 2, 1, pal.rule, null, 0, 'fx-list-rule');
+      ctx.restore();
+    }
+    return true;
+  }
+  /* 컷 → 시각물 종류 */
+  function foxVisualOf(cut) {
+    var t = tplOf();
+    var items = (chartItems(cut) || []).slice(0, 6);
+    var trend = foxTrendPts(cut);
+    if (t === 'line') {
+      if (trend) return { kind: 'line', trend: trend };
+      return items.length >= 2 ? { kind: 'bar', items: items } : { kind: 'list' };
+    }
+    if (t === 'chart') {
+      if (items.length >= 2) return { kind: 'bar', items: items };
+      return trend ? { kind: 'line', trend: trend } : { kind: 'list' };
+    }
+    var idxWord = /코스피|코스닥|지수|야간선물|선물|환율|나스닥|S&P|VIX|VIX/;
+    if (items.length >= 3) return { kind: 'bar', items: items };
+    if (idxWord.test(String(cut.text || '') + ' ' + String(cut.hook || '')) && trend) return { kind: 'line', trend: trend };
+    if (items.length === 2) return { kind: 'bar', items: items };
+    return { kind: 'list' };
+  }
+
+  /* ---------- ⑥ 카라오케 자막 — 헤드라인과 다른 「나레이션」 문장 ---------- */
+  function fxNorm(s) { return String(s || '').replace(/[^0-9A-Za-z가-힣]/g, ''); }
+  /* 속보(딥네이비) 스킨에서는 어두운 버건디/네이비 글자가 안 읽힌다 → 밝은 톤으로 */
+  function fxCapCol(c) {
+    if (!INV || !c) return c;
+    if (c === '#9F1239') return '#FCA5A5';
+    if (c === '#1E40AF') return '#93C5FD';
+    return c;
+  }
+  function foxNarLine(cut) {
+    var tts = String((cut && cut.tts) || '').replace(/\s+/g, ' ').trim();
+    var head = fxNorm(cut && cut.text);
+    if (!tts) return '';
+    var safe = tts.replace(/(\d)\.(\d)/g, '$1\u0001$2');
+    var sents = safe.split(/[.。!?]/).map(function (s) { return s.replace(/\u0001/g, '.').trim().replace(/^[·,]\s*/, ''); })
+      .filter(function (s) { return s.length >= 8; });
+    if (!sents.length) sents = [tts];
+    var best = '', bs = -1;
+    sents.forEach(function (s, i) {
+      var nn = fxNorm(s);
+      if (!nn) return;
+      /* 헤드라인과 같은 문장(겹침 60% 이상)은 버린다 — 위아래 같은 말 반복 금지 */
+      var hit = 0;
+      for (var k = 0; k + 3 <= nn.length; k++) if (head.indexOf(nn.slice(k, k + 3)) >= 0) hit++;
+      var cover = hit / Math.max(1, nn.length - 2);
+      if (cover > .6) return;
+      var sc = 0;
+      if (/\d/.test(s)) sc += 3;
+      if (s.length >= 12 && s.length <= 64) sc += 2;
+      if (CAP_WARN.test(s) || CAP_UP.test(s)) sc += 1;
+      sc += i * .2;                            /* 뒤 문장(결론부)을 살짝 선호 */
+      if (sc > bs) { bs = sc; best = s; }
+    });
+    if (!best) {
+      var hk = String((cut && cut.hook) || '').trim();
+      if (hk && fxNorm(hk) !== head) best = hk;
+    }
+    return best;
+  }
+  /* ⑦ 출처 각주 · 하단 티커 */
+  function foxSourceLine(cut) {
+    var bits = [];
+    if (IDX.src === 'api' && IDX.pts.length) bits.push(IDX.name + ' ' + IDX.pts.length + '거래일 · 관제탑 실측');
+    else if (DEALS.src === 'api' && DEALS.items.length) bits.push('특가 레이더 ' + String(DEALS.stamp || '').slice(0, 10));
+    else bits.push('컷 내 수치 · 자체 집계');
+    if (cut && cut.tts && cut.tts !== cut.text) bits.push('나레이션 기준');
+    bits.push('정보 제공 목적 · 투자 권유 아님');
+    return bits.join(' · ');
+  }
+
+  /* ---------- ① 상단 밴드 — 시리즈 라벨 · 날짜 · 위험 게이지 · 배지 · 진행 분수 ---------- */
+  function drawFoxRiskMini(ctx, cut, x, w) {
+    if (w < 170) return;
+    var C = fxPal(), r = foxRisk(cut || {});
+    var p = MO.on ? moEase(MO.tIn, .9) : 1;
+    var lv = r.lv * p, col = riskColorOn(lv);
+    var h = 26, y = FXG.head.y + (FXG.head.h - h) / 2;
+    var lf = '900 19px ' + FF;
+    var txt = '위험 ' + Math.round(lv) + '%';
+    ctx.font = lf;
+    var lw = ctx.measureText(txt).width + 2;
+    txLine(ctx, txt, x, y + h / 2, lf, col, 'left', 'fx-risk-val');
+    var tx0 = x + lw + 10, tw = Math.max(36, w - lw - 10);
+    panel(ctx, tx0, y + h / 2 - 5, tw, 10, 5, C.chip, null, 0, 'fx-risk-track');
+    var fw = Math.max(0, tw * (lv / 100));
+    if (fw > 2) {
+      ctx.save(); ctx.globalAlpha = .92;
+      panel(ctx, tx0, y + h / 2 - 5, fw, 10, 5, col, null, 0, 'fx-risk-fill');
+      ctx.restore();
+    }
+  }
+  function drawFoxHead(ctx, spec, idx, n, t, total, cuts, cut) {
+    var C = fxPal(), y = FXG.head.y, h = FXG.head.h;
+    var label = '🦊 폭스시그널';
+    var f = '900 27px ' + FF;
+    ctx.font = f;
+    var pw = ctx.measureText(label).width + 44;
+    panel(ctx, SAFE.x, y, pw, h, h / 2, C.pill, null, 0, 'fx-brand');
+    txLine(ctx, label, SAFE.x + 22, y + h / 2 + 1, f, C.pillInk, 'left', 'fx-brand-text');
+    /* 날짜 — 상단 라벨이 곧 편 표식(풀다와 같은 자리) */
+    txLine(ctx, fxDateLabel(), SAFE.x + pw + 14, y + h / 2 + 1, '900 24px ' + FF, C.sub, 'left', 'fx-date');
+    /* 진행 분수 — 오른쪽 끝 */
+    var cnt = ('0' + (idx + 1)).slice(-2) + ' / ' + ('0' + n).slice(-2);
+    ctx.font = '900 25px ' + FF;
+    var cw = ctx.measureText(cnt).width;
+    txLine(ctx, cnt, SAFE.r, y + h / 2 + 1, '900 25px ' + FF, C.ink, 'right', 'fx-counter');
+    /* 상단 배지 — 분수 왼쪽 */
+    var slot = foxSlotBadge();
+    var right = SAFE.r - cw - 16;
+    if (slot) {
+      var sf = '900 23px ' + FF, bh = 42;
+      ctx.font = sf;
+      var bw = Math.min(right - SAFE.x - 330, ctx.measureText(slot).width + 38);
+      while (bw > 210 && fontPx(sf) > 17) {
+        sf = '900 ' + Math.round(fontPx(sf) - 2) + 'px ' + FF;
+        ctx.font = sf;
+        bw = Math.min(right - SAFE.x - 330, ctx.measureText(slot).width + 38);
+      }
+      var bx = right - bw, by = y + (h - bh) / 2;
+      ctx.save();
+      rr(ctx, bx, by, bw, bh, bh / 2); ctx.clip();
+      panel(ctx, bx, by, bw, bh, bh / 2, FX.wine, 'rgba(201,162,94,.95)', 2, 'fx-slot');
+      txLine(ctx, slot, bx + bw / 2, by + bh / 2 + 1, sf, FX.cream, 'center', 'fx-slot-text');
+      ctx.restore();
+    }
+    /* 위험 게이지(축약) — 날짜와 배지 사이 남는 자리에만 */
+    var gx = SAFE.x + pw + 24 + 64, gw = (slot ? right - bw : right) - gx - 20;
+    drawFoxRiskMini(ctx, cut, gx, gw);
+    /* 진행 바 — 밴드 아래 얇은 머리선 */
+    var py = y + h + 4;
+    panel(ctx, SAFE.x, py, SAFE.w, 6, 3, C.chip, null, 0, 'fx-prog-track');
     var den = Math.max(.1, total || 0);
     var fr = Math.min(1, (t || 0) / den);
-    panel(ctx, SAFE.x, py, Math.max(8, SAFE.w * fr), 8, 4, C.accent, null, 0, 'fx-prog');
+    panel(ctx, SAFE.x, py, Math.max(8, SAFE.w * fr), 6, 3, C.accent, null, 0, 'fx-prog');
     (cuts || []).forEach(function (c) {
       if (!(c.start > 0)) return;
       var cx = SAFE.x + SAFE.w * (c.start / den);
-      panel(ctx, cx - 1.5, py - 4, 3, 16, 2, C.hair, null, 0, 'fx-prog-tick');
+      panel(ctx, cx - 1.5, py - 3, 3, 12, 1.5, C.hair, null, 0, 'fx-prog-tick');
     });
-    /* ② 시장 위험 게이지 HUD — 브랜드 필·진행 바 아래 한 줄 */
-    drawFoxGauge(ctx, cut);
   }
+  /* ---------- ② 헤드라인 — 자막 줄 · 900 웨이트 · 자간 좁게 ---------- */
+  function drawFoxTitle(ctx, spec, cut, idx) {
+    var C = fxPal(), g = FXG.title;
+    var head = String((cut && cut.text) || '').trim() || String(spec.hookTitle || '');
+    if (!head) return;
+    ctx.save();
+    fxTight(ctx, true);
+    var fit = fitText(ctx, head, { w: g.w, h: g.h, base: 80, min: 40, weight: 900, lh: 1.04 });
+    var y0 = g.y + Math.max(0, (g.h - fit.height) / 2);
+    var swp = INV ? 0 : moSweepP();
+    for (var i = 0; i < fit.lines.length; i++) {
+      if (i === 0 && swp > 0) {
+        ctx.font = fit.font;
+        moHl(ctx, g.x, y0 + fit.lineH / 2, ctx.measureText(fit.lines[i]).width, fit.lineH, swp, { maxW: g.w, alpha: .78 });
+      }
+      txWords(ctx, fit.lines[i], g.x, y0 + i * fit.lineH + fit.lineH / 2, fit.font,
+        function (tok) { return /\d/.test(tok) ? C.num : C.ink; }, 'fx-title');
+    }
+    ctx.restore();
+    fxTight(ctx, false);
+  }
+  /* ---------- ③ 평면 2KPI ---------- */
+  function drawFoxKpiRow(ctx, cut) {
+    var k = foxKpiList(cut);
+    if (!k.length) return false;
+    return drawFlatKpis(ctx, k, FXG.kpi, {
+      num: fxPal().num, ink: fxPal().ink, sub: fxPal().sub,
+      rule1: fxPal().accent, rule2: INV ? 'rgba(248,243,234,.34)' : 'rgba(16,32,47,.30)'
+    });
+  }
+  /* ---------- ④ 중앙 시각물 + ⑤ 여우 ---------- */
+  function drawFoxVisual(ctx, spec, cut, idx, pose, hero) {
+    var g = FXG.vis;
+    var v = foxVisualOf(cut);
+    var vw = hero ? g.w - 358 : g.w;
+    var ok = false;
+    if (v.kind === 'line') ok = drawTrendCard(ctx, v.trend, g.x, g.y, vw, g.h, FX_TREND_PAL);
+    else if (v.kind === 'bar') ok = drawBarCard(ctx, v.items, g.x, g.y, vw, g.h, FX_BAR_PAL);
+    if (!ok) drawListCard(ctx, cut, g.x, g.y, vw, g.h, FX_LIST_PAL);
+    if (hero) drawFox(ctx, pose, SAFE.r - 340, g.y + Math.round((g.h - 340) / 2), 340);
+  }
+  /* ---------- ⑥ 카라오케 자막 — 나레이션 문장 + 본문 컷 우하단 스탬프 ---------- */
+  function drawFoxCaption(ctx, cut, p, spec, idx, n) {
+    var C = fxPal(), g = FXG.cap;
+    var hero = fxHero(idx, n);
+    var textW = hero ? g.w : g.w - FX_STAMP - 28;
+    var line = foxNarLine(cut);
+    if (line) {
+      var fit = fitText(ctx, line, { w: textW, h: g.h - 12, base: 54, min: 26, weight: 800, lh: 1.24 });
+      var warn = foxTone(cut.text) === 'warn';
+      panel(ctx, g.x, g.y + 4, 56, 7, 3.5, warn ? '#DC2626' : C.accent, null, 0, 'fx-cap-rule');
+      var y0 = g.y + 18 + Math.max(0, (g.h - 24 - fit.height) / 2);
+      var words = (spec && spec.words) || [];
+      var total = String(line).replace(/\s/g, '').length || 1, seen = 0;
+      for (var i = 0; i < fit.lines.length; i++) {
+        var toks = fit.lines[i].split(' '), cols = [], marks = [];
+        toks.forEach(function (tok) {
+          var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
+          var on = (seen / total) <= p + 0.0001;
+          seen += String(tok).length;
+          if (!on) { cols.push(C.sub); marks.push(''); return; }
+          var c = fxCapCol(capColorOf(tok));
+          if (!c && words.indexOf(clean) >= 0) c = C.accent;
+          cols.push(c || C.ink);
+          marks.push(capMarkOf(tok));
+        });
+        txWords(ctx, fit.lines[i], g.x + 4, y0 + i * fit.lineH + fit.lineH / 2, fit.font,
+          function (tok, k) { return cols[k]; }, 'fx-cap', null, null, null,
+          function (tok, k) { return marks[k]; });
+      }
+    }
+    if (!hero) {
+      var s = FX_STAMP;
+      drawFox(ctx, poseOfCut('fox', cut, idx), SAFE.r - s, g.y + Math.round((g.h - s) / 2), s);
+    }
+  }
+  function drawFoxFoot(ctx, spec, cut) {
+    var C = fxPal(), g = FXG.foot;
+    var src = foxSourceLine(cut);
+    var f = '700 19px ' + FF;
+    var wm = String((spec && spec.watermark) || '').trim();
+    if (wm === '연오랑의 3분 시황') wm = '';
+    ctx.font = f;
+    var room = SAFE.w - (wm ? 300 : 0);
+    var sf = fitText(ctx, src, { w: room, h: 24, base: 19, min: 13, weight: 700, lh: 1.1 });
+    txLine(ctx, sf.lines[0] || '', g.x, g.y + 14, sf.font, C.wm, 'left', 'fx-src');
+    if (wm) {
+      ctx.font = f;
+      var wt = trimTo(ctx, wm, 300);
+      txLine(ctx, wt, SAFE.r, g.y + 14, f, C.wm, 'right', 'fx-wm');
+    }
+  }
+  /* ⑦ 최하단 티커 — 세이프 존 밖 장식(유튜브 UI 아래에 깔린다) */
+  function drawFoxTicker(ctx, spec, cut, next) {
+    var g = FXG.tick;
+    var txt = next ? ('▶ 다음 컷 · ' + String(next.hook || '').trim()) : ('▶ ' + String((cut && cut.hook) || '정보 제공 목적 · 판단은 본인 몫').trim());
+    if (!txt || txt === '▶ ') return;
+    ctx.save();
+    ctx.fillStyle = FX.wine;
+    ctx.fillRect(0, g.y, CW, g.h);
+    ctx.fillStyle = 'rgba(248,243,234,.14)';
+    ctx.fillRect(0, g.y, CW, 3);
+    var f = '900 25px ' + FF;
+    ctx.font = f;
+    var t = trimTo(ctx, txt, CW - 128);
+    var slide = MO.on ? Math.round((1 - moEase(MO.tIn, .5)) * 26) : 0;
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.fillStyle = FX.cream;
+    ctx.fillText(t, 60 + slide, g.y + g.h / 2 + 1);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(248,243,234,.62)';
+    ctx.font = '800 19px ' + FF;
+    ctx.fillText('FOX SIGNAL', CW - 60, g.y + g.h / 2 + 1);
+    ctx.restore();
+  }
+  /* ⑥ 엔딩 시그니처 — 헤드라인·KPI·시각물 밴드를 덮는 카드 */
+  var FX_NEXT = { '1': '☀️ 점심 시황', '2': '🌆 정규마감 시황', '3': '🌙 애프터장 결산', '4': '🌅 내일 장전 시황', '5': '🌙 애프터장 결산' };
+  function drawFoxEnding(ctx, cut, tIn) {
+    var left = (cut && cut.dur ? cut.dur : 0) - tIn;
+    if (left > 1.5) return;
+    var a = Math.min(1, Math.max(0, (1.5 - left) / .24));
+    if (a <= 0.01) return;
+    var x = FXG.title.x, y = FXG.title.y, w = FXG.title.w;
+    var h = FXG.vis.y + FXG.vis.h - FXG.title.y;
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.shadowColor = 'rgba(16,32,47,.26)';
+    ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
+    panel(ctx, x, y, w, h, 26, FX.paper, 'rgba(201,162,94,.92)', 3, 'fx-end-card');
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    var cy0 = y + 60;
+    panel(ctx, x + 48, cy0 + 6, 8, 108, 4, FX.wine, null, 0, 'fx-end-rule');
+    var f1 = fitText(ctx, '🦊 오늘도 끝까지 봐주셔서 고마워요', { w: w - 150, h: 62, base: 44, min: 24, weight: 900, lh: 1.16 });
+    txLine(ctx, f1.lines[0] || '', x + 78, cy0 + 34, f1.font, FX.navy, 'left', 'fx-end-1');
+    var f2 = fitText(ctx, '상세 표·차트는 프로필 링크 티스토리에서', { w: w - 150, h: 44, base: 30, min: 18, weight: 800, lh: 1.2 });
+    txLine(ctx, f2.lines[0] || '', x + 78, cy0 + 92, f2.font, 'rgba(16,32,47,.72)', 'left', 'fx-end-2');
+    var lab = 'NEXT ▶ ' + (FX_NEXT[formulaKey('fox')] || '다음 시황');
+    var bf = '900 28px ' + FF;
+    ctx.font = bf;
+    var bw = Math.min(w - 200, ctx.measureText(lab).width + 60);
+    panel(ctx, x + 78, cy0 + 148, bw, 60, 30, FX.navy, null, 0, 'fx-end-next');
+    txLine(ctx, lab, x + 78 + bw / 2, cy0 + 179, bf, FX.cream, 'center', 'fx-end-next-t');
+    panel(ctx, x + 78, cy0 + 238, 120, 6, 3, 'rgba(16,32,47,.14)', null, 0, 'fx-end-rule2');
+    txLine(ctx, 'youtube.com/@폭스시그널', x + 78, cy0 + 282, '800 26px ' + FF, FX.wine, 'left', 'fx-end-3');
+    var fs = 320;
+    drawFox(ctx, foxPoseOf(cut, 0), x + w - fs - 40, y + h - fs - 46, fs);
+    txLine(ctx, '폭스시그널 · 고밀도 리서치 노트 · 1080 × 1920', x + 78, y + h - 60,
+      '800 22px ' + FF, 'rgba(16,32,47,.38)', 'left', 'fx-end-note');
+    ctx.restore();
+  }
+  /* ---------- 🦊 폭스시그널 v4 프레임 ---------- */
+  function drawFoxFrame(t) {
+    var cv = $('#wvCanvas');
+    if (!cv) return;
+    var ctx = ctxOf(cv);
+    var spec = S.spec, cuts = S.cuts;
+    if (!spec || !cuts.length) { drawFoxIdle(ctx); return; }
+    var idx = 0;
+    while (idx < cuts.length - 1 && t >= cuts[idx].end) idx++;
+    var cut = cuts[idx];
+    var tIn = Math.max(0, t - cut.start);
+    var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
+    var pose = foxPoseOf(cut, idx);
+    INV = (idx === foxWarnIdx(cuts));
+    var tone = foxTone(cut.text);
+    var sh = tone === 'warn' ? Math.max(0, 1 - tIn / 1.2) : 0;
+    SHAKE.x = sh ? +(Math.sin(tIn * 47) * 2.2 * sh).toFixed(2) : 0;
+    SHAKE.y = sh ? +(Math.cos(tIn * 41) * 1.6 * sh).toFixed(2) : 0;
+    moSet(tIn, t);
+    var hero = fxHero(idx, cuts.length);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    foxBands(ctx, pose);
+    if (INV) foxBreaking(ctx);
+    if (tone === 'up') foxParticles(ctx, tIn);
+    var ein = moInP();
+    var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
+    ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
+    drawFoxHead(ctx, spec, idx, cuts.length, t, S.total, cuts, cut);
+    ctx.save();
+    ctx.translate(0, Math.round((1 - ein) * 12));
+    drawFoxTitle(ctx, spec, cut, idx);
+    drawFoxKpiRow(ctx, cut);
+    drawFoxVisual(ctx, spec, cut, idx, pose, hero);
+    drawFoxCaption(ctx, cut, p, spec, idx, cuts.length);
+    ctx.restore();
+    ctx.restore();
+    drawFoxFoot(ctx, spec, cut);
+    drawFoxTicker(ctx, spec, cut, cuts[idx + 1] || null);
+    if (idx === cuts.length - 1) drawFoxEnding(ctx, cut, tIn);
+    SHAKE.x = 0; SHAKE.y = 0;
+    INV = false;
+  }
+  function drawFoxIdle(ctx) {
+    foxLoad();
+    moSet(2.2, 2.2);
+    var sp = sampleFor('fox', formulaKey('fox'));
+    var spec = { hookTitle: sp.hook_title, watermark: '', words: sp.highlight_words || [], badge: '' };
+    var cut = { text: sp.cuts[0].text, tts: sp.cuts[0].tts_text || sp.cuts[0].text, hook: sp.hook_title, idx: 0, dur: 5, start: 0 };
+    var pose = foxAuto(cut, 0);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    foxBands(ctx, pose);
+    drawFoxHead(ctx, spec, 0, sp.cuts.length, 2.2, sp.cuts.length * 5, [], cut);
+    drawFoxTitle(ctx, spec, cut, 0);
+    drawFoxKpiRow(ctx, cut);
+    drawFoxVisual(ctx, spec, cut, 0, pose, true);
+    drawFoxCaption(ctx, cut, .72, spec, 0, sp.cuts.length);
+    drawFoxFoot(ctx, spec, cut);
+    drawFoxTicker(ctx, spec, cut, { hook: sp.cuts[1] ? sp.cuts[1].hook : '' });
+    txLine(ctx, '샘플 미리보기 · [🧪 샘플로 바로 만들기] → 이 ' + sp.cuts.length + '컷 그대로 녹화', CW / 2, SAFE.b + 74,
+      '800 27px ' + FF, 'rgba(16,32,47,.55)', 'center', 'fx-note');
+    txLine(ctx, '폭스시그널 · 고밀도 리서치 노트 그리드 · 1080 × 1920', CW / 2, SAFE.b + 120,
+      '700 24px ' + FF, 'rgba(16,32,47,.40)', 'center', 'fx-note2');
+    ctx.restore();
+  }
+
+  /* ══════════════════════════════════════════════════════════════════════
+     Part 2 — 🐶 시바딜 · 🐰 피치홈 · 🐧 펭귄특가 · 🎬 다크 시네마 고도화
+       · 세 채널 모두 같은 4단 리듬(라벨/제목 → 평면 2KPI → 시각물 → 자막)을 쓰고,
+         카드 모양만 채널 것을 유지한다.
+       · 🐶 가격 비교 가로 막대표 + 할인율 숫자 롤링 + 평면 2KPI
+       · 🐧 특가 레이더 실데이터(data/latest-deals.json) 기반 할인 비교표 · 특가 배지
+       · 🐰 단계별 체크리스트/비교표 모션 + line·chart 양식
+       · 🎬 다크는 실제 line 꺾은선 + 평면 2KPI + 타임라인 스윕
+     ══════════════════════════════════════════════════════════════════════ */
+  /* ---------- 🛰 특가 레이더 실데이터 (없으면 조용히 샘플) ---------- */
+  var DEALS = { items: [], stamp: '', src: '', at: 0, loading: false, err: '', pend: null };
+  function dealsLoad(force) {
+    if (DEALS.pend) return DEALS.pend;
+    if (!force && DEALS.at && Date.now() - DEALS.at < 10 * 60000) return null;
+    DEALS.loading = true;
+    DEALS.pend = fetch('data/latest-deals.json', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (j) {
+        DEALS.pend = null; DEALS.loading = false; DEALS.at = Date.now();
+        var it = (j && Array.isArray(j.items)) ? j.items.filter(function (x) { return x && x.title; }) : [];
+        DEALS.items = it;
+        DEALS.stamp = String((j && (j.dataStamp || j.updatedAt)) || '');
+        DEALS.src = it.length ? 'api' : '';
+        DEALS.err = it.length ? '' : 'no-data';
+        try { if (!S.running) redraw(); } catch (e) {}
+      })
+      .catch(function (e) {
+        DEALS.pend = null; DEALS.loading = false; DEALS.at = Date.now();
+        DEALS.items = []; DEALS.src = ''; DEALS.err = String((e && e.message) || e);
+      });
+    return DEALS.pend;
+  }
+  function dealsTop(n) {
+    var it = (DEALS.items || []).filter(function (x) { return x && x.title && isFinite(Number(x.discountPct)); });
+    it.sort(function (a, b) { return Number(b.discountPct) - Number(a.discountPct); });
+    return it.slice(0, n || 4);
+  }
+  /* 특가 배지 모션 — 카드 머리에 붙는 'HOT / 마감임박' 칩(살짝 튀며 등장) */
+  function drawDealBadge(ctx, R, text, x, y, right, hot) {
+    var bf = '900 20px ' + FF;
+    ctx.font = bf;
+    var bw = Math.min(Math.max(80, ctx.measureText(text).width + 30), Math.max(80, right - x));
+    var k = MO.on ? moPop(MO.tIn, .34) : 1;
+    var w = Math.max(12, bw * Math.min(1, k));
+    panel(ctx, right - w, y, w, 34, 17, hot ? R.hot : inkA(R, .09), null, 0, 'deal-badge-chip');
+    if (k > .6) txLine(ctx, text, right - w / 2, y + 18, bf, hot ? '#FFFFFF' : inkA(R, .70), 'center', 'deal-badge-text');
+  }
+  /* 할인 비교표 — 특가 레이더 실데이터 4행(라벨·값·막대 순차 등장) */
+  function drawDealBoard(ctx, R, x, y, w, h, n) {
+    var rows = dealsTop(n || 4);
+    if (rows.length < 3 || h < 300) return false;
+    panel(ctx, x, y, w, h, 24, R.paper, inkA(R, .10), 2, 'deal-card');
+    panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, R.accent, null, 0, 'deal-spine');
+    txLine(ctx, '📡 특가 레이더 · 할인율 상위 ' + rows.length, x + 40, y + 30, '900 23px ' + FF, R.accent, 'left', 'deal-label');
+    var st = String(DEALS.stamp || '').slice(0, 16);
+    if (st) txLine(ctx, st + ' 기준', x + w - 34, y + 30, '800 18px ' + FF, inkA(R, .42), 'right', 'deal-stamp');
+    var top = y + 64, avail = h - 64 - 34;
+    var rh = Math.min(150, Math.floor(avail / rows.length));
+    var off = Math.max(0, Math.floor((avail - rh * rows.length) / 2));
+    for (var i = 0; i < rows.length; i++) {
+      var it = rows[i];
+      var t0 = MO.on ? moEase(MO.tIn - i * .14, .3) : 1;
+      if (t0 <= 0) continue;
+      var ry = top + off + i * rh;
+      var oy = ry + Math.max(4, Math.round((rh - 66) / 2));
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, t0);
+      var hot = i === 0;
+      panel(ctx, x + 40, oy + 8, 34, 34, 10, hot ? R.hot : inkA(R, .08), null, 0, 'deal-rank');
+      txLine(ctx, String(i + 1), x + 57, oy + 26, '900 20px ' + FF, hot ? '#FFFFFF' : inkA(R, .60), 'center', 'deal-rank-t');
+      var nm = String(it.title || '').replace(/^[^0-9A-Za-z가-힣]+/, '').replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+      var nf = fitText(ctx, nm, { w: w - 386, h: 34, base: 26, min: 15, weight: 800, lh: 1.1 });
+      txLine(ctx, nf.lines[0] || '', x + 84, oy + 25, nf.font, R.ink, 'left', 'deal-name');
+      var pf = fitText(ctx, String(it.price || ''), { w: 190, h: 34, base: 30, min: 15, weight: 900, lh: 1.1 });
+      txLine(ctx, pf.lines[0] || '', x + w - 40, oy + 25, pf.font, R.accent, 'right', 'deal-price');
+      var pct = Math.round(Number(it.discountPct));
+      var bx = x + 84, bw = w - 84 - 40 - 118, th = 18;
+      panel(ctx, bx, oy + 46, bw, th, th / 2, inkA(R, .07), null, 0, 'deal-track');
+      panel(ctx, bx, oy + 46, Math.max(8, bw * Math.min(1, pct / 100) * t0), th, th / 2, hot ? R.hot : R.accent, null, 0, 'deal-bar');
+      moTip(ctx, bx + bw * Math.min(1, pct / 100) * t0, oy + 46 + th / 2, th, hot ? R.hot : R.accent, t0);
+      drawDealBadge(ctx, R, pct + '% ↓', x, oy + 41, x + w - 40, hot);
+      ctx.restore();
+    }
+    return true;
+  }
+  /* 펭귄 1클릭용 — 특가 레이더 실측으로 5컷 대본을 만든다(출처·기준일을 화면에 남긴다) */
+  function penguinScript() {
+    var it = dealsTop(4);
+    if (it.length < 3) return null;
+    var stamp = String(DEALS.stamp || '').slice(0, 16);
+    var cuts = [{ text: '🐧 특가 레이더 · 할인율 상위 ' + it.length + '곳', hook: '오늘 특가 ' + it.length + '곳' }];
+    it.forEach(function (x, i) {
+      var nm = String(x.title || '').replace(/^[^0-9A-Za-z가-힣]+/, '').replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 22);
+      cuts.push({ text: nm + ' ' + x.price + ' · ' + Math.round(Number(x.discountPct)) + '% 할인', hook: (i + 1) + '위 ' + nm });
+    });
+    cuts.push({ text: '특가 레이더 ' + stamp + ' 기준 · 가격은 바뀔 수 있습니다', hook: '마감 전 확인' });
+    return { title: '🐧 오늘의 특가 레이더', hook_title: '오늘 할인율 상위 ' + it.length + '곳',
+      series_badge: '특가 레이더', highlight_words: ['특가', '할인', '최저가'], cuts: cuts };
+  }
+  /* ---------- 채널 KPI — 채널 성격에 맞는 두 숫자 ---------- */
+  function roleKpis(d, cut) {
+    var all = foxKpiList(cut);
+    if (d === 'shiba') {
+      var pct = null, price = null;
+      all.forEach(function (k) { if (!pct && k.unit === '%') pct = k; else if (!price && k.unit === '원') price = k; });
+      var out = [];
+      if (pct) out.push({ disp: pct.disp, label: pct.label || '할인율', value: pct.value, unit: pct.unit });
+      if (price) out.push({ disp: price.disp, label: price.label || '오늘가', value: price.value, unit: price.unit });
+      if (out.length < 2) all.forEach(function (k) { if (out.length < 2 && k.disp !== (out[0] && out[0].disp)) out.push(k); });
+      return out.slice(0, 2);
+    }
+    if (d === 'penguin') {
+      var pr = null, pc = null;
+      all.forEach(function (k) { if (!pr && k.unit === '원') pr = k; else if (!pc && k.unit === '%') pc = k; });
+      var o2 = [];
+      if (pr) o2.push({ disp: pr.disp, label: pr.label || '최저가', value: pr.value, unit: pr.unit });
+      if (pc) o2.push({ disp: pc.disp, label: pc.label || '할인율', value: pc.value, unit: pc.unit });
+      if (o2.length < 2) all.forEach(function (k) { if (o2.length < 2 && k.disp !== (o2[0] && o2[0].disp)) o2.push(k); });
+      return o2.slice(0, 2);
+    }
+    return all;
+  }
+  function roleKpiPal(d) {
+    var R = ROLE[d];
+    return { num: R.accent, ink: R.ink, sub: inkA(R, .56), rule1: R.accent, rule2: inkA(R, .30) };
+  }
+  /* 채널 시각물 — line/chart 양식 지원 + 채널 카드 + 펭귄 실데이터 보드 */
+  function roleTrend(cut) {
+    var items = (chartItems(cut) || []).slice(0, 5);
+    var same = items.length > 0;
+    items.forEach(function (it) { if ((it.unit || '') !== (items[0].unit || '')) same = false; });
+    if (items.length >= 3 && same) {
+      return { real: false, tag: '컷 수치 흐름', name: '컷 수치 비교 ' + items.length + '개',
+        pts: items.map(function (it) { return { d: it.label, c: it.value, disp: it.disp }; }) };
+    }
+    return foxTrendPts(cut);
+  }
+  function drawRoleVisual(ctx, d, spec, cut, idx, x, y, w, h) {
+    var R = ROLE[d], t = tplOf();
+    if (t === 'line') {
+      var tr = roleTrend(cut);
+      if (tr) { idxMaybeLoad(); if (drawTrendCard(ctx, tr, x, y, w, h, roleTrendPal(d))) return 'line'; }
+    }
+    if (t === 'chart') {
+      var items = (chartItems(cut) || []).slice(0, 5);
+      if (items.length >= 2 && drawBarCard(ctx, items, x, y, w, h, roleBarPal(d))) return 'chart';
+    }
+    if (d === 'shiba') {
+      var pit = (chartItems(cut) || []).slice(0, 5);
+      if (pit.length >= 2 && drawBarCard(ctx, pit, x, y, w, h, roleBarPal(d))) return 'price-bar';
+    }
+    if (d === 'penguin' && idx === 0 && dealsTop(4).length >= 3 && drawDealBoard(ctx, R, x, y, w, h, 4)) return 'deal';
+    var f = formulaOf(d);
+    var fn = CARD_FN[f ? f.card : 'shock'] || cardShock;
+    fn(ctx, R, cut, spec, x, y, w, h);
+    return 'card';
+  }
+  /* ---------- 상단 — 브랜드 필 · 날짜 · 진행 분수 ---------- */
+  function drawRoleHead(ctx, d, spec, idx, n, t, total, cuts) {
+    var R = ROLE[d], y = FXG.head.y, h = FXG.head.h;
+    var label = R.badge;
+    var fs0 = 27, f = '900 ' + fs0 + 'px ' + FF;
+    ctx.font = f;
+    var pw = Math.min(SAFE.w - 320, Math.max(180, ctx.measureText(label).width + 44));
+    while (fs0 > 18 && ctx.measureText(label).width + 44 > pw) { fs0 -= 2; f = '900 ' + fs0 + 'px ' + FF; ctx.font = f; }
+    var lg = null;
+    try {
+      lg = ctx.createLinearGradient(SAFE.x, y, SAFE.x + pw, y + h);
+      lg.addColorStop(0, R.pill || R.accent);
+      lg.addColorStop(1, R.pill2 || R.accent);
+    } catch (e) { lg = null; }
+    panel(ctx, SAFE.x, y, pw, h, h / 2, lg || R.accent, null, 0, 'role-brand');
+    txLine(ctx, label, SAFE.x + 22, y + h / 2 + 1, f, '#FFFFFF', 'left', 'role-brand-text');
+    txLine(ctx, fxDateLabel(), SAFE.x + pw + 14, y + h / 2 + 1, '900 24px ' + FF, inkA(R, .55), 'left', 'role-date');
+    txLine(ctx, ('0' + (idx + 1)).slice(-2) + ' / ' + ('0' + n).slice(-2), SAFE.r, y + h / 2 + 1,
+      '900 25px ' + FF, inkA(R, .80), 'right', 'role-counter');
+    var py = y + h + 4;
+    panel(ctx, SAFE.x, py, SAFE.w, 6, 3, inkA(R, .13), null, 0, 'role-prog-track');
+    var den = Math.max(.1, total || 0);
+    var fr = Math.min(1, (t || 0) / den);
+    panel(ctx, SAFE.x, py, Math.max(8, SAFE.w * fr), 6, 3, R.accent, null, 0, 'role-prog');
+    (cuts || []).forEach(function (c) {
+      if (!(c.start > 0)) return;
+      var cx = SAFE.x + SAFE.w * (c.start / den);
+      panel(ctx, cx - 1.5, py - 3, 3, 12, 1.5, inkA(R, .28), null, 0, 'role-prog-tick');
+    });
+  }
+  function drawRoleMain(ctx, d, spec, cut, idx, pose) {
+    var R = ROLE[d], G = RLG, f = formulaOf(d);
+    var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (cut.hook || spec.hookTitle || '');
+    var eye = (f ? f.eye : 'DEAL') + ' ' + ('0' + ((cut.idx || 0) + 1)).slice(-2);
+    txLine(ctx, eye, G.title.x, G.title.y + 12, '900 22px ' + FF, R.accent, 'left', 'role-eyebrow');
+    if (title) {
+      var tfit = fitText(ctx, title, { w: G.title.w, h: G.title.h - 30, base: 64, min: 24, weight: 800, lh: 1.18 });
+      var ty = G.title.y + 30;
+      var swp = moSweepP();
+      for (var i = 0; i < tfit.lines.length; i++) {
+        if (i === 0 && swp > 0) {
+          ctx.font = tfit.font;
+          moHl(ctx, G.title.x, ty + tfit.lineH / 2, ctx.measureText(tfit.lines[i]).width, tfit.lineH, swp, { maxW: G.title.w, alpha: .8 });
+        }
+        txWords(ctx, tfit.lines[i], G.title.x, ty + i * tfit.lineH + tfit.lineH / 2, tfit.font, numColor(R), 'role-title');
+      }
+    }
+    drawRoleChar(ctx, d, pose, G.char.x, G.char.y, G.char.size);
+    /* 🐶 할인율 숫자 롤링 · 🐧 최저가 롤링 · 🐰 개선 폭 롤링 — 평면 2KPI */
+    drawFlatKpis(ctx, roleKpis(d, cut), G.kpi, roleKpiPal(d));
+    drawRoleVisual(ctx, d, spec, cut, idx, G.vis.x, G.vis.y, G.vis.w, G.vis.h);
+  }
+  function drawRoleCaption(ctx, d, cut, p, spec, idx, n) {
+    var R = ROLE[d], g = RLG.cap;
+    var fit = fitText(ctx, cut.text, { w: g.w - 104, h: g.h - 96, base: 54, min: 26, weight: 800, lh: 1.24 });
+    var cardH = Math.min(g.h, fit.height + 74);
+    var cy = g.y + (g.h - cardH) / 2;
+    ctx.save();
+    ctx.shadowColor = inkA(R, .16); ctx.shadowBlur = 24; ctx.shadowOffsetY = 9;
+    panel(ctx, g.x, cy, g.w, cardH, R.radius || 26, R.paper, inkA(R, .12), 2, 'role-cap-card');
+    ctx.restore();
+    panel(ctx, g.x + 30, cy + 24, 56, 7, 3.5, R.accent, null, 0, 'role-cap-rule');
+    var words = (spec && spec.words) || [];
+    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
+    var y0 = cy + cardH - 30 - fit.height;
+    for (var i = 0; i < fit.lines.length; i++) {
+      txWords(ctx, fit.lines[i], g.x + 52, y0 + i * fit.lineH + fit.lineH / 2, fit.font, function (tok) {
+        var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
+        var on = (seen / total) <= p + 0.0001;
+        seen += String(tok).length;
+        if (!on) return inkA(R, .42);
+        if (words.indexOf(clean) >= 0 || /\d/.test(tok)) return R.mark || R.accent;
+        return R.ink;
+      }, 'role-cap');
+    }
+  }
+  function drawRoleFrame(t) {
+    var cv = $('#wvCanvas');
+    if (!cv) return;
+    var ctx = ctxOf(cv);
+    var d = designOf(), spec = S.spec, cuts = S.cuts;
+    if (!spec || !cuts.length) { drawRoleIdle(ctx, d); return; }
+    if (d === 'penguin' && !DEALS.at && !DEALS.loading) dealsLoad(false);
+    var idx = 0;
+    while (idx < cuts.length - 1 && t >= cuts[idx].end) idx++;
+    var cut = cuts[idx];
+    var tIn = Math.max(0, t - cut.start);
+    var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
+    var pose = poseOfCut(d, cut, idx);
+    moSet(tIn, t);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    roleBands(ctx, d, pose);
+    var ein = moInP();
+    var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
+    ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
+    drawRoleHead(ctx, d, spec, idx, cuts.length, t, S.total, cuts);
+    ctx.save();
+    ctx.translate(0, Math.round((1 - ein) * 12));
+    drawRoleMain(ctx, d, spec, cut, idx, pose);
+    drawRoleCaption(ctx, d, cut, p, spec, idx, cuts.length);
+    ctx.restore();
+    ctx.restore();
+  }
+  function drawRoleIdle(ctx, d) {
+    charLoad(d);
+    moSet(2.2, 2.2);
+    var R = ROLE[d];
+    var sp = sampleFor(d, formulaKey(d));
+    if (d === 'penguin' && !DEALS.at && !DEALS.loading) dealsLoad(false);
+    var spec = { hookTitle: sp.hook_title, watermark: R.wm, words: sp.highlight_words || [], badge: R.badge };
+    var cut = { text: sp.cuts[0].text, tts: sp.cuts[0].text, hook: sp.hook_title, idx: 0, dur: 5, start: 0 };
+    var pose = autoPose(d, cut);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalAlpha = 1;
+    roleBands(ctx, d, pose);
+    drawRoleHead(ctx, d, spec, 0, sp.cuts.length, 2.2, sp.cuts.length * 5, []);
+    drawRoleMain(ctx, d, spec, cut, 0, pose);
+    drawRoleCaption(ctx, d, { text: cut.text }, .72, spec, 0, sp.cuts.length);
+    txLine(ctx, '샘플 미리보기 · [🧪 샘플로 바로 만들기] → 이 ' + sp.cuts.length + '컷 그대로 녹화', CW / 2, SAFE.b + 74,
+      '800 27px ' + FF, inkA(R, .55), 'center', 'role-note');
+    txLine(ctx, R.name + ' · ' + (formulaOf(d) ? formulaOf(d).tag + ' ' + formulaOf(d).name : '') + ' · 1080 × 1920',
+      CW / 2, SAFE.b + 120, '700 24px ' + FF, inkA(R, .40), 'center', 'role-note2');
+    ctx.restore();
+  }
+
+  /* ---------- 🎬 다크 시네마 — line 양식: 평면 2KPI + 실측 꺾은선 + 타임라인 스윕 ---------- */
+  function drawTimelineSweep(ctx, x, y, w, p, ac) {
+    var k = Math.min(1, Math.max(0, p));
+    panel(ctx, x, y, w, 8, 4, 'rgba(148,163,184,.20)', null, 0, 'tl-track');
+    var fw = Math.max(10, w * k);
+    panel(ctx, x, y, fw, 8, 4, hexA(ac, .95), null, 0, 'tl-fill');
+    ctx.save();
+    ctx.fillStyle = '#F8FAFC';
+    ctx.beginPath(); ctx.arc(x + fw, y + 4, 7, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = hexA(ac, .9); ctx.lineWidth = 3; ctx.stroke();
+    ctx.restore();
+    rec(x + fw - 8, y - 4, 16, 16, 'tl-dot');
+    [0.25, 0.5, 0.75].forEach(function (t) {
+      panel(ctx, x + w * t - 1, y - 4, 2, 16, 1, 'rgba(148,163,184,.34)', null, 0, 'tl-tick');
+    });
+  }
+  function drawLineMain(ctx, cut, p, spec, ac) {
+    var slot = SLOTS.main;
+    if (!DEALS.at && !DEALS.loading) dealsLoad(false);
+    var k = foxKpiList(cut);
+    var kp = drawFlatKpis(ctx, k, { x: slot.x, y: slot.y + 2, w: slot.w, h: 112 }, {
+      num: ac, ink: '#f1f5f9', sub: 'rgba(226,232,240,.60)', rule1: ac, rule2: 'rgba(226,232,240,.34)',
+      vSize: 86, ruleDy: 88, labelDy: 106
+    });
+    var vy = slot.y + (kp ? 128 : 4), vh = slot.y + slot.h - vy - 34;
+    var tr = foxTrendPts(cut);
+    idxMaybeLoad();
+    if (tr && drawTrendCard(ctx, tr, slot.x, vy, slot.w, vh, darkTrendPal(ac))) {
+      drawTimelineSweep(ctx, slot.x, slot.y + slot.h - 22, slot.w, p, ac);
+      return;
+    }
+    drawCardMain(ctx, cut, p, spec, ac);
+  }
+
   /* 중단 — 빅넘버 카드 + 여우 캐릭터 (컷 문장은 하단 에디토리얼 자막이 맡는다) */
   function drawFoxNumber(ctx, big, x, y, maxW, h) {
     var col = big.neg ? FX.wine : FX.navy;
@@ -17807,6 +18860,8 @@ var CSVoice = (function () {
     ctx.rotate(sway * Math.PI / 180);
     ctx.scale(1 + br * .5, 1 + br - nod);
     ctx.translate(-ccx, -ccy);
+    /* 여우 PNG 는 크림 바탕이 불투명 — 다크·흰 카드 위에서 사각형으로 보이지 않게 같은 색 둥근 타일을 깐다 */
+    panel(ctx, x, y + dy, size, size, Math.round(size * .16), FOX.bg[pose] || FOX.bg.main || FX.cream, null, 0, 'fx-fox-bg');
     ctx.drawImage(im, x, y + dy, size, size);
     foxBlink(ctx, pose, x, y + dy, size);
     ctx.restore();
@@ -17833,7 +18888,10 @@ var CSVoice = (function () {
         pts: IDX.pts.map(function (p) { return { d: p.d, c: p.c, disp: fmtIdxNum(p.c) }; }) };
     }
     var items = (chartItems(cut) || []).slice(0, 5);
-    if (items.length >= 3) {
+    /* 단위가 섞인 수치(739.35 와 3.83%)를 한 선으로 이으면 거짓 추세가 된다 → 선을 그리지 않는다 */
+    var same = items.length > 0;
+    items.forEach(function (it) { if ((it.unit || '') !== (items[0].unit || '')) same = false; });
+    if (items.length >= 3 && same) {
       return { real: false, tag: '컷 내 수치 흐름', name: '컷 수치 비교 ' + items.length + '개',
         pts: items.map(function (it) { return { d: it.label, c: it.value, disp: it.disp }; }) };
     }
@@ -17848,145 +18906,6 @@ var CSVoice = (function () {
     var trend = mode === 'line' ? foxTrendPts(cut) : null;
     if (mode === 'line' && !trend) mode = items.length ? 'bar' : null;
     return { mode: mode, items: items, trend: trend };
-  }
-  function drawFoxLine(ctx, cut, tr, x, y, w, h) {
-    var pts = (tr && tr.pts) || [];
-    var n = pts.length, i;
-    if (n < 3 || h < 300) return false;
-    panel(ctx, x, y, w, h, 22, FX.paper, 'rgba(16,32,47,.18)', 2, 'fx-line-card');
-    panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, 'rgba(16,32,47,.92)', null, 0, 'fx-line-spine');
-    txLine(ctx, 'TREND', x + 38, y + 27, '900 22px ' + FF, FX.wine, 'left', 'fx-line-label');
-    txLine(ctx, tr.tag, x + w - 34, y + 27, '800 19px ' + FF, 'rgba(16,32,47,.40)', 'right', 'fx-line-tag');
-    var nf = fitText(ctx, tr.name, { w: w - 76, h: 32, base: 27, min: 17, weight: 800, lh: 1.12 });
-    txLine(ctx, nf.lines[0] || '', x + 38, y + 58, nf.font, 'rgba(16,32,47,.62)', 'left', 'fx-line-name');
-
-    var px0 = x + 44, px1 = x + w - 62, py0 = y + 92, py1 = y + h - 76;
-    if (py1 - py0 < 60) return false;
-    var lo = Infinity, hi = -Infinity;
-    for (i = 0; i < n; i++) { if (pts[i].c < lo) lo = pts[i].c; if (pts[i].c > hi) hi = pts[i].c; }
-    if (!isFinite(lo) || !isFinite(hi)) return false;
-    if (hi - lo < 1e-9) hi = lo + 1;
-    var padY = (hi - lo) * .18;
-    lo -= padY; hi += padY;
-    function sx(k) { return px0 + (px1 - px0) * (k / (n - 1)); }
-    function sy(v) { return py1 - (py1 - py0) * ((v - lo) / (hi - lo)); }
-
-    /* 눈금 3줄 + 값(우측) */
-    for (i = 0; i < 3; i++) {
-      var gv = lo + (hi - lo) * (i === 0 ? .16 : i === 1 ? .5 : .84);
-      var gy = sy(gv);
-      ctx.save();
-      ctx.globalAlpha = .55; ctx.strokeStyle = 'rgba(16,32,47,.28)'; ctx.lineWidth = 1.5;
-      ctx.setLineDash([6, 7]); ctx.beginPath(); ctx.moveTo(px0, gy); ctx.lineTo(px1, gy); ctx.stroke();
-      ctx.restore();
-      txLine(ctx, fmtTrendVal(gv, tr.real), x + w - 24, gy, '800 17px ' + FF, 'rgba(16,32,47,.38)', 'right', 'fx-line-grid');
-    }
-    /* 변곡점 — 추세 방향의 끝점(저점/고점). 양 끝은 피해서 잡는다 */
-    var down = pts[n - 1].c < pts[0].c;
-    var fi = -1, fv = 0;
-    for (i = 1; i < n - 1; i++) {
-      if (fi < 0 || (down ? pts[i].c < fv : pts[i].c > fv)) { fi = i; fv = pts[i].c; }
-    }
-    if (fi < 0) fi = n - 1;
-
-    /* 꺾은선 — 0 → 1.0초 동안 왼쪽에서 오른쪽으로 그어진다(도착 부근은 보간) */
-    var prog = MO.on ? moEase(MO.tIn, 1.0) : 1;
-    var lastK = (n - 1) * Math.min(1, prog);
-    var upto = Math.floor(lastK), frac = lastK - upto;
-    if (lastK > 0) {
-      ctx.save();
-      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(sx(0), sy(pts[0].c));
-      for (i = 1; i <= upto; i++) ctx.lineTo(sx(i), sy(pts[i].c));
-      var endX = sx(upto), endY = sy(pts[upto].c);
-      if (frac > 0 && upto + 1 < n) {
-        endX = sx(upto) + (sx(upto + 1) - sx(upto)) * frac;
-        endY = sy(pts[upto].c) + (sy(pts[upto + 1].c) - sy(pts[upto].c)) * frac;
-        ctx.lineTo(endX, endY);
-      }
-      ctx.strokeStyle = FX.wine; ctx.lineWidth = 4.5; ctx.stroke();
-      ctx.lineTo(endX, py1); ctx.lineTo(sx(0), py1); ctx.closePath();
-      ctx.fillStyle = 'rgba(159,18,57,.075)'; ctx.fill();
-      ctx.restore();
-      /* 그려지는 끝점 표시 */
-      if (prog < 1) {
-        ctx.save();
-        ctx.fillStyle = FX.wine;
-        ctx.beginPath(); ctx.arc(endX, endY, 6, 0, Math.PI * 2); ctx.fill();
-        ctx.strokeStyle = '#FFFFFF'; ctx.lineWidth = 2.5; ctx.stroke();
-        ctx.restore();
-      }
-    }
-    /* 변곡점 강조 원 + 화살표 — 선이 그 지점에 닿는 순간 찍힌다 */
-    var arriveK = fi / (n - 1);
-    var rp = MO.on ? moEase(MO.tIn - 1.0 * arriveK - .06, .3) : 1;
-    var fx0 = sx(fi), fy0 = sy(pts[fi].c);
-    if (rp > .02) {
-      ctx.save();
-      ctx.globalAlpha = Math.min(1, rp);
-      ctx.strokeStyle = FX.wine; ctx.lineWidth = 3.5;
-      ctx.beginPath(); ctx.arc(fx0, fy0, 13 * (.6 + .4 * rp), 0, Math.PI * 2); ctx.stroke();
-      ctx.fillStyle = FX.navy;
-      ctx.beginPath(); ctx.arc(fx0, fy0, 5 * rp, 0, Math.PI * 2); ctx.fill();
-      ctx.globalAlpha = Math.min(1, rp) * .55;
-      ctx.beginPath(); ctx.arc(fx0, fy0, 13 + 7 * rp, 0, Math.PI * 2); ctx.stroke();
-      /* 화살표 — 위에서 변곡점을 가리킨다 */
-      var ay = fy0 - 34 - 8 * rp;
-      ctx.globalAlpha = Math.min(1, rp);
-      ctx.fillStyle = FX.wine;
-      ctx.beginPath();
-      ctx.moveTo(fx0, fy0 - 20);
-      ctx.lineTo(fx0 - 8, ay - 10);
-      ctx.lineTo(fx0 + 8, ay - 10);
-      ctx.closePath(); ctx.fill();
-      ctx.restore();
-      rec(fx0 - 20, fy0 - 20, 40, 40, 'fx-line-ring');
-    }
-    /* 변곡점 줌인 렌즈 — 선이 다 그려진 뒤(1.05초~) 그 구간만 확대해 옆에 띄운다(변곡점 반대편에 놓는다) */
-    var zq = MO.on ? moEase(MO.tIn - 1.05, .5) : 1;
-    if (zq > .04) {
-      var LW = 206, LH = 150, Z = 1.9;
-      var lw = LW * zq, lh = LH * zq;
-      var lx = fx0 < x + w / 2 ? (x + w - 24 - LW) : (x + 24);
-      var ly = fy0 > y + h / 2 ? (y + 88) : (y + h - 52 - LH);
-      lx = Math.max(x + 20, Math.min(x + w - 20 - lw, lx + (LW - lw) / 2));
-      ly = Math.max(y + 74, Math.min(y + h - 44 - lh, ly + (LH - lh) / 2));
-      /* 연결선 — 렌즈 가장자리에서 변곡점으로 */
-      var nx = Math.max(lx, Math.min(fx0, lx + lw)), ny = Math.max(ly, Math.min(fy0, ly + lh));
-      if (Math.abs(nx - fx0) + Math.abs(ny - fy0) > 8) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(159,18,57,.45)'; ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]);
-        ctx.beginPath(); ctx.moveTo(nx, ny); ctx.lineTo(fx0, fy0); ctx.stroke();
-        ctx.restore();
-      }
-      ctx.save();
-      rr(ctx, lx, ly, lw, lh, Math.min(18, lh / 2)); ctx.clip();
-      ctx.fillStyle = FX.paper; ctx.fillRect(lx, ly, lw, lh);
-      ctx.translate(lx + lw / 2, ly + lh / 2);
-      ctx.scale(Z, Z);
-      ctx.translate(-fx0, -fy0);
-      ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(sx(0), sy(pts[0].c));
-      for (i = 1; i < n; i++) ctx.lineTo(sx(i), sy(pts[i].c));
-      ctx.strokeStyle = FX.wine; ctx.lineWidth = 2.6; ctx.stroke();
-      ctx.fillStyle = FX.navy;
-      ctx.beginPath(); ctx.arc(fx0, fy0, 3.8, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-      ctx.save();
-      ctx.strokeStyle = FX.wine; ctx.lineWidth = 3;
-      rr(ctx, lx, ly, lw, lh, Math.min(18, lh / 2)); ctx.stroke();
-      ctx.restore();
-      rec(lx, ly, lw, lh, 'fx-line-lens');
-      if (zq > .55) {
-        txLine(ctx, '×' + Z, lx + lw - 12, ly + 15, '900 15px ' + FF, FX.wine, 'right', 'fx-line-zoomtag');
-      }
-    }
-    /* 하단 — 변곡점 라벨 */
-    var lab = (tr.real ? (down ? '저점 ' : '고점 ') : '변곡 ') + (pts[fi].disp || fmtTrendVal(pts[fi].c, tr.real)) + (tr.real ? ' · ' + pts[fi].d : '');
-    txLine(ctx, lab, x + 38, y + h - 34, '900 24px ' + FF, FX.wine, 'left', 'fx-line-foot');
-    return true;
   }
   /* 📈 폭스시그널 모션 차트 — 크림 아이보리 카드 위 딥네이비·버건디 막대(컷 시작 0.8초에 자란다) */
   function drawFoxChart(ctx, cut, p, x, y, w, h) {
@@ -18035,194 +18954,8 @@ var CSVoice = (function () {
     }
     return true;
   }
-  function drawFoxMain(ctx, spec, cut, idx, pose, p) {
-    var FXC = fxPal();
-    var slot = SLOTS.main;
-    var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (cut.hook || spec.hookTitle || '');
-    var big = foxBig(cut.text) || foxBig(title);
-    var tfit = title ? fitText(ctx, title, { w: 512, h: 190, base: 54, min: 30, weight: 800, lh: 1.22 }) : null;
-    /* 📈 모션 차트/비교표형 — 컷 수치(또는 ⚙ 차트 데이터 직접 입력)를 막대로. 수치가 없으면 빅넘버 카드로 폴백
-       ① 꺾은선 추세 — 관제탑 실측 지수(없으면 컷 수치 흐름)를 선으로 긋고 변곡점을 줌인 */
-    var cardMode = foxCardMode(cut);
-    var chart = cardMode.mode === 'bar' ? cardMode.items : null;
-    var trend = cardMode.mode === 'line' ? cardMode.trend : null;
-    if (chart && !chart.length) chart = null;
-    if (trend || (tplOf() === 'line' || tplOf() === 'chart')) idxMaybeLoad();
-    var y = slot.y + 12;
-    var fx = formulaOf('fox');
-    var ex = ((fx && fx.eye) || 'SIGNAL') + ' ' + ('0' + ((cut.idx || 0) + 1)).slice(-2);
-    var ef = '900 23px ' + FF;
-    txLine(ctx, ex, slot.x, y + 12, ef, FXC.num, 'left', 'fx-eyebrow');
-    ctx.font = ef;
-    var ew = ctx.measureText(ex).width;
-    panel(ctx, slot.x + ew + 16, y + 11, Math.max(20, 470 - ew - 16), 3, 1.5, FXC.hair, null, 0, 'fx-rule');
-    if (fx && fx.signal) {
-      var sg = foxRisk(cut).sg;
-      var sgf = '900 24px ' + FF;
-      ctx.font = sgf;
-      var sgw = ctx.measureText(sg.txt).width + 36;
-      panel(ctx, SAFE.r - sgw, y + 2, sgw, 40, 20, sg.bg, null, 0, 'fx-signal');
-      txLine(ctx, sg.txt, SAFE.r - sgw / 2, y + 23, sgf, '#FFFFFF', 'center', 'fx-signal-text');
-    }
-    var ty = y + 34;
-    if (tfit) {
-      /* ③ 형광펜 스윕 — 첫 줄(핵심 훅) 뒤에 크림 옐로가 왼→오 0.45초에 걸쳐 그어진다 */
-      var swp = moSweepP();
-      for (var i = 0; i < tfit.lines.length; i++) {
-        if (i === 0 && swp > 0) {
-          ctx.font = tfit.font;
-          moHl(ctx, slot.x, ty + tfit.lineH / 2, ctx.measureText(tfit.lines[i]).width, tfit.lineH, swp, { maxW: 512, alpha: .8 });
-        }
-        txWords(ctx, tfit.lines[i], slot.x, ty + i * tfit.lineH + tfit.lineH / 2, tfit.font,
-          function (tok) { return /\d/.test(tok) ? FXC.num : FXC.ink; }, 'fx-title');
-      }
-      ty += tfit.height + 24;
-    }
-    var cardH = 0, cardTop = ty, drew = false;
-    if (chart || trend) {
-      var avail = Math.max(180, slot.y + slot.h - ty - 6);
-      if (trend) cardH = Math.max(300, Math.min(avail, 560));
-      else if (chart.length === 1) cardH = Math.min(avail, 330);
-      else {
-        var rowH = Math.max(58, Math.min(150, Math.floor((avail - 72) / chart.length)));
-        cardH = Math.min(avail, 72 + rowH * chart.length);
-      }
-      cardTop = ty + Math.max(0, (avail - cardH) / 2);     /* 남는 높이는 위아래로 나눠 카드를 가운데에 */
-      if (trend) drew = drawFoxLine(ctx, cut, trend, slot.x, cardTop, 512, cardH);
-      else { drawFoxChart(ctx, cut, p == null ? .7 : p, slot.x, cardTop, 512, cardH); drew = true; }
-      if (!drew) { cardH = 0; cardTop = ty; }
-    }
-    if (!drew && big) {
-      cardH = 296;
-      drawFoxNumber(ctx, big, slot.x, ty, 512, cardH);
-      drew = true;
-    }
-    var foxY = drew ? (cardTop + Math.max(0, (cardH - 360) / 2))
-      : (y + Math.max(0, (34 + (tfit ? tfit.height + 24 : 0) + cardH - 360) / 2));
-    /* 상단 신호 칩(우측)과 여우가 겹치지 않게 — 여우 PNG는 불투명 정사각이라 칩을 덮어 버린다 */
-    if (fx && fx.signal) foxY = Math.max(foxY, y + 62);
-    /* ① 경고 컷 — 여우도 같이 미세하게 떨린다(여우 x 594~954 · 오른쪽 여유 6px 안) */
-    drawFox(ctx, pose, 594 + SHAKE.x, Math.round(foxY + SHAKE.y), 360);
-  }
   /* 하단 — 그림자·명암 대비 확보한 에디토리얼 자막 카드 */
-  function drawFoxCaption(ctx, cut, p, spec) {
-    var slot = SLOTS.cap;
-    var fit = fitText(ctx, cut.text, { w: slot.w - 104, h: slot.h - 96, base: 58, min: 30, weight: 800, lh: 1.26 });
-    var cardH = Math.min(slot.h, fit.height + 78);
-    var cy = slot.y + (slot.h - cardH) / 2;
-    ctx.save();
-    ctx.shadowColor = 'rgba(16,32,47,.22)';
-    ctx.shadowBlur = 26;
-    ctx.shadowOffsetY = 10;
-    panel(ctx, slot.x, cy, slot.w, cardH, 26, FX.paper, 'rgba(16,32,47,.16)', 2, 'fx-cap-card');
-    ctx.restore();
-    /* ① 경고 컷 — 왼쪽 룰과 빨간 점만 점멸한다(글자는 읽히게 그대로) */
-    var warn = foxTone(cut.text) === 'warn';
-    var pulse = warn ? (.32 + .68 * Math.abs(Math.sin(MO.tIn * 5.4))) : 1;
-    ctx.save();
-    ctx.globalAlpha = pulse;
-    panel(ctx, slot.x + 30, cy + 26, 60, 7, 3.5, warn ? '#DC2626' : FX.wine, null, 0, 'fx-cap-rule');
-    if (warn) {
-      ctx.beginPath();
-      ctx.arc(slot.x + 110, cy + 29.5, 7, 0, Math.PI * 2);
-      ctx.fillStyle = '#DC2626';
-      ctx.fill();
-      rec(slot.x + 103, cy + 22.5, 14, 14, 'fx-cap-dot');
-    }
-    ctx.restore();
-    var words = (spec && spec.words) || [];
-    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
-    var y0 = cy + cardH - 32 - fit.height;
-    var sx = SHAKE.x, sy = SHAKE.y;
-    for (var i = 0; i < fit.lines.length; i++) {
-      var toks = fit.lines[i].split(' '), cols = [], marks = [];
-      toks.forEach(function (tok) {
-        var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
-        var on = (seen / total) <= p + 0.0001;
-        seen += String(tok).length;
-        if (!on) { cols.push('rgba(16,32,47,.55)'); marks.push(''); return; }
-        var c = capColorOf(tok);
-        if (!c && words.indexOf(clean) >= 0) c = FX.wine;
-        cols.push(c || FX.navy);
-        marks.push(capMarkOf(tok));
-      });
-      txWords(ctx, fit.lines[i], slot.x + 52 + sx, y0 + i * fit.lineH + fit.lineH / 2 + sy, fit.font,
-        function (tok, k) { return cols[k]; }, 'fx-cap', null, null, null,
-        function (tok, k) { return marks[k]; });
-    }
-  }
-  function drawFoxFrame(t) {
-    var cv = $('#wvCanvas');
-    if (!cv) return;
-    var ctx = ctxOf(cv);
-    var spec = S.spec, cuts = S.cuts;
-    if (!spec || !cuts.length) { drawFoxIdle(ctx); return; }
-    var idx = 0;
-    while (idx < cuts.length - 1 && t >= cuts[idx].end) idx++;
-    var cut = cuts[idx];
-    var tIn = Math.max(0, t - cut.start);
-    var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
-    var pose = foxPoseOf(cut, idx);
-    /* ② 가장 센 경고 컷 1컷만 딥 네이비 속보 스킨 → 다음 컷은 크림으로 복귀 */
-    INV = (idx === foxWarnIdx(cuts));
-    /* ① 경고 컷 미세 흔들림 — 앞 1.2초만, 세이프 존 안쪽 자막·여우만 흔든다 */
-    var tone = foxTone(cut.text);
-    var sh = tone === 'warn' ? Math.max(0, 1 - tIn / 1.2) : 0;
-    SHAKE.x = sh ? +(Math.sin(tIn * 47) * 2.2 * sh).toFixed(2) : 0;
-    SHAKE.y = sh ? +(Math.cos(tIn * 41) * 1.6 * sh).toFixed(2) : 0;
-    moSet(tIn, t);
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.globalAlpha = 1;
-    foxBands(ctx, pose);
-    if (INV) foxBreaking(ctx);                            /* ② 속보 스트립(상단 밴드 장식) */
-    if (tone === 'up') foxParticles(ctx, tIn);            /* ① 상승 화살표 파티클(좌·우 여백) */
-    var ein = moInP();                                   /* ④ 컷 전환 — 0.2초 페이드 */
-    var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
-    ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
-    drawFoxHead(ctx, spec, idx, cuts.length, t, S.total, cuts, cut);
-    ctx.save();
-    ctx.translate(0, Math.round((1 - ein) * 12));         /* ④ 아래에서 12px 슬라이드 인 */
-    drawFoxMain(ctx, spec, cut, idx, pose, p);
-    drawFoxCaption(ctx, cut, p, spec);
-    ctx.restore();
-    ctx.restore();
-    /* ④ 3단계 진행 바 · ③ 날짜 스탬프 · ⑥ 엔딩 시그니처 — 흔들림 없이, 세이프 존 안 */
-    drawFoxSteps(ctx, idx, cuts.length);
-    drawDateStamp(ctx, t);
-    if (idx === cuts.length - 1) drawFoxEnding(ctx, cut, tIn);
-    SHAKE.x = 0; SHAKE.y = 0;
-    INV = false;
-  }
   /* 대본이 없을 때도 템플릿이 어떻게 나오는지 보여 주는 샘플 프레임 */
-  function drawFoxIdle(ctx) {
-    foxLoad();
-    moSet(2.2, 2.2);                       /* 샘플 미리보기는 모션이 끝난 상태로 그린다 */
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.globalAlpha = 1;
-    foxBands(ctx, 'surprise');
-    var fsp = sampleFor('fox', formulaKey('fox'));
-    var fcut = (fsp && fsp.cuts && fsp.cuts[0]) || { text: SAMPLE_SPEC.cuts[0].text };
-    var spec = {
-      hookTitle: fsp.hook_title || '',
-      watermark: '폭스시그널 · 오늘의 시장 신호',
-      words: fsp.highlight_words || ['외인', '쌍매도', '수급'], cutCount: fsp.cuts.length
-    };
-    var cut = {
-      text: fcut.text,
-      hook: spec.hookTitle, idx: 0, dur: 5, start: 0
-    };
-    drawFoxHead(ctx, spec, 0, fsp.cuts.length, 2.2, fsp.cuts.length * 5, [], cut);
-    drawFoxMain(ctx, spec, cut, 0, 'surprise', 0.72);
-    drawFoxCaption(ctx, { text: fcut.text, idx: 0 }, 0.7, spec);
-    txLine(ctx, '샘플 미리보기 · [🧪 샘플로 바로 만들기] → 이 ' + fsp.cuts.length + '컷 그대로 녹화', CW / 2, SAFE.b + 74,
-      '800 27px ' + FF, 'rgba(16,32,47,.52)', 'center', 'fx-sample-note');
-    var ff2 = formulaOf('fox');
-    txLine(ctx, '🦊 폭스시그널 에디토리얼' + (ff2 ? ' · ' + ff2.tag + ' ' + ff2.name : '') + ' · 1080 × 1920', CW / 2, SAFE.b + 120,
-      '700 24px ' + FF, 'rgba(16,32,47,.36)', 'center', 'fx-sample-note2');
-    ctx.restore();
-  }
   function buildFoxCuts() {
     var box = $('#wvFoxCuts');
     if (!box) return;
@@ -18591,45 +19324,6 @@ var CSVoice = (function () {
     ctx.fillRect(0, SAFE.b - 1, CW, 2);
   }
 
-  /* ---------- 상단 — 브랜드 필 · 컷 카운터 · 진행 바 ---------- */
-  function drawRoleHead(ctx, d, spec, idx, n, t, total, cuts) {
-    var R = ROLE[d], y = SAFE.y + 14, h = 64;
-    var label = R.badge;
-    var f = '900 30px ' + FF;
-    ctx.font = f;
-    var tw = ctx.measureText(label).width;
-    var w = Math.min(SAFE.w - 250, Math.max(200, tw + 52));
-    var lf = f, fs = 30;
-    while (fs > 19 && ctx.measureText(label).width + 52 > w) { fs -= 2; lf = '900 ' + fs + 'px ' + FF; ctx.font = lf; }
-    var lg = null;
-    try {
-      lg = ctx.createLinearGradient(SAFE.x, y, SAFE.x + w, y + h);
-      lg.addColorStop(0, R.pill || R.accent);
-      lg.addColorStop(1, R.pill2 || R.accent);
-    } catch (e) { lg = null; }
-    panel(ctx, SAFE.x, y, w, h, h / 2, lg || R.accent, null, 0, 'role-brand');
-    txLine(ctx, label, SAFE.x + 26, y + h / 2 + 1, lf, '#FFFFFF', 'left', 'role-brand-text');
-    txLine(ctx, ('0' + (idx + 1)).slice(-2) + ' / ' + ('0' + n).slice(-2), SAFE.r, y + 21,
-      '800 24px ' + FF, inkA(R, .58), 'right', 'role-counter');
-    var wm = String((spec && spec.watermark) || '').trim();
-    if (!wm || wm === '연오랑의 3분 시황') wm = R.wm;
-    if (wm) {
-      ctx.font = '700 21px ' + FF;
-      var wmMax = Math.max(0, SAFE.w - w - 30);
-      if (wmMax > 60) txLine(ctx, trimTo(ctx, wm, wmMax), SAFE.r, y + 50, '700 21px ' + FF, inkA(R, .42), 'right', 'role-wm');
-    }
-    var py = y + h + 18;
-    panel(ctx, SAFE.x, py, SAFE.w, 8, 4, inkA(R, .13), null, 0, 'role-prog-track');
-    var den = Math.max(.1, total || 0);
-    var fr = Math.min(1, (t || 0) / den);
-    panel(ctx, SAFE.x, py, Math.max(8, SAFE.w * fr), 8, 4, R.accent, null, 0, 'role-prog');
-    (cuts || []).forEach(function (c) {
-      if (!(c.start > 0)) return;
-      var cx = SAFE.x + SAFE.w * (c.start / den);
-      panel(ctx, cx - 1.5, py - 4, 3, 16, 2, inkA(R, .28), null, 0, 'role-prog-tick');
-    });
-  }
-
   /* ---------- 숫자·항목 파싱 (카드 공용) ---------- */
   var WEAK_LABEL = { '오늘': 1, '지금': 1, '현재': 1, '이번': 1, '여기': 1, '이거': 1, '저거': 1, '가격': 1, '기준': 1, '정도': 1, '대비': 1, '할인가': 1, '판매가': 1 };
   function cleanLabel(raw) {
@@ -18925,13 +19619,18 @@ var CSVoice = (function () {
       txLine(ctx, bf.lines[0] || '', lx + 128, by + rh / 2, bf.font, inkA(R, .70), 'left', 'bimbo-before-text');
       txLine(ctx, '↓', lx + rw / 2, by + rh + 20, '900 30px ' + FF, R.accent, 'center', 'bimbo-arrow');
       var ay = by + rh + 40;
-      panel(ctx, lx, ay, rw, rh, 18, inkA(R, .05), R.accent, 3, 'bimbo-after');
+      var tA = MO.on ? moEase(MO.tIn - .22, .34) : 1;
+      if (tA <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, tA);
+      panel(ctx, lx, ay + Math.round((1 - tA) * 16), rw, rh, 18, inkA(R, .05), R.accent, 3, 'bimbo-after');
       txLine(ctx, 'AFTER', lx + 22, ay + rh / 2, '900 21px ' + FF, R.accent, 'left', 'bimbo-tag2');
       var af = fitText(ctx, parts[1], { w: rw - 210, h: 42, base: 32, min: 20, weight: 900, lh: 1.1 });
-      txWords(ctx, af.lines[0] || '', lx + 128, ay + rh / 2, af.font, numColor(R), 'bimbo-after-text');
+      txWords(ctx, af.lines[0] || '', lx + 128, ay + rh / 2 + Math.round((1 - tA) * 16), af.font, numColor(R), 'bimbo-after-text');
+      ctx.restore();
     } else {
       roleLabel(ctx, R, '🔄 지금 상태', lx, y + 42);
-      var fit = fitText(ctx, raw, { w: rw - 150, h: 150, base: 42, min: 24, weight: 800, lh: 1.3 });
+      var fit = fitText(ctx, raw, { w: rw - 150, h: Math.max(150, h - 170), base: 58, min: 26, weight: 800, lh: 1.3 });
       var yy = y + 70 + (h - 70 - 26 - fit.height) / 2;
       ctx.beginPath(); ctx.arc(lx + 40, yy + fit.height / 2, 26, 0, Math.PI * 2); ctx.fillStyle = R.accent; ctx.fill();
       rec(lx + 14, yy + fit.height / 2 - 26, 52, 52, 'bimbo-dot');
@@ -18965,6 +19664,10 @@ var CSVoice = (function () {
     items.forEach(function (it, i) {
       var last = /단점|주의|아쉬/.test(it.tag || '') || (!it.tag && i === n - 1 && n > 1 && cons > 0);
       var cyc = top + off + rh * i + rh / 2;
+      var t0 = MO.on ? moEase(MO.tIn - i * .12, .3) : 1;
+      if (t0 <= 0) return;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, t0);
       ctx.beginPath(); ctx.arc(x + 66, cyc, 22, 0, Math.PI * 2);
       ctx.fillStyle = last ? inkA(R, .10) : R.accent; ctx.fill();
       rec(x + 44, cyc - 22, 44, 44, 'pc-dot');
@@ -18972,6 +19675,7 @@ var CSVoice = (function () {
       var tf = fitText(ctx, it.text, { w: w - 260, h: 42, base: 31, min: 19, weight: 800, lh: 1.1 });
       txWords(ctx, tf.lines[0] || '', x + 106, cyc + 1, tf.font, numColor(R), 'pc-row');
       txLine(ctx, last ? '단점' : '장점', x + w - 44, cyc + 1, '900 22px ' + FF, last ? inkA(R, .50) : R.accent, 'right', 'pc-tag');
+      ctx.restore();
     });
   }
   /* ⑥ 체크리스트 3 */
@@ -18993,13 +19697,19 @@ var CSVoice = (function () {
     var rh = Math.min(72, Math.floor(avail / n));
     var off = Math.max(0, Math.floor((avail - rh * n) / 2));
     items.forEach(function (it, i) {
+      var t0 = MO.on ? moEase(MO.tIn - i * .12, .3) : 1;
+      if (t0 <= 0) return;
       var cyc = top + off + rh * i + rh / 2;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, t0);
+      ctx.translate(Math.round((1 - t0) * 14), 0);
       ctx.beginPath(); ctx.arc(x + 66, cyc, 22, 0, Math.PI * 2);
       ctx.fillStyle = i === 0 ? R.accent : inkA(R, .09); ctx.fill();
-      rec(x + 44, cyc - 22, 44, 44, 'chk-dot');
-      txLine(ctx, '✓', x + 66, cyc + 1, '900 23px ' + FF, i === 0 ? '#FFFFFF' : R.accent, 'center', 'chk-mark');
+      rec(x + 44 + Math.round((1 - t0) * 14), cyc - 22, 44, 44, 'chk-dot');
+      txLine(ctx, '✓', x + 66 + Math.round((1 - t0) * 14), cyc + 1, '900 23px ' + FF, i === 0 ? '#FFFFFF' : R.accent, 'center', 'chk-mark');
       var tf = fitText(ctx, it.text, { w: w - 150, h: 42, base: 32, min: 20, weight: 800, lh: 1.1 });
       txWords(ctx, tf.lines[0] || '', x + 106, cyc + 1, tf.font, numColor(R), 'chk-row');
+      ctx.restore();
     });
   }
   /* ⑦ 보딩패스 + D-day (타임딜) */
@@ -19104,110 +19814,8 @@ var CSVoice = (function () {
   var CARD_FN = { shock: cardShock, duel: cardDuel, rank: cardRank, bimbo: cardBimbo,
     proscons: cardProsCons, check: cardCheck, ticket: cardTicket, hero: cardHero, course: cardCourse };
 
-  /* ---------- 중단 — 훅 + 캐릭터 + 공식 카드 ---------- */
-  function drawRoleMain(ctx, d, spec, cut, idx, pose) {
-    var R = ROLE[d], slot = SLOTS.main, f = formulaOf(d);
-    var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (cut.hook || spec.hookTitle || '');
-    var eye = (f ? f.eye : 'DEAL') + ' ' + ('0' + ((cut.idx || 0) + 1)).slice(-2);
-    var y = slot.y + 12;
-    txLine(ctx, eye, slot.x, y + 12, '900 23px ' + FF, R.accent, 'left', 'role-eyebrow');
-    ctx.font = '900 23px ' + FF;
-    var ew = ctx.measureText(eye).width;
-    panel(ctx, slot.x + ew + 16, y + 11, Math.max(20, 420 - ew), 3, 1.5, inkA(R, .16), null, 0, 'role-rule');
-    if (title) {
-      var tfit = fitText(ctx, title, { w: 520, h: 196, base: 72, min: 28, weight: 800, lh: 1.2 });
-      var ty = y + 36;
-      /* ③ 형광펜 스윕 — 첫 줄(핵심 훅) 뒤로 크림 옐로가 왼→오 0.45초에 걸쳐 그어진다 */
-      var swp = moSweepP();
-      for (var i = 0; i < tfit.lines.length; i++) {
-        if (i === 0 && swp > 0) {
-          ctx.font = tfit.font;
-          moHl(ctx, slot.x, ty + tfit.lineH / 2, ctx.measureText(tfit.lines[i]).width, tfit.lineH, swp, { maxW: 520, alpha: .8 });
-        }
-        txWords(ctx, tfit.lines[i], slot.x, ty + i * tfit.lineH + tfit.lineH / 2, tfit.font, numColor(R), 'role-title');
-      }
-    }
-    drawRoleChar(ctx, d, pose, 604, slot.y + 4, 350);
-    var cy = slot.y + 360, chh = slot.y + slot.h - cy - 6;
-    var fn = CARD_FN[f ? f.card : 'shock'] || cardShock;
-    fn(ctx, R, cut, spec, slot.x, cy, slot.w, chh);
-  }
   /* ---------- 하단 — 자막 카드 ---------- */
-  function drawRoleCaption(ctx, d, cut, p, spec) {
-    var R = ROLE[d], slot = SLOTS.cap;
-    var fit = fitText(ctx, cut.text, { w: slot.w - 104, h: slot.h - 96, base: 58, min: 30, weight: 800, lh: 1.26 });
-    var cardH = Math.min(slot.h, fit.height + 78);
-    var cy = slot.y + (slot.h - cardH) / 2;
-    ctx.save();
-    ctx.shadowColor = inkA(R, .16); ctx.shadowBlur = 26; ctx.shadowOffsetY = 10;
-    panel(ctx, slot.x, cy, slot.w, cardH, R.radius || 26, R.paper, inkA(R, .12), 2, 'role-cap-card');
-    ctx.restore();
-    panel(ctx, slot.x + 30, cy + 26, 60, 7, 3.5, R.accent, null, 0, 'role-cap-rule');
-    var words = (spec && spec.words) || [];
-    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
-    var y0 = cy + cardH - 32 - fit.height;
-    for (var i = 0; i < fit.lines.length; i++) {
-      txWords(ctx, fit.lines[i], slot.x + 52, y0 + i * fit.lineH + fit.lineH / 2, fit.font, function (tok) {
-        var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
-        var on = (seen / total) <= p + 0.0001;
-        seen += String(tok).length;
-        if (!on) return inkA(R, .48);
-        if (words.indexOf(clean) >= 0 || /\d/.test(tok)) return R.mark || R.accent;
-        return R.ink;
-      }, 'role-cap');
-    }
-  }
-
-  function drawRoleFrame(t) {
-    var cv = $('#wvCanvas');
-    if (!cv) return;
-    var ctx = ctxOf(cv);
-    var d = designOf(), spec = S.spec, cuts = S.cuts;
-    if (!spec || !cuts.length) { drawRoleIdle(ctx, d); return; }
-    var idx = 0;
-    while (idx < cuts.length - 1 && t >= cuts[idx].end) idx++;
-    var cut = cuts[idx];
-    var tIn = Math.max(0, t - cut.start);
-    var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
-    var pose = poseOfCut(d, cut, idx);
-    moSet(tIn, t);
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.globalAlpha = 1;
-    roleBands(ctx, d, pose);
-    var ein = moInP();                                   /* ④ 컷 전환 — 0.2초 페이드 */
-    var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
-    ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
-    drawRoleHead(ctx, d, spec, idx, cuts.length, t, S.total, cuts);
-    ctx.save();
-    ctx.translate(0, Math.round((1 - ein) * 12));         /* ④ 아래에서 12px 슬라이드 인 */
-    drawRoleMain(ctx, d, spec, cut, idx, pose);
-    drawRoleCaption(ctx, d, cut, p, spec);
-    ctx.restore();
-    ctx.restore();
-  }
   /* 대본이 없을 때 — 지금 고른 템플릿·공식 그대로의 샘플 프레임 */
-  function drawRoleIdle(ctx, d) {
-    charLoad(d);
-    moSet(2.2, 2.2);                       /* 샘플 미리보기는 모션이 끝난 상태로 그린다 */
-    var R = ROLE[d];
-    var sp = sampleFor(d, formulaKey(d));
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.globalAlpha = 1;
-    var spec = { hookTitle: sp.hook_title, watermark: R.wm, words: sp.highlight_words || [], badge: R.badge };
-    var cut = { text: sp.cuts[0].text, hook: sp.hook_title, idx: 0, dur: 5, start: 0 };
-    var pose = autoPose(d, cut);
-    roleBands(ctx, d, pose);
-    drawRoleHead(ctx, d, spec, 0, sp.cuts.length, 2.2, sp.cuts.length * 5, []);
-    drawRoleMain(ctx, d, spec, cut, 0, pose);
-    drawRoleCaption(ctx, d, { text: cut.text }, .72, spec);
-    txLine(ctx, '샘플 미리보기 · [🧪 샘플로 바로 만들기] → 이 ' + sp.cuts.length + '컷 그대로 녹화', CW / 2, SAFE.b + 74,
-      '800 27px ' + FF, inkA(R, .55), 'center', 'role-note');
-    txLine(ctx, R.name + ' · ' + (formulaOf(d) ? formulaOf(d).tag + ' ' + formulaOf(d).name : '') + ' · 1080 × 1920',
-      CW / 2, SAFE.b + 120, '700 24px ' + FF, inkA(R, .40), 'center', 'role-note2');
-    ctx.restore();
-  }
   /* ---------- 샘플 대본 — 템플릿 × 공식 9종 ---------- */
   function mkSample(cuts, title, hook, words) {
     return { title: title, hook_title: hook, series_badge: '샘플', highlight_words: words || [], cuts: cuts };
@@ -19646,15 +20254,12 @@ var CSVoice = (function () {
     src.connect(hp); hp.connect(g2); g2.connect(out);
     src.start(at); src.stop(at + 0.03);
   }
-  /* ③ 펀치가 실제로 나는 컷 — 빅넘버 카드가 뜨는 컷(차트·꺾은선 컷은 펀치 없음) */
+  /* ③ 펀치가 실제로 나는 컷 — 평면 2KPI 첫 숫자가 펀치 줌하는 컷(수치가 없으면 무음) */
   function punchCuts(plan) {
-    var out = [], spec = S.spec || {};
+    var out = [];
     if (designOf() !== 'fox') return out;
-    (plan.cuts || []).forEach(function (c, idx) {
-      if (foxCardMode(c).mode) return;                 /* 차트·꺾은선 컷은 펀치 없음 */
-      /* drawFoxMain 과 똑같이 제목을 고른다 — 첫 컷만 hookTitle, 나머지는 그 컷의 hook */
-      var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (c.hook || spec.hookTitle || '');
-      if (foxBig(c.text) || foxBig(title)) out.push(c);
+    (plan.cuts || []).forEach(function (c) {
+      if (foxKpiList(c).length) out.push(c);
     });
     return out;
   }
@@ -19675,18 +20280,21 @@ var CSVoice = (function () {
     return sign + n.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (p[1] ? '.' + p[1] : '');
   }
   function parseNums(text) {
-    var src = String(text || '').replace(/(\d),(?=\d{3})/g, '$1\u2060');
+    /* 14:34 같은 시각은 수치가 아니다 — 막대·차트에 '34'가 끼는 것을 막는다 */
+    var src = String(text || '').replace(/\d{1,2}\s*:\s*\d{2}/g, ' ').replace(/(\d),(?=\d{3})/g, '$1\u2060');
     /* 문장·항목 단위로 끊고, 조각마다 대표 수치 1개를 뽑는다 — 라벨은 수치 앞 말 */
     var segs = src.split(/[,·;:\n\/|]/);
     var out = [];
     for (var si = 0; si < segs.length; si++) {
       var seg = segs[si];
-      var m = /([+-]?\d(?:[\d\u2060]*\d)?(?:\.\d+)?)\s*(만원|조|억|만|천)?\s*(원|퍼센트|%|pt|배|건|명|개|위|주)?/.exec(seg);
+      var m = /([+-]?\d(?:[\d\u2060]*\d)?(?:\.\d+)?)\s*(만원|조|억|만|천)?\s*(원|퍼센트|%|pt|배|건|명|개|위|kg|Pa|dB|ml|mL|cm|mm)?/.exec(seg);
       if (!m) continue;
       var num = parseFloat(m[1].replace(/\u2060/g, ''));
       if (!isFinite(num)) continue;
       var u = m[2] || '', suf = m[3] || '';
       if (u === '만원') suf = '원';
+      /* 단위도 없고 쉼표·소수점도 없는 정수(연도·번호·개수 찌꺼기)는 카드 수치로 쓰지 않는다 */
+      if (!u && !suf && String(m[1]).indexOf('\u2060') < 0 && String(m[1]).indexOf('.') < 0) continue;
       var pre = seg.slice(0, m.index).replace(/[0-9+\-.,()%]/g, ' ').replace(/\s+/g, ' ').trim();
       var words = pre.split(' ').filter(Boolean);
       var label = words.slice(-2).join(' ').replace(/^[·,\-]+|[·,\-]+$/g, '').trim();
@@ -20059,6 +20667,7 @@ var CSVoice = (function () {
     } else {
       drawHook(ctx, spec, cut, idx, ac);
       if (tpl === 'chart') drawChartMain(ctx, cut, p, spec, ac);
+      else if (tpl === 'line') drawLineMain(ctx, cut, p, spec, ac);
       else drawCardMain(ctx, cut, p, spec, ac);
     }
     drawCaption(ctx, cut, p, spec, tpl === 'photo');
@@ -20895,7 +21504,7 @@ var CSVoice = (function () {
     if (S.cfg.tpl === 'photo' && !S.photos.length) {
       say('🖼️ <b>사진 줌인형</b>은 옵션의 <b>내 사진</b>이 필요합니다 — 사진을 넣는 즉시 그 사진으로 그립니다. (지금은 카드형으로 보여 줍니다)');
     } else {
-      var d = { card: '📊 카드형 — 훅 + 핵심 포인트 카드 + 자막', chart: '📈 차트형 — 컷의 수치를 움직이는 바로 (수치 없으면 카드형)' + (parseManual(S.cfg.chartData).length >= 2 ? ' · 직접 입력한 비교 데이터 사용 중' : ''), line: '📈 꺾은선 추세 — 지수 선을 왼→오로 그리고 변곡점을 줌인합니다(폭스시그널·역할 템플릿 · 다크는 차트형으로 그립니다)', photo: '🖼️ 사진형 — 내 사진 Ken Burns + 배지·자막' }[S.cfg.tpl];
+      var d = { card: '📊 카드형 — 훅 + 핵심 포인트 카드 + 자막', chart: '📈 차트형 — 컷의 수치를 움직이는 바로 (수치 없으면 카드형)' + (parseManual(S.cfg.chartData).length >= 2 ? ' · 직접 입력한 비교 데이터 사용 중' : ''), line: '📈 꺾은선 추세 — 전 채널 공통: 실제 지수(관제탑 실측) 선을 왼→오로 긋고 변곡점을 줌인합니다(다크 시네마는 평면 2KPI + 타임라인 스윕 포함)', photo: '🖼️ 사진형 — 내 사진 Ken Burns + 배지·자막' }[S.cfg.tpl];
       if (d) say('양식을 바꿨습니다 · ' + d + ' · 세이프 존은 3종 모두 동일합니다.');
     }
     redraw();
@@ -21277,6 +21886,7 @@ var CSVoice = (function () {
     feed: feedDraftWv,
     loadScript: loadScript,
     formula: function () { return ROLE[designOf()] ? { design: designOf(), key: formulaKey(), name: formulaName(), tag: formulaTag() } : null; },
+    designLabel: function () { return designName(); },
     formulaPrompt: formulaPrompt,
     formulaSummary: formulaSummary,
     formulaDefs: function () { return FORMULA; },
@@ -21284,9 +21894,40 @@ var CSVoice = (function () {
     dealInfo: dealInfo,
     charOf: function (d) { var st = charSt(d || designOf()); return { loaded: Object.keys(st.img).length, bg: st.bg }; },
     bigOf: function (text) { return foxBig(text); },
+    penguinScript: function () { return penguinScript(); },
+    deals: function () { return { n: DEALS.items.length, stamp: DEALS.stamp, src: DEALS.src, err: DEALS.err }; },
+    voicePreset: function (d) { return applyVoicePreset(d); },
+    kpisOf: function (text) { return foxKpiList({ text: String(text || '') }); },
     tpl: function () { return tplOf(); },
     render: function (t) { if (t == null) redraw(); else { try { drawFrame(t); } catch (e) {} } },
     audit: audit,
+    auditBoxes: function (opt) {
+      var o = opt || {}, out = [];
+      var raw = o.spec || (W.WVID_SRC && W.WVID_SRC.shorts ? W.WVID_SRC.shorts() : null);
+      var spec = normSpec(raw);
+      if (!spec) return out;
+      var prev = { spec: S.spec, cuts: S.cuts, total: S.total, force: S.tplForce, design: S.designForce, cd: S.cfg.chartData };
+      var pv = previewCuts(spec);
+      S.spec = spec; S.cuts = pv.cuts; S.total = pv.total;
+      S.tplForce = o.tpl || null; S.designForce = o.design || null;
+      if (o.design === 'fox') foxLoad();
+      if (ROLE[o.design]) charLoad(o.design);
+      if (o.chartData != null) S.cfg.chartData = String(o.chartData);
+      pv.cuts.forEach(function (c) { c._items = null; });
+      var fr = o.fractions || [0.2, 0.6, 0.97];
+      pv.cuts.forEach(function (c, i) {
+        fr.forEach(function (f) {
+          var at = c.start + c.dur * f;
+          AUDIT = [];
+          drawFrame(at);
+          out.push({ cut: i + 1, at: +at.toFixed(2), boxes: AUDIT.slice() });
+          AUDIT = null;
+        });
+      });
+      S.spec = prev.spec; S.cuts = prev.cuts; S.total = prev.total; S.tplForce = prev.force;
+      S.designForce = prev.design; S.cfg.chartData = prev.cd;
+      return out;
+    },
     auditAll: function (opt) {
       var o = opt || {}, out = {}, seq = Promise.resolve();
       ['card', 'chart', 'photo'].forEach(function (t) {
