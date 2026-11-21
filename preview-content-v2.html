@@ -12321,7 +12321,10 @@ var CSVoice = (function () {
       var node = feedNode(j, j.latestSlot || j.slot);
       if (!node) throw new Error('초안 없음');
       var rb = feedApplyBlog(node, true);
-      var rs = feedApplyShorts(node, true, false);
+      /* 쇼츠 쪽 버튼(data-feed-draft="shorts")에서 누른 게 아니면 조용히 채운다 —
+         블로그 재료 수집의 [#feedDraftBtn]에서 눌렀을 때 화면이 쇼츠 영역으로 끌려가지 않는다 */
+      var isShortsBtn = !!(btn && btn.getAttribute && btn.getAttribute('data-feed-draft') === 'shorts');
+      var rs = feedApplyShorts(node, true, !isShortsBtn);
       var got = [];
       if (rb.ok) got.push('블로그 ' + Number(rb.chars || 0).toLocaleString('ko-KR') + '자 · 태그 ' + rb.tags + '개');
       if (rs.ok) got.push('쇼츠 ' + rs.cuts + '컷 · 폭스시그널 ' + (rs.formula || ''));
