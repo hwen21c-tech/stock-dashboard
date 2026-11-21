@@ -17261,6 +17261,7 @@ var CSVoice = (function () {
     var c = {};
     try { c = JSON.parse(ls(CFG_KEY, '{}')) || {}; } catch (e) { c = {}; }
     for (var k in DEF) if (Object.prototype.hasOwnProperty.call(DEF, k) && c[k] === undefined) c[k] = DEF[k];
+    if (c.tpl === 'auto' || c.tpl === 'smart') c.tpl = 'line';
     if (!TPL_NAME[c.tpl]) c.tpl = 'card';
     if (!DESIGN[c.design]) c.design = 'dark';
     if (!c.formula || typeof c.formula !== 'object' || Object.prototype.toString.call(c.formula) !== '[object Object]') c.formula = {};
@@ -21505,6 +21506,7 @@ var CSVoice = (function () {
     if (adoptSpec(raw, label || '')) start();
   }
   function loadSpec(raw, label) {
+    idxMaybeLoad();                                               /* 컷마다 꺾은선이 필요할 수 있다 — 미리 받아 둔다 */
     var spec = adoptSpec(raw, label || '보관함');
     if (spec) redraw();
     return spec;
@@ -21827,6 +21829,7 @@ var CSVoice = (function () {
 
   /* ---------- 템플릿 선택 ---------- */
   function setTpl(name) {
+    if (name === 'auto' || name === 'smart') name = 'line';      /* 스마트 별칭 */
     S.cfg.tpl = TPL_NAME[name] ? name : 'card';
     saveCfg();
     syncUi();
