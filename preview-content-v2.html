@@ -12192,6 +12192,12 @@ var CSVoice = (function () {
   function feedFetch(force){
     if (!force && FEED.data && (Date.now() - FEED.at) < 60000) return Promise.resolve(FEED.data);
     var urls = [FEED_PATH, V2.ORIGIN + '/data/content_auto_latest.json'];
+    /* 강제 새로고침(force)일 때는 캐시 버스터를 붙인다 — GitHub Pages(max-age=600)·Vercel 엣지 캐시·브라우저 캐시를
+       모두 비껴가고 항상 최신 JSON을 받아온다. (?cb=타임스탬프 · 이미 쿼리가 있으면 &로 붙인다) */
+    if (force){
+      var cb = 'cb=' + Date.now();
+      urls = urls.map(function (u) { return u + (u.indexOf('?') < 0 ? '?' : '&') + cb; });
+    }
     function one(i){
       return fetchJsonT(urls[i], 9000).then(function (j) {
         if (!j || typeof j !== 'object') throw new Error('빈 초안');
