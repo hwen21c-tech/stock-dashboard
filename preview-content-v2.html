@@ -16886,7 +16886,8 @@ var CSVoice = (function () {
   var DESIGN = { dark: '🌙 다크 시네마', fox: '🦊 폭스시그널 에디토리얼',
     shiba: '🐶 시바딜 · 최저가', bunny: '🐰 피치홈 · 리얼리뷰', penguin: '🐧 펭귄특가 · 타임딜' };
   var FOX_POSES = { main: '기본', surprise: '놀람·경고', analyze: '분석', cheer: '환호' };
-  var FX = { cream: '#F8F3EA', band: '#F1E8D8', navy: '#10202F', wine: '#9F1239', paper: '#FFFFFF' };
+  /* ① 배경은 전 컷 한 가지 크림 아이보리(#F7F3E9) — 컷별 딥네이비 속보 스킨은 쓰지 않는다 */
+  var FX = { cream: '#F7F3E9', page: '#F7F3E9', band: '#F1E8D8', navy: '#10202F', wine: '#9F1239', paper: '#FFFFFF' };
   var FOX = {
     SRC: { main: 'assets/fox/fox_main.png', surprise: 'assets/fox/fox_surprise.png',
            analyze: 'assets/fox/fox_analyze.png', cheer: 'assets/fox/fox_cheer.png' },
@@ -16950,7 +16951,8 @@ var CSVoice = (function () {
     var d = S.designForce || (S.cfg && S.cfg.design) || 'dark';
     return DESIGN[d] ? d : 'dark';
   }
-  function foxBg(pose) { return FOX.bg[pose] || FX.cream; }
+  /* ① 배경 단일화 — 여우 PNG 에서 뽑은 포즈별 색을 배경에 쓰지 않는다(모든 컷 #F7F3E9) */
+  function foxBg(pose) { return FX.page; }
   /* 여우 PNG 4종은 이 디자인을 처음 켤 때만 불러온다(다크 시네마는 0바이트 추가) */
   function foxLoad() {
     Object.keys(FOX.SRC).forEach(function (k) {
@@ -17453,7 +17455,8 @@ var CSVoice = (function () {
   /* ---------- 🦊 폭스시그널 에디토리얼 렌더러 ---------- */
   function foxBands(ctx, pose) {
     var C = fxPal();
-    ctx.fillStyle = INV ? C.bg : foxBg(pose);
+    /* ① 컷·포즈·경고 여부와 무관하게 같은 크림 아이보리 — 배경색이 바뀌지 않는다 */
+    ctx.fillStyle = FX.page;
     ctx.fillRect(0, 0, CW, CH);
     ctx.fillStyle = C.band;
     ctx.fillRect(0, 0, CW, SAFE.y);
@@ -17508,18 +17511,19 @@ var CSVoice = (function () {
     if (!INV) return riskColor(lv);
     return lv >= 70 ? '#FCA5A5' : lv >= 45 ? '#FCD34D' : '#86EFAC';
   }
-  /* ② 속보 스트립 — 상단 밴드(0~180)의 장식. 세이프 존 밖이라 rec 하지 않는다 */
+  /* ① 속보 표시는 상단 밴드의 작은 배지만 — 배경은 크림 그대로 둔다(세이프 존 밖 장식이라 rec 하지 않는다) */
   function foxBreaking(ctx) {
     ctx.save();
-    ctx.fillStyle = FX.wine;
-    ctx.fillRect(0, 0, CW, 52);
-    ctx.font = '900 27px ' + FF;
-    ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    var lab = '🔴 속보', f = '900 22px ' + FF, h = 34, y = 134;
+    ctx.font = f;
+    var w = ctx.measureText(lab).width + 34;
+    rr(ctx, SAFE.x, y, w, h, h / 2);
+    ctx.fillStyle = FX.wine; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 2;
+    rr(ctx, SAFE.x, y, w, h, h / 2); ctx.stroke();
     ctx.fillStyle = FX.cream;
-    ctx.fillText('🔴 속보 · 시장 급변', SAFE.x, 27);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = 'rgba(248,243,234,.78)';
-    ctx.fillText('LIVE', SAFE.r, 27);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(lab, SAFE.x + w / 2, y + h / 2 + 1);
     ctx.restore();
   }
   /* ① 상승 화살표 파티클 — 좌·우 여백(x 60 미만 / 960 초과)을 조용히 올라간다 */
@@ -17716,9 +17720,9 @@ var CSVoice = (function () {
      ══════════════════════════════════════════════════════════════════════ */
   var FXG = {
     head:  { x: SAFE.x, y: 180, w: SAFE.w, h: 58 },
-    title: { x: SAFE.x, y: 266, w: SAFE.w, h: 150 },
-    kpi:   { x: SAFE.x, y: 424, w: SAFE.w, h: 130 },
-    vis:   { x: SAFE.x, y: 572, w: SAFE.w, h: 710 },
+    title: { x: SAFE.x, y: 268, w: SAFE.w, h: 164 },   /* ② 62px 800 · 1.22 행간 */
+    kpi:   { x: SAFE.x, y: 458, w: SAFE.w, h: 112 },   /* ② 헤드라인과 26px 띄운 2KPI */
+    vis:   { x: SAFE.x, y: 592, w: SAFE.w, h: 690 },
     cap:   { x: SAFE.x, y: 1324, w: SAFE.w, h: 158 },
     foot:  { x: SAFE.x, y: 1490, w: SAFE.w, h: 34 },
     tick:  { y: 1780, h: 48 }
@@ -17747,28 +17751,43 @@ var CSVoice = (function () {
   /* KPI 설명 한 줄 — 단위 낱말만 걷어내고 '저점' 같은 낱말은 살린다(cleanLabel 은 '점'까지 지운다) */
   var FX_WEAK = { '오늘': 1, '지금': 1, '현재': 1, '이번': 1, '여기': 1, '이거': 1, '가격': 1, '기준': 1, '정도': 1, '대비': 1, '이': 1, '그': 1, '저': 1 };
   function fxKpiLabel(w) {
-    var t = String(w || '').replace(/[0-9+\-−.,()%\[\]{}\/:;]/g, ' ').replace(/\s+/g, ' ').trim();
+    var t = String(w || '').replace(/[0-9+\-−.,()%\[\]{}:;]/g, ' ').replace(/\s+/g, ' ').trim();
     if (!t) return '';
     if (/^(원|개|점|배|위|명|건|일|분|박|주|계약|종목)$/.test(t)) return '';
     if (FX_WEAK[t]) return '';
     return t.slice(0, 14);
   }
-  function foxKpiList(cut) {
-    var text = String((cut && cut.text) || '');
-    var out = [], m, guard = 0;
+  /* ② 컷 문장/나레이션에서 주요 수치 2개 — 헤드라인에 이미 나온 수는 뒤로 미룬다(중복·충돌 방지) */
+  function foxKpiScan(text, inHead, headVals, out) {
+    var t = String(text || ''), m, guard = 0;
     var re = /([+\-−]?\d[\d,]*(?:\.\d+)?)\s*(만원|조|억|만|천)?\s*(원|%|퍼센트|pt|배|계약|종목|개|명|건|위)?/g;
-    while ((m = re.exec(text)) && guard++ < 30) {
-      var raw = String(m[1]).replace('−', '-');
+    while ((m = re.exec(t)) && guard++ < 30) {
+      var rawAll = String(m[1]).replace('−', '-');
+      var hasComma = rawAll.indexOf(',') >= 0;
+      var raw = rawAll.replace(/,+$/, '');                 /* '645,' 처럼 뒤에 붙은 쉼표는 떼어 낸다 */
       var u = m[2] || '', suf = String(m[3] || '').replace('퍼센트', '%');
-      if (!u && !suf && raw.indexOf(',') < 0 && raw.indexOf('.') < 0) continue;   /* 단위 없는 정수(날짜·시간)는 버린다 */
+      if (!u && !suf && !hasComma && raw.indexOf('.') < 0) continue;   /* 단위 없는 정수(날짜·시간)는 버린다 */
       var val = parseFloat(raw.replace(/,/g, '')) * (UNIT[u === '만원' ? '만' : u] || 1);
       if (!isFinite(val)) continue;
-      var pre = text.slice(Math.max(0, m.index - 26), m.index)
-        .replace(/[0-9+\-−.,()%\[\]{}]/g, ' ').replace(/[·:;\/|~→]/g, ' ').replace(/\s+/g, ' ').trim();
+      var pre = t.slice(Math.max(0, m.index - 30), m.index)
+        .replace(/[0-9+\-−.,()%\[\]{}]/g, ' ').replace(/[·:;|~→]/g, ' ').replace(/\s+/g, ' ').trim();
       var ws = pre.split(' ').filter(Boolean);
-      var last0 = ws.length ? ws[ws.length - 1] : '';
-      var strip = last0.replace(/(은|는|이|가|을|를|의|에서|부터|까지|으로|로)$/, '');
-      var last = strip.length >= 2 ? strip : last0;   /* '종가'·'정가'의 '가'는 조사가 아니라 낱말의 일부 */
+      /* ② 조사만 남은 낱말('에'·'은')은 한 칸 물러나 앞 낱말을 라벨로 쓴다 */
+      var last = '', k2 = ws.length - 1;
+      while (k2 >= 0) {
+        var w0 = ws[k2];
+        var s0 = w0.replace(/(은|는|이|가|을|를|의|에서|부터|까지|으로|로)$/, '');
+        var cand = s0.length >= 2 ? s0 : w0;   /* '종가'·'정가'의 '가'는 조사가 아니라 낱말의 일부 */
+        if (!/^(에|께|와|과|도|만|그|이|저)$/.test(cand) && !/^(원|개|점|배|위|명|건|일|분|박|주|계약|종목)$/.test(cand)) {
+          /* '선물'·'지수'처럼 뜻이 얇은 낱말은 앞 낱말과 붙여 라벨로 쓴다 → '나스닥100 선물' → '나스닥 선물' */
+          if (/^(선물|지수|환율|유가|금리|종목|테마|평균|대금|거래대금)$/.test(cand) && k2 > 0) {
+            var pv = ws[k2 - 1].replace(/[0-9]/g, '').replace(/(은|는|이|가|을|를|의|에서|부터|까지|으로|로)$/, '').trim();
+            if (pv.length >= 2) cand = pv + ' ' + cand;
+          }
+          last = cand; break;
+        }
+        k2 -= 1;
+      }
       var lab = fxKpiLabel(last);
       var disp = raw + (u === '만원' ? '만원' : u) + suf;
       var sc = 20;
@@ -17778,22 +17797,49 @@ var CSVoice = (function () {
       if (suf === '%') sc += 34;
       if (suf === 'pt') sc += 26;
       if (suf === '계약' || suf === '종목') sc += 22;
-      if (raw.indexOf(',') >= 0) sc += 10;
+      if (hasComma) sc += 10;
       if (raw.indexOf('.') >= 0) sc += 6;
       sc += Math.min(10, raw.replace(/[^\d]/g, '').length);
-      out.push({ disp: disp, label: lab, value: val, unit: (u === '만원' ? '만원' : u) + suf, score: sc });
+      /* ② 헤드라인에 같은 크기의 수(부호만 다른 경우 포함)가 있으면 나레이션 쪽 수는 버린다
+            → 2KPI 에 같은 숫자가 두 번 나오지 않고, 부호(-)는 헤드라인 표기를 그대로 따른다 */
+      var dup = false;
+      headVals.forEach(function (hv) { if (Math.abs(Math.abs(hv) - Math.abs(val)) <= Math.max(.05, Math.abs(hv) * .003)) dup = true; });
+      if (!inHead && dup) continue;          /* 헤드라인과 같은 수는 건너뛰고 다음 수를 계속 본다 */
+      out.push({ disp: disp, label: lab, value: val, unit: (u === '만원' ? '만원' : u) + suf, score: sc, inHead: !!inHead });
     }
+  }
+  function foxKpiList(cut) {
+    var head = String((cut && cut.text) || '');
+    var body = String((cut && cut.tts) || '');
+    var out = [], headVals = [];
+    foxKpiScan(head, true, [], out);
+    out.forEach(function (x) { headVals.push(x.value); });
+    if (body) foxKpiScan(body, false, headVals, out);
     var man = parseManual(S.cfg.chartData);
     man.forEach(function (it) {
-      out.push({ disp: it.disp, label: it.label, value: it.value, unit: it.unit, score: 62 });
+      out.push({ disp: it.disp, label: it.label, value: it.value, unit: it.unit, score: 62, inHead: false });
     });
-    var seen = {}, uniq = [];
-    out.sort(function (a, b) { return b.score - a.score; });
+    /* ② 나레이션의 새 수치 → 헤드라인 수치 순으로 세우고, 같은 값은 한 번만 */
+    out.sort(function (a, b) {
+      if (!!a.inHead !== !!b.inHead) return a.inHead ? 1 : -1;
+      return b.score - a.score;
+    });
+    var seen = {}, vals = [], uniq = [];
     out.forEach(function (x) {
       if (seen[x.disp]) return;
-      seen[x.disp] = 1; uniq.push(x);
+      for (var i = 0; i < vals.length; i++) {
+        if (Math.abs(vals[i] - x.value) <= Math.max(.05, Math.abs(vals[i]) * .003)) return;
+      }
+      seen[x.disp] = 1; vals.push(x.value); uniq.push(x);
     });
-    return uniq.slice(0, 2);
+    var top2 = uniq.slice(0, 2);
+    /* ② 두 수의 라벨이 같으면 뒤엣것에 성격을 붙여 중복 라벨을 없앤다 */
+    if (top2.length === 2 && top2[0].label && top2[1].label === top2[0].label) {
+      var desc = /%$/.test(String(top2[1].unit || '')) ? '등락률'
+        : (/(원|억|조)$/.test(String(top2[1].unit || '')) ? '금액' : '지수');
+      top2[1] = { disp: top2[1].disp, label: top2[0].label + ' ' + desc, value: top2[1].value, unit: top2[1].unit, score: top2[1].score, inHead: top2[1].inHead };
+    }
+    return top2;
   }
   /* ---------- ③ 평면 2KPI — 박스·그림자 없이 숫자 + 밑줄 + 설명 1줄 ---------- */
   function drawFlatKpis(ctx, kpis, geo, pal) {
@@ -18102,37 +18148,112 @@ var CSVoice = (function () {
     }
     return true;
   }
-  /* 🦊 내용 맞춤 — 자금 이동 2단 비교(크림 카드) */
+  /* 🦊 내용 맞춤 — 자금 이동 2단 비교(크림 카드)
+     · ③ 정지 화살표 대신 '자금 도트'가 이탈 박스 → 유입 박스로 흐르고, 도착한 순서대로
+          유입 카드가 켜진다(2.0초 주기 반복 — 녹화·미리보기 모두 같은 시간축)
+     · ③ 이탈·유입 옆에 실측 등락률, 아래에 이동 규모(격차)와 쏠림 비중을 적는다.
+          수치는 컷 문장·브리핑에 실제로 적힌 값만 쓰고 없으면 '미제공'으로 남긴다. */
+  function fmtPct(v) {
+    if (v == null || !isFinite(v)) return '—';
+    return (v > 0 ? '+' : (v < 0 ? '-' : '')) + Math.abs(v).toFixed(2) + '%';
+  }
+  function foxFlowDetail(cut) {
+    var t = String((cut && cut.text) || '').trim();
+    var parts = t.split(/\s*(?:→|⟶|➜|⇒|->)\s*/);
+    if (parts.length < 2) return null;
+    function side(s) {
+      var pct = null;
+      var m = /[\(\[]?\s*([+\-]\d+(?:\.\d+)?)\s*%\s*[\)\]]?/.exec(s);
+      if (m) {
+        pct = parseFloat(m[1]);
+        s = (s.slice(0, m.index) + ' ' + s.slice(m.index + m[0].length)).replace(/\s+/g, ' ').trim();
+      }
+      return { names: smartFlowList(s), pct: pct };
+    }
+    var a = side(parts[0]), b = side(parts.slice(1).join(' '));
+    if (!a.names.length || !b.names.length) return null;
+    return { out: a.names, into: b.names, outPct: a.pct, intoPct: b.pct };
+  }
+  function foxFlowScale(det) {
+    var o = det.outPct, i = det.intoPct;
+    if (o != null && i != null) {
+      var share = Math.round(Math.abs(o) / ((Math.abs(o) + Math.abs(i)) || 1) * 100);
+      return { text: '이탈 ' + fmtPct(o) + ' → 유입 ' + fmtPct(i) + ' · 격차 ' + Math.abs(o - i).toFixed(2) + '%p · 비중 ' + share + ':' + (100 - share), out: o, into: i };
+    }
+    if (o != null) return { text: '이탈 ' + fmtPct(o) + ' · 유입 등락률 미제공', out: o, into: null };
+    if (i != null) return { text: '유입 ' + fmtPct(i) + ' · 이탈 등락률 미제공', out: null, into: i };
+    return { text: '테마 수 이탈 ' + det.out.length + ' → 유입 ' + det.into.length + ' · 등락률 미제공', out: null, into: null };
+  }
+  /* 도트 주기 — 시작 0.0 · 발사 간격 0.36초 · 횡단 0.80초 · 주기 2.0초 */
+  var FX_MOVE_STEP = .36, FX_MOVE_DUR = .8, FX_MOVE_CYC = 2.0;
+  function foxMovePhase() { return MO.on ? (Math.max(0, MO.tIn) % FX_MOVE_CYC) : 1.15; }
+  function foxMoveHot(i) {                     /* 유입 카드가 도트 도착에 맞춰 켜졌다 꺼진다 */
+    var cyc = foxMovePhase(), arr = i * FX_MOVE_STEP + FX_MOVE_DUR;
+    var k = (cyc - arr) / .9;
+    if (k < 0 || k > 1) return 0;
+    return Math.sin(Math.PI * k);
+  }
+  function foxMoveDots(ctx, x0, x1, cy, ch) {
+    var cyc = foxMovePhase(), span = Math.max(20, x1 - x0 - 16), i;
+    ctx.save();
+    /* 흐름 레일 — 점선 */
+    ctx.globalAlpha = .24;
+    ctx.strokeStyle = 'rgba(16,32,47,.85)'; ctx.lineWidth = 3.5; ctx.setLineDash([9, 11]);
+    ctx.beginPath(); ctx.moveTo(x0 + 8, cy); ctx.lineTo(x1 - 8, cy); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+    for (i = 0; i < 4; i++) {
+      var ph = (cyc - i * FX_MOVE_STEP) / FX_MOVE_DUR;
+      if (ph < 0 || ph > 1) continue;
+      var e = 1 - Math.pow(1 - ph, 3);
+      var px = x0 + 8 + span * e;
+      var py = cy - Math.sin(Math.PI * e) * Math.min(26, ch * .055) * (i % 2 ? 1 : -1);
+      ctx.globalAlpha = Math.sin(Math.PI * ph) * .95;
+      ctx.fillStyle = i === 0 ? FX.wine : '#1E40AF';
+      ctx.beginPath(); ctx.arc(px, py, 10 - i * .7, 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = .45; ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath(); ctx.arc(px - 2.5, py - 2.5, 3.4, 0, Math.PI * 2); ctx.fill();
+    }
+    /* 도착 화살촉 */
+    ctx.globalAlpha = .5; ctx.strokeStyle = 'rgba(16,32,47,.9)'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x1 - 12, cy - 9); ctx.lineTo(x1 - 4, cy); ctx.lineTo(x1 - 12, cy + 9); ctx.stroke();
+    ctx.restore();
+  }
   function drawFoxMove(ctx, cut, x, y, w, h, pal) {
-    var fp = smartFlowOf(cut);
-    if (!fp || h < 300 || w < 600) return false;
+    var det = foxFlowDetail(cut);
+    if (!det || h < 320 || w < 600) return false;
     panel(ctx, x, y, w, h, 22, pal.card, pal.edge, 2, 'fx-move-card');
     panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, pal.spine, null, 0, 'fx-move-spine');
     txLine(ctx, 'MOVE · 이탈 → 유입', x + 38, y + 30, '900 22px ' + FF, pal.label, 'left', 'fx-move-label');
-    var note = smartNoteOf(cut), noteH = note ? 78 : 0;
-    var top = y + 54, ch = h - 54 - 20 - noteH;
-    var gap = 74, cw = Math.floor((w - 76 - gap) / 2);
+    var note = smartNoteOf(cut), noteH = note ? 70 : 0;
+    var scaleH = 82;
+    var top = y + 54, ch = h - 54 - 14 - scaleH - noteH;
+    /* 두 박스는 3~4행 분량만큼만 — 남는 높이는 위아래로 나눠 두어 카드가 헐렁하지 않게 */
+    var chMax = 66 + 94 * Math.max(det.out.length, det.into.length) + 20;
+    if (ch > chMax) { top += Math.round((ch - chMax) / 2); ch = chMax; }
+    var gap = 92, cw = Math.floor((w - 76 - gap) / 2);
     var lx = x + 38, rx = lx + cw + gap;
-    foxMoveCol(ctx, fp.out, '🚪 이탈', lx, top, cw, ch, '#9F1239', 'rgba(159,18,57,.20)', pal);
-    foxMoveCol(ctx, fp.into, '💰 유입', rx, top, cw, ch, pal.num, 'rgba(16,32,47,.14)', pal);
-    var cx = lx + cw + gap / 2, cy = top + Math.round(ch / 2);
-    var k = MO.on ? moEase(MO.tIn - .3, .32) : 1;
-    if (k > .02) {
-      ctx.save();
-      ctx.globalAlpha = Math.min(1, k);
-      ctx.strokeStyle = 'rgba(16,32,47,.50)'; ctx.lineWidth = 4; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(cx - 22, cy); ctx.lineTo(cx - 22 + 44 * k, cy); ctx.stroke();
-      if (k > .9) {
-        ctx.fillStyle = 'rgba(16,32,47,.68)';
-        ctx.beginPath(); ctx.moveTo(cx + 26, cy); ctx.lineTo(cx + 12, cy - 10); ctx.lineTo(cx + 12, cy + 10); ctx.closePath(); ctx.fill();
-      }
-      ctx.restore();
-      rec(cx - 22, cy - 12, 52, 24, 'fx-move-arrow');
+    foxMoveCol(ctx, det.out, 'OUT · 이탈', det.outPct, lx, top, cw, ch, '#9F1239', 'rgba(159,18,57,.22)', pal, null);
+    foxMoveCol(ctx, det.into, 'IN · 유입', det.intoPct, rx, top, cw, ch, pal.num, 'rgba(16,32,47,.16)', pal, foxMoveHot);
+    foxMoveDots(ctx, lx + cw, rx, top + Math.round(ch / 2), ch);
+    /* ③ 이동 규모 — 실측 등락률의 격차 + 쏠림 비중 */
+    var sc = foxFlowScale(det);
+    var sy = y + h - noteH - scaleH - 4;
+    panel(ctx, x + 38, sy, w - 76, scaleH - 12, 14, 'rgba(16,32,47,.05)', null, 0, 'fx-move-scale');
+    txLine(ctx, 'SCALE · 이동 규모', x + 54, sy + 24, '900 21px ' + FF, pal.label, 'left', 'fx-scale-l');
+    var sf = fitText(ctx, sc.text, { w: w - 330, h: 28, base: 23, min: 15, weight: 900, lh: 1.1 });
+    txLine(ctx, sf.lines[0] || '', x + w - 54, sy + 24, sf.font, pal.ink, 'right', 'fx-scale-v');
+    if (sc.out != null && sc.into != null) {
+      var oa = Math.abs(sc.out), ia = Math.abs(sc.into), tot = oa + ia || 1;
+      var bx = x + 54, bw = w - 108, by = sy + 42, bh = 20;
+      panel(ctx, bx, by, bw, bh, 10, 'rgba(16,32,47,.10)', null, 0, 'fx-scale-track');
+      var ow = Math.max(16, bw * (oa / tot));
+      panel(ctx, bx, by, ow, bh, 10, FX.wine, null, 0, 'fx-scale-out');
+      panel(ctx, bx + ow, by, Math.max(16, bw - ow), bh, 10, '#1E40AF', null, 0, 'fx-scale-in');
     }
     if (note) {
-      var ny = y + h - noteH - 6;
+      var ny = y + h - noteH - 4;
       panel(ctx, x + 38, ny, w - 76, noteH - 10, 14, 'rgba(16,32,47,.05)', null, 0, 'fx-move-note');
-      var nf = fitText(ctx, note, { w: w - 116, h: noteH - 26, base: 26, min: 17, weight: 800, lh: 1.2 });
+      var nf = fitText(ctx, note, { w: w - 116, h: noteH - 26, base: 25, min: 17, weight: 800, lh: 1.2 });
       var ty0 = ny + ((noteH - 10) - nf.height) / 2;
       for (var i2 = 0; i2 < nf.lines.length; i2++) {
         txLine(ctx, nf.lines[i2], x + 54, ty0 + i2 * nf.lineH + nf.lineH / 2, nf.font, pal.sub, 'left', 'fx-move-note-t');
@@ -18140,25 +18261,31 @@ var CSVoice = (function () {
     }
     return true;
   }
-  function foxMoveCol(ctx, list, head, x, y, w, h, headCol, edge, pal) {
+  function foxMoveCol(ctx, list, head, pct, x, y, w, h, headCol, edge, pal, hotFn) {
     panel(ctx, x, y, w, h, 18, 'rgba(16,32,47,.035)', edge, 1.5, 'fx-move-col');
     txLine(ctx, head, x + 24, y + 30, '900 28px ' + FF, headCol, 'left', 'fx-move-head');
-    txLine(ctx, String(list.length) + '개', x + w - 24, y + 30, '900 22px ' + FF, pal.sub, 'right', 'fx-move-count');
+    var tag = String(list.length) + '개' + (pct != null ? ' · ' + fmtPct(pct) : '');
+    txLine(ctx, tag, x + w - 24, y + 30, '900 22px ' + FF,
+      pct != null ? (pct < 0 ? '#1E40AF' : '#B91C1C') : pal.sub, 'right', 'fx-move-count');
     panel(ctx, x + 24, y + 50, w - 48, 2, 1, 'rgba(16,32,47,.12)', null, 0, 'fx-move-rule');
     var n = list.length, top = y + 66, avail = h - 66 - 16;
-    var rowH = Math.min(98, Math.floor(avail / n)), off = Math.max(0, Math.floor((avail - rowH * n) / 2));
+    var rowH = Math.min(94, Math.floor(avail / n)), off = Math.max(0, Math.floor((avail - rowH * n) / 2));
     for (var i = 0; i < n; i++) {
-      var t0 = MO.on ? moEase(MO.tIn - .08 - i * .16, .3) : 1;
+      var t0 = MO.on ? moEase(MO.tIn - .08 - i * .14, .3) : 1;
       if (t0 <= 0) continue;
+      var hot = hotFn ? hotFn(i) : 0;
       ctx.save();
       ctx.globalAlpha = Math.min(1, t0);
-      var ry = top + off + i * rowH, chipH = Math.min(68, rowH - 12);
-      panel(ctx, x + 24, ry, w - 48, chipH, 12, pal.card, edge, 1, 'fx-move-chip');
+      var ry = top + off + i * rowH, chipH = Math.min(64, rowH - 12);
+      var fill = hot > .02 ? 'rgba(159,18,57,' + (.06 + .13 * hot).toFixed(3) + ')' : pal.card;
+      var cedge = hot > .02 ? 'rgba(159,18,57,' + (.30 + .60 * hot).toFixed(3) + ')' : edge;
+      panel(ctx, x + 24, ry, w - 48, chipH, 12, fill, cedge, hot > .5 ? 2.5 : 1, 'fx-move-chip');
       var f = fitText(ctx, list[i], { w: w - 96, h: chipH - 10, base: 32, min: 18, weight: 900, lh: 1.1 });
       txLine(ctx, f.lines[0] || '', x + 40, ry + chipH / 2, f.font, pal.ink, 'left', 'fx-move-item');
       ctx.restore();
     }
   }
+
   /* 🦊 내용 맞춤 — 1 · 2 · 3 번호 조건 카드 */
   function drawFoxCheck(ctx, cut, x, y, w, h, pal) {
     var segs = smartSegments(cut);
@@ -18190,11 +18317,150 @@ var CSVoice = (function () {
     return true;
   }
 
+  /* ══════════════════════════════════════════════════════════════════════
+     ④ 야간·글로벌 6지표 — 관제탑 실측만 쓴다(없는 수치는 지어내지 않는다)
+        · 코스피200 야간선물 : data/latest-briefing.json 문장에 적힌 실측값
+        · 나스닥100 선물 · 원/달러 : /api/stock-live (futures · fx)
+        · 필라델피아 반도체 · WTI : /api/stock-live (macro.SOX · macro.WTI)
+        · VIX : /api/macro-live
+     ══════════════════════════════════════════════════════════════════════ */
+  var MAC = { at: 0, pend: null, live: null, macro: null, brief: null, err: [] };
+  function macBase() {
+    try { if (/(^|\.)vercel\.app$/.test(location.hostname)) return ''; } catch (e) {}
+    return 'https://stock-dashboard-live-6frm.vercel.app';
+  }
+  function macFetch(url, ms) {
+    var ctrl = null, timer = null;
+    try { ctrl = new AbortController(); timer = setTimeout(function () { ctrl.abort(); }, ms || 9000); } catch (e) {}
+    return fetch(url, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined }).then(function (r) {
+      if (timer) clearTimeout(timer);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    });
+  }
+  function macLoad(force) {
+    if (!force && MAC.pend) return MAC.pend;
+    if (!force && MAC.at && Date.now() - MAC.at < 4 * 60000 && (MAC.live || MAC.macro)) return null;
+    MAC.pend = Promise.all([
+      macFetch(macBase() + '/api/stock-live').catch(function () { return null; }),
+      macFetch(macBase() + '/api/macro-live').catch(function () { return null; }),
+      macFetch('data/latest-briefing.json').catch(function () { return null; })
+    ]).then(function (rows) {
+      MAC.pend = null; MAC.at = Date.now();
+      MAC.live = rows[0]; MAC.macro = rows[1]; MAC.brief = rows[2];
+      MAC.err = [];
+      if (!rows[0]) MAC.err.push('stock-live');
+      if (!rows[1]) MAC.err.push('macro-live');
+      if (!rows[2]) MAC.err.push('brief');
+      try { if (!S.running) redraw(); } catch (e) {}   /* 녹화 중에는 캔버스를 건드리지 않는다 */
+      return MAC;
+    });
+    return MAC.pend;
+  }
+  function macMaybeLoad() {
+    if (MAC.pend) return;
+    if (MAC.at && Date.now() - MAC.at < 4 * 60000) return;
+    macLoad(false);
+  }
+  /* 브리핑 문장에 적힌 코스피200 야간선물 실측값(공개 실시간 API 없음) */
+  function foxNightFut() {
+    var b = MAC.brief || {};
+    var txt = String((b.summaryLine || '') + ' ' + (b.bodyExcerpt || ''));
+    var m = /야간선물[^\d\n]{0,26}([\d,]+\.[\d]+)\s*(?:pt|p)?\s*(?:\(\s*([+\-][\d.]+)\s*%)?/.exec(txt);
+    if (!m) return null;
+    /* 같은 수 앞뒤에 붙은 시각('22:19 739.35')을 기준 시각으로 쓴다 */
+    var pn = String(m[1]).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var tm = txt.match(new RegExp('(\\d{1,2}:\\d{2})[^\\d]{0,26}' + pn + '|' + pn + '[^\\d]{0,26}(\\d{1,2}:\\d{2})'));
+    var tmTxt = tm ? (tm[1] || tm[2] || '') : '';
+    var dl = String(b.dateLabel || '').replace(/^(\d{4})-(\d{2})-(\d{2}).*$/, '$2/$3');
+    var price = parseFloat(String(m[1]).replace(/,/g, ''));
+    if (!isFinite(price)) return null;
+    return { price: price, disp: String(m[1]), pct: m[2] != null ? parseFloat(m[2]) : null,
+      basis: [dl, tmTxt].filter(Boolean).join(' ') };
+  }
+  function fxVal(v, d) {
+    if (v == null || !isFinite(Number(v))) return '—';
+    return Number(v).toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d });
+  }
+  function foxMacroRows() {
+    var L = MAC.live || {}, MB = MAC.macro || {}, rows = [];
+    var fut = Array.isArray(L.futures) ? L.futures : [], nq = null;
+    fut.forEach(function (f) { if (f && /나스닥/.test(String(f.name || ''))) nq = f; });
+    var sox = (L.macro && L.macro.SOX) || null;
+    var wti = (L.macro && L.macro.WTI) || null;
+    var fx = L.fx || null;
+    var vix = null;
+    (MB.items || []).forEach(function (it) { if (it && it.key === 'vix' && it.ok !== false && it.value != null) vix = it; });
+    var nf = foxNightFut();
+    if (nf) rows.push({ name: '코스피200 야간선물', value: nf.disp, pct: nf.pct, basis: nf.basis || '브리핑 실측' });
+    if (nq && nq.price != null) rows.push({ name: '나스닥100 선물', value: fxVal(nq.price, 2), pct: nq.changePct, basis: String(nq.asOfKst || '마감 확정') });
+    if (sox && sox.price != null) rows.push({ name: '필라델피아 반도체', value: fxVal(sox.price, 2), pct: sox.changePct, basis: String(sox.asOfKst || '마감 확정') });
+    if (fx && fx.price != null) rows.push({ name: '원/달러', value: fxVal(fx.price, 2) + '원', pct: fx.changePct, basis: String(fx.tradedDate || '고시') + ' 고시' });
+    if (wti && wti.price != null) rows.push({ name: 'WTI 원유', value: '$' + fxVal(wti.price, 2), pct: wti.changePct, basis: String(wti.asOfKst || '마감 확정') });
+    if (vix && vix.value != null) rows.push({ name: 'VIX', value: fxVal(vix.value, 2), pct: vix.changePct, basis: String(vix.asOfKst || '마감 확정') });
+    return rows;
+  }
+  /* 야간선물·선물·환율·유가·VIX 가 두 개 이상 나오는 컷 = 글로벌/리스크 컷 */
+  var FX_GLOBAL_WORDS = ['야간선물', '나스닥', '필라델피아', 'SOX', '원/달러', '환율', 'WTI', '유가', 'VIX', '반도체'];
+  function foxGlobalCut(cut) {
+    var t = String((cut && cut.text) || '') + ' ' + String((cut && cut.hook) || '');
+    var hits = 0;
+    FX_GLOBAL_WORDS.forEach(function (k) { if (t.indexOf(k) >= 0) hits++; });
+    return hits >= 2;
+  }
+  /* ④ 6행 비교표 — 지표 · 실측값 · 등락률 · 등락률 막대(단위가 달라도 %는 같은 축) */
+  function drawMacroBoard(ctx, rows, x, y, w, h, pal) {
+    var all = rows || [], n = Math.min(6, all.length), i;
+    if (n < 3 || h < 320) return false;
+    var list = all.slice(0, n);
+    panel(ctx, x, y, w, h, 22, pal.card, pal.edge, 2, 'fx-macro-card');
+    panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, pal.spine, null, 0, 'fx-macro-spine');
+    txLine(ctx, 'GLOBAL · 야간·글로벌 ' + n + '지표', x + 38, y + 30, '900 22px ' + FF, pal.label, 'left', 'fx-macro-label');
+    txLine(ctx, '실측값 · 등락률', x + w - 34, y + 30, '800 19px ' + FF, pal.sub, 'right', 'fx-macro-sub');
+    var headH = 60, footH = 44, avail = h - headH - footH;
+    var rowH = Math.floor(avail / n);
+    var maxAbs = .01;
+    list.forEach(function (r) { maxAbs = Math.max(maxAbs, Math.abs(Number(r.pct) || 0)); });
+    for (i = 0; i < n; i++) {
+      var r = list[i];
+      var t0 = MO.on ? moEase(MO.tIn - i * .12, .3) : 1;
+      if (t0 <= 0) continue;
+      var ry = y + headH + i * rowH;
+      var pct = (r.pct == null || !isFinite(Number(r.pct))) ? null : Number(r.pct);
+      var col = pct == null ? pal.sub : (pct < 0 ? '#1E40AF' : (pct > 0 ? '#B91C1C' : pal.sub));
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, t0);
+      var nf = fitText(ctx, r.name, { w: w - 380, h: 32, base: 27, min: 17, weight: 900, lh: 1.1 });
+      txLine(ctx, nf.lines[0] || '', x + 38, ry + 22, nf.font, pal.ink, 'left', 'fx-macro-name');
+      var bf = fitText(ctx, String(r.basis || ''), { w: w - 380, h: 22, base: 17, min: 12, weight: 700, lh: 1.1 });
+      txLine(ctx, bf.lines[0] || '', x + 38, ry + 46, bf.font, pal.sub, 'left', 'fx-macro-basis');
+      var vf = fitText(ctx, String(r.value || '—'), { w: 210, h: 34, base: 29, min: 16, weight: 900, lh: 1.1 });
+      txLine(ctx, vf.lines[0] || '', x + w - 206, ry + 22, vf.font, pal.num, 'right', 'fx-macro-value');
+      txLine(ctx, pct == null ? '—' : fmtPct(pct), x + w - 34, ry + 22, '900 27px ' + FF, col, 'right', 'fx-macro-pct');
+      var bx = x + 38, bw = w - 76, by = ry + rowH - 26, bh = 10;
+      panel(ctx, bx, by, bw, bh, 5, pal.chip, null, 0, 'fx-macro-track');
+      var fw = pct == null ? 0 : Math.max(6, bw * (Math.abs(pct) / maxAbs) * t0);
+      if (fw > 0) panel(ctx, bx, by, fw, bh, 5, col, null, 0, 'fx-macro-fill');
+      if (i < n - 1) panel(ctx, bx, ry + rowH - 6, bw, 1.5, .75, pal.rule, null, 0, 'fx-macro-rule');
+      ctx.restore();
+    }
+    var ft = '관제탑 실측 · 야간선물은 브리핑 실측 시각 · 미 지표는 마감 확정값';
+    var ff = fitText(ctx, ft, { w: w - 76, h: 28, base: 19, min: 13, weight: 800, lh: 1.1 });
+    txLine(ctx, ff.lines[0] || '', x + 38, y + h - 24, ff.font, pal.sub, 'left', 'fx-macro-foot');
+    return true;
+  }
+
   /* 컷 → 시각물 종류 */
   function foxVisualOf(cut, idx, n) {
     var t = tplOf();
     var items = (chartItems(cut) || []).slice(0, 6);
     var trend = foxTrendPts(cut);
+    /* ④ 야간·글로벌 컷은 6지표 비교표 — 실측값이 3개 이상 모였을 때만 */
+    if (foxGlobalCut(cut) && foxMacroRows().length >= 3) return { kind: 'macro' };
+    /* ③ 머니무브 컷('이탈 → 유입')은 양식(card·chart·line)과 무관하게 도트 모션 비교 카드.
+          양쪽 목록을 못 만들면 아래 원래 양식 규칙으로 그대로 떨어진다. */
+    if (smartFlowOf(cut) && (smartHits(SMART_RE.flow, smartTextOf(cut)) >= 2 || /→|⟶|➜|⇒|->/.test(String(cut.text || '')))
+        && foxFlowDetail(cut)) return { kind: 'flow' };
     if (t === 'line') {
       /* 🎨 내용 맞춤(스마트) — 컷 내용에 따라 4가지 시각물로 갈라진다 */
       var kind = smartKindOf(cut, idx || 0, n || 0);
@@ -18336,21 +18602,18 @@ var CSVoice = (function () {
       panel(ctx, cx - 1.5, py - 3, 3, 12, 1.5, C.hair, null, 0, 'fx-prog-tick');
     });
   }
-  /* ---------- ② 헤드라인 — 자막 줄 · 900 웨이트 · 자간 좁게 ---------- */
+  /* ---------- ② 헤드라인 — 62px 800 · 1.22 행간 · 형광펜 띠 없이 숫자 컬러만 ---------- */
   function drawFoxTitle(ctx, spec, cut, idx) {
     var C = fxPal(), g = FXG.title;
     var head = String((cut && cut.text) || '').trim() || String(spec.hookTitle || '');
     if (!head) return;
     ctx.save();
     fxTight(ctx, true);
-    var fit = fitText(ctx, head, { w: g.w, h: g.h, base: 80, min: 40, weight: 900, lh: 1.04 });
+    /* ② 80px 900 → 62px 800: 크기를 한 단계 줄이고 행간을 벌려 시원하게 읽히게 한다.
+       노란 형광펜 띠는 2KPI 와 엉켜 보여 없앴다 — 숫자만 버건디로 강조한다. */
+    var fit = fitText(ctx, head, { w: g.w, h: g.h, base: 62, min: 42, weight: 800, lh: 1.22 });
     var y0 = g.y + Math.max(0, (g.h - fit.height) / 2);
-    var swp = INV ? 0 : moSweepP();
     for (var i = 0; i < fit.lines.length; i++) {
-      if (i === 0 && swp > 0) {
-        ctx.font = fit.font;
-        moHl(ctx, g.x, y0 + fit.lineH / 2, ctx.measureText(fit.lines[i]).width, fit.lineH, swp, { maxW: g.w, alpha: .78 });
-      }
       txWords(ctx, fit.lines[i], g.x, y0 + i * fit.lineH + fit.lineH / 2, fit.font,
         function (tok) { return /\d/.test(tok) ? C.num : C.ink; }, 'fx-title');
     }
@@ -18359,23 +18622,32 @@ var CSVoice = (function () {
   }
   /* ---------- ③ 평면 2KPI ---------- */
   function drawFoxKpiRow(ctx, cut) {
-    var k = foxKpiList(cut);
+    /* ③ 이탈→유입 컷은 두 변의 실측 등락률을 그대로 2KPI 로 — 카드 안 수치와 같은 출처 */
+    var det = foxFlowDetail(cut), fk = [];
+    if (det) {
+      if (det.outPct != null) fk.push({ disp: fmtPct(det.outPct), label: '이탈 등락률' });
+      if (det.intoPct != null) fk.push({ disp: fmtPct(det.intoPct), label: '유입 등락률' });
+    }
+    var k = fk.length ? fk : foxKpiList(cut);
     if (!k.length) return false;
+    /* ② 헤드라인(62px)보다 작은 60px 로 두고, 숫자 아래 얇은 밑줄 + 회색 라벨로 위계를 만든다 */
     return drawFlatKpis(ctx, k, FXG.kpi, {
-      num: fxPal().num, ink: fxPal().ink, sub: fxPal().sub,
-      rule1: fxPal().accent, rule2: INV ? 'rgba(248,243,234,.34)' : 'rgba(16,32,47,.30)'
+      num: fxPal().num, ink: fxPal().ink, sub: fxPal().sub, vSize: 60, ruleDy: 66, labelDy: 90,
+      rule1: fxPal().accent, rule2: 'rgba(16,32,47,.30)'
     });
   }
   /* ---------- ④ 중앙 시각물 + ⑤ 여우 ---------- */
   function drawFoxVisual(ctx, spec, cut, idx, pose, hero) {
     var g = FXG.vis;
-    idxMaybeLoad();                                        /* 지수 꺾은선 재료 — 관제탑 /api/index-chart */
+    idxMaybeLoad();
+    macMaybeLoad();                                        /* ④ 야간·글로벌 6지표 실측 */                                        /* 지수 꺾은선 재료 — 관제탑 /api/index-chart */
     var v = foxVisualOf(cut, idx, (S.cuts || []).length);
     var vw = hero ? g.w - 358 : g.w;
     var ok = false;
     if (v.kind === 'line') ok = drawTrendCard(ctx, v.trend, g.x, g.y, vw, g.h, FX_TREND_PAL);
     else if (v.kind === 'bar') ok = drawBarCard(ctx, v.items, g.x, g.y, vw, g.h, FX_BAR_PAL);
     else if (v.kind === 'flow') ok = drawFoxMove(ctx, cut, g.x, g.y, vw, g.h, FX_LIST_PAL);
+    else if (v.kind === 'macro') ok = drawMacroBoard(ctx, foxMacroRows(), g.x, g.y, vw, g.h, FX_BAR_PAL);
     else if (v.kind === 'check') ok = drawFoxCheck(ctx, cut, g.x, g.y, vw, g.h, FX_LIST_PAL);
     if (!ok) drawListCard(ctx, cut, g.x, g.y, vw, g.h, FX_LIST_PAL);
     if (hero) drawFox(ctx, pose, SAFE.r - 340, g.y + Math.round((g.h - 340) / 2), 340);
@@ -18502,7 +18774,8 @@ var CSVoice = (function () {
     var tIn = Math.max(0, t - cut.start);
     var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
     var pose = foxPoseOf(cut, idx);
-    INV = (idx === foxWarnIdx(cuts));
+    var warnIdx = foxWarnIdx(cuts);       /* ① 경고 컷도 배경을 뒤집지 않는다 — 작은 속보 배지로만 표시 */
+    INV = false;
     var tone = foxTone(cut.text);
     var sh = tone === 'warn' ? Math.max(0, 1 - tIn / 1.2) : 0;
     SHAKE.x = sh ? +(Math.sin(tIn * 47) * 2.2 * sh).toFixed(2) : 0;
@@ -18513,7 +18786,7 @@ var CSVoice = (function () {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
     foxBands(ctx, pose);
-    if (INV) foxBreaking(ctx);
+    if (idx === warnIdx) foxBreaking(ctx);
     if (tone === 'up') foxParticles(ctx, tIn);
     var ein = moInP();
     var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
@@ -22234,6 +22507,10 @@ var CSVoice = (function () {
     visuals: function () { return (S.cuts || []).map(function (c, i) { return smartKindOf(c, i, S.cuts.length); }); },
     visual: function (cut, i) { return smartKindOf(cut || (S.cuts || [])[0] || {}, i || 0, (S.cuts || []).length || 1); },
     flowOf: function (cut) { return smartFlowOf(cut); },
+    flowDetail: function (cut) { return foxFlowDetail(cut); },
+    macroRows: function () { return foxMacroRows(); },
+    macroLoad: macLoad,
+    macroRaw: function () { return MAC; },
     render: function (t) { if (t == null) redraw(); else { try { drawFrame(t); } catch (e) {} } },
     audit: audit,
     auditBoxes: function (opt) {
