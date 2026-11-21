@@ -17083,6 +17083,15 @@ var CSVoice = (function () {
     var s = Math.abs(+v || 0).toFixed(2);
     return (v < 0 ? '-' : '') + s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
+  /* 축 눈금 표기 — 실측 지수는 소수 2자리, 컷 수치 폴백은 조/억으로 줄여 쓴다 */
+  function fmtTrendVal(v, real) {
+    if (real) return fmtIdxNum(v);
+    var a = Math.abs(+v || 0), s = v < 0 ? '-' : '';
+    if (a >= 1e12) return s + (a / 1e12).toFixed(a >= 1e13 ? 0 : 1).replace(/\.0$/, '') + '조';
+    if (a >= 1e8) return s + Math.round(a / 1e8).toLocaleString('ko-KR') + '억';
+    if (a >= 1e4) return s + Math.round(a / 1e4).toLocaleString('ko-KR') + '만';
+    return s + Math.round(a).toLocaleString('ko-KR');
+  }
   function foxTrendPts(cut) {
     if (idxReady()) {
       return { real: true, tag: '관제탑 실측', name: IDX.name + ' 최근 ' + IDX.pts.length + '거래일',
@@ -17135,7 +17144,7 @@ var CSVoice = (function () {
       ctx.globalAlpha = .55; ctx.strokeStyle = 'rgba(16,32,47,.28)'; ctx.lineWidth = 1.5;
       ctx.setLineDash([6, 7]); ctx.beginPath(); ctx.moveTo(px0, gy); ctx.lineTo(px1, gy); ctx.stroke();
       ctx.restore();
-      txLine(ctx, fmtIdxNum(gv), x + w - 24, gy, '800 17px ' + FF, 'rgba(16,32,47,.38)', 'right', 'fx-line-grid');
+      txLine(ctx, fmtTrendVal(gv, tr.real), x + w - 24, gy, '800 17px ' + FF, 'rgba(16,32,47,.38)', 'right', 'fx-line-grid');
     }
     /* 변곡점 — 추세 방향의 끝점(저점/고점). 양 끝은 피해서 잡는다 */
     var down = pts[n - 1].c < pts[0].c;
@@ -17240,7 +17249,7 @@ var CSVoice = (function () {
       }
     }
     /* 하단 — 변곡점 라벨 */
-    var lab = (down ? '저점 ' : '고점 ') + (pts[fi].disp || fmtIdxNum(pts[fi].c)) + (tr.real ? ' · ' + pts[fi].d : '');
+    var lab = (tr.real ? (down ? '저점 ' : '고점 ') : '변곡 ') + (pts[fi].disp || fmtTrendVal(pts[fi].c, tr.real)) + (tr.real ? ' · ' + pts[fi].d : '');
     txLine(ctx, lab, x + 38, y + h - 34, '900 24px ' + FF, FX.wine, 'left', 'fx-line-foot');
     return true;
   }
