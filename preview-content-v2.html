@@ -17788,7 +17788,8 @@ var CSVoice = (function () {
       : (y + Math.max(0, (34 + (tfit ? tfit.height + 24 : 0) + cardH - 360) / 2));
     /* 상단 신호 칩(우측)과 여우가 겹치지 않게 — 여우 PNG는 불투명 정사각이라 칩을 덮어 버린다 */
     if (fx && fx.signal) foxY = Math.max(foxY, y + 62);
-    drawFox(ctx, pose, 594, Math.round(foxY), 360);
+    /* ① 경고 컷 — 여우도 같이 미세하게 떨린다(여우 x 594~954 · 오른쪽 여유 6px 안) */
+    drawFox(ctx, pose, 594 + SHAKE.x, Math.round(foxY + SHAKE.y), 360);
   }
   /* 하단 — 그림자·명암 대비 확보한 에디토리얼 자막 카드 */
   function drawFoxCaption(ctx, cut, p, spec) {
