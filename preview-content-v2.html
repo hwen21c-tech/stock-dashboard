@@ -18414,6 +18414,23 @@ var CSVoice = (function () {
   /* ---------- ③ 컷 문장에서 주요 수치 2개 ---------- */
   /* KPI 설명 한 줄 — 단위 낱말만 걷어내고 '저점' 같은 낱말은 살린다(cleanLabel 은 '점'까지 지운다) */
   var FX_WEAK = { '오늘': 1, '지금': 1, '현재': 1, '이번': 1, '여기': 1, '이거': 1, '가격': 1, '기준': 1, '정도': 1, '대비': 1, '이': 1, '그': 1, '저': 1 };
+  /* ② 라벨이 될 수 없는 말 — 조사·서술어 어미·부사가 라벨로 붙어
+        '300억 / 모였습니다'·'900억 / 달리'·'… / 없습니다'처럼 깨지는 것을 막는다.
+        걸리면 라벨을 포기하고 한 칸 더 앞 낱말을 본다(끝까지 없으면 '오늘의 숫자'). */
+  var FX_BADLAB = { '모였습니다': 1, '없습니다': 1, '있습니다': 1, '합니다': 1, '됩니다': 1, '입니다': 1,
+    '했습니다': 1, '됐습니다': 1, '갔습니다': 1, '왔습니다': 1, '났습니다': 1, '봤습니다': 1,
+    '달리': 1, '함께': 1, '위해': 1, '따라': 1, '비해': 1, '넘게': 1, '넘어': 1, '가까이': 1,
+    '정도': 1, '수준': 1, '이상': 1, '이하': 1, '그리고': 1, '하지만': 1, '그러나': 1, '때문에': 1,
+    '경우': 1, '또한': 1, '역시': 1, '여전히': 1, '거의': 1, '약': 1, '무려': 1, '불과': 1 };
+  var FX_PART_RE = /(에서|에게|으로|부터|까지|보다|처럼|마다|께서|은|는|이|가|을|를|의|에|와|과|도|만|께|로)+$/;
+  function fxBadLabel(w) {
+    var t = String(w || '').replace(/\s+/g, '');
+    if (!t) return true;
+    if (FX_BADLAB[t]) return true;
+    if (/(습니다|니다|세요|해요)$/.test(t)) return true;          /* 서술어 어미('모였습니다'·'없습니다') */
+    if (/^(그|저|이|저|또|다|잘|더|덜|안|못|수)$/.test(t)) return true;
+    return false;
+  }
   function fxKpiLabel(w) {
     var t = String(w || '').replace(/[0-9+\-−.,()%\[\]{}:;]/g, ' ').replace(/\s+/g, ' ').trim();
     if (!t) return '';
@@ -18436,21 +18453,23 @@ var CSVoice = (function () {
       var pre = t.slice(Math.max(0, m.index - 30), m.index)
         .replace(/[0-9+\-−.,()%\[\]{}]/g, ' ').replace(/[·:;|~→]/g, ' ').replace(/\s+/g, ' ').trim();
       var ws = pre.split(' ').filter(Boolean);
-      /* ② 조사만 남은 낱말('에'·'은')은 한 칸 물러나 앞 낱말을 라벨로 쓴다 */
+      /* ② 조사만 남은 낱말('에'·'은')과 서술어 어미('모였습니다')·부사('달리')는
+            라벨로 쓰지 않고 한 칸씩 물러나 앞 낱말을 본다 */
       var last = '', k2 = ws.length - 1;
       while (k2 >= 0) {
         var w0 = ws[k2];
-        var s0 = w0.replace(/(은|는|이|가|을|를|의|에서|부터|까지|으로|로)$/, '');
+        var s0 = w0.replace(FX_PART_RE, '');
         var cand = s0.length >= 2 ? s0 : w0;   /* '종가'·'정가'의 '가'는 조사가 아니라 낱말의 일부 */
-        if (!/^(에|께|와|과|도|만|그|이|저)$/.test(cand) && !/^(원|개|점|배|위|명|건|일|분|박|주|계약|종목)$/.test(cand)) {
-          /* '선물'·'지수'처럼 뜻이 얇은 낱말은 앞 낱말과 붙여 라벨로 쓴다 → '나스닥100 선물' → '나스닥 선물' */
-          if (/^(선물|지수|환율|유가|금리|종목|테마|평균|대금|거래대금)$/.test(cand) && k2 > 0) {
-            var pv = ws[k2 - 1].replace(/[0-9]/g, '').replace(/(은|는|이|가|을|를|의|에서|부터|까지|으로|로)$/, '').trim();
-            if (pv.length >= 2) cand = pv + ' ' + cand;
-          }
-          last = cand; break;
+        if (/^(에|께|와|과|도|만|그|이|저|은|는|을|를)$/.test(cand) || /^(원|개|점|배|위|명|건|일|분|박|주|계약|종목)$/.test(cand)) {
+          k2 -= 1; continue;                   /* 조사 뿐인 낱말 */
         }
-        k2 -= 1;
+        if (fxBadLabel(cand) && fxBadLabel(w0)) { k2 -= 1; continue; }   /* 서술어·부사는 라벨이 아니다 */
+        /* '선물'·'지수'처럼 뜻이 얇은 낱말은 앞 낱말과 붙여 라벨로 쓴다 → '나스닥100 선물' → '나스닥 선물' */
+        if (/^(선물|지수|환율|유가|금리|종목|테마|평균|대금|거래대금)$/.test(cand) && k2 > 0) {
+          var pv = ws[k2 - 1].replace(/[0-9]/g, '').replace(FX_PART_RE, '').trim();
+          if (pv.length >= 2) cand = pv + ' ' + cand;
+        }
+        last = cand; break;
       }
       var lab = fxKpiLabel(last);
       var disp = raw + (u === '만원' ? '만원' : u) + suf;
@@ -18828,8 +18847,9 @@ var CSVoice = (function () {
     return true;
   }
   /* ② 4행 가로 막대표 — 라벨 · 값 · 막대가 0.25초 간격으로 순차 등장 */
-  function drawBarCard(ctx, items, x, y, w, h, pal) {
-    var rows = (items || []).slice(0, 4), n = rows.length, i;
+  function drawBarCard(ctx, items, x, y, w, h, pal, cut) {
+    /* ② 1·2·3위는 값 크기 순 — 맨 위 줄이 가장 큰 값이고 '1위' 문구도 그 줄을 가리킨다 */
+    var rows = barRanked(items, cut).slice(0, 4), n = rows.length, i;
     if (n < 2 || h < 220) return false;
     panel(ctx, x, y, w, h, 22, pal.card, pal.edge, 2, 'fx-bar-card');
     panel(ctx, x + 15, y + 1.5, 6, h - 3, 3, pal.spine, null, 0, 'fx-bar-spine');
@@ -19495,14 +19515,79 @@ var CSVoice = (function () {
     fxTight(ctx, false);
   }
   /* ---------- ③ 평면 2KPI ---------- */
-  function drawFoxKpiRow(ctx, cut) {
+  /* ② 막대표 1·2·3위 — 입력 순서가 아니라 값 크기 순으로 세운다.
+        (한미약품 948억 · 마녀공장 933억 · 한진칼 1,347억 이 입력 순서대로 그려져
+         3번째 줄이 가장 긴데도 맨 위 948억이 '1위'로 찍히던 결함)
+        · 단위가 같을 때만 정렬한다 — 야간선물·VIX·환율처럼 단위가 섞인 표는
+          지표 순서 자체가 뜻이라 그대로 둔다(막대 대신 값만 적는 사양표).
+        · '최저가/할인' 가격 비교는 싼 값이 1위, 그 밖의 금액·수량은 큰 값이 1위. */
+  function barRankDir(items, cut) {
+    var t = String((cut && (cut.text || '')) || '') + ' ' +
+      (items || []).map(function (it) { return String((it && it.label) || ''); }).join(' ');
+    if (/최저가|최저|저렴|싸게|가성비|할인/.test(t)) return 'asc';
+    /* 원·만원 단위만 모인 막대는 가격 비교 — 싼 값이 1위 */
+    var price = true, any = false;
+    (items || []).forEach(function (it) {
+      any = true;
+      if (!/^(원|만원)$/.test(String((it && it.unit) || ''))) price = false;
+    });
+    return (price && any) ? 'asc' : 'desc';
+  }
+  function barRanked(items, cut) {
+    var arr = (items || []).slice(0, 6);
+    if (arr.length < 2) return arr;
+    var same = true;
+    arr.forEach(function (it) { if ((it.unit || '') !== (arr[0].unit || '')) same = false; });
+    if (!same) return arr;
+    var sign = barRankDir(arr, cut) === 'asc' ? 1 : -1;
+    var order = arr.map(function (_, i) { return i; });
+    order.sort(function (a, b) {
+      var d = (Math.abs(Number(arr[a].value) || 0) - Math.abs(Number(arr[b].value) || 0)) * sign;
+      return d || (a - b);                      /* 같은 값이면 입력 순서를 지킨다(안정 정렬) */
+    });
+    return order.map(function (i) { return arr[i]; });
+  }
+  /* 막대 라벨('바이오 한미약품') → 종목명('한미약품') — 2KPI 설명 한 줄에 쓸 이름 */
+  var FX_NAME_TAIL = { '선물': 1, '지수': 1, '환율': 1, '유가': 1, '금리': 1, '종목': 1, '테마': 1, '평균': 1,
+    '대금': 1, '거래대금': 1, '가격': 1, '최저가': 1, '할인': 1, '등락률': 1 };
+  function barNameOf(it) {
+    var full = String((it && it.label) || '').replace(/\s+/g, ' ').trim();
+    if (!full) return '';
+    var ws = full.split(' '), last = ws[ws.length - 1];
+    if (ws.length > 1 && last.length >= 2 && !FX_NAME_TAIL[last] && !/^[\d.,]+$/.test(last)) return last;
+    return full;
+  }
+  /* ② 비교 막대표(bars)가 있는 컷의 2KPI — 나레이션 앞 단어를 기계적으로 잘라
+        '300억 / 모였습니다'·'900억 / 달리'가 되던 자리에, 정렬된 막대표의
+        1·2위 '수치 + 종목명'(1,347억 / 한진칼 · 948억 / 한미약품)을 그대로 쓴다. */
+  function foxBarKpis(cut, idx) {
+    var v = null;
+    try { v = foxVisualOf(cut, idx || 0, (S.cuts || []).length || 1); } catch (e) { v = null; }
+    if (!v || v.kind !== 'bar' || !v.items || v.items.length < 2) return [];
+    /* 막대표와 같은 순서(정렬 후)를 쓴다 — 2KPI와 막대 1위가 어긋나지 않게 */
+    var top = barRanked(v.items, cut).slice(0, 2), out = [];
+    top.forEach(function (it) {
+      if (!it || !it.disp) return;
+      out.push({ disp: it.disp, label: barNameOf(it), value: it.value, unit: it.unit });
+    });
+    if (out.length < 2) return [];
+    /* 이름이 같으면 성격까지 붙여 구분한다 */
+    if (out[0].label && out[0].label === out[1].label) {
+      out[0].label = String(top[0].label || out[0].label);
+      out[1].label = String(top[1].label || out[1].label);
+    }
+    return out;
+  }
+  function drawFoxKpiRow(ctx, cut, idx) {
     /* ③ 이탈→유입 컷은 두 변의 실측 등락률을 그대로 2KPI 로 — 카드 안 수치와 같은 출처 */
     var det = foxFlowDetail(cut), fk = [];
     if (det) {
       if (det.outPct != null) fk.push({ disp: fmtPct(det.outPct), label: '이탈 등락률' });
       if (det.intoPct != null) fk.push({ disp: fmtPct(det.intoPct), label: '유입 등락률' });
     }
-    var k = fk.length ? fk : foxKpiList(cut);
+    /* ② 막대표 컷은 막대표 1·2위를, 아니면 컷 문장의 두 수치를 */
+    var k = fk.length ? fk : foxBarKpis(cut, idx);
+    if (!k.length) k = foxKpiList(cut);
     if (!k.length) return false;
     /* ② 헤드라인(53px)보다 확실히 큰 78px 900 — 숫자 아래 얇은 밑줄 + 회색 라벨로 위계를 만든다.
        색은 값마다: 마이너스/하락 파랑 · 플러스/상승 빨강 · 중립(지수·금액) 네이비 */
@@ -19522,7 +19607,7 @@ var CSVoice = (function () {
     var vw = hero ? g.w - 358 : g.w;
     var ok = false;
     if (v.kind === 'line') ok = drawTrendCard(ctx, v.trend, g.x, g.y, vw, g.h, FX_TREND_PAL, cut);
-    else if (v.kind === 'bar') ok = drawBarCard(ctx, v.items, g.x, g.y, vw, g.h, FX_BAR_PAL);
+    else if (v.kind === 'bar') ok = drawBarCard(ctx, v.items, g.x, g.y, vw, g.h, FX_BAR_PAL, cut);
     else if (v.kind === 'flow') ok = drawFoxMove(ctx, cut, g.x, g.y, vw, g.h, FX_LIST_PAL);
     else if (v.kind === 'macro') ok = drawMacroBoard(ctx, foxMacroRows(), g.x, g.y, vw, g.h, FX_BAR_PAL);
     else if (v.kind === 'check') ok = drawFoxCheck(ctx, cut, g.x, g.y, vw, g.h, FX_LIST_PAL);
@@ -19677,7 +19762,7 @@ var CSVoice = (function () {
     ctx.translate(0, Math.round((1 - ein) * 12));
     if (!covered) {
       drawFoxTitle(ctx, spec, cut, idx);
-      drawFoxKpiRow(ctx, cut);
+      drawFoxKpiRow(ctx, cut, idx);
       drawFoxVisual(ctx, spec, cut, idx, pose, hero);
     }
     drawFoxCaption(ctx, cut, p, spec, idx, cuts.length);
@@ -19702,7 +19787,7 @@ var CSVoice = (function () {
     foxBands(ctx, pose);
     drawFoxHead(ctx, spec, 0, sp.cuts.length, 2.2, sp.cuts.length * 5, [], cut);
     drawFoxTitle(ctx, spec, cut, 0);
-    drawFoxKpiRow(ctx, cut);
+    drawFoxKpiRow(ctx, cut, 0);
     drawFoxVisual(ctx, spec, cut, 0, pose, true);
     drawFoxCaption(ctx, cut, .72, spec, 0, sp.cuts.length);
     drawFoxFoot(ctx, spec, cut);
@@ -19859,11 +19944,11 @@ var CSVoice = (function () {
     }
     if (t === 'chart') {
       var items = (chartItems(cut) || []).slice(0, 5);
-      if (items.length >= 2 && drawBarCard(ctx, items, x, y, w, h, roleBarPal(d))) return 'chart';
+      if (items.length >= 2 && drawBarCard(ctx, items, x, y, w, h, roleBarPal(d), cut)) return 'chart';
     }
     if (d === 'shiba') {
       var pit = (chartItems(cut) || []).slice(0, 5);
-      if (pit.length >= 2 && drawBarCard(ctx, pit, x, y, w, h, roleBarPal(d))) return 'price-bar';
+      if (pit.length >= 2 && drawBarCard(ctx, pit, x, y, w, h, roleBarPal(d), cut)) return 'price-bar';
     }
     if (d === 'penguin' && idx === 0 && dealsTop(4).length >= 3 && drawDealBoard(ctx, R, x, y, w, h, 4)) return 'deal';
     var f = formulaOf(d);
@@ -21775,6 +21860,8 @@ var CSVoice = (function () {
       return;
     }
     /* 3개 이상 — 단위가 같으면 한 축, 다르면 같은 단위끼리 각자의 최대값으로 스케일 */
+    /* ② 같은 단위 비교는 값 내림차순 — 맨 윗줄이 가장 큰 1위(버건디 강조) */
+    items = barRanked(items, cut);
     var n = items.length;
     var maxBy = {};
     items.forEach(function (it) { var k = it.unit || ''; maxBy[k] = Math.max(maxBy[k] || 1, Math.abs(it.value)); });
