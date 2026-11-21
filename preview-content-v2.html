@@ -15393,9 +15393,9 @@ var CSVoice = (function () {
     var out = [], seen = {};
     function push(w){
       var t = String(w || '').replace(/[^가-힣A-Za-z0-9]/g, '');
-      if (charLen(t) >= 2) t = t.replace(/(의|은|는|을|를|과|와|도|만|로|며|던)$/, '');
+      if (charLen(t) >= 2) t = t.replace(/(의|은|는|을|를|과|와|도|만|로|며|던|에)$/, '');
       if (charLen(t) < 2 || /^\d+$/.test(t) || NV_STOP[t] || seen[t]) return;
-      if (/(었다|았다|한다|된다|이다|였다|했|됐|이며|하고|지만|면서)$/.test(t)) return;
+      if (/(었다|았다|한다|된다|이다|였다|입니다|합니다|됩니다|습니|합니|됩니|했|됐|이며|하고|지만|면서)$/.test(t)) return;
       seen[t] = 1;
       out.push(t);
     }
