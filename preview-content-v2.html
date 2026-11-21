@@ -8813,8 +8813,15 @@ var CSVoice = (function () {
        아래 문구로 '시작하는 한 줄'만 박스로 바꾼다. 그 밖의 문장은 건드리지 않는다.
        (티스토리·네이버 스마트에디터에 붙여넣어도 살아남도록 표·div·인라인 스타일만 쓴다) */
     var FOX_YT_SHORTS = 'https://www.youtube.com/@폭스시그널/shorts';
+    /* 줄 앞의 인용·불릿·굵게 표시(**·` 등)를 걷어 낸 뒤 판정한다 — 모델이 굵게 쓴 줄도 박스가 된다 */
+    function foxClean(t){
+      return String(t == null ? '' : t)
+        .replace(/^(?:[\s>*_`~#]+|[-+]\s+)+/, '')
+        .replace(/[\s*_~`]+$/, '')
+        .trim();
+    }
     function isFoxHead(t){
-      t = String(t == null ? '' : t).trim();
+      t = foxClean(t);
       if (!t) return false;
       if (/^(🦊\s*오늘 시장 온도|바쁘면\s*50초|📌\s*여기까지 10초 정리|⚠️\s*오늘의 함정|🛡️\s*오늘의 생존|🎯\s*300억|🧾\s*장전 예상|📅\s*이번 주\s*D-?day|[🟢🟡🔴])/i.test(t)) return true;
       return /──▶|──>/.test(t);
@@ -8961,6 +8968,7 @@ var CSVoice = (function () {
     /* 이 줄이 박스면 { html, next } 를 돌려준다 — 아니면 null */
     function foxCardAt(t, lines, i){
       var g = null, html = null;
+      t = foxClean(t);
       if (/^🦊\s*오늘 시장 온도/.test(t)) { g = foxLines(lines, i + 1); html = foxTemp(t, g.items); }
       else if (/^바쁘면\s*50초/.test(t)) { g = foxLines(lines, i + 1); html = foxShortsBox(g.items); }
       else if (/^📌\s*여기까지 10초 정리/.test(t)) { g = foxLines(lines, i + 1); html = foxBriefBox(g.items); }
@@ -8968,7 +8976,7 @@ var CSVoice = (function () {
         g = foxLines(lines, i + 1);
         var right = [], nx = g.next;
         while (nx < lines.length && !lines[nx].trim()) nx++;
-        if (nx < lines.length && /^🛡️/.test(lines[nx].trim())){
+        if (nx < lines.length && /^🛡️/.test(foxClean(lines[nx]))){
           var g2 = foxLines(lines, nx + 1);
           right = g2.items; nx = g2.next;
         }
@@ -8981,7 +8989,7 @@ var CSVoice = (function () {
       else if (/^[🟢🟡🔴]/.test(t)) {
         var sig = [t], k2 = i + 1;
         while (k2 < lines.length){
-          var st2 = lines[k2].trim();
+          var st2 = foxClean(lines[k2]);
           if (!st2 || !/^[🟢🟡🔴]/.test(st2)) break;
           sig.push(st2); k2++;
         }
@@ -9027,6 +9035,11 @@ var CSVoice = (function () {
           var q = [];
           while (i < lines.length && lines[i].trim().charAt(0) === '>'){
             q.push(lines[i].trim().replace(/^>\s?/, '')); i++;
+          }
+          /* 인용으로 감싼 머니무브 한 줄은 인용구가 아니라 화살표 박스로 */
+          if (q.length === 1 && /──▶|──>/.test(q[0])){
+            var mv = foxMoveBox(q[0]);
+            if (mv){ out.push(mv); continue; }
           }
           out.push('<blockquote style="margin:12px 0 16px;padding:10px 14px;border-left:4px solid #03c75a;background-color:#f8fafc;color:#334155;font-size:13.5px;line-height:1.7">' +
             q.filter(function(x){ return !!x; }).map(function(x){ return '<p style="margin:0 0 4px;background-color:#ffffff">' + inline(x) + '</p>'; }).join('') +
