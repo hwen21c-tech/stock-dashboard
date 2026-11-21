@@ -2595,6 +2595,7 @@
         <div class="wvrow">
           <button class="btn small" id="wvUpBtn" type="button" title="제목 + 설명글 + 해시태그 + 고정 댓글을 한 번에 복사">📋 업로드 세트 복사</button>
           <button class="btn small" id="wvSrtBtn" type="button" title="지금 컷들의 타임스탬프·자막을 표준 .srt 형식으로 복사 — 캡컷·프리미어에서 바로 불러옵니다">📝 자막 SRT 복사</button>
+          <button class="btn small" id="wvThumbBtn" type="button" title="유튜브 쇼츠 업로드용 대표 썸네일 1080×1920 PNG 1장을 바로 저장합니다">🖼️ 쇼츠 대표 썸네일 저장</button>
           <a class="btn small ghost" id="wvDl" hidden download>⬇ 영상 저장</a>
         </div>
         <div class="hint">MP4 우선, 브라우저가 못 만들면 WebM으로 저장합니다. 생성 중에는 이 탭을 닫지 마세요.</div>
@@ -2647,6 +2648,7 @@
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.1 — ✨ 3차 최종 연출·블로그 고도화: ① <b>대본 키워드 자동 연출</b>(급락·사이드카·위험 → 미세 흔들림+빨간 점멸 / 신고가·돌파·우위 → 상승 화살표 파티클) ② <b>경고 컷 1컷만 딥네이비 속보 스킨</b> 반전 후 다음 컷 크림 복귀 ③ <b>0~1초 날짜 스탬프</b> <code>🦊 MM/DD 장전</code> ④ 얇은 <b>3단계 진행 바</b>(현황 → 머니무브 → 대응 기준) ⑤ <b>자막 핵심 숫자·키워드 자동 컬러</b>(버건디/네이비/형광) ⑥ <b>엔딩 시그니처 + NEXT 다음 방송</b> ⑦ <b>🖼️ 쇼츠 대표 썸네일 저장</b>(1080×1920) · ✍️ 블로그 5·6번에 <b>시장 온도·50초 쇼츠 바로가기·10초 정리·머니무브·함정/생존·300억↑ 대장주·예상 vs 실제·신호등·D-day</b> 박스 자동 서식</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.0 — 🦊 2차 고퀄 연출 6종: ① <b>실제 지수 꺾은선</b>(/api/index-chart) 왼→오 드로잉 + 변곡점 Ring·화살표·2.2배 줌인 렌즈(API 실패 시 컷 수치 흐름 폴백) ② 상단 <b>시장 위험 게이지</b> HUD(신호·등락률 → 빨강/노랑/초록으로 차오름) ③ 핵심 숫자 <b>펀치 줌 1.12→1.00 + 효과음 싱크</b>(0.58초) ④ 여우 <b>눈 깜빡임·호흡·흔들림·점프·끄덕임</b> ⑤ 컷 사이 <b>0.30초 여백 + BGM 덕킹(0.12/0.28)</b> ⑥ 블로그 <b>'3초 요약 대표 카드' PNG</b>(1080×1080 · 1200×675)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.9 — ✍️ <b>쇼츠 대본 영역 접기</b>(기본 접힘 · [🎬 쇼츠 대본 생성]·[📱 쇼츠로 변환] 때 자동 펼침) · 🎬 웹 영상 생성기 <b>📝 컷별 화면 배치 메모 + 📋 피클 수정요청 복사</b> · 🦊 폭스시그널에서 <b>📈 모션 차트/비교표형이 실제 막대 차트</b>로 그려짐(수치 없으면 빅넘버 카드) · 녹화 <b>진행률 %</b> 0.5초 갱신 · <b>📝 자막 SRT 복사</b>(캡컷용)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.8 — ✍️ 블로그 <b>2종</b>(🌅 장전 · 🌙 통합 마감(정규+애프터): ① 정규장 결산 → ② NXT 애프터장 15:30~20:00 유지/이탈·신규 재료 → ③ 야간선물·미 선물·환율 → ④ 중요 일정 → ⑤ 리스크 괄호 표기) · 📱 쇼츠·🎬 영상 생성기 <b>4종</b>(🌅 장전 · ☀️ 점심 · 🌆 정규마감 · 🌙 애프터장) <b>1클릭</b> — 실측·NXT·뉴스로 공식·레이아웃 자동 전환, 블로그 글 없이도 동작</div>
@@ -3427,6 +3429,7 @@ function styleBlock(st) {
   const struct = arr(st.structure, 12).map((x) => `- ${s(x, 90)}`).join('\n');
   const symbols = arr(st.symbols, 10).map((x) => `- ${s(x, 130)}`).join('\n');
   const rules = arr(st.rules, 8).map((x) => `- ${s(x, 160)}`).join('\n');
+  const blocks = arr(st.blocks, 12).map((x) => `- ${s(x, 240)}`).join('\n');
   return [
     `\n[블로그 양식 — 「${name}」 스타일 · 구조·호흡·기호·말투만 따른다]`,
     st.who ? `- 이 글이 왜 읽히는가: ${s(st.who, 200)}` : '',
@@ -3435,6 +3438,7 @@ function styleBlock(st) {
     symbols ? `- 쓰는 기호·박스(본문에 실제로 넣는다):\n${symbols}` : '',
     st.voice ? `- 말투 DNA: ${s(st.voice, 320)}` : '',
     rules ? `- 지킬 규칙:\n${rules}` : '',
+    blocks ? `- 반드시 넣는 블록(아래 문구로 시작하는 '독립된 한 줄'로 쓴다 — 그 줄이 서식 박스로 바뀐다):\n${blocks}` : '',
     '- 저작권: 이 사람의 실제 문장을 옮기지 않는다. 뼈대·호흡·기호·말투만 내 글로 다시 쓴다. 글에 이 사람 이름·블로그 이름을 쓰지 않는다.',
   ]
     .filter(Boolean)
@@ -7038,7 +7042,7 @@ var CSVoice = (function () {
       bloggerNo: pk,
       stylePreset: st ? {
         name: st.name, who: st.who, structure: st.structure, rhythm: st.rhythm,
-        symbols: st.symbols, voice: st.voice, rules: st.rules
+        symbols: st.symbols, voice: st.voice, rules: st.rules, blocks: st.blocks
       } : null,
       form: { name: f.name, tone: f.tone, sections: f.sections,
               highlight: [BLOG_FMT_RULE, f.highlight].filter(Boolean).join('\n') },
@@ -7190,7 +7194,7 @@ var CSVoice = (function () {
   }
   function stylePresetPayload(st){
     if (!st) return null;
-    return { name: st.name, who: st.who, structure: st.structure, rhythm: st.rhythm, symbols: st.symbols, voice: st.voice, rules: st.rules };
+    return { name: st.name, who: st.who, structure: st.structure, rhythm: st.rhythm, symbols: st.symbols, voice: st.voice, rules: st.rules, blocks: st.blocks };
   }
   function replaceDraftText(next){
     next = affilAuto(next);
@@ -8697,12 +8701,13 @@ var CSVoice = (function () {
       /* ② 굵게·기울임 */
       t = t.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
       t = t.replace(/(^|[\s(])\*([^*\n]+?)\*(?=[\s).,!?:]|$)/g, '$1<em>$2</em>');
-      /* ③ 수치 색칠 (제목 안쪽은 건너뛴다) */
-      if (!noColor) t = paintNums(t);
-      /* ④ 형광펜 ==핵심 문장== */
+      /* ④ 형광펜 ==핵심 문장== — 수치 색칠보다 먼저 한다
+         (색칠을 먼저 하면 안쪽 span 의 = 때문에 형광펜 짝이 깨져 == 가 그대로 남는다) */
       t = t.replace(/==([^=\n]{2,200}?)==/g, function(m, c){
         return '<span style="background-color:' + MK.mark + ';font-weight:700">' + c + '</span>';
       });
+      /* ③ 수치 색칠 (제목 안쪽은 건너뛴다) */
+      if (!noColor) t = paintNums(t);
       return t.replace(/\u0000(\d+)\u0001/g, function(m, i){ return slot[Number(i)] || ''; });
     }
     function isTableRow(t){ return t.length > 2 && t.charAt(0) === '|' && t.charAt(t.length - 1) === '|'; }
@@ -8804,6 +8809,189 @@ var CSVoice = (function () {
         '<b style="color:#0f172a">📸 사진 자리</b>' + (p.desc ? ' — ' + inline(p.desc) : ' — 이 위치에 사진을 넣으세요') +
         (p.q ? '<br><span style="color:#64748b;font-size:12px">검색어: ' + inline(p.q) + '</span>' : '') + '</div>';
     }
+    /* ── 🦊 폭스시그널 블록 → 블로그 서식 박스 ─────────────────────────────
+       아래 문구로 '시작하는 한 줄'만 박스로 바꾼다. 그 밖의 문장은 건드리지 않는다.
+       (티스토리·네이버 스마트에디터에 붙여넣어도 살아남도록 표·div·인라인 스타일만 쓴다) */
+    var FOX_YT_SHORTS = 'https://www.youtube.com/@폭스시그널/shorts';
+    function isFoxHead(t){
+      t = String(t == null ? '' : t).trim();
+      if (!t) return false;
+      if (/^(🦊\s*오늘 시장 온도|바쁘면\s*50초|📌\s*여기까지 10초 정리|⚠️\s*오늘의 함정|🛡️\s*오늘의 생존|🎯\s*300억|🧾\s*장전 예상|📅\s*이번 주\s*D-?day|[🟢🟡🔴])/i.test(t)) return true;
+      return /──▶|──>/.test(t);
+    }
+    function foxLines(lines, i){
+      var out = [], n = lines.length;
+      while (i < n){
+        var t = lines[i].trim();
+        if (!t) break;
+        if (/^#{1,4}\s+/.test(t) || t.charAt(0) === '>' || isTableRow(t)) break;
+        if (/^([-*_])\1{2,}$/.test(t) || PHOTO_LINE_RE.test(t)) break;
+        if (out.length && isFoxHead(t)) break;
+        out.push(t.replace(/^[-*]\s+/, '').replace(/^\d+[.)]\s+/, ''));
+        i++;
+      }
+      return { items: out, next: i };
+    }
+    function foxRows(items){
+      return items.map(function(x){
+        return '<div style="margin:4px 0 0;font-size:13.5px;line-height:1.7;color:#334155">· ' + inline(x) + '</div>';
+      }).join('');
+    }
+    function foxTemp(head, items){
+      var rest = String(head).replace(/^🦊\s*/, '').replace(/오늘 시장 온도\s*:?\s*/, '');
+      var m = /(\d{1,3})/.exec(rest);
+      var sc = m ? Math.max(0, Math.min(100, parseInt(m[1], 10))) : null;
+      var col = sc == null ? '#64748b' : sc >= 70 ? '#B91C1C' : sc >= 45 ? '#B45309' : '#15803D';
+      var word = sc == null ? '확인 필요' : sc >= 70 ? '뜨거움 · 변동성 경계' : sc >= 45 ? '관망 · 방향 확인' : '차가움 · 위험 선호 회복';
+      var h = '<div style="margin:16px 0 18px;padding:14px 16px;border:1px solid #e5d8bd;border-radius:12px;background-color:#fdf8ec">' +
+        '<div style="font-size:12px;font-weight:800;color:#8a7a5c">🦊 오늘 시장 온도</div>' +
+        '<div style="margin-top:3px"><span style="font-size:30px;font-weight:900;line-height:1.1;color:' + col + '">' + (sc == null ? '—' : sc) + '</span>' +
+        '<span style="font-size:13px;font-weight:800;color:#8a7a5c">&nbsp;점' + (sc == null ? '' : ' / 100') + '</span>' +
+        '<span style="margin-left:9px;font-size:12.5px;font-weight:800;color:' + col + '">' + word + '</span></div>';
+      if (sc != null){
+        h += '<table role="presentation" style="width:100%;border-collapse:collapse;margin:8px 0 0"><tbody><tr>' +
+          '<td width="' + Math.max(4, sc) + '%" style="height:10px;background-color:' + col + ';font-size:1px;line-height:1px">&nbsp;</td>' +
+          '<td width="' + Math.max(4, 100 - sc) + '%" style="height:10px;background-color:#e2e8f0;font-size:1px;line-height:1px">&nbsp;</td>' +
+          '</tr></tbody></table>';
+      }
+      if (items.length) h += '<div style="margin-top:8px;font-size:12.5px;line-height:1.7;color:#8a7a5c">' + items.map(function(x){ return inline(x); }).join(' ') + '</div>';
+      return h + '</div>';
+    }
+    function foxShortsBox(items){
+      var sub = items.length
+        ? items.map(function(x){ return inline(x); }).join(' ')
+        : '장전 · 점심 · 마감 · 애프터 시황을 50초 영상으로 먼저 봅니다.';
+      return '<div style="margin:16px 0;padding:12px 15px;border-radius:12px;background-color:#10202F">' +
+        '<div style="font-size:14.5px;font-weight:800;color:#F8F3EA">▶ 바쁘면 50초 쇼츠로</div>' +
+        '<div style="margin-top:3px;font-size:12.5px;line-height:1.7;color:#d8cfc0">' + sub + '</div>' +
+        '<div style="margin-top:8px"><a href="' + FOX_YT_SHORTS + '" target="_blank" rel="noopener" style="font-size:13px;font-weight:800;color:#F8F3EA;text-decoration:none;border-bottom:1px solid #C9A25E">youtube.com/@폭스시그널 쇼츠 ▶</a></div></div>';
+    }
+    function foxBriefBox(items){
+      return '<div style="margin:18px 0;padding:13px 16px;border-left:5px solid #9f1239;border-radius:0 10px 10px 0;background-color:#fdf8ec">' +
+        '<div style="font-size:13.5px;font-weight:900;color:#781b33">📌 여기까지 10초 정리</div>' +
+        (items.length ? '<div style="margin-top:5px">' + foxRows(items) + '</div>' : '') + '</div>';
+    }
+    function foxMoveBox(head){
+      var parts = String(head).split(/[─—–\-]{2,}\s*[▶>]|→|▶/).map(function(x){
+        return x.replace(/^[^가-힣A-Za-z0-9+%]+/, '').replace(/^(이탈|유입)\s*섹터\s*[:：]?\s*/, '').trim();
+      }).filter(function(x){ return !!x; });
+      if (parts.length < 2) return null;
+      var cols = ['#fdf2f4', '#eef2ff', '#f0fdf4', '#fffbeb'];
+      var bds = ['#f5c9d4', '#c9d5f7', '#bbf7d0', '#fde68a'];
+      var h = '<div style="margin:16px 0;padding:12px 14px;border:1px solid #e8e4da;border-radius:12px;background-color:#ffffff">' +
+        '<div style="font-size:12px;font-weight:800;color:#8a7a5c">💰 머니무브 — 자금이 옮겨간 곳</div>' +
+        '<table role="presentation" style="width:100%;border-collapse:collapse;margin-top:8px"><tbody><tr>';
+      parts.forEach(function(p, k){
+        if (k) h += '<td style="width:34px;text-align:center;font-size:15px;font-weight:900;color:#9f1239">▶</td>';
+        h += '<td style="text-align:center;padding:7px 8px;border:1px solid ' + bds[k % 4] + ';border-radius:9px;background-color:' + cols[k % 4] + ';font-size:13px;font-weight:800;line-height:1.5;color:#0f172a">' + inline(p) + '</td>';
+      });
+      h += '</tr></tbody></table>' +
+        '<div style="margin-top:7px;font-size:11.5px;color:#8a7a5c">왼쪽에서 빠진 자금이 오른쪽으로 들어왔다는 뜻입니다.</div></div>';
+      return h;
+    }
+    function foxVsBox(head, left, right){
+      var two = !!(right && right.length);
+      var hl = head.replace(/^⚠️\s*/, '').replace(/^오늘의\s*함정\s*/, '').replace(/\s*(vs|VS|대)\s*.*$/, '').trim();
+      if (!two && /🛡️/.test(head) && left.length >= 4){
+        var half = Math.ceil(left.length / 2);
+        right = left.slice(half); left = left.slice(0, half); two = true;
+      }
+      function col(title, items, bg, bd, ink){
+        return '<td width="50%" valign="top" style="padding:11px 12px;border:1px solid ' + bd + ';border-radius:10px;background-color:' + bg + '">' +
+          '<div style="font-size:12.5px;font-weight:900;color:' + ink + '">' + title + '</div>' +
+          (items.length ? '<div style="margin-top:5px">' + foxRows(items) + '</div>' : '') + '</td>';
+      }
+      var h = '<div style="margin:18px 0">';
+      if (hl) h += '<div style="font-size:12.5px;font-weight:800;color:#8a7a5c;margin-bottom:6px">' + inline(hl) + '</div>';
+      h += '<table role="presentation" style="width:100%;border-collapse:separate;border-spacing:8px 0"><tbody><tr>' +
+        col('⚠️ 오늘의 함정', left, '#fef2f2', '#fecaca', '#b91c1c');
+      if (two) h += col('🛡️ 오늘의 생존', right, '#f0fdf4', '#bbf7d0', '#15803d');
+      h += '</tr></tbody></table></div>';
+      return h;
+    }
+    function foxLeaderBox(items){
+      var rows = items.map(function(x){
+        var ps = String(x).split(/\s*[·|]\s*/).filter(function(y){ return !!y; });
+        if (!ps.length) return '';
+        var name = ps.shift();
+        var rest = ps.map(function(y){
+          var hot = /기준/.test(y);
+          return '<span style="margin-left:8px;font-size:12px;font-weight:800;color:' + (hot ? '#1e40af' : '#475569') + '">' + inline(y) + '</span>';
+        }).join('');
+        return '<div style="margin-top:7px;padding:8px 11px;border-radius:9px;background-color:#f8fafc">' +
+          '<span style="font-size:13.5px;font-weight:900;color:#0f172a">' + inline(name) + '</span>' + rest + '</div>';
+      }).filter(Boolean).join('');
+      return '<div style="margin:18px 0;padding:13px 15px;border:1px solid #e5d8bd;border-radius:12px;background-color:#ffffff">' +
+        '<div style="font-size:12.5px;font-weight:900;color:#781b33">🎯 300억↑ 대장주 <span style="font-weight:800;color:#8a7a5c">— 내일 09:00 관찰 기준선 포함</span></div>' +
+        (rows || '<div style="margin-top:6px;font-size:12.5px;color:#8a7a5c">확인된 300억↑ 종목이 없습니다.</div>') + '</div>';
+    }
+    function foxRecapBox(items){
+      var ex = '', ac = '';
+      items.forEach(function(x){
+        if (/^예상\s*[:：]/.test(x)) ex = x.replace(/^예상\s*[:：]\s*/, '');
+        else if (/^실제\s*[:：]/.test(x)) ac = x.replace(/^실제\s*[:：]\s*/, '');
+        else if (!ex) ex = x;
+        else ac = ac ? ac + ' ' + x : x;
+      });
+      function line(lab, body, col){
+        return '<div style="margin-top:6px;font-size:13px;line-height:1.7;color:#334155"><b style="color:' + col + '">' + lab + '</b> ' + inline(body || '—') + '</div>';
+      }
+      return '<div style="margin:18px 0;padding:12px 15px;border:1px dashed #b08d57;border-radius:11px;background-color:#fffdf7">' +
+        '<div style="font-size:12.5px;font-weight:900;color:#781b33">🧾 장전 예상 vs 실제 결과</div>' +
+        line('예상', ex, '#64748b') + line('실제', ac, '#0f172a') + '</div>';
+    }
+    function foxSignalBox(items){
+      if (!items.length) return null;
+      var tone = { '🟢': ['#f0fdf4', '#bbf7d0', '#15803d'], '🟡': ['#fffbeb', '#fde68a', '#b45309'], '🔴': ['#fef2f2', '#fecaca', '#b91c1c'] };
+      var h = '<div style="margin:18px 0;padding:13px 15px;border:1px solid #e5e8ef;border-radius:12px;background-color:#ffffff">' +
+        '<div style="font-size:12.5px;font-weight:900;color:#0f172a">🚦 내일 대응 신호등</div>';
+      items.forEach(function(x){
+        var t = tone[x.slice(0, 2)] || ['#f8fafc', '#e2e8f0', '#334155'];
+        h += '<div style="margin-top:7px;padding:8px 11px;border:1px solid ' + t[1] + ';border-radius:9px;background-color:' + t[0] + ';font-size:13px;line-height:1.7;color:' + t[2] + '">' + inline(x) + '</div>';
+      });
+      return h + '</div>';
+    }
+    function foxDdayBox(items){
+      return '<div style="margin:18px 0;padding:12px 15px;border-radius:12px;background-color:#10202F">' +
+        '<div style="font-size:12.5px;font-weight:900;color:#F8F3EA">📅 이번 주 D-day</div>' +
+        (items.length ? '<div style="margin-top:6px">' + items.map(function(x){
+          return '<div style="margin-top:4px;font-size:13px;line-height:1.7;color:#d8cfc0">· ' + inline(x) + '</div>';
+        }).join('') + '</div>' : '') + '</div>';
+    }
+    /* 이 줄이 박스면 { html, next } 를 돌려준다 — 아니면 null */
+    function foxCardAt(t, lines, i){
+      var g = null, html = null;
+      if (/^🦊\s*오늘 시장 온도/.test(t)) { g = foxLines(lines, i + 1); html = foxTemp(t, g.items); }
+      else if (/^바쁘면\s*50초/.test(t)) { g = foxLines(lines, i + 1); html = foxShortsBox(g.items); }
+      else if (/^📌\s*여기까지 10초 정리/.test(t)) { g = foxLines(lines, i + 1); html = foxBriefBox(g.items); }
+      else if (/^⚠️\s*오늘의 함정/.test(t)) {
+        g = foxLines(lines, i + 1);
+        var right = [], nx = g.next;
+        while (nx < lines.length && !lines[nx].trim()) nx++;
+        if (nx < lines.length && /^🛡️/.test(lines[nx].trim())){
+          var g2 = foxLines(lines, nx + 1);
+          right = g2.items; nx = g2.next;
+        }
+        html = foxVsBox(t, g.items, right);
+        g = { next: nx };
+      }
+      else if (/^🎯\s*300억/.test(t)) { g = foxLines(lines, i + 1); html = foxLeaderBox(g.items); }
+      else if (/^🧾\s*장전 예상/.test(t)) { g = foxLines(lines, i + 1); html = foxRecapBox(g.items); }
+      else if (/^📅\s*이번 주\s*D-?day/i.test(t)) { g = foxLines(lines, i + 1); html = foxDdayBox(g.items); }
+      else if (/^[🟢🟡🔴]/.test(t)) {
+        var sig = [t], k2 = i + 1;
+        while (k2 < lines.length){
+          var st2 = lines[k2].trim();
+          if (!st2 || !/^[🟢🟡🔴]/.test(st2)) break;
+          sig.push(st2); k2++;
+        }
+        html = foxSignalBox(sig);
+        g = { next: k2 };
+      }
+      else if (/──▶|──>/.test(t)) { html = foxMoveBox(t); if (!html) return null; g = { next: i + 1 }; }
+      if (html == null) return null;
+      return { html: html, next: g ? g.next : i + 1 };
+    }
     function mdToHtml(md, flavor){
       var lines = String(md == null ? '' : md).replace(/\r\n?/g, '\n').split('\n');
       var out = [], i = 0;
@@ -8843,6 +9031,12 @@ var CSVoice = (function () {
           out.push('<blockquote style="margin:12px 0 16px;padding:10px 14px;border-left:4px solid #03c75a;background-color:#f8fafc;color:#334155;font-size:13.5px;line-height:1.7">' +
             q.filter(function(x){ return !!x; }).map(function(x){ return '<p style="margin:0 0 4px;background-color:#ffffff">' + inline(x) + '</p>'; }).join('') +
             '</blockquote>');
+          continue;
+        }
+        var fcard = foxCardAt(t, lines, i);
+        if (fcard){
+          out.push(fcard.html);
+          i = fcard.next;
           continue;
         }
         if (listMatch(lines[i])){
@@ -9751,19 +9945,38 @@ var CSVoice = (function () {
         id:'stockFoxPre', fox:'pre', name:'🦊 폭스시그널 · 🌅 장전 시황', label:'5번 🦊 폭스시그널 장전 시황',
         who:'밤사이 미 증시와 야간선물을 먼저 정리하고, 오늘 시초가에서 볼 테마 2~3개로 압축하는 장전 브리핑',
         structure:['밤사이 미 증시 — 나스닥·S&P500·반도체(SOX) 마감과 선물','야간선물·원/달러·유가 — 숫자 3줄','오늘 시초가 주목 테마 2~3개와 그 이유','개장 전 체크 — 오늘 일정·공시·지수 위치','강세·약세 두 갈래 대응 시나리오'],
-        rhythm:'첫 3줄은 결론과 숫자로 끊는다. 소제목마다 2~3문장, 표는 한 개만.',
+        rhythm:'첫 2줄은 질문형 훅으로 연다(예: \"외인이 3일째 팔고 있다. 오늘도 같은 이유였을까?\"). 그다음 하루를 시간순 인과로 잇는다 — 밤사이 → 시초 갭 → 오전 변곡 → 오후. 소제목마다 2~3문장, 표는 한 개만. 어려운 지표 옆에는 괄호로 한 줄 통역을 붙인다(예: VIX 30.90(공포지수 30 돌파 = 급등락 경계)).',
         symbols:['📌 장전 3줄 요약','| 지표 | 밤사이 | 시초가 기준 | 표','==오늘의 핵심 문장== 형광펜 3~5곳','[📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부]','[📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부]','🦊 폭스시그널 장전 시황'],
+        blocks:['🦊 오늘 시장 온도: OO점 — 글 맨 위 첫 줄. 0~100 정수 하나. 바로 다음 줄에 괄호로 근거 1줄(예: (수급 -1조2,311억·환율 1,395원·낙폭 -1.8% 반영))',
+          '바쁘면 50초 쇼츠로 ▶ — 시장 온도 바로 아래 한 줄. 링크는 넣지 않는다(쇼츠 박스가 자동으로 붙는다)',
+          '📌 여기까지 10초 정리 — 글 중간(전체의 45~55% 지점)에 한 번. 바로 아래 3줄을 \"- \" 로 시작',
+          '이탈 섹터 ──▶ 유입 섹터 — 수급 문단 끝에 한 줄. 왼쪽에 빠진 섹터, 오른쪽에 들어온 섹터를 가운뎃점(·)으로 2개까지(예: 2차전지·반도체 ──▶ 바이오·방산)',
+          '⚠️ 오늘의 함정 — 대비 박스 왼쪽. 바로 아래 \"- \" 2~3줄(저유동성 추격·공매도 과열 등)',
+          '🛡️ 오늘의 생존 — 대비 박스 오른쪽. 바로 아래 \"- \" 2~3줄(300억↑+외인 유입 유지 등)',
+          '🎯 300억↑ 대장주 — 미니 카드. 아래 줄마다 \"종목 · 등락률 · 거래대금 · 이유 1줄 · 기준선 4,870\" 형식으로 최대 3줄(관찰 기준선 숫자는 종목당 1개)',
+          '🟢 돌파 — 마무리 직전 3줄 신호등. 각 줄을 🟢 / 🟡 / 🔴 로 시작하고 조건을 한 줄로',
+          '📅 이번 주 D-day — 글 맨 아래 2줄(예: 11/24(월) · 한은 금통위)'],
         voice:'건조한 브리핑체. "~입니다"로 끝내고 감탄사는 쓰지 않는다. 숫자는 소수점까지 그대로 옮긴다.',
-        rules:['확정 종가와 프리마켓·장중 값을 구분한다','전망은 추정이라고 밝힌다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','수급을 다룬 문단 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','상승·하락 종목을 다룬 문단 바로 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','없는 종목·수치를 만들지 않고 모르는 값은 [확인 필요]로 둔다']
+        rules:['확정 종가와 프리마켓·장중 값을 구분한다','전망은 추정이라고 밝힌다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','수급을 다룬 문단 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','상승·하락 종목을 다룬 문단 바로 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','없는 종목·수치를 만들지 않고 모르는 값은 [확인 필요]로 둔다','블록 줄은 문장 속에 섞지 않고 독립된 한 줄로 쓴다(그 줄만 보고 박스로 바뀐다)','제목과 소제목에 검색하는 말을 자연스럽게 넣는다(예: \"코스피 하락 이유\", \"내일 증시 전망\") — 제목 1곳, 소제목 2곳 이상. 같은 말을 기계적으로 반복하지 않는다','첫 인사·정의로 시작하지 않는다 — 첫 2줄이 질문형 훅이다']
       },
       6: {
         id:'stockFoxUnified', fox:'after', name:'🦊 폭스시그널 · 🌙 통합 마감(정규+애프터)', label:'6번 🦊 폭스시그널 통합 마감(정규+애프터)',
         who:'정규장 결산에 NXT 애프터장(15:30~20:00)의 유지·이탈, 야간선물·일정까지 붙여 다음 거래일 시초 조건으로 닫는 통합 마감 글',
         structure:['① 정규장 마감 결산 — 확정 지수·거래대금·수급·대장주','② NXT 애프터장(15:30~20:00) — 정규장 강세주 유지/이탈 + 장 마감 후 새로 뜬 종목·공시/뉴스','③ 야간선물·미 선물·환율 현황','④ 중요 증시 일정 — 오늘/내일/이번 주 핵심 일정과 시장 영향','⑤ 리스크 괄호 표기와 한 줄 총평 — 다음 거래일 시초 조건'],
-        rhythm:'①은 표 → 해석 2~3문장, ②는 종목별 "정규 종가 → 시간외 → 종가比"를 한 줄씩. ③④는 불릿 3~4개, ⑤는 두 문장으로 닫는다.',
+        rhythm:'첫 2줄은 질문형 훅으로 연다(예: "외인이 판 하루, 시간외에서는 돌아섰을까?"). ①은 표 → 해석 2~3문장, ②는 종목별 "정규 종가 → 시간외 → 종가比"를 한 줄씩. ③④는 불릿 3~4개, ⑤는 두 문장으로 닫는다. 지표 옆에는 괄호로 한 줄 통역을 붙인다(예: VIX 30.90(공포지수 30 돌파 = 급등락 경계)).',
         symbols:['| 구분 | 코스피 | 코스닥 | 표','💰 유지 / 🚪 이탈','🌙 NXT 15:30~20:00','📅 오늘·내일·이번 주 일정','==오늘의 결론== 형광펜 3~5곳','[📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부]','[📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부]','🦊 폭스시그널 통합 마감'],
+        blocks:['🦊 오늘 시장 온도: OO점 — 글 맨 위 첫 줄. 0~100 정수 하나 + 다음 줄에 근거 1줄(괄호)',
+          '바쁘면 50초 쇼츠로 ▶ — 시장 온도 바로 아래 한 줄(링크는 넣지 않는다)',
+          '🧾 장전 예상 vs 실제 — ① 정규장 결산 뒤 2줄 복기. \"예상: ...\" 다음 줄 \"실제: ...\"',
+          '📌 여기까지 10초 정리 — 글 중간에 한 번. 바로 아래 3줄을 \"- \" 로 시작',
+          '이탈 섹터 ──▶ 유입 섹터 — 수급 문단 끝에 한 줄(예: 2차전지·반도체 ──▶ 바이오·방산)',
+          '⚠️ 오늘의 함정 — 대비 박스 왼쪽. 바로 아래 \"- \" 2~3줄',
+          '🛡️ 오늘의 생존 — 대비 박스 오른쪽. 바로 아래 \"- \" 2~3줄',
+          '🎯 300억↑ 대장주 — 미니 카드. 아래 줄마다 \"종목 · 등락률 · 거래대금 · 이유 1줄 · 기준선 4,870\" 형식으로 최대 3줄',
+          '🟢 돌파 — 마무리 직전 3줄 신호등. 각 줄을 🟢 / 🟡 / 🔴 로 시작',
+          '📅 이번 주 D-day — 글 맨 아래 2줄'],
         voice:'정리하는 해설체. "~로 마감했습니다", "~가 남았습니다". 확정치는 소수점까지 그대로 옮긴다.',
-        rules:['확정 종가·확정 수급만 단정하고 장중 값은 시각과 함께 쓴다','②에는 정규장 강세주가 시간외에서 종가 위에 남았는지(유지) 종가 아래로 밀렸는지(이탈)를 종목마다 구분해 적는다','장 마감 뒤 새로 뜬 종목은 공시·보도로 재료가 확인된 것만 쓰고, 확인 못 한 재료는 [확인 필요]로 둔다','종목 옆 리스크는 괄호로 구분한다 — 실제 지정 종목은 (투자주의 지정)·(투자경고 지정)·(거래정지)처럼 사실대로 쓰고, 지정 사실이 확인되지 않은 급등주는 (단기 급등·과열 주의)로 적는다','③에는 야간선물·미 선물·원/달러를 숫자와 시각으로 적고, 받지 못한 값은 [확인 필요]로 둔다','④에는 오늘/내일/이번 주 일정과 그 일정이 시장에 미칠 영향을 한 줄씩 붙인다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','수급을 다룬 문단 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','상승·하락 종목을 다룬 문단 바로 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','없는 종목·수치를 만들지 않고 모르는 값은 [확인 필요]로 둔다']
+        rules:['블록 줄은 문장 속에 섞지 않고 독립된 한 줄로 쓴다(그 줄만 보고 박스로 바뀐다)','첫 인사·정의로 시작하지 않는다 — 첫 2줄이 질문형 훅이다','제목과 소제목에 검색하는 말을 자연스럽게 넣는다(예: \"코스피 하락 이유\", \"내일 증시 전망\") — 제목 1곳, 소제목 2곳 이상','확정 종가·확정 수급만 단정하고 장중 값은 시각과 함께 쓴다','②에는 정규장 강세주가 시간외에서 종가 위에 남았는지(유지) 종가 아래로 밀렸는지(이탈)를 종목마다 구분해 적는다','장 마감 뒤 새로 뜬 종목은 공시·보도로 재료가 확인된 것만 쓰고, 확인 못 한 재료는 [확인 필요]로 둔다','종목 옆 리스크는 괄호로 구분한다 — 실제 지정 종목은 (투자주의 지정)·(투자경고 지정)·(거래정지)처럼 사실대로 쓰고, 지정 사실이 확인되지 않은 급등주는 (단기 급등·과열 주의)로 적는다','③에는 야간선물·미 선물·원/달러를 숫자와 시각으로 적고, 받지 못한 값은 [확인 필요]로 둔다','④에는 오늘/내일/이번 주 일정과 그 일정이 시장에 미칠 영향을 한 줄씩 붙인다','중요 결론 3~5곳을 ==문장==으로 감싼다(형광펜)','상승·유입 수치는 +부호, 하락·유출 수치는 -부호를 숫자에 붙인다','수급을 다룬 문단 바로 다음 줄에 [📸 여기에 ② 투자자별 수급 그래프(flow.png) 첨부] 를 그대로 한 줄 넣는다','상승·하락 종목을 다룬 문단 바로 다음 줄에 [📸 여기에 ③ 상승·하락 종목 대비 그래프(sectors.png) 첨부] 를 그대로 한 줄 넣는다','없는 종목·수치를 만들지 않고 모르는 값은 [확인 필요]로 둔다']
       }
     },
     living: {
@@ -10019,6 +10232,9 @@ var CSVoice = (function () {
       st.structure.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ol></div>';
     h += '<div class="stline"><span class="sk">호흡</span><span>' + esc(st.rhythm || '—') + '</span></div>';
     h += '<div class="stline"><span class="sk">기호</span><span>' + (st.symbols.length ? st.symbols.map(function(x){ return esc(x); }).join(' · ') : '—') + '</span></div>';
+    if (st.blocks && st.blocks.length){
+      h += '<div class="stline"><span class="sk">블록</span><span>' + st.blocks.map(function(x){ return esc(String(x).split(' — ')[0]); }).join(' · ') + '</span></div>';
+    }
     h += '<div class="stline"><span class="sk">말투</span><span>' + esc(st.voice || '—') + '</span></div>';
     if (st.rules && st.rules.length){
       h += '<div class="stline"><span class="sk">금지</span><span>' + st.rules.map(function(x){ return esc(x); }).join(' · ') + '</span></div>';
@@ -16820,7 +17036,7 @@ var CSVoice = (function () {
     return w;
   }
   /* 단어별 색(숫자·키워드 하이라이트)을 섞어 한 줄을 그린다 */
-  function txWords(ctx, line, x, yMid, font, colorFn, label, alpha, align, outline) {
+  function txWords(ctx, line, x, yMid, font, colorFn, label, alpha, align, outline, markFn) {
     var s = String(line == null ? '' : line);
     if (!s) return 0;
     ctx.font = font; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
@@ -16837,6 +17053,18 @@ var CSVoice = (function () {
       cx = x0;
     }
     for (i = 0; i < parts.length; i++) {
+      /* ⑤ 형광 마커 — 글자 뒤에만 칠한다(줄바꿈·폭 계산은 그대로) */
+      if (markFn) {
+        var mc = markFn(parts[i], i);
+        if (mc) {
+          var mh = Math.max(8, fontPx(font) * .92);
+          ctx.save();
+          ctx.fillStyle = mc;
+          rr(ctx, cx - 2, yMid - mh / 2, Math.max(4, ws[i] + 4), mh, 3);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
       ctx.fillStyle = colorFn(parts[i], i) || '#f1f5f9';
       ctx.fillText(parts[i], cx, yMid);
       cx += ws[i] + sp;
@@ -16849,15 +17077,207 @@ var CSVoice = (function () {
 
   /* ---------- 🦊 폭스시그널 에디토리얼 렌더러 ---------- */
   function foxBands(ctx, pose) {
-    ctx.fillStyle = foxBg(pose);
+    var C = fxPal();
+    ctx.fillStyle = INV ? C.bg : foxBg(pose);
     ctx.fillRect(0, 0, CW, CH);
-    ctx.fillStyle = FX.band;
+    ctx.fillStyle = C.band;
     ctx.fillRect(0, 0, CW, SAFE.y);
     ctx.fillRect(0, SAFE.b, CW, CH - SAFE.b);
-    ctx.fillStyle = 'rgba(16,32,47,.10)';
+    ctx.fillStyle = C.hair;
     ctx.fillRect(0, SAFE.y - 1, CW, 2);
     ctx.fillRect(0, SAFE.b - 1, CW, 2);
   }
+  /* ══════════════════════════════════════════════════════════════════════
+     🎬 3차 최종 연출 — ① 대본 키워드 자동 연출  ② 경고 컷 딥네이비 반전
+       ③ 0~1초 날짜 스탬프  ④ 3단계 진행 바  ⑤ 자막 핵심어 컬러
+       ⑥ 엔딩 시그니처 카드  ⑦ 대표 썸네일 저장
+     ─ 모두 컷이 시작된 뒤 흐른 시간(MO.tIn)만 쓴다 → 녹화(30fps)에서도 곱셈 몇 번.
+     ─ 세이프 존(좌 60·우 120·상 180·하 380) 밖에는 '장식'만 그린다(rec 기록 없음).
+     ══════════════════════════════════════════════════════════════════════ */
+  var FX_WARN_STRONG = /사이드카|서킷|폭락|급락|하한가|위험|경고/;
+  var FX_WARN_SOFT = /주의|매물|반대매매|이탈|쓸어|쏟아|충격|악재|약세|빨간불|하락/;
+  var FX_UP = /신고가|급등|돌파|우위|상한가|반등|강세|수혜|호재|유입|순매수|훈풍|회복/;
+  var INV = false;                                  /* ② 경고 컷 반전 상태 */
+  var SHAKE = { x: 0, y: 0 };                       /* ① 흔들림 — rec() 가 실제 좌표로 기록 */
+  function foxTone(txt) {
+    var t = String(txt || '');
+    if (FX_WARN_STRONG.test(t) || FX_WARN_SOFT.test(t)) return 'warn';
+    if (FX_UP.test(t)) return 'up';
+    return '';
+  }
+  function foxWarnScore(txt) {
+    var t = String(txt || ''), s = 0;
+    var a = t.match(/사이드카|서킷|폭락|급락|하한가|위험|경고/g);
+    var b = t.match(/주의|매물|반대매매|이탈|쓸어|쏟아|충격|악재|약세|빨간불|하락/g);
+    if (a) s += a.length * 3;
+    if (b) s += b.length;
+    return s;
+  }
+  /* ② 뒤집을 컷 1개 — 강한 경고가 최소 한 번은 있어야 한다(약한 '주의' 하나로 화면을 뒤집지 않는다) */
+  function foxWarnIdx(cuts) {
+    var best = -1, bs = 0;
+    (cuts || []).forEach(function (c, i) {
+      var s = foxWarnScore(c && c.text);
+      if (s > bs) { bs = s; best = i; }
+    });
+    return bs >= 3 ? best : -1;
+  }
+  function fxPal() {
+    return INV
+      ? { bg: '#0d1829', band: '#0a1524', hair: 'rgba(248,243,234,.16)', ink: FX.cream, sub: 'rgba(248,243,234,.66)',
+          wm: 'rgba(248,243,234,.42)', num: '#FCA5A5', accent: '#E11D48', pill: FX.wine, pillInk: FX.cream, chip: 'rgba(248,243,234,.10)' }
+      : { bg: FX.cream, band: FX.band, hair: 'rgba(16,32,47,.12)', ink: FX.navy, sub: 'rgba(16,32,47,.62)',
+          wm: 'rgba(16,32,47,.40)', num: FX.wine, accent: FX.wine, pill: FX.navy, pillInk: FX.cream, chip: 'rgba(16,32,47,.08)' };
+  }
+  function riskColorOn(lv) {
+    if (!INV) return riskColor(lv);
+    return lv >= 70 ? '#FCA5A5' : lv >= 45 ? '#FCD34D' : '#86EFAC';
+  }
+  /* ② 속보 스트립 — 상단 밴드(0~180)의 장식. 세이프 존 밖이라 rec 하지 않는다 */
+  function foxBreaking(ctx) {
+    ctx.save();
+    ctx.fillStyle = FX.wine;
+    ctx.fillRect(0, 0, CW, 52);
+    ctx.font = '900 27px ' + FF;
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    ctx.fillStyle = FX.cream;
+    ctx.fillText('🔴 속보 · 시장 급변', SAFE.x, 27);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(248,243,234,.78)';
+    ctx.fillText('LIVE', SAFE.r, 27);
+    ctx.restore();
+  }
+  /* ① 상승 화살표 파티클 — 좌·우 여백(x 60 미만 / 960 초과)을 조용히 올라간다 */
+  function foxParticles(ctx, tIn) {
+    var t = Math.max(0, tIn || 0);
+    ctx.save();
+    ctx.lineWidth = 7; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    for (var i = 0; i < 12; i++) {
+      var ph = (t * .38 + i * .093) % 1;
+      var rise = 1 - Math.pow(1 - ph, 2);
+      var right = i % 2 === 0;
+      var x = right ? (SAFE.r + 30 + (i * 17) % 76) : (18 + (i * 13) % 38);
+      var y = 1880 - rise * 700;
+      ctx.globalAlpha = Math.max(0, Math.sin(Math.PI * ph)) * (i % 3 === 0 ? .74 : .56);
+      ctx.strokeStyle = i % 3 === 0 ? FX.wine : '#1E40AF';
+      var s3 = 11 + (i % 3) * 2;
+      ctx.beginPath();
+      ctx.moveTo(x - s3, y + s3 + 2); ctx.lineTo(x, y); ctx.lineTo(x + s3, y + s3 + 2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  /* ③ 0~1.0초 오늘 날짜 스탬프 — 쿵 찍혔다가 자연스럽게 사라진다 */
+  var FX_SLOT_SHORT = { '1': '장전', '2': '점심', '3': '마감', '4': '애프터', '5': '속보' };
+  function fxStampLabel() {
+    var d = new Date();
+    return '🦊 ' + pad(d.getMonth() + 1) + '/' + pad(d.getDate()) + ' ' + (FX_SLOT_SHORT[formulaKey('fox')] || '시황');
+  }
+  function drawDateStamp(ctx, t) {
+    if (!(t <= 1.0)) return;
+    var k = t < .13 ? moEase(t, .13) : 1;                 /* 쿵 — 1.28배에서 1.0으로 */
+    var sc = 1 + .28 * (1 - k);
+    var a = t < .66 ? 1 : Math.max(0, 1 - (t - .66) / .34);
+    if (a <= 0.01) return;
+    var lab = fxStampLabel();
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.translate(CW / 2, 812);
+    ctx.rotate(-5 * Math.PI / 180);
+    ctx.scale(sc, sc);
+    ctx.font = '900 52px ' + FF;
+    var w = Math.min(600, ctx.measureText(lab).width + 84), h = 104;
+    ctx.shadowColor = 'rgba(16,32,47,.22)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 9;
+    /* 회전·확대한 좌표계 안이라 panel() 대신 직접 그린다(감사 박스는 화면 좌표로 따로 기록) */
+    rr(ctx, -w / 2, -h / 2, w, h, 18);
+    ctx.fillStyle = 'rgba(248,243,234,.96)';
+    ctx.fill();
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = FX.wine; ctx.lineWidth = 5;
+    rr(ctx, -w / 2, -h / 2, w, h, 18);
+    ctx.stroke();
+    ctx.fillStyle = FX.wine;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(lab, 0, 3);
+    ctx.restore();
+    rec(CW / 2 - (w * sc) / 2 - 12, 812 - (h * sc) / 2 - 12, w * sc + 24, h * sc + 24, 'fx-stamp-box');
+  }
+  /* ④ 얇고 조용한 3단계 진행 바 — 컷 진행에 따라 현재 구간만 점등 */
+  var FX_STEPS = ['현황', '머니무브', '대응 기준'];
+  function foxStepAt(idx, n) {
+    var pos = (idx + .5) / Math.max(1, n);
+    return pos < 1 / 3 ? 0 : pos < 2 / 3 ? 1 : 2;
+  }
+  function drawFoxSteps(ctx, idx, n) {
+    if (n < 2) return;
+    var C = fxPal(), cur = foxStepAt(idx, n), i, ws = [];
+    var fs = '900 20px ' + FF;
+    ctx.font = fs;
+    for (i = 0; i < 3; i++) ws.push(ctx.measureText(FX_STEPS[i]).width + 26);
+    var gap = 44, total = ws[0] + ws[1] + ws[2] + gap * 2;
+    var x = SAFE.x + Math.max(0, (SAFE.w - total) / 2), y = 350;
+    for (i = 0; i < 3; i++) {
+      var on = i === cur, past = i < cur;
+      panel(ctx, x, y, ws[i], 34, 17, on ? FX.wine : C.chip, null, 0, 'fx-step');
+      txLine(ctx, FX_STEPS[i], x + ws[i] / 2, y + 18, fs, on ? FX.cream : (past ? C.ink : C.sub), 'center', 'fx-step-t', on ? 1 : .78);
+      if (i < 2) {
+        ctx.save();
+        ctx.globalAlpha = (past || on) ? .45 : .2;
+        ctx.fillStyle = C.ink;
+        ctx.fillRect(x + ws[i] + 8, y + 16, gap - 16, 2);
+        ctx.restore();
+        rec(x + ws[i] + 8, y + 15, gap - 16, 4, 'fx-step-line');
+      }
+      x += ws[i] + gap;
+    }
+  }
+  /* ⑥ 엔딩 시그니처 카드 — 마지막 컷 끝 1.5초에 여우 인사 + 티스토리 안내 + 다음 방송 예고 */
+  var FX_NEXT = { '1': '☀️ 점심 시황', '2': '🌆 정규마감 시황', '3': '🌙 애프터장 결산', '4': '🌅 내일 장전 시황', '5': '🌙 애프터장 결산' };
+  function drawFoxEnding(ctx, cut, tIn) {
+    var left = (cut && cut.dur ? cut.dur : 0) - tIn;
+    if (left > 1.5) return;
+    var a = Math.min(1, Math.max(0, (1.5 - left) / .24));
+    if (a <= 0.01) return;
+    var w = SAFE.w, h = 420, x = SAFE.x, y = 640;     /* 세이프 존 폭 전체 — 본문 카드를 덮는 엔딩 카드 */
+    ctx.save();
+    ctx.globalAlpha = a;
+    ctx.shadowColor = 'rgba(16,32,47,.26)';
+    ctx.shadowBlur = 30; ctx.shadowOffsetY = 12;
+    panel(ctx, x, y, w, h, 26, FX.paper, 'rgba(201,162,94,.92)', 3, 'fx-end-card');
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    panel(ctx, x + 48, y + 52, 8, 104, 4, FX.wine, null, 0, 'fx-end-rule');
+    var f1 = fitText(ctx, '🦊 오늘도 끝까지 봐주셔서 고마워요', { w: w - 150, h: 56, base: 42, min: 26, weight: 900, lh: 1.2 });
+    txLine(ctx, f1.lines[0] || '', x + 78, y + 86, f1.font, FX.navy, 'left', 'fx-end-1');
+    var f2 = fitText(ctx, '상세 표·차트는 프로필 링크 티스토리에서', { w: w - 150, h: 44, base: 30, min: 20, weight: 800, lh: 1.2 });
+    txLine(ctx, f2.lines[0] || '', x + 78, y + 142, f2.font, 'rgba(16,32,47,.72)', 'left', 'fx-end-2');
+    var lab = 'NEXT ▶ ' + (FX_NEXT[formulaKey('fox')] || '다음 시황');
+    ctx.font = '900 30px ' + FF;
+    var bw = Math.min(w - 156, ctx.measureText(lab).width + 64);
+    panel(ctx, x + 78, y + 200, bw, 64, 32, FX.navy, null, 0, 'fx-end-next');
+    txLine(ctx, lab, x + 78 + bw / 2, y + 233, '900 30px ' + FF, FX.cream, 'center', 'fx-end-next-t');
+    panel(ctx, x + 78, y + 296, 120, 6, 3, 'rgba(16,32,47,.14)', null, 0, 'fx-end-rule2');
+    txLine(ctx, 'youtube.com/@폭스시그널', x + 78, y + 344, '800 26px ' + FF, FX.wine, 'left', 'fx-end-3');
+    ctx.restore();
+  }
+  /* ⑤ 자막 핵심어 자동 컬러 — 숫자·핵심 키워드만 버건디/네이비 + 형광 마커 */
+  var CAP_WARN = /급락|폭락|하락|이탈|주의|위험|경고|매도|약세|사이드카|매물|손절|빨간불|충격/;
+  var CAP_UP = /급등|상승|돌파|신고가|우위|매수|강세|유입|회복|반등|수혜|호재/;
+  var CAP_KEY = /현금|유지|이탈|관망|우위|주의|돌파|신고가|급등|급락|폭락|사이드카|반대매매|매물|손절|기준선|대장주|관찰/;
+  function capColorOf(tok) {
+    var t = String(tok || '').replace(/[^0-9A-Za-z가-힣%+\-.·]/g, '');
+    if (!t) return '';
+    if (CAP_WARN.test(t)) return '#9F1239';
+    if (CAP_UP.test(t)) return '#1E40AF';
+    if (/\d/.test(t)) return /^[-−]/.test(t) ? '#9F1239' : '#1E40AF';
+    return '';
+  }
+  function capMarkOf(tok) {
+    var t = String(tok || '').replace(/[^0-9A-Za-z가-힣%]/g, '');
+    if (CAP_KEY.test(t)) return 'rgba(246,225,153,.72)';
+    if (/\d/.test(t) && /%|억|조|계약|pt/.test(t)) return 'rgba(246,225,153,.72)';
+    return '';
+  }
+
   /* 🏷️ 시간대 배지 — 지금 선택된 폭스시그널 공식을 상단에 한 글자로 못 박는다 */
   var FOX_SLOT_LABEL = { '1': '🌅 장전', '2': '☀️ 점심', '3': '🌆 정규마감', '4': '🌙 애프터장', '5': '🚨 긴급 장분석' };
   /* 🏷️ 상단 배지 — 사용자가 직접 쓴 문구(자유 배지)가 있으면 그 값이, 없으면 그 공식의 기본 배지가 나온다 */
@@ -16899,19 +17319,20 @@ var CSVoice = (function () {
   }
   function riskColor(lv) { return lv >= 70 ? '#B91C1C' : lv >= 45 ? '#B45309' : '#15803D'; }
   function drawFoxGauge(ctx, cut) {
+    var C = fxPal();
     var h = 36, y = SAFE.y + 110;
     var r = foxRisk(cut || {});
     var col = riskColor(r.lv);
     var lab = '⚠ 시장 위험', lf = '900 23px ' + FF;
     ctx.font = lf;
     var lw = ctx.measureText(lab).width + 26;
-    panel(ctx, SAFE.x, y, lw, h, h / 2, 'rgba(16,32,47,.08)', null, 0, 'fx-risk-pill');
-    txLine(ctx, lab, SAFE.x + 14, y + h / 2 + 1, lf, 'rgba(16,32,47,.70)', 'left', 'fx-risk-label');
+    panel(ctx, SAFE.x, y, lw, h, h / 2, C.chip, null, 0, 'fx-risk-pill');
+    txLine(ctx, lab, SAFE.x + 14, y + h / 2 + 1, lf, C.sub, 'left', 'fx-risk-label');
     var x0 = SAFE.x + lw + 18, x1 = SAFE.r - 208;
-    panel(ctx, x0, y + h / 2 - 8, x1 - x0, 16, 8, 'rgba(16,32,47,.13)', null, 0, 'fx-risk-track');
+    panel(ctx, x0, y + h / 2 - 8, x1 - x0, 16, 8, C.chip, null, 0, 'fx-risk-track');
     var p = MO.on ? moEase(MO.tIn, .9) : 1;
     /* 값이 차오르는 동안 색도 같이 데워진다 — 초록 → 노랑 → 빨강 */
-    var curLv = r.lv * p, curCol = riskColor(curLv);
+    var curLv = r.lv * p, curCol = riskColorOn(curLv);
     var fw = Math.max(0, (x1 - x0) * (curLv / 100));
     if (fw > 3) {
       ctx.save();
@@ -16929,21 +17350,22 @@ var CSVoice = (function () {
     }
     [25, 50, 75].forEach(function (t) {
       var tx = x0 + (x1 - x0) * (t / 100);
-      panel(ctx, tx - 1, y + h / 2 - 13, 2, 26, 1, 'rgba(16,32,47,.16)', null, 0, 'fx-risk-tick');
+      panel(ctx, tx - 1, y + h / 2 - 13, 2, 26, 1, C.hair, null, 0, 'fx-risk-tick');
     });
     var vt = '위험 ' + Math.round(curLv) + '% · ' + r.sg.txt;
     txLine(ctx, vt, SAFE.r, y + h / 2 + 1, '900 24px ' + FF, curCol, 'right', 'fx-risk-val');
   }
   /* 상단 — 🦊 폭스시그널 브랜드 필 + 시간대 배지 + 컷 카운터 + 진행 프로그레스 바 */
   function drawFoxHead(ctx, spec, idx, n, t, total, cuts, cut) {
+    var C = fxPal();
     var y = SAFE.y + 14, h = 64;
     var label = '🦊 폭스시그널';
     var f = '900 30px ' + FF;
     ctx.font = f;
     var tw = ctx.measureText(label).width;
     var w = tw + 52;
-    panel(ctx, SAFE.x, y, w, h, h / 2, FX.navy, null, 0, 'fx-brand');
-    txLine(ctx, label, SAFE.x + 26, y + h / 2 + 1, f, FX.cream, 'left', 'fx-brand-text');
+    panel(ctx, SAFE.x, y, w, h, h / 2, C.pill, null, 0, 'fx-brand');
+    txLine(ctx, label, SAFE.x + 26, y + h / 2 + 1, f, C.pillInk, 'left', 'fx-brand-text');
     /* 🏷️ 시간대 배지 — 브랜드 필 바로 오른쪽 · 컷 카운터와 겹치지 않을 때만 그린다 */
     var slot = foxSlotBadge();
     if (slot) {
@@ -16972,20 +17394,20 @@ var CSVoice = (function () {
       }
     }
     txLine(ctx, ('0' + (idx + 1)).slice(-2) + ' / ' + ('0' + n).slice(-2), SAFE.r, y + 21,
-      '800 24px ' + FF, 'rgba(16,32,47,.62)', 'right', 'fx-counter');
+      '800 24px ' + FF, C.sub, 'right', 'fx-counter');
     var wm = String((spec && spec.watermark) || '').trim();
     /* 폭스시그널 템플릿은 채널 기본 워터마크를 쓴다(옵션에서 직접 바꾸면 그 값이 우선) */
     if (!wm || wm === '연오랑의 3분 시황') wm = '폭스시그널 · 오늘의 시장 신호';
-    if (wm) txLine(ctx, wm, SAFE.r, y + 50, '700 21px ' + FF, 'rgba(16,32,47,.40)', 'right', 'fx-wm');
+    if (wm) txLine(ctx, wm, SAFE.r, y + 50, '700 21px ' + FF, C.wm, 'right', 'fx-wm');
     var py = y + h + 18;
-    panel(ctx, SAFE.x, py, SAFE.w, 8, 4, 'rgba(16,32,47,.12)', null, 0, 'fx-prog-track');
+    panel(ctx, SAFE.x, py, SAFE.w, 8, 4, C.chip, null, 0, 'fx-prog-track');
     var den = Math.max(.1, total || 0);
     var fr = Math.min(1, (t || 0) / den);
-    panel(ctx, SAFE.x, py, Math.max(8, SAFE.w * fr), 8, 4, FX.wine, null, 0, 'fx-prog');
+    panel(ctx, SAFE.x, py, Math.max(8, SAFE.w * fr), 8, 4, C.accent, null, 0, 'fx-prog');
     (cuts || []).forEach(function (c) {
       if (!(c.start > 0)) return;
       var cx = SAFE.x + SAFE.w * (c.start / den);
-      panel(ctx, cx - 1.5, py - 4, 3, 16, 2, 'rgba(16,32,47,.30)', null, 0, 'fx-prog-tick');
+      panel(ctx, cx - 1.5, py - 4, 3, 16, 2, C.hair, null, 0, 'fx-prog-tick');
     });
     /* ② 시장 위험 게이지 HUD — 브랜드 필·진행 바 아래 한 줄 */
     drawFoxGauge(ctx, cut);
@@ -17301,6 +17723,7 @@ var CSVoice = (function () {
     return true;
   }
   function drawFoxMain(ctx, spec, cut, idx, pose, p) {
+    var FXC = fxPal();
     var slot = SLOTS.main;
     var title = (idx === 0 && spec.hookTitle) ? spec.hookTitle : (cut.hook || spec.hookTitle || '');
     var big = foxBig(cut.text) || foxBig(title);
@@ -17316,10 +17739,10 @@ var CSVoice = (function () {
     var fx = formulaOf('fox');
     var ex = ((fx && fx.eye) || 'SIGNAL') + ' ' + ('0' + ((cut.idx || 0) + 1)).slice(-2);
     var ef = '900 23px ' + FF;
-    txLine(ctx, ex, slot.x, y + 12, ef, FX.wine, 'left', 'fx-eyebrow');
+    txLine(ctx, ex, slot.x, y + 12, ef, FXC.num, 'left', 'fx-eyebrow');
     ctx.font = ef;
     var ew = ctx.measureText(ex).width;
-    panel(ctx, slot.x + ew + 16, y + 11, Math.max(20, 470 - ew - 16), 3, 1.5, 'rgba(16,32,47,.16)', null, 0, 'fx-rule');
+    panel(ctx, slot.x + ew + 16, y + 11, Math.max(20, 470 - ew - 16), 3, 1.5, FXC.hair, null, 0, 'fx-rule');
     if (fx && fx.signal) {
       var sg = foxRisk(cut).sg;
       var sgf = '900 24px ' + FF;
@@ -17338,7 +17761,7 @@ var CSVoice = (function () {
           moHl(ctx, slot.x, ty + tfit.lineH / 2, ctx.measureText(tfit.lines[i]).width, tfit.lineH, swp, { maxW: 512, alpha: .8 });
         }
         txWords(ctx, tfit.lines[i], slot.x, ty + i * tfit.lineH + tfit.lineH / 2, tfit.font,
-          function (tok) { return /\d/.test(tok) ? FX.wine : FX.navy; }, 'fx-title');
+          function (tok) { return /\d/.test(tok) ? FXC.num : FXC.ink; }, 'fx-title');
       }
       ty += tfit.height + 24;
     }
@@ -17379,19 +17802,39 @@ var CSVoice = (function () {
     ctx.shadowOffsetY = 10;
     panel(ctx, slot.x, cy, slot.w, cardH, 26, FX.paper, 'rgba(16,32,47,.16)', 2, 'fx-cap-card');
     ctx.restore();
-    panel(ctx, slot.x + 30, cy + 26, 60, 7, 3.5, FX.wine, null, 0, 'fx-cap-rule');
+    /* ① 경고 컷 — 왼쪽 룰과 빨간 점만 점멸한다(글자는 읽히게 그대로) */
+    var warn = foxTone(cut.text) === 'warn';
+    var pulse = warn ? (.32 + .68 * Math.abs(Math.sin(MO.tIn * 5.4))) : 1;
+    ctx.save();
+    ctx.globalAlpha = pulse;
+    panel(ctx, slot.x + 30, cy + 26, 60, 7, 3.5, warn ? '#DC2626' : FX.wine, null, 0, 'fx-cap-rule');
+    if (warn) {
+      ctx.beginPath();
+      ctx.arc(slot.x + 110, cy + 29.5, 7, 0, Math.PI * 2);
+      ctx.fillStyle = '#DC2626';
+      ctx.fill();
+      rec(slot.x + 103, cy + 22.5, 14, 14, 'fx-cap-dot');
+    }
+    ctx.restore();
     var words = (spec && spec.words) || [];
     var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
     var y0 = cy + cardH - 32 - fit.height;
+    var sx = SHAKE.x, sy = SHAKE.y;
     for (var i = 0; i < fit.lines.length; i++) {
-      txWords(ctx, fit.lines[i], slot.x + 52, y0 + i * fit.lineH + fit.lineH / 2, fit.font, function (tok) {
+      var toks = fit.lines[i].split(' '), cols = [], marks = [];
+      toks.forEach(function (tok) {
         var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
         var on = (seen / total) <= p + 0.0001;
         seen += String(tok).length;
-        if (!on) return 'rgba(16,32,47,.55)';
-        if (words.indexOf(clean) >= 0 || /\d/.test(tok)) return FX.wine;
-        return FX.navy;
-      }, 'fx-cap');
+        if (!on) { cols.push('rgba(16,32,47,.55)'); marks.push(''); return; }
+        var c = capColorOf(tok);
+        if (!c && words.indexOf(clean) >= 0) c = FX.wine;
+        cols.push(c || FX.navy);
+        marks.push(capMarkOf(tok));
+      });
+      txWords(ctx, fit.lines[i], slot.x + 52 + sx, y0 + i * fit.lineH + fit.lineH / 2 + sy, fit.font,
+        function (tok, k) { return cols[k]; }, 'fx-cap', null, null, null,
+        function (tok, k) { return marks[k]; });
     }
   }
   function drawFoxFrame(t) {
@@ -17406,11 +17849,20 @@ var CSVoice = (function () {
     var tIn = Math.max(0, t - cut.start);
     var p = cut.dur > 0 ? Math.min(1, tIn / cut.dur) : 1;
     var pose = foxPoseOf(cut, idx);
+    /* ② 가장 센 경고 컷 1컷만 딥 네이비 속보 스킨 → 다음 컷은 크림으로 복귀 */
+    INV = (idx === foxWarnIdx(cuts));
+    /* ① 경고 컷 미세 흔들림 — 앞 1.2초만, 세이프 존 안쪽 자막·여우만 흔든다 */
+    var tone = foxTone(cut.text);
+    var sh = tone === 'warn' ? Math.max(0, 1 - tIn / 1.2) : 0;
+    SHAKE.x = sh ? +(Math.sin(tIn * 47) * 2.2 * sh).toFixed(2) : 0;
+    SHAKE.y = sh ? +(Math.cos(tIn * 41) * 1.6 * sh).toFixed(2) : 0;
     moSet(tIn, t);
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
     foxBands(ctx, pose);
+    if (INV) foxBreaking(ctx);                            /* ② 속보 스트립(상단 밴드 장식) */
+    if (tone === 'up') foxParticles(ctx, tIn);            /* ① 상승 화살표 파티클(좌·우 여백) */
     var ein = moInP();                                   /* ④ 컷 전환 — 0.2초 페이드 */
     var eout = Math.min(1, Math.max(0, (cut.dur - tIn) / .2));
     ctx.globalAlpha = Math.max(0.05, Math.min(1, ein) * (.4 + .6 * eout));
@@ -17421,6 +17873,12 @@ var CSVoice = (function () {
     drawFoxCaption(ctx, cut, p, spec);
     ctx.restore();
     ctx.restore();
+    /* ④ 3단계 진행 바 · ③ 날짜 스탬프 · ⑥ 엔딩 시그니처 — 흔들림 없이, 세이프 존 안 */
+    drawFoxSteps(ctx, idx, cuts.length);
+    drawDateStamp(ctx, t);
+    if (idx === cuts.length - 1) drawFoxEnding(ctx, cut, tIn);
+    SHAKE.x = 0; SHAKE.y = 0;
+    INV = false;
   }
   /* 대본이 없을 때도 템플릿이 어떻게 나오는지 보여 주는 샘플 프레임 */
   function drawFoxIdle(ctx) {
@@ -20338,6 +20796,7 @@ var CSVoice = (function () {
       if (!txt) { say('먼저 쇼츠 대본이 필요합니다.', 'bad'); return; }
       copy(txt, '자막 SRT(' + (S.cuts || []).length + '컷)를 복사했습니다 — 캡컷 [가져오기]에서 .srt로 불러오세요.');
     });
+    var thumbBtn = $('#wvThumbBtn'); if (thumbBtn) thumbBtn.addEventListener('click', saveShortsThumb);
     var pkBtn = $('#wvPickleCopy'); if (pkBtn) pkBtn.addEventListener('click', function () {
       var txt = pickleRequestText();
       if (!txt) { say('먼저 쇼츠 대본이 필요합니다.', 'bad'); return; }
@@ -20360,6 +20819,93 @@ var CSVoice = (function () {
       if (S.running) { e.preventDefault(); e.returnValue = ''; }
     });
   }
+  /* ⑦ 쇼츠 업로드용 대표 썸네일 1080×1920 — 영상과 별도로 1장 저장한다 */
+  function shortsThumbCanvas() {
+    var cv = D.createElement('canvas');
+    cv.width = CW; cv.height = CH;
+    var ctx = cv.getContext('2d');
+    var C = fxPal();
+    ctx.fillStyle = FX.cream; ctx.fillRect(0, 0, CW, CH);
+    ctx.fillStyle = FX.band;
+    ctx.fillRect(0, 0, CW, SAFE.y);
+    ctx.fillRect(0, SAFE.b, CW, CH - SAFE.b);
+    ctx.fillStyle = 'rgba(16,32,47,.10)';
+    ctx.fillRect(0, SAFE.y - 1, CW, 2);
+    ctx.fillRect(0, SAFE.b - 1, CW, 2);
+    /* 브랜드 필 + 시간대 배지 */
+    var lab = '🦊 폭스시그널';
+    ctx.font = '900 34px ' + FF;
+    var bw = ctx.measureText(lab).width + 56;
+    panel(ctx, SAFE.x, SAFE.y + 16, bw, 70, 35, FX.navy, null, 0, 'th-brand');
+    txLine(ctx, lab, SAFE.x + 28, SAFE.y + 52, '900 34px ' + FF, FX.cream, 'left', 'th-brand-t');
+    var slot = foxSlotBadge();
+    if (slot) {
+      var sf = '900 27px ' + FF;
+      ctx.font = sf;
+      var sw = Math.min(420, ctx.measureText(slot).width + 44);
+      panel(ctx, SAFE.r - sw, SAFE.y + 22, sw, 58, 29, FX.wine, 'rgba(201,162,94,.95)', 2, 'th-slot');
+      txLine(ctx, slot, SAFE.r - sw / 2, SAFE.y + 52, sf, FX.cream, 'center', 'th-slot-t');
+    }
+    /* 날짜 */
+    var st = fxStampLabel().replace(/^🦊\s*/, '');
+    txLine(ctx, st, SAFE.x, SAFE.y + 128, '800 30px ' + FF, 'rgba(16,32,47,.55)', 'left', 'th-date');
+    /* 큰 제목 — 대본 훅 제목(없으면 첫 컷). 상단 브랜드와 하단 안내 사이에 세로 가운데 */
+    var spec = S.spec || {};
+    var first = (spec.cuts && spec.cuts[0] && spec.cuts[0].text) || '';
+    var title = spec.hookTitle || first || (spec.title || '오늘의 시황');
+    var f2 = (first && first !== title) ? fitText(ctx, first, { w: SAFE.w, h: 260, base: 42, min: 26, weight: 700, lh: 1.34 }) : null;
+    /* 제목 — 마지막 줄에 한 단어만 남으면 글자를 한 단계씩 줄여 다시 나눈다(고아 줄 방지) */
+    var fit = null;
+    [108, 98, 90, 82, 74, 66].some(function (sz) {
+      var f = fitText(ctx, title, { w: SAFE.w, h: 640, base: sz, min: sz, weight: 900, lh: 1.18 });
+      var last = f.lines[f.lines.length - 1] || '';
+      ctx.font = f.font;
+      var lw = ctx.measureText(last).width;
+      if (f.lines.length <= 2 || lw >= SAFE.w * .34) { fit = f; return true; }
+      fit = f;
+      return false;
+    });
+    var blk = fit.height + 30 + 8 + 30 + (f2 ? f2.height : 0);
+    var top = SAFE.y + 150, bot = SAFE.b - 200;
+    var ty = top + Math.max(0, (bot - top - blk) / 2);
+    for (var i = 0; i < fit.lines.length; i++) {
+      txWords(ctx, fit.lines[i], SAFE.x, ty + i * fit.lineH + fit.lineH / 2, fit.font,
+        function (tok) { return /\d/.test(tok) ? FX.wine : FX.navy; }, 'th-title');
+    }
+    ty += fit.height + 30;
+    ctx.fillStyle = FX.wine;
+    ctx.fillRect(SAFE.x, ty, 130, 8);
+    ty += 38;
+    if (f2) {
+      for (var k = 0; k < f2.lines.length; k++) {
+        txLine(ctx, f2.lines[k], SAFE.x, ty + k * f2.lineH + f2.lineH / 2, f2.font, 'rgba(16,32,47,.72)', 'left', 'th-sub');
+      }
+    }
+    /* 하단 안내 — 썸네일에서도 '어디서 표·차트를 보는지' 한 줄 */
+    txLine(ctx, '상세 표·차트는 프로필 링크 티스토리에서', SAFE.x, SAFE.b - 96, '800 30px ' + FF, FX.navy, 'left', 'th-foot');
+    txLine(ctx, '▶ youtube.com/@폭스시그널', SAFE.x, SAFE.b - 46, '900 28px ' + FF, FX.wine, 'left', 'th-yt');
+    return cv;
+  }
+  function saveShortsThumb() {
+    if (!S.spec || !S.cuts.length) { say('먼저 쇼츠 대본이 필요합니다.', 'bad'); return; }
+    var cv = shortsThumbCanvas();
+    var name = 'shorts_thumb_' + stamp() + '.png';
+    function ok() { flash('🖼️ 쇼츠 대표 썸네일(1080×1920)을 저장했습니다 · ' + name); }
+    if (cv.toBlob) {
+      cv.toBlob(function (b) {
+        if (!b) { say('썸네일 PNG를 만들지 못했습니다.', 'bad'); return; }
+        var a = D.createElement('a');
+        a.href = URL.createObjectURL(b);
+        a.download = name;
+        D.body.appendChild(a); a.click(); D.body.removeChild(a);
+        setTimeout(function () { try { URL.revokeObjectURL(a.href); } catch (e) {} }, 5000);
+        ok();
+      }, 'image/png');
+      return;
+    }
+    say('이 브라우저에서는 PNG 저장을 지원하지 않습니다.', 'bad');
+  }
+
   function drawIdle() {
     var cv = $('#wvCanvas'); if (!cv) return;
     var ctx = ctxOf(cv);
@@ -20451,7 +20997,17 @@ var CSVoice = (function () {
     parseNums: parseNums,
     paste: applyPasted,
     sample: loadSample,
-    parseScript: parseScriptText
+    parseScript: parseScriptText,
+    thumbCanvas: function () { return shortsThumbCanvas(); },
+    thumbSave: saveShortsThumb,
+    stampLabel: fxStampLabel,
+    tone: foxTone,
+    warnIdx: function () { return foxWarnIdx(S.cuts); },
+    stepAt: foxStepAt,
+    timeline: function () { return (S.cuts || []).map(function (c) { return { start: +c.start.toFixed(2), dur: +c.dur.toFixed(2), text: c.text }; }); },
+    inv: function () { return INV; },
+    captionColor: capColorOf,
+    captionMark: capMarkOf
   };
 })();
 </script>
