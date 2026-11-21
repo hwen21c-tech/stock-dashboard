@@ -2074,6 +2074,7 @@
           </div>
           <div class="outact" style="padding:0 11px 9px;border-bottom:1px solid var(--line)">
             <button class="btn small primary" id="proofBtn" type="button" title="편집장 관점으로 한 번 더 점검합니다: 거짓 경험담·AI 문구·양식 누락·맞춤법">✨ 2차 검수·다듬기</button>
+            <button class="btn small naver" id="naverToneBtn" type="button" title="티스토리 원고를 말투·도입부·소제목 구성을 바꾼 네이버용 요약본으로 다시 씁니다(같은 글 그대로 올리면 중복 문서로 노출이 떨어질 수 있음). 원본은 그대로 두고 새 카드에 만듭니다.">🟢 네이버용 톤 변환</button>
             <button class="btn small" id="pickleCopyBtn" type="button" title="본문 + 테마·블로거 양식 정보를 피클 채팅에 붙여넣을 수 있게 복사합니다">📋 피클 점검용 복사</button>
             <button class="btn small mon" id="affilBtn" type="button" title="저장한 제휴 링크와 필수 고지 문구를 본문 끝에 넣습니다(다시 누르면 뺍니다)">💰 제휴 링크·고지 넣기</button>
             <button class="btn small primary" id="blogOneShotBtn" type="button" title="이 글 하나로 쇼츠 v3 대본·MP3·MP4 JSON·추천 차트 PNG를 한 번에 뽑습니다">🎬 이 글로 쇼츠 JSON·제목 한 번에</button>
@@ -2151,6 +2152,32 @@
           <button class="btn small ghost" id="msCloseBtn" type="button">닫기</button>
         </div>
         <div id="msBody"></div>
+      </div>
+      <div class="card" id="naverCard" hidden>
+        <div class="card-head">
+          <span class="num">🟢</span><h2>네이버용 톤 변환 (요약본)</h2>
+          <span class="bdg real" id="naverBadge">—</span>
+          <span class="spacer"></span>
+          <button class="btn small ghost" id="naverCloseBtn" type="button">닫기</button>
+        </div>
+        <p class="hint" style="margin-bottom:6px">티스토리 원고는 <b>그대로 두고</b>, 말투·도입부·소제목 구성을 바꾼 <b>네이버용 요약본</b>을 새로 만듭니다. 같은 글을 두 곳에 그대로 올리면 중복 문서로 노출이 떨어질 수 있어 결을 다르게 씁니다.</p>
+        <div class="field">
+          <label class="flabel" for="naverTitle">네이버 제목 (모바일 30자 권장)</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <input type="text" id="naverTitle" maxlength="90" autocomplete="off" placeholder="네이버용 제목" style="flex:1 1 180px">
+            <button class="btn small ghost" id="naverTitleCopy" type="button">제목만 복사</button>
+          </div>
+        </div>
+        <div id="naverNote"></div>
+        <pre class="out" id="naverText"></pre>
+        <div class="seotags" id="naverTags"></div>
+        <div class="outact" style="padding:9px 0 0;border:none">
+          <button class="btn small primary" id="naverCopyBtn" type="button" title="제목을 뺀 본문 + 무료 도구 링크 + 해시태그를 복사합니다">📋 요약본 복사</button>
+          <button class="btn small naver" id="naverRichBtn" type="button" title="네이버 스마트에디터에 붙여넣으면 소제목·인용구·굵은 글씨가 살아 있는 HTML로 복사합니다">📋 네이버 서식 복사</button>
+          <button class="btn small" id="naverTagBtn" type="button">🏷️ 태그 복사</button>
+          <button class="btn small ghost" id="naverAgainBtn" type="button">🔄 다시 변환</button>
+        </div>
+        <div class="out-foot">요약본은 <b>원본을 덮어쓰지 않습니다.</b> 숫자·날짜·[확인 필요]는 그대로 두고 문장과 구성을 바꿉니다. 발행 전 값은 직접 확인하세요.</div>
       </div>
       <div class="card" id="photoCard" hidden>
         <div class="card-head">
@@ -2252,10 +2279,12 @@
             <button class="btn small primary" type="button" data-cs-slot="noon">☀️ 점심</button>
             <button class="btn small primary" type="button" data-cs-slot="close">🌆 정규마감</button>
             <button class="btn small primary" type="button" data-cs-slot="after">🌙 애프터장</button>
+            <button class="btn small" type="button" data-cs-slot="dict" title="토요일 에버그린 — 사이드카·VIX·거래대금 300억·NXT 같은 용어를 5컷으로">📘 30초 사전</button>
+            <button class="btn small" type="button" data-cs-slot="review" title="일요일 복기 — 이번 주 성적표·맞춘 판단·빗나간 포인트·다음 주 if→then">📊 주간 오답노트</button>
             <button class="btn small" type="button" data-feed-draft="shorts" title="피클이 만들어 둔 최신 초안(블로그·쇼츠)을 이 화면에 다시 불러옵니다">📥 피클 최신 초안 다시 불러오기</button>
           </div>
           <div class="slotstate" id="shSlotState" hidden></div>
-          <p class="hint" style="margin-top:6px">누르면 그 시간대 <b>관제탑 실측·NXT 애프터마켓·뉴스</b>를 읽어 참고 자료와 주제를 채우고, <b>폭스시그널 공식</b>과 <b>🎬 영상 레이아웃</b>을 그 시간대로 바꿉니다. <b>블로그 글을 쓰지 않아도</b> 바로 동작합니다.</p>
+          <p class="hint" style="margin-top:6px">누르면 그 시간대 <b>관제탑 실측·NXT 애프터마켓·뉴스</b>를 읽어 참고 자료와 주제를 채우고, <b>폭스시그널 공식</b>과 <b>🎬 영상 레이아웃</b>을 그 시간대로 바꿉니다. <b>블로그 글을 쓰지 않아도</b> 바로 동작합니다. 주말의 <b>📘 30초 사전(토)</b>·<b>📊 주간 오답노트(일)</b>는 새 시세가 없어 <b>공식과 5컷 샘플만</b> 올립니다(확인된 사례·브리핑 기록만).</p>
           <div class="store-note">
             <span id="shThemeInfo">테마를 고르면 이 브라우저에 저장됩니다</span>
             <button class="linkbtn" id="shThemeReset" type="button">이 테마만 1번으로</button>
@@ -2380,8 +2409,10 @@
       <button class="btn small" type="button" data-cs-slot="noon" data-cs-slot-mode="wvid">☀️ 점심</button>
       <button class="btn small" type="button" data-cs-slot="close" data-cs-slot-mode="wvid">🌆 정규마감</button>
       <button class="btn small" type="button" data-cs-slot="after" data-cs-slot-mode="wvid">🌙 애프터장</button>
+      <button class="btn small" type="button" data-cs-slot="dict" data-cs-slot-mode="wvid" title="토요일 에버그린 — 용어 정의 → 실제 사례 → 체크 3가지, 5컷">📘 30초 사전</button>
+      <button class="btn small" type="button" data-cs-slot="review" data-cs-slot-mode="wvid" title="일요일 복기 — 성적표 → 맞춘 판단 → 빗나간 점 → 다음 주 if→then, 5컷">📊 주간 오답노트</button>
       <button class="btn small primary" type="button" data-feed-draft="shorts" title="피클이 만들어 둔 최신 쇼츠 대본을 컷으로 나눠 이 생성기에 올립니다">📥 피클 최신 초안 다시 불러오기</button>
-      <span class="hint" style="margin:0;flex:1 1 200px;min-width:0">누르면 그 시간대 <b>피클 초안</b>이 있으면 먼저 불러오고, 없으면 실측을 읽어 <b>폭스시그널 공식·카드 레이아웃·5컷 미리보기</b>까지 세팅합니다(성우 고정값 유지).</span>
+      <span class="hint" style="margin:0;flex:1 1 200px;min-width:0">누르면 그 시간대 <b>피클 초안</b>이 있으면 먼저 불러오고, 없으면 실측을 읽어 <b>폭스시그널 공식·카드 레이아웃·5컷 미리보기</b>까지 세팅합니다(성우 고정값 유지). <b>📘 30초 사전 · 📊 주간 오답노트</b>는 주말용 — 새 시세 없이 공식·샘플만 올립니다.</span>
     </div>
     <div class="wvpaste" id="wvPaste" hidden>
       <div class="wvrow" style="gap:6px">
@@ -2668,6 +2699,7 @@
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.2 — 🦊 <b>주말 전용 공식 2종</b>: 토요일 <b>📘 30초 증시 사전</b>(정의→실제 사례→체크 3 · 사이드카·VIX·대금 300억·NXT) · 일요일 <b>📊 주간 오답노트</b>(성적표→맞춘 판단→빗나간 점→다음 주 if→then · 브리핑·관제탑 기록만) — 쇼츠 스튜디오·⚡ 원클릭 세팅·🎬 웹 영상 생성기에서 바로 선택·5컷 미리보기·생성 · ✍️ 블로그 <b>🟢 네이버용 톤 변환</b>(말투·도입부·소제목 구성을 바꾼 구어체 요약본 · AI 재작성/로컬 변환 폴백) · 블로그 본문 끝·쇼츠 고정댓글에 <b>무료 도구 유입 링크 2개</b>(관제탑·특가 레이더) 자동 포함</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.1 — ✨ 3차 최종 연출·블로그 고도화: ① <b>대본 키워드 자동 연출</b>(급락·사이드카·위험 → 미세 흔들림+빨간 점멸 / 신고가·돌파·우위 → 상승 화살표 파티클) ② <b>경고 컷 1컷만 딥네이비 속보 스킨</b> 반전 후 다음 컷 크림 복귀 ③ <b>0~1초 날짜 스탬프</b> <code>🦊 MM/DD 장전</code> ④ 얇은 <b>3단계 진행 바</b>(현황 → 머니무브 → 대응 기준) ⑤ <b>자막 핵심 숫자·키워드 자동 컬러</b>(버건디/네이비/형광) ⑥ <b>엔딩 시그니처 + NEXT 다음 방송</b> ⑦ <b>🖼️ 쇼츠 대표 썸네일 저장</b>(1080×1920) · ✍️ 블로그 5·6번에 <b>시장 온도·50초 쇼츠 바로가기·10초 정리·머니무브·함정/생존·300억↑ 대장주·예상 vs 실제·신호등·D-day</b> 박스 자동 서식</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.1 — 🎨 <b>내용 맞춤(스마트) 전환</b>: 쇼츠 양식 <b>🎨 내용 맞춤</b>에서 컷마다 <b>지수→실측 꺾은선 · 테마 이동→이탈/유입 비교 · 수급·대금→가로 막대표 · 대응·조건→1·2·3 번호 카드</b>로 자동 분기(⚡ 원클릭 세팅·?go=shorts 기본 양식 그대로 · 세이프 존 위반 0)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.0 — 🦊 2차 고퀄 연출 6종: ① <b>실제 지수 꺾은선</b>(/api/index-chart) 왼→오 드로잉 + 변곡점 Ring·화살표·2.2배 줌인 렌즈(API 실패 시 컷 수치 흐름 폴백) ② 상단 <b>시장 위험 게이지</b> HUD(신호·등락률 → 빨강/노랑/초록으로 차오름) ③ 핵심 숫자 <b>펀치 줌 1.12→1.00 + 효과음 싱크</b>(0.58초) ④ 여우 <b>눈 깜빡임·호흡·흔들림·점프·끄덕임</b> ⑤ 컷 사이 <b>0.30초 여백 + BGM 덕킹(0.12/0.28)</b> ⑥ 블로그 <b>'3초 요약 대표 카드' PNG</b>(1080×1080 · 1200×675)</div>
@@ -2986,6 +3018,18 @@ const SCHEMA_REWRITE = {
     warnings: { type: 'array', items: { type: 'string' } },
   },
   required: ['body'],
+};
+
+const SCHEMA_NAVER = {
+  type: 'object',
+  properties: {
+    title: { type: 'string', description: '네이버 블로그용 제목 — 28자 이내, 검색어를 앞쪽에' },
+    body: { type: 'string', description: '네이버 블로그용으로 다시 쓴 완성 본문 (마크다운 · 링크·사진 태그 없이)' },
+    tags: { type: 'array', description: '네이버 검색 유입용 해시태그 10개 (# 없이)', items: { type: 'string' } },
+    changed: { type: 'array', description: '원문과 실제로 다르게 쓴 점 2~4개', items: { type: 'string' } },
+    warnings: { type: 'array', items: { type: 'string' } },
+  },
+  required: ['title', 'body'],
 };
 
 const SCHEMA_HUMANIZE = {
@@ -3719,6 +3763,39 @@ function promptRewrite(b) {
   };
 }
 
+/* 네이버 블로그용 요약본 — 티스토리 원고를 '결이 다른 글'로 다시 쓴다.
+   같은 글을 두 채널에 그대로 올리면 중복 문서로 노출이 떨어질 수 있어
+   도입부·소제목 구성·문장 길이를 실제로 바꾸고, 분량은 55~75%로 줄인다. */
+function promptNaverNote(b) {
+  const user = [
+    b.topic ? `글 주제: ${s(b.topic, 200)}` : '',
+    `\n[티스토리 원고 — 이 글을 네이버용 요약본으로 다시 쓴다]\n"""${s(b.body, 14000)}"""`,
+    banLine(b.banPhrases),
+    `
+[해야 할 일 — 🟢 네이버용 톤 변환]
+같은 소재를 네이버 블로그에 올릴 '결이 다른 요약본'으로 다시 쓴다. 원문을 그대로 옮기면 두 채널 모두 노출이 떨어질 수 있으니 문장·도입부·소제목 구성을 실제로 바꾼다.
+1) 첫 문단: 인사 + 왜 이 글을 쓰는지 1~2문장. "오늘은 ~를 짧게 정리해 볼게요"처럼 말하듯 시작한다. 원문 첫 문단을 그대로 쓰지 않는다.
+2) 소제목: 원문 소제목을 복사하지 말고 4~6개로 새로 묶는다. 질문형이나 말하듯("그래서 얼마나 빠졌는데?")으로 달고, 순서도 읽기 좋게 다시 짠다.
+3) 분량: 원문의 55~75%. 한 문단은 2~4문장, 한 문장은 40자 안팎으로 끊는다. "~습니다"와 "~요/~더라고요"를 섞는다.
+4) 숫자·날짜·업체명·종목명·[확인 필요]는 절대 바꾸거나 새로 만들지 않는다. 원문에 없는 사실·사례·수치를 추가하면 실패다.
+5) 1인칭 경험(가봤다·써봤다·내돈내산)은 원문에 있을 때만 남기고 새로 만들지 않는다.
+6) "[📸 사진: ...]" 태그와 링크·제휴 고지 줄은 넣지 않는다(네이버에는 사진을 직접 올리고, 링크는 앱이 따로 붙인다).
+7) 맨 끝에 "한 줄 요약" 한 문장을 둔다.
+8) tags 에는 네이버 검색 유입용 해시태그 10개를 # 없이 넣는다(지역·대상·상황 키워드 포함).
+9) 마크다운 본문만 출력한다. 머리말·설명·인사 없이.
+[출력] title · body · tags · changed · warnings JSON.`,
+  ]
+    .filter(Boolean)
+    .join('\n');
+  return {
+    system: `너는 같은 소재를 채널에 맞게 다시 쓰는 한국어 블로그 작가다. 네이버 블로그 독자에게 말 걸듯 친근한 구어체로, 원문의 사실은 그대로 두고 구성과 문장만 새로 짠다. ${VOICE} ${HONESTY}`,
+    user,
+    schema: SCHEMA_NAVER,
+    maxTokens: 3600,
+    temperature: 0.8,
+  };
+}
+
 const AI_TICS = [
   '~에 대해 알아보겠습니다', '알아보겠습니다', '결론적으로', '다양한 측면에서', '여러 측면에서',
   '살펴보겠습니다', '살펴보도록 하겠습니다', '정리해 보겠습니다', '정리해보자면', '무엇보다도',
@@ -4206,6 +4283,29 @@ function normRewrite(data, banPhrases) {
   };
 }
 
+function normNaverNote(data, banPhrases) {
+  const body = s(data && data.body, 24000);
+  const title = s(data && data.title, 120);
+  const tags = arr(data && data.tags, 14).map((x) => s(x, 30).replace(/^#/, '')).filter(Boolean);
+  const changed = arr(data && data.changed, 6).map((x) => s(x, 140)).filter(Boolean);
+  const warnings = arr(data && data.warnings, 8).map((x) => s(x, 200)).filter(Boolean);
+  const banHits = scanBans(body, banPhrases);
+  if (!body) warnings.push('본문이 비어 있습니다. 다시 시도해 주세요.');
+  if (!tags.length) warnings.push('해시태그가 비어 왔습니다 — [🏷️ 태그 10개 복사]로 채울 수 있습니다.');
+  return {
+    title,
+    body,
+    tags,
+    changed,
+    warnings,
+    banHits,
+    chars: body.length,
+    needsCheck: (body.match(/\[확인 필요\]/g) || []).length,
+    headings: (body.match(/^##\s+/gm) || []).length,
+    linkLines: (body.match(/https?:\/\//g) || []).length,
+  };
+}
+
 function normHumanize(data, banPhrases) {
   const body = s(data && data.body, 24000);
   const removed = arr(data && data.removed, 12).map((x) => s(x, 80)).filter(Boolean);
@@ -4404,6 +4504,7 @@ const GEN_ACTIONS = [
   'youtube_analyze',
   'blog_to_shorts',
   'rewrite_tone',
+  'naver_note',
   'humanize',
   'multi_use',
   'seo_tags',
@@ -4663,6 +4764,10 @@ const GEN_ACTIONS = [
       const tone = s(body.tone, 20) || 'honest';
       if (!TONES[tone]) return { ok: false, reason: 'unknown_tone', message: 'tone 은 honest / expert / warm 중 하나입니다.' };
       prompt = promptRewrite(Object.assign({}, body, { banPhrases: banPhrases, body: draft, tone: tone }));
+    } else if (action === 'naver_note') {
+      const draft = s(body.body, 16000);
+      if (draft.length < 120) return { ok: false, reason: 'missing_body', message: '네이버용으로 바꿀 완성 본문이 필요합니다(120자 이상).' };
+      prompt = promptNaverNote(Object.assign({}, body, { banPhrases: banPhrases, body: draft }));
     } else if (action === 'humanize') {
       const draft = s(body.body, 16000);
       if (draft.length < 80) return { ok: false, reason: 'missing_body', message: '다듬을 초안이 필요합니다(80자 이상).' };
@@ -4822,6 +4927,7 @@ const GEN_ACTIONS = [
     else if (action === 'video_plan') result = normVideo(data0, arr(body.clips, 6));
     else if (action === 'youtube_analyze') result = normYt(data0);
     else if (action === 'rewrite_tone') result = normRewrite(data0, banPhrases);
+    else if (action === 'naver_note') result = normNaverNote(data0, banPhrases);
     else if (action === 'humanize') result = normHumanize(data0, banPhrases);
     else if (action === 'multi_use') result = normMulti(data0, banPhrases);
     else if (action === 'seo_tags') result = normSeo(data0);
@@ -4842,6 +4948,7 @@ const GEN_ACTIONS = [
       (action === 'blog_to_shorts' && !(result.scenes || []).length) ||
       (action === 'youtube_analyze' && !((result.shorts || {}).scenes || []).length) ||
       (action === 'rewrite_tone' && !s(result.body, 10)) ||
+      (action === 'naver_note' && !s(result.body, 10)) ||
       (action === 'humanize' && !s(result.body, 10)) ||
       (action === 'multi_use' && !(((result.insta || {}).lines) || []).length) ||
       (action === 'seo_tags' && !((result.hashtags || []).length || (result.keywords || []).length)) ||
@@ -11677,7 +11784,10 @@ var CSVoice = (function () {
     pre:   { icon: '🌅', name: '장전',     label: '장전 시황',             blogNo: 5, foxNo: '1' },
     noon:  { icon: '☀️', name: '점심',     label: '점심 시황',             blogNo: 0, foxNo: '2' },
     close: { icon: '🌆', name: '정규마감', label: '정규마감 시황',         blogNo: 0, foxNo: '3' },
-    after: { icon: '🌙', name: '애프터장', label: '통합 마감(정규+애프터)', blogNo: 6, foxNo: '4' }
+    after: { icon: '🌙', name: '애프터장', label: '통합 마감(정규+애프터)', blogNo: 6, foxNo: '4' },
+    /* 📘📊 주말 전용 — 새 시세가 없으므로 실측을 읽지 않고 공식·샘플만 세팅한다(weekend: true) */
+    dict:   { icon: '📘', name: '30초 사전',  label: '토요일 30초 증시 사전', blogNo: 0, foxNo: '6', weekend: true },
+    review: { icon: '📊', name: '주간 오답노트', label: '일요일 주간 오답노트',  blogNo: 0, foxNo: '7', weekend: true }
   };
   var SLOT_EXT = { at: 0, livebrief: null, macro: null, econ: null, alerts: null, err: [] };
   function slotExtra(force){
@@ -12125,10 +12235,39 @@ var CSVoice = (function () {
     return { text: L.join('\n'), topic: topic.slice(0, 80), thumb: thumb.slice(0, 60) };
   }
   /* 세 모드: blog = 글 양식까지 전환 / shorts = 쇼츠 스튜디오 세팅 / wvid = 쇼츠 + 영상 생성기 레이아웃 */
+  /* ---------- 📘 토요일 30초 증시 사전 · 📊 일요일 주간 오답노트 ----------
+     · 주말에는 새 시세가 없다 → 실측을 읽지 않고(지어내지 않고) 폭스시그널 공식 + 5컷 샘플만 올린다.
+     · 🎬 웹 영상 생성기(mode=wvid)는 [▶ 생성] 자리까지 세팅해 바로 녹화할 수 있게 한다. */
+  function weekendSlot(slot, mode, btn){
+    var def = SLOT_DEF[slot];
+    var st = $('#matState'), sst = $('#shSlotState');
+    if (btn) spinner(btn, true, def.name + ' 세팅 중…');
+    /* 다른 <script> 블록의 함수는 WVID 공개 API 로만 부른다(setDesign·loadSample 은 이 블록에 없다) */
+    var r = null;
+    try { if (window.WVID && window.WVID.slot) r = window.WVID.slot(slot); } catch (e) { r = null; }
+    var cuts = 0;
+    try { cuts = (window.WVID && window.WVID.timeline) ? window.WVID.timeline().length : 0; } catch (e2) { cuts = 0; }
+    var nm = (r && r.name) ? (r.tag + ' ' + r.name).trim() : (def.icon + ' ' + def.name);
+    var vName = (r && r.voice) ? r.voice : '';
+    if (st) st.textContent = def.icon + ' ' + def.name + ' 세팅됨';
+    if (sst){
+      sst.hidden = false;
+      sst.className = 'slotstate ok';
+      sst.innerHTML = def.icon + ' <b>' + esc(def.name) + '</b> · 폭스시그널 <b>' + esc(nm) + '</b> · ' + cuts + '컷 샘플' +
+        (vName ? ' · 성우 <b>' + esc(vName) + '</b>' : '') + ' — 주말엔 새 시세가 없어 확인된 사례·기록만 씁니다';
+    }
+    if (mode === 'wvid') { try { csGenReady(); } catch (e3) {} }
+    toast(def.icon + ' ' + def.name + ' — 폭스시그널 ' + nm + ' · ' + cuts + '컷 샘플 로드 · [▶ 생성]만 누르세요.');
+    if (btn) spinner(btn, false);
+    return Promise.resolve({ key: def.foxNo, name: (r && r.name) || def.name, tag: (r && r.tag) || def.icon,
+      voice: vName, cuts: cuts, applied: cuts > 0, weekend: true, ok: !!r });
+  }
+
   function runSlot(slot, mode, btn){
     var def = SLOT_DEF[slot];
     if (!def) return Promise.resolve(false);
     var m = (mode === 'shorts' || mode === 'wvid') ? mode : 'blog';
+    if (def.weekend) return weekendSlot(slot, m, btn);
     var st = $('#matState'), sst = $('#shSlotState');
     if (m === 'blog'){
       if (st) st.textContent = '읽는 중…';
@@ -12219,7 +12358,9 @@ var CSVoice = (function () {
   var CS_SLOT = '';
   var CS_AUTO_BUSY = false;
   function csSlotClock(){
-    var d = new Date(), m = d.getHours() * 60 + d.getMinutes();
+    var d = new Date(), m = d.getHours() * 60 + d.getMinutes(), wd = d.getDay();
+    if (wd === 6) return 'dict';        /* 토요일 → 📘 30초 증시 사전 */
+    if (wd === 0) return 'review';      /* 일요일 → 📊 주간 오답노트 */
     if (m < 9 * 60) return 'pre';
     if (m < 14 * 60 + 30) return 'noon';
     if (m < 18 * 60) return 'close';
@@ -12232,9 +12373,11 @@ var CSVoice = (function () {
       if (n && feedIsToday(n)) return { slot: CS_SLOT, from: 'draft' };
       return { slot: CS_SLOT, from: 'live' };
     }
+    var wk = csSlotClock();
+    if (SLOT_DEF[wk] && SLOT_DEF[wk].weekend) return { slot: wk, from: 'weekend' };
     var n2 = ls ? feedNode(j, ls) : null;
     if (n2 && feedIsToday(n2)) return { slot: ls, from: 'draft' };
-    return { slot: csSlotClock(), from: 'live' };
+    return { slot: wk, from: 'live' };
   }
   function csState(html, kind){
     var el = document.getElementById('csAutoState');
@@ -12342,9 +12485,11 @@ var CSVoice = (function () {
     }).then(function (r) {
       return goShWaitWvid(4000).then(function () {
         var d = SLOT_DEF[r.slot] || { icon: '📱', name: '쇼츠' };
-        var what = (r.from === 'draft')
-          ? '📥 피클 <b>' + esc(d.name) + '</b> 초안'
-          : '🦊 <b>' + esc(d.name) + '</b> 관제탑 실측 재료';
+        var what = (r.from === 'weekend')
+          ? '주말 공식 ' + d.icon + ' <b>' + esc(d.name) + '</b>'
+          : (r.from === 'draft')
+            ? '📥 피클 <b>' + esc(d.name) + '</b> 초안'
+            : '🦊 <b>' + esc(d.name) + '</b> 관제탑 실측 재료';
         var g = csGenReady();
         var who = g.voice || '폭스시그널 고정값';
         var tplTxt = g.kept ? '🖼️ 사진형 그대로' : csTplText(g.tpl || 'line');
@@ -14582,6 +14727,45 @@ var CSVoice = (function () {
   var AFFIL = affilLoad();
   var PIN = { last: '' };
 
+  /* ================================================================
+     🧰 무료 도구 유입 링크 — 블로그 결과 하단 + 쇼츠 고정댓글에 자동 포함
+     · 우리가 실제로 돌리는 무료 웹앱 2개로 보내는 고정 문구. 광고·제휴가 아니다.
+     · 본문에는 표식(## 🧰 …)으로 한 번만 붙는다 — 다시 생성·다듬기·제휴 링크를 넣었다 빼도 중복되지 않는다.
+     · AI에 보낼 때는 toolsStrip() 으로 걷어낸다(모델이 링크를 고치거나 지어내지 않게).
+     ================================================================ */
+  var TOOLS_MARK = '## 🧰 오늘 바로 써볼 무료 도구';
+  var FREE_TOOLS = [
+    { label: '📊 실시간 수급·300억↑ 주도주 관제탑', url: 'https://stock-dashboard-live-6frm.vercel.app/' },
+    { label: '🏷️ 오늘 키즈·여행 30%↑ 특가 레이더', url: 'https://hwen21c-tech.github.io/stock-dashboard/deals.html' }
+  ];
+  function toolsHas(t){ return String(t == null ? '' : t).indexOf(TOOLS_MARK) > -1; }
+  function toolsBlock(){
+    var L = ['---', '', TOOLS_MARK, ''];
+    FREE_TOOLS.forEach(function(l){ L.push('- ' + l.label + ' — ' + l.url); });
+    L.push('');
+    L.push('> 앱 설치 없이 브라우저에서 바로 열리는 무료 도구입니다.');
+    L.push('');
+    return L.join('\n');
+  }
+  function toolsEnsure(txt){
+    var t = String(txt == null ? '' : txt);
+    if (!t.trim()) return t;
+    if (toolsHas(t)) return t;
+    return t.replace(/\s+$/, '') + '\n\n' + toolsBlock();
+  }
+  function toolsStrip(txt){
+    var t = String(txt == null ? '' : txt);
+    var i = t.indexOf(TOOLS_MARK);
+    if (i < 0) return t;
+    var head = t.slice(0, i);
+    head = head.replace(/\n*---\s*$/, '\n');            /* 앞의 구분선도 함께 걷어낸다 */
+    head = head.split('\n').filter(function(line){
+      return !/^- (?:📊 실시간 수급|🏷️ 오늘 키즈·여행)/.test(line) && !/앱 설치 없이 브라우저에서 바로 열리는 무료 도구/.test(line);
+    }).join('\n');
+    return head.replace(/[ \t]+$/gm, '').replace(/\n{3,}$/, '\n\n').replace(/\s+$/, '') + (head.trim() ? '\n' : '');
+  }
+  function toolsPinnedLines(){ return FREE_TOOLS.map(function(l){ return l.label + ': ' + l.url; }); }
+
   function affilDefaults(){
     return {
       on: false,
@@ -14642,9 +14826,9 @@ var CSVoice = (function () {
   function affilStrip(txt){
     var t = String(txt == null ? '' : txt);
     var i = t.indexOf(affilMark());
-    if (i < 0) return affilPresent(t) ? affilDropStray(t) + '\n' : t;
+    if (i < 0) return toolsStrip(affilPresent(t) ? affilDropStray(t) + '\n' : t);
     var head = t.slice(0, i).replace(/\n*---\s*$/, '\n');
-    return head.replace(/[ \t]+$/gm, '').replace(/\n{3,}$/, '\n\n').replace(/\s+$/, '') + '\n';
+    return toolsStrip(head.replace(/[ \t]+$/gm, '').replace(/\n{3,}$/, '\n\n').replace(/\s+$/, '') + '\n');
   }
   function affilExtract(txt){
     var t = String(txt == null ? '' : txt);
@@ -14652,7 +14836,7 @@ var CSVoice = (function () {
     return i < 0 ? '' : t.slice(i).replace(/\s+$/, '');
   }
   function affilAuto(txt){
-    var t = String(txt == null ? '' : txt);
+    var t = toolsEnsure(txt);
     if (!AFFIL || !AFFIL.on || !affilHas()) return t;
     if (affilMarked(t)) return t;
     t = affilDropStray(t);
@@ -14674,6 +14858,7 @@ var CSVoice = (function () {
     var ttl = String(topic || '').trim();
     var L = [];
     L.push('📌 ' + (ttl ? ('[' + ttl + '] ') : '') + '더 자세한 정리는 아래 링크에 있습니다.');
+    toolsPinnedLines().forEach(function(l){ L.push(l); });
     affilLinks().forEach(function(l){ L.push(String(l.label || '링크').trim() + ': ' + String(l.url).trim()); });
     var nt = String(AFFIL.notice || '').trim();
     if (nt) L.push(nt);
@@ -14730,7 +14915,7 @@ var CSVoice = (function () {
     try { p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch(e){}
   }
   function applyDraftText(t, badge){
-    var txt = String(t == null ? '' : t);
+    var txt = affilAuto(String(t == null ? '' : t));
     outText.textContent = txt;
     outEdit.value = txt;
     if (state.lastDraft) state.lastDraft.text = txt;
@@ -15100,6 +15285,238 @@ var CSVoice = (function () {
       copyText(MS.pin || affilPinned(''), '고정 댓글 초안을 복사했습니다.');
     }
   }
+
+  /* ================================================================
+     🟢 네이버용 톤 변환 — 티스토리 원고 → 네이버용 구어체 요약본
+     · 원본은 그대로 두고 새 카드에 만든다(덮어쓰지 않는다).
+     · Gemini가 있으면 도입부·소제목 구성까지 새로 쓰고(action=naver_note),
+       키가 없거나 실패하면 브라우저에서 문장을 줄이고 소제목을 다시 묶는 로컬 변환으로 만든다.
+     · 끝에는 무료 도구 링크(toolsBlock)와 해시태그를 붙여 바로 붙여넣기 좋게 만든다.
+     ================================================================ */
+  var NV = { data: null, local: false, model: '', err: null, busy: false, topic: '' };
+  /* 문장 나누기 — '4,869.96' '5.21%' 같은 소수점은 자르지 않는다(뒤가 공백·끝일 때만 자른다) */
+  function nvSplitSents(t){
+    var out = [];
+    String(t || '').split(/\n+/).forEach(function(line){
+      var s = String(line || '').trim();
+      if (!s) return;
+      var buf = '';
+      for (var i = 0; i < s.length; i++){
+        var ch = s.charAt(i);
+        buf += ch;
+        if ((ch === '.' || ch === '!' || ch === '?') && (i + 1 >= s.length || /[\s"'\])}」』]/.test(s.charAt(i + 1)))){
+          out.push(buf.trim());
+          buf = '';
+        }
+      }
+      if (buf.trim()) out.push(buf.trim());
+    });
+    return out;
+  }
+  function nvSents(t){
+    return nvSplitSents(t).map(function(x){ return String(x || '').replace(/^[#>*\-\s]+/, '').replace(/\s+$/, '').trim(); })
+      .filter(function(x){ return charLen(x) >= 8 && !/^\[/.test(x) && !/^[|\-]{2,}$/.test(x); });
+  }
+  function nvCondense(txt, ratio){
+    var s = nvSents(txt);
+    if (!s.length) return '';
+    var total = charLen(txt), target = Math.max(45, Math.round(total * (ratio || 0.6))), out = '', n = 0;
+    while (n < s.length && (charLen(out) < target || n === 0)){
+      out += (out ? ' ' : '') + s[n];
+      n++;
+      if (n >= 3) break;
+    }
+    out = out.replace(/\s+$/, '');
+    if (!/[.!?]$/.test(out)) out += '.';
+    return out;
+  }
+  function nvLocalBody(body, topic){
+    var core = toolsStrip(affilStrip(String(body || '')));
+    var h1 = /^#\s+(.+)$/m.exec(core);
+    var ttl = String(topic || '').trim() || (h1 ? h1[1].trim() : '') || '오늘의 시장 정리';
+    var secs = [], cur = { head: '', paras: [] };
+    core.split('\n').forEach(function(line){
+      var t = String(line || '').trim();
+      if (!t) return;
+      var m = /^#{2,4}\s+(.+)$/.exec(t);
+      if (m){
+        if (cur.head || cur.paras.length) secs.push(cur);
+        cur = { head: m[1].replace(/[#*`>]/g, '').replace(/^\d+[.)]\s*/, '').trim(), paras: [] };
+        return;
+      }
+      if (/^(#{1}\s|\||-{2,}|>|[-*]\s|\d+[.)]\s)/.test(t)) return;
+      if (t.indexOf('[📸') === 0 || t.indexOf('[📷') === 0) return;
+      cur.paras.push(t);
+    });
+    if (cur.head || cur.paras.length) secs.push(cur);
+    var plain = core.split('\n').filter(function(line){
+      var t = String(line || '').trim();
+      return t && !/^(#{1,4}\s|\||-{2,}|>|[-*]\s|\d+[.)]\s)/.test(t) && t.indexOf('[📸') !== 0 && t.indexOf('[📷') !== 0;
+    }).join('\n');
+    var all = nvSents(plain);
+    var first = all[0] || ttl;
+    var L = [];
+    L.push('안녕하세요, 폭스시그널입니다.');
+    L.push('오늘은 ' + ttl + ' 이야기를 짧게 정리해 볼게요. 길게 쓰지 않고, 제가 본 것만 남깁니다.');
+    L.push('');
+    L.push('## 한 줄로 먼저');
+    L.push('> ' + trunc(first, 110));
+    L.push('');
+    var use = secs.filter(function(s){ return (s.head || s.paras.join(' ').trim()); }).slice(0, 6);
+    if (!use.length) use = [{ head: '오늘의 핵심', paras: all.slice(0, 3) }];
+    use.forEach(function(s, i){
+      var txt = s.paras.join(' ');
+      var head = s.head || (i === 0 ? '먼저 짚을 것' : ((i + 1) + '번째 이야기'));
+      L.push('## ' + (i + 1) + '. ' + head + ' — 쉽게 말하면');
+      var c = nvCondense(txt, 0.6);
+      if (!c) c = trunc(txt, 90);
+      if (c) L.push(c);
+      L.push('');
+    });
+    var last = all[all.length - 1] || '';
+    L.push('## 마무리 한 줄');
+    L.push('> ' + trunc(last || (ttl + '는 이렇게 보면 됩니다.'), 110));
+    L.push('');
+    L.push('읽어 주셔서 고맙습니다. 궁금한 점은 댓글로 남겨 주세요.');
+    return {
+      title: trunc(ttl, 28),
+      body: L.join('\n'),
+      tags: nvTags(core, ttl),
+      changed: ['첫 문단을 인사 + 말 거는 문장으로 새로 씀', '원문 소제목을 말하듯 다시 묶음(1~' + use.length + '번)', '문단을 60% 분량으로 줄여 한 문장씩 끊음'],
+      warnings: ['AI 없이 브라우저에서 만든 로컬 변환입니다 — 문장을 새로 쓰지는 않았지만 숫자·날짜는 원문 그대로입니다.']
+    };
+  }
+  var NV_STOP = { '입니다':1, '합니다':1, '했습니다':1, '했다':1, '한다':1, '으로':1, '에서':1, '부터':1, '까지':1,
+    '때문에':1, '있는':1, '없는':1, '같은':1, '이번':1, '오늘':1, '어제':1, '그리고':1, '하지만':1, '그래서':1,
+    '정도':1, '경우':1, '위해':1, '대한':1, '하는':1, '보면':1, '봅니다':1, '같습니다':1, '있습니다':1, '없습니다':1, '이야기':1 };
+  function nvTags(body, topic){
+    var out = [], seen = {};
+    function push(w){
+      var t = String(w || '').replace(/[^가-힣A-Za-z0-9]/g, '');
+      if (charLen(t) >= 2) t = t.replace(/(의|은|는|을|를|과|와|도|만|로|며|던)$/, '');
+      if (charLen(t) < 2 || /^\d+$/.test(t) || NV_STOP[t] || seen[t]) return;
+      if (/(었다|았다|한다|된다|이다|였다|했|됐|이며|하고|지만|면서)$/.test(t)) return;
+      seen[t] = 1;
+      out.push(t);
+    }
+    String(topic || '').replace(/[^가-힣A-Za-z0-9\s]/g, ' ').split(/\s+/).forEach(push);
+    (String(body || '').match(/^#{2,4}\s+(.+)$/gm) || []).forEach(function(h){
+      h.replace(/^#{2,4}\s+/, '').replace(/^\d+[.)]\s*/, '').split(/[\s·,\-—()\[\]]+/).forEach(push);
+    });
+    var freq = {};
+    (String(body || '').match(/[가-힣]{2,5}/g) || []).forEach(function(w){ freq[w] = (freq[w] || 0) + 1; });
+    Object.keys(freq).sort(function(a, b){ return freq[b] - freq[a]; }).slice(0, 14).forEach(push);
+    ['주식', '시황', '코스피', '증시', '수급', '거래대금', '재테크', '경제'].forEach(push);
+    return out.slice(0, 10);
+  }
+
+  function naverFullText(){
+    var d = NV.data;
+    if (!d) return '';
+    var parts = [String(d.body || '').replace(/\s+$/, '')];
+    var tb = toolsBlock().replace(/^---\s*\n+/, '');
+    parts.push('');
+    parts.push(tb.replace(/\s+$/, ''));
+    if ((d.tags || []).length) parts.push('');
+    if ((d.tags || []).length) parts.push((d.tags || []).map(function(t){ return '#' + String(t).replace(/^#/, ''); }).join(' '));
+    return parts.join('\n').replace(/\n{3,}/g, '\n\n');
+  }
+  function renderNaverCard(){
+    var card = $('#naverCard'), host = $('#naverText'), ti = $('#naverTitle'), bd = $('#naverBadge'), nt = $('#naverNote');
+    if (!card || !host) return;
+    var d = NV.data || {};
+    card.hidden = false;
+    if (ti) ti.value = d.title || '';
+    host.textContent = String(d.body || '');
+    var tags = $('#naverTags');
+    if (tags){
+      tags.innerHTML = (d.tags || []).map(function(t){
+        return '<button type="button" class="seotag" data-nvtag="' + esc(String(t).replace(/^#/, '')) + '" title="누르면 복사">#' + esc(String(t).replace(/^#/, '')) + '</button>';
+      }).join('');
+    }
+    if (bd) bd.textContent = NV.local ? '로컬 변환(AI 없이)' : ('Gemini · ' + (NV.model || AI.model));
+    if (nt){
+      var items = [];
+      if (NV.err) items.push('AI 변환이 되지 않아 로컬 변환으로 만들었습니다 — ' + String((NV.err && (NV.err.message || NV.err.reason)) || '').slice(0, 120));
+      (NV.data && NV.data.changed || []).forEach(function(x){ items.push(x); });
+      (NV.data && NV.data.warnings || []).forEach(function(x){ items.push('⚠ ' + x); });
+      if (NV.data && NV.data.needsCheck) items.push('[확인 필요] ' + NV.data.needsCheck + '곳 — 발행 전에 직접 확인하세요.');
+      items.push('무료 도구 링크 2개와 해시태그가 본문 끝에 함께 들어갑니다.');
+      nt.innerHTML = items.length
+        ? '<div class="ainote"' + (NV.err ? ' style="border-color:rgba(245,158,11,.45)"' : '') + '><b>' + (NV.local ? '로컬 변환' : 'AI 변환') + (NV.model && !NV.local ? ' · ' + esc(NV.model) : '') + ' · ' + charLen(String(d.body || '')) + '자</b><ul>' +
+          items.filter(Boolean).map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>'
+        : '';
+    }
+  }
+  async function runNaverTone(btn){
+    if (NV.busy) return;
+    var body = String(currentDraftSafe() || '').trim();
+    if (charLen(body) < 120){ toast('먼저 본문을 만들어 주세요(120자 이상).'); return; }
+    NV.busy = true;
+    NV.err = null;
+    NV.local = false;
+    var topic = (state.lastDraft && state.lastDraft.topic) || (topicEl && topicEl.value.trim()) || '';
+    var core = toolsStrip(affilStrip(body));
+    if (btn) btn.disabled = true;
+    try {
+      var j = await callAI('naver_note', { topic: topic, body: core, banPhrases: banAll() }, btn, '네이버용으로 다시 쓰는 중…');
+      var d = (j && j.data) || {};
+      if (!String(d.body || '').trim()) throw Object.assign(new Error('빈 응답이 왔습니다.'), { payload: {} });
+      NV.data = { title: d.title || '', body: d.body || '', tags: (d.tags || []), changed: d.changed || [], warnings: d.warnings || [], needsCheck: d.needsCheck || 0 };
+      NV.model = (j && j.model) || AI.model;
+      NV.topic = topic;
+      renderNaverCard();
+      toast('네이버용 요약본을 만들었습니다 — 원본은 그대로입니다.');
+    } catch (err){
+      NV.err = err;
+      NV.local = true;
+      NV.model = '';
+      NV.data = nvLocalBody(core, topic);
+      NV.topic = topic;
+      renderNaverCard();
+      toast('AI 없이 로컬 변환으로 네이버용 요약본을 만들었습니다(원본은 그대로).');
+    } finally {
+      NV.busy = false;
+      if (btn) btn.disabled = false;
+    }
+    var card = $('#naverCard');
+    if (card){ try { card.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }
+  }
+  (function(){
+    var b = $('#naverToneBtn');
+    if (b) b.addEventListener('click', function(){ runNaverTone(b); });
+    var again = $('#naverAgainBtn');
+    if (again) again.addEventListener('click', function(){ runNaverTone(again); });
+    var close = $('#naverCloseBtn');
+    if (close) close.addEventListener('click', function(){ var c = $('#naverCard'); if (c) c.hidden = true; });
+    var cp = $('#naverCopyBtn');
+    if (cp) cp.addEventListener('click', function(){ copyText(naverFullText(), '네이버용 요약본(본문 + 무료 도구 링크 + 해시태그)을 복사했습니다.'); });
+    var rc = $('#naverRichBtn');
+    if (rc) rc.addEventListener('click', function(){ RICH.copyRich(naverFullText(), '네이버 서식(HTML)으로 복사했습니다. 스마트에디터에 붙여넣으세요.'); });
+    var tg = $('#naverTagBtn');
+    if (tg) tg.addEventListener('click', function(){
+      var list = ((NV.data && NV.data.tags) || []).map(function(t){ return String(t).replace(/^#/, ''); });
+      if (!list.length){ toast('복사할 태그가 없습니다.'); return; }
+      copyText(list.join(', '), '태그 ' + list.length + '개를 복사했습니다 — 네이버 태그 칸에 붙여넣으세요.');
+    });
+    var tc = $('#naverTitleCopy');
+    if (tc) tc.addEventListener('click', function(){
+      var ti = $('#naverTitle');
+      var v = String((ti && ti.value) || '').trim();
+      if (!v){ toast('복사할 제목이 없습니다.'); return; }
+      copyText(v, '네이버용 제목을 복사했습니다.');
+    });
+    var ti2 = $('#naverTitle');
+    if (ti2) ti2.addEventListener('input', function(){
+      if (NV.data) NV.data.title = String(ti2.value || '').slice(0, 90);
+    });
+    var tags = $('#naverTags');
+    if (tags) tags.addEventListener('click', function(e){
+      var t = e.target.closest('[data-nvtag]');
+      if (!t) return;
+      copyText('#' + t.getAttribute('data-nvtag'), '#' + t.getAttribute('data-nvtag') + ' 복사했습니다.');
+    });
+  })();
 
   /* ---------- ④ 보관함 성과·조회수 트래커 ---------- */
   var PUB_PLATFORMS = [['', '플랫폼'], ['naver', '네이버'], ['tistory', '티스토리'], ['youtube', '유튜브'], ['insta', '인스타']];
@@ -17630,7 +18047,7 @@ var CSVoice = (function () {
   }
 
   /* 🏷️ 시간대 배지 — 지금 선택된 폭스시그널 공식을 상단에 한 글자로 못 박는다 */
-  var FOX_SLOT_LABEL = { '1': '🌅 장전', '2': '☀️ 점심', '3': '🌆 정규마감', '4': '🌙 애프터장', '5': '🚨 긴급 장분석' };
+  var FOX_SLOT_LABEL = { '1': '🌅 장전', '2': '☀️ 점심', '3': '🌆 정규마감', '4': '🌙 애프터장', '5': '🚨 긴급 장분석', '6': '📘 30초 사전', '7': '📊 주간 오답노트' };
   /* 🏷️ 상단 배지 — 사용자가 직접 쓴 문구(자유 배지)가 있으면 그 값이, 없으면 그 공식의 기본 배지가 나온다 */
   function foxBadgeMax() { return 18; }
   function foxBadgeOverride() {
@@ -19453,7 +19870,25 @@ var CSVoice = (function () {
                   '26~38초 대응 3단 — 🔴 비중 축소 / 🟡 관망 / 🟢 분할 대응, 각각 지지·저항 조건과 함께',
                   '38~50초 다음 확인 시각·지표 — 사이드카 해제·선물·수급, 추측은 추측이라고 밝히고 정리'],
            caption: '시각·수치는 실제 체결 그대로, 대응은 🔴🟡🟢로', tone: '속보 톤 · 짧고 단호하게, 추측은 추측이라고',
-           avoid: ['확인되지 않은 속보·사이드카 발동 여부를 단정하지 않는다', '손실·수익을 보장하는 표현을 쓰지 않는다'] }
+           avoid: ['확인되지 않은 속보·사이드카 발동 여부를 단정하지 않는다', '손실·수익을 보장하는 표현을 쓰지 않는다'] },
+      6: { tag: '📘', name: '30초 증시 사전', desc: '토요일 에버그린 · 정의→실제 사례→체크 3', eye: 'MARKET 101', card: 'fox', cardName: '빅넘버 + 여우 카드 + 용어 정의·체크 1·2·3',
+           hook: '"사이드카"처럼 매번 검색되는 증시 용어 하나를 첫 문장에 던지고 "30초면 이해됩니다"로 약속한다(토요일 에버그린)',
+           plan: ['0~4초 용어 하나를 훅으로 — 용어와 "30초면 이해됩니다"를 함께 말한다',
+                  '4~12초 1줄 정의 — 그 용어가 무엇을 막거나 알려 주는 장치인지 한 문장으로(한글+영문 병기)',
+                  '12~24초 실제 장 사례/숫자 — 발동·체결이 확인된 날짜·시각·수치만. 확인된 사례가 없으면 "예시"라고 밝힌다',
+                  '24~36초 실전 체크 기준 1·2 — 무엇을 어디서 확인하는지(발동 시각·해제 여부 등)',
+                  '36~45초 실전 체크 기준 3 + 저장 유도 — 다음에 같은 상황이 오면 이 3개만 보라고 정리'],
+           caption: '용어는 한글+영문 병기, 숫자는 확인된 값만 — 한 컷 15~20자', tone: '처음 듣는 사람에게 설명하듯 · 과장 없이 또박또박',
+           avoid: ['확인하지 않은 제도·수치를 정의로 쓰지 않는다', '오늘 시황처럼 방향을 단정하지 않는다', '출처가 분명하지 않은 "관계자" 표현을 쓰지 않는다'] },
+      7: { tag: '📊', name: '주간 오답노트', desc: '일요일 복기 · 성적표→맞춘 판단→빗나간 점→if→then', eye: 'WEEK REVIEW', card: 'fox', cardName: '빅넘버 + 여우 카드 + 성적표·맞춤/빗나감',
+           hook: '이번 주 우리가 짚었던 판단이 실제로 어떻게 됐는지 확인된 숫자로 먼저 던진다(일요일 복기 · 브리핑·관제탑 기록만)',
+           plan: ['0~5초 이번 주 성적표 — 확인된 지수·수급·후보 종목 결과만 숫자로',
+                  '5~16초 맞춘 판단 — 브리핑에서 건 조건이 실제로 맞은 것(날짜·조건·결과)',
+                  '16~28초 빗나간/주의 포인트 — 틀린 판단·철회한 계획을 숨기지 않고 그대로',
+                  '28~38초 다음 주 체크 if → then 2쌍 — 조건과 대응을 한 문장씩 짝으로',
+                  '38~45초 이번 주 복기는 여기까지 · 다음 주도 같은 기준으로 보자고 정리'],
+           caption: '날짜·수치는 기록 그대로, 판단은 "맞음/빗나감"으로 나눠서 — 한 컷 15~20자', tone: '복기하는 톤 · 변명 없이, 자랑도 없이',
+           avoid: ['브리핑·관제탑 기록에 없는 수치를 복기로 만들지 않는다', '틀린 판단을 지우거나 말 바꾸지 않는다', '다음 주 방향을 단정하지 않는다'] }
     },
     shiba: {
       1: { tag: '①', name: '가격 충격 비교형', desc: '정가 → 오늘가 낙차', eye: 'DEAL', card: 'shock', cardName: '정가 취소선 + 오늘가 빅넘버 카드',
@@ -20301,7 +20736,23 @@ var CSVoice = (function () {
       { text: '지금 코스피 4,869.96 · 야간선물 736.30 · 원/달러 1,338.78', hook: '지금 숫자 세 개' },
       { text: '대응은 🔴 추격 매도 금지 · 🟡 4,831 지지 확인 · 🟢 분할 대응', hook: '🔴🟡🟢 대응 3단' },
       { text: '다음 확인은 15시 20분 사이드카 해제와 외인 선물 수급입니다', hook: '다음 확인 시각' }
-    ], '긴급 장분석 · 사이드카 발동', '지금 사이드카, 무엇을 봐야 하나', ['사이드카', '선물', '대응'])
+    ], '긴급 장분석 · 사이드카 발동', '지금 사이드카, 무엇을 봐야 하나', ['사이드카', '선물', '대응']),
+    /* 📘 30초 증시 사전 — 토요일 에버그린(사례는 11/20 실측: 11:54 매도 사이드카 발동) */
+    'fox:6': mkSample([
+      { text: '사이드카, 30초면 이해됩니다', hook: '사이드카 30초 정리' },
+      { text: '사이드카는 선물이 5% 넘게 움직여 1분 지속되면 프로그램 매매를 5분 멈추는 장치입니다', hook: '한 줄 정의' },
+      { text: '11월 20일 11시 54분, 코스피 -5.21%까지 밀리며 매도 사이드카가 났습니다', hook: '실제 사례 11/20' },
+      { text: '체크 ① 발동 시각 ② 5분 뒤 자동 해제됐는지 — 이 둘만 먼저 봅니다', hook: '체크 1·2' },
+      { text: '체크 ③ 해제 뒤 외인 수급이 돌아섰는지 · 이 3개만 보세요', hook: '체크 3 · 저장' }
+    ], '30초 증시 사전 · 사이드카', '사이드카, 30초면 이해됩니다', ['사이드카', '5%', '5분']),
+    /* 📊 주간 오답노트 — 일요일 복기(11/20 브리핑 실측 기록만 사용) */
+    'fox:7': mkSample([
+      { text: '이번 주 마지막 날 코스피 -5.21% · 코스닥 -5.71%, 11시 54분 매도 사이드카까지 나왔습니다', hook: '이번 주 성적표' },
+      { text: '맞춘 판단 — 20시 브리핑의 야간선물 744.25 재이탈·740선 테스트, 둘 다 왔습니다(739.35 -1.78%)', hook: '맞춘 판단' },
+      { text: '빗나간 점 — 큐로셀 +19.58%를 후보로 봤지만 대금 82.5억으로 300억 기준 미달, 계획을 철회했습니다', hook: '빗나간 점도 그대로' },
+      { text: '다음 주 if 시초가가 4,869.96 위 → then 대금 300억↑부터 / if 야간선물 740선 아래 → then 지수 관련주 관망', hook: '다음 주 if → then' },
+      { text: '복기는 여기까지, 다음 주도 같은 기준으로 보겠습니다 · 감사합니다', hook: '복기 끝' }
+    ], '주간 오답노트 · 11/16~11/20', '이번 주 우리 판단, 맞은 것과 틀린 것', ['오답노트', '사이드카', 'if→then'])
   };
   function sampleFor(d, f) { return SAMPLE_F[d + ':' + f] || SAMPLE_F[d + ':1'] || SAMPLE_SPEC; }
 
@@ -22078,7 +22529,7 @@ var CSVoice = (function () {
      · 디자인은 🦊 폭스시그널로, 공식은 그 시간대(1 장전 / 2 점심 / 3 정규마감 / 4 애프터장)로 바꾸고
        그 공식의 5컷 샘플을 미리보기에 올린다. 성우·말 속도는 이 컨셉의 고정값(없으면 기본 현수 1.20x)을 그대로 쓴다. */
   function slotApply(slot) {
-    var map = { pre: '1', noon: '2', close: '3', after: '4' };
+    var map = { pre: '1', noon: '2', close: '3', after: '4', dict: '6', review: '7' };
     var k = map[slot] || '1';
     setDesign('fox');
     S.cfg.formula = S.cfg.formula || {};
