@@ -18654,7 +18654,8 @@ var CSVoice = (function () {
       var fr = Math.max(0, Math.min(1, (ev.m - T0) / (T1 - T0)));
       var mx = px0 + (px1 - px0) * fr;
       var cy = ay - 24 - (i % 2) * 26;
-      var mq = MO.on ? moPop(MO.tIn - .35 - fr * .6, .28) : 1;
+      /* 순서대로 톡톡 — 컷 시작 0.30초부터 0.40초 간격으로 하나씩 팝업 */
+      var mq = MO.on ? moPop(MO.tIn - .30 - i * .40, .3) : 1;
       if (mq <= .02) continue;
       var col = fxDirCol(ev.dir);
       var txt = ev.hh + ':' + ev.mm + ' ' + ev.label;
@@ -18818,7 +18819,8 @@ var CSVoice = (function () {
       if (zq > .55) txLine(ctx, '×' + Z, lx + lw - 12, ly + 15, '900 15px ' + FF, pal.zoomTag, 'right', 'fx-line-zoomtag');
     }
     /* 현재가 도트 — 마지막 점. 변곡점과 같은 점이면 링이 이미 표시했으므로 생략 */
-    if (fi !== n - 1) fxPulseDot(ctx, sx(n - 1), sy(pts[n - 1].c), pal);
+    /* 현재가 점은 선이 끝까지 그려진 뒤에만(그리는 중에는 선 끝 점 하나만 보인다) */
+    if (fi !== n - 1 && prog >= 1) fxPulseDot(ctx, sx(n - 1), sy(pts[n - 1].c), pal);
     var lab = (tr.real ? (down ? '저점 ' : '고점 ') : '변곡 ') + (pts[fi].disp || fmtTrendVal(pts[fi].c, tr.real)) + (tr.real ? ' · ' + pts[fi].d : '');
     var lf = fitText(ctx, lab, { w: w - 76, h: 30, base: 24, min: 14, weight: 900, lh: 1.1 });
     if (band) fxSessionBand(ctx, evs, x, w, evY, px0, px1, pal);
