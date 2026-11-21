@@ -18031,12 +18031,15 @@ var CSVoice = (function () {
   var CAP_WARN = /급락|폭락|하락|이탈|주의|위험|경고|매도|약세|사이드카|매물|손절|빨간불|충격/;
   var CAP_UP = /급등|상승|돌파|신고가|우위|매수|강세|유입|회복|반등|수혜|호재/;
   var CAP_KEY = /현금|유지|이탈|관망|우위|주의|돌파|신고가|급등|급락|폭락|사이드카|반대매매|매물|손절|기준선|대장주|관찰/;
-  function capColorOf(tok) {
+  function capColorOf(tok, near) {
     var t = String(tok || '').replace(/[^0-9A-Za-z가-힣%+\-.·]/g, '');
     if (!t) return '';
-    if (CAP_WARN.test(t)) return '#9F1239';
-    if (CAP_UP.test(t)) return '#1E40AF';
-    if (/\d/.test(t)) return /^[-−]/.test(t) ? '#9F1239' : '#1E40AF';
+    /* ② 등락 색 통일 — 마이너스·하락 = 파랑 · 플러스·상승 = 빨강 · 중립 수치 = 짙은 네이비 */
+    var s = fxSignOf(t);
+    if (s) return fxDirCol(s);
+    var d = fxToneOf(t);
+    if (d) return fxDirCol(d);
+    if (/\d/.test(t)) return fxNumCol(t, near || '');
     return '';
   }
   function capMarkOf(tok) {
@@ -18137,9 +18140,9 @@ var CSVoice = (function () {
      ══════════════════════════════════════════════════════════════════════ */
   var FXG = {
     head:  { x: SAFE.x, y: 180, w: SAFE.w, h: 58 },
-    title: { x: SAFE.x, y: 268, w: SAFE.w, h: 164 },   /* ② 62px 800 · 1.22 행간 */
-    kpi:   { x: SAFE.x, y: 458, w: SAFE.w, h: 112 },   /* ② 헤드라인과 26px 띄운 2KPI */
-    vis:   { x: SAFE.x, y: 592, w: SAFE.w, h: 690 },
+    title: { x: SAFE.x, y: 284, w: SAFE.w, h: 158 },   /* ② 53px 800 · 1.22 행간 — 상단 바와 16px 더 띄운다 */
+    kpi:   { x: SAFE.x, y: 468, w: SAFE.w, h: 132 },   /* ② 제목보다 큰 78px 900 앵커 숫자(라벨·시각물과 안 겹치게) */
+    vis:   { x: SAFE.x, y: 618, w: SAFE.w, h: 664 },
     cap:   { x: SAFE.x, y: 1324, w: SAFE.w, h: 158 },
     foot:  { x: SAFE.x, y: 1490, w: SAFE.w, h: 34 },
     tick:  { y: 1780, h: 48 }
@@ -18163,6 +18166,72 @@ var CSVoice = (function () {
     return pad(d.getMonth() + 1) + '/' + pad(d.getDate());
   }
   function fxHero(idx, n) { return idx === 0 || idx === n - 1 || n <= 2; }
+
+  /* ---------- 등락 색 단일 규칙 (헤드라인 · 2KPI · 비교표 · 카라오케 자막 공통) ----------
+     마이너스·하락·이탈·매도 = 파랑(#1a5490) · 플러스·상승·유입·매수 = 빨강(#781b33)
+     부호 없는 지수 포인트·금액·종목수·시각 = 짙은 네이비(#172030) */
+  var FX_UPCOL = '#781b33', FX_DOWNCOL = '#1a5490', FX_MIDCOL = '#172030';
+  var FX_RE_DOWN = /하락|이탈|매도|약세|감소|급락|폭락|순매도|밀린|빠졌|내줬|떨어|무너|내림/;
+  var FX_RE_UP = /상승|유입|매수|강세|급등|증가|반등|회복|순매수|신고가|돌파|올랐|뛰었/;
+  /* '-3.83%' → -1 · '(+26.20%)' → +1 · 부호 없음 → 0 (날짜 11-21 같은 붙임표는 부호가 아니다) */
+  function fxSignOf(s) {
+    var m = /(^|[(（\[])\s*([+\-−])\s*[\d.]/.exec(String(s == null ? '' : s));
+    if (!m) return 0;
+    return m[2] === '+' ? 1 : -1;
+  }
+  function fxToneOf(s) {
+    var t = String(s == null ? '' : s);
+    var d = (t.match(FX_RE_DOWN) || []).length, u = (t.match(FX_RE_UP) || []).length;
+    return d > u ? -1 : u > d ? 1 : 0;
+  }
+  function fxDirCol(d) {
+    if (d > 0) return INV ? '#FCA5A5' : FX_UPCOL;
+    if (d < 0) return INV ? '#93C5FD' : FX_DOWNCOL;
+    return INV ? fxPal().ink : FX_MIDCOL;
+  }
+  /* 수치 색 — 부호가 우선, 부호 없는 등락률(%)만 바로 옆 문맥을 따른다. 나머지는 중립 네이비 */
+  function fxNumCol(disp, near) {
+    var d = fxSignOf(disp);
+    if (!d && /%|퍼센트|프로|pt/.test(String(disp == null ? '' : disp)) && near) d = fxToneOf(near);
+    return fxDirCol(d);
+  }
+  /* 컷 문장에서 이 수치 바로 옆(±26자) 문맥 — '5.71퍼센트 하락'처럼 부호 없는 등락률의 방향 */
+  function fxNearCtx(text, disp) {
+    var t = String(text || ''), core = String(disp == null ? '' : disp).replace(/[^\d.]/g, '');
+    if (!t || !core) return '';
+    var p = t.indexOf(core);
+    if (p < 0) return '';
+    return t.slice(Math.max(0, p - 26), p + core.length + 26);
+  }
+  /* 한 줄을 '수치'와 '낱말'로 나눠 칠한다 — 괄호 안 부호((-1.78%))까지 따로 색을 준다 */
+  var FX_NUMRE = /((?:[+\-−]\s*)?\d[\d,]*(?:\.\d+)?\s*(?:%|퍼센트|pt|억|조|만원|원|계약|종목|개|명|건|위|달러)?)/g;
+  function txSegs(ctx, line, x, yMid, font, C, label, near) {
+    var s = String(line == null ? '' : line);
+    if (!s) return 0;
+    ctx.font = font; ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    var segs = s.split(FX_NUMRE), cx = x, i, g, k, ws, d;
+    for (i = 0; i < segs.length; i++) {
+      g = segs[i];
+      if (!g) continue;
+      if (i % 2 === 1) {
+        ctx.fillStyle = fxNumCol(g, near || s);
+        ctx.fillText(g, cx, yMid);
+        cx += ctx.measureText(g).width;
+        continue;
+      }
+      ws = g.split(/(\s+)/);
+      for (k = 0; k < ws.length; k++) {
+        if (!ws[k]) continue;
+        d = /^\s+$/.test(ws[k]) ? 0 : fxToneOf(ws[k]);
+        ctx.fillStyle = d ? fxDirCol(d) : C.ink;
+        ctx.fillText(ws[k], cx, yMid);
+        cx += ctx.measureText(ws[k]).width;
+      }
+    }
+    var sz = fontPx(font);
+    rec(x, yMid - sz * 0.62, cx - x, sz * 1.24, label || 'text');
+    return cx - x;
+  }
 
   /* ---------- ③ 컷 문장에서 주요 수치 2개 ---------- */
   /* KPI 설명 한 줄 — 단위 낱말만 걷어내고 '저점' 같은 낱말은 살린다(cleanLabel 은 '점'까지 지운다) */
@@ -18266,7 +18335,7 @@ var CSVoice = (function () {
     var prog = moRollP(), pk = moPunch();
     for (var i = 0; i < n; i++) {
       var k = kpis[i], cx = geo.x + i * (cw + gap);
-      var col = i === 0 ? pal.num : pal.ink;
+      var col = pal.valueCol ? pal.valueCol(k, i) : (i === 0 ? pal.num : pal.ink);
       var vSize = pal.vSize || 98;
       var vf = fitText(ctx, k.disp, { w: cw, h: Math.round(vSize * .94), base: vSize, min: 38, weight: 900, lh: 1.02 });
       var txt = moRoll(vf.lines[0] || k.disp, prog);
@@ -18279,7 +18348,8 @@ var CSVoice = (function () {
       ctx.font = vf.font;
       var aw = Math.min(cw, ctx.measureText(txt).width);
       var uw = Math.max(56, Math.min(cw, aw * 0.62));
-      panel(ctx, cx, geo.y + (pal.ruleDy || 96), Math.max(8, uw * moPop(MO.tIn, .52)), 7, 3.5, i === 0 ? pal.rule1 : pal.rule2, null, 0, 'fx-kpi-rule');
+      panel(ctx, cx, geo.y + (pal.ruleDy || 96), Math.max(8, uw * moPop(MO.tIn, .52)), 7, 3.5,
+        i === 0 ? (pal.valueCol ? col : pal.rule1) : pal.rule2, null, 0, 'fx-kpi-rule');
       var lf = fitText(ctx, k.label || '오늘의 숫자', { w: cw, h: 30, base: 24, min: 15, weight: 800, lh: 1.1 });
       txLine(ctx, lf.lines[0] || '', cx, geo.y + (pal.labelDy || 122), lf.font, pal.sub, 'left', 'fx-kpi-sub');
     }
@@ -18295,9 +18365,11 @@ var CSVoice = (function () {
     lensBg: FX.paper, lensEdge: FX.wine, zoomTag: FX.wine };
   var FX_BAR_PAL = { card: FX.paper, edge: 'rgba(16,32,47,.18)', spine: 'rgba(16,32,47,.92)', label: FX.wine,
     ink: FX.navy, sub: 'rgba(16,32,47,.60)', num: FX.wine, chip: 'rgba(16,32,47,.09)',
-    bar1: FX.wine, bar2: 'rgba(16,32,47,.55)', bar2tip: 'rgba(16,32,47,.82)', rule: 'rgba(16,32,47,.10)' };
+    bar1: FX.wine, bar2: 'rgba(16,32,47,.55)', bar2tip: 'rgba(16,32,47,.82)', rule: 'rgba(16,32,47,.10)',
+    numCol: function (it) { return fxNumCol(it && it.disp, it && it.label); } };
   var FX_LIST_PAL = { card: FX.paper, edge: 'rgba(16,32,47,.18)', spine: 'rgba(16,32,47,.92)', label: FX.wine,
-    ink: FX.navy, sub: 'rgba(16,32,47,.60)', num: FX.wine, rule: 'rgba(16,32,47,.12)' };
+    ink: FX.navy, sub: 'rgba(16,32,47,.60)', num: FX.wine, rule: 'rgba(16,32,47,.12)',
+    numCol: function (it) { return fxNumCol(it && it.disp, it && it.label); } };
   function roleTrendPal(d) {
     var R = ROLE[d];
     return { card: R.paper, edge: inkA(R, .12), spine: R.accent, label: R.accent, ink: R.ink, sub: inkA(R, .58),
@@ -18502,7 +18574,8 @@ var CSVoice = (function () {
       var lf = fitText(ctx, it.label || ('항목 ' + (i + 1)), { w: w - 300, h: labPx + 8, base: labPx, min: 15, weight: 800, lh: 1.1 });
       txLine(ctx, lf.lines[0] || '', x + 38 + slide, oy + Math.max(labPx, valPx) / 2, lf.font, pal.sub, 'left', 'fx-bar-name');
       var vf = fitText(ctx, it.disp, { w: 260, h: valPx + 8, base: valPx, min: 15, weight: 900, lh: 1.1 });
-      txLine(ctx, moRoll(vf.lines[0] || it.disp, Math.min(1, t0)), x + w - 38, oy + Math.max(labPx, valPx) / 2, vf.font, i === 0 ? pal.num : pal.ink, 'right', 'fx-bar-value');
+      txLine(ctx, moRoll(vf.lines[0] || it.disp, Math.min(1, t0)), x + w - 38, oy + Math.max(labPx, valPx) / 2, vf.font,
+        pal.numCol ? pal.numCol(it) : (i === 0 ? pal.num : pal.ink), 'right', 'fx-bar-value');
       var by = oy + Math.max(labPx, valPx) + 10, bx = x + 38, bw = w - 76;
       if (sameUnit) {
         panel(ctx, bx, by, bw, th, th / 2, pal.chip, null, 0, 'fx-bar-track');
@@ -18557,7 +18630,9 @@ var CSVoice = (function () {
       txLine(ctx, ('0' + (i + 1)).slice(-2), x + 38, cy0 + blockH / 2, '900 ' + noPx + 'px ' + FF, pal.num, 'left', 'fx-list-no');
       var ty = cy0 + blockH / 2 - tf.height / 2;
       for (var k = 0; k < tf.lines.length; k++) {
-        txWords(ctx, tf.lines[k], tx0, ty + k * tf.lineH + tf.lineH / 2, tf.font,
+        var ly = ty + k * tf.lineH + tf.lineH / 2;
+        if (pal.numCol) txSegs(ctx, tf.lines[k], tx0, ly, tf.font, { ink: pal.ink }, 'fx-list-row', null);
+        else txWords(ctx, tf.lines[k], tx0, ly, tf.font,
           function (tok) { return /\d/.test(tok) ? pal.num : pal.ink; }, 'fx-list-row');
       }
       if (i < n - 1) panel(ctx, x + 38, ry + rowH - 8, w - 76, 2, 1, pal.rule, null, 0, 'fx-list-rule');
@@ -18627,7 +18702,7 @@ var CSVoice = (function () {
       var px = x0 + 8 + span * e;
       var py = cy - Math.sin(Math.PI * e) * Math.min(26, ch * .055) * (i % 2 ? 1 : -1);
       ctx.globalAlpha = Math.sin(Math.PI * ph) * .95;
-      ctx.fillStyle = i === 0 ? FX.wine : '#1E40AF';
+      ctx.fillStyle = i === 0 ? FX_DOWNCOL : FX_UPCOL;
       ctx.beginPath(); ctx.arc(px, py, 10 - i * .7, 0, Math.PI * 2); ctx.fill();
       ctx.globalAlpha = .45; ctx.fillStyle = '#FFFFFF';
       ctx.beginPath(); ctx.arc(px - 2.5, py - 2.5, 3.4, 0, Math.PI * 2); ctx.fill();
@@ -18653,8 +18728,8 @@ var CSVoice = (function () {
     if (ch > chMax) { top += Math.round((ch - chMax) / 2); ch = chMax; }
     var gap = compact ? 54 : 92, cw = Math.floor((w - 76 - gap) / 2);
     var lx = x + 38, rx = lx + cw + gap;
-    foxMoveCol(ctx, det.out, 'OUT · 이탈', det.outPct, lx, top, cw, ch, '#9F1239', 'rgba(159,18,57,.22)', pal, null, compact);
-    foxMoveCol(ctx, det.into, 'IN · 유입', det.intoPct, rx, top, cw, ch, pal.num, 'rgba(16,32,47,.16)', pal, foxMoveHot, compact);
+    foxMoveCol(ctx, det.out, 'OUT · 이탈', det.outPct, lx, top, cw, ch, fxDirCol(-1), 'rgba(26,84,144,.24)', pal, null, compact);
+    foxMoveCol(ctx, det.into, 'IN · 유입', det.intoPct, rx, top, cw, ch, fxDirCol(1), 'rgba(120,27,51,.22)', pal, foxMoveHot, compact);
     foxMoveDots(ctx, lx + cw, rx, top + Math.round(ch / 2), ch);
     /* ③ 이동 규모 — 실측 등락률의 격차 + 쏠림 비중 */
     var sc = foxFlowScale(det, compact);
@@ -18662,14 +18737,20 @@ var CSVoice = (function () {
     panel(ctx, x + 38, sy, w - 76, scaleH - 12, 14, 'rgba(16,32,47,.05)', null, 0, 'fx-move-scale');
     txLine(ctx, compact ? 'SCALE' : 'SCALE · 이동 규모', x + 54, sy + 24, '900 21px ' + FF, pal.label, 'left', 'fx-scale-l');
     var sf = fitText(ctx, sc.text, { w: w - (compact ? 186 : 330), h: 28, base: 23, min: 14, weight: 900, lh: 1.1 });
-    txLine(ctx, sf.lines[0] || '', x + w - 54, sy + 24, sf.font, pal.ink, 'right', 'fx-scale-v');
+    /* ② SCALE 문장 안의 등락률도 같은 색 규칙 — 마이너스 파랑 · 플러스 빨강 */
+    var stx = sf.lines[0] || '';
+    ctx.save();
+    ctx.font = sf.font; ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    var sw = ctx.measureText(stx).width;
+    ctx.restore();
+    txSegs(ctx, stx, x + w - 54 - sw, sy + 24, sf.font, { ink: pal.ink }, 'fx-scale-v', null);
     if (sc.out != null && sc.into != null) {
       var oa = Math.abs(sc.out), ia = Math.abs(sc.into), tot = oa + ia || 1;
       var bx = x + 54, bw = w - 108, by = sy + 42, bh = 20;
       panel(ctx, bx, by, bw, bh, 10, 'rgba(16,32,47,.10)', null, 0, 'fx-scale-track');
       var ow = Math.max(16, bw * (oa / tot));
-      panel(ctx, bx, by, ow, bh, 10, FX.wine, null, 0, 'fx-scale-out');
-      panel(ctx, bx + ow, by, Math.max(16, bw - ow), bh, 10, '#1E40AF', null, 0, 'fx-scale-in');
+      panel(ctx, bx, by, ow, bh, 10, fxDirCol(-1), null, 0, 'fx-scale-out');
+      panel(ctx, bx + ow, by, Math.max(16, bw - ow), bh, 10, fxDirCol(1), null, 0, 'fx-scale-in');
     }
     if (note) {
       var ny = y + h - noteH - 4;
@@ -18687,7 +18768,7 @@ var CSVoice = (function () {
     txLine(ctx, head, x + 24, y + 30, '900 ' + (compact ? 22 : 28) + 'px ' + FF, headCol, 'left', 'fx-move-head');
     var tag = String(list.length) + '개' + (pct != null && !compact ? ' · ' + fmtPct(pct) : '');
     txLine(ctx, tag, x + w - 24, y + 30, '900 ' + (compact ? 19 : 22) + 'px ' + FF,
-      pct != null && !compact ? (pct < 0 ? '#1E40AF' : '#B91C1C') : pal.sub, 'right', 'fx-move-count');
+      pct != null && !compact ? fxDirCol(pct < 0 ? -1 : 1) : pal.sub, 'right', 'fx-move-count');
     panel(ctx, x + 24, y + 50, w - 48, 2, 1, 'rgba(16,32,47,.12)', null, 0, 'fx-move-rule');
     var n = list.length, top = y + 66, avail = h - 66 - 16;
     var rowH = Math.min(94, Math.floor(avail / n)), off = Math.max(0, Math.floor((avail - rowH * n) / 2));
@@ -18848,7 +18929,7 @@ var CSVoice = (function () {
       if (t0 <= 0) continue;
       var ry = y + headH + i * rowH;
       var pct = (r.pct == null || !isFinite(Number(r.pct))) ? null : Number(r.pct);
-      var col = pct == null ? pal.sub : (pct < 0 ? '#1E40AF' : (pct > 0 ? '#B91C1C' : pal.sub));
+      var col = pct == null ? pal.sub : (pct < 0 ? fxDirCol(-1) : (pct > 0 ? fxDirCol(1) : pal.sub));
       ctx.save();
       ctx.globalAlpha = Math.min(1, t0);
       var nf = fitText(ctx, r.name, { w: w - 380, h: 32, base: 27, min: 17, weight: 900, lh: 1.1 });
@@ -18856,7 +18937,8 @@ var CSVoice = (function () {
       var bf = fitText(ctx, String(r.basis || ''), { w: w - 380, h: 22, base: 17, min: 12, weight: 700, lh: 1.1 });
       txLine(ctx, bf.lines[0] || '', x + 38, ry + 46, bf.font, pal.sub, 'left', 'fx-macro-basis');
       var vf = fitText(ctx, String(r.value || '—'), { w: 210, h: 34, base: 29, min: 16, weight: 900, lh: 1.1 });
-      txLine(ctx, vf.lines[0] || '', x + w - 206, ry + 22, vf.font, pal.num, 'right', 'fx-macro-value');
+      txLine(ctx, vf.lines[0] || '', x + w - 206, ry + 22, vf.font,
+        pal.numCol ? pal.numCol({ disp: String(r.value || ''), label: r.name }) : pal.num, 'right', 'fx-macro-value');
       txLine(ctx, pct == null ? '—' : fmtPct(pct), x + w - 34, ry + 22, '900 27px ' + FF, col, 'right', 'fx-macro-pct');
       var bx = x + 38, bw = w - 76, by = ry + rowH - 26, bh = 10;
       panel(ctx, bx, by, bw, bh, 5, pal.chip, null, 0, 'fx-macro-track');
@@ -18908,8 +18990,9 @@ var CSVoice = (function () {
   /* 속보(딥네이비) 스킨에서는 어두운 버건디/네이비 글자가 안 읽힌다 → 밝은 톤으로 */
   function fxCapCol(c) {
     if (!INV || !c) return c;
-    if (c === '#9F1239') return '#FCA5A5';
-    if (c === '#1E40AF') return '#93C5FD';
+    if (c === FX_UPCOL || c === '#9F1239') return '#FCA5A5';
+    if (c === FX_DOWNCOL || c === '#1E40AF') return '#93C5FD';
+    if (c === FX_MIDCOL) return fxPal().ink;
     return c;
   }
   function foxNarLine(cut) {
@@ -19023,20 +19106,19 @@ var CSVoice = (function () {
       panel(ctx, cx - 1.5, py - 3, 3, 12, 1.5, C.hair, null, 0, 'fx-prog-tick');
     });
   }
-  /* ---------- ② 헤드라인 — 62px 800 · 1.22 행간 · 형광펜 띠 없이 숫자 컬러만 ---------- */
+  /* ---------- ② 헤드라인 — 53px 800 · 1.22 행간 · 숫자는 부호대로 ---------- */
   function drawFoxTitle(ctx, spec, cut, idx) {
     var C = fxPal(), g = FXG.title;
     var head = String((cut && cut.text) || '').trim() || String(spec.hookTitle || '');
     if (!head) return;
     ctx.save();
     fxTight(ctx, true);
-    /* ② 80px 900 → 62px 800: 크기를 한 단계 줄이고 행간을 벌려 시원하게 읽히게 한다.
-       노란 형광펜 띠는 2KPI 와 엉켜 보여 없앴다 — 숫자만 버건디로 강조한다. */
-    var fit = fitText(ctx, head, { w: g.w, h: g.h, base: 62, min: 42, weight: 800, lh: 1.22 });
+    /* ② 62px 800 → 53px 800: 제목은 정갈한 '안내문'으로 한 단계 낮추고,
+       크기 위계는 아래 2KPI(78px 900)가 맡는다. 숫자 색은 부호·문맥 그대로. */
+    var fit = fitText(ctx, head, { w: g.w, h: g.h, base: 53, min: 40, weight: 800, lh: 1.22 });
     var y0 = g.y + Math.max(0, (g.h - fit.height) / 2);
     for (var i = 0; i < fit.lines.length; i++) {
-      txWords(ctx, fit.lines[i], g.x, y0 + i * fit.lineH + fit.lineH / 2, fit.font,
-        function (tok) { return /\d/.test(tok) ? C.num : C.ink; }, 'fx-title');
+      txSegs(ctx, fit.lines[i], g.x, y0 + i * fit.lineH + fit.lineH / 2, fit.font, C, 'fx-title', fit.lines[i]);
     }
     ctx.restore();
     fxTight(ctx, false);
@@ -19051,10 +19133,13 @@ var CSVoice = (function () {
     }
     var k = fk.length ? fk : foxKpiList(cut);
     if (!k.length) return false;
-    /* ② 헤드라인(62px)보다 작은 60px 로 두고, 숫자 아래 얇은 밑줄 + 회색 라벨로 위계를 만든다 */
+    /* ② 헤드라인(53px)보다 확실히 큰 78px 900 — 숫자 아래 얇은 밑줄 + 회색 라벨로 위계를 만든다.
+       색은 값마다: 마이너스/하락 파랑 · 플러스/상승 빨강 · 중립(지수·금액) 네이비 */
+    var cutText = String((cut && cut.text) || '') + ' ' + String((cut && cut.tts) || '');
     return drawFlatKpis(ctx, k, FXG.kpi, {
-      num: fxPal().num, ink: fxPal().ink, sub: fxPal().sub, vSize: 60, ruleDy: 66, labelDy: 90,
-      rule1: fxPal().accent, rule2: 'rgba(16,32,47,.30)'
+      num: fxPal().num, ink: fxPal().ink, sub: fxPal().sub, vSize: 78, ruleDy: 88, labelDy: 114,
+      rule1: fxPal().accent, rule2: 'rgba(16,32,47,.30)',
+      valueCol: function (kk) { return fxNumCol(kk && kk.disp, fxNearCtx(cutText, kk && kk.disp) || cutText); }
     });
   }
   /* ---------- ④ 중앙 시각물 + ⑤ 여우 ---------- */
@@ -19093,7 +19178,7 @@ var CSVoice = (function () {
           var on = (seen / total) <= p + 0.0001;
           seen += String(tok).length;
           if (!on) { cols.push(C.sub); marks.push(''); return; }
-          var c = fxCapCol(capColorOf(tok));
+          var c = fxCapCol(capColorOf(tok, line));
           if (!c && words.indexOf(clean) >= 0) c = C.accent;
           cols.push(c || C.ink);
           marks.push(capMarkOf(tok));
