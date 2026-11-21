@@ -18463,7 +18463,8 @@ var CSVoice = (function () {
         if (/^(에|께|와|과|도|만|그|이|저|은|는|을|를)$/.test(cand) || /^(원|개|점|배|위|명|건|일|분|박|주|계약|종목)$/.test(cand)) {
           k2 -= 1; continue;                   /* 조사 뿐인 낱말 */
         }
-        if (fxBadLabel(cand) && fxBadLabel(w0)) { k2 -= 1; continue; }   /* 서술어·부사는 라벨이 아니다 */
+        /* 서술어·부사('모였습니다'·'달리')는 라벨이 아니다 — 엉뚱한 앞말을 끌어오지 않고 라벨을 비운다(→ '오늘의 숫자') */
+        if (fxBadLabel(cand) || fxBadLabel(w0)) break;
         /* '선물'·'지수'처럼 뜻이 얇은 낱말은 앞 낱말과 붙여 라벨로 쓴다 → '나스닥100 선물' → '나스닥 선물' */
         if (/^(선물|지수|환율|유가|금리|종목|테마|평균|대금|거래대금)$/.test(cand) && k2 > 0) {
           var pv = ws[k2 - 1].replace(/[0-9]/g, '').replace(FX_PART_RE, '').trim();
