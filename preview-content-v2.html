@@ -454,6 +454,17 @@
   .feedbanner #feedBannerText{flex:1 1 220px;min-width:0;color:#fef3c7}
   .feedbanner #feedBannerText b{color:#fff}
 
+  /* ---------- ⚡ 생성 직전까지 원클릭 세팅 (쇼츠 스튜디오 상단 바) ---------- */
+  .csauto{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:0 0 12px;padding:11px 12px;border:1px solid rgba(245,158,11,.5);border-radius:14px;background:linear-gradient(135deg,rgba(245,158,11,.17),rgba(56,189,248,.10))}
+  .csauto-t{flex:1 1 220px;min-width:0;display:grid;gap:3px}
+  .csauto-t b{font-size:13.4px;font-weight:900;color:#fcd34d;letter-spacing:-.02em}
+  .csauto-s{font-size:11.4px;font-weight:700;color:#cbd5e1;line-height:1.55}
+  .csauto-s.ok{color:#86efac}
+  .csauto-s.busy{color:#fde68a}
+  .csauto-s.bad{color:#fca5a5}
+  .csauto-btn{flex:0 0 auto;white-space:nowrap}
+  @media (max-width:430px){ .csauto-btn{width:100%;justify-content:center} }
+
   /* ---------- 🎬 웹 영상 생성기 (Canvas + MediaRecorder · 크레딧 0) ---------- */
   .wvhead{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
   .wvchip{font-size:10.6px;font-weight:900;color:#bae6fd;background:rgba(56,189,248,.12);border:1px solid rgba(56,189,248,.3);border-radius:999px;padding:2px 9px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2217,6 +2228,14 @@
 
 <!-- ================= 📱 쇼츠 스튜디오 (대본 → 🦊 폭스시그널 → 1080×1920 영상) ================= -->
 <section id="panelShorts" role="tabpanel" aria-labelledby="tabShorts" hidden>
+  <!-- ⚡ 생성 직전까지 원클릭 세팅 — 시간대 초안(없으면 관제탑 실측) + 📈 꺾은선 추세 + 현수 1.20x + [▶ 생성] 스크롤까지 한 번에 -->
+  <div class="csauto" id="csAutoBar">
+    <div class="csauto-t">
+      <b>⚡ 생성 직전까지 원클릭 세팅</b>
+      <span class="csauto-s" id="csAutoState">지금 고른 시간대(없으면 오늘 최신) 초안 → 📈 꺾은선 추세 · 성우 현수 1.20x · <b>[▶ 생성]</b>까지 한 번에 세팅합니다.</span>
+    </div>
+    <button class="btn primary big csauto-btn" id="csAutoBtn" type="button" title="이 시간대(없으면 최신) 초안이 있으면 그 대본을, 없으면 관제탑 실측 재료로 대본을 올리고 📈 꺾은선 추세·성우·[▶ 생성] 자리까지 한 번에 세팅합니다">⚡ 생성 직전까지 원클릭 세팅</button>
+  </div>
   <div id="shortsMain">
     <div class="blog-cols">
       <div>
@@ -2350,6 +2369,7 @@
       <span class="wvchip" id="wvTplTag">📊 카드형</span>
       <span class="wvchip" id="wvMusic">BGM —</span>
       <span class="spacer"></span>
+      <button class="btn small primary" id="wvAutoBtn" type="button" title="이 시간대(또는 최신) 초안 → 📈 꺾은선 추세 → 성우 → [▶ 생성] 자리까지 한 번에 세팅합니다">⚡ 생성 직전 세팅</button>
       <button class="btn small" id="wvPasteBtn" type="button" aria-expanded="false" aria-controls="wvPaste">📋 대본 붙여넣기</button>
       <button class="btn small ghost" id="wvSampleBtn" type="button" data-wvsample="1">🧪 샘플로 바로 만들기</button>
       <button class="btn small ghost" id="wvSetBtn" type="button">⚙ 옵션</button>
@@ -12188,20 +12208,149 @@ var CSVoice = (function () {
       return r;
     });
   }
+  /* ---------- ⚡ 생성 직전까지 원클릭 세팅 (화면 안 버튼 · 쿼리 없이) ----------
+     · 📱 쇼츠 스튜디오 상단 [⚡ 생성 직전까지 원클릭 세팅] 과 🎬 웹 영상 생성기 상단 바 [⚡ 생성 직전 세팅]이 같은 함수를 부른다.
+     · 순서: ① 지금 고른 시간대(없으면 오늘 최신 초안 → 없으면 지금 시각의 시간대)
+             ② 그 시간대 '오늘자' 피클 초안이 있으면 그 대본, 없으면 관제탑 실측 재료(없는 숫자는 지어내지 않는다)
+             ③ 🎬 웹 영상 생성기 펼침 ④ 양식 📈 꺾은선 추세(사진을 넣어 직접 고른 사진형은 그대로 둔다)
+             ⑤ 성우·말 속도는 폭스시그널 고정값(기본 현수 1.20x — 📌 고정값이 있으면 그 값) ⑥ [▶ 생성] 자리를 화면 가운데로 스크롤.
+     · 실패하면 화면을 억지로 옮기지 않고 무엇이 막혔는지만 남긴다(작업 중이던 대본은 건드리지 않는다). */
+  var CS_SLOT = '';
+  var CS_AUTO_BUSY = false;
+  function csSlotClock(){
+    var d = new Date(), m = d.getHours() * 60 + d.getMinutes();
+    if (m < 9 * 60) return 'pre';
+    if (m < 14 * 60 + 30) return 'noon';
+    if (m < 18 * 60) return 'close';
+    return 'after';
+  }
+  function csPick(j){
+    var ls = (j && (j.latestSlot || j.slot)) || '';
+    if (CS_SLOT && SLOT_DEF[CS_SLOT]){
+      var n = feedNode(j, CS_SLOT);
+      if (n && feedIsToday(n)) return { slot: CS_SLOT, from: 'draft' };
+      return { slot: CS_SLOT, from: 'live' };
+    }
+    var n2 = ls ? feedNode(j, ls) : null;
+    if (n2 && feedIsToday(n2)) return { slot: ls, from: 'draft' };
+    return { slot: csSlotClock(), from: 'live' };
+  }
+  function csState(html, kind){
+    var el = document.getElementById('csAutoState');
+    if (!el) return;
+    el.className = 'csauto-s' + (kind ? ' ' + kind : '');
+    el.innerHTML = html;
+  }
+  /* 사진을 넣어 직접 고른 사진형만 그대로 둔다 — 기본(카드형)에서 누른 것은 꺾은선 추세로 바꾼다 */
+  function csPhotoKept(){
+    var cur = '';
+    try { cur = (window.WVID && window.WVID.tpl) ? window.WVID.tpl() : ''; } catch (e) { cur = ''; }
+    if (cur !== 'photo') return false;
+    return !!document.querySelector('#wvThumbs .wvth');
+  }
+  function csVoice(){
+    var sel = document.getElementById('wvVoice'), tag = document.getElementById('wvSpeedTag'), nm = '';
+    try { if (sel && sel.selectedIndex >= 0 && sel.options[sel.selectedIndex]) nm = String(sel.options[sel.selectedIndex].textContent || ''); } catch (e) {}
+    nm = nm.split('·')[0].replace(/\s+/g, ' ').trim();
+    var sp = tag ? String(tag.textContent || '').trim() : '';
+    return (nm + (sp ? ' ' + sp : '')).trim();
+  }
+  /* 생성기 쪽 마무리 — 펼침 · 양식 · [▶ 생성] 스크롤 */
+  function csGenReady(){
+    goShOpen();
+    var keepPhoto = csPhotoKept();
+    if (!keepPhoto) goShTpl('line');
+    goShOpen();
+    var sc = goShScroll();
+    setTimeout(function () { goShOpen(); if (!sc) goShScroll(); }, 600);
+    return { tpl: keepPhoto ? 'photo' : 'line', kept: keepPhoto, scroll: !!sc, voice: csVoice() };
+  }
+  function csAutoStart(btn){
+    if (CS_AUTO_BUSY) return Promise.resolve(false);
+    CS_AUTO_BUSY = true;
+    if (btn) spinner(btn, true, '세팅 중…');
+    csState('⏳ 시간대 초안·관제탑 실측을 읽는 중…', 'busy');
+    return feedFetch(true).catch(function () { return null; }).then(function (j) {
+      var pick = csPick(j);
+      return runSlot(pick.slot, 'wvid', null).then(function (ok) {
+        return { ok: !!ok, slot: pick.slot, from: pick.from };
+      }, function () { return { ok: false, slot: pick.slot, from: pick.from }; });
+    }).then(function (r) {
+      return goShWaitWvid(4000).then(function () {
+        var d = SLOT_DEF[r.slot] || { icon: '📱', name: '쇼츠' };
+        var what = (r.from === 'draft')
+          ? '📥 피클 <b>' + esc(d.name) + '</b> 초안'
+          : '🦊 <b>' + esc(d.name) + '</b> 관제탑 실측 재료';
+        var g = csGenReady();
+        var who = g.voice || '폭스시그널 고정값';
+        var tplTxt = g.kept ? '🖼️ 사진형 그대로' : '📈 꺾은선 추세';
+        var cuts = 0;
+        try { cuts = (window.WVID && window.WVID.timeline) ? window.WVID.timeline().length : 0; } catch (e4) { cuts = 0; }
+        if (r.ok){
+          csState('✅ ' + what + ' · ' + cuts + '컷 — ' + tplTxt + ' · 성우 <b>' + esc(who) + '</b>' +
+            (g.scroll ? ' — <b>[▶ 생성]</b>만 누르면 됩니다.' : ' — [▶ 생성] 자리를 찾지 못했습니다.'), 'ok');
+          toast('⚡ ' + d.icon + ' ' + d.name + ' 세팅 완료 — ' + tplTxt + ' · ' + who + ' · [▶ 생성]만 누르세요.');
+          feedBanner('⚡ <b>생성 직전까지 원클릭 세팅</b> — ' + what + '을 ' + tplTxt + ' · 성우 <b>' + esc(who) + '</b> 으로 올렸습니다' +
+            (g.scroll ? ' · <b>[▶ 생성]</b>만 누르면 됩니다.' : ''));
+        } else {
+          csState('⚠ ' + what + '까지 가지 못했습니다 — 그 시간대 오늘자 초안이 없고 관제탑 실측도 받지 못했습니다. 작업하던 대본은 그대로 두었습니다.', 'bad');
+          toast('⚡ 자동 세팅이 실측 값을 받지 못했습니다 — [📥 피클 최신 초안 다시 불러오기]로 먼저 확인해 주세요.');
+        }
+        var info = { slot: r.slot, slotName: d.name, from: r.from, ok: !!r.ok, cuts: cuts,
+          tpl: g.tpl, tplKept: g.kept, voice: g.voice, scroll: g.scroll, at: Date.now() };
+        window.CS2_AUTO_INFO = info;
+        try { document.documentElement.setAttribute('data-cs-auto', r.ok ? 'ready' : 'fail'); } catch (e5) {}
+        return info;
+      });
+    }).catch(function (e) {
+      csState('⚠ 세팅 중 오류 — ' + esc(String((e && e.message) || e)), 'bad');
+      window.CS2_AUTO_INFO = { error: String((e && e.message) || e), at: Date.now() };
+      try { document.documentElement.setAttribute('data-cs-auto', 'error'); } catch (e2) {}
+      return false;
+    }).then(function (r2) {
+      CS_AUTO_BUSY = false;
+      if (btn) spinner(btn, false);
+      return r2;
+    });
+  }
+  (function(){
+    var a = document.getElementById('csAutoBtn');
+    if (a) a.addEventListener('click', function(){ csAutoStart(a); });
+    var b = document.getElementById('wvAutoBtn');
+    if (b) b.addEventListener('click', function(){ csAutoStart(b); });
+  })();
+
   (function(){
     [['slotPreBtn', 'pre'], ['slotCloseBtn', 'after'],
      ['slotPreBtn2', 'pre'], ['slotCloseBtn2', 'after']].forEach(function(pair){
       var el = document.getElementById(pair[0]);
       if (el) el.addEventListener('click', function(){ runSlot(pair[1], 'blog', el); });
     });
-    /* 쇼츠 스튜디오 · 🎬 웹 영상 생성기의 4시간대 버튼 — data-cs-slot / data-cs-slot-mode */
+    /* 쇼츠 스튜디오 · 🎬 웹 영상 생성기의 4시간대 버튼 — data-cs-slot / data-cs-slot-mode
+       · mode=wvid(🎬 생성기 안쪽 버튼)는 대본·공식에서 끝내지 않고 📈 꺾은선 추세(사진형을 직접 고른 경우 제외) ·
+         성우 고정값 유지 · [▶ 생성] 자리 스크롤까지 마무리한다. 실측이 막히면 화면을 옮기지 않는다. */
     document.addEventListener('click', function(ev){
       var b = ev.target && ev.target.closest ? ev.target.closest('[data-cs-slot]') : null;
       if (!b) return;
       ev.preventDefault();
       var slot = b.getAttribute('data-cs-slot');
       var mode = b.getAttribute('data-cs-slot-mode') || 'shorts';
-      runSlot(slot, mode, b);
+      if (SLOT_DEF[slot]) CS_SLOT = slot;          /* 다음 [⚡ 원클릭 세팅]도 이 시간대로 이어진다 */
+      var r = runSlot(slot, mode, b);
+      if (mode !== 'wvid' || !r || !r.then) return;
+      r.then(function (ok) {
+        if (ok === false) return;
+        var g = csGenReady();
+        var d = SLOT_DEF[slot] || { icon: '📱', name: '쇼츠' };
+        var cuts = 0;
+        try { cuts = (window.WVID && window.WVID.timeline) ? window.WVID.timeline().length : 0; } catch (e2) { cuts = 0; }
+        csState('✅ ' + d.icon + ' <b>' + esc(d.name) + '</b> · ' + cuts + '컷 — ' + (g.kept ? '🖼️ 사진형 그대로' : '📈 꺾은선 추세') +
+          ' · 성우 <b>' + esc(g.voice || '폭스시그널 고정값') + '</b>' +
+          (g.scroll ? ' — <b>[▶ 생성]</b>만 누르면 됩니다.' : ''), 'ok');
+        window.CS2_AUTO_INFO = { slot: slot, slotName: d.name, from: 'slot', ok: true, cuts: cuts,
+          tpl: g.tpl, tplKept: g.kept, voice: g.voice, scroll: g.scroll, at: Date.now() };
+        try { document.documentElement.setAttribute('data-cs-auto', 'ready'); } catch (e3) {}
+      }).catch(function () {});
     });
   })();
 
