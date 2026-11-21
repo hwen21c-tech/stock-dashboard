@@ -8816,7 +8816,8 @@ var CSVoice = (function () {
     /* 줄 앞의 인용·불릿·굵게 표시(**·` 등)를 걷어 낸 뒤 판정한다 — 모델이 굵게 쓴 줄도 박스가 된다 */
     function foxClean(t){
       return String(t == null ? '' : t)
-        .replace(/^(?:[\s>*_`~#]+|[-+]\s+)+/, '')
+        /* 줄 앞의 재생표시(▶ 등)도 함께 걷어 낸다 — '▶ 바쁘면 50초 쇼츠로' 처럼 써도 박스로 인식되게 */
+        .replace(/^(?:[\s>*_`~#▶▸►▷⏵]+|[-+]\s+)+/, '')
         .replace(/[\s*_~`]+$/, '')
         .trim();
     }
@@ -8879,9 +8880,14 @@ var CSVoice = (function () {
         (items.length ? '<div style="margin-top:5px">' + foxRows(items) + '</div>' : '') + '</div>';
     }
     function foxMoveBox(head){
-      var parts = String(head).split(/[─—–\-]{2,}\s*[▶>]|→|▶/).map(function(x){
-        return x.replace(/^[^가-힣A-Za-z0-9+%]+/, '').replace(/^(이탈|유입)\s*섹터\s*[:：]?\s*/, '').trim();
+      var raw = String(head).split(/[─—–\-]{2,}\s*[▶>]|→|▶/);
+      function tidy(x){ return String(x == null ? '' : x).replace(/^[^가-힣A-Za-z0-9+%]+/, '').trim(); }
+      /* '이탈 섹터 ──▶ 유입 섹터'처럼 양쪽이 라벨뿐이면 라벨을 걷어 낸 뒤 빈칸이 된다 —
+         그때는 라벨을 살린 원문으로 다시 잡아 박스가 비지 않게 한다 */
+      var parts = raw.map(function(x){
+        return tidy(x).replace(/^(이탈|유입)\s*섹터\s*[:：]?\s*/, '').trim();
       }).filter(function(x){ return !!x; });
+      if (parts.length < 2) parts = raw.map(tidy).filter(function(x){ return !!x; });
       if (parts.length < 2) return null;
       var cols = ['#fdf2f4', '#eef2ff', '#f0fdf4', '#fffbeb'];
       var bds = ['#f5c9d4', '#c9d5f7', '#bbf7d0', '#fde68a'];
@@ -9503,8 +9509,35 @@ var CSVoice = (function () {
     if (el){ el.value = ''; }
     var line = sum3Conclusion();
     if (el && line) el.value = line.slice(0, 70);
+    SUM3.auto = el ? String(el.value || '') : '';
     sum3Draw();
     toast(line ? '결론 1줄을 자동으로 채웠습니다 — 필요하면 직접 고치세요.' : '아직 채울 결론이 없습니다 — 1:1 표지 제목이나 주제를 먼저 정해 주세요.');
+  }
+  /* 📥 피클 초안을 불러온 뒤 — 카드가 이전 초안 문장을 들고 있지 않게 다시 그린다.
+     자동으로 채워 둔 결론(SUM3.auto)이나 빈 칸은 비워 새 초안 제목·본문에서 다시 뽑고,
+     사용자가 직접 쓴 문장은 지우지 않는다. */
+  function sum3SyncDraft(prevTitle){
+    var el = $('#sum3Line');
+    if (el){
+      var v = String(el.value || '').trim();
+      if (!v || v === String(SUM3.auto || '') || (prevTitle && v === prevTitle)){
+        el.value = '';
+        try { lsSet('cs2_sum3_line_v1', ''); } catch (e) {}
+      }
+    }
+    /* 1:1 표지 제목도 이전 초안 제목을 그대로 들고 있었다면 새 초안 제목으로 넘긴다
+       (직접 고친 표지 제목은 건드리지 않는다) */
+    var t11 = $('#t11Title');
+    if (t11){
+      var tv = String(t11.value || '').trim();
+      if (tv && prevTitle && tv === prevTitle){
+        t11.value = '';
+        try { t11.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {}
+      }
+    }
+    SUM3.auto = '';
+    sum3Draw();
+    if (!SUM3.idx){ try { sum3Fetch(false).then(function(){ sum3Draw(); }); } catch (e) {} }
   }
   function sum3Refresh(){
     var st = $('#sum3Stat');
@@ -12236,6 +12269,7 @@ var CSVoice = (function () {
     if (!b || !String(b.markdown || '').trim()) return { ok: false, why: 'no-blog' };
     if (!force && String(currentDraftText() || '').trim()) return { ok: false, why: 'busy' };
     var slot = node.slot || 'after';
+    var prevTitle = topicEl ? String(topicEl.value || '').trim() : '';   /* 덮기 전 초안 제목 — 아래 3초 카드 동기화에 쓴다 */
     var chip = document.querySelector('#formChips .fchip[data-id="stock"]');
     if (chip) chip.click();
     bloggerPick['stock'] = feedBlogFormNo(slot);
@@ -12257,6 +12291,9 @@ var CSVoice = (function () {
     var tags = (b.tags || []).filter(Boolean);
     if (tags.length){ try { renderSeo({ keywords: tags, hashtags: tags }, '피클 초안'); } catch (e) {} }
     try { cvReload(false); } catch (e) {}
+    /* 🦊 3초 요약 카드도 새 초안으로 다시 그린다 — 이전 초안 제목을 따라가던 값만 비우고 새 제목을 쓴다
+       (직접 써 둔 문장·표지 제목은 그대로 둔다) */
+    try { sum3SyncDraft(prevTitle); } catch (e) {}
     var tt = $('#thumbTitle'); if (tt && title) tt.value = title;
     return { ok: true, slot: slot, title: title, chars: body.length, tags: tags.length, charts: (b.chartFiles || []) };
   }
@@ -20607,7 +20644,7 @@ var CSVoice = (function () {
     if (S.cfg.tpl === 'photo' && !S.photos.length) {
       say('🖼️ <b>사진 줌인형</b>은 옵션의 <b>내 사진</b>이 필요합니다 — 사진을 넣는 즉시 그 사진으로 그립니다. (지금은 카드형으로 보여 줍니다)');
     } else {
-      var d = { card: '📊 카드형 — 훅 + 핵심 포인트 카드 + 자막', chart: '📈 차트형 — 컷의 수치를 움직이는 바로 (수치 없으면 카드형)' + (parseManual(S.cfg.chartData).length >= 2 ? ' · 직접 입력한 비교 데이터 사용 중' : ''), photo: '🖼️ 사진형 — 내 사진 Ken Burns + 배지·자막' }[S.cfg.tpl];
+      var d = { card: '📊 카드형 — 훅 + 핵심 포인트 카드 + 자막', chart: '📈 차트형 — 컷의 수치를 움직이는 바로 (수치 없으면 카드형)' + (parseManual(S.cfg.chartData).length >= 2 ? ' · 직접 입력한 비교 데이터 사용 중' : ''), line: '📈 꺾은선 추세 — 지수 선을 왼→오로 그리고 변곡점을 줌인합니다(폭스시그널·역할 템플릿 · 다크는 차트형으로 그립니다)', photo: '🖼️ 사진형 — 내 사진 Ken Burns + 배지·자막' }[S.cfg.tpl];
       if (d) say('양식을 바꿨습니다 · ' + d + ' · 세이프 존은 3종 모두 동일합니다.');
     }
     redraw();
