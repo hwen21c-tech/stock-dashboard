@@ -24277,7 +24277,9 @@ var CSVoice = (function () {
     items.forEach(function (r) { h += itemLine(r); });
     if (!items.length) h += '<div class="foxsc-n">채점할 항목이 아직 없습니다 — 브리핑·초안이 쌓이면 자동으로 채워집니다.</div>';
     if (pend.length) {
-      var names = pend.map(function (r) { return r.kind === 'stock' ? r.name : ((r.market || '') + ' ' + r.level); });
+      var names = pend.map(function (r) {
+        return r.kind === 'stock' ? r.name : ((r.market || '지수') + ' ' + Number(r.level).toLocaleString('ko-KR') + ' 지지');
+      });
       h += '<div class="foxsc-row"><b>검증 대기</b><span style="color:#94a3b8;font-weight:750">' + esc(names.join(' · ')) + '</span>' +
         '<span class="v wait">다음 거래일</span></div>';
     }
@@ -24317,7 +24319,7 @@ var CSVoice = (function () {
     var pend = (s.pending || []).slice(0, 4);
     if (pend.length) {
       L.push('· 검증 대기(다음 거래일 확인): ' + pend.map(function (r) {
-        return r.kind === 'stock' ? r.name : ((r.market || '') + ' ' + r.level + ' 지지');
+        return r.kind === 'stock' ? r.name : ((r.market || '지수') + ' ' + Number(r.level).toLocaleString('ko-KR') + ' 지지');
       }).join(' · '));
     }
     L.push('※ 이 성적표는 브리핑·초안에 적힌 종목·기준선을 실제 시세와 기계적으로 비교한 값입니다. 문장으로 옮길 때 새 수치를 만들지 말고, 맞은 것과 빗나간 것을 구분해 쓰세요.');

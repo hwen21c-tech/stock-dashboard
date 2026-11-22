@@ -216,7 +216,7 @@
         return String(s.name || '').trim() === q || String(s.code || '') === q;
       })[0] || rows[0];
       if (!hit) throw new Error('not_found');
-      var basisTxt = '관제탑 실측 · ' + (j.generatedAtKst || '') + (j.marketStatus === 'CLOSE' ? ' · 정규장 마감' : '');
+      var basisTxt = '관제탑 실측 · ' + (j.generatedAtKst || '');
       show(hit, { live: true, basis: basisTxt, tradeDate: (hit.tradedAt || '').slice(0, 10), marketStatus: j.marketStatus });
       msg('', '');
     }).catch(function(){
