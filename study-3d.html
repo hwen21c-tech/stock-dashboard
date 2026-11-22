@@ -5769,42 +5769,6 @@ if (document.readyState === 'loading') {
     return g;
   }
 
-  /* 밤하늘 텍스처에 먼 도시 실루엣 한 줄 (1층 창가 야경 보강) */
-  function hookSkyCity() {
-    if (!window.skyCanvas || window.skyCanvas.__s3d2) return;
-    var orig = window.skyCanvas;
-    var wrapped = function (night) {
-      var t = orig(night);
-      try {
-        if (night && t && t.image && t.image.getContext) {
-          var c = t.image, x = c.getContext('2d'), w = c.width, h = c.height;
-          var seed = 7;
-          function rr() { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }
-          var base = h * 0.862;
-          var bx = 0;
-          while (bx < w) {
-            var bw = 8 + rr() * 22, bh = 8 + rr() * 34;
-            x.fillStyle = 'rgba(11,18,34,.92)';
-            x.fillRect(bx, base - bh, bw, bh + 2);
-            for (var wy = base - bh + 4; wy < base - 2; wy += 7) {
-              for (var wx = bx + 2; wx < bx + bw - 2; wx += 5) {
-                if (rr() < 0.32) {
-                  x.fillStyle = rr() < 0.6 ? 'rgba(255,206,140,.8)' : 'rgba(150,225,255,.6)';
-                  x.fillRect(wx, wy, 2, 2);
-                }
-              }
-            }
-            bx += bw + 2 + rr() * 6;
-          }
-          t.needsUpdate = true;
-        }
-      } catch (e) { }
-      return t;
-    };
-    wrapped.__s3d2 = true;
-    window.skyCanvas = wrapped;
-  }
-
   /* ---------- 7. 층 전환 ---------- */
   var Z2 = {
     floor2: { th: 0.46, ph: 0.99, r: 13.2, rn: 22.0, tx: 1.7, ty: 5.15, tz: -1.7, tx2: 0.55, ty2: 4.9, tz2: -1.55, tph: 1.02, label: '2층 전략 · 게임룸' },
@@ -6315,7 +6279,6 @@ if (document.readyState === 'loading') {
   /* ---------- 14. 빌드 · 후처리 ---------- */
   function buildAll2() {
     V.emberTex = emberTex();
-    hookSkyCity();
     try { buildStairs(); } catch (e) { console.error('[s3d2] stairs', e); }
     try { buildFloor2(); } catch (e) { console.error('[s3d2] floor2', e); }
     try { buildRoof(); } catch (e) { console.error('[s3d2] roof', e); }
