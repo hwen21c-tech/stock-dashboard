@@ -17700,7 +17700,11 @@ var CSVoice = (function () {
       ['tabs', [v2Api('/api/tabs-live')]],
       ['supply', [v2Api('/data/supply-latest.json'), './data/supply-latest.json']],
       ['brief', ['./data/latest-briefing.json', v2Api('/data/latest-briefing.json')]],
-      ['flow', ['./data/flow_timeline_today.json', v2Api('/data/flow_timeline_today.json')]]
+      ['flow', ['./data/flow_timeline_today.json', v2Api('/data/flow_timeline_today.json')]],
+      /* 오늘 주도 테마 Top 5 — 성적표(build_signal_scorecard.py)의 themesTop.
+         테마보드를 KRX 확정 일봉으로 다시 계산한 값(테마 구성 평균·실질 대장·대금)이라
+         스냅샷 Top4 평균처럼 이상치 1종목에 1위가 뒤집히지 않는다. */
+      ['score', ['./data/signal_scorecard.json', v2Api('/data/signal_scorecard.json')]]
     ];
     return Promise.all(jobs.map(function (j) {
       return v2Json(j[1]).then(function (x) { return [j[0], x]; }).catch(function () { return [j[0], null]; });
@@ -17719,15 +17723,39 @@ var CSVoice = (function () {
     return arr;
   }
   function cvThemes(){
-    var d = V2.data, t = (d && d.tabs && d.tabs.themes) || [];
-    if (!Array.isArray(t) || !t.length) return [];
-    return t.slice(0, 5).map(function (x) {
-      return {
-        name: x.name || x.keyword || '테마',
-        pct: (x.top4Avg != null ? x.top4Avg : x.avgPct),
-        avg: x.avgPct, rise: x.riseCount, fall: x.fallCount, n: x.stockCount
-      };
-    }).filter(function (x) { return x.name; });
+    var d = V2.data, t = (d && d.tabs) || {}, sc = d && d.score;
+    /* ① 장중 실시간 테마 랭킹(naver-theme)이면 그 값을, 그 밖(장전·마감 스냅샷)이면
+          성적표 themesTop 을 쓴다 — 스냅샷의 '상위 4종목 평균'은 이상치 1종목에 1위가 뒤집힌다
+          (2026-11-20 탈모 치료 +50.48% ← 타임X AI +182.71% 1종목, 실제 테마 평균은 마이너스). */
+    var live = (t.themeSource === 'naver-theme');
+    if (!live && sc && Array.isArray(sc.themesTop) && sc.themesTop.length){
+      return sc.themesTop.slice(0, 5).map(function (x) {
+        return {
+          name: x.name, pct: x.pct, avg: x.avgPct, rise: x.rise, fall: x.fall,
+          leader: x.leader, valueText: x.valueText, low: !!x.lowLiquidity, basis: 'scorecard'
+        };
+      }).filter(function (x) { return x.name; });
+    }
+    var arr = (t && Array.isArray(t.themes)) ? t.themes : [];
+    var out = [];
+    arr.forEach(function (x) {
+      var avg = (typeof x.avgPct === 'number') ? x.avgPct : null;
+      var rise = x.riseCount, fall = x.fallCount;
+      /* 가짜 1위 차단 — 상승<하락 테마, Top4 평균이 전체 평균과 크게 벌어진(이상치) 테마는 뺀다 */
+      if (avg != null && rise != null && fall != null){
+        if (rise < fall) return;
+        if (typeof x.top4Avg === 'number' && Math.abs(x.top4Avg - avg) > Math.max(3, Math.abs(avg))) return;
+      }
+      var lead = null, st = x.stocks || [];
+      for (var i = 0; i < st.length; i++){
+        if (!lead || Number(st[i].changePct) > Number(lead.changePct)) lead = st[i];
+      }
+      out.push({
+        name: x.name || x.keyword || '테마', pct: avg, avg: avg, rise: rise, fall: fall,
+        leader: lead, valueText: x.sumValueText, low: false, basis: 'live'
+      });
+    });
+    return out.slice(0, 5);
   }
   function cvSupplyNums(){
     var b = V2.data && V2.data.brief, out = { foreign: null, organ: null, indiv: null, basis: '' };
@@ -17954,26 +17982,39 @@ var CSVoice = (function () {
     var g = cvPrep(id, W, H);
     if (!g) return;
     var d = V2.data;
-    var th = (d && d.tabs) || {};
-    cvBase(g, W, H, '오늘 주도 테마 Top 5', (th.themeSource ? '(' + th.themeSource + ') · ' : '') + (th.generatedAtKst ? '실시간 ' + String(th.generatedAtKst).slice(0, 5) : '관제탑 실시간'), '#a855f7');
+    var th = (d && d.tabs) || {}, sc = (d && d.score) || {};
+    var usingSc = (th.themeSource !== 'naver-theme') && sc && Array.isArray(sc.themesTop) && sc.themesTop.length;
+    var sub = usingSc
+      ? ((sc.asOfTradingDay || '') + ' 정규장 확정 · 관제탑 실측 주도 테마 · 대금 KRX 확정')
+      : ((th.themeSource === 'naver-theme' ? '실시간 테마 랭킹' : '관제탑 실시간') + (th.generatedAtKst ? ' · ' + String(th.generatedAtKst).slice(0, 5) : ''));
+    cvBase(g, W, H, '오늘 주도 테마 Top 5', sub, '#a855f7');
     if (!d){ cvEmpty(g, W, H, '관제탑 실데이터를 불러오는 중…'); cvWatermark(g, W, H); return; }
     var list = cvThemes();
     if (!list.length){ cvText(g, '주도 테마 데이터를 받지 못했습니다 — [🔄 실데이터 새로고침]', 40, H / 2, 17, '#fbbf24', 'left', 800, W - 90); cvWatermark(g, W, H); return; }
     var max = Math.max.apply(null, list.map(function (x) { return Math.abs(Number(x.pct) || 0); }).concat([1]));
-    var top = 120, bottom = H - 46;
-    var rowH = Math.min(110, Math.floor((bottom - top) / list.length));
-    var labelW = Math.round(W * 0.30), pctW = Math.round(W * 0.16);
+    var top = 118, bottom = H - 52;
+    var rowH = Math.min(104, Math.floor((bottom - top) / list.length));
+    var labelW = Math.round(W * 0.34), pctW = Math.round(W * 0.15);
     var barX = 40 + labelW, barMax = W - 80 - labelW - pctW;
     list.forEach(function (x, i) {
       var y = top + i * rowH;
       var v = Number(x.pct) || 0;
-      cvText(g, (i + 1) + '. ' + x.name, 40, y + rowH * 0.44, Math.round(W / 62), '#f8fafc', 'left', 900, labelW - 16);
-      var meta = [];
-      if (x.rise != null) meta.push('상승 ' + x.rise);
-      if (x.fall != null) meta.push('하락 ' + x.fall);
-      if (meta.length) cvText(g, meta.join(' · '), 40, y + rowH * 0.44 + Math.round(W / 72), 11.5, '#64748b', 'left', 700, labelW - 16);
+      var nm = (i + 1) + '. ' + x.name + (x.low ? '  ⚠저유동성' : '');
+      cvText(g, nm, 40, y + rowH * 0.40, Math.round(W / 66), x.low ? '#cbd5e1' : '#f8fafc', 'left', 900, labelW - 14);
+      /* 한 줄 = 대장주(등락률·대금) + 테마 구성 평균 — 두 숫자를 섞지 않고 나란히 적는다 */
+      var bits = [];
+      if (x.leader && x.leader.name) bits.push('대장 ' + x.leader.name);
+      /* 대금은 '대장주'의 대금을 적는다(테마 합산 대금과 헷갈리지 않게) */
+      var leadVal = (x.leader && x.leader.valueEok != null)
+        ? (Math.round(x.leader.valueEok).toLocaleString('ko-KR') + '억')
+        : (x.valueText ? String(x.valueText).replace(/^\+/, '') : '');
+      if (leadVal) bits.push(leadVal);
+      if (x.low) bits.push('300억 미만');
+      if (x.avg != null) bits.push('테마 평균 ' + cvPctText(x.avg));
+      if (x.rise != null && x.fall != null) bits.push('상승 ' + x.rise + ' / 하락 ' + x.fall);
+      if (bits.length) cvText(g, bits.join(' · '), 40, y + rowH * 0.40 + Math.round(W / 78), 11.5, '#64748b', 'left', 700, labelW - 14);
       var bw = Math.max(3, Math.round(barMax * Math.abs(v) / max));
-      var barY = y + rowH * 0.30, barH = Math.round(rowH * 0.34);
+      var barY = y + rowH * 0.56, barH = Math.round(rowH * 0.30);
       g.fillStyle = 'rgba(148,163,184,.10)';
       cvRR(g, barX, barY, barMax, barH, barH / 2); g.fill();
       var col = v > 0 ? '#f43f5e' : (v < 0 ? '#3b82f6' : '#64748b');
@@ -17981,9 +18022,9 @@ var CSVoice = (function () {
       lg2.addColorStop(0, col); lg2.addColorStop(1, v > 0 ? '#fb7185' : '#60a5fa');
       g.fillStyle = lg2;
       cvRR(g, barX, barY, bw, barH, barH / 2); g.fill();
-      cvText(g, cvPctText(v), W - 40, y + rowH * 0.44, Math.round(W / 58), col, 'right', 900);
+      cvText(g, cvPctText(v), W - 40, y + rowH * 0.56 + barH * 0.78, Math.round(W / 60), col, 'right', 900);
     });
-    cvText(g, '※ 테마 등락률은 관제탑 상위 종목 평균값입니다(개별 종목 등락률과 다름).', 40, H - 20, 11.5, '#475569', 'left', 700, W - 260);
+    cvText(g, '※ 막대·정렬 = 그날 실질 대장(대금 300억↑ 우선) 등락률 · 테마 평균은 구성종목 평균(±100% 이상 이상치 제외) · 대금 KRX 정규장 확정', 40, H - 22, 11, '#475569', 'left', 700, W - 260);
     cvWatermark(g, W, H);
   }
 
@@ -26003,24 +26044,28 @@ var CSVoice = (function () {
       return;
     }
 
-    /* ① 300억↑ 대장주 */
+    /* ① 오늘 가장 강하게 움직인 주도 테마 + 그 테마 대장주 */
     var boxX = 40, boxY = 126, boxW = 600, boxH = 314;
     g.fillStyle = CREAM.card; g.strokeStyle = CREAM.line; g.lineWidth = 1.5;
     rrect(g, boxX, boxY, boxW, boxH, 14); g.fill(); g.stroke();
-    txt(g, '① 대금 300억↑ 대장주', boxX + 20, boxY + 32, 17, CREAM.wine, 'left', 900);
-    txt(g, '만쥬 ②차트·거래대금 기준 · 통합(KRX+NXT)', boxX + 20, boxY + 54, 12, CREAM.mute, 'left', 700);
+    txt(g, '① 주도 테마 대장주 (테마 강도순)', boxX + 20, boxY + 32, 17, CREAM.wine, 'left', 900);
+    txt(g, '관제탑 실측 주도 테마 · 대금 KRX 정규장 확정 · 300억↑ 우선', boxX + 20, boxY + 54, 12, CREAM.mute, 'left', 700);
     var leaders = (s && s.leaders) || [];
     if (!leaders.length) {
-      txt(g, '300억을 넘긴 종목 기록이 아직 없습니다.', boxX + 20, boxY + 104, 16, CREAM.mute, 'left', 750);
+      txt(g, '관제탑 실측 주도 테마 기록이 아직 없습니다.', boxX + 20, boxY + 104, 16, CREAM.mute, 'left', 750);
     }
     leaders.slice(0, 3).forEach(function (r, i) {
-      var y = boxY + 80 + i * 74;
+      var y = boxY + 74 + i * 78;
       g.fillStyle = i === 0 ? 'rgba(201,162,94,.14)' : 'rgba(247,243,233,.7)';
-      rrect(g, boxX + 16, y, boxW - 32, 62, 10); g.fill();
-      txt(g, String(i + 1), boxX + 30, y + 40, 20, CREAM.gold, 'left', 900);
-      txt(g, r.name, boxX + 62, y + 28, 19, CREAM.ink, 'left', 900, 190);
-      txt(g, eok(r.valueEok) + ' · 종가 ' + won(r.close), boxX + 62, y + 50, 13, CREAM.sub, 'left', 750, 260);
-      txt(g, pct(r.changePct), boxX + boxW - 30, y + 40, 22, (num(r.changePct) || 0) >= 0 ? CREAM.up : CREAM.down, 'right', 900);
+      rrect(g, boxX + 16, y, boxW - 32, 68, 10); g.fill();
+      txt(g, String(i + 1), boxX + 30, y + 42, 20, CREAM.gold, 'left', 900);
+      var th = String(r.theme || '주도 테마');
+      if (th.length > 18) th = th.slice(0, 17) + '…';
+      txt(g, th, boxX + 62, y + 18, 11.5, CREAM.gold, 'left', 850, 240);
+      txt(g, r.name, boxX + 62, y + 40, 18, CREAM.ink, 'left', 900, 210);
+      txt(g, eok(r.valueEok) + (r.lowLiquidity ? ' · 저유동성' : '') + (r.close != null ? ' · 종가 ' + won(r.close) : ''),
+        boxX + 62, y + 60, 12.5, CREAM.sub, 'left', 750, 300);
+      txt(g, pct(r.changePct), boxX + boxW - 30, y + 40, 21, (num(r.changePct) || 0) >= 0 ? CREAM.up : CREAM.down, 'right', 900);
     });
 
     /* ② 외인·기관 순매수 */
@@ -26042,21 +26087,27 @@ var CSVoice = (function () {
       txt(g, '—', rX + 20, boxY + 100, 16, CREAM.mute, 'left', 800);
     }
 
-    /* ③ 기준선 */
-    var cY = boxY + 202, cH = 98;
+    /* ③ 기준선 — 아직 장이 안 열린 날짜의 기준선은 종가로 채점하지 않고 '대기(개장 전)'로 보여준다 */
+    var cY = boxY + 202, cH = 108;
     g.fillStyle = CREAM.card; g.strokeStyle = CREAM.line;
     rrect(g, rX, cY, rW, cH, 14); g.fill(); g.stroke();
     txt(g, '③ 지수 기준선 — 지지 유지/이탈', rX + 20, cY + 28, 16, CREAM.wine, 'left', 900);
-    var lv = ((s && s.items) || []).filter(function (r) { return r.kind === 'index'; }).slice(0, 2);
+    var lvNext = ((s && s.pending) || []).filter(function (r) { return r.kind === 'index'; });
+    var lvDone = ((s && s.items) || []).filter(function (r) { return r.kind === 'index'; });
+    var lv = lvNext.slice(0, 2).concat(lvDone.slice(0, 2)).slice(0, 3);
     if (!lv.length) {
       txt(g, '기준선 기록이 아직 없습니다.', rX + 20, cY + 58, 14, CREAM.mute, 'left', 750);
     }
     lv.forEach(function (r, i) {
-      var y = cY + 54 + i * 26;
+      var y = cY + 52 + i * 24;
       var v = r.verdict || '';
-      txt(g, (r.market || '지수') + ' ' + Number(r.level).toLocaleString('ko-KR') + ' 지지', rX + 20, y, 14.5, CREAM.ink, 'left', 850, 180);
-      txt(g, v + (r.result && r.result.close != null ? ' · 종가 ' + Number(r.result.close).toLocaleString('ko-KR') : ''),
-        rX + rW - 20, y, 14, v === '유지' ? CREAM.up : CREAM.down, 'right', 900);
+      var pending = (v === '검증 대기');
+      var d = String(r.targetTradeDate || '');
+      var dTxt = d ? ' (' + d.slice(5) + ')' : (pending ? ' (다음 개장)' : '');
+      txt(g, (r.market || '지수') + ' ' + Number(r.level).toLocaleString('ko-KR') + ' 지지' + dTxt,
+        rX + 20, y, 14, CREAM.ink, 'left', 850, 190);
+      var right = pending ? '대기(개장 전)' : (v + (r.result && r.result.close != null ? ' · 종가 ' + Number(r.result.close).toLocaleString('ko-KR') : ''));
+      txt(g, right, rX + rW - 20, y, 13.5, pending ? CREAM.mute : (v === '유지' ? CREAM.up : CREAM.down), 'right', 900);
     });
 
     /* ④ 피보나치(당일 범위) */
