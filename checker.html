@@ -602,16 +602,16 @@
       lines.push('거래대금 <b>' + amt + '</b>' + (/조$/.test(amt) ? '로 ' : '으로 ') + how + '.');
     }
 
-    /* 2줄 — 어제 종가 대비 + 시가 위/아래 (부호 그대로) */
+    /* 2줄 — 어제 종가 대비 + 시가 위/아래 (부호 그대로, 400px에서 한 줄에 들어가는 길이) */
     var above = (cur != null && open != null) ? (cur >= open) : null;
     var openTxt = '시가(' + won(open) + ')';
     if (chg != null && above != null){
       if (chg > 0){
-        lines.push('어제보다 <b>' + pct(chg) + '</b> 올랐고, ' +
-          (above ? openTxt + ' 위에서 힘을 지켰어요.' : openTxt + '까지는 밀렸어요.'));
+        lines.push('어제보다 <b>' + pct(chg) + '</b> ' + (above ? '올랐고, ' : '올랐지만, ') +
+          (above ? openTxt + ' 위에서 버텼어요.' : openTxt + ' 아래로 밀렸어요.'));
       } else if (chg < 0){
         lines.push('어제보다 <b>' + pct(chg) + '</b> ' + (above ? '내렸지만, ' : '내렸고, ') +
-          (above ? openTxt + ' 위에서 버티고 있어요.' : openTxt + ' 아래로도 밀렸어요.'));
+          (above ? openTxt + ' 위에서 버텼어요.' : openTxt + ' 아래로 밀렸어요.'));
       } else {
         lines.push('어제와 같은 가격이고, ' +
           (above ? openTxt + ' 위에서 마감했어요.' : openTxt + ' 아래에 있어요.'));
