@@ -13314,7 +13314,9 @@ var CSVoice = (function () {
   /* ---------- ① 📈 주식시장분석 — 관제탑 실측(시간대) ---------- */
   function blogAutoStock(){
     var slot = blogAutoSlot(), def = SLOT_DEF[slot] || SLOT_DEF.pre;
+    var dname = def.label || def.name;
     return runSlot(slot, 'blog', null).then(function (ok) {
+      if (!ok) throw new Error(def.icon + ' ' + dname + ' 실측을 받지 못했습니다');
       /* 증거 카드 — 성적표(signal_scorecard)·스냅샷을 다시 읽어 실측으로만 그린다 */
       try {
         if (window.FOXSC){
@@ -13323,10 +13325,26 @@ var CSVoice = (function () {
           else { try { window.FOXSC.draw(); } catch (eD2) {} }
         }
       } catch (eEvi) {}
+      var oc = $('#outCard'), draft = !!(oc && !oc.hidden);
       var chars = 0;
       try { chars = charLen(($('#srcMaterial') || {}).value || ''); } catch (eC) {}
-      if (!ok) throw new Error(def.icon + ' ' + def.name + ' 실측을 받지 못했습니다');
-      return { ok: true, theme: 'stock', slot: slot, slotName: def.name, blogNo: def.blogNo || (slot === 'pre' ? 5 : 6), chars: chars };
+      /* 오늘 초안이 있어 본문만 올라온 경우 — 참고 자료가 비어 있으면 그 시간대 실측 재료를 채워 둔다
+         (초안 본문은 건드리지 않는다 · 받지 못한 값은 지어내지 않는다) */
+      var fill = (chars > 0) ? Promise.resolve() : Promise.all([cvReload(false), slotExtra(true)]).then(function () {
+        var mat = null;
+        try { mat = buildSlotMaterial(slot, 'blog'); } catch (eB) { mat = null; }
+        if (mat && mat.text){
+          var src = $('#srcMaterial');
+          if (src){ src.value = mat.text; try { src.dispatchEvent(new Event('input', { bubbles: true })); } catch (eS) {} }
+          var tp = $('#topic');
+          if (tp && !String(tp.value || '').trim()) blogAutoTopic(mat.topic);
+          try { chars = charLen(mat.text); } catch (eCh) {}
+        }
+      }, function () {});
+      return fill.then(function () {
+        return { ok: true, theme: 'stock', slot: slot, slotName: dname,
+          blogNo: def.blogNo || (slot === 'pre' ? 5 : 6), chars: chars, draft: draft };
+      });
     });
   }
   /* ---------- ② 🏷️ SNS 핫템 — 시바딜 실측(국내 vs 직구) ---------- */
@@ -13560,10 +13578,13 @@ var CSVoice = (function () {
       info.scrolled = false;
       if (theme === 'stock'){
         var d = SLOT_DEF[r.slot] || SLOT_DEF.pre;
-        blogAutoState('✅ <b>🦊 폭스시그널 · ' + d.icon + ' ' + esc(d.name) + '</b> — 참고 자료 <b>' +
-          Number(r.chars || 0).toLocaleString('ko-KR') + '자</b> · <b>' + (r.blogNo || 5) + '번 양식</b> · 크림 그래프 3종·🧾 증거 카드 준비됨 — <b>[🤖 AI 본문 생성]</b>만 누르면 됩니다.', 'ok');
-        toast('⚡ 🦊 폭스시그널 ' + d.name + ' — 실측으로 주제·참고 자료·' + (r.blogNo || 5) + '번 양식·크림 그래프·증거 카드까지 세팅했습니다.');
-        feedBanner('⚡ <b>블로그 원클릭 세팅</b> — 🦊 폭스시그널 <b>' + esc(d.name) + '</b> 실측을 <b>' + (r.blogNo || 5) + '번 양식</b>으로 올렸습니다 · <b>[🤖 AI 본문 생성]</b>만 누르면 됩니다.');
+        var dname = r.slotName || d.label || d.name;
+        blogAutoState('✅ <b>🦊 폭스시그널 · ' + d.icon + ' ' + esc(dname) + '</b>' +
+          (r.draft ? ' — 📥 오늘 피클 초안 본문이 이미 올라와 있습니다' : '') +
+          ' · 참고 자료 <b>' + Number(r.chars || 0).toLocaleString('ko-KR') + '자</b> · <b>' + (r.blogNo || 5) + '번 양식</b> · 크림 그래프 3종·🧾 증거 카드 준비됨 — ' +
+          (r.draft ? '고치거나 <b>[🤖 AI 본문 생성]</b>으로 다시 쓰면 됩니다.' : '<b>[🤖 AI 본문 생성]</b>만 누르면 됩니다.'), 'ok');
+        toast('⚡ 🦊 폭스시그널 ' + dname + ' — 실측으로 주제·참고 자료·' + (r.blogNo || 5) + '번 양식·크림 그래프·증거 카드까지 세팅했습니다.');
+        feedBanner('⚡ <b>블로그 원클릭 세팅</b> — 🦊 폭스시그널 <b>' + esc(dname) + '</b> 실측' + (r.draft ? '과 📥 오늘 초안 본문' : '') + '을 <b>' + (r.blogNo || 5) + '번 양식</b>으로 올렸습니다 · <b>[🤖 AI 본문 생성]</b>만 누르면 됩니다.');
       } else if (theme === 'hottem'){
         var diff = (r.overseas != null ? ' · 직구 ' + bWon(r.overseas) : '') + (r.diffPct != null ? ' (' + r.diffPct + '% 차이)' : '');
         blogAutoState('✅ <b>🐶 시바딜 · ' + esc(r.name || '핫템') + '</b> — 국내 ' + bWon(r.price) + diff +
