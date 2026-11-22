@@ -209,6 +209,46 @@
   .tmapnote{margin-top:6px;font-size:10.2px;font-weight:750;color:var(--mute);line-height:1.5}
   .tmapnote b{color:var(--sub)}
 
+  /* [hidden] 은 UA 스타일(display:none)이지만 .tmap{display:flex} 같은 author 규칙이 이긴다
+     → display 를 지정한 요소는 [hidden] 규칙을 따로 줘야 실제로 접힌다(테마맵 접기 버그 원인). */
+  .tmap[hidden]{display:none}
+  /* ---- 📅 이번 주 증시 일정(아코디언) ---- */
+  .schedhead{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:11px 0 5px;font-size:11.6px;font-weight:900;color:var(--sub)}
+  .schedhead .tb{font-weight:750;color:var(--mute);font-size:10.5px}
+  .schedhead .tg{margin-left:auto;border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:999px;padding:3px 9px;font-size:10.5px;font-weight:900}
+  .sched{display:flex;flex-direction:column;gap:5px}
+  .sched[hidden]{display:none}
+  .schrow{display:flex;align-items:center;gap:7px;width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:6px 8px;text-align:left;font:inherit;color:var(--ink)}
+  .schrow:active{transform:translateY(1px)}
+  .schrow .sd{flex:0 0 auto;width:52px;text-align:center;line-height:1.15}
+  .schrow .sd b{display:block;font-size:12.2px;font-weight:900;color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+  .schrow .sd i{display:block;font-style:normal;font-size:9.1px;font-weight:850;color:var(--mute);margin-top:2px}
+  .schrow .sk{flex:0 0 auto;font-size:9.2px;font-weight:900;border-radius:5px;padding:2px 5px;background:#EFE7D7;color:#5E5546;white-space:nowrap}
+  .schrow .sk.ipo{background:#FDECEA;color:#8B1A12}
+  .schrow .sk.bok{background:#EFF4FF;color:#1E3A8A}
+  .schrow .sk.us{background:#EDF1F7;color:#334155}
+  .schrow .sk.exp{background:#FFF1E0;color:#9A3412}
+  .schrow .sk.hol{background:#E8F5EC;color:#15612F}
+  .schrow .st{flex:1 1 auto;min-width:0;font-size:11.9px;font-weight:850;line-height:1.32;letter-spacing:-.02em}
+  .schrow .st small{display:block;font-size:10.1px;font-weight:750;color:var(--mute);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .schrow .sa{flex:0 0 auto;color:var(--mute);font-size:11.5px;font-weight:900}
+  .schednote{margin-top:6px;font-size:10.1px;font-weight:750;color:var(--mute);line-height:1.5}
+  .schmore{width:100%;border:1px dashed var(--line);background:#FFFDF7;color:var(--sub);border-radius:9px;padding:6px 8px;font-size:10.8px;font-weight:900}
+  /* ---- 📅 일정 상세 시트 ---- */
+  .kv{display:grid;grid-template-columns:74px 1fr;gap:5px 8px;padding:8px 2px 2px;font-size:11.5px;line-height:1.45}
+  .kv dt{font-size:10.6px;font-weight:900;color:var(--mute)}
+  .kv dd{margin:0;font-weight:850;color:var(--ink);word-break:keep-all;overflow-wrap:break-word}
+  .kv dd.miss{color:var(--mute);font-weight:800}
+  .pt{margin-top:9px;padding:8px 10px;background:#FBF7EC;border:1px solid var(--line);border-radius:10px}
+  .pt>b{display:block;font-size:11.3px;font-weight:900;color:var(--ink);margin-bottom:3px}
+  .pt ul{margin:0;padding:0}
+  .pt li{list-style:none;font-size:11.5px;font-weight:750;color:var(--sub);line-height:1.6;padding-left:9px;position:relative;margin-top:2px}
+  .pt li:before{content:'·';position:absolute;left:0;color:var(--wine);font-weight:900}
+  .mood{font-size:11px;font-weight:800;color:var(--sub);line-height:1.55;padding:7px 9px;border:1px dashed var(--line);border-radius:9px;margin:6px 2px 0;background:#FFFDF7}
+  .mood b{color:var(--ink);font-weight:900}
+  .mood small{display:block;font-size:9.9px;font-weight:750;color:var(--mute);margin-top:2px}
+  .livebox{font-size:11.6px;font-weight:850;color:var(--ink);line-height:1.5;padding:7px 9px;border-radius:9px;background:#F2F7F3;border:1px solid #CFE3D6;margin:7px 2px 0}
+
   /* ---- 📋 테마 구성종목 시트(모달) ---- */
   .sheet-bg{position:fixed;inset:0;background:rgba(32,24,15,.46);display:flex;align-items:flex-end;justify-content:center;z-index:90}
   .sheet{background:var(--card);width:100%;max-width:520px;max-height:88vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 28px rgba(32,24,15,.25)}
@@ -288,6 +328,10 @@
     <div class="tmaphead" id="tmapHead" hidden>🗺️ 오늘의 테마맵 <span class="tb" id="tmapBasis"></span>
       <button class="tg" id="tmapToggle" type="button">접기</button></div>
     <div class="tmap" id="themeMap" hidden></div>
+    <div class="schedhead" id="schedHead" hidden>📅 이번 주 증시 일정 <span class="tb" id="schedBasis"></span>
+      <button class="tg" id="schedToggle" type="button">접기</button></div>
+    <div class="sched" id="schedBody" hidden></div>
+    <div class="schednote" id="schedNote" hidden></div>
     <div id="msg" role="status" aria-live="polite"></div>
   </section>
 
@@ -1529,6 +1573,494 @@
     host.hidden = !mapOpen;
   }
 
+  /* ============================================================
+     📅 이번 주 증시 일정 — 오늘 포함 7일 · 접기/펼치기 + 상세 시트
+     · 공모주(신규상장·청약) : data/ipo-latest.json — 수집 스크립트가 매일 갱신한 실측값
+     · 해외 거시 일정        : /api/econ-calendar — ForexFactory 주간 캘린더를 KST 로 변환한 값
+     · 국내 공표 일정        : 한국은행 2026년 금통위 일정 + 파생 만기 규칙(매월 둘째 목요일)
+     · 없는 일정·없는 경쟁률을 만들지 않는다. 받지 못한 값은 '미확인'.
+     ============================================================ */
+  var SCHED = { loaded: false, open: true, expanded: false, items: [], info: { ipo: null, econ: null }, mood: null };
+  var SCHED_LIMIT = 14;
+
+  /* 한국은행 2026년 금통위 정기회의
+     출처: 한국은행 보도자료 「2026년 금융통화위원회 정기회의 개최 및 의사록 공개 예정일정」(2025.10.30)
+     bok = 통화정책방향 결정회의(1·2·4·5·7·8·10·11월) / fin = 금융안정회의(3·6·9·12월) */
+  var KR_MEET = {
+    '2026-01-15': 'bok', '2026-02-26': 'bok', '2026-04-23': 'bok', '2026-05-28': 'bok',
+    '2026-07-16': 'bok', '2026-08-27': 'bok', '2026-10-22': 'bok', '2026-11-26': 'bok',
+    '2026-03-26': 'fin', '2026-06-24': 'fin', '2026-09-22': 'fin', '2026-12-23': 'fin'
+  };
+  var WD_KO = ['일', '월', '화', '수', '목', '금', '토'];
+
+  function p2(x){ return (x < 10 ? '0' : '') + x; }
+  function kstToday0(){
+    var now = new Date();
+    var k = new Date(now.getTime() + (now.getTimezoneOffset() + 540) * 60000);
+    k.setHours(0, 0, 0, 0);
+    return k;
+  }
+  function ymdOf(d){ return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate()); }
+  function dayShift(d, k){ var x = new Date(d.getTime()); x.setDate(x.getDate() + k); return x; }
+  function dateOf(iso){
+    var p = String(iso || '').split('-');
+    if (p.length < 3) return null;
+    return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+  }
+  function schedWindow(){
+    var t = kstToday0(), out = [];
+    for (var i = 0; i < 7; i++) out.push(ymdOf(dayShift(t, i)));
+    return out;
+  }
+  function ddayOf(iso){
+    var d = dateOf(iso); if (!d) return null;
+    return Math.round((d.getTime() - kstToday0().getTime()) / 86400000);
+  }
+  function dLabel(iso){
+    var d = dateOf(iso); if (!d) return { md: '', wd: '' };
+    return { md: (d.getMonth() + 1) + '/' + p2(d.getDate()), wd: WD_KO[d.getDay()] || '' };
+  }
+  function whenLabel(iso){
+    var k = ddayOf(iso);
+    if (k == null) return '';
+    if (k === 0) return '오늘';
+    if (k === 1) return '내일';
+    return 'D-' + k;
+  }
+
+  /* ---------- ① 국내 공표 일정 · 만기 · 미 휴장 ---------- */
+  function usThanksgiving(y){
+    /* 11월 넷째 목요일 */
+    var first = new Date(y, 10, 1);
+    var firstThu = 1 + ((4 - first.getDay() + 7) % 7);
+    return new Date(y, 10, firstThu + 21);
+  }
+  function krEvents(win){
+    var out = [];
+    win.forEach(function(iso){
+      var kind = KR_MEET[iso];
+      var d = dateOf(iso);
+      if (kind === 'bok'){
+        out.push({ key: 'bok-' + iso, date: iso, time: '09:00', kind: 'bok', tag: '한은',
+          title: '한국은행 금통위 — 기준금리 결정',
+          sub: '통화정책방향·수정 경제전망 10:30 · 기자간담회 11:10', src: 'bok' });
+      } else if (kind === 'fin'){
+        out.push({ key: 'fin-' + iso, date: iso, time: '09:00', kind: 'bok', tag: '한은',
+          title: '한국은행 금융안정회의',
+          sub: '금융안정 점검 (기준금리 결정 회의 아님)', src: 'fin' });
+      }
+      /* 파생 만기 — 매월 둘째 목요일. 3·6·9·12월은 선물옵션 동시만기, 그 밖은 옵션만기 */
+      if (d && d.getDay() === 4 && d.getDate() >= 8 && d.getDate() <= 14){
+        var m = d.getMonth() + 1;
+        var quad = (m === 3 || m === 6 || m === 9 || m === 12);
+        out.push({ key: 'exp-' + iso, date: iso, time: '09:00', kind: 'exp',
+          tag: quad ? '동시만기' : '옵션만기',
+          title: quad ? '선물옵션 동시만기' : 'KOSPI200 옵션만기',
+          sub: quad ? '선물·옵션 동시 만기 — 종가 동시호가 수급 왜곡 주의' : '만기일 종가 동시호가 변동성 구간',
+          src: 'exp' });
+      }
+      /* 미국 추수감사절 — 뉴욕증시 휴장, 다음 날 블랙프라이데이 조기 폐장 */
+      if (d){
+        var tg = usThanksgiving(d.getFullYear());
+        if (ymdOf(tg) === iso){
+          out.push({ key: 'tg-' + iso, date: iso, time: '', kind: 'hol', tag: '휴장',
+            title: '미 추수감사절 — 뉴욕증시 휴장', sub: '다음 거래일(블랙프라이데이)은 조기 폐장(ET 13:00)', src: 'us-hol' });
+        }
+        if (ymdOf(dayShift(tg, 1)) === iso){
+          out.push({ key: 'bf-' + iso, date: iso, time: '', kind: 'hol', tag: '조기폐장',
+            title: '미 블랙프라이데이 — 뉴욕증시 조기 폐장', sub: 'ET 13:00 마감 · 유통·소비재 이벤트 시즌', src: 'us-hol' });
+        }
+      }
+    });
+    return out;
+  }
+
+  /* ---------- ② 공모주 일정 ---------- */
+  function ipoEvents(j, win){
+    var out = [], items = (j && j.items) || [];
+    items.forEach(function(it){
+      var nm = it && (it.name || it.rawName);
+      if (!nm) return;
+      var mk = String(it.market || '') + (it.isSpac ? ' 스팩' : '');
+      var price = it.fixedPrice != null ? ('공모가 ' + won(it.fixedPrice)) : '공모가 미확정';
+      var base = [mk, price].filter(Boolean).join(' · ');
+      if (it.listingDate && win.indexOf(it.listingDate) >= 0){
+        out.push({ key: 'ipoL-' + nm, date: it.listingDate, time: '09:00', kind: 'ipo', tag: '상장',
+          title: nm + ' 신규 상장', sub: base + (it.products ? ' · ' + it.products : ''), ipo: it, act: 'listing' });
+      }
+      if (it.subStart && win.indexOf(it.subStart) >= 0){
+        out.push({ key: 'ipoS-' + nm, date: it.subStart, time: '10:00', kind: 'ipo', tag: '청약',
+          title: nm + ' 공모청약 시작', sub: base + ' · 마감 ' + (it.subEndLabel || it.subEnd || ''), ipo: it, act: 'subStart' });
+      }
+      if (it.subEnd && it.subEnd !== it.subStart && win.indexOf(it.subEnd) >= 0){
+        out.push({ key: 'ipoE-' + nm, date: it.subEnd, time: '16:00', kind: 'ipo', tag: '청약마감',
+          title: nm + ' 공모청약 마감', sub: base + ' · 16:00까지', ipo: it, act: 'subEnd' });
+      }
+      if (it.demandEnd && win.indexOf(it.demandEnd) >= 0){
+        out.push({ key: 'ipoD-' + nm, date: it.demandEnd, time: '', kind: 'ipo', tag: '수요예측',
+          title: nm + ' 기관 수요예측 마감', sub: [base, it.demandStage].filter(Boolean).join(' · '), ipo: it, act: 'demandEnd' });
+      }
+    });
+    return out;
+  }
+
+  /* ---------- ③ 해외 거시 일정 ---------- */
+  var US_KO = {
+    'Flash Manufacturing PMI': '미 제조업 PMI 속보',
+    'Flash Services PMI': '미 서비스업 PMI 속보',
+    'CB Consumer Confidence': '미 CB 소비자신뢰지수',
+    'Core PCE Price Index m/m': '미 근원 PCE 물가(전월비)',
+    'PCE Price Index m/m': '미 PCE 물가(전월비)',
+    'Prelim GDP q/q': '미 GDP 예비치(전분기비)',
+    'Final GDP q/q': '미 GDP 확정치(전분기비)',
+    'Prelim GDP Price Index q/q': '미 GDP 물가지수 예비치',
+    'Unemployment Claims': '미 신규 실업수당 청구건수',
+    'CPI m/m': '미 CPI(전월비)',
+    'Core CPI m/m': '미 근원 CPI(전월비)',
+    'PPI m/m': '미 PPI(전월비)',
+    'Core PPI m/m': '미 근원 PPI(전월비)',
+    'Retail Sales m/m': '미 소매판매(전월비)',
+    'Non-Farm Employment Change': '미 비농업 고용자수',
+    'Average Hourly Earnings m/m': '미 시간당 평균임금(전월비)',
+    'Unemployment Rate': '미 실업률',
+    'ISM Manufacturing PMI': '미 ISM 제조업 PMI',
+    'ISM Services PMI': '미 ISM 서비스업 PMI',
+    'Federal Funds Rate': 'FOMC 기준금리 결정',
+    'FOMC Statement': 'FOMC 성명서',
+    'Prelim UoM Consumer Sentiment': '미 미시간대 소비자심리 예비치',
+    'JOLTS Job Openings': '미 JOLTS 구인건수',
+    'Durable Goods Orders m/m': '미 내구재 주문(전월비)',
+    'ADP Employment Change': '미 ADP 민간고용'
+  };
+  function macroEvents(j, win){
+    var out = [], items = (j && j.items) || [];
+    items.forEach(function(it){
+      if (!it || !it.dateKst || win.indexOf(it.dateKst) < 0) return;
+      var ko = US_KO[it.title] || it.title;
+      var rank = Number(it.impactRank) || 0;
+      var tag = rank >= 3 ? '★중요' : '미지표';
+      var meta = [];
+      if (it.forecast) meta.push('예상 ' + it.forecast);
+      if (it.actual) meta.push('발표 ' + it.actual);
+      if (rank >= 3) meta.unshift('영향도 높음');
+      out.push({ key: 'us-' + it.dateKst + '-' + it.title, date: it.dateKst, time: it.timeKst || '',
+        kind: 'us', tag: tag, title: ko, sub: meta.join(' · '),
+        us: it, src: 'econ' });
+    });
+    return out;
+  }
+
+  function schedSort(a, b){
+    if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+    var ta = a.time || '99:00', tb = b.time || '99:00';
+    if (ta !== tb) return ta < tb ? -1 : 1;
+    return 0;
+  }
+
+  function loadSchedule(){
+    if (SCHED.loaded) return;
+    SCHED.loaded = true;
+    var host = $('schedBody'), head = $('schedHead'), basis = $('schedBasis');
+    if (!host) return;
+    head.hidden = false;
+    host.hidden = false;
+    if (basis) basis.textContent = '오늘 포함 7일 · 불러오는 중…';
+    host.innerHTML = '<div class="schednote" style="padding:4px 0">일정을 읽는 중…</div>';
+    var win = schedWindow();
+    Promise.all([
+      fetchJson(apiBase() + '/data/ipo-latest.json', 12000).catch(function(){ return null; }),
+      fetchJson(apiBase() + '/api/econ-calendar', 12000).catch(function(){ return null; })
+    ]).then(function(r){
+      var ipo = r[0], econ = r[1];
+      SCHED.info.ipo = ipo; SCHED.info.econ = econ;
+      var items = krEvents(win).concat(ipoEvents(ipo, win)).concat(macroEvents(econ, win)).sort(schedSort);
+      SCHED.items = items;
+      renderSchedule(items);
+    }).catch(function(){
+      host.hidden = true; head.hidden = true;
+    });
+  }
+
+  function renderSchedule(items){
+    var host = $('schedBody'), head = $('schedHead'), basis = $('schedBasis'), note = $('schedNote');
+    if (!host) return;
+    if (!items.length){
+      host.innerHTML = '<div class="schednote" style="padding:4px 0">이번 주(오늘 포함 7일)에 확인된 증시 일정이 없습니다.</div>';
+    } else {
+      var shown = SCHED.expanded ? items : items.slice(0, SCHED_LIMIT);
+      host.innerHTML = shown.map(function(e){
+        var dl = dLabel(e.date), wh = whenLabel(e.date);
+        return '<button class="schrow" type="button" data-k="' + esc(e.key) + '">' +
+          '<span class="sd"><b>' + esc(dl.md) + '</b><i>' + esc(dl.wd + (wh ? ' · ' + wh : '')) + '</i></span>' +
+          '<span class="sk ' + esc(e.kind) + '">' + esc(e.tag) + '</span>' +
+          '<span class="st">' + esc(e.title) + '<small>' + esc(e.time ? (e.time + ' ' + (e.sub || '')) : (e.sub || '')) + '</small></span>' +
+          '<span class="sa">›</span></button>';
+      }).join('');
+      if (items.length > SCHED_LIMIT && !SCHED.expanded){
+        host.innerHTML += '<button class="schmore" type="button" id="schedMore">＋ ' + (items.length - SCHED_LIMIT) + '건 더 보기 (' + items.length + '건)</button>';
+        var more = $('schedMore');
+        if (more) more.addEventListener('click', function(){ SCHED.expanded = true; renderSchedule(SCHED.items); });
+      } else if (SCHED.expanded && items.length > SCHED_LIMIT){
+        host.innerHTML += '<button class="schmore" type="button" id="schedLess">− 접어서 ' + SCHED_LIMIT + '건만 보기</button>';
+        var less = $('schedLess');
+        if (less) less.addEventListener('click', function(){ SCHED.expanded = false; renderSchedule(SCHED.items); });
+      }
+      Array.prototype.forEach.call(host.querySelectorAll('.schrow'), function(btn){
+        btn.addEventListener('click', function(){
+          var k = btn.getAttribute('data-k');
+          var it = SCHED.items.filter(function(x){ return x.key === k; })[0];
+          if (it) openSchedSheet(it);
+        });
+      });
+    }
+    if (basis){
+      var upd = (SCHED.info.ipo && SCHED.info.ipo.updatedAt) ? String(SCHED.info.ipo.updatedAt).slice(0, 10) : '';
+      basis.textContent = '오늘 포함 7일 · ' + items.length + '건' + (upd ? ' · 공모주 ' + upd + ' 기준' : '');
+    }
+    if (note){
+      var bad = [];
+      if (!SCHED.info.ipo) bad.push('공모주 파일');
+      if (!SCHED.info.econ) bad.push('해외 캘린더');
+      note.hidden = !bad.length;
+      note.textContent = bad.length ? (bad.join('·') + '을 받지 못했습니다 — 받은 일정만 보여 줍니다(일정을 지어내지 않습니다).') : '';
+    }
+    head.hidden = false;
+    host.hidden = !SCHED.open;
+  }
+
+  /* ---------- 지금 분위기(실측) ---------- */
+  function schedMood(){
+    if (SCHED.mood) return Promise.resolve(SCHED.mood);
+    return loadSnapshot().then(function(snap){
+      var idx = (snap && snap.indices) || [];
+      var base = { indices: idx, tradeDate: (snap && snap.tradeDate) || '' };
+      return fetchJson(apiBase() + '/api/macro-live', 9000).then(function(j){
+        var mac = {};
+        ((j && j.items) || []).forEach(function(x){ if (x && x.key) mac[x.key] = x; });
+        SCHED.mood = { indices: idx, tradeDate: base.tradeDate, macro: mac, at: (j && j.generatedAtKst) || '' };
+        return SCHED.mood;
+      }).catch(function(){ SCHED.mood = base; return SCHED.mood; });
+    }).catch(function(){ SCHED.mood = { indices: [], tradeDate: '' }; return SCHED.mood; });
+  }
+  function moodHtml(m){
+    m = m || {};
+    var bits = [], mac = m.macro || {};
+    (m.indices || []).slice(0, 2).forEach(function(x){
+      var c = n(x.changePct);
+      if (x && x.name && c != null) bits.push(x.name + ' ' + pct(c));
+    });
+    if (mac.vix && mac.vix.ok && n(mac.vix.value) != null) bits.push('VIX ' + Number(mac.vix.value).toFixed(2) + (n(mac.vix.changePct) != null ? '(' + pct(mac.vix.changePct) + ')' : ''));
+    if (mac.us10y && mac.us10y.ok && n(mac.us10y.value) != null) bits.push('미 10년 ' + Number(mac.us10y.value).toFixed(3) + '%');
+    if (mac.dxy && mac.dxy.ok && n(mac.dxy.value) != null) bits.push('달러지수 ' + Number(mac.dxy.value).toFixed(2));
+    if (!bits.length) return '';
+    var bs = [];
+    if (m.tradeDate) bs.push(m.tradeDate + ' 마감');
+    if (m.at) bs.push('거시 ' + m.at);
+    return '<div class="mood"><b>지금 분위기</b> ' + bits.map(esc).join(' · ') +
+      (bs.length ? '<small>' + esc(bs.join(' · ')) + '</small>' : '') + '</div>';
+  }
+  function moodText(m){
+    m = m || {};
+    var bits = [], mac = m.macro || {};
+    (m.indices || []).slice(0, 2).forEach(function(x){
+      var c = n(x.changePct);
+      if (x && x.name && c != null) bits.push(x.name + ' ' + pct(c));
+    });
+    if (mac.vix && mac.vix.ok && n(mac.vix.value) != null) bits.push('VIX ' + Number(mac.vix.value).toFixed(2));
+    if (mac.us10y && mac.us10y.ok && n(mac.us10y.value) != null) bits.push('미 10년 ' + Number(mac.us10y.value).toFixed(3) + '%');
+    return bits.join(' · ');
+  }
+
+  /* ---------- 상세 시트 ---------- */
+  function kv(label, val, miss){
+    return '<dt>' + esc(label) + '</dt><dd' + (miss ? ' class="miss"' : '') + '>' + esc(val) + '</dd>';
+  }
+  function openSchedSheet(e){
+    var bg = openSheet(e.title, '');
+    var body = bg.querySelector('#sheetBody');
+    var note = bg.querySelector('#sheetNote');
+    var meta = bg.querySelector('#sheetMeta');
+    var dl = dLabel(e.date);
+    if (meta) meta.innerHTML = esc(e.date + '(' + dl.wd + ') · ' + (e.time ? e.time + ' KST · ' : '') + e.tag);
+    body.innerHTML = '<div class="schednote" style="padding:6px 2px">상세를 정리하는 중…</div>';
+    if (note) note.innerHTML = '받은 값은 실측·공표 자료 그대로입니다. 해석 문장은 규칙 기반 참고이며 투자 권유가 아닙니다. 받지 못한 값은 <b>미확인</b>으로 둡니다.';
+    schedMood().then(function(m){
+      if (e.kind === 'ipo') body.innerHTML = ipoSheet(e, m) + '<div id="ipoLive"></div>';
+      else body.innerHTML = macroSheet(e, m);
+      if (e.kind === 'ipo' && e.ipo && e.ipo.code && e.act === 'listing') ipoLiveFill(e, body);
+    });
+  }
+
+  function ipoSheet(e, m){
+    var it = e.ipo || {};
+    var nm = it.name || it.rawName || e.title;
+    var h = '';
+    h += '<dl class="kv">';
+    h += kv('종목', nm + (it.code ? ' (' + it.code + ')' : '') + (it.isSpac ? ' · 스팩' : ''));
+    h += kv('시장', it.market || '미확인', !it.market);
+    h += kv('업종·사업', it.products || '미확인', !it.products);
+    var band = (it.bandLow != null && it.bandHigh != null)
+      ? (it.bandLow === it.bandHigh ? won(it.bandLow) : (won(it.bandLow) + ' ~ ' + won(it.bandHigh)))
+      : null;
+    h += kv('공모가', (it.fixedPrice != null ? won(it.fixedPrice) + ' 확정' : '미확정') + (band ? ' / 밴드 ' + band : '') + (it.bandPosition ? ' · ' + it.bandPosition : ''), it.fixedPrice == null);
+    h += kv('공모금액', it.amountEok != null ? eok(it.amountEok) + (it.offerShares ? ' · ' + it.offerShares.toLocaleString('ko-KR') + '주' : '') : '미확인', it.amountEok == null);
+    h += kv('주관사', it.managers || '미확인', !it.managers);
+    h += kv('수요예측', it.demandPeriodLabel || ((it.demandStart || '?') + ' ~ ' + (it.demandEnd || '?')) + (it.demandStage ? ' · ' + it.demandStage : ''), !it.demandStart);
+    h += kv('청약', it.subPeriodLabel || ((it.subStart || '?') + ' ~ ' + (it.subEnd || '?')), !it.subStart);
+    h += kv('환불일', it.refundDateLabel || it.refundDate || '미확인', !it.refundDate);
+    h += kv('상장일', it.listingDateLabel || it.listingDate || '미확인', !it.listingDate);
+    h += kv('경쟁률', '기관 ' + (it.instCompetition != null ? it.instCompetition.toLocaleString('ko-KR') + ':1' : '미확인') +
+      ' · 일반 ' + (it.retailCompetition || '미확인'), it.instCompetition == null && !it.retailCompetition);
+    h += kv('의무보유확약', it.lockupPct != null ? it.lockupPct.toFixed(2) + '%' : '미확인', it.lockupPct == null);
+    h += kv('유통가능물량',
+      it.floatShares != null
+        ? (it.floatShares.toLocaleString('ko-KR') + '주' + (it.floatRatioPct != null ? ' · 발행주식의 ' + it.floatRatioPct.toFixed(1) + '%' : '') +
+           (it.floatAmountEok != null ? ' · ' + eok(it.floatAmountEok) : '') + (it.floatAmountBasis ? ' (' + it.floatAmountBasis + ')' : ''))
+        : '미확인', it.floatShares == null);
+    h += kv('공모주 점수', it.score != null ? (it.score.toFixed(1) + '점' + (it.scoreParts ? ' (기관 ' + it.scoreParts.inst + ' · 의무보유 ' + it.scoreParts.lockup + ' · 유통 ' + it.scoreParts.float + ' · 밴드 ' + it.scoreParts.band + ')' : '')) : '미확인', it.score == null);
+    h += '</dl>';
+    h += moodHtml(m);
+
+    /* 상장일 체크 포인트 — 파일에 있는 수치만 근거로 */
+    var pts = [];
+    if (it.floatRatioPct != null){
+      pts.push('유통가능물량 ' + it.floatShares.toLocaleString('ko-KR') + '주(발행주식의 ' + it.floatRatioPct.toFixed(1) + '%)' +
+        (it.floatAmountEok != null ? ' — 확정공모가 기준 ' + eok(it.floatAmountEok) + ' 원어치가 상장일부터 매매 가능' : ''));
+    }
+    if (it.lockupPct != null){
+      pts.push('의무보유확약 ' + it.lockupPct.toFixed(2) + '%' + (it.lockupPct < 1 ? ' — 기관 물량 대부분이 곧바로 팔 수 있는 상태' : ' — 확약 물량은 상장 초기 매도 제한'));
+    }
+    if (it.instCompetition != null){
+      pts.push('기관 수요예측 경쟁률 ' + it.instCompetition.toLocaleString('ko-KR') + ':1' + (it.instCompetition < 300 ? ' (낮은 편 — 수요가 약했다는 신호로 읽힘)' : ''));
+    }
+    if (it.retailCompetition){
+      pts.push('일반 청약 경쟁률 ' + it.retailCompetition + ' — 상장 직후 개인 매물 출회 규모와 직결');
+    }
+    if (it.bandPosition){
+      pts.push('공모가 밴드 위치 ' + it.bandPosition + (it.fixedPrice != null && it.bandLow != null && it.fixedPrice < it.bandLow ? ' — 밴드 아래로 확정된 점은 수요 부진 신호' : ''));
+    }
+    var mt = moodText(m);
+    if (mt) pts.push('현재 분위기(' + mt + ')에서는 시초가가 공모가를 크게 웃돌아도 장중 되돌림이 빨라질 수 있어 시초 체결가와 거래대금을 먼저 확인');
+    if (!pts.length) pts.push('받은 수치가 없어 체크 포인트를 만들지 않았습니다(미확인).');
+    h += '<div class="pt"><b>🎯 상장·청약 체크 포인트</b><ul>' + pts.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+    h += '<div class="pt"><b>📌 실전 메모</b><ul>' +
+      '<li>' + esc('공모주 수치는 ' + ((SCHED.info.ipo && SCHED.info.ipo.updatedAt) ? String(SCHED.info.ipo.updatedAt).slice(0, 10) + ' 기준 수집본' : '수집본') + '이며, 경쟁률·확약은 수요예측 종료 후 값입니다.') + '</li>' +
+      '<li>' + esc('청약은 증권사별 마감 시각(보통 16:00)과 최소 청약 주수가 다릅니다 — 신청 전 주관사 앱에서 확인.') + '</li>' +
+      '<li>' + esc('환불일은 청약 증거금 환불 기준일이며, 상장일과 다릅니다.') + '</li>' +
+      '</ul></div>';
+    return h;
+  }
+
+  function ipoLiveFill(e, body){
+    var it = e.ipo || {}, box = body.querySelector('#ipoLive');
+    if (!box) return;
+    box.innerHTML = '<div class="livebox">실시간 시세를 읽는 중…</div>';
+    fetchJson(apiQuery() + '?codes=' + encodeURIComponent(it.code) + '&fresh=1', 12000).then(function(j){
+      var s = (j && j.stocks || []).filter(function(x){ return x && String(x.code) === String(it.code); })[0] || (j && j.stocks || [])[0] || null;
+      if (!s){ box.innerHTML = '<div class="livebox">실시간 시세 미확인 — 상장 당일 호가 전에는 값이 없을 수 있습니다.</div>'; return; }
+      var cur = n(s.price), op = n(s.open), hi = n(s.high), lo = n(s.low), cp = n(s.changePct);
+      var fp = n(it.fixedPrice);
+      var bits = [];
+      if (op != null) bits.push('시초 ' + won(op));
+      if (cur != null) bits.push('현재 ' + won(cur) + (cp != null ? '(' + pct(cp) + ')' : ''));
+      if (hi != null && lo != null) bits.push('고 ' + won(hi) + ' · 저 ' + won(lo));
+      if (cur != null && fp) bits.push('공모가 대비 ' + pct((cur - fp) / fp * 100));
+      box.innerHTML = '<div class="livebox"><b>실시간</b> ' + esc(bits.join(' · ')) + '</div>';
+    }).catch(function(){
+      box.innerHTML = '<div class="livebox">실시간 시세 미확인 — 상장 당일 호가 전에는 값이 없을 수 있습니다.</div>';
+    });
+  }
+
+  function macroSheet(e, m){
+    var h = '', mt = moodText(m);
+    if (e.kind === 'us'){
+      var it = e.us || {};
+      h += '<dl class="kv">';
+      h += kv('일정', e.title);
+      h += kv('발표 시각', (it.dateLabel || (e.date + ' ' + (it.timeKst || ''))) + ' KST');
+      var imp = Number(it.impactRank) >= 3 ? '높음' : Number(it.impactRank) === 2 ? '보통' : (it.impact || '미확인');
+      h += kv('영향도', imp + (it.impact ? ' (' + it.impact + ')' : ''));
+      h += kv('예상', it.forecast || '미확인', !it.forecast);
+      h += kv('이전', it.previous || '미확인', !it.previous);
+      h += kv('발표', it.actual || '미발표', !it.actual);
+      h += kv('원문 제목', it.title || '미확인');
+      h += kv('출처', (it.source || 'forexfactory') + ' 주간 캘린더');
+      h += '</dl>';
+      h += moodHtml(m);
+      var t = String(e.title);
+      var why = [], care = [];
+      if (/PCE|CPI|PPI|물가/.test(t)){
+        why.push('연준이 보는 물가 지표라 금리·달러·성장주 밸류에이션에 바로 연결됩니다.');
+        care.push('발표 전에는 레버리지·신규 진입을 줄이고, 발표 직후 야간선물과 미 10년물 방향을 먼저 확인');
+        care.push('예상치 상회(물가 재가속)면 성장주·바이오 약세, 은행·가치주 상대 강세가 나오기 쉬움');
+      } else if (/GDP/.test(t)){
+        why.push('경기 체력과 금리 경로를 함께 흔드는 지표입니다.');
+        care.push('성장 둔화 + 물가 고착 조합이면 지수 전체 위험 회피로 번질 수 있어 발표 후 지수 20일선 확인');
+      } else if (/Unemployment|Non-Farm|ADP|Employment|고용/.test(t)){
+        why.push('고용은 연준 금리 결정의 핵심 입력값입니다.');
+        care.push('예상보다 강한 고용은 금리 인상 우려로, 약한 고용은 경기 둔화 우려로 — 어느 쪽이든 변동성 확대');
+      } else if (/PMI|ISM|Confidence|Sentiment/.test(t)){
+        why.push('경기 심리·제조업 체력을 보는 선행 지표입니다.');
+        care.push('지수 자체보다 발표 후 미장 반도체·소재 업종 반응을 확인');
+      } else if (/Rate|FOMC|Powell|Fed/.test(t)){
+        why.push('금리 결정과 점도표는 시장 전체 할인율을 바꿉니다.');
+        care.push('발표·기자회견 구간은 호가 공백이 커지므로 시장가 주문 자제');
+      } else {
+        why.push('해외 매크로 지표는 다음 날 국내 시초가와 외국인 수급에 영향을 줍니다.');
+        care.push('발표 전후 변동성 확대 구간 — 포지션 크기와 손절선을 먼저 정해 두기');
+      }
+      if (mt) why.push('지금 실측 분위기: ' + mt + ' — 금리·변동성 민감도가 높은 구간에서는 같은 지표도 지수 흔들림이 커집니다.');
+      h += '<div class="pt"><b>왜 중요한가</b><ul>' + why.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+      h += '<div class="pt"><b>발표 전후 실전 포인트</b><ul>' + care.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+    } else if (e.src === 'bok' || e.src === 'fin'){
+      h += '<dl class="kv">';
+      h += kv('일정', e.title);
+      h += kv('시각', e.date + '(' + dLabel(e.date).wd + ') 09:00 본회의 · 10:30 결과 배포' + (e.src === 'bok' ? ' · 11:10 기자간담회' : ''));
+      h += kv('공표', e.src === 'bok' ? '기준금리 결정 · 수정 경제전망 · 점도표' : '금융안정 상황 점검');
+      h += kv('출처', '한국은행 2026년 금통위 정기회의 일정');
+      h += '</dl>';
+      h += moodHtml(m);
+      var w1 = [], c1 = [];
+      if (e.src === 'bok'){
+        w1.push('기준금리와 함께 금통위원 점도표·수정 경제전망이 나오면 국내 할인율과 원화·외국인 수급이 함께 움직입니다.');
+        w1.push('금리 민감 업종(은행·보험·리츠·바이오·성장주)의 방향이 이날 갈리기 쉽습니다.');
+        c1.push('10:30 결과 배포 직후 지수·야간선물 변동이 커집니다 — 발표 전 신규 진입은 축소');
+        c1.push('동결/인상 여부와 점도표(6개월 후 금리)를 같이 봐야 합니다. 헤드라인 금리만 보면 놓칩니다.');
+        c1.push('기자간담회(11:10) 발언에서 매파·비둘기 톤이 갈리므로 장중 재확인');
+      } else {
+        w1.push('금융안정회의는 기준금리를 정하는 회의가 아니지만, 가계부채·부동산 PF 같은 리스크 점검 결과가 나옵니다.');
+        c1.push('금리 결정이 아니므로 지수 충격은 제한적 — 다만 은행·건설·저축은행 관련 코멘트는 확인');
+      }
+      if (mt) w1.push('지금 실측 분위기: ' + mt + '.');
+      h += '<div class="pt"><b>왜 중요한가</b><ul>' + w1.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+      h += '<div class="pt"><b>당일 실전 포인트</b><ul>' + c1.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
+    } else if (e.src === 'exp'){
+      h += '<dl class="kv">';
+      h += kv('일정', e.title);
+      h += kv('시각', e.date + '(' + dLabel(e.date).wd + ') 종가 동시호가');
+      h += kv('의미', /동시만기/.test(e.tag) ? '선물·옵션 포지션을 같은 날 정리(3·6·9·12월)' : 'KOSPI200 옵션 포지션 정리일');
+      h += kv('출처', '파생상품 만기 규칙(매월 둘째 목요일)');
+      h += '</dl>';
+      h += moodHtml(m);
+      h += '<div class="pt"><b>왜 중요한가</b><ul>' +
+        '<li>' + esc('만기일에는 프로그램 매매·선물 롤오버로 종가 동시호가 수급이 왜곡될 수 있습니다.') + '</li>' +
+        '<li>' + esc('지수 등락과 무관하게 특정 대형주에 매수·매도가 몰리는 착시가 생깁니다.') + '</li>' +
+        '</ul></div>';
+      h += '<div class="pt"><b>당일 실전 포인트</b><ul>' +
+        '<li>' + esc('만기 당일 종가 체결을 신호로 삼지 말고, 다음 거래일 수급으로 확인') + '</li>' +
+        '<li>' + esc('외국인 선물 순매수·롤오버 규모를 장 마감 후 확인') + '</li>' +
+        '</ul></div>';
+    } else {
+      h += '<dl class="kv">';
+      h += kv('일정', e.title);
+      h += kv('시각', e.date + '(' + dLabel(e.date).wd + ') ' + (e.time || '') + (e.sub ? ' · ' + e.sub : ''));
+      h += '</dl>';
+      h += moodHtml(m);
+      h += '<div class="pt"><b>체크</b><ul><li>' + esc('해외 휴장·조기 폐장일에는 야간선물 유동성이 얇아 호가 변동이 커집니다.') + '</li><li>' + esc('다음 날 국내 시초가 갭이 커질 수 있어 주문 가격을 여유 있게.') + '</li></ul></div>';
+    }
+    return h;
+  }
+
   /* ---------- 📋 테마 구성종목 시트 ---------- */
   var sheetEl = null, sheetData = null, sheetSort = 'value';
   function closeSheet(){
@@ -1753,6 +2285,20 @@
       try { localStorage.setItem('foxsignal_checker_tmap', mapOpen ? 'open' : 'closed'); } catch(e){}
     });
   }
+  /* 📅 이번 주 증시 일정 — 접기/펼치기 상태도 기억한다 */
+  try { SCHED.open = localStorage.getItem('foxsignal_checker_sched') !== 'closed'; } catch(e){ SCHED.open = true; }
+  var schedBtn = $('schedToggle');
+  if (schedBtn){
+    schedBtn.textContent = SCHED.open ? '접기' : '펼치기';
+    schedBtn.addEventListener('click', function(){
+      SCHED.open = !SCHED.open;
+      var host = $('schedBody');
+      if (host) host.hidden = !SCHED.open;
+      schedBtn.textContent = SCHED.open ? '접기' : '펼치기';
+      try { localStorage.setItem('foxsignal_checker_sched', SCHED.open ? 'open' : 'closed'); } catch(e){}
+    });
+  }
+  loadSchedule();
   loadThemeMap();
   document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') closeSheet(); });
   if (pre){ $('q').value = pre; checkStock(pre); }
