@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F7F3E9">
 <meta name="description" content="종목명이나 코드 하나로 오늘 통합 거래대금·등락률·시가/고가/저가 대비 위치와 소속 테마·최근 재료를 1초에 확인하는 폭스시그널 무료 체커.">
-<title>🔍 내 종목 수급·테마 1초 체커 — 폭스시그널</title>
+<title>🔍 내 종목 수급·테마·[특징주] 1초 체커 — 폭스시그널</title>
 <!-- 📲 이 페이지 전용 PWA (관제탑과 id·start_url·scope 를 분리해 따로 설치된다) -->
 <link rel="manifest" href="manifest-checker.json">
 <meta name="mobile-web-app-capable" content="yes">
@@ -128,7 +128,9 @@
   .align.solo{background:#FFF7E4;border-color:#EFDDAE;color:#8A5A0B}
   .align.with{background:#EAF6EC;border-color:#C3E2C9;color:#15612F}
   .tchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
-  .tchip{font-size:10.8px;font-weight:800;border-radius:999px;padding:4px 9px;background:#fff;border:1px solid var(--line);color:var(--sub)}
+  .tchip{font-size:10.8px;font-weight:800;border-radius:999px;padding:4px 9px;background:#fff;border:1px solid var(--line);color:var(--sub);font-family:inherit}
+  .tchip .tgo{color:var(--wine);font-weight:900}
+  .tnamebtn{border:0;background:none;padding:0;text-align:left;display:block;width:100%;font-family:inherit;color:inherit;cursor:pointer}
   .tchip b{color:var(--ink)}
   .tchip.green{background:#E8F5EC;border-color:#BFE0C8;color:#15612F}
   .tchip.yellow{background:#FFF6E0;border-color:#EFD9A6;color:#8A5A0B}
@@ -188,6 +190,53 @@
   .aitag.rule{background:#8E8271}
   .whynote{font-size:10.4px;font-weight:750;color:var(--mute);margin-top:6px;line-height:1.5}
 
+  /* ---- 🗺️ 오늘의 테마맵(히트맵) ---- */
+  .tmaphead{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:13px 0 5px;font-size:11.6px;font-weight:900;color:var(--sub)}
+  .tmaphead .tb{font-weight:750;color:var(--mute);font-size:10.5px}
+  .tmaphead .tg{margin-left:auto;border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:999px;padding:3px 9px;font-size:10.5px;font-weight:900}
+  .tmap{display:flex;flex-wrap:wrap;gap:4px}
+  .tile{border-radius:9px;padding:6px 7px;border:1px solid rgba(32,24,15,.06);text-align:left;line-height:1.22;overflow:hidden;min-width:0}
+  .tile b{display:block;font-size:11.2px;font-weight:900;letter-spacing:-.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile small{display:block;font-size:10.2px;font-weight:850;font-variant-numeric:tabular-nums;opacity:.95}
+  .tile:active{transform:translateY(1px)}
+  .tile.t-hot{background:#B3261E;color:#FFF9EC}
+  .tile.t-up{background:#D4544A;color:#FFF9EC}
+  .tile.t-up2{background:#F0B7AE;color:#6E1A12}
+  .tile.t-flat{background:#E7E0D2;color:#5E5546}
+  .tile.t-dn2{background:#BAC9EA;color:#152A55}
+  .tile.t-dn{background:#5E7CB8;color:#F4F7FF}
+  .tile.t-cold{background:#1E3A8A;color:#F4F7FF}
+  .tmapnote{margin-top:6px;font-size:10.2px;font-weight:750;color:var(--mute);line-height:1.5}
+  .tmapnote b{color:var(--sub)}
+
+  /* ---- 📋 테마 구성종목 시트(모달) ---- */
+  .sheet-bg{position:fixed;inset:0;background:rgba(32,24,15,.46);display:flex;align-items:flex-end;justify-content:center;z-index:90}
+  .sheet{background:var(--card);width:100%;max-width:520px;max-height:88vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 28px rgba(32,24,15,.25)}
+  .sheet .sh{display:flex;align-items:center;gap:8px;padding:13px 14px 10px;border-bottom:1px solid var(--line)}
+  .sheet .sh h3{margin:0;font-size:16px;font-weight:900;letter-spacing:-.03em}
+  .sheet .sh .sx{margin-left:auto;border:0;background:#F2EADB;color:var(--sub);border-radius:999px;width:30px;height:30px;font-size:15px;font-weight:900}
+  .sheet .smeta{padding:8px 14px 0;font-size:11px;font-weight:800;color:var(--sub);line-height:1.5}
+  .sheet .sbtns{display:flex;gap:5px;padding:8px 12px 4px;flex-wrap:wrap}
+  .sheet .sbtns button{border:1px solid var(--line);background:#fff;color:var(--sub);border-radius:999px;padding:4px 10px;font-size:11px;font-weight:900}
+  .sheet .sbtns button.on{background:#781B33;color:#FFF9EC;border-color:#781B33}
+  .sheet .sb{overflow-y:auto;padding:2px 12px calc(16px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch}
+  .srow{display:flex;align-items:center;gap:8px;width:100%;padding:9px 2px;border:0;border-bottom:1px dashed var(--line);background:none;text-align:left;font:inherit;color:inherit}
+  .srow .nm{display:block;font-size:13.4px;font-weight:900;letter-spacing:-.02em}
+  .srow .cd{display:block;font-size:10.2px;font-weight:800;color:var(--mute);margin-top:1px}
+  .srow .pc{margin-left:auto;font-size:13px;font-weight:900;font-variant-numeric:tabular-nums}
+  .srow .vl{width:66px;text-align:right;font-size:11px;font-weight:850;color:var(--sub);font-variant-numeric:tabular-nums}
+  .sheet .snote{padding:8px 14px 4px;font-size:10.3px;font-weight:750;color:var(--mute);line-height:1.5}
+
+  /* ---- 📰 [특징주] 이력 · 과거 파동 ---- */
+  .wave{background:#FBF7EC;border:1px solid var(--line);border-radius:11px;padding:9px 10px;margin-top:7px}
+  .wave .wt{font-size:12.4px;font-weight:900;letter-spacing:-.02em}
+  .wave .wm{font-size:11.2px;font-weight:750;color:var(--sub);margin-top:3px;line-height:1.55}
+  .wave .wm b{font-weight:900}
+  .catrow{font-size:11.4px;font-weight:750;color:var(--sub);line-height:1.55;padding:6px 0;border-bottom:1px dashed var(--line)}
+  .catrow:last-child{border-bottom:0}
+  .catrow .ct{font-size:12.1px;font-weight:800;color:var(--ink);line-height:1.42}
+  .catrow .cm{display:block;font-size:10.6px;font-weight:800;color:var(--mute);margin-top:2px}
+
   .links{margin-top:14px;display:grid;gap:7px}  .links a{
     display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);
     background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:800;
@@ -226,16 +275,19 @@
 
   <section class="hero">
     <h1>내 종목, 오늘 수급과 테마는?</h1>
-    <p>종목명·코드 하나면 <b>통합 거래대금</b>, <b>시가·고가·저가 대비 위치</b>, <b>소속 테마 신호등</b>, <b>최근 재료</b>까지 1초 만에 확인합니다. 숫자는 실측 그대로 보여 줍니다.</p>
+    <p>종목명·코드 하나면 <b>통합 거래대금</b>, <b>시가·고가·저가 대비 위치</b>, <b>소속 테마 신호등</b>, <b>[특징주] 이력·과거 파동</b>까지 1초 만에 확인합니다. 테마명(예: 반도체)으로도 찾을 수 있어요.</p>
     <div class="search">
       <input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" spellcheck="false"
-             placeholder="종목명 또는 코드 (예: 한미약품 · 128940)" maxlength="30" aria-label="종목명 또는 6자리 종목코드">
+             placeholder="종목명·코드·테마 (예: 한미약품 · 128940 · 반도체)" maxlength="30" aria-label="종목명, 6자리 종목코드 또는 테마명">
       <button id="go" type="button">1초 체커</button>
     </div>
     <div class="chiphead" id="watchHead" hidden>⭐ 내 관심종목</div>
     <div class="chips" id="watchChips"></div>
     <div class="chiphead" id="chipHead" hidden>테마주도주 상위</div>
     <div class="chips" id="chips"></div>
+    <div class="tmaphead" id="tmapHead" hidden>🗺️ 오늘의 테마맵 <span class="tb" id="tmapBasis"></span>
+      <button class="tg" id="tmapToggle" type="button">접기</button></div>
+    <div class="tmap" id="themeMap" hidden></div>
     <div id="msg" role="status" aria-live="polite"></div>
   </section>
 
@@ -262,8 +314,8 @@
   var LIVE_BASE = 'https://stock-dashboard-live-6frm.vercel.app';
   var state = {
     snap: null, score: null, busy: false, last: null, sigLabel: null, sigP: null, sigResolve: null, w52Seq: 0,
-    seq: 0, w52pos: null, market: null, themeData: null, whyShown: 'skeleton',
-    risk: { dart: null, krx: null, dartP: null, krxP: null, themeP: null, p52: null }
+    seq: 0, w52pos: null, market: null, themeData: null, whyShown: 'skeleton', hist: null,
+    risk: { dart: null, krx: null, dartP: null, krxP: null, themeP: null, p52: null, pHist: null }
   };
 
   /* ---------- 숫자·색 도우미 ---------- */
@@ -527,9 +579,13 @@
     }).catch(function(){ state.score = null; return null; });
   }
 
+  /* 어느 도메인에서 열려도 실측 API를 찾아간다 — 관제탑(같은 도메인)일 때만 상대경로 */
   function apiBase(){
-    return (location.pathname.indexOf('/stock-dashboard') > -1 || /github\.io$/.test(location.hostname))
-      ? LIVE_BASE : '';
+    var host = '';
+    try { host = String(location.hostname || ''); } catch(e){ host = ''; }
+    var liveHost = LIVE_BASE.replace(/^https?:\/\//, '');
+    if (host === liveHost || host === 'localhost' || host === '127.0.0.1') return '';
+    return LIVE_BASE;
   }
 
   function apiQuery(){
@@ -585,9 +641,16 @@
       });
     }).catch(function(e){
       var why = (e && e.message) || '';
-      if (why === 'not_found') msg('그 이름으로는 종목을 찾지 못했습니다 — 이름을 정확히 쓰거나 6자리 코드를 넣어 보세요(예: 삼성전자 · 005930).', 'bad');
-      else if (why === 'not_in_snapshot') msg('그 이름·코드로는 종목을 찾지 못했습니다 — 이름을 정확히 쓰거나 6자리 코드를 넣어 보세요(예: 삼성전자 · 005930).', 'bad');
-      else msg('시세를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요(' + why + ').', 'bad');
+      if (why === 'not_found' || why === 'not_in_snapshot'){
+        /* 종목이 아니면 테마 이름일 수 있다 — 테마 구성종목을 펼쳐 본다 */
+        return themeFallback(q).then(function(found){
+          if (found) return;
+          msg('그 이름으로는 종목도 테마도 찾지 못했습니다 — 종목명·6자리 코드·테마명(예: 반도체)을 넣어 보세요.', 'bad');
+          var out0 = $('out'); if (out0){ out0.hidden = true; out0.innerHTML = ''; }
+          var ins0 = $('insight'); if (ins0){ ins0.hidden = true; ins0.innerHTML = ''; }
+        });
+      }
+      msg('시세를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요(' + why + ').', 'bad');
       var out = $('out'); if (out){ out.hidden = true; out.innerHTML = ''; }
       var ins = $('insight'); if (ins){ ins.hidden = true; ins.innerHTML = ''; }
     }).then(function(){ state.busy = false; });
@@ -665,7 +728,8 @@
     state.themeData = null;
     state.w52pos = null;
     state.whyShown = 'skeleton';
-    state.risk = { dart: null, krx: null, dartP: null, krxP: null, themeP: null, p52: null };
+    state.risk = { dart: null, krx: null, dartP: null, krxP: null, themeP: null, p52: null, pHist: null };
+    state.hist = null;
     var price = n(d.price), chg = n(d.changePct);
     var val = n(d.valueTotal);
     var valEok = val == null ? null : Math.round(val / 1e8);
@@ -725,6 +789,11 @@
       '<div class="skel" style="width:66%;margin-top:8px"></div></div>' +
       '<div class="rule">실측 값(등락률·시가 위치·거래대금·52주 위치·소속 테마·최근 뉴스·공시·미장 지표)만 근거로 정리한 참고 해석이며 투자 권유가 아닙니다. 받지 못한 값은 적지 않습니다.</div>' +
       '</div>';
+    /* 📰 [특징주] 이력 · 🌊 최근 1년 과거 파동 비교 */
+    h += '<div class="card" id="histCard">' +
+      '<div class="ihead"><span>📰 [특징주] 이력 · 과거 파동 비교</span><span class="ibasis">기사 검색 · 일별 실측</span></div>' +
+      '<div class="iload">[특징주] 기사와 최근 1년 파동을 읽는 중…</div>' +
+      '<div class="skel" style="width:86%;margin-top:9px"></div><div class="skel" style="width:100%;margin-top:8px"></div></div>';
     out.innerHTML = h;
     out.hidden = false;
     out.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -736,6 +805,7 @@
     var my = state.seq;
     load52(d.code, state.w52Seq);
     loadInsight(d.code, d.name, d.changePct);
+    if (d.code) loadHistory(d.code, d.name, my);
     if (d.code){
       loadDart(d.code, my);
       loadAlerts(d.code, my);
@@ -1023,9 +1093,33 @@
         '지정': row ? (row.alertLabel || null) : null,
         '거래정지': row ? !!row.tradeStop : (krxOk ? false : null)
       },
+      '특징주': ((state.hist && state.hist.catalyst && state.hist.catalyst.items) || []).slice(0, 3).map(function(x){
+        return { '날짜': x.date || null, '제목': x.title || null, '등락률': n(x.changePct), '거래대금억': n(x.valueEok), '현재대비': n(x.nowVsClosePct) };
+      }),
+      '과거파동': ((state.hist && state.hist.waves) || []).map(function(w){
+        return { '시작': w.startDate || null, '고점': w.peakDate || null, '상승률': n(w.gainPct), '최대거래대금억': n(w.peakValueEok), '고점대비현재': n(w.nowVsPeakPct) };
+      }),
       '상태': judge.label
     };
   }
+  /* 과거 파동·[특징주] 재료를 '그때 대비 지금'으로 한 줄 — 전부 실측값 */
+  function pastCompareLine(){
+    var h = state.hist;
+    if (!h) return null;
+    var w = (h.waves || [])[0] || null;
+    var it = (h.catalyst && h.catalyst.items && h.catalyst.items[0]) || null;
+    var bits = [];
+    if (w && w.nowVsPeakPct != null){
+      bits.push('과거 ' + w.startDate + '~' + w.peakDate + ' ' + pct(w.gainPct) + ' 파동 → 그 고점 대비 지금 ' + pct(w.nowVsPeakPct));
+    }
+    if (it && it.title){
+      var t = String(it.title).replace(/^\s*\[[^\]]*특징주[^\]]*\]\s*/, '').replace(/^특징주[,\s]*/, '');
+      bits.push('당시 [특징주] “' + t + '”');
+    }
+    if (!bits.length) return null;
+    return '과거 비교 — ' + bits.join(' · ');
+  }
+
   function renderWhy(lines, meta){
     var host = $('whyBody'); if (!host) return;
     var src = meta && meta.source === 'ai' ? 'ai' : 'rule';
@@ -1054,7 +1148,13 @@
     }).then(function(j){
       if (my !== state.seq) return;
       if (j && j.ok && (j.lines || []).length){
-        renderWhy(j.lines, { source: j.source === 'ai' ? 'ai' : 'rule', note: j.note || null });
+        var lines = (j.lines || []).slice();
+        /* AI 가 과거 비교를 빼먹으면 실측 계산 줄을 한 줄 덧붙인다(있으면 그대로) */
+        var past = pastCompareLine();
+        if (past && !lines.some(function(l){ return /과거|파동|고점 대비/.test(l); }) && lines.length < 4){
+          lines = lines.concat([past]);
+        }
+        renderWhy(lines, { source: j.source === 'ai' ? 'ai' : 'rule', note: j.note || null });
       } else {
         renderWhy(whyRuleLines(), { source: 'rule', note: (j && j.message) || 'AI 해석을 받지 못해 실측 값만으로 정리했습니다.' });
       }
@@ -1070,7 +1170,8 @@
       settle(state.risk.themeP, 3000),
       settle(state.risk.dartP, 4500),
       settle(state.risk.krxP, 3000),
-      settle(state.risk.p52, 900)
+      settle(state.risk.p52, 900),
+      settle(state.risk.pHist, 6000)
     ]).then(function(){
       if (my !== state.seq) return;
       whyAiRequest(my);
@@ -1118,7 +1219,7 @@
          '<span class="signote">' + esc(sig.note || '') + '</span></div>';
     if (p){
       h += '<div class="tbox">';
-      h += '<div class="tname">' + esc(p.name) + '</div>';
+      h += '<button class="tname tnamebtn" type="button" data-no="' + esc(p.no || '') + '" data-name="' + esc(p.name) + '">' + esc(p.name) + ' <span style="font-size:11px;color:var(--wine);font-weight:900">구성종목 ›</span></button>';
       var meta = [];
       if (p.rank) meta.push('네이버 테마 순위 ' + p.rank + '/' + (p.total || '—') + '위');
       if (p.changeRate != null) meta.push('테마 평균 ' + pct(p.changeRate));
@@ -1140,7 +1241,7 @@
       h += '</div>';
       if (themes.length > 1){
         h += '<div class="tchips">' + themes.slice(0, 6).map(function(t){
-          return '<span class="tchip ' + chipClass(t) + '"><b>' + esc(t.name) + '</b> ' + esc(fmtRank(t)) + '</span>';
+          return '<button class="tchip ' + chipClass(t) + '" type="button" data-no="' + esc(t.no || '') + '" data-name="' + esc(t.name) + '"><b>' + esc(t.name) + '</b> ' + esc(fmtRank(t)) + ' <span class="tgo">›</span></button>';
         }).join('') + '</div>';
       }
     } else {
@@ -1194,6 +1295,9 @@
 
     host.innerHTML = h;
     host.hidden = false;
+    Array.prototype.forEach.call(host.querySelectorAll('[data-no]'), function(b){
+      b.addEventListener('click', function(){ openTheme(b.getAttribute('data-no'), b.getAttribute('data-name')); });
+    });
   }
 
   function insightFallback(code, name, stockPct){
@@ -1354,6 +1458,262 @@
     });
   }
 
+  /* ============================================================
+     🗺️ 오늘의 테마맵(히트맵) · 테마 구성종목 시트 · 테마 이름 찾기
+     · 타일의 평균 등락률·거래대금은 서버(/api/stock-live?mode=theme_map)가
+       네이버 테마 상세 실측으로 계산해 준 값을 그대로 쓴다(값을 만들지 않는다).
+     · 타일을 누르면 그 테마 구성종목이 거래대금 주요순으로 펼쳐지고,
+       종목을 누르면 그 종목의 1초 체크로 넘어간다.
+     ============================================================ */
+  var mapLoaded = false, mapTiles = [], mapOpen = true;
+
+  function tileClass(p){
+    var x = n(p);
+    if (x == null) return 't-flat';
+    if (x >= 5) return 't-hot';
+    if (x >= 2) return 't-up';
+    if (x >= 0.3) return 't-up2';
+    if (x > -0.3) return 't-flat';
+    if (x > -2) return 't-dn2';
+    if (x > -5) return 't-dn';
+    return 't-cold';
+  }
+  function tileFlex(v){
+    var x = Math.abs(n(v) || 0);
+    var w = Math.round(Math.max(76, Math.min(150, 64 + Math.sqrt(x) * 0.6)));
+    return 'flex:1 1 ' + w + 'px';
+  }
+  function loadThemeMap(){
+    var host = $('themeMap'), head = $('tmapHead'), basis = $('tmapBasis');
+    if (!host || mapLoaded) return;
+    mapLoaded = true;
+    if (head) head.hidden = false;
+    if (basis) basis.textContent = '불러오는 중…';
+    host.hidden = false;
+    host.innerHTML = '<div class="tmapnote" style="padding:6px 0">테마맵을 읽는 중…</div>';
+    fetchJson(apiQuery() + '?mode=theme_map', 18000).then(function(j){
+      if (!j || !j.ok || !(j.tiles || []).length) throw new Error('theme_map_empty');
+      mapTiles = j.tiles || [];
+      renderThemeMap(j);
+    }).catch(function(){
+      /* 테마맵이 없어도 체커는 그대로 쓴다 — 조용히 숨긴다 */
+      mapLoaded = false;
+      host.hidden = true;
+      if (head) head.hidden = true;
+    });
+  }
+  function renderThemeMap(j){
+    var host = $('themeMap'), basis = $('tmapBasis'), head = $('tmapHead');
+    if (!host) return;
+    if (basis){
+      var d = String(j.tradeDate || '');
+      basis.textContent = (d ? '직전 거래일 ' + d.slice(5).replace('-', '/') + ' · ' : '') + '타일 크기=거래대금';
+    }
+    host.innerHTML = (j.tiles || []).map(function(t){
+      var p = n(t.avgPct);
+      var tip = (t.name || '') + ' · 평균 ' + pct(p) + ' · 대금 ' + eok(t.valueEok) + ' · 구성 ' + (t.stockCount || '—') + '종목';
+      return '<button class="tile ' + tileClass(p) + '" type="button" data-no="' + esc(t.no) + '" data-name="' + esc(t.name || t.label) + '" style="' + tileFlex(t.valueEok) + '" title="' + esc(tip) + '">' +
+        '<b>' + esc(t.label || t.name) + '</b><small>' + (p == null ? '—' : pct(p)) + '</small></button>';
+    }).join('');
+    Array.prototype.forEach.call(host.querySelectorAll('.tile'), function(btn){
+      btn.addEventListener('click', function(){
+        openTheme(btn.getAttribute('data-no'), btn.getAttribute('data-name'));
+      });
+    });
+    if (head) head.hidden = false;
+    host.hidden = !mapOpen;
+  }
+
+  /* ---------- 📋 테마 구성종목 시트 ---------- */
+  var sheetEl = null, sheetData = null, sheetSort = 'value';
+  function closeSheet(){
+    if (!sheetEl) return;
+    if (sheetEl.parentNode) sheetEl.parentNode.removeChild(sheetEl);
+    sheetEl = null; sheetData = null;
+    document.body.style.overflow = '';
+  }
+  function openSheet(title, metaHtml){
+    closeSheet();
+    var bg = document.createElement('div');
+    bg.className = 'sheet-bg';
+    bg.innerHTML = '<div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(title) + '">' +
+      '<div class="sh"><h3>' + esc(title) + '</h3><button class="sx" type="button" aria-label="닫기">✕</button></div>' +
+      '<div class="smeta" id="sheetMeta">' + (metaHtml || '') + '</div>' +
+      '<div class="sbtns" id="sheetBtns"></div>' +
+      '<div class="sb" id="sheetBody"></div>' +
+      '<div class="snote" id="sheetNote"></div></div>';
+    bg.addEventListener('click', function(ev){ if (ev.target === bg) closeSheet(); });
+    bg.querySelector('.sx').addEventListener('click', closeSheet);
+    document.body.appendChild(bg);
+    document.body.style.overflow = 'hidden';
+    sheetEl = bg;
+    return bg;
+  }
+  function openTheme(no, name){
+    if (!no){ toast('테마 번호를 확인하지 못했어요'); return; }
+    var bg = openSheet(name || '테마 구성종목', '구성종목을 읽는 중…');
+    var body = bg.querySelector('#sheetBody');
+    body.innerHTML = '<div class="iload">구성종목을 읽는 중…</div>';
+    fetchJson(apiQuery() + '?mode=theme_members&no=' + encodeURIComponent(no), 16000).then(function(j){
+      if (!j || !j.ok) throw new Error((j && (j.message || j.reason)) || 'theme_members_fail');
+      sheetData = j;
+      var t = j.theme || {};
+      var meta = bg.querySelector('#sheetMeta');
+      meta.innerHTML = '<b>' + esc(t.name || name || '') + '</b> · 구성 ' + (t.stockCount || (j.stocks || []).length) + '종목' +
+        (t.changeRate != null ? ' · 평균 <b class="' + dirClass(t.changeRate) + '">' + pct(t.changeRate) + '</b>' : '') +
+        (t.riseCount != null ? ' · 상승 ' + t.riseCount + ' / 하락 ' + t.fallCount : '');
+      renderThemeRows(bg);
+    }).catch(function(e){
+      body.innerHTML = '<div class="iload">구성종목을 받지 못했습니다' + (e && e.message ? '(' + esc(e.message) + ')' : '') + '.</div>';
+    });
+  }
+  function renderThemeRows(bg){
+    if (!sheetData) return;
+    var body = bg.querySelector('#sheetBody'), btns = bg.querySelector('#sheetBtns'), note = bg.querySelector('#sheetNote');
+    if (!body) return;
+    var rows = (sheetData.stocks || []).slice();
+    if (sheetSort === 'pct'){
+      rows.sort(function(a, b){ var x = n(b.changePct), y = n(a.changePct); return (x == null ? -999 : x) - (y == null ? -999 : y); });
+    } else {
+      rows.sort(function(a, b){ return (n(b.valueEok) || 0) - (n(a.valueEok) || 0); });
+    }
+    if (btns){
+      btns.innerHTML = '<button type="button" data-s="value" class="' + (sheetSort === 'value' ? 'on' : '') + '">거래대금순</button>' +
+        '<button type="button" data-s="pct" class="' + (sheetSort === 'pct' ? 'on' : '') + '">등락률순</button>';
+      Array.prototype.forEach.call(btns.querySelectorAll('button'), function(b){
+        b.addEventListener('click', function(){ sheetSort = b.getAttribute('data-s'); renderThemeRows(bg); });
+      });
+    }
+    body.innerHTML = rows.map(function(x){
+      return '<button class="srow" type="button" data-code="' + esc(x.code) + '" data-name="' + esc(x.name) + '">' +
+        '<span><span class="nm">' + esc(x.name) + '</span><span class="cd">' + esc(x.code) + (x.market ? ' · ' + esc(x.market) : '') + '</span></span>' +
+        '<span class="pc ' + dirClass(x.changePct) + '">' + pct(x.changePct) + '</span>' +
+        '<span class="vl">' + (x.valueEok == null ? '—' : eok(x.valueEok)) + '</span></button>';
+    }).join('') || '<div class="iload">구성종목이 없습니다.</div>';
+    Array.prototype.forEach.call(body.querySelectorAll('.srow'), function(b){
+      b.addEventListener('click', function(){
+        var code = b.getAttribute('data-code'), nm = b.getAttribute('data-name');
+        closeSheet();
+        if (!code) return;
+        $('q').value = nm || code;
+        checkStock(code);
+      });
+    });
+    if (note) note.innerHTML = '종목을 누르면 그 종목의 1초 체크로 이동합니다 · ' + esc(sheetData.basisLabel || '네이버 증권 테마 실측');
+  }
+  function openThemeChooser(q, themes){
+    var bg = openSheet('테마 「' + q + '」', '이름이 비슷한 테마 ' + themes.length + '개 — 하나를 고르세요.');
+    var body = bg.querySelector('#sheetBody');
+    body.innerHTML = themes.map(function(t){
+      return '<button class="srow" type="button" data-no="' + esc(t.no) + '" data-name="' + esc(t.name) + '">' +
+        '<span><span class="nm">' + esc(t.name) + '</span><span class="cd">구성 ' + (t.stockCount || '—') + '종목</span></span>' +
+        '<span class="pc" style="color:var(--wine)">열기 ›</span></button>';
+    }).join('');
+    Array.prototype.forEach.call(body.querySelectorAll('.srow'), function(b){
+      b.addEventListener('click', function(){ openTheme(b.getAttribute('data-no'), b.getAttribute('data-name')); });
+    });
+    var note = bg.querySelector('#sheetNote');
+    if (note) note.innerHTML = '테마 구성·평균 등락률은 네이버 증권 테마 실측입니다.';
+  }
+
+  /* 종목으로 못 찾았을 때 테마 이름으로 한 번 더 찾는다 */
+  function themeFallback(q){
+    return fetchJson(apiQuery() + '?mode=theme_search&q=' + encodeURIComponent(q), 11000).then(function(j){
+      var ts = (j && j.themes) || [];
+      if (!ts.length) return false;
+      if (ts.length === 1){
+        openTheme(ts[0].no, ts[0].name);
+        msg('테마 「' + ts[0].name + '」 구성종목을 열었어요.', 'ok');
+        return true;
+      }
+      openThemeChooser(q, ts);
+      msg('테마 「' + q + '」 후보 ' + ts.length + '개를 열었어요.', 'ok');
+      return true;
+    }).catch(function(){ return false; });
+  }
+
+  /* ============================================================
+     📰 [특징주] 기사 이력 + 🌊 최근 1년 과거 파동 (그때 대비 지금)
+     · 기사·일봉·거래대금은 서버가 실측으로 짝지어 내려준다. 없는 기사는 만들지 않는다.
+     ============================================================ */
+  function loadHistory(code, name, my){
+    state.hist = null;
+    var pv = state.last ? n(state.last.price) : null;
+    var url = apiQuery() + '?mode=history_catalyst&code=' + encodeURIComponent(code) +
+      '&name=' + encodeURIComponent(name || '') + (pv != null ? '&price=' + Math.round(pv) : '');
+    state.risk.pHist = fetchJson(url, 22000).catch(function(e){
+      return { ok: false, message: String((e && e.message) || e) };
+    });
+    state.risk.pHist.then(function(j){
+      if (my !== state.seq) return;
+      state.hist = j && j.ok ? j : null;
+      renderHistory(j || {});
+      stateRender();
+    });
+  }
+
+  function renderHistory(j){
+    var host = $('histCard');
+    if (!host) return;
+    var cat = j.catalyst || {};
+    var items = (cat.items || []).slice();
+    var waves = j.waves || [];
+    var h = '<div class="ihead"><span>📰 [특징주] 이력 · 과거 파동 비교</span><span class="ibasis">' +
+      (cat.source === 'google-news-rss' ? '구글뉴스 [특징주] 검색' : cat.source === 'naver-stock-news' ? '네이버 종목뉴스' : '기사 검색') +
+      (j.series && j.series.count ? ' · 일봉 ' + j.series.count + '일' : '') + '</span></div>';
+
+    h += '<div class="mt">① [특징주] 기사 — 그날 등락률·거래대금</div>';
+    if (items.length){
+      h += items.map(function(x){
+        var bits = [];
+        if (x.changePct != null) bits.push('그날 <b class="' + dirClass(x.changePct) + '">' + pct(x.changePct) + '</b>');
+        if (x.valueEok != null) bits.push('대금 ' + eok(x.valueEok));
+        if (x.nowVsClosePct != null) bits.push('지금 그날 종가 대비 <b class="' + dirClass(x.nowVsClosePct) + '">' + pct(x.nowVsClosePct) + '</b>');
+        if (x.fwd10Pct != null) bits.push('그 뒤 10거래일 ' + pct(x.fwd10Pct));
+        else if (x.fwd5Pct != null) bits.push('그 뒤 5거래일 ' + pct(x.fwd5Pct));
+        var t = esc(x.title || '');
+        var body = x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener" class="ct">' + t + '</a>' : '<span class="ct">' + t + '</span>';
+        var when = [x.date, x.press].filter(Boolean).join(' · ');
+        if (x.match && x.match !== 'same' && x.tradeDate) when += ' (그날 휴장 → ' + x.tradeDate + ' 기준)';
+        if (!x.tradeDate) when += ' · 1년 일봉 범위 밖(그날 시세 미확인)';
+        return '<div class="catrow">' + body +
+          '<span class="cm">' + esc(when) + (bits.length ? ' · ' + bits.join(' · ') : '') + '</span></div>';
+      }).join('');
+    } else {
+      h += '<div class="iload">' + esc(j.message || '이 종목 이름으로 [특징주] 기사를 찾지 못했습니다.') +
+        '<br><span style="font-size:10.3px">없는 기사를 지어내지 않습니다.</span></div>';
+    }
+
+    h += '<div class="mt">② 최근 1년 주요 상승 파동 <span>거래대금이 크게 터진 순</span></div>';
+    if (waves.length){
+      h += waves.map(function(w, i){
+        var inWave = items.filter(function(x){
+          var ymd = String(x.tradeDate || x.date || '').replace(/-/g, '');
+          return /^\d{8}$/.test(ymd) && w.startYmd && ymd >= w.startYmd && ymd <= w.peakYmd;
+        }).slice(0, 1);
+        return '<div class="wave">' +
+          '<div class="wt">🌊 파동 ' + (i + 1) + ' · ' + esc(w.startDate) + ' → ' + esc(w.peakDate) +
+          ' <span style="font-weight:800;color:var(--sub);font-size:11px">(' + (w.days || w.tradingDays) + '거래일)</span></div>' +
+          '<div class="wm">저점 ' + won(w.lowClose) + ' → 고점 ' + won(w.peakClose) +
+          ' <b class="up">' + pct(w.gainPct) + '</b> · 그 안 최대 일대금 <b>' + eok(w.peakValueEok) + '</b>' +
+          (w.peakValueDate ? '(' + esc(w.peakValueDate) + ')' : '') + '</div>' +
+          '<div class="wm">그 고점 대비 지금 <b class="' + dirClass(w.nowVsPeakPct) + '">' + pct(w.nowVsPeakPct) + '</b>' +
+          (inWave.length ? ' · 당시 [특징주] “' + esc(inWave[0].title) + '”' : '') + '</div></div>';
+      }).join('');
+    } else {
+      h += '<div class="iload">최근 1년 일봉에서 거래대금이 터진 뚜렷한 상승 파동이 잡히지 않았습니다.</div>';
+    }
+
+    var notes = [];
+    if (j.waveCriteria) notes.push(j.waveCriteria);
+    if (j.series && j.series.priceBasis) notes.push('종가·등락률 ' + j.series.priceBasis);
+    if (j.series && j.series.valueBasis) notes.push('거래대금 ' + j.series.valueBasis);
+    (j.notes || []).forEach(function(x){ notes.push(x); });
+    h += '<div class="rule">' + notes.map(function(x){ return esc(x); }).join(' · ') +
+      '<br>기사 날짜는 한국 시간 기준이며, 휴장일이면 가장 가까운 거래일과 짝지어 계산했습니다. 과거 사실 비교이며 투자 권유가 아닙니다.</div>';
+    host.innerHTML = h;
+  }
+
   /* ---------- 시작 ---------- */
   watchRender();
   $('go').addEventListener('click', function(){ checkStock($('q').value); });
@@ -1368,7 +1728,35 @@
     if (!pre && m2) pre = decodeURIComponent(m2[1]);
   } catch(e){ pre = ''; }
   loadScore().then(loadSnapshot).then(function(){ chips(); }).catch(function(){});
+  /* 🗺️ 테마맵 — 처음 한 번만 읽고, 접기/펼치기는 기억한다 */
+  try { mapOpen = localStorage.getItem('foxsignal_checker_tmap') !== 'closed'; } catch(e){ mapOpen = true; }
+  var tmapBtn = $('tmapToggle');
+  if (tmapBtn){
+    tmapBtn.textContent = mapOpen ? '접기' : '펼치기';
+    tmapBtn.addEventListener('click', function(){
+      mapOpen = !mapOpen;
+      var host = $('themeMap');
+      if (host) host.hidden = !mapOpen;
+      tmapBtn.textContent = mapOpen ? '접기' : '펼치기';
+      try { localStorage.setItem('foxsignal_checker_tmap', mapOpen ? 'open' : 'closed'); } catch(e){}
+    });
+  }
+  loadThemeMap();
+  document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') closeSheet(); });
   if (pre){ $('q').value = pre; checkStock(pre); }
+
+  /* 📲 홈 화면 설치용 서비스워커 (https 에서만)
+     · 이 체커 전용 SW 는 독립 저장소(foxsignal-checker)에만 있다. 관제탑·동적 앱에 복사될 때는
+       manifest 가 manifest-checker.json 이므로 등록하지 않는다(다른 사이트 SW 를 덮지 않게). */
+  try {
+    var manEl = document.querySelector('link[rel="manifest"]');
+    var ownSw = !!(manEl && /(^|\/)manifest\.json$/.test(manEl.getAttribute('href') || ''));
+    if (ownSw && 'serviceWorker' in navigator && location.protocol === 'https:'){
+      window.addEventListener('load', function(){
+        navigator.serviceWorker.register('./sw.js').catch(function(){});
+      });
+    }
+  } catch(e){}
 })();
 </script>
 </body>
