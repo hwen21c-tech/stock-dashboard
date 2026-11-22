@@ -679,11 +679,13 @@ body.focus #vignette{opacity:1}
 }
 
 
-/* ================= 12. AI 직원 5명 — 도크 · 카드 · 대화 ================= */
+/* ================= 12. AI 직원 7명 — 도크 · 카드 · 대화 ================= */
+/* 도크 바닥 여백(--dockBot)과 도크 실제 높이(--aiDockH, JS가 측정)로 카드 위치를 잡는다(7칩 2줄 래핑 대응) */
+:root{--dockBot:116px; --aiDockH:38px}
 /* 하단 AI 직원 도크 (구역 버튼 위) */
 #aiDock{
   position:fixed; z-index:21; left:50%; transform:translateX(-50%);
-  bottom:calc(116px + env(safe-area-inset-bottom));
+  bottom:calc(var(--dockBot) + env(safe-area-inset-bottom));
   display:flex; align-items:center; gap:3px; padding:4px 5px; max-width:calc(100vw - 12px);
   border-radius:999px; overflow-x:auto; scrollbar-width:none;
   background:linear-gradient(180deg,rgba(17,27,44,.93),rgba(9,15,26,.97));
@@ -711,7 +713,7 @@ body.focus #vignette{opacity:1}
 /* 카드 패널 — 데스크톱 우측 */
 #aiPanel{
   position:fixed; z-index:33; right:10px; top:52px; width:352px;
-  bottom:calc(162px + env(safe-area-inset-bottom));
+  bottom:calc(var(--dockBot) + var(--aiDockH) + 10px + env(safe-area-inset-bottom));
   display:flex; flex-direction:column; overflow:hidden;
   border-radius:var(--r); border:1px solid var(--line2);
   background:linear-gradient(180deg,rgba(17,27,44,.97),rgba(8,13,22,.985));
@@ -810,7 +812,7 @@ body.aiopen #side{opacity:0; pointer-events:none; transform:translateX(14px); tr
 @media (max-width:860px){
   #aiPanel{
     left:8px; right:8px; width:auto; top:auto;
-    bottom:calc(146px + env(safe-area-inset-bottom));
+    bottom:calc(var(--dockBot) + var(--aiDockH) + 8px + env(safe-area-inset-bottom));
     max-height:min(66vh,600px); border-radius:16px;
     transform:translateY(calc(100% + 24px));
   }
@@ -823,7 +825,11 @@ body.aiopen #side{opacity:0; pointer-events:none; transform:translateX(14px); tr
   .ai-body{padding:9px 10px 10px}
 }
 @media (max-width:720px){
-  #aiDock{bottom:calc(106px + env(safe-area-inset-bottom)); gap:2px; padding:3px 4px}
+  :root{--dockBot:106px}
+  #aiDock{
+    bottom:calc(var(--dockBot) + env(safe-area-inset-bottom)); gap:2px; padding:3px 4px;
+    flex-wrap:wrap; justify-content:center; border-radius:16px; overflow:visible;
+  }
   #aiDock .aiDock-t{display:none}
   .aichip{height:28px; padding:0 8px; font-size:10px; gap:3px}
   .aichip i{font-size:11px}
@@ -838,13 +844,27 @@ body.aiopen #side{opacity:0; pointer-events:none; transform:translateX(14px); tr
   .aichip i{font-size:10.5px}
 }
 @media (max-height:560px){
-  #aiDock{bottom:calc(114px + env(safe-area-inset-bottom))}
-  #aiPanel{bottom:calc(140px + env(safe-area-inset-bottom)); max-height:min(72vh,440px)}
+  :root{--dockBot:114px}
+  #aiPanel{max-height:min(72vh,440px)}
 }
 
 /* 이름표 · 대화 블록 보조 */
 .av-label.ai{box-shadow:0 6px 18px rgba(0,0,0,.42); border-color:rgba(255,255,255,.24)}
 .av-label.ai em{color:#9fe8d8}
+.ai-news{display:flex; flex-direction:column; gap:3px; margin-top:5px}
+.ai-nw{display:flex; align-items:baseline; gap:5px; font-size:10.5px; line-height:1.45; min-width:0}
+.ai-nw .tm{flex:0 0 auto; font-family:var(--mono); font-size:9px; color:#7b8b9e}
+.ai-nw a, .ai-nw > span{color:#dbe7f2; text-decoration:none; min-width:0; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; word-break:keep-all; overflow-wrap:anywhere}
+.ai-nw a:hover{color:#b6ffee; text-decoration:underline}
+.ai-nw .imp{flex:0 0 auto; font-style:normal; font-size:8.5px; font-weight:800; color:#ffd9a0; background:rgba(255,203,107,.14); padding:0 4px; border-radius:5px}
+.ai-nw em{flex:0 0 auto; font-style:normal; font-size:8.5px; color:#9fe8d8; background:rgba(79,227,193,.12); padding:0 4px; border-radius:5px; max-width:84px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis}
+.ai-papers{display:flex; flex-direction:column; gap:5px; margin-top:5px}
+.ai-pp{display:flex; flex-wrap:wrap; align-items:baseline; gap:4px; padding:5px 7px; border-radius:8px; background:rgba(255,255,255,.04); min-width:0}
+.ai-pp b{flex:1 1 100%; font-size:10.5px; font-weight:700; color:#eaf4ff; line-height:1.4; word-break:keep-all; overflow-wrap:anywhere}
+.ai-pp .meta{font-size:9px; color:#8fa3b8; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.ai-pp .ln{flex:1 1 100%; font-size:10px; color:#cfdcea; line-height:1.45}
+.ai-pp a{font-size:9px; font-weight:800; color:#9be36b; text-decoration:none; margin-left:auto}
+.ai-pp a:hover{text-decoration:underline}
 .ai-line{margin:4px 0; font-size:10.5px; line-height:1.45; overflow-wrap:anywhere}
 .ai-line b{display:block; font-size:9.5px; font-weight:700; color:#8fa3b8; margin-bottom:1px}
 .ai-line span{color:#dbe7f2}
@@ -977,7 +997,7 @@ body.aiopen #side{opacity:0; pointer-events:none; transform:translateX(14px); tr
   </div>
 </div>
 
-<!-- ===== AI 직원 5명 — 하단 도크 + 카드 ===== -->
+<!-- ===== AI 직원 7명 — 하단 도크 + 카드 ===== -->
 <div id="aiDock" role="toolbar" aria-label="AI 직원 선택">
   <span class="aiDock-t"><em>●</em>AI 직원</span>
 </div>
@@ -1008,6 +1028,7 @@ body.aiopen #side{opacity:0; pointer-events:none; transform:translateX(14px); tr
     </form>
   </div>
 </section>
+
 
 <div id="boot">
   <div class="boot-in">
@@ -6771,7 +6792,7 @@ if (document.readyState === 'loading') {
 </script>
 <script>
 /* ============================================================
-   AI 직원 5명 — 전용 자리 · 역할 이름표 · 실시간 질문/응답 카드
+   AI 직원 7명 — 전용 자리 · 역할 이름표 · 실시간 질문/응답 카드
    기존 1층(라운지·트레이딩·스튜디오) · 2층(전략실) 위에 얹는 4번째 모듈.
    · 3D  : 직원별 책상·모니터·명패 + 앉은 아바타 + 머리 위 역할 이름표, 클릭 시 카메라 줌인
    · UI  : 하단 AI 직원 도크 + 카드(데스크톱 우측 / 모바일 하단 시트, 닫기 명확)
@@ -6786,6 +6807,7 @@ if (document.readyState === 'loading') {
   var CHECKER = 'https://hwen21c-tech.github.io/foxsignal-checker/';
   var TG = 'https://t.me/fox_signal_stock';
   var PDATA = 'https://hwen21c-tech.github.io/stock-dashboard/data/';
+  var BIBLE = 'https://hwen21c-tech.github.io/stock-dashboard/battery-bible.html';
   var FY2 = 3.90;                       /* 2층 바닥면(s3d2 와 동일) */
   var CAM_A = 3.80, CAM_B = 4.00, CAM_Y = 2.02, CAM_Y2 = 2.05;
 
@@ -6836,6 +6858,25 @@ if (document.readyState === 'loading') {
       quick: ['🍯 오늘 새 체험단 있어?', '📣 텔레그램 채널 알려줘'],
       src: [['revu-campaigns.json', PDATA + 'revu-campaigns.json']],
       links: [['📣 텔레그램 채널', TG], ['🍯 레뷰 캠페인', 'https://www.revu.net/']]
+    },
+    {
+      k: 'news', emoji: '📰', name: '뉴스 AI', role: '뉴스·매크로 데스크', where: '1층 · 뉴스 데스크',
+      accent: '#ffc46b', hex: 0xffc46b, shirt: 0x6d5c3e, pants: 0x2b3442, hair: 0x2b2119, skin: 0xf0cba6,
+      pos: [2.05, 4.45], face: [0, 1], lv: 0, side: 1, deskW: 2.05,
+      quick: ['📰 오늘 핵심 뉴스 3개', '🇺🇸 미장·매크로 요약'],
+      src: [['/api/tabs-live?tab=news', API + '/api/tabs-live?tab=news'],
+            ['/api/stock-live (매크로)', API + '/api/stock-live'],
+            ['content_auto_latest.json', API + '/data/content_auto_latest.json']],
+      links: [['📰 네이버 증시 뉴스', 'https://finance.naver.com/news/'], ['🏛 관제탑 뉴스 탭', API + '/']]
+    },
+    {
+      k: 'battery', emoji: '🔋', name: '이차전지 AI', role: '배터리 리서치', where: '1층 · 배터리 리서치 데스크',
+      accent: '#9be36b', hex: 0x9be36b, shirt: 0x4f6a44, pants: 0x2f3947, hair: 0x241c16, skin: 0xf5d6b6,
+      pos: [-1.55, 4.70], face: [0, 1], lv: 0, side: 1, deskW: 2.05,
+      quick: ['📈 dQ/dV 피크 해석·열화 원인', '📄 실리콘 음극 최신 논문 분석'],
+      src: [['OpenAlex 논문', 'https://api.openalex.org/works?search=lithium-ion+battery'],
+            ['CrossRef 논문', 'https://api.crossref.org/works?query=lithium+ion+battery']],
+      links: [['🔋 이차전지 실무 대백과', BIBLE]]
     }
   ];
 
@@ -6890,6 +6931,23 @@ if (document.readyState === 'loading') {
       if (to) clearTimeout(to);
       throw e;
     });
+  }
+  function postJSON(url, body, ms) {
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    var to = ctl ? setTimeout(function () { try { ctl.abort(); } catch (e) { } }, ms || 45000) : 0;
+    return fetch(url, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body), cache: 'no-store', signal: ctl ? ctl.signal : undefined
+    }).then(function (r) {
+      if (to) clearTimeout(to);
+      return r.json().then(function (j) {
+        if (!r.ok || j.ok === false) {
+          var e = new Error((j && (j.message || j.reason)) || ('HTTP ' + r.status));
+          e.body = j; throw e;
+        }
+        return j;
+      });
+    }).catch(function (e) { if (to) clearTimeout(to); throw e; });
   }
   function byKey(k) { for (var i = 0; i < STAFF.length; i++) if (STAFF[i].k === k) return STAFF[i]; return null; }
 
@@ -7059,7 +7117,9 @@ if (document.readyState === 'loading') {
       content: ['콘텐츠 PD', ['블로그 초안', '쇼츠 6컷 대본', '주말 뉴스 정리']],
       checker: ['1초 체커', ['종목명·코드 조회', '거래대금 · 등락률', '테마 소속 확인']],
       deals: ['특가 레이더', ['여행 · 키즈 특가', '동일모델 핫템', '최저가 비교']],
-      revu: ['생활 비서', ['체험단 신규 알림', '마감 임박 캠페인', '텔레그램 전송']]
+      revu: ['생활 비서', ['체험단 신규 알림', '마감 임박 캠페인', '텔레그램 전송']],
+      news: ['뉴스 데스크', ['증시 속보 · 매크로', '나스닥100 · SOX 선물', '원/달러 · WTI']],
+      battery: ['배터리 리서치', ['dQ/dV · SEI · 열화', 'OpenAlex 최신 논문', '대백과 실무 기준']]
     };
     STAFF.forEach(function (st) {
       var p = pre[st.k] || [st.role, []];
@@ -7260,6 +7320,82 @@ if (document.readyState === 'loading') {
     };
   }
 
+  /* -------- 📰 뉴스 데스크: tabs-live(news) + stock-live(매크로) -------- */
+  function shapeNews(live, tabs) {
+    var rows = [], ctx = [], news = [];
+    var idx = (live.indices || []).slice(0, 2);
+    idx.forEach(function (i) {
+      rows.push({ label: i.name, value: nf(i.price, 2), pct: i.changePct });
+      ctx.push(i.name + ' ' + nf(i.price, 2) + ' (' + spct(i.changePct) + ')');
+    });
+    ((live.futures || []).slice(0, 2)).forEach(function (f) {
+      rows.push({ label: f.name || '해외선물', value: nf(f.price, 2), pct: f.changePct });
+      ctx.push((f.name || '해외선물') + ' ' + nf(f.price, 2) + ' (' + spct(f.changePct) + ') · ' + (f.asOfKst || ''));
+    });
+    var mac = live.macro || {};
+    ['SOX', 'WTI'].forEach(function (k) {
+      var m = mac[k]; if (!m || !m.price) return;
+      rows.push({ label: m.name || k, value: nf(m.price, 2), pct: m.changePct });
+      ctx.push((m.name || k) + ' ' + nf(m.price, 2) + ' (' + spct(m.changePct) + ') · ' + (m.asOfKst || ''));
+    });
+    if (live.fx && live.fx.price) {
+      rows.push({ label: '원/달러', value: nf(live.fx.price, 1) + '원', pct: live.fx.changePct });
+      ctx.push('원/달러 ' + nf(live.fx.price, 1) + ' (' + spct(live.fx.changePct) + ')');
+    }
+    var ns = (tabs.news || []);
+    ns.slice(0, 4).forEach(function (n) {
+      news.push({
+        title: n.title, url: n.url || n.link || '', time: n.time || tm(n.datetime),
+        impact: n.impactLevel || '', themes: n.matchedThemes || []
+      });
+    });
+    ns.slice(0, 10).forEach(function (n, i) {
+      var ben = (n.beneficiaryStocks || []).map(function (b) {
+        return b.name + (b.live && b.live.changePct != null ? ' ' + spct(b.live.changePct) : '');
+      }).slice(0, 3).join(', ');
+      var tags = [];
+      if (n.impactLevel && n.impactLevel !== '참고') tags.push(n.impactLevel + (n.impactDirection ? '·' + n.impactDirection : ''));
+      if (n.matchedThemes && n.matchedThemes.length) tags.push('테마: ' + n.matchedThemes.join(', '));
+      ctx.push('[' + (i + 1) + '] ' + (n.time || tm(n.datetime) || '') + ' ' + n.title
+        + (tags.length ? ' (' + tags.join(' / ') + ')' : '')
+        + (ben ? ' / 수혜: ' + ben : '')
+        + (n.summary ? '\n   ' + cut(n.summary, 180) : ''));
+    });
+    var top = (tabs.searchTop || []).slice(0, 6);
+    if (top.length) {
+      ctx.push('검색 상위: ' + top.map(function (x) { return x.rank + '. ' + x.name + ' ' + spct(x.changePct); }).join(', '));
+    }
+    var stamp = (tabs.generatedAtKst || tm(live.generatedAtKst) || '') + ' 갱신';
+    var head = ns[0] ? cut(ns[0].title, 60) : '속보 없음';
+    return {
+      rows: rows, news: news, stamp: stamp,
+      note: (tabs.sessionLabel || '') + (top.length ? ' · 검색상위 ' + top.slice(0, 3).map(function (x) { return x.name; }).join('·') : ''),
+      ctx: '[실측 뉴스·매크로 자료 · ' + stamp + ' · ' + (tabs.sessionLabel || '') + ']\n' + ctx.join('\n'),
+      screen: ['뉴스 데스크', [head, (idx[0] ? idx[0].name + ' ' + spct(idx[0].changePct) : ''), (idx[1] ? idx[1].name + ' ' + spct(idx[1].changePct) : '')]]
+    };
+  }
+
+  /* -------- 🔋 배터리 리서치: OpenAlex/CrossRef 실제 논문 메타데이터 -------- */
+  function shapeBattery(j) {
+    var rows = [], ctx = [], papers = [];
+    var ps = (j && j.papers) || [];
+    rows.push({ label: '검색된 논문', value: ps.length + '건', pct: '', cls: 'fl' });
+    rows.push({ label: '검색어', value: cut(j.queryEn || '—', 24), pct: '', cls: 'fl' });
+    ps.forEach(function (p, i) {
+      papers.push({ n: i + 1, title: p.title, year: p.year, journal: p.journal, doi: p.doi, cited: p.cited });
+      ctx.push('[' + (i + 1) + '] ' + p.title + ' / ' + (p.journal || '저널 미상') + ' / ' + (p.year || '연도 미상')
+        + (p.cited ? ' / 피인용 ' + p.cited : '') + (p.doi ? ' / ' + p.doi : '')
+        + (p.abstract ? '\n   초록: ' + cut(p.abstract, 260) : ''));
+    });
+    return {
+      rows: rows, papers: papers, stamp: hhmm(new Date().toISOString()) + ' 조회',
+      note: (j.source === 'crossref' ? 'CrossRef' : 'OpenAlex') + ' · 최신순 ' + ps.length + '건 · 질문하면 대백과와 함께 해석',
+      ctx: '[실제 논문 메타데이터 · ' + (j.source || '') + ']\n' + ctx.join('\n'),
+      screen: ['배터리 리서치', ps.slice(0, 3).map(function (p) { return cut(p.title, 30); })],
+      empty: !ps.length
+    };
+  }
+
   var LOADERS = {
     market: function () {
       return Promise.all([
@@ -7286,6 +7422,18 @@ if (document.readyState === 'loading') {
       return getJSON(PDATA + 'revu-campaigns.json').catch(function () {
         return getJSON(API + '/data/revu-campaigns.json');
       }).then(shapeRevu);
+    },
+    news: function () {
+      return Promise.all([
+        getJSON(API + '/api/stock-live'),
+        getJSON(API + '/api/tabs-live?tab=news')
+      ]).then(function (a) { return shapeNews(a[0], a[1]); });
+    },
+    battery: function () {
+      // 카드 첫 화면은 논문 목록만(lite) — Gemini 를 부르지 않아 크레딧을 쓰지 않는다.
+      return postJSON(API + '/api/content-ai',
+        { action: 'battery_research', q: 'lithium-ion battery electrode degradation silicon anode', lite: true }, 26000)
+        .then(shapeBattery);
     }
   };
 
@@ -7326,6 +7474,24 @@ if (document.readyState === 'loading') {
             ? t.up.map(function (s) { return esc(s.name) + ' <em style="font-style:normal;color:' + (Number(s.changePct) > 0 ? '#4fe3a6' : '#8fa3b8') + '">' + spct(s.changePct) + '</em>'; }).join(' · ')
             : '상승 종목 없음')
           + '</span></div>';
+      }).join('') + '</div>';
+    }
+    if (d.news && d.news.length) {
+      h += '<div class="ai-news">' + d.news.map(function (n) {
+        var imp = (n.impact && n.impact !== '참고') ? '<i class="imp">' + esc(n.impact) + '</i>' : '';
+        var th = (n.themes && n.themes.length) ? '<em>' + esc(n.themes[0]) + '</em>' : '';
+        var tt = esc(cut(n.title, 74));
+        return '<div class="ai-nw"><span class="tm">' + esc(n.time || '') + '</span>'
+          + (n.url ? '<a href="' + esc(n.url) + '" target="_blank" rel="noopener">' + tt + '</a>' : '<span>' + tt + '</span>')
+          + imp + th + '</div>';
+      }).join('') + '</div>';
+    }
+    if (d.papers && d.papers.length) {
+      h += '<div class="ai-papers">' + d.papers.map(function (p) {
+        return '<div class="ai-pp"><b>' + p.n + '. ' + esc(cut(p.title, 90)) + '</b>'
+          + '<span class="meta">' + esc([p.journal, p.year, p.cited ? '피인용 ' + p.cited : ''].filter(Boolean).join(' · ')) + '</span>'
+          + (p.doi ? '<a href="' + esc(p.doi) + '" target="_blank" rel="noopener">DOI</a>' : '')
+          + '</div>';
       }).join('') + '</div>';
     }
     if (d.note) h += '<p class="ai-note">' + esc(d.note) + '</p>';
@@ -7413,9 +7579,13 @@ if (document.readyState === 'loading') {
   }
 
   function greet(st) {
-    addMsg('bot', '<span class="hl">' + esc(st.emoji + ' ' + st.name + ' · ' + st.role) + '</span>'
-      + '아래 <b>오늘 실측</b>은 ' + esc(st.where) + '에서 방금 받아온 실제 값입니다. '
-      + '빠른 질문을 누르거나 직접 물어보세요. 답은 실측 자료 안에서만 만들고, 자료에 없는 숫자는 쓰지 않습니다.', '', true);
+    var tail = st.k === 'battery'
+      ? '아래 <b>최신 논문</b>은 OpenAlex에서 방금 받아온 실제 논문입니다(DOI 그대로 연결). '
+        + '질문하면 그 논문들과 「이차전지 실무 대백과」를 함께 놓고 핵심 원리·실무 해석으로 정리합니다. '
+        + '논문·DOI·수치는 실제로 받아온 것만 쓰고, 없으면 없다고 적습니다.'
+      : '아래 <b>오늘 실측</b>은 ' + esc(st.where) + '에서 방금 받아온 실제 값입니다. '
+        + '빠른 질문을 누르거나 직접 물어보세요. 답은 실측 자료 안에서만 만들고, 자료에 없는 숫자는 쓰지 않습니다.';
+    addMsg('bot', '<span class="hl">' + esc(st.emoji + ' ' + st.name + ' · ' + st.role) + '</span>' + tail, '', true);
   }
 
 
@@ -7479,6 +7649,102 @@ if (document.readyState === 'loading') {
     return h;
   }
 
+  /* -------- 🔋 이차전지: 대백과 발췌 + 실제 논문 + Gemini 해석 -------- */
+  var bibleP = null;
+  function parseBible(text) {
+    var out = [], parts = String(text || '').split("{id:'");
+    for (var i = 1; i < parts.length; i++) {
+      var ch = parts[i], m1 = ch.match(/^[a-z0-9_]+',\s*t:'([^']*)'/);
+      if (!m1) continue;
+      var mt = ch.match(/tag:'([^']*)'/);
+      var mk = ch.match(/k:\[([\s\S]*?)\]/);
+      var mw = ch.match(/why:`([\s\S]*?)`/);
+      var keys = [];
+      if (mk) {
+        var kk = mk[1].match(/'([^']*)'/g) || [];
+        keys = kk.map(function (x) { return x.replace(/'/g, '').toLowerCase(); });
+      }
+      out.push({
+        t: m1[1], tag: mt ? mt[1] : '', k: keys,
+        why: mw ? mw[1].replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : ''
+      });
+    }
+    return out;
+  }
+  function loadBible() {
+    if (bibleP) return bibleP;
+    bibleP = fetch(BIBLE, { cache: 'force-cache' }).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    }).then(function (t) {
+      var e = parseBible(t);
+      return e.length ? e : null;
+    }).catch(function () { return null; });
+    return bibleP;
+  }
+  function bibleMatch(entries, q) {
+    if (!entries || !entries.length) return { text: '', titles: [] };
+    var low = String(q || '').toLowerCase();
+    var scored = entries.map(function (e) {
+      var sc = 0;
+      (e.k || []).forEach(function (k) { if (k.length > 1 && low.indexOf(k) >= 0) sc += k.length > 3 ? 3 : 2; });
+      if (e.t && low.indexOf(String(e.t).slice(0, 4).toLowerCase()) >= 0) sc += 2;
+      return { e: e, sc: sc };
+    }).filter(function (x) { return x.sc > 0; }).sort(function (a, b) { return b.sc - a.sc; }).slice(0, 2);
+    if (!scored.length) return { text: '', titles: [] };
+    var text = scored.map(function (x) {
+      return '· ' + x.e.t + ' — ' + x.e.tag + '\n' + cut(x.e.why, 460);
+    }).join('\n');
+    return { text: text, titles: scored.map(function (x) { return x.e.t; }) };
+  }
+
+  function batteryAnswer(j, bibleTitles) {
+    var a = (j && j.answer) || null, papers = (j && j.papers) || [];
+    var h = '';
+    if (a && a.headline) h += '<span class="hl">' + esc(a.headline) + '</span>';
+    if (a && a.principle && a.principle.length) {
+      h += '<div class="ai-sec-t">핵심 원리</div><ul>' + a.principle.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+    }
+    if (a && a.practice && a.practice.length) {
+      h += '<div class="ai-sec-t">실무 해석</div><ul>' + a.practice.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+    }
+    if (papers.length) {
+      var nmap = {};
+      ((a && a.paperNotes) || []).forEach(function (n) { if (n && n.doi) nmap[n.doi.toLowerCase()] = n.line; });
+      h += '<div class="ai-sec-t">논문 ' + papers.length + '건</div><div class="ai-papers">' + papers.map(function (p, i) {
+        var line = p.doi ? nmap[p.doi.toLowerCase()] : '';
+        return '<div class="ai-pp"><b>' + (i + 1) + '. ' + esc(cut(p.title, 90)) + '</b>'
+          + '<span class="meta">' + esc([p.journal, p.year, p.cited ? '피인용 ' + p.cited : ''].filter(Boolean).join(' · ')) + '</span>'
+          + (line ? '<span class="ln">' + esc(line) + '</span>' : '')
+          + (p.doi ? '<a href="' + esc(p.doi) + '" target="_blank" rel="noopener">DOI</a>' : '')
+          + '</div>';
+      }).join('') + '</div>';
+    }
+    if (a && a.cautions && a.cautions.length) {
+      h += '<div class="ai-sec-t">확인할 것</div><ul>' + a.cautions.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+    }
+    if (bibleTitles && bibleTitles.length) {
+      h += '<p class="ai-note">대백과 연계: ' + esc(bibleTitles.join(' · ')) + '</p>';
+    }
+    if (!h) throw new Error('empty_answer');
+    var via = (j.source === 'crossref' ? 'CrossRef' : 'OpenAlex') + ' 논문 ' + papers.length + '건';
+    h += '<span class="tag">' + esc(via)
+      + (a ? ' · Gemini(' + esc((j && j.model) || '') + ')' : ' · AI 해석 없음')
+      + (j.ai && j.ai.note ? ' · ' + esc(j.ai.note) : '') + '</span>';
+    return h;
+  }
+
+  function askBattery(st, q) {
+    return loadBible().then(function (entries) {
+      var m = bibleMatch(entries, q);
+      R[st.k].bibleTitles = m.titles;
+      return postJSON(API + '/api/content-ai',
+        { action: 'battery_research', q: q, notes: m.text }, 75000);
+    }).then(function (j) {
+      return batteryAnswer(j, R[st.k].bibleTitles);
+    });
+  }
+
   function fallbackAnswer(st, why) {
     var d = R[st.k] && R[st.k].data;
     if (!d) {
@@ -7509,6 +7775,14 @@ if (document.readyState === 'loading') {
     setBusy(st, true);
     addMsg('me', esc(q));
     var box2 = addMsg('bot', '', 'pending');
+    if (st.k === 'battery') {
+      askBattery(st, q).then(function (html) {
+        paintMsg(box2, html, 'ok');
+      }).catch(function (e) {
+        paintMsg(box2, fallbackAnswer(st, e), 'fallback');
+      }).then(function () { setBusy(st, false); });
+      return;
+    }
     loadData(st).then(function (d) {
       if (st.k === 'market' && d.facts && isBriefQ(q)) {
         return postAI({ mode: 'live_briefing', facts: d.facts }).then(briefAnswer);
@@ -7608,6 +7882,19 @@ if (document.readyState === 'loading') {
         host.appendChild(b);
       });
     }
+    // 도크 실제 높이(7칩이 좁은 화면에서 2줄로 래핑될 때)를 재서 카드 하단 여백에 반영한다
+    if (!window.__aiDockH) {
+      window.__aiDockH = true;
+      var syncDockH = function () {
+        var d = el('#aiDock'); if (!d) return;
+        var hh2 = Math.round(d.getBoundingClientRect().height);
+        if (hh2 > 0) document.documentElement.style.setProperty('--aiDockH', hh2 + 'px');
+      };
+      syncDockH();
+      window.addEventListener('resize', syncDockH);
+      if (window.ResizeObserver) { try { new ResizeObserver(syncDockH).observe(el('#aiDock')); } catch (e) { } }
+      setTimeout(syncDockH, 500);
+    }
     var c = el('#aiClose'); if (c && !c.getAttribute('data-bound')) { c.setAttribute('data-bound', '1'); c.addEventListener('click', close); }
     var bk = el('#aiBack'); if (bk && !bk.getAttribute('data-bound')) { bk.setAttribute('data-bound', '1'); bk.addEventListener('click', close); }
     var rf = el('#aiRefresh');
@@ -7637,7 +7924,7 @@ if (document.readyState === 'loading') {
     if (helpUl && !helpUl.getAttribute('data-ai')) {
       helpUl.setAttribute('data-ai', '1');
       var li = document.createElement('li');
-      li.innerHTML = '<b>AI 직원 5명</b> — 화면 아래 <b>AI 직원</b> 칩(시황 · 블로그/쇼츠 · 1초 체커 · 특가 · 체험단)을 누르면 그 자리로 카메라가 이동하고, <b>오늘 실측</b> 요약과 질문창이 열립니다. 3D 캐릭터를 직접 눌러도 됩니다.';
+      li.innerHTML = '<b>AI 직원 7명</b> — 화면 아래 <b>AI 직원</b> 칩(시황 · 블로그/쇼츠 · 1초 체커 · 특가 · 체험단 · 뉴스 · 이차전지)을 누르면 그 자리로 카메라가 이동하고, <b>오늘 실측</b> 요약과 질문창이 열립니다. 이차전지 데스크는 OpenAlex에서 실제 논문을 찾아 대백과와 함께 분석합니다. 3D 캐릭터를 직접 눌러도 됩니다.';
       helpUl.appendChild(li);
     }
     if (!window.__aiEsc) {
@@ -7674,7 +7961,7 @@ if (document.readyState === 'loading') {
     var h = el('#hint');
     if (h && !h.getAttribute('data-ai')) {
       h.setAttribute('data-ai', '1');
-      h.textContent = '아래 AI 직원 칩으로 실시간 시황·초안·특가·체험단 질문 · 구역 버튼으로 이동 · 캐릭터를 누르면 카드';
+      h.textContent = '아래 AI 직원 칩으로 실시간 시황·뉴스·특가·논문 질문 · 구역 버튼으로 이동 · 캐릭터를 누르면 카드';
     }
   };
   window.__extTick = function (dt, now) {

@@ -1036,7 +1036,9 @@
     if (row && row.tradeStop) tail.push('거래정지 종목');
     else if (row && row.alertLabel) tail.push('KRX ' + row.alertLabel + ' 지정');
     if (tail.length) lines.push(tail.join(' · '));
-    return lines.slice(0, 3);
+    var past = pastCompareLine();
+    if (past) lines.push(past);
+    return lines.slice(0, 4);
   }
   function factsForAi(){
     var d = state.last || {}, t = state.themeData || null;
