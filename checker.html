@@ -924,7 +924,8 @@
         return { name: x.name, code: x.code, valueEok: x.valueEok, changePct: x.changePct, from: '성적표' };
       });
     } else if (state.snap && (state.snap.stocks || []).length){
-      list = state.snap.stocks.slice()
+      /* 성적표 leaders가 비었을 때의 대체 경로 — 이때도 '오른 종목'만 올린다(하락 종목은 테마주도주가 아니다) */
+      list = state.snap.stocks.filter(function(s){ return (n(s.changePct) || 0) > 0; }).slice()
         .sort(function(a, b){ return (n(b.valueEok) || 0) - (n(a.valueEok) || 0); })
         .slice(0, 4)
         .map(function(s){ return { name: s.name, code: s.code, valueEok: s.valueEok, changePct: s.changePct, from: '스냅샷' }; });
