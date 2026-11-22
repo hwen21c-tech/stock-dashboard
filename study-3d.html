@@ -1569,17 +1569,33 @@ function buildRoom() {
   return room;
 }
 
-function addSeat(id, x, z, rotY, type, label) {
-  var s = { id: id, pos: new THREE.Vector3(x, 0, z), rotY: rotY, type: type, label: label, taken: null };
+function addSeat(id, x, z, rotY, type, label, y, group) {
+  var fy = Number(y) || 0;
+  var s = { id: id, pos: new THREE.Vector3(x, fy, z), rotY: rotY, type: type, label: label, taken: null,
+    floor: fy > 5 ? 2 : (fy > 0.5 ? 1 : 0) };
   seats.push(s);
-  // 클릭 영역
+  // 클릭 영역 — 상층 의자는 그 층 그룹에 넣어 층이 숨겨지면 같이 숨는다
   var hit = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.9, 0.66), new THREE.MeshBasicMaterial({ visible: false }));
-  hit.position.set(x, 0.45, z);
+  hit.position.set(x, fy + 0.45, z);
   hit.userData.pick = 'seat';
   hit.userData.seat = s;
-  scene.add(hit);
+  (group || scene).add(hit);
   pickables.push(hit);
   return s;
+}
+function curLevel() { return (window.__s3d2 && window.__s3d2.level) || 0; }
+// 지금 보고 있는 층에서 실제로 만질 수 있는 대상만 클릭으로 인정 (다른 층 소품·바닥·의자는 통과)
+function pickAllowed(u) {
+  var lv = curLevel();
+  if (u.pick === 'floor') return lv === 0;
+  if (u.pick === 'floorLv') return (u.lv | 0) === lv;
+  if (u.pick === 'seat') return u.seat ? ((u.seat.floor || 0) === lv) : true;
+  if (u.pick === 'prop') {
+    var kl = (window.__s3d2 && window.__s3d2.keyLevel) ? (window.__s3d2.keyLevel(u.key) | 0) : 0;
+    return kl === lv;
+  }
+  if (u.pick === 'stairs') return lv === 0;
+  return true;
 }
 
 function markObstacle(obj, pad) {
@@ -1860,13 +1876,14 @@ function Avatar(o) {
   this.state = 'idle';
   this.sitT = 0; this.sitTarget = 0;
   this.seat = null; this.path = []; this.walkPhase = 0;
+  this.floorY = 0;                                 // 서 있는 바닥 높이 (1층 0 · 2층 3.9 · 옥상 7.4)
   this.speed = o.isMe ? 2.15 : 1.55;
   this.nextBlink = rnd(2, 6); this.blinkT = 0;
   this.statusText = this.role;
   this.bubbleUntil = 0;
   this.thinkT = rnd(2, 6);
   this.build();
-  this.g.position.set(o.x || 0, 0, o.z || 0);
+  this.g.position.set(o.x || 0, this.floorY, o.z || 0);
   if (o.rotY) this.g.rotation.y = o.rotY;
 }
 Avatar.prototype.build = function () {
@@ -1985,12 +2002,23 @@ Avatar.prototype.build = function () {
   pickables.push(hit);
 };
 
+Avatar.prototype.warpTo = function (x, z, floorY, rotY) {
+  if (this.seat) { this.seat.taken = null; this.seat = null; }
+  this.sitTarget = 0; this.sitT = 0;
+  this.pendingSeat = null; this.path = [];
+  this.state = 'idle'; this.moving = false;
+  this.floorY = Number(floorY) || 0;
+  this.g.position.set(x, this.floorY, z);
+  if (typeof rotY === 'number') this.g.rotation.y = rotY;
+};
 Avatar.prototype.goTo = function (pos, seat) {
   if (this.seat) this.leaveSeat();
   var self = this;
   this.sitTarget = 0;
+  if (typeof pos.y === 'number' && Math.abs(pos.y - (this.floorY || 0)) > 0.25) this.floorY = pos.y;
   var target = new THREE.Vector3(pos.x, 0, pos.z);
-  this.path = findPath(this.g.position, target);
+  var up = (this.floorY || 0) > 0.5;                                 // 2층·옥상은 1층 격자 대신 이 층 위를 직선으로
+  this.path = up ? [target] : findPath(this.g.position, target);
   if (this.path.length < 2) { this.path.push(target.clone()); }
   this.state = 'walk';
   this.pendingSeat = seat || null;
@@ -2005,6 +2033,7 @@ Avatar.prototype.leaveSeat = function () {
 Avatar.prototype.sitOn = function (seat) {
   if (this.seat) this.seat.taken = null;
   this.seat = seat; seat.taken = this;
+  if (seat.pos && typeof seat.pos.y === 'number') this.floorY = seat.pos.y;
   this.sitTarget = 1;
   this.state = 'sit';
   this.sitFrom = this.g.position.clone();
@@ -2075,7 +2104,7 @@ Avatar.prototype.update = function (dt) {
   this.legs[1].knee.rotation.x = 1.28 * s + Math.max(0, swing) * 0.6;
 
   var idleBreath = Math.sin(performance.now() / 900 + (this.name.length)) * 0.012;
-  this.g.position.y = (this.moving ? Math.abs(Math.sin(this.walkPhase)) * 0.035 : 0) - 0.185 * s + idleBreath * 0.3;
+  this.g.position.y = (this.floorY || 0) + (this.moving ? Math.abs(Math.sin(this.walkPhase)) * 0.035 : 0) - 0.185 * s + idleBreath * 0.3;
 
   this.torso.rotation.x = s * (this.seat && this.seat.type === 'desk' ? 0.1 : (this.seat && this.seat.type === 'sofa' ? -0.1 : 0.03));
   this.torso.rotation.z = this.moving ? Math.sin(this.walkPhase) * 0.03 : 0;
@@ -2143,7 +2172,7 @@ function npcUpdate(n, dt) {
     return;
   }
   if (r < 0.66) {
-    var free = seats.filter(function (s) { return !s.taken; });
+    var free = seats.filter(function (s) { return !s.taken && !s.floor; });   // NPC는 1층 의자만 (상층은 내 자리)
     if (free.length) {
       var seat = pick(free);
       var ap = approachPoint(seat);
@@ -2164,6 +2193,10 @@ function freeSpot() {
   return null;
 }
 function approachPoint(seat) {
+  if (seat.floor) {                                  // 2층·옥상 의자는 1층 격자 대신 의자 뒤쪽 바닥
+    var af = seat.rotY + Math.PI;
+    return new THREE.Vector3(seat.pos.x + Math.sin(af) * 0.78, seat.pos.y, seat.pos.z + Math.cos(af) * 0.78);
+  }
   var best = null, bestD = 1e9;
   for (var a = 0; a < 12; a++) {
     var ang = (a / 12) * Math.PI * 2;
@@ -2325,9 +2358,15 @@ function bindInput() {
       var fx = Math.sin(ang) * -1, fz = Math.cos(ang) * -1;
       var rx = Math.cos(ang), rz = -Math.sin(ang);
       var wx = (fx * -m[1] + rx * m[0]) * 2, wz = (fz * -m[1] + rz * m[0]) * 2;
-      var nx = clamp(me.g.position.x + wx, BND.x1 + 0.15, BND.x2 - 0.15), nz = clamp(me.g.position.z + wz, BND.z1 + 0.15, BND.z2 - 0.15);
-      var c = cellOf(nx, nz);
-      if (isFree(c.ix, c.iz)) { me.state = 'walk'; me.path = [new THREE.Vector3(nx, 0, nz)]; me.pendingSeat = null; }
+      var BB = (me.floorY > 0.5 && window.__s3d2 && window.__s3d2.boundsFor) ? window.__s3d2.boundsFor(me.floorY) : BND;
+      var nx = clamp(me.g.position.x + wx, BB.x1 + 0.15, BB.x2 - 0.15), nz = clamp(me.g.position.z + wz, BB.z1 + 0.15, BB.z2 - 0.15);
+      if (me.floorY > 0.5) {
+        if (me.sitTarget) me.stand();
+        me.state = 'walk'; me.path = [new THREE.Vector3(nx, 0, nz)]; me.pendingSeat = null;
+      } else {
+        var c = cellOf(nx, nz);
+        if (isFree(c.ix, c.iz)) { me.state = 'walk'; me.path = [new THREE.Vector3(nx, 0, nz)]; me.pendingSeat = null; }
+      }
     }
     if (e.code === 'Escape') { if (window.__exitFocus) window.__exitFocus(); helpOff(); }
   });
@@ -2344,10 +2383,17 @@ function handleClick(cx, cy) {
   raycaster.setFromCamera(ndc, camera);
   var hits = raycaster.intersectObjects(pickables, false);
   if (!hits.length) return;
-  var obj = hits[0].object;
+  var hit = null;
+  for (var hi = 0; hi < hits.length; hi++) {
+    if (pickAllowed(hits[hi].object.userData || {})) { hit = hits[hi]; break; }
+  }
+  if (!hit) return;
+  var obj = hit.object;
   var ud = obj.userData;
+  try { (window.__s3dExt || (window.__s3dExt = {})).lastPick = (ud.pick || '(none)') + ':' + (ud.key || (ud.seat && ud.seat.id) || (ud.lv === undefined ? '' : ud.lv)) + ':' + (obj.name || obj.type) + ':' + Object.keys(ud).join(','); } catch (e) { }
   if (ud.pick === 'seat') {
     var seat = ud.seat;
+    if (seat.floor && seat.floor !== curLevel()) return;               // 지금 보고 있는 층의 의자만
     if (seat.taken && seat.taken !== me) {
       seat.taken.say(pick(['여기 앉아 있어요 :)', '제 자리예요! 😄', '옆자리 앉으세요~']), 2200);
       return;
@@ -2359,22 +2405,28 @@ function handleClick(cx, cy) {
     if (av === me) me.say(pick(['집중 중! 🎧', '여기 있어요 🙌', '우리 같이 해요']), 2200);
     else av.say(pick(['안녕하세요! 👋', '같이 집중해요 🙌', '오늘 목표는 뭐예요?']), 2600);
   } else if (ud.pick === 'floor') {
-    var p = hits[0].point;
+    var p = hit.point;
     if (p.x < BND.x1 + 0.1 || p.x > BND.x2 - 0.1 || p.z < BND.z1 + 0.1 || p.z > BND.z2 - 0.1) return;
     if (me.sitTarget) me.stand();
     me.goTo(new THREE.Vector3(p.x, 0, p.z), null);
     // 도착 지점 표시
     showTargetMark(p);
+  } else if (ud.pick === 'floorLv') {
+    // 2층 · 옥상 바닥: 그 층 위를 걸어간다
+    if (window.__s3d2 && window.__s3d2.walkAt) window.__s3d2.walkAt(hit.point.x, hit.point.z, ud.lv);
+  } else if (ud.pick === 'stairs') {
+    // 1층 계단을 누르면 계단 앞까지 걸어가 2층으로 올라간다
+    if (window.__s3d2 && window.__s3d2.climb) window.__s3d2.climb();
   } else if (ud.pick === 'prop') {
     // 확장팩 소품(전광판·원칙보드·용어사전·여우·고양이·커피) — 인사이트 팝업/미니게임
     if (window.__s3dExt && window.__s3dExt.api) window.__s3dExt.api.prop(ud.key);
   }
 }
 var markMesh = null, markT = 0;
-function showTargetMark(p) {
+function showTargetMark(p, y) {
   if (markMesh) { scene.remove(markMesh); }
   var c = new THREE.Mesh(new THREE.RingGeometry(0.14, 0.2, 24), new THREE.MeshBasicMaterial({ color: 0x4fe3c1, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }));
-  c.rotation.x = -Math.PI / 2; c.position.set(p.x, 0.03, p.z);
+  c.rotation.x = -Math.PI / 2; c.position.set(p.x, (Number(y) || 0) + 0.03, p.z);
   scene.add(c); markMesh = c; markT = 0;
 }
 function updateMark(dt) {
@@ -4996,6 +5048,7 @@ if (document.readyState === 'loading') {
     state: function () {
       return {
         zone: X.zone, coins: eco.coins, unlimited: UNLIMITED, owned: Object.keys(eco.owned),
+        meFloor: me ? (me.floorY || 0) : 0,
         props: Object.keys(X.props), pets: Object.keys(X.pets),
         market: X.market ? (X.market.src + ':' + X.market.rows.length) : 'none',
         err: X.marketErr, modal: MODAL.kind, badges: X.badges.length,
@@ -5013,7 +5066,9 @@ if (document.readyState === 'loading') {
       return pth.map(function (v) { return [+v.x.toFixed(2), +v.z.toFixed(2)]; });
     },
     deskScreens: function () { return X.deskScreens ? X.deskScreens.visible : null; },
-    termsCount: TERMS.length, quizCount: QUIZ.length, shopCount: SHOP.length
+    termsCount: TERMS.length, quizCount: QUIZ.length, shopCount: SHOP.length,
+    meRef: function () { return me; }, mark: showTargetMark,
+    screenOf: function (x, y, z) { var p = project(new THREE.Vector3(x, y || 0, z)); return { x: p.x, y: p.y, w: W, h: H }; }
   };
 })();
 
@@ -5255,6 +5310,12 @@ if (document.readyState === 'loading') {
     sign.position.set(xa - 0.03, 2.55, 3.15); sign.rotation.y = Math.PI / 2; g.add(sign);
     // 1층 통행 막기(계단 자리)
     obstacles.push({ x1: xa - 0.06, x2: xb + 0.08, z1: 1.85, z2: 4.62 });
+    // 계단을 눌러 2층으로 올라가기
+    var sh = new THREE.Mesh(new THREE.BoxGeometry(w + 0.34, FY * 0.92, z0 - z1), new THREE.MeshBasicMaterial({ visible: false }));
+    sh.position.set((xa + xb) / 2, FY * 0.46, (z0 + z1) / 2);
+    sh.userData.pick = 'stairs'; sh.userData.lv = 1;
+    scene.add(sh); pickables.push(sh);
+    V.stairHit = sh;
   }
 
   /* ---------- 4. 2층 ---------- */
@@ -5269,6 +5330,8 @@ if (document.readyState === 'loading') {
     var fPlane = new THREE.Mesh(new THREE.PlaneGeometry(BX2 - BX1 - 0.04, BZ2 - BZ1 - 0.04), new THREE.MeshStandardMaterial({ map: fTex, roughness: 0.72 }));
     fPlane.rotation.x = -Math.PI / 2; fPlane.position.set((BX1 + BX2) / 2, FY + 0.002, (BZ1 + BZ2) / 2);
     fPlane.receiveShadow = true; g.add(fPlane);
+    fPlane.userData.pick = 'floorLv'; fPlane.userData.lv = 1;          // 2층 바닥 클릭 → 그 층 위로 걷기
+    pickables.push(fPlane);
     // 앞·옆 슬래브 마감 밴드
     g.add(box(BX2 - BX1 + 0.12, 0.42, 0.1, WOOD_D, 0, FY - 0.21, BZ2 + 0.02, { mat: mat(0x9b7f60, { rough: 0.65 }), shadow: false }));
     g.add(box(0.1, 0.42, BZ2 - BZ1, WOOD_D, BX2 + 0.02, FY - 0.21, (BZ1 + BZ2) / 2, { mat: mat(0x9b7f60, { rough: 0.65 }), shadow: false }));
@@ -5347,6 +5410,7 @@ if (document.readyState === 'loading') {
     seatPos.forEach(function (s, i) {
       var ch = makeChair(s[0], s[1], s[2], i % 2 ? 0xcfc4b4 : 0xd8c8ac);
       ch.position.y = FY; g.add(ch);
+      addSeat('mf' + i, s[0], s[1], s[2], 'chair', '2층 회의 의자', FY, g);
     });
 
     /* --- 아케이드 게임기 --- */
@@ -5520,6 +5584,8 @@ if (document.readyState === 'loading') {
     var bean = sph(0.44, 0xc9795a, -5.85, FY + 0.3, -1.15, { seg: 16 }); bean.scale.set(1, 0.66, 1); bean.castShadow = true; g.add(bean);
     bean.add(sph(0.16, 0xb96a4c, 0, 0.16, 0.24, { seg: 12, shadow: false }));
     var bean2 = sph(0.4, 0x7f9e86, -4.95, FY + 0.27, -0.6, { seg: 16 }); bean2.scale.set(1, 0.64, 1); bean2.castShadow = true; g.add(bean2);
+    addSeat('mbean0', -5.85, -1.15, 0.5, 'sofa', '2층 빈백', FY, g);
+    addSeat('mbean1', -4.95, -0.6, -0.6, 'sofa', '2층 빈백', FY, g);
     // 책장 (왼쪽 벽)
     var bs = makeBookshelf(-6.62, -2.4, Math.PI / 2, 1.9, 1.9, 0.36); bs.position.y = FY; g.add(bs);
     // 벽 액자 · 시계
@@ -5572,6 +5638,8 @@ if (document.readyState === 'loading') {
     var deck = new THREE.Mesh(new THREE.PlaneGeometry(BX2 - BX1 - 0.05, RZ2 + 4.92 - 0.05), new THREE.MeshStandardMaterial({ map: dTex, color: 0x9a876d, roughness: 0.9 }));
     deck.rotation.x = -Math.PI / 2; deck.position.set(0, RY + 0.002, (RZ2 - 4.92) / 2);
     deck.receiveShadow = true; g.add(deck);
+    deck.userData.pick = 'floorLv'; deck.userData.lv = 2;              // 옥상 데크 클릭 → 그 위로 걷기
+    pickables.push(deck);
     // 데크 마감 밴드
     g.add(box(BX2 - BX1 + 0.14, 0.4, 0.1, 0x8a7358, 0, RY - 0.2, RZ2 + 0.01, { mat: mat(0x8a7358, { rough: 0.7 }), shadow: false }));
 
@@ -5671,13 +5739,15 @@ if (document.readyState === 'loading') {
     g.add(fire);
     hitBox(fire, 'fire', '🔥 모닥불 (불멍)', 1.5, 1.1, 1.5, 0, 0.5, 0);    badge('fire', 0.35, RY + 1.15, -1.1);
 
-    /* 캠핑 의자 2 */
-    [[-1.85, 0.05, 0.62], [2.55, -0.05, -0.62]].forEach(function (cp) {
+    /* 캠핑 의자 2 — 눌러서 앉기 (불멍 창은 배지·모닥불로) */
+    [[-1.85, 0.05, 0.62, 'rchair0'], [2.55, -0.05, -0.62, 'rchair1']].forEach(function (cp) {
       var ch2 = makeCampChair();
       ch2.position.set(cp[0], RY, cp[1]);
       ch2.rotation.y = cp[2];
       g.add(ch2);
-    hitBox(ch2, 'chair2', '🪑 캠핑 의자 (불멍)', 0.8, 1.0, 0.8, 0, 0.5, 0);
+      var hb = hitBox(ch2, 'chair2', '🪑 캠핑 의자 (불멍)', 0.8, 1.0, 0.8, 0, 0.5, 0);
+      var st = addSeat(cp[3], cp[0], cp[1], cp[2], 'sofa', '캠핑 의자', RY, g);
+      hb.userData.pick = 'seat'; hb.userData.seat = st; hb.userData.key = '';
     });
     badge('chair2', 2.55, RY + 0.95, -0.05);
 
@@ -5802,6 +5872,44 @@ if (document.readyState === 'loading') {
     return g;
   }
 
+  /* ---------- 6.5 내 아바타 층 이동 ---------- */
+  function meRef() { return (X.api && X.api.meRef) ? X.api.meRef() : null; }
+  function boundsFor(y) {
+    if (y > 5) return { x1: -6.5, x2: 6.5, z1: -4.4, z2: 1.65 };      // 옥상 데크(파라펫 안쪽)
+    return { x1: -6.6, x2: 6.6, z1: -4.3, z2: 1.12 };                 // 2층 슬래브
+  }
+  function walkAt(x, z, lv) {
+    var a = meRef(); if (!a) return false;
+    lv = lv | 0;
+    if (V.level !== lv) goto2(lv >= 2 ? 'roof' : 'floor2');
+    var y = lv >= 2 ? RY : FY;
+    var bb = boundsFor(y);
+    x = clamp(x, bb.x1, bb.x2); z = clamp(z, bb.z1, bb.z2);
+    if (Math.abs((a.floorY || 0) - y) > 0.25) a.warpTo(clamp(a.g.position.x, bb.x1, bb.x2), clamp(a.g.position.z, bb.z1, bb.z2), y);
+    if (a.sitTarget) a.stand();
+    a.goTo(new THREE.Vector3(x, y, z), null);
+    if (X.api.mark) X.api.mark({ x: x, z: z }, y);
+    return true;
+  }
+  function climb() {
+    var a = meRef(); if (!a) return false;
+    if (V.level === 2) { goto2('floor2'); return true; }               // 옥상에서 계단을 누르면 2층으로
+    if (V.level === 1) return false;                                   // 이미 2층
+    V.pendingClimb = 1;
+    a.goTo(new THREE.Vector3(-5.55, 0, 4.15), null);                   // 계단 앞까지 걸어간 뒤 올라간다
+    toast('🪜 계단으로 2층에 올라갑니다', 1600);
+    return true;
+  }
+  function placeMeOnLevel(lv) {
+    var a = meRef(); if (!a) return;
+    var y = lv >= 2 ? RY : (lv >= 1 ? FY : 0);
+    if (Math.abs((a.floorY || 0) - y) < 0.25) return;
+    if (lv > 0 && !V.me1) V.me1 = { x: a.g.position.x, z: a.g.position.z };   // 1층에 있던 자리 기억
+    if (lv >= 2) { a.warpTo(0.35, 1.15, y, Math.PI); if (a.say) a.say('옥상 도착! ⛺', 2200); }
+    else if (lv >= 1) { a.warpTo(-6.25, 0.85, y, 0.35); if (a.say) a.say('2층 도착! 🎮', 2200); }
+    else { var p = V.me1 || { x: -6.2, z: 3.4 }; a.warpTo(p.x, p.z, 0); }
+  }
+
   /* ---------- 7. 층 전환 ---------- */
   var Z2 = {
     floor2: { th: 0.46, ph: 0.99, r: 13.2, rn: 22.0, tx: 1.7, ty: 5.15, tz: -1.7, tx2: 0.55, ty2: 4.9, tz2: -1.55, tph: 1.02, label: '2층 전략 · 게임룸' },
@@ -5826,12 +5934,13 @@ if (document.readyState === 'loading') {
     if (gr) gr.visible = lv >= 2;
     if (gcity) gcity.visible = lv >= 2 && isNight;
     if (lv >= 1) refreshTrophies();
+    try { placeMeOnLevel(lv); } catch (e) { }
     if (V.after) updateHints();
   }
   function updateHints() {
     var h = qs('#hint');
-    if (h && V.level === 1) h.textContent = '전략 보드 · 아케이드 · 어항 · LP 를 눌러 보세요';
-    else if (h && V.level === 2) h.textContent = '모닥불 · 의자 · 망원경을 눌러 불멍 · 오늘의 밤하늘';
+    if (h && V.level === 1) h.textContent = '2층 바닥을 눌러 걷기 · 회의 의자·빈백을 누르면 앉아요 · 보드·아케이드·어항·LP';
+    else if (h && V.level === 2) h.textContent = '옥상 바닥을 눌러 걷기 · 캠핑 의자에 앉아 불멍 · 모닥불·망원경';
     else if (h) h.textContent = '구역 버튼으로 이동 · 2층·옥상까지 · 소품 배지를 눌러 인사이트';
   }
 
@@ -6187,6 +6296,12 @@ if (document.readyState === 'loading') {
       if (want !== V.level) applyLevel(want);
     }
 
+    // 계단 클릭 → 계단 앞에 도착하면 2층으로 올라간다
+    if (V.pendingClimb) {
+      var mc = meRef();
+      if (!mc || mc.state !== 'walk' || !mc.path || !mc.path.length) { V.pendingClimb = 0; goto2('floor2'); }
+    }
+
     // 어항 물고기
     if (g2 && g2.visible && AQ.fish.length) {
       var boost = Date.now() < AQ.boost;
@@ -6379,7 +6494,7 @@ if (document.readyState === 'loading') {
     updateHints();
     var helpUl = document.querySelector('#help .box ul');
     if (helpUl) {
-      [['2층 · 옥상', '아래 <b>2층</b>·<b>옥상</b> 버튼으로 카메라가 층을 옮겨 갑니다. 1층에 있는 계단으로도 이어져 있어요.'],
+      [['2층 · 옥상', '아래 <b>2층</b>·<b>옥상</b> 버튼을 누르면 카메라와 <b>내 캐릭터</b>가 함께 올라갑니다. 1층 <b>계단을 눌러도</b> 2층으로 올라가고, 그 층 <b>바닥을 누르면 걸어 다니고</b> 회의 의자·빈백·캠핑 의자에 앉을 수 있어요.'],
       ['2층 (전략·게임)', '전략 보드 · 아케이드(캔들 맞추기) · 업적 진열장 · 대형 어항 · LP 플레이어.'],
       ['3층 옥상', '모닥불·캠핑 의자로 불멍, 망원경으로 오늘의 밤하늘 한 줄, 텐트 랜턴. 밤 모드에서 가장 예뻐요.']].forEach(function (row) {
         var li = document.createElement('li');
@@ -6418,9 +6533,17 @@ if (document.readyState === 'loading') {
 
   /* ---------- 15. 테스트 훅 ---------- */
   V.zone = goto2;
+  V.walkAt = walkAt; V.climb = climb; V.boundsFor = boundsFor;
+  V.keyLevel = function (k) { return (KEYLV[k] === undefined) ? 0 : KEYLV[k]; };
   V.state = function () {
     return {
       level: V.level, zone: X.zone, modal: V.modal,
+      me: (function () {
+        var a = meRef();
+        return a ? { x: +a.g.position.x.toFixed(2), z: +a.g.position.z.toFixed(2), y: +a.g.position.y.toFixed(2),
+          floorY: +(a.floorY || 0).toFixed(2), seat: a.seat ? a.seat.id : null, state: a.state, path: a.path.length } : null;
+      })(),
+      seats: seats.map(function (s) { return s.id + ':' + (s.floor || 0) + ':' + (s.taken ? 'taken' : 'free'); }),
       ach: { focus: ach.focus, quiz: ach.quiz, arcade: ach.arcade, best: ach.best },
       g2: g2 ? g2.visible : null, roof: gr ? gr.visible : null, city: gcity ? gcity.visible : null,
       arcade: ARC.data ? { streak: ARC.streak, pick: ARC.pick } : null,
