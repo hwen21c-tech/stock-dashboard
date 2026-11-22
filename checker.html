@@ -581,8 +581,10 @@
      · 문장은 계산값의 부호로만 고른다(숫자와 반대로 말하지 않는다).
        현재가 ≥ 시가 = 시가 위에서 버팀 · 현재가 < 시가 = 시가 아래로 밀림 */
   function diagnosis(d){
-    var val = n(d.valueTotal), chg = n(d.changePct);
-    var cur = n(d.price), open = n(d.open);
+    /* 받지 못한 값(null·빈값)은 0으로 만들지 않는다 — 없는 숫자로 문장을 만들지 않기 위해 */
+    var num = function(v){ return (v === null || v === undefined || v === '') ? null : n(v); };
+    var val = num(d.valueTotal), chg = num(d.changePct);
+    var cur = num(d.price), open = num(d.open);
     var tier = liqTier(val);
     var lines = [];
 
@@ -595,7 +597,9 @@
               : key === 'warm' ? '거래가 꽤 활발했어요'
               : key === 'mid' ? '거래는 보통 수준이었어요'
               : '거래가 한산했어요';
-      lines.push('거래대금 <b>' + eok(Math.round(val / 1e8)) + '</b>으로 ' + how + '.');
+      var amt = eok(Math.round(val / 1e8));
+      /* '억'은 받침이 있어 '으로', '조'는 받침이 없어 '로' (5.29조로 / 1,687억으로) */
+      lines.push('거래대금 <b>' + amt + '</b>' + (/조$/.test(amt) ? '로 ' : '으로 ') + how + '.');
     }
 
     /* 2줄 — 어제 종가 대비 + 시가 위/아래 (부호 그대로) */
