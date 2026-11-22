@@ -374,6 +374,9 @@
      캡처 단계에서 먼저 잡아 기존 openDetail(...) 핸들러를 대체한다.
      단, 상세 데이터가 없는 종목은 건드리지 않고 기존 팝업을 그대로 둔다. */
   document.addEventListener('click', function (e) {
+    /* 📌 핀 고정 · 실시간 미니차트는 카드 클릭이 아니다 — 캡처에서 먼저 삼키면 핀을 누를 때
+       고정 대신 상세 팝업이 열려 핀이 아예 동작하지 않았다(2026-11-22 수리). */
+    if (e.target && e.target.closest && e.target.closest('.sp-tools, .sp-pin, .sp-mini')) return;
     var el = e.target && e.target.closest ? e.target.closest('[data-manju-code]') : null;
     if (!el) return;
     var code = el.getAttribute('data-manju-code');
