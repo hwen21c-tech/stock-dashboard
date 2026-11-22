@@ -91,7 +91,7 @@
   .liq-warm{background:#F6E3C4;color:#8A5A0B}
   .liq-mid{background:#EFE9DC;color:#5E5546}
   .liq-low{background:#F1EEE7;color:#7A7163}
-  .verdict{margin-top:12px;border-radius:12px;padding:11px 12px;font-size:13.2px;font-weight:750;line-height:1.6;background:#FBF7EC;border:1px solid var(--line)}
+  .verdict{margin-top:12px;border-radius:12px;padding:11px 12px;font-size:13.2px;font-weight:750;line-height:1.6;background:#FBF7EC;border:1px solid var(--line);word-break:keep-all;overflow-wrap:break-word}
   .verdict b{font-weight:900}
   .verdict .tag{display:inline-block;font-size:10.8px;font-weight:900;border-radius:6px;padding:2px 7px;margin-right:6px;background:#781B33;color:#FFF9EC;vertical-align:1px}
   .verdict .tag.no{background:#8E8271}
@@ -217,7 +217,7 @@
     </div>
     <div class="chiphead" id="watchHead" hidden>⭐ 내 관심종목</div>
     <div class="chips" id="watchChips"></div>
-    <div class="chiphead" id="chipHead" hidden>오늘의 거래대금 상위 종목</div>
+    <div class="chiphead" id="chipHead" hidden>테마주도주 상위</div>
     <div class="chips" id="chips"></div>
     <div id="msg" role="status" aria-live="polite"></div>
   </section>
@@ -576,31 +576,48 @@
     return Math.max(0, Math.min(100, (p - l) / (h - l) * 100));
   }
 
+  /* ---------- 해석 박스 — 핵심 2줄 ----------
+     · 1줄 = 거래대금 유입 강도, 2줄 = 어제 종가 대비 + 시가 위/아래.
+     · 문장은 계산값의 부호로만 고른다(숫자와 반대로 말하지 않는다).
+       현재가 ≥ 시가 = 시가 위에서 버팀 · 현재가 < 시가 = 시가 아래로 밀림 */
   function diagnosis(d){
-    var val = n(d.valueTotal), chg = n(d.changePct), pos = positionPct(d.price, d.low, d.high);
-    var highGap = (n(d.high) && n(d.price) != null) ? (n(d.price) - n(d.high)) / n(d.high) * 100 : null;
-    var openGap = (n(d.open) && n(d.price) != null) ? (n(d.price) - n(d.open)) / n(d.open) * 100 : null;
+    var val = n(d.valueTotal), chg = n(d.changePct);
+    var cur = n(d.price), open = n(d.open);
     var tier = liqTier(val);
-    var tag = tier ? '<span class="tag liq-' + tier.key + '">' + tier.label + '</span>' : '';
-    var body = [];
+    var lines = [];
+
+    /* 1줄 — 거래대금 */
     if (val == null){
-      body.push('거래대금 값을 받지 못해 유동성 체급은 표시하지 않았습니다(없는 숫자를 만들지 않습니다).');
+      lines.push('거래대금 값을 받지 못했어요 — 없는 숫자는 적지 않아요.');
     } else {
-      body.push('오늘 통합 거래대금 <b>' + eok(Math.round(val / 1e8)) + '</b> — ' + tier.note);
+      var key = tier ? tier.key : '';
+      var how = key === 'hot' ? '자금이 크게 몰렸어요'
+              : key === 'warm' ? '거래가 꽤 활발했어요'
+              : key === 'mid' ? '거래는 보통 수준이었어요'
+              : '거래가 한산했어요';
+      lines.push('거래대금 <b>' + eok(Math.round(val / 1e8)) + '</b>으로 ' + how + '.');
     }
-    if (highGap != null){
-      if (highGap > -2) body.push('현재가가 <b>고가권</b>(고가 대비 ' + highGap.toFixed(2) + '%)에 붙어 있어 고가를 지키는 모양입니다.');
-      else if (highGap < -7) body.push('고가 대비 <b>' + highGap.toFixed(2) + '%</b>로 밀려 윗꼬리가 길게 남은 모양입니다.');
-      else body.push('고가 대비 ' + highGap.toFixed(2) + '% — 고가와 저가 사이 중간권입니다.');
+
+    /* 2줄 — 어제 종가 대비 + 시가 위/아래 (부호 그대로) */
+    var above = (cur != null && open != null) ? (cur >= open) : null;
+    var openTxt = '시가(' + won(open) + ')';
+    if (chg != null && above != null){
+      if (chg > 0){
+        lines.push('어제보다 <b>' + pct(chg) + '</b> 올랐고, ' +
+          (above ? openTxt + ' 위에서 힘을 지켰어요.' : openTxt + '까지는 밀렸어요.'));
+      } else if (chg < 0){
+        lines.push('어제보다 <b>' + pct(chg) + '</b> ' + (above ? '내렸지만, ' : '내렸고, ') +
+          (above ? openTxt + ' 위에서 버티고 있어요.' : openTxt + ' 아래로도 밀렸어요.'));
+      } else {
+        lines.push('어제와 같은 가격이고, ' +
+          (above ? openTxt + ' 위에서 마감했어요.' : openTxt + ' 아래에 있어요.'));
+      }
+    } else if (chg != null){
+      lines.push('어제보다 <b>' + pct(chg) + '</b> ' + (chg > 0 ? '올랐어요.' : chg < 0 ? '내렸어요.' : '움직이지 않았어요.'));
+    } else if (above != null){
+      lines.push(above ? openTxt + ' 위에서 움직이고 있어요.' : openTxt + ' 아래에서 움직이고 있어요.');
     }
-    if (pos != null) body.push('오늘 범위의 <b>' + pos.toFixed(1) + '%</b> 지점(0%=저가 · 100%=고가)에 있습니다.');
-    if (chg != null && openGap != null){
-      if (chg > 0 && openGap > 0) body.push('시가보다 높고 전일보다도 <b>+' + chg.toFixed(2) + '%</b> — 시초 갭을 되돌리지 않고 위로 간 날입니다.');
-      else if (chg > 0 && openGap <= 0) body.push('전일 대비 <b>+' + chg.toFixed(2) + '%</b>지만 시가 아래 — <b>갭하락 뒤 되돌림</b> 구간입니다.');
-      else if (chg < 0 && openGap > 0) body.push('전일 대비 <b>' + chg.toFixed(2) + '%</b>, 시가보다도 낮습니다 — <b>시초 갭상승을 밀어낸</b> 모양입니다.');
-      else if (chg < 0) body.push('전일 대비 <b>' + chg.toFixed(2) + '%</b> — 시초부터 약했던 날입니다.');
-    }
-    return tag + body.join(' ');
+    return lines.join('<br>');
   }
 
   function show(d, meta){
@@ -911,7 +928,7 @@
     if (!list.length){ host.innerHTML = ''; $('chipHead').hidden = true; return; }
     var date = (sc && sc.asOfTradingDay) || (state.snap && state.snap.tradeDate) || '';
     $('chipHead').hidden = false;
-    $('chipHead').innerHTML = '오늘의 거래대금 상위 종목' + (date ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(date) + ' 기준</span>' : '');
+    $('chipHead').innerHTML = '테마주도주 상위' + (date ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(date) + ' 기준</span>' : '');
     host.innerHTML = list.map(function(x){
       var cls = dirClass(x.changePct);
       return '<button class="chip" type="button" data-code="' + esc(x.code || x.name) + '" data-name="' + esc(x.name) + '">' +
