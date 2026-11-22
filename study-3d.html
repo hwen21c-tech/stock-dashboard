@@ -4134,9 +4134,28 @@ if (document.readyState === 'loading') {
     if (X.boardTexture) X.boardTexture.needsUpdate = true;
   }
 
+  function isStaticHost() {
+    // GitHub Pages(정적 사본)에는 /api 가 없다 → 404 콘솔 노이즈 없이 바로 브리핑 JSON 으로
+    return /\.github\.io$/i.test(location.hostname) || location.protocol === 'file:';
+  }
   function fetchMarket() {
     X.marketTried = Date.now();
     function okish(d) { return d && (d.ok !== false); }
+    var fallback = function () {
+      fetch('data/latest-briefing.json', { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function (d) {
+          X.market = normBrief(d); X.marketErr = ''; refreshBoard();
+          if (MODAL.kind === 'ticker') renderTicker();
+        })
+        .catch(function (e) {
+          X.market = null;
+          X.marketErr = String((e && e.message) || e || 'network');
+          refreshBoard();
+          if (MODAL.kind === 'ticker') renderTicker();
+        });
+    };
+    if (isStaticHost()) { fallback(); return; }
     fetch('/api/stock-live', { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (d) {
@@ -4144,19 +4163,7 @@ if (document.readyState === 'loading') {
         X.market = normLive(d); X.marketErr = ''; refreshBoard();
         if (MODAL.kind === 'ticker') renderTicker();
       })
-      .catch(function () {
-        fetch('data/latest-briefing.json', { cache: 'no-store' })
-          .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-          .then(function (d) {
-            X.market = normBrief(d); X.marketErr = ''; refreshBoard();
-            if (MODAL.kind === 'ticker') renderTicker();
-          })
-          .catch(function (e) {
-            X.marketErr = String((e && e.message) || e || 'network');
-            refreshBoard();
-            if (MODAL.kind === 'ticker') renderTicker();
-          });
-      });
+      .catch(fallback);
   }
 
   /* ============================================================
