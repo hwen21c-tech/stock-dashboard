@@ -826,6 +826,10 @@ body.aiopen #side{opacity:0; pointer-events:none; transform:translateX(14px); tr
 }
 @media (max-width:720px){
   :root{--dockBot:106px}
+  /* 카드가 열려도 모바일 #side 서랍은 닫힌 채로 둔다 — 예전 규칙(transform:none)이 서랍을 화면 위로 끌어와
+     AI 직원 도크를 가로막았다(칩 전환 불가). */
+  body.aiopen #side{transform:translateX(calc(100% + 12px)); opacity:1; pointer-events:auto}
+  body.aiopen #side.open{transform:translateX(0)}
   #aiDock{
     bottom:calc(var(--dockBot) + env(safe-area-inset-bottom)); gap:2px; padding:3px 4px;
     flex-wrap:wrap; justify-content:center; border-radius:16px; overflow:visible;
@@ -1029,6 +1033,7 @@ body.aiopen #side{opacity:0; pointer-events:none; transform:translateX(14px); tr
     </form>
   </div>
 </section>
+
 
 
 

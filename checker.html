@@ -1661,7 +1661,14 @@
     var host = $('histCard');
     if (!host) return;
     var cat = j.catalyst || {};
-    var items = (cat.items || []).slice();
+    var allItems = (cat.items || []).slice();
+    /* 260일 밖 기사(그날 시세를 못 붙인 기사)는 2건까지만 — 숫자 있는 이력을 먼저 보여 준다 */
+    var outside = 0;
+    var items = allItems.filter(function(x){
+      if (x.tradeDate) return true;
+      outside += 1;
+      return outside <= 2;
+    });
     var waves = j.waves || [];
     var h = '<div class="ihead"><span>📰 [특징주] 이력 · 과거 파동 비교</span><span class="ibasis">' +
       (cat.source === 'google-news-rss' ? '구글뉴스 [특징주] 검색' : cat.source === 'naver-stock-news' ? '네이버 종목뉴스' : '기사 검색') +
@@ -1673,7 +1680,7 @@
         var bits = [];
         if (x.changePct != null) bits.push('그날 <b class="' + dirClass(x.changePct) + '">' + pct(x.changePct) + '</b>');
         if (x.valueEok != null) bits.push('대금 ' + eok(x.valueEok));
-        if (x.nowVsClosePct != null) bits.push('지금 그날 종가 대비 <b class="' + dirClass(x.nowVsClosePct) + '">' + pct(x.nowVsClosePct) + '</b>');
+        if (x.nowVsClosePct != null && Math.abs(x.nowVsClosePct) > 0.005) bits.push('지금 그날 종가 대비 <b class="' + dirClass(x.nowVsClosePct) + '">' + pct(x.nowVsClosePct) + '</b>');
         if (x.fwd10Pct != null) bits.push('그 뒤 10거래일 ' + pct(x.fwd10Pct));
         else if (x.fwd5Pct != null) bits.push('그 뒤 5거래일 ' + pct(x.fwd5Pct));
         var t = esc(x.title || '');
@@ -1692,7 +1699,7 @@
     h += '<div class="mt">② 최근 1년 주요 상승 파동 <span>거래대금이 크게 터진 순</span></div>';
     if (waves.length){
       h += waves.map(function(w, i){
-        var inWave = items.filter(function(x){
+        var inWave = allItems.filter(function(x){
           var ymd = String(x.tradeDate || x.date || '').replace(/-/g, '');
           return /^\d{8}$/.test(ymd) && w.startYmd && ymd >= w.startYmd && ymd <= w.peakYmd;
         }).slice(0, 1);
