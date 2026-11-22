@@ -12366,6 +12366,9 @@ var CSVoice = (function () {
       sst.innerHTML = def.icon + ' <b>' + esc(def.name) + '</b> · 폭스시그널 공식 <b>' + esc(nm) + '</b> · ' + cuts + '컷 샘플' +
         (vName ? ' · 성우 <b>' + esc(vName) + '</b>' : '') + ' — 주말엔 새 시세가 없어 확인된 사례·기록만 씁니다';
     }
+    /* 🧾 📊 주간 오답노트는 '성적표 복기'가 곧 자료라 주말에도 그 실측으로 증거 카드를 꽂는다
+       (📘 30초 사전은 용어 설명이라 넣지 않는다) */
+    try { if (slot === 'review' && window.WVID && window.WVID.eviSlot) window.WVID.eviSlot({ slot: slot }); } catch (eEv) {}
     if (mode === 'wvid') { try { csGenReady(); } catch (e3) {} }
     toast(def.icon + ' ' + def.name + ' — 폭스시그널 ' + nm + ' · ' + cuts + '컷 샘플 로드 · [▶ 생성]만 누르세요.');
     if (btn) spinner(btn, false);
