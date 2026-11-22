@@ -4534,7 +4534,7 @@
       <button class="btn-action" style="background:#06281e; color:#34d399; border-color:#10b981; font-weight:800; cursor:pointer;" onclick="openDartModal()">🛡️ DART 레이더</button>
       <button class="btn-action" style="background:#0e2638; color:#38bdf8; border-color:#38bdf8; font-weight:800; cursor:pointer;" onclick="switchView('rnzone', null)">🎯 RN존 탭</button>
       <button class="btn-action" style="background:#2a2113; color:#fbbf24; border-color:#f59e0b; font-weight:800; cursor:pointer;" onclick="switchView('jongbe', null)">🏆 종베 탭</button>
-      <button class="btn-action" style="background:#0284c7; color:#ffffff; border-color:#38bdf8; font-weight:800; box-shadow:0 2px 8px rgba(2,132,199,0.4); cursor:pointer;" onclick="openLiveBriefingModal()">⚡ 브리핑 스냅샷</button>
+      <button class="btn-action" style="background:#0284c7; color:#ffffff; border-color:#38bdf8; font-weight:800; box-shadow:0 2px 8px rgba(2,132,199,0.4); cursor:pointer;" onclick="openLiveBriefingModal()">📋 최근 동기화 브리핑</button>
       <button class="btn-action" style="color:#34d399; border-color:#059669;" onclick="saveTodayToStorage()">💾 오늘 저장</button>
       <button class="btn-action" style="color:#fbbf24; border-color:#b45309;" onclick="openHistoryModal()">📁 보관함</button>
     </div>
@@ -14117,17 +14117,17 @@
       <div class="modal-header" style="border-bottom:1px solid #0284c7; padding-bottom:10px; display:flex; justify-content:space-between; align-items:flex-start;">
         <div>
           <div style="font-size:10px; color:#38bdf8; font-weight:800; letter-spacing:0.5px;">LIVE MARKET FLASH</div>
-          <h3 id="liveModalTitle" style="color:#38bdf8; margin:2px 0 0 0; font-size:15px; font-weight:800;">🌙 [야간 세션 긴급 진단] KRX 야간선물 & 美 나스닥·빅테크 랠리 총괄 브리핑</h3>
-          <div style="font-size:11px; color:#94a3b8; margin-top:2px;" id="liveBriefingTime">브리핑을 열면 최신 스냅샷으로 채워집니다</div>
+          <h3 id="liveModalTitle" style="color:#38bdf8; margin:2px 0 0 0; font-size:15px; font-weight:800;">📋 최근 동기화 브리핑</h3>
+          <div style="font-size:11px; color:#94a3b8; margin-top:2px;" id="liveBriefingTime">동기화된 data/*.json 마지막 값으로 요약합니다</div>
         </div>
         <button class="btn-close" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer; line-height:1;" onclick="closeLiveBriefingModal(null)">&times;</button>
       </div>
 
       <div class="modal-body" id="liveModalBody" style="overflow-y:auto; padding:12px 0; max-height:72vh;">
         <div style="padding:34px 18px; text-align:center; color:#94a3b8; line-height:1.7;">
-          <div style="font-size:30px; margin-bottom:10px;">⚡</div>
-          <div style="font-size:13px; font-weight:800; color:#e2e8f0; margin-bottom:6px;">브리핑을 열면 11/13 정시 브리핑 스냅샷이 표시됩니다</div>
-          <div style="font-size:12px;">고정 추론 문구(과거 유사사례·수혜주·확률)는 2026-11-22 제거했습니다. 최신 브리핑은 <b>📊 19:00 애프터마켓 결산 브리핑</b> 버튼이나 정시 브리핑 카드에서 확인하세요.</div>
+          <div style="font-size:30px; margin-bottom:10px;">📋</div>
+          <div style="font-size:13px; font-weight:800; color:#e2e8f0; margin-bottom:6px;">정적 페이지라 실시간 시세 대신 마지막 동기화 값을 보여줍니다</div>
+          <div style="font-size:12px;">지수·거래대금 상위·테마·최근 정시 브리핑을 data/*.json 에서 읽어 요약합니다. 실시간 즉석 브리핑은 동적 관제탑(Vercel)의 ⚡ 실시간 브리핑에서 확인하세요.</div>
         </div>
       </div>
 
@@ -14452,154 +14452,198 @@
     window.runAutoValidationEngine = runAutoValidationEngine;
 
 
+        /* ═══════════ 📋 최근 동기화 브리핑 — 서버 없는 정적 Pages 판 ═══════════
+           · 정적 페이지에서는 실시간 시세 API(/api/*)를 부를 수 없다.
+           · 고정 스냅샷 대신 data/*.json 의 마지막 동기화 값으로 요약하고,
+             '언제 동기화된 값인지'를 화면에 정확히 적는다. */
+
+        function sbEsc(v) {
+          return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+          });
+        }
+        function sbNf(n, d) {
+          if (n === null || n === undefined || !isFinite(n)) return '—';
+          return Number(n).toLocaleString('ko-KR', { maximumFractionDigits: d == null ? 2 : d, minimumFractionDigits: 0 });
+        }
+        function sbPctf(p) {
+          if (p === null || p === undefined || !isFinite(p)) return '';
+          var n = Number(p);
+          return (n > 0 ? '+' : '') + n.toFixed(2) + '%';
+        }
+        function sbTone(p) {
+          if (p === null || p === undefined || !isFinite(p)) return 'flat';
+          var n = Number(p);
+          return n > 0 ? 'up' : n < 0 ? 'down' : 'flat';
+        }
+        function sbEokText(v) {
+          if (v === null || v === undefined || !isFinite(v)) return null;
+          return Math.round(Number(v)).toLocaleString('ko-KR') + '억';
+        }
+
+        function sbFetchJson(name) {
+          var bases = ['data/', './data/', '/stock-dashboard/data/'];
+          var b = Date.now();
+          var i = 0;
+          function tryNext() {
+            if (i >= bases.length) return Promise.resolve(null);
+            var url = bases[i++] + name + '?_=' + b;
+            return fetch(url, { cache: 'no-store' })
+              .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+              .catch(function () { return tryNext(); });
+          }
+          return tryNext();
+        }
+
+        function sbStamp(iso) {
+          if (!iso) return null;
+          var d = new Date(iso);
+          if (isNaN(d.getTime())) return String(iso);
+          var p = function (n) { return (n < 10 ? '0' : '') + n; };
+          return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+        }
+
+        function sbCss() {
+          if (document.getElementById('sbBriefCss')) return;
+          var st = document.createElement('style');
+          st.id = 'sbBriefCss';
+          st.textContent = [
+            '#liveModalBody .sb-hd{background:linear-gradient(90deg,rgba(30,64,175,.28) 0%,rgba(71,85,105,.24) 100%);border:1px solid #64748b;border-radius:8px;padding:11px 13px;margin-bottom:10px}',
+            '#liveModalBody .sb-hd-t{font-size:13px;font-weight:800;color:#cbd5e1;line-height:1.45}',
+            '#liveModalBody .sb-card{background:#0f172a;border:1px solid #1e293b;border-radius:8px;padding:11px 13px;margin-bottom:10px}',
+            '#liveModalBody .sb-card-t{font-size:12.5px;font-weight:800;color:#93c5fd;margin-bottom:8px;line-height:1.4}',
+            '#liveModalBody .sb-rows{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:7px}',
+            '#liveModalBody .sb-row{background:#070c14;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:7px 9px;min-width:0}',
+            '#liveModalBody .sb-row-l{font-size:10.5px;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+            '#liveModalBody .sb-row-v{font-size:14px;font-weight:800;line-height:1.25}',
+            '#liveModalBody .sb-row-d{font-size:11px;font-weight:700}',
+            '#liveModalBody .sb-line{font-size:11.5px;color:#cbd5e1;line-height:1.7;margin:0 0 6px 0;padding-left:11px;text-indent:-11px}',
+            '#liveModalBody .sb-lr{display:grid;grid-template-columns:1fr auto auto;gap:6px;font-size:11.5px;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,.06);align-items:baseline}',
+            '#liveModalBody .sb-spin{text-align:center;padding:36px 16px;color:#94a3b8;line-height:1.7}',
+            '#liveModalBody .sb-note{font-size:10.5px;color:#fbbf24;margin-top:6px;line-height:1.6}'
+          ].join('\n');
+          document.head.appendChild(st);
+        }
+
+        function renderSyncBrief(snap, brief, themes, extraNote) {
+          sbCss();
+          var titleEl = document.getElementById('liveModalTitle');
+          var timeEl = document.getElementById('liveBriefingTime');
+          var bodyEl = document.getElementById('liveModalBody');
+          var snapAt = sbStamp(snap && snap.updatedAt);
+          var tradeDate = (snap && snap.tradeDate) || null;
+          if (titleEl) titleEl.innerText = '📋 최근 동기화 브리핑';
+          if (timeEl) timeEl.innerText = (snapAt ? '동기화 ' + snapAt : '동기화 시각 없음') + (tradeDate ? ' · 기준 거래일 ' + tradeDate : '');
+
+          var who = [];
+          if (snap && snap.indices && snap.indices.length) who.push('지수·종목');
+          if (themes && themes.themes && themes.themes.length) who.push('테마');
+          if (brief && brief.slotLabel) who.push('정시 브리핑');
+
+          var html = '';
+          html += '<div class="sb-hd"><div class="sb-hd-t">📋 정적 페이지(서버 없음) — data/*.json 마지막 동기화 값</div>' +
+            '<div style="font-size:11px;color:#cbd5e1;margin-top:5px;line-height:1.6;">' +
+            (snapAt ? '동기화 시각 ' + sbEsc(snapAt) : '동기화 시각 없음') +
+            (tradeDate ? ' · 기준 거래일 ' + sbEsc(tradeDate) : '') +
+            (themes && themes.basisLong ? ' · 테마 기준 ' + sbEsc(themes.basisLong) : '') + '</div>' +
+            '<div class="sb-note">실시간 시세가 아닙니다. 실시간 즉석 브리핑은 동적 관제탑(Vercel)의 ⚡ 실시간 브리핑 버튼에서 확인하세요.</div>' +
+            (extraNote ? '<div class="sb-note">' + sbEsc(extraNote) + '</div>' : '') +
+            '</div>';
+
+          // 1) 지수
+          if (snap && snap.indices && snap.indices.length) {
+            html += '<div class="sb-card"><div class="sb-card-t">📊 1. 지수 (동기화 마감값)</div><div class="sb-rows">';
+            snap.indices.forEach(function (i) {
+              var col = sbTone(i.changePct) === 'up' ? '#f43f5e' : sbTone(i.changePct) === 'down' ? '#38bdf8' : '#cbd5e1';
+              html += '<div class="sb-row"><div class="sb-row-l">' + sbEsc(i.name) + '</div>' +
+                '<div class="sb-row-v" style="color:' + col + '">' + sbEsc(sbNf(i.price, 2)) + '</div>' +
+                '<div class="sb-row-d" style="color:' + col + '">' + sbEsc(sbPctf(i.changePct)) + '</div>' +
+                '<div style="font-size:10px;color:#64748b;margin-top:2px;">고 ' + sbEsc(sbNf(i.high, 2)) + ' · 저 ' + sbEsc(sbNf(i.low, 2)) + '</div></div>';
+            });
+            html += '</div></div>';
+          }
+
+          // 2) 거래대금 상위
+          if (snap && snap.stocks && snap.stocks.length) {
+            var seenCode = {};
+            var byVal = snap.stocks.slice()
+              .filter(function (t) { var k = t.code || t.name; if (seenCode[k]) return false; seenCode[k] = 1; return true; })
+              .sort(function (a, b) { return (b.valueEok || 0) - (a.valueEok || 0); }).slice(0, 5);
+            html += '<div class="sb-card"><div class="sb-card-t">💰 2. 거래대금 상위 (동기화 마감값)</div>';
+            byVal.forEach(function (t) {
+              var col = sbTone(t.changePct) === 'up' ? '#f43f5e' : sbTone(t.changePct) === 'down' ? '#38bdf8' : '#cbd5e1';
+              html += '<div class="sb-lr"><div style="color:#e2e8f0;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + sbEsc(t.name) +
+                ' <small style="color:#64748b;font-size:10px;">' + sbEsc(t.code || '') + '</small></div>' +
+                '<div style="color:#cbd5e1;font-size:11px;white-space:nowrap;">' + sbEsc(sbNf(t.close, 0)) + '원</div>' +
+                '<div style="color:' + col + ';font-weight:800;font-size:11px;white-space:nowrap;">' + sbEsc(sbPctf(t.changePct)) + (t.valueEok ? ' · ' + sbEsc(sbEokText(t.valueEok)) : '') + '</div></div>';
+            });
+            html += '</div>';
+          }
+
+          // 3) 테마
+          if (themes && themes.themes && themes.themes.length) {
+            html += '<div class="sb-card"><div class="sb-card-t">📈 3. 주도 테마 (' + sbEsc(themes.basisLong || themes.shortLabel || '기준일 없음') + ')</div>';
+            themes.themes.slice(0, 4).forEach(function (t) {
+              var col = sbTone(t.avgPct) === 'up' ? '#f43f5e' : sbTone(t.avgPct) === 'down' ? '#38bdf8' : '#cbd5e1';
+              html += '<p class="sb-line">• <b>' + sbEsc(t.rank) + '위 ' + sbEsc(t.name) + '</b> 평균 ' +
+                '<span style="color:' + col + ';font-weight:800;">' + sbEsc(sbPctf(t.avgPct)) + '</span>' +
+                (t.top4Avg != null ? ' · 노출 상위4 평균 ' + sbEsc(sbPctf(t.top4Avg)) : '') +
+                (t.sumValueText ? ' · 대금 ' + sbEsc(t.sumValueText) : '') +
+                (t.riseCount != null ? ' · ▲' + sbEsc(t.riseCount) + ' ▼' + sbEsc(t.fallCount) : '') + '</p>';
+            });
+            html += '</div>';
+          }
+
+          // 4) 최근 정시 브리핑 요약
+          if (brief && (brief.summaryLine || brief.slotLabel)) {
+            html += '<div class="sb-card"><div class="sb-card-t">🗒️ 4. 최근 정시 브리핑 (' + sbEsc(brief.dateLabel || '') + ' ' + sbEsc(brief.slotLabel || '') + ')</div>';
+            if (brief.summaryLine) html += '<p class="sb-line">• ' + sbEsc(brief.summaryLine) + '</p>';
+            if (brief.themes && brief.themes.length) html += '<p class="sb-line">• 테마: ' + sbEsc(brief.themes.join(' · ')) + '</p>';
+            if (brief.picks && brief.picks.length) {
+              html += '<p class="sb-line">• 언급 종목: ' + brief.picks.slice(0, 4).map(function (p) {
+                return sbEsc(p.name) + (p.change ? ' ' + sbEsc(p.change) : '');
+              }).join(' · ') + '</p>';
+            }
+            html += '<p class="sb-line" style="color:#64748b;">• 전문은 정시 브리핑 카드에서 여세요.</p></div>';
+          }
+
+          if (!who.length) {
+            html += '<div class="sb-spin"><div style="font-size:28px;margin-bottom:8px;">📭</div><div style="font-size:12.5px;font-weight:800;color:#e2e8f0;">동기화된 data/*.json 을 찾지 못했습니다</div>' +
+              '<div style="font-size:11.5px;">정적 페이지라 실시간 시세를 직접 받을 수 없습니다. 다음 자동 동기화 뒤 다시 열어 주세요.</div></div>';
+          }
+
+          if (bodyEl) bodyEl.innerHTML = html;
+        }
+
         function openLiveBriefingModal() {
-      try {
-        var m = document.getElementById('liveBriefingModal');
-        var t = document.getElementById('liveBriefingTime');
-        var titleEl = document.getElementById('liveModalTitle');
-        var bodyEl = document.getElementById('liveModalBody');
-        
-        var now = new Date();
-        var curHm = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
-        var fullTimeStr = '2026-11-13(금) 정시 브리핑 스냅샷 · ' + curHm + ' 열람';
-        
-        if (t) t.innerText = fullTimeStr;
-        if (titleEl) titleEl.innerText = '⚡ 11/13 정시 브리핑 스냅샷 (' + curHm + ' 열람) — 실시간 아님';
-
-        var fullBriefingHtml = `
-          <!-- REALTIME COMPREHENSIVE HEADER -->
-          <div style="background: linear-gradient(90deg, rgba(2,132,199,0.2) 0%, rgba(99,102,241,0.2) 100%); border:1px solid #38bdf8; border-radius:8px; padding:12px 14px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-            <div>
-              <div style="font-size:13.5px; font-weight:800; color:#38bdf8; display:flex; align-items:center; gap:6px;">
-                <span>⚡ 2026-11-13(금) 정시 브리핑 스냅샷 · ${curHm} 열람 (실시간 아님)</span>
-                <span style="font-size:10px; background:#475569; color:#e2e8f0; padding:1px 6px; border-radius:4px; font-weight:700;">11/13 스냅샷</span>
-              </div>
-              <div style="font-size:11.5px; color:#cbd5e1; margin-top:3px;">
-                KRX 야간선물·미국 증시 선물 폭등·애프터마켓 시간외 체결·DART 마감 공시·만쥬 타점을 총망라한 정밀 전문입니다.
-              </div>
-            </div>
-            <button type="button" class="btn-action" style="font-size:11px; padding:5px 12px; background:rgba(56,189,248,0.2); color:#7dd3fc; border-color:#38bdf8; font-weight:800; cursor:pointer;" onclick="closeLiveBriefingModal(null); openBriefingModal('19:00');">📊 19:00 애프터마켓 결산 브리핑 보기 ➔</button>
-          </div>
-
-          <!-- SECTION 1: KEY INDICES -->
-          <div style="background:#070c14; border:1px solid #38bdf8; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-            <div style="font-size:12.5px; font-weight:800; color:#38bdf8; margin-bottom:8px;">📊 1. 11/13(금) 마감 기준 핵심 시장 지표 & 파생상품 (스냅샷)</div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; font-size:11.5px;">
-              <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                <span style="color:#94a3b8;">📉 코스피 (KRX 확정):</span> <strong style="color:#38bdf8; font-size:13px;">5,290.53 (-0.98%, -52.42p)</strong><br>
-                <span style="font-size:10px; color:#38bdf8;">외인 -5,521억 순매도 vs 기관 +23억 (연기금 방어)</span>
-              </div>
-              <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                <span style="color:#94a3b8;">📈 코스닥 (KRX 확정):</span> <strong style="color:#f43f5e; font-size:13px;">699.66 (+0.45%, +3.12p)</strong><br>
-                <span style="font-size:10px; color:#4ade80;">개인 +1,420억 순매수 속 지수 700선 회복 시도</span>
-              </div>
-              <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                <span style="color:#94a3b8;">📈 코스피200 주간선물:</span> <strong style="color:#f43f5e; font-size:13px;">836.35 (+2.99%)</strong><br>
-                <span style="font-size:10px; color:#4ade80;">외인 선물 +12,400계약 대량 순매수 강력 지지</span>
-              </div>
-              <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-                <span style="color:#94a3b8;">🌙 야간선물 / CME 나스닥:</span> <strong style="color:#f43f5e; font-size:13px;">837.50 (+0.14%) / 28,442.50 (+2.18% 🚀)</strong><br>
-                <span style="font-size:10px; color:#4ade80;">미 나스닥선물 폭등 랠리 지속 · 환율 1,333.80원 안정</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- SECTION 2: COMPREHENSIVE MARKET OUTLOOK -->
-          <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-            <div style="font-size:12.5px; font-weight:800; color:#38bdf8; margin-bottom:8px;">🎯 2. 오늘 시장 총괄 진단 & 글로벌·국내 동향 심층 분석 ('오늘 시장은 어떨 것 같다')</div>
-            <div style="font-size:12px; color:#cbd5e1; line-height:1.7;">
-              <p style="margin:0 0 6px 0;">• <strong>선물 시장의 강력한 하방 방어와 안도 랠리:</strong> 오늘(11/13 금) 정규장에서 외국인은 코스피 현물을 -5,521억 원 매도했으나, <strong>코스피200 주간선물에서 무려 +12,400계약의 폭풍 순매수</strong>를 단행하며 하방을 견고히 방어했습니다. 18:00 개장한 KRX 야간선물 역시 837.50(+0.14%)로 836선 위에서 안정적으로 안착했습니다.</p>
-              <p style="margin:0 0 6px 0;">• <strong>미국 야간선물 폭등과 다음 주 월요일 시초가 전망:</strong> 미국 CME E-mini 나스닥 100 선물이 <strong>+2.18%(28,442.50)</strong>, 필라델피아 반도체 지수가 <strong>+3.42%</strong> 폭등세를 유지하고 있어, 22:30 미 10월 생산자물가지수(PPI) 발표가 예상치에 부합할 경우 글로벌 빅테크 랠리가 이어져 <strong>다음 주 월요일 국내 증시는 +0.8%~+1.3% 수준의 강력한 갭상승 출발</strong>이 유력합니다.</p>
-              <p style="margin:0; color:#fbbf24;">• <strong>주도 섹터 자금 초압축 현상:</strong> 반도체 CXL(코리아써키트 2,864억, 티엘비), AI 보안(지니언스 2,150억), 시스템반도체(가온칩스 상한가), 건설 인프라(금호건설 상한가 42만 주 잠금)로 시장의 모든 스마트머니가 초압축되었습니다. 정규장 주도주들이 시간외 단일가에서도 매수 잔량을 유지했습니다(그날의 기록).</p>
-            </div>
-          </div>
-
-          <!-- SECTION 3: INVESTOR SUPPLY -->
-          <div style="background:#111827; border:1px solid #334155; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-            <div style="font-size:12.5px; font-weight:800; color:#34d399; margin-bottom:8px;">💰 3. 투자자별 최종 확정 수급 현황 및 공방 진단 (11/13 확정)</div>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:12px;">
-              <div style="background:#070c14; padding:8px 10px; border-radius:6px; border:1px solid #1e293b;">
-                <div style="font-weight:800; color:#38bdf8; margin-bottom:4px;">📊 코스피 확정 수급 (억 원)</div>
-                • <strong>외국인(코스피):</strong> <span style="color:#38bdf8; font-weight:800;">-5,521억 순매도 🔴</span> (차익 실현 출회)<br>
-                • <strong>기관(코스피):</strong> <span style="color:#f43f5e; font-weight:800;">+23억 순매수 🟢</span> (연기금 +640억 순매수 방어)<br>
-                • <strong>개인:</strong> <span style="color:#f43f5e; font-weight:800;">+5,180억 순매수 🟢</span><br>
-                • <strong>외인 주간선물:</strong> <span style="color:#4ade80; font-weight:800;">+12,400계약 대량 순매수 🚀</span>
-              </div>
-              <div style="background:#070c14; padding:8px 10px; border-radius:6px; border:1px solid #1e293b;">
-                <div style="font-weight:800; color:#fbbf24; margin-bottom:4px;">📊 코스닥 확정 수급 (억 원)</div>
-                • <strong>개인:</strong> <span style="color:#f43f5e; font-weight:800;">+1,420억 순매수 🟢</span> (저가 매수 유입)<br>
-                • <strong>외국인:</strong> <span style="color:#38bdf8; font-weight:800;">-980억 순매도 🔴</span><br>
-                • <strong>기관:</strong> <span style="color:#38bdf8; font-weight:800;">-320억 순매도 🔴</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- SECTION 4: AFTERMARKET STRENGTH VS WEAKNESS COMPARISON -->
-          <div style="background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-            <div style="font-size:12.5px; font-weight:800; color:#fbbf24; margin-bottom:8px;">🕒 4. 애프터마켓 시간외 단일가 체결: 강세 유지주 vs 신규 강세 vs 약세 전환주 비교</div>
-            <div style="font-size:12px; color:#cbd5e1; line-height:1.7;">
-              <p style="margin:0 0 6px 0;">• <strong>정규장 강세 유지 종목 (11/13):</strong><br>
-                - <strong>금호건설(11,210원):</strong> 1.2조 인프라 수주 모멘텀으로 상한가 잔량 42만 주 잠금 유지 (수급 최상급 🟢)<br>
-                - <strong>가온칩스(38,650원):</strong> 2나노 차세대 빅테크 AI 수주로 시스템반도체 1위 상한가 안착 (수급 최상급 🟢)<br>
-                - <strong>지니언스(35,550원):</strong> 2,150억 대금 폭발 후 시간외에서 +0.14% 상승 마감, 매수 잔량 3.8만 주 견조 (안착 🟢)<br>
-                - <strong>코리아써키트(90,400원):</strong> 2,864억 대금 흡수 후 시간외에서 +0.22% 상승 마감, 9만 원 라운드넘버 안착 (안착 🟢)</p>
-              <p style="margin:0 0 6px 0;">• <strong>시간외 신규 부각 강세 종목:</strong><br>
-                - <strong>DSC인베스트먼트(8,120원):</strong> 상한가 안착, AI 벤처투자 회수 수혜.<br>
-                - <strong>주성엔지니어링(61,700원):</strong> 시간외 +1.48% 상승, 반도체 소부장 대장주 매수세 유입.</p>
-              <p style="margin:0; color:#f87171;">• <strong>시간외 약세 전환/차익 출회 주의 종목:</strong><br>
-                - <strong>컨텍 / AP위성:</strong> 전일 상한가 이후 오늘 -8.89% 급락, 시간외에서도 반등 부재로 추가 조정 주의.<br>
-                - <strong>거래대금 50억 미만 소형 테마주:</strong> 시간외에서 -2~3%대 차익 매물 출회 중이므로 뇌동매매 엄금.</p>
-            </div>
-          </div>
-
-          <!-- SECTION 5: DART SCAN -->
-          <div style="background:#111827; border:1px solid #10b981; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-            <div style="font-size:12.5px; font-weight:800; color:#34d399; margin-bottom:8px;">🛡️ 5. DART 마감 전자공시 전수 스캔 및 악재 필터링 진단</div>
-            <div style="font-size:12px; color:#cbd5e1; line-height:1.65;">
-              <p style="margin:0 0 5px 0;">• <strong>DART 공시 조회:</strong> 이 스냅샷에는 공시 조회 결과가 포함돼 있지 않습니다 — <strong>🚨 DART 공시 레이더</strong>에서 종목코드 기준 실시간 조회로 확인하세요.</p>
-              <p style="margin:0; color:#38bdf8;">• <strong>호재성 수주/실적 공시:</strong> 가온칩스(2나노 AI 수주), 금호건설(1.2조 공공 인프라 계약) 등 실질 실적 기반 공시만 유입되어 시장 건전성 우수.</p>
-            </div>
-          </div>
-
-          <!-- SECTION 6: NEWS & HISTORICAL CASE -->
-          <div style="background:#1e1b4b; border:1px solid #6366f1; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-            <div style="font-size:12.5px; font-weight:800; color:#c7d2fe; margin-bottom:8px;">📰 6. 그날의 뉴스 (스냅샷)</div>
-            <div style="font-size:12px; color:#e0e7ff; line-height:1.7;">
-              <p style="margin:0 0 6px 0;">① <strong>새로 나온 핵심 뉴스:</strong> 미 상무부 CXL 첨단 패키징 지원 및 엔비디아 차세대 루빈 GPU 플랫폼의 CXL 3.1 전격 표준 채택 속보 + 국정원·과기부 차세대 EDR·제로트러스트 가이드라인 배포.</p>
-              <p style="margin:0; color:#94a3b8;">과거 유사사례·수혜주 추정 문구는 실제 근거가 없어 2026-11-22 제거했습니다.</p>
-            </div>
-          </div>
-
-          <!-- SECTION 7: MANJU TRADING SETUP -->
-          <div style="background:#070c14; border:1px solid #f43f5e; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-            <div style="font-size:12.5px; font-weight:800; color:#f43f5e; margin-bottom:8px;">🎯 7. [만쥬 매매법 4대 기준] 11/13 애프터마켓 최종 압축 후보 실전 타점</div>
-            <div style="font-size:12px; color:#cbd5e1; line-height:1.7;">
-              <div style="background:#111827; padding:8px 10px; border-radius:6px; margin-bottom:6px; border-left:3px solid #f43f5e;">
-                <strong style="color:#fff;">🥇 1순위: 지니언스 (263860) [S등급 · 자동 채점 86점] — AI 보안 2,150억 초대량거래 실질 대장</strong><br>
-                • 4대 기준: 이슈(국정원 EDR 가이드라인) 최상 / 차트(+13.2% 신고가 안착) / 대금(2,150억) / 수급(외인·기관 순매수)<br>
-                • 실전 타점: 매수존 <strong>34,970 ~ 35,500원</strong>, 익일 시초가 목표가 <strong>37,100원(+4.5%)</strong>, 손절선 <strong>34,440원(-3.0%)</strong> 엄수.
-              </div>
-              <div style="background:#111827; padding:8px 10px; border-radius:6px; margin-bottom:6px; border-left:3px solid #38bdf8;">
-                <strong style="color:#fff;">🥈 2순위: 코리아써키트 (007810) [S등급 · 자동 채점 85점] — CXL 3.1 및 엔비디아 표준 채택 대장</strong><br>
-                • 4대 기준: 이슈(엔비디아 루빈 CXL 3.1) 최상 / 차트(9만 원선 안착) / 대금(2,864억) / 수급(외인 롱바스켓 유입)<br>
-                • 실전 타점: 매수존 <strong>89,200 ~ 90,200원</strong>, 익일 시초가 목표가 <strong>94,200원(+4.4%)</strong>, 손절선 <strong>87,500원(-3.0%)</strong>.
-              </div>
-              <div style="background:#111827; padding:8px 10px; border-radius:6px; border-left:3px solid #fbbf24;">
-                <strong style="color:#fff;">🥉 3순위: 금호건설 (002990) [S등급 · 자동 채점 84점] — 건설/인프라 상한가 42만 주 잠금</strong><br>
-                • 4대 기준: 이슈(1.2조 인프라 수주) / 차트(상한가 11,210원) / 대금(1,068억) / 수급(개인·기관 쌍끌이)<br>
-                • 실전 타점: 매수존 <strong>11,040 ~ 11,210원</strong> 분할 대응, 익일 시초가 목표가 <strong>11,710원(+4.5%)</strong>, 손절선 <strong>10,870원(-3.0%)</strong>.
-              </div>
-            </div>
-          </div>
-        `;
-
-        if (bodyEl) bodyEl.innerHTML = fullBriefingHtml;
-        if (m) m.style.display = 'flex';
-      } catch(e) {
-        console.error('openLiveBriefingModal error:', e);
-      }
-    }
-
+          try {
+            var m = document.getElementById('liveBriefingModal');
+            if (!m) return;
+            m.style.display = 'flex';
+            sbCss();
+            var titleEl = document.getElementById('liveModalTitle');
+            var timeEl = document.getElementById('liveBriefingTime');
+            var bodyEl = document.getElementById('liveModalBody');
+            if (titleEl) titleEl.innerText = '📋 최근 동기화 브리핑';
+            if (timeEl) timeEl.innerText = '동기화된 data/*.json 을 읽는 중…';
+            if (bodyEl) {
+              bodyEl.innerHTML = '<div class="sb-spin"><div style="font-size:28px;margin-bottom:8px;">📋</div>' +
+                '<div style="font-size:12.5px;font-weight:800;color:#e2e8f0;">최근 동기화 값으로 요약을 만드는 중</div></div>';
+            }
+            Promise.all([
+              sbFetchJson('stock_snapshot_latest.json'),
+              sbFetchJson('latest-briefing.json'),
+              sbFetchJson('last-dynamic-themes.json')
+            ]).then(function (arr) {
+              renderSyncBrief(arr[0], arr[1], arr[2], null);
+            }).catch(function (e) {
+              console.error('openLiveBriefingModal error:', e);
+              renderSyncBrief(null, null, null, '동기화 파일을 읽지 못했습니다: ' + String((e && e.message) || e));
+            });
+          } catch (e) {
+            console.error('openLiveBriefingModal error:', e);
+          }
+        }
     function closeLiveBriefingModal(e) {
       try {
         if (e && e.target && e.target.id !== 'liveBriefingModal') {
