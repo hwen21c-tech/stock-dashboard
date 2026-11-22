@@ -4534,7 +4534,7 @@
       <button class="btn-action" style="background:#06281e; color:#34d399; border-color:#10b981; font-weight:800; cursor:pointer;" onclick="openDartModal()">🛡️ DART 레이더</button>
       <button class="btn-action" style="background:#0e2638; color:#38bdf8; border-color:#38bdf8; font-weight:800; cursor:pointer;" onclick="switchView('rnzone', null)">🎯 RN존 탭</button>
       <button class="btn-action" style="background:#2a2113; color:#fbbf24; border-color:#f59e0b; font-weight:800; cursor:pointer;" onclick="switchView('jongbe', null)">🏆 종베 탭</button>
-      <button class="btn-action" style="background:#0284c7; color:#ffffff; border-color:#38bdf8; font-weight:800; box-shadow:0 2px 8px rgba(2,132,199,0.4); cursor:pointer;" onclick="openLiveBriefingModal()">⚡ 실시간 브리핑</button>
+      <button class="btn-action" style="background:#0284c7; color:#ffffff; border-color:#38bdf8; font-weight:800; box-shadow:0 2px 8px rgba(2,132,199,0.4); cursor:pointer;" onclick="openLiveBriefingModal()">⚡ 브리핑 스냅샷</button>
       <button class="btn-action" style="color:#34d399; border-color:#059669;" onclick="saveTodayToStorage()">💾 오늘 저장</button>
       <button class="btn-action" style="color:#fbbf24; border-color:#b45309;" onclick="openHistoryModal()">📁 보관함</button>
     </div>
@@ -14118,62 +14118,16 @@
         <div>
           <div style="font-size:10px; color:#38bdf8; font-weight:800; letter-spacing:0.5px;">LIVE MARKET FLASH</div>
           <h3 id="liveModalTitle" style="color:#38bdf8; margin:2px 0 0 0; font-size:15px; font-weight:800;">🌙 [야간 세션 긴급 진단] KRX 야간선물 & 美 나스닥·빅테크 랠리 총괄 브리핑</h3>
-          <div style="font-size:11px; color:#94a3b8; margin-top:2px;" id="liveBriefingTime">2026-11-13 17:30 실시간 라이브 진단</div>
+          <div style="font-size:11px; color:#94a3b8; margin-top:2px;" id="liveBriefingTime">브리핑을 열면 최신 스냅샷으로 채워집니다</div>
         </div>
         <button class="btn-close" style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer; line-height:1;" onclick="closeLiveBriefingModal(null)">&times;</button>
       </div>
 
       <div class="modal-body" id="liveModalBody" style="overflow-y:auto; padding:12px 0; max-height:72vh;">
-        <!-- 1. Realtime Night Futures & Macro -->
-        <div style="background:#070c14; border:1px solid #38bdf8; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-          <div style="font-size:12px; font-weight:800; color:#38bdf8; margin-bottom:8px;">📊 실시간 글로벌 매크로 & 야간 파생 시장 크로스체크</div>
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:8px; font-size:11.5px;">
-            <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-              <span style="color:#94a3b8;">🌙 KRX 코스피200 야간선물:</span> <strong style="color:#f43f5e; font-size:13px;">844.05pt (+0.90%</span> ▲)</strong><br>
-              <span style="font-size:10px; color:#4ade80;">외인 +2,450계약 폭풍 순매수 (주간 +12,400계약 롱베팅 지속)</span>
-            </div>
-            <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-              <span style="color:#94a3b8;">🇺🇸 CME E-mini 나스닥 100 선물:</span> <strong style="color:#f43f5e; font-size:13px;">28,387.75 (+1.98%</span> ▲ 폭등 🚀)</strong><br>
-              <span style="font-size:10px; color:#38bdf8;">S&P 500 선물: 6,882.20 (+0.78%</span> ▲ 강세 안착)</span>
-            </div>
-            <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-              <span style="color:#94a3b8;">💻 필라델피아 반도체 (SOX):</span> <strong style="color:#f43f5e; font-size:13px;">9,998.33 (+3.42%</span> ▲ 폭등)</strong><br>
-              <span style="font-size:10px; color:#fbbf24;">엔비디아 CXL 표준 채택 속보에 AI반도체 초강세</span>
-            </div>
-            <div style="background:#111827; padding:8px 10px; border-radius:6px; border:1px solid rgba(255,255,255,0.08);">
-              <span style="color:#94a3b8;">🛡️ VIX / 환율 / 유가:</span> <strong style="color:#4ade80; font-size:13px;">VIX 18.42 (-5.34%</span> ▼)</strong><br>
-              <span style="font-size:10px; color:#38bdf8;">NDF 환율 1,334.20원 (-9.64원 급락) · WTI $87.36 (-1.2%</span>)</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- 2. US Big Tech & Semiconductors -->
-        <div style="background:#0f172a; border:1px solid rgba(168,85,247,0.3); border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-          <div style="font-size:12px; font-weight:800; color:#c084fc; margin-bottom:6px;">🚀 미국 실시간 빅테크 & 반도체 주도주 동향</div>
-          <div style="font-size:11.5px; color:#cbd5e1; line-height:1.55;">
-            • <strong style="color:#38bdf8;">엔비디아 (NVDA +3.4%</span> 급등):</strong> 차세대 서버용 CXL 2.0 메모리 풀링 표준 채택 공식화로 AI 서버 인프라 병목 해소 기대감 반영.<br>
-            • <strong style="color:#38bdf8;">마이크론 (MU +4.2%</span> 폭등):</strong> 차세대 HBM 및 고부가 CXL 메모리 모듈 양산 수주 모멘텀으로 신고가 랠리.<br>
-            • <strong style="color:#e2e8f0;">테슬라(+2.6%</span>), MSFT(+1.8%</span>), 애플(+1.2%</span>):</strong> 기술주 전반으로 글로벌 기관 롱바스켓 자금 유입 가속.
-          </div>
-        </div>
-
-        <!-- 3. Global News & Domestic Policy -->
-        <div style="background:#070c14; border:1px solid rgba(245,158,11,0.25); border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-          <div style="font-size:12px; font-weight:800; color:#f59e0b; margin-bottom:6px;">📰 미국 증시 핵심 속보 & 국내 정책 연동 파급력</div>
-          <div style="font-size:11.5px; color:#cbd5e1; line-height:1.55;">
-            • <strong>미국 10월 근원 CPI 둔화 조짐:</strong> 인플레이션 완화 확인으로 연준의 12월 추가 금리인하 확률 82% 돌파, 글로벌 위험자산 랠리 점화.<br>
-            • <strong>정부 판교·용인 CXL 1조 클러스터 투자:</strong> 장마감 후 산업부 1조 투자 속보와 엔비디아 CXL 채택이 결합되며, 2023년 12월 CXL 3연속 상한가 랠리와 완벽하게 판박이 장세 연출 중.
-          </div>
-        </div>
-
-        <!-- 4. Tactical Playbook -->
-        <div style="background:#06281e; border:1px solid #10b981; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-          <div style="font-size:12px; font-weight:800; color:#34d399; margin-bottom:6px;">🎯 익일 09:00 국내 증시 시초가 예측 및 만쥬 종베 실전 타점</div>
-          <div style="font-size:11.5px; color:#cbd5e1; line-height:1.55;">
-            • <strong>시초가 갭상승 확률:</strong> 코스피200 야간선물 844선 안착과 나스닥 선물 +1.98%</span> 폭등으로 내일 09:00 코스피·코스닥 <strong style="color:#fef08a;">+1.5~2.0%</span> 이상 시초가 갭상승 출발 확률 98% 확정적</strong>.<br>
-            • <strong>만쥬 종베 1순위 주성엔지니어링 (173,000원 종가):</strong> 내일 시초가 +3~5% 갭상승 유력. <strong>09:00~09:05 구간에서 보유 물량의 50% 분할 익절 확정</strong> 후 잔여 물량은 시초가 지지 여부 보며 38,000원 돌파 추종.<br>
-            • <strong>만쥬 종베 2순위 코리아써키트 (21,350원 종가):</strong> 시간외 84억 폭발 + CXL 1조 수혜로 시초가 강한 갭 예상. 22,200~22,800원 1차 목표가 분할 청산 원칙 준수.
-          </div>
+        <div style="padding:34px 18px; text-align:center; color:#94a3b8; line-height:1.7;">
+          <div style="font-size:30px; margin-bottom:10px;">⚡</div>
+          <div style="font-size:13px; font-weight:800; color:#e2e8f0; margin-bottom:6px;">브리핑을 열면 11/13 정시 브리핑 스냅샷이 표시됩니다</div>
+          <div style="font-size:12px;">고정 추론 문구(과거 유사사례·수혜주·확률)는 2026-11-22 제거했습니다. 최신 브리핑은 <b>📊 19:00 애프터마켓 결산 브리핑</b> 버튼이나 정시 브리핑 카드에서 확인하세요.</div>
         </div>
       </div>
 
@@ -14510,7 +14464,7 @@
         var fullTimeStr = '2026-11-13(금) 정시 브리핑 스냅샷 · ' + curHm + ' 열람';
         
         if (t) t.innerText = fullTimeStr;
-        if (titleEl) titleEl.innerText = '⚡ [' + curHm + ' 실시간 심층 종합 브리핑] 시장 팩트 & 애프터마켓 결산 전문';
+        if (titleEl) titleEl.innerText = '⚡ 11/13 정시 브리핑 스냅샷 (' + curHm + ' 열람) — 실시간 아님';
 
         var fullBriefingHtml = `
           <!-- REALTIME COMPREHENSIVE HEADER -->
@@ -14556,7 +14510,7 @@
             <div style="font-size:12px; color:#cbd5e1; line-height:1.7;">
               <p style="margin:0 0 6px 0;">• <strong>선물 시장의 강력한 하방 방어와 안도 랠리:</strong> 오늘(11/13 금) 정규장에서 외국인은 코스피 현물을 -5,521억 원 매도했으나, <strong>코스피200 주간선물에서 무려 +12,400계약의 폭풍 순매수</strong>를 단행하며 하방을 견고히 방어했습니다. 18:00 개장한 KRX 야간선물 역시 837.50(+0.14%)로 836선 위에서 안정적으로 안착했습니다.</p>
               <p style="margin:0 0 6px 0;">• <strong>미국 야간선물 폭등과 다음 주 월요일 시초가 전망:</strong> 미국 CME E-mini 나스닥 100 선물이 <strong>+2.18%(28,442.50)</strong>, 필라델피아 반도체 지수가 <strong>+3.42%</strong> 폭등세를 유지하고 있어, 22:30 미 10월 생산자물가지수(PPI) 발표가 예상치에 부합할 경우 글로벌 빅테크 랠리가 이어져 <strong>다음 주 월요일 국내 증시는 +0.8%~+1.3% 수준의 강력한 갭상승 출발</strong>이 유력합니다.</p>
-              <p style="margin:0; color:#fbbf24;">• <strong>주도 섹터 자금 초압축 현상:</strong> 반도체 CXL(코리아써키트 2,864억, 티엘비), AI 보안(지니언스 2,150억), 시스템반도체(가온칩스 상한가), 건설 인프라(금호건설 상한가 42만 주 잠금)로 시장의 모든 스마트머니가 초압축되었습니다. 정규장 주도주들이 시간외 단일가에서도 굳건한 매수 잔량을 유지하고 있어 익주 주도 테마의 연속성 승률이 90% 이상으로 평가됩니다.</p>
+              <p style="margin:0; color:#fbbf24;">• <strong>주도 섹터 자금 초압축 현상:</strong> 반도체 CXL(코리아써키트 2,864억, 티엘비), AI 보안(지니언스 2,150억), 시스템반도체(가온칩스 상한가), 건설 인프라(금호건설 상한가 42만 주 잠금)로 시장의 모든 스마트머니가 초압축되었습니다. 정규장 주도주들이 시간외 단일가에서도 매수 잔량을 유지했습니다(그날의 기록).</p>
             </div>
           </div>
 
@@ -14602,19 +14556,17 @@
           <div style="background:#111827; border:1px solid #10b981; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
             <div style="font-size:12.5px; font-weight:800; color:#34d399; margin-bottom:8px;">🛡️ 5. DART 마감 전자공시 전수 스캔 및 악재 필터링 진단</div>
             <div style="font-size:12px; color:#cbd5e1; line-height:1.65;">
-              <p style="margin:0 0 5px 0;">• <strong>10대 핵심 주도주 전자공시:</strong> 11/13 장마감 후 지니언스, 코리아써키트, 금호건설, 가온칩스, 주성엔지니어링, 티엘비 등 주도주 전원에 대해 유상증자, 전환사채(CB) 발행, 블록딜 등 <strong style="color:#4ade80;">악재성 지분희석 공시 0건 (100% 클린 🟢)</strong> 확인.</p>
+              <p style="margin:0 0 5px 0;">• <strong>DART 공시 조회:</strong> 이 스냅샷에는 공시 조회 결과가 포함돼 있지 않습니다 — <strong>🚨 DART 공시 레이더</strong>에서 종목코드 기준 실시간 조회로 확인하세요.</p>
               <p style="margin:0; color:#38bdf8;">• <strong>호재성 수주/실적 공시:</strong> 가온칩스(2나노 AI 수주), 금호건설(1.2조 공공 인프라 계약) 등 실질 실적 기반 공시만 유입되어 시장 건전성 우수.</p>
             </div>
           </div>
 
           <!-- SECTION 6: NEWS & HISTORICAL CASE -->
           <div style="background:#1e1b4b; border:1px solid #6366f1; border-radius:8px; padding:12px 14px; margin-bottom:12px;">
-            <div style="font-size:12.5px; font-weight:800; color:#c7d2fe; margin-bottom:8px;">📰 6. 네이버 증권 최신 뉴스 & 과거 유사 사례 심층 분석</div>
+            <div style="font-size:12.5px; font-weight:800; color:#c7d2fe; margin-bottom:8px;">📰 6. 그날의 뉴스 (스냅샷)</div>
             <div style="font-size:12px; color:#e0e7ff; line-height:1.7;">
               <p style="margin:0 0 6px 0;">① <strong>새로 나온 핵심 뉴스:</strong> 미 상무부 CXL 첨단 패키징 지원 및 엔비디아 차세대 루빈 GPU 플랫폼의 CXL 3.1 전격 표준 채택 속보 + 국정원·과기부 차세대 EDR·제로트러스트 가이드라인 배포.</p>
-              <p style="margin:0 0 6px 0;">② <strong>과거 유사 사례 파급력:</strong> 2023년 5월 엔비디아 HBM 공식 채택 당시 한미반도체·이수페타시스는 1차 상한가 이후 300% 이상 폭등 랠리를 기록한 바 있음.</p>
-              <p style="margin:0 0 6px 0;">③ <strong>당시 수혜 종목:</strong> 한미반도체, 이수페타시스, 에스티아이.</p>
-              <p style="margin:0; color:#fbbf24;">④ <strong>이번 유력 수혜 종목:</strong> <strong>코리아써키트 (CXL 3.1 및 FC-BGA 전격 표준 채택 대장)</strong> 및 <strong>지니언스 (EDR 제로트러스트 공공망 의무화 수혜 1위)</strong>.</p>
+              <p style="margin:0; color:#94a3b8;">과거 유사사례·수혜주 추정 문구는 실제 근거가 없어 2026-11-22 제거했습니다.</p>
             </div>
           </div>
 
