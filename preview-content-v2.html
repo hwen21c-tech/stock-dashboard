@@ -18024,7 +18024,10 @@ var CSVoice = (function () {
       cvRR(g, barX, barY, bw, barH, barH / 2); g.fill();
       cvText(g, cvPctText(v), W - 40, y + rowH * 0.56 + barH * 0.78, Math.round(W / 60), col, 'right', 900);
     });
-    cvText(g, '※ 막대·정렬 = 그날 실질 대장(대금 300억↑ 우선) 등락률 · 테마 평균은 구성종목 평균(±100% 이상 이상치 제외) · 대금 KRX 정규장 확정', 40, H - 22, 11, '#475569', 'left', 700, W - 260);
+    var liveMode = !!(list[0] && list[0].basis === 'live');
+    cvText(g, liveMode
+      ? '※ 막대 = 테마 구성종목 평균 등락률(관제탑 실시간) · 상승<하락·이상치 1종목 왜곡 테마는 제외'
+      : '※ 막대·정렬 = 그날 실질 대장(대금 300억↑ 우선) 등락률 · 테마 평균은 구성종목 평균(±100% 이상 이상치 제외) · 대금 KRX 정규장 확정', 40, H - 22, 11, '#475569', 'left', 700, W - 260);
     cvWatermark(g, W, H);
   }
 
