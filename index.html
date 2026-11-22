@@ -16720,42 +16720,47 @@ function renderModalRisk(code, title) {
   }
 
   /* ---------- KRX: 공식 경보 지정 현황만 ---------- */
-  var alert = null, at = '', live = false;
-  try {
-    if (typeof ALERTS !== 'undefined' && ALERTS) {
-      at = ALERTS.at || '';
-      live = ALERTS.src === 'live';
-      if (code && ALERTS.byCode) alert = ALERTS.byCode[code] || null;
+  /*   ALERTS(관제탑 전역)는 '비중법사' 탭을 처음 열 때 채워진다. 다른 탭에서 모달을 열면
+       아직 비어 있을 수 있으므로, 그때는 /api/stock-live?mode=alerts 를 1회 조회해
+       5분간 캐시한다(같은 엔드포인트·같은 공식 자료, 값을 지어내지 않는다). */
+  function krxSnapshotAt() {
+    try { if (typeof ALERTS !== 'undefined' && ALERTS && ALERTS.at) return ALERTS.at; } catch (eSnap) { return ''; }
+    return '';
+  }
+  function renderKrx(alertObj, at, isLive) {
+    if (window.__MODAL_RISK_SEQ !== seq) return;
+    if (!code) {
+      box.style.background = 'rgba(148, 163, 184, 0.07)';
+      box.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+      badge.style.background = 'rgba(148,163,184,0.18)';
+      badge.style.color = '#94a3b8';
+      badge.textContent = '⏳ 조회 전';
+      krxEl.innerHTML = '<span style="color:#cbd5e1;">조회하지 않음</span> <span style="' + muted + '">— 종목코드를 확인하지 못했습니다</span>';
+      return;
     }
-  } catch (eAl) { alert = null; }
-
-  if (alert) {
-    var label = alert.tradeStop ? '거래정지' : (alert.label || '시장경보');
-    var ico = alert.tradeStop ? '⛔' : '⚠️';
-    box.style.background = 'rgba(245, 158, 11, 0.08)';
-    box.style.borderColor = 'rgba(245, 158, 11, 0.35)';
-    badge.style.background = 'rgba(245,158,11,0.18)';
-    badge.style.color = '#fbbf24';
-    badge.textContent = ico + ' ' + label;
-    krxEl.innerHTML = '<span style="color:#fbbf24;">' + ico + ' ' + _riskEsc(label) + '</span> 지정 종목 — ' +
-      (live ? 'KRX 경보 실시간 조회(' + _riskEsc(at || '방금') + ')'
-            : '내장 스냅샷 ' + _riskEsc(at) + ' 기준');
-  } else if (!code) {
-    box.style.background = 'rgba(148, 163, 184, 0.07)';
-    box.style.borderColor = 'rgba(148, 163, 184, 0.3)';
-    badge.style.background = 'rgba(148,163,184,0.18)';
-    badge.style.color = '#94a3b8';
-    badge.textContent = '⏳ 조회 전';
-    krxEl.innerHTML = '<span style="color:#cbd5e1;">조회하지 않음</span> <span style="' + muted + '">— 종목코드를 확인하지 못했습니다</span>';
-  } else if (live) {
-    box.style.background = 'rgba(16, 185, 129, 0.08)';
-    box.style.borderColor = 'rgba(16, 185, 129, 0.25)';
-    badge.style.background = 'rgba(16,185,129,0.18)';
-    badge.style.color = '#34d399';
-    badge.textContent = '🟢 경보 미지정';
-    krxEl.innerHTML = '<span style="color:#4ade80;">공식 경보 지정 없음</span> ' +
-      '<span style="' + muted + '">— KRX 경보 실시간 조회(' + _riskEsc(at || '방금') + ')</span>';
-  } else {
+    if (alertObj) {
+      var label = alertObj.tradeStop ? '거래정지' : (alertObj.label || '시장경보');
+      var ico = alertObj.tradeStop ? '⛔' : '⚠️';
+      box.style.background = 'rgba(245, 158, 11, 0.08)';
+      box.style.borderColor = 'rgba(245, 158, 11, 0.35)';
+      badge.style.background = 'rgba(245,158,11,0.18)';
+      badge.style.color = '#fbbf24';
+      badge.textContent = ico + ' ' + label;
+      krxEl.innerHTML = '<span style="color:#fbbf24;">' + ico + ' ' + _riskEsc(label) + '</span> 지정 종목 — ' +
+        (isLive ? 'KRX 경보 실시간 조회(' + _riskEsc(at || '방금') + ')'
+                : '내장 스냅샷 ' + _riskEsc(at) + ' 기준');
+      return;
+    }
+    if (isLive) {
+      box.style.background = 'rgba(16, 185, 129, 0.08)';
+      box.style.borderColor = 'rgba(16, 185, 129, 0.25)';
+      badge.style.background = 'rgba(16,185,129,0.18)';
+      badge.style.color = '#34d399';
+      badge.textContent = '🟢 경보 미지정';
+      krxEl.innerHTML = '<span style="color:#4ade80;">공식 경보 지정 없음</span> ' +
+        '<span style="' + muted + '">— KRX 경보 실시간 조회(' + _riskEsc(at || '방금') + ')</span>';
+      return;
+    }
     box.style.background = 'rgba(148, 163, 184, 0.07)';
     box.style.borderColor = 'rgba(148, 163, 184, 0.3)';
     badge.style.background = 'rgba(148,163,184,0.18)';
@@ -16763,6 +16768,49 @@ function renderModalRisk(code, title) {
     badge.textContent = '⏳ 실시간 미확인';
     krxEl.innerHTML = '<span style="color:#cbd5e1;">실시간 경보 조회 결과 없음</span> ' +
       '<span style="' + muted + '">— ' + (at ? '내장 스냅샷 ' + _riskEsc(at) + ' · ' : '') + '동적 서버에서 실시간 확인</span>';
+  }
+  function krxIsOtherWarn() { return /^(⚠️|⛔)/.test(badge.textContent || ''); }
+
+  var krxState = null;
+  try { krxState = (typeof ALERTS !== 'undefined' && ALERTS) ? ALERTS : null; } catch (eKrx) { krxState = null; }
+  var krxCache = window.__KRX_MODAL_CACHE;
+  var krxApiOn = true;
+  try { krxApiOn = (typeof API_ON === 'undefined') ? true : !!API_ON; } catch (eKa) { krxApiOn = false; }
+
+  if (krxState && krxState.src === 'live') {
+    renderKrx(code ? ((krxState.byCode || {})[code] || null) : null, krxState.at || '', true);
+  } else if (krxCache && krxCache.byCode && (Date.now() - krxCache.ts) < 300000) {
+    renderKrx(code ? (krxCache.byCode[code] || null) : null, krxCache.at || '', true);
+  } else if (!code) {
+    renderKrx(null, '', false);
+  } else if (!krxApiOn) {
+    renderKrx(null, krxSnapshotAt(), false);
+  } else {
+    box.style.background = 'rgba(148, 163, 184, 0.07)';
+    box.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+    badge.style.background = 'rgba(148,163,184,0.18)';
+    badge.style.color = '#94a3b8';
+    badge.textContent = '⏳ 조회 중';
+    krxEl.innerHTML = '<span style="' + muted + '">KRX 경보 목록 실시간 조회 중…</span>';
+    fetch('/api/stock-live?mode=alerts', { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (b) {
+        if (!b || b.ok !== true || !b.byCode) throw new Error('no alerts');
+        var by = {};
+        Object.keys(b.byCode).forEach(function (k2) {
+          var x2 = b.byCode[k2] || {};
+          by[k2] = { label: x2.alertLabel || null, grade: x2.grade || 0, tradeStop: !!x2.tradeStop };
+        });
+        window.__KRX_MODAL_CACHE = { byCode: by, at: b.generatedAtKst || '', ts: Date.now() };
+        var a3 = by[code] || null;
+        if (krxIsOtherWarn() && !a3) return;   /* 다른 소스가 이미 공식 경보를 표시 중이면 그 문장을 지키다 */
+        renderKrx(a3, b.generatedAtKst || '', true);
+      })
+      .catch(function () {
+        if (window.__MODAL_RISK_SEQ !== seq) return;
+        if (krxIsOtherWarn()) return;
+        renderKrx(null, krxSnapshotAt(), false);
+      });
   }
 }
 window.renderModalRisk = renderModalRisk;
