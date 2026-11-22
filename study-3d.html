@@ -7633,6 +7633,13 @@ if (document.readyState === 'loading') {
         ask(cur, v);
       });
     }
+    var helpUl = document.querySelector('#help .box ul');
+    if (helpUl && !helpUl.getAttribute('data-ai')) {
+      helpUl.setAttribute('data-ai', '1');
+      var li = document.createElement('li');
+      li.innerHTML = '<b>AI 직원 5명</b> — 화면 아래 <b>AI 직원</b> 칩(시황 · 블로그/쇼츠 · 1초 체커 · 특가 · 체험단)을 누르면 그 자리로 카메라가 이동하고, <b>오늘 실측</b> 요약과 질문창이 열립니다. 3D 캐릭터를 직접 눌러도 됩니다.';
+      helpUl.appendChild(li);
+    }
     if (!window.__aiEsc) {
       window.__aiEsc = true;
       window.addEventListener('keydown', function (e) { if (e.code === 'Escape' && cur) close(); });
@@ -7665,7 +7672,10 @@ if (document.readyState === 'loading') {
     try { bindUI(); } catch (e) { console.error('[ai] ui', e); }
     ready = true;
     var h = el('#hint');
-    if (h && !h.getAttribute('data-ai')) { h.setAttribute('data-ai', '1'); }
+    if (h && !h.getAttribute('data-ai')) {
+      h.setAttribute('data-ai', '1');
+      h.textContent = '아래 AI 직원 칩으로 실시간 시황·초안·특가·체험단 질문 · 구역 버튼으로 이동 · 캐릭터를 누르면 카드';
+    }
   };
   window.__extTick = function (dt, now) {
     if (typeof pTick === 'function') { try { pTick(dt, now); } catch (e) { } }
