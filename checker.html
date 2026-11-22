@@ -262,11 +262,23 @@
     state.busy = true;
     msg('실측 시세를 읽는 중…', 'kind');
     renderLoading(q);
-    fetchJson(apiQuery() + '?codes=' + encodeURIComponent(q) + '&fresh=1', 11000).then(function(j){
+    fetchJson(apiQuery() + '?codes=' + encodeURIComponent(q) + '&fresh=1', 13000).then(function(j){
       var rows = (j && j.stocks) || [];
+      var isCode = /^\d{6}$/.test(q);
       var hit = rows.filter(function(s){
         return String(s.name || '').trim() === q || String(s.code || '') === q;
-      })[0] || rows[0];
+      })[0] || null;
+      /* 이름으로 물었을 때 서버가 코드로 바꿔 준 경우 그 코드로 찾는다 */
+      if (!hit && j && j.resolved && j.resolved.length){
+        for (var i = 0; i < j.resolved.length; i++){
+          var rc = j.resolved[i] && j.resolved[i].code;
+          if (!rc) continue;
+          hit = rows.filter(function(s){ return String(s.code || '') === String(rc); })[0] || null;
+          if (hit) break;
+        }
+      }
+      /* 그래도 없으면 6자리 코드일 때만 첫 행을 쓴다 — 이름 질의에 다른 종목을 보여주지 않는다 */
+      if (!hit && isCode && rows.length === 1) hit = rows[0];
       if (!hit) throw new Error('not_found');
       var basisTxt = '실측 · ' + (j.generatedAtKst || '');
       show(hit, { live: true, basis: basisTxt, tradeDate: (hit.tradedAt || '').slice(0, 10), marketStatus: j.marketStatus });
@@ -291,8 +303,8 @@
       });
     }).catch(function(e){
       var why = (e && e.message) || '';
-      if (why === 'not_found') msg('그 이름으로는 종목을 찾지 못했습니다 — 6자리 코드로 넣어 보세요(예: 삼성전자 005930).', 'bad');
-      else if (why === 'not_in_snapshot') msg('이 종목은 스냅샷에 없습니다. 실시간 API가 열려 있을 때 다시 시도해 주세요.', 'bad');
+      if (why === 'not_found') msg('그 이름으로는 종목을 찾지 못했습니다 — 이름을 정확히 쓰거나 6자리 코드를 넣어 보세요(예: 삼성전자 · 005930).', 'bad');
+      else if (why === 'not_in_snapshot') msg('그 이름·코드로는 종목을 찾지 못했습니다 — 이름을 정확히 쓰거나 6자리 코드를 넣어 보세요(예: 삼성전자 · 005930).', 'bad');
       else msg('시세를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요(' + why + ').', 'bad');
       var out = $('out'); if (out){ out.hidden = true; out.innerHTML = ''; }
       var ins = $('insight'); if (ins){ ins.hidden = true; ins.innerHTML = ''; }
