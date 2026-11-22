@@ -664,10 +664,41 @@
     }
     .review-header {
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
+      align-items: center;
+      gap: 4px 8px;
+      width: 100%;
       font-weight: 800;
       color: var(--indigo-ink);
-      margin-bottom: 4px;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: inherit;
+      text-align: left;
+      line-height: 1.35;
+    }
+    .review-header:focus-visible { outline: 2px solid rgba(56, 189, 248, 0.6); outline-offset: 2px; border-radius: 4px; }
+    .review-header-title { min-width: 0; }
+    .review-header-meta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 4px 6px;
+      margin-left: auto;
+      font-size: 10px;
+      font-weight: 800;
+    }
+    .review-toggle-label {
+      white-space: nowrap;
+      background: var(--line-softer);
+      border: 1px solid var(--line-hair);
+      padding: 2px 6px;
+      border-radius: 999px;
     }
     .review-quote {
       color: var(--quote-ink);
@@ -760,6 +791,71 @@
       color: var(--gold-soft);
     }
   
+    /* 🔽 아코디언(접기/펼치기): 8대 특가 허브 · 카드 실측 내용 */
+    .hub-toggle {
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      font-family: inherit;
+      text-align: left;
+      color: inherit;
+    }
+    .hub-toggle-title {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 6px;
+      min-width: 0;
+      flex: 1 1 0%;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent-ink);
+    }
+    .hub-toggle-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      margin-left: auto;
+      font-size: 10.5px;
+      font-weight: 800;
+      color: var(--sky-ink);
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.42);
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .hub-toggle:hover .hub-toggle-badge,
+    .hub-toggle:focus-visible .hub-toggle-badge { background: rgba(56, 189, 248, 0.28); border-color: rgba(56, 189, 248, 0.72); }
+    .hub-toggle:focus-visible { outline: 2px solid rgba(56, 189, 248, 0.6); outline-offset: 3px; border-radius: 6px; }
+    .hub-body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .hub-body > .hub-body-inner { overflow: hidden; min-height: 0; }
+    #travelHubSection.is-open .hub-body { grid-template-rows: 1fr; }
+    .review-body {
+      display: grid;
+      grid-template-rows: 0fr;
+      transition: grid-template-rows 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .review-body > .review-body-inner { overflow: hidden; min-height: 0; }
+    .review-box.is-open .review-body { grid-template-rows: 1fr; }
+    @media (prefers-reduced-motion: reduce) {
+      .hub-body, .review-body { transition: none; }
+    }
+
     /* ☀️ 라이트 모드: 어두운 인라인 배경을 밝게 (8대 특가 허브) */
     html[data-theme="light"] #travelHubSection { background: #ffffff !important; border-color: #d7e3ee !important; }
     html[data-theme="light"] #travelHubSection a { background: #f8fafc !important; border-color: #e2e8f0 !important; }
@@ -1005,14 +1101,16 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 
   <!-- POPULAR DEAL FINDING SITES DIRECT HUB -->
   <div id="travelHubSection" style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 14px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-      <div style="font-size: 13px; font-weight: 800; color: var(--accent-ink); display: flex; align-items: center; gap: 6px;">
+    <button type="button" class="hub-toggle" id="travelHubToggle" onclick="toggleTravelHub()" aria-expanded="false" aria-controls="travelHubBody">
+      <span class="hub-toggle-title">
         <span>🌐 대한민국 8대 특가 발굴 인기 사이트 관제 허브</span>
-        <span style="font-size: 10px; background: rgba(56,189,248,0.15); color: var(--sky-ink); padding: 2px 6px; border-radius: 4px;">실시간 모니터링 연동</span>
-      </div>
-      <span style="font-size: 11px; color: var(--muted);">원클릭 바로가기 ➔</span>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px;">
+        <span style="font-size: 10px; background: rgba(56,189,248,0.15); color: var(--sky-ink); padding: 2px 6px; border-radius: 4px; white-space: nowrap;">실시간 모니터링 연동</span>
+      </span>
+      <span class="hub-toggle-badge" id="travelHubToggleLabel">펼치기 ▾</span>
+    </button>
+    <div class="hub-body" id="travelHubBody">
+      <div class="hub-body-inner">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 8px; padding-top: 10px;">
       <a href="https://booking.kakao.com/search" target="_blank" style="background: rgba(254,229,0,0.08); border: 1px solid rgba(254,229,0,0.3); border-radius: 8px; padding: 10px 14px; text-decoration: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; transition: all 0.2s;" onmouseover="this.style.background='rgba(254,229,0,0.14)'" onmouseout="this.style.background='rgba(254,229,0,0.08)'">
         <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0;">
           <span style="font-size: 12.5px; font-weight: 800; color: var(--kakao-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">💬 카카오톡 예약하기</span>
@@ -1069,6 +1167,8 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
         </div>
         <span style="font-size: 10px; font-weight: 800; color: var(--gold-soft2); background: rgba(245,158,11,0.2); border: 1px solid rgba(245,158,11,0.4); padding: 4px 8px; border-radius: 5px; white-space: nowrap; flex-shrink: 0;">바로가기 ›</span>
       </a>
+    </div>
+      </div>
     </div>
   </div>
 
@@ -1771,13 +1871,15 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
                   <strong style="color: var(--accent-ink);">👨‍👩‍👧‍👦 가족 맞춤 팁:</strong> ${d.family_fit}
                 </div>
 
-                <!-- Real Parent Reviews -->
+                <!-- Real Parent Reviews (접기/펼치기 · 기본 접힘) -->
                 <div class="review-box">
-                  <div class="review-header">
-                    <span>🔎 예약 화면에서 실측 확인한 내용</span>
-                    <span style="font-size: 10px; color: var(--accent-ink);">${DEALS_SCAN_META && DEALS_SCAN_META.scannedAt ? DEALS_SCAN_META.scannedAt + ' 실측' : '실측 확인'}</span>
+                  <button type="button" class="review-header" onclick="toggleReviewBox(this)" aria-expanded="false">
+                    <span class="review-header-title">🔎 예약 화면에서 실측 확인한 내용</span>
+                    <span class="review-header-meta" style="color: var(--accent-ink);"><span class="review-date">${DEALS_SCAN_META && DEALS_SCAN_META.scannedAt ? DEALS_SCAN_META.scannedAt + ' 실측' : '실측 확인'}</span><span class="review-toggle-label">상세 보기 ▾</span></span>
+                  </button>
+                  <div class="review-body">
+                    <div class="review-body-inner">${reviewsHtml}</div>
                   </div>
-                  ${reviewsHtml}
                 </div>
               </div>
 
@@ -1875,13 +1977,15 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
                   <strong style="color: var(--good-ink);">🎪 핵심 즐길거리:</strong> ${k.highlights}
                 </div>
 
-                <!-- Real Parent Reviews -->
+                <!-- Real Parent Reviews (접기/펼치기 · 기본 접힘) -->
                 <div class="review-box">
-                  <div class="review-header">
-                    <span>🔎 예약 화면에서 실측 확인한 내용</span>
-                    <span style="font-size: 10px; color: var(--good-ink);">${DEALS_SCAN_META && DEALS_SCAN_META.scannedAt ? DEALS_SCAN_META.scannedAt + ' 실측' : '실측 확인'}</span>
+                  <button type="button" class="review-header" onclick="toggleReviewBox(this)" aria-expanded="false">
+                    <span class="review-header-title">🔎 예약 화면에서 실측 확인한 내용</span>
+                    <span class="review-header-meta" style="color: var(--good-ink);"><span class="review-date">${DEALS_SCAN_META && DEALS_SCAN_META.scannedAt ? DEALS_SCAN_META.scannedAt + ' 실측' : '실측 확인'}</span><span class="review-toggle-label">상세 보기 ▾</span></span>
+                  </button>
+                  <div class="review-body">
+                    <div class="review-body-inner">${reviewsHtml}</div>
                   </div>
-                  ${reviewsHtml}
                 </div>
               </div>
 
@@ -1919,6 +2023,29 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       var cardsHtml = list.map(upcomingCardHtml).join('');
 
       container.innerHTML = cardsHtml;
+    }
+
+    // 🔽 아코디언 1: 8대 특가 사이트 관제 허브 (기본 접힘)
+    function toggleTravelHub(force) {
+      var sec = document.getElementById('travelHubSection');
+      var btn = document.getElementById('travelHubToggle');
+      var lbl = document.getElementById('travelHubToggleLabel');
+      if (!sec) return;
+      var open = (typeof force === 'boolean') ? force : !sec.classList.contains('is-open');
+      if (open) { sec.classList.add('is-open'); } else { sec.classList.remove('is-open'); }
+      if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (lbl) lbl.textContent = open ? '접기 ▴' : '펼치기 ▾';
+    }
+
+    // 🔽 아코디언 2: 카드 내부 '실측 확인한 내용' (기본 접힘)
+    function toggleReviewBox(btn) {
+      var box = (btn && btn.closest) ? btn.closest('.review-box') : null;
+      if (!box) return;
+      var open = !box.classList.contains('is-open');
+      if (open) { box.classList.add('is-open'); } else { box.classList.remove('is-open'); }
+      if (btn.setAttribute) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      var lbl = btn.querySelector ? btn.querySelector('.review-toggle-label') : null;
+      if (lbl) lbl.textContent = open ? '접기 ▴' : '상세 보기 ▾';
     }
 
     // EVENT LISTENERS & INITIAL RENDER
