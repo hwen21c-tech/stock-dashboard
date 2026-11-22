@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7F3E9">
+<meta name="description" content="종목명이나 코드 하나로 오늘 거래대금 300억 통과 여부·등락률·시가/고가/저가 대비 위치를 1초에 확인하는 폭스시그널 무료 체커.">
+<title>🔍 내 종목 300억·추세 1초 체커 — 폭스시그널</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦊</text></svg>">
+<style>
+  :root{
+    --cream:#F7F3E9; --card:#FFFDF7; --ink:#20180F; --sub:#6B5E4C; --mute:#8E8271; --line:#E3DAC8;
+    --up:#B3261E; --down:#1E3A8A; --gold:#C9A25E; --wine:#781B33; --ok:#1F6B3A; --warn:#B45309;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--cream); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+    font-size:15px; line-height:1.55; letter-spacing:-.01em;
+    padding:14px 12px calc(28px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:520px;margin:0 auto}
+  header.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:2px 0 12px}
+  .brand{font-weight:900;font-size:16px;letter-spacing:-.02em}
+  .brand small{display:block;font-size:11.5px;font-weight:700;color:var(--sub);letter-spacing:0}
+  .toplinks{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+  .toplinks a{
+    font-size:11.5px;font-weight:800;color:var(--wine);text-decoration:none;
+    border:1px solid rgba(120,27,51,.30);border-radius:999px;padding:5px 9px;background:rgba(120,27,51,.05);
+  }
+  .hero{background:linear-gradient(135deg,#FFFDF7,#F2EADB);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;box-shadow:0 6px 18px rgba(32,24,15,.05)}
+  .hero h1{margin:0 0 3px;font-size:19px;font-weight:900;letter-spacing:-.03em}
+  .hero p{margin:0;font-size:12.3px;color:var(--sub);font-weight:650}
+  .search{display:flex;gap:7px;margin-top:12px}
+  .search input{
+    flex:1 1 auto;min-width:0;background:#fff;border:1.5px solid #D9CDB6;border-radius:11px;
+    padding:12px 12px;font-size:15px;font-weight:700;color:var(--ink);letter-spacing:0;
+  }
+  .search input::placeholder{color:#A99C86;font-weight:600}
+  .search input:focus{outline:3px solid rgba(201,162,94,.45);outline-offset:1px;border-color:var(--gold)}
+  .search button{
+    flex:0 0 auto;border:0;border-radius:11px;padding:12px 15px;font-size:14px;font-weight:900;color:#FFF9EC;
+    background:linear-gradient(160deg,#781B33,#5A1126);letter-spacing:-.02em;box-shadow:0 4px 12px rgba(120,27,51,.28);
+  }
+  .search button:active{transform:translateY(1px)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  .chip{
+    border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:999px;
+    padding:7px 11px;font-size:12.2px;font-weight:800;letter-spacing:-.01em;
+  }
+  .chip b{color:var(--wine)}
+  .chip small{font-weight:700;color:var(--mute);font-size:10.5px}
+  .chip:active{background:#F2EADB}
+  .chiphead{display:flex;align-items:center;gap:6px;margin:12px 0 2px;font-size:11.5px;font-weight:900;color:var(--sub)}
+  #msg{margin-top:10px;font-size:12.5px;font-weight:800;border-radius:11px;padding:10px 12px;display:none}
+  #msg.show{display:block}
+  #msg.bad{background:#FDECEA;color:#8B1A12;border:1px solid #F3C6C0}
+  #msg.kind{background:#FFF7E4;color:#8A5A0B;border:1px solid #EFDDAE}
+  #msg.ok{background:#EAF6EC;color:var(--ok);border:1px solid #C3E2C9}
+
+  .card{margin-top:12px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:0 6px 18px rgba(32,24,15,.05)}
+  .res-head{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap}
+  .res-name{font-size:19px;font-weight:900;letter-spacing:-.03em}
+  .res-code{font-size:11.5px;font-weight:800;color:var(--mute);background:#F2EADB;border-radius:6px;padding:2px 6px;margin-left:1px}
+  .res-basis{margin-left:auto;font-size:10.8px;font-weight:800;color:var(--mute);text-align:right;line-height:1.35}
+  .price{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin:8px 0 2px}
+  .price .p{font-size:29px;font-weight:900;letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+  .price .c{font-size:15px;font-weight:900} .up{color:var(--up)} .down{color:var(--down)} .flat{color:var(--mute)}
+  .kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px}
+  .kpi .k{background:#FBF7EC;border:1px solid var(--line);border-radius:12px;padding:9px 10px}
+  .kpi .k span{display:block;font-size:10.8px;font-weight:800;color:var(--mute)}
+  .kpi .k b{font-size:15.5px;font-weight:900;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .bar{height:9px;border-radius:999px;background:#EDE4D3;overflow:hidden;margin-top:10px;position:relative}
+  .bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#C9A25E,#781B33)}
+  .bar.miss i{background:linear-gradient(90deg,#E0C48A,#C58B3A)}
+  .barlabel{display:flex;justify-content:space-between;font-size:10.8px;font-weight:800;color:var(--mute);margin-top:5px}
+  .verdict{margin-top:12px;border-radius:12px;padding:11px 12px;font-size:13.2px;font-weight:750;line-height:1.6;background:#FBF7EC;border:1px solid var(--line)}
+  .verdict b{font-weight:900}
+  .verdict .tag{display:inline-block;font-size:10.8px;font-weight:900;border-radius:6px;padding:2px 7px;margin-right:6px;background:#781B33;color:#FFF9EC;vertical-align:1px}
+  .verdict .tag.no{background:#8E8271}
+  .pos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+  .pos div{background:#FBF7EC;border:1px solid var(--line);border-radius:10px;padding:7px 8px;text-align:center}
+  .pos span{display:block;font-size:10.4px;font-weight:800;color:var(--mute)}
+  .pos b{font-size:12.8px;font-weight:900;font-variant-numeric:tabular-nums}
+
+  .links{margin-top:14px;display:grid;gap:7px}
+  .links a{
+    display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);
+    background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:800;
+  }
+  .links a b{margin-left:auto;color:var(--wine);font-size:12px;font-weight:900}
+  .links a small{display:block;font-size:11px;font-weight:650;color:var(--mute)}
+  footer{margin-top:14px;font-size:11px;color:var(--mute);line-height:1.65;font-weight:650}
+  footer b{color:var(--sub)}
+  .skel{height:12px;border-radius:6px;background:linear-gradient(90deg,#EFE7D7,#F8F3E7,#EFE7D7);background-size:200% 100%;animation:sk 1.1s infinite}
+  @keyframes sk{0%{background-position:0 0}100%{background-position:-200% 0}}
+  @media (max-width:400px){
+    body{padding:11px 10px calc(24px + env(safe-area-inset-bottom));font-size:14.5px}
+    .hero{padding:12px}
+    .hero h1{font-size:17.5px}
+    .search input{padding:11px 10px;font-size:14.5px}
+    .search button{padding:11px 12px;font-size:13px}
+    .price .p{font-size:26px}
+    .kpi{grid-template-columns:1fr 1fr}
+    .res-name{font-size:17.5px}
+    .toplinks a{font-size:11px;padding:4px 8px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">🦊 폭스시그널<small>300억·추세 1초 체커</small></div>
+    <nav class="toplinks">
+      <a href="https://stock-dashboard-live-6frm.vercel.app/" target="_blank" rel="noopener">📊 관제탑</a>
+      <a href="https://foxsignal.tistory.com" target="_blank" rel="noopener">🟠 블로그</a>
+      <a href="https://www.youtube.com/@폭스시그널" target="_blank" rel="noopener">▶ 유튜브</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>내 종목, 300억은 넘었나?</h1>
+    <p>종목명·코드 하나면 <b>거래대금 300억 통과 여부 · 등락률 · 시가/고가/저가 대비 위치</b>를 바로 보여 줍니다. 가격이 올라도 돈이 안 실리면 신호가 아닙니다.</p>
+    <div class="search">
+      <input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" spellcheck="false"
+             placeholder="종목명 또는 코드 (예: 한미약품 · 128940)" maxlength="30" aria-label="종목명 또는 6자리 종목코드">
+      <button id="go" type="button">1초 체커</button>
+    </div>
+    <div class="chiphead" id="chipHead" hidden>오늘의 300억↑ 대장주</div>
+    <div class="chips" id="chips"></div>
+    <div id="msg" role="status" aria-live="polite"></div>
+  </section>
+
+  <section id="out" hidden></section>
+
+  <section class="links">
+    <a href="https://stock-dashboard-live-6frm.vercel.app/" target="_blank" rel="noopener"><span>📊</span><span>실시간 수급·300억↑ 관제탑<small>지수·수급·주도 테마·NXT 애프터</small></span><b>열기 ↗</b></a>
+    <a href="https://foxsignal.tistory.com" target="_blank" rel="noopener"><span>🟠</span><span>폭스시그널 블로그<small>오늘 시황 해설 · 성적표 복기</small></span><b>열기 ↗</b></a>
+    <a href="https://www.youtube.com/@폭스시그널/shorts" target="_blank" rel="noopener"><span>▶</span><span>폭스시그널 쇼츠<small>50초로 보는 오늘의 신호</small></span><b>열기 ↗</b></a>
+    <a href="https://hwen21c-tech.github.io/stock-dashboard/deals.html" target="_blank" rel="noopener"><span>🏷️</span><span>패밀리 특가 레이더<small>키즈·여행 30%↑ 특가</small></span><b>열기 ↗</b></a>
+  </section>
+
+  <footer>
+    <b>기준</b> — 거래대금 300억은 폭스시그널 <b>만쥬 ②차트·거래대금</b> 기준선입니다. 대금은 통합(KRX+NXT·시간외) 실측이고, 위치(%)는 그날 시가·고가·저가 대비 현재가입니다.
+    값은 관제탑 API 실측을 그대로 보여 주며, 통신이 막히면 <b>마지막 거래일 스냅샷</b>으로 대신합니다(그때는 화면에 기준일을 표시). 이 도구는 정보 정리이고 투자 권유가 아닙니다 — 판단과 책임은 본인 몫입니다.
+  </footer>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var $ = function(id){ return document.getElementById(id); };
+  var LIVE_BASE = 'https://stock-dashboard-live-6frm.vercel.app';
+  var state = { snap: null, score: null, busy: false, last: null };
+
+  /* ---------- 숫자·색 도우미 ---------- */
+  function n(v){ var x = Number(v); return isFinite(x) ? x : null; }
+  function won(v){ var x = n(v); return x == null ? '—' : Math.round(x).toLocaleString('ko-KR') + '원'; }
+  function pct(v){ var x = n(v); if (x == null) return '—'; return (x > 0 ? '+' : '') + x.toFixed(2) + '%'; }
+  function eok(v){
+    var x = n(v); if (x == null) return '—';
+    if (Math.abs(x) >= 10000) return (x / 10000).toFixed(2).replace(/\.00$/,'') + '조';
+    return Math.round(x).toLocaleString('ko-KR') + '억';
+  }
+  function dirClass(v){ var x = n(v); return x == null ? 'flat' : (x > 0 ? 'up' : x < 0 ? 'down' : 'flat'); }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[c];
+    });
+  }
+  function msg(text, kind){
+    var m = $('msg'); if (!m) return;
+    if (!text){ m.className = ''; m.textContent = ''; return; }
+    m.className = 'show ' + (kind || 'kind');
+    m.textContent = text;
+  }
+
+  /* ---------- 데이터: 실측 API → 없으면 정적 스냅샷 ---------- */
+  function fetchJson(url, ms){
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var tm = setTimeout(function(){ try { if (ctrl) ctrl.abort(); } catch(e){} }, ms || 9000);
+    return fetch(url, { cache: 'no-store', signal: ctrl ? ctrl.signal : undefined })
+      .then(function(r){ clearTimeout(tm); if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .catch(function(e){ clearTimeout(tm); throw e; });
+  }
+  function loadSnapshot(){
+    if (state.snap) return Promise.resolve(state.snap);
+    return fetchJson('./data/stock_snapshot_latest.json', 7000).then(function(j){
+      state.snap = j || null; return state.snap;
+    }).catch(function(){ state.snap = null; return null; });
+  }
+  function loadScore(){
+    if (state.score) return Promise.resolve(state.score);
+    return fetchJson('./data/signal_scorecard.json', 7000).then(function(j){
+      state.score = j || null; chips(); return state.score;
+    }).catch(function(){ state.score = null; return null; });
+  }
+
+  function apiQuery(){
+    var api = (location.pathname.indexOf('/stock-dashboard') > -1 || /github\.io$/.test(location.hostname))
+      ? LIVE_BASE + '/api/stock-live' : '/api/stock-live';
+    return api;
+  }
+
+  function checkStock(q){
+    q = String(q || '').trim();
+    if (!q){ msg('종목명이나 6자리 코드를 넣어 주세요.', 'bad'); $('q').focus(); return; }
+    if (state.busy) return;
+    state.busy = true;
+    msg('실측 시세를 읽는 중…', 'kind');
+    renderLoading(q);
+    fetchJson(apiQuery() + '?codes=' + encodeURIComponent(q) + '&fresh=1', 11000).then(function(j){
+      var rows = (j && j.stocks) || [];
+      var hit = rows.filter(function(s){
+        return String(s.name || '').trim() === q || String(s.code || '') === q;
+      })[0] || rows[0];
+      if (!hit) throw new Error('not_found');
+      var basisTxt = '관제탑 실측 · ' + (j.generatedAtKst || '') + (j.marketStatus === 'CLOSE' ? ' · 정규장 마감' : '');
+      show(hit, { live: true, basis: basisTxt, tradeDate: (hit.tradedAt || '').slice(0, 10), marketStatus: j.marketStatus });
+      msg('', '');
+    }).catch(function(){
+      /* 실시간이 막히면 마지막 거래일 스냅샷으로 */
+      return loadSnapshot().then(function(snap){
+        if (!snap || !(snap.stocks || []).length) throw new Error('no_snapshot');
+        var rows = snap.stocks || [];
+        var hit = rows.filter(function(s){
+          return String(s.name || '').trim() === q || String(s.code || '') === q;
+        })[0];
+        if (!hit) throw new Error('not_in_snapshot');
+        show({
+          code: hit.code, name: hit.name, price: hit.close, changePct: hit.changePct,
+          open: hit.open, high: hit.high, low: hit.low,
+          prevClose: hit.close != null && hit.changePct != null ? hit.close / (1 + hit.changePct / 100) : null,
+          valueTotal: hit.valueEok != null ? hit.valueEok * 1e8 : null,
+          tradedAt: hit.tradeDate
+        }, { live: false, basis: '마지막 거래일 스냅샷 · ' + (snap.tradeDate || ''), tradeDate: snap.tradeDate });
+        msg('실시간 API에 닿지 않아 마지막 거래일(' + (snap.tradeDate || '') + ') 종가 스냅샷으로 보여 줍니다.', 'kind');
+      });
+    }).catch(function(e){
+      var why = (e && e.message) || '';
+      if (why === 'not_found') msg('그 이름으로는 종목을 찾지 못했습니다 — 6자리 코드로 넣어 보세요(예: 삼성전자 005930).', 'bad');
+      else if (why === 'not_in_snapshot') msg('이 종목은 스냅샷에 없습니다. 실시간 API가 열려 있을 때 다시 시도해 주세요.', 'bad');
+      else msg('시세를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요(' + why + ').', 'bad');
+      var out = $('out'); if (out){ out.hidden = true; out.innerHTML = ''; }
+    }).then(function(){ state.busy = false; });
+  }
+
+  /* ---------- 화면 ---------- */
+  function renderLoading(q){
+    var out = $('out');
+    out.hidden = false;
+    out.innerHTML = '<div class="card"><div class="res-name">' + esc(q) + '</div>' +
+      '<div class="skel" style="width:58%;margin-top:12px"></div>' +
+      '<div class="skel" style="width:100%;margin-top:10px"></div>' +
+      '<div class="skel" style="width:74%;margin-top:8px"></div></div>';
+  }
+
+  function positionPct(price, low, high){
+    var p = n(price), l = n(low), h = n(high);
+    if (p == null || l == null || h == null || h <= l) return null;
+    return Math.max(0, Math.min(100, (p - l) / (h - l) * 100));
+  }
+
+  function diagnosis(d){
+    var val = n(d.valueTotal), chg = n(d.changePct), pos = positionPct(d.price, d.low, d.high);
+    var highGap = (n(d.high) && n(d.price) != null) ? (n(d.price) - n(d.high)) / n(d.high) * 100 : null;
+    var openGap = (n(d.open) && n(d.price) != null) ? (n(d.price) - n(d.open)) / n(d.open) * 100 : null;
+    var pass = val != null && val >= 300e8;
+    var tag = pass ? '<span class="tag">300억 통과</span>' : '<span class="tag no">300억 미달</span>';
+    var body = [];
+    if (val == null){
+      body.push('거래대금 값을 받지 못해 ②대금 기준은 판정하지 않았습니다(없는 숫자를 만들지 않습니다).');
+    } else if (!pass){
+      body.push('오늘 통합 거래대금 <b>' + eok(Math.round(val / 1e8)) + '</b>으로 기준선 <b>300억</b>에 못 미칩니다 — 가격이 올라도 자금이 안 실린 상승이라 폭스시그널 <b>②대금 기준 탈락</b>입니다.');
+    } else {
+      body.push('오늘 통합 거래대금 <b>' + eok(Math.round(val / 1e8)) + '</b>으로 <b>300억을 넘겼습니다</b> — 가격에 자금이 실린 축입니다.');
+    }
+    if (highGap != null){
+      if (highGap > -2) body.push('현재가가 <b>고가권</b>(고가 대비 ' + highGap.toFixed(2) + '%)에 붙어 있어 <b>고가권 유지</b>로 봅니다.');
+      else if (highGap < -7) body.push('고가 대비 <b>' + highGap.toFixed(2) + '%</b>로 밀려 <b>윗꼬리 물림 구간</b>입니다 — 추격 매수 자리 아닙니다.');
+      else body.push('고가 대비 ' + highGap.toFixed(2) + '% — 고가와 저가 사이 중간권입니다.');
+    }
+    if (pos != null) body.push('오늘 범위의 <b>' + pos.toFixed(1) + '%</b> 지점(0%=저가 · 100%=고가)에 있습니다.');
+    if (chg != null && openGap != null){
+      if (chg > 0 && openGap > 0) body.push('시가보다 높고 전일보다도 <b>+' + chg.toFixed(2) + '%</b> — 시초 갭을 되돌리지 않고 위로 간 날입니다.');
+      else if (chg > 0 && openGap <= 0) body.push('전일 대비 <b>+' + chg.toFixed(2) + '%</b>지만 시가 아래 — <b>갭하락 뒤 되돌림</b> 구간입니다.');
+      else if (chg < 0 && openGap > 0) body.push('전일 대비 <b>' + chg.toFixed(2) + '%</b>, 시가보다도 낮습니다 — <b>시초 갭상승을 밀어낸</b> 모양입니다.');
+      else if (chg < 0) body.push('전일 대비 <b>' + chg.toFixed(2) + '%</b> — 시초부터 약했던 날입니다.');
+    }
+    return tag + body.join(' ');
+  }
+
+  function show(d, meta){
+    var out = $('out');
+    var price = n(d.price), chg = n(d.changePct);
+    var val = n(d.valueTotal);
+    var valEok = val == null ? null : Math.round(val / 1e8);
+    var pass = valEok != null && valEok >= 300;
+    var pos = positionPct(d.price, d.low, d.high);
+    var closePos = (n(d.high) && price != null && n(d.high) > 0) ? (price - n(d.high)) / n(d.high) * 100 : null;
+    var openPos = (n(d.open) && price != null && n(d.open) > 0) ? (price - n(d.open)) / n(d.open) * 100 : null;
+    var lowPos = (n(d.low) && price != null && n(d.low) > 0) ? (price - n(d.low)) / n(d.low) * 100 : null;
+    var pctOfBar = valEok == null ? 0 : Math.max(2, Math.min(100, valEok / 300 * 100));
+    var h = '';
+    h += '<div class="card">';
+    h += '<div class="res-head"><div><span class="res-name">' + esc(d.name || '') + '</span>' +
+         (d.code ? '<span class="res-code">' + esc(d.code) + '</span>' : '') +
+         (d.market ? ' <span class="res-code">' + esc(d.market) + '</span>' : '') + '</div>' +
+         '<div class="res-basis">' + esc(meta.basis || '') + (meta.live ? '<br>실시간 값' : '<br>종가 기준') + '</div></div>';
+    h += '<div class="price"><span class="p ' + dirClass(chg) + '">' + won(price) + '</span>' +
+         '<span class="c ' + dirClass(chg) + '">' + pct(chg) + '</span>' +
+         (n(d.change) != null ? '<span style="font-size:12px;font-weight:800;color:var(--mute)">' + (n(d.change) > 0 ? '+' : '') + Math.round(n(d.change)).toLocaleString('ko-KR') + '원</span>' : '') + '</div>';
+    h += '<div class="kpi">' +
+      '<div class="k"><span>통합 거래대금</span><b class="' + (pass ? 'up' : 'flat') + '">' + (valEok == null ? '—' : eok(valEok)) + '</b>' +
+      '<div class="bar ' + (pass ? '' : 'miss') + '"><i style="width:' + pctOfBar + '%"></i></div>' +
+      '<div class="barlabel"><span>0</span><span>기준 300억</span></div></div>' +
+      '<div class="k"><span>시가 / 고가 / 저가</span><b style="font-size:12.6px">' + won(d.open) + '</b>' +
+      '<div style="font-size:12.2px;font-weight:850;color:var(--sub);margin-top:2px">고 ' + won(d.high) + ' · 저 ' + won(d.low) + '</div>' +
+      (d.prevClose != null ? '<div style="font-size:11px;font-weight:750;color:var(--mute);margin-top:2px">전일 종가 ' + won(d.prevClose) + '</div>' : '') +
+      '</div></div>';
+    h += '<div class="pos">' +
+      '<div><span>시가 대비</span><b class="' + dirClass(openPos) + '">' + (openPos == null ? '—' : pct(openPos)) + '</b></div>' +
+      '<div><span>고가 대비</span><b class="' + dirClass(closePos) + '">' + (closePos == null ? '—' : pct(closePos)) + '</b></div>' +
+      '<div><span>저가 대비</span><b class="' + dirClass(lowPos) + '">' + (lowPos == null ? '—' : pct(lowPos)) + '</b></div>' +
+      '</div>';
+    h += '<div class="verdict">' + diagnosis(d) + '</div>';
+    h += '<div style="margin-top:9px;font-size:10.8px;color:var(--mute);font-weight:750">기준일 ' + esc(meta.tradeDate || (d.tradedAt || '').slice(0,10) || '—') +
+      ' · 대금은 통합(KRX+NXT·시간외) 기준 · 위치 %는 그날 시가·고가·저가 대비입니다.</div>';
+    h += '</div>';
+    out.innerHTML = h;
+    out.hidden = false;
+    out.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    state.last = d;
+  }
+
+  /* ---------- 300억↑ 대장주 1클릭 ---------- */
+  function chips(){
+    var host = $('chips'); if (!host) return;
+    var list = [];
+    var sc = state.score;
+    if (sc && (sc.leaders || []).length){
+      list = sc.leaders.slice(0, 4).map(function(x){
+        return { name: x.name, code: x.code, valueEok: x.valueEok, changePct: x.changePct, from: '성적표' };
+      });
+    } else if (state.snap && (state.snap.stocks || []).length){
+      list = state.snap.stocks.filter(function(s){ return (n(s.valueEok) || 0) >= 300; })
+        .sort(function(a, b){ return (n(b.valueEok) || 0) - (n(a.valueEok) || 0); })
+        .slice(0, 4)
+        .map(function(s){ return { name: s.name, code: s.code, valueEok: s.valueEok, changePct: s.changePct, from: '스냅샷' }; });
+    }
+    if (!list.length){ host.innerHTML = ''; $('chipHead').hidden = true; return; }
+    var date = (sc && sc.asOfTradingDay) || (state.snap && state.snap.tradeDate) || '';
+    $('chipHead').hidden = false;
+    $('chipHead').innerHTML = '오늘의 300억↑ 대장주' + (date ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(date) + ' 기준</span>' : '');
+    host.innerHTML = list.map(function(x){
+      var cls = dirClass(x.changePct);
+      return '<button class="chip" type="button" data-code="' + esc(x.code || x.name) + '" data-name="' + esc(x.name) + '">' +
+        '<b>' + esc(x.name) + '</b> <small>' + eok(x.valueEok) + ' · <span class="' + cls + '">' + pct(x.changePct) + '</span></small></button>';
+    }).join('');
+    Array.prototype.forEach.call(host.querySelectorAll('.chip'), function(btn){
+      btn.addEventListener('click', function(){
+        $('q').value = btn.getAttribute('data-name') || btn.getAttribute('data-code') || '';
+        checkStock(btn.getAttribute('data-code') || btn.getAttribute('data-name'));
+      });
+    });
+  }
+
+  /* ---------- 시작 ---------- */
+  $('go').addEventListener('click', function(){ checkStock($('q').value); });
+  $('q').addEventListener('keydown', function(e){
+    if (e.key === 'Enter'){ e.preventDefault(); checkStock($('q').value); }
+  });
+  var pre = '';
+  try {
+    var m = /[?&]q=([^&]+)/.exec(location.search);
+    if (m) pre = decodeURIComponent(m[1].replace(/\+/g, ' '));
+    var m2 = /[?&]code=([^&]+)/.exec(location.search);
+    if (!pre && m2) pre = decodeURIComponent(m2[1]);
+  } catch(e){ pre = ''; }
+  loadScore().then(loadSnapshot).then(function(){ chips(); }).catch(function(){});
+  if (pre){ $('q').value = pre; checkStock(pre); }
+})();
+</script>
+</body>
+</html>
