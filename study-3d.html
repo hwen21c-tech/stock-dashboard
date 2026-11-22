@@ -678,6 +678,177 @@ body.focus #vignette{opacity:1}
   #hint{bottom:calc(116px + env(safe-area-inset-bottom)) !important}
 }
 
+
+/* ================= 12. AI 직원 5명 — 도크 · 카드 · 대화 ================= */
+/* 하단 AI 직원 도크 (구역 버튼 위) */
+#aiDock{
+  position:fixed; z-index:21; left:50%; transform:translateX(-50%);
+  bottom:calc(116px + env(safe-area-inset-bottom));
+  display:flex; align-items:center; gap:3px; padding:4px 5px; max-width:calc(100vw - 12px);
+  border-radius:999px; overflow-x:auto; scrollbar-width:none;
+  background:linear-gradient(180deg,rgba(17,27,44,.93),rgba(9,15,26,.97));
+  border:1px solid var(--line); box-shadow:0 12px 30px rgba(0,0,0,.42); backdrop-filter:blur(14px);
+}
+#aiDock::-webkit-scrollbar{display:none}
+#aiDock .aiDock-t{
+  display:flex; align-items:center; gap:4px; padding:0 7px 0 5px; flex:0 0 auto;
+  font-size:9px; font-weight:800; letter-spacing:.06em; color:var(--faint); white-space:nowrap;
+}
+#aiDock .aiDock-t em{font-style:normal; color:var(--mint); font-size:10px}
+.aichip{
+  display:flex; align-items:center; gap:4px; height:30px; padding:0 9px; border-radius:999px;
+  color:#c9d8e8; font-size:10.5px; font-weight:700; white-space:nowrap; flex:0 0 auto;
+  background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.07);
+  transition:background .15s,color .15s,border-color .15s,transform .12s;
+}
+.aichip i{font-style:normal; font-size:12px; line-height:1}
+.aichip:hover{background:rgba(255,255,255,.09); color:#fff}
+.aichip:active{transform:scale(.96)}
+.aichip.on{background:rgba(79,227,193,.16); color:#b6ffee; border-color:rgba(79,227,193,.42)}
+.aichip .dot{width:5px; height:5px; border-radius:50%; background:#4fe3c1; box-shadow:0 0 6px #4fe3c1; display:none}
+.aichip.on .dot{display:block}
+
+/* 카드 패널 — 데스크톱 우측 */
+#aiPanel{
+  position:fixed; z-index:33; right:10px; top:52px; width:352px;
+  bottom:calc(162px + env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; overflow:hidden;
+  border-radius:var(--r); border:1px solid var(--line2);
+  background:linear-gradient(180deg,rgba(17,27,44,.97),rgba(8,13,22,.985));
+  box-shadow:0 24px 60px rgba(0,0,0,.55); backdrop-filter:blur(18px) saturate(1.2);
+  transform:translateX(calc(100% + 26px)); opacity:0; pointer-events:none;
+  transition:transform .26s cubic-bezier(.2,.8,.2,1), opacity .2s;
+}
+#aiPanel.on{transform:none; opacity:1; pointer-events:auto}
+body.aiopen #side{opacity:0; pointer-events:none; transform:translateX(14px); transition:opacity .2s,transform .2s}
+
+.ai-hd{display:flex; align-items:center; gap:9px; padding:11px 11px 10px 12px; border-bottom:1px solid rgba(255,255,255,.08)}
+.ai-ava{
+  width:34px; height:34px; border-radius:11px; display:grid; place-items:center; font-size:18px; flex:0 0 auto;
+  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); box-shadow:inset 0 0 12px rgba(79,227,193,.10);
+}
+.ai-hd .nm{flex:1; min-width:0}
+.ai-hd b{display:block; font-size:13px; font-weight:800; letter-spacing:-.02em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ai-hd i{display:block; font-style:normal; font-size:10px; color:var(--dim); margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ai-x{width:28px; height:28px; border-radius:9px; color:#c3d2e2; font-size:14px; display:grid; place-items:center; flex:0 0 auto; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1)}
+.ai-x:hover{background:rgba(255,255,255,.12); color:#fff}
+
+.ai-body{flex:1; overflow-y:auto; overscroll-behavior:contain; padding:10px 11px 12px; display:flex; flex-direction:column; gap:10px}
+.ai-body > *{flex:0 0 auto}
+.ai-sec{border-radius:12px; border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.028); padding:9px 10px; overflow:hidden}
+.ai-sec-h{display:flex; align-items:center; gap:6px; margin-bottom:7px}
+.ai-sec-h b{font-size:10.5px; font-weight:800; letter-spacing:-.01em; color:#dce8f4}
+.ai-sec-h .st{margin-left:auto; font-family:var(--mono); font-size:9px; color:var(--faint); white-space:nowrap}
+.ai-sec-h .rf{width:22px; height:22px; border-radius:7px; color:var(--faint); font-size:11px; display:grid; place-items:center; flex:0 0 auto}
+.ai-sec-h .rf:hover{background:rgba(255,255,255,.09); color:#fff}
+.ai-sec-h .rf.spin{animation:aispin .9s linear infinite}
+@keyframes aispin{to{transform:rotate(360deg)}}
+
+.ai-row{display:flex; align-items:baseline; gap:6px; padding:3px 0; font-size:11px; min-width:0; overflow:hidden}
+.ai-row .lb{color:#a9bacd; font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:0 1 auto}
+.ai-row .vl{margin-left:auto; font-family:var(--mono); font-size:11.5px; font-weight:800; color:#f2f8ff; white-space:nowrap; min-width:0; overflow:hidden; text-overflow:ellipsis}
+.ai-row .pc{font-family:var(--mono); font-size:10.5px; font-weight:800; min-width:52px; text-align:right; white-space:nowrap}
+.ai-row.up .pc{color:#4fe3a6} .ai-row.dn .pc{color:#ff8095} .ai-row.fl .pc{color:#8fa3b8}
+.ai-themes{display:flex; flex-direction:column; gap:4px; margin-top:5px}
+.ai-theme{display:flex; align-items:flex-start; gap:6px; font-size:10.5px; line-height:1.4; padding:4px 6px; border-radius:8px; background:rgba(255,255,255,.04); min-width:0; overflow:hidden}
+.ai-theme b{color:#ffd98a; font-weight:800; white-space:nowrap}
+.ai-theme span{color:#cfdcea; min-width:0; word-break:keep-all; overflow-wrap:anywhere}
+.ai-note{margin:6px 0 0; font-size:9.5px; color:#7b8b9e; line-height:1.5}
+.ai-empty{font-size:10.5px; color:var(--faint); padding:4px 0}
+
+.ai-src{display:flex; flex-wrap:wrap; gap:4px}
+.ai-src a{
+  display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:8px;
+  font-size:9.5px; font-weight:700; color:#c8d9ea; background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.07); max-width:100%;
+}
+.ai-src a:hover{background:rgba(79,227,193,.14); color:#c9fff2; border-color:rgba(79,227,193,.3)}
+.ai-src a.file{font-family:var(--mono); font-size:9px; color:#9fb3c6}
+
+.ai-msgs{display:flex; flex-direction:column; gap:7px}
+.am{max-width:100%; border-radius:11px; padding:7px 9px; font-size:11px; line-height:1.55; word-break:keep-all; overflow-wrap:anywhere; overflow:hidden}
+.am.me{align-self:flex-end; background:rgba(79,227,193,.14); border:1px solid rgba(79,227,193,.28); color:#cbfff2; font-weight:600}
+.am.bot{background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.07); color:#dbe7f2}
+.am.bot .hl{display:block; font-size:11px; font-weight:800; color:#eaf4ff; margin-bottom:4px}
+.am.bot ul{margin:0; padding-left:14px}
+.am.bot li{margin:2px 0}
+.am.bot .tag{display:inline-block; margin-top:5px; font-size:9px; font-weight:700; color:#8fa3b8; background:rgba(255,255,255,.05); padding:1px 6px; border-radius:999px}
+.am.bot.fb{border-color:rgba(255,203,107,.28); background:rgba(255,203,107,.07)}
+.am.bot.fb .tag{color:#ffd9a0; background:rgba(255,203,107,.12)}
+.am.bot.er{border-color:rgba(255,128,149,.28); background:rgba(255,128,149,.07)}
+.am .waits{display:inline-flex; gap:3px; align-items:center; height:12px}
+.am .waits i{width:5px; height:5px; border-radius:50%; background:var(--mint); opacity:.35; animation:aiw 1s infinite}
+.am .waits i:nth-child(2){animation-delay:.15s} .am .waits i:nth-child(3){animation-delay:.3s}
+@keyframes aiw{0%,100%{opacity:.25; transform:translateY(0)}50%{opacity:1; transform:translateY(-2px)}}
+
+.ai-stock{display:flex; gap:5px; margin-top:7px}
+.ai-stock input{flex:1; min-width:0; height:30px; border-radius:8px; padding:0 9px; font-size:11px; color:#eaf4ff;
+  background:rgba(10,17,28,.9); border:1px solid rgba(255,255,255,.12); outline:none}
+.ai-stock input:focus{border-color:rgba(79,227,193,.45)}
+.ai-stock button{height:30px; padding:0 11px; border-radius:8px; font-size:11px; font-weight:800; color:#04231e;
+  background:linear-gradient(180deg,#57e8c6,#22bfa0); flex:0 0 auto}
+
+.ai-ft{border-top:1px solid rgba(255,255,255,.08); padding:8px 10px calc(9px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap:6px}
+.ai-quick{display:flex; gap:5px; flex-wrap:wrap}
+.ai-qbtn{
+  flex:1 1 0; min-width:0; height:29px; padding:0 8px; border-radius:8px; font-size:10.5px; font-weight:700;
+  color:#d6e6f4; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.08);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.ai-qbtn:hover{background:rgba(79,227,193,.14); color:#c9fff2; border-color:rgba(79,227,193,.32)}
+.ai-qbtn:disabled{opacity:.5}
+.ai-form{display:flex; gap:5px}
+.ai-form input{flex:1; min-width:0; height:34px; border-radius:9px; padding:0 10px; font-size:11.5px; color:#eaf4ff;
+  background:rgba(10,17,28,.92); border:1px solid rgba(255,255,255,.12); outline:none}
+.ai-form input:focus{border-color:rgba(79,227,193,.45)}
+.ai-form button{width:38px; height:34px; border-radius:9px; font-size:13px; color:#04231e;
+  background:linear-gradient(180deg,#57e8c6,#22bfa0); flex:0 0 auto}
+.ai-form button:disabled{opacity:.55}
+#aiBack{display:none}
+
+/* 좁은 화면 — 하단 시트 */
+@media (max-width:860px){
+  #aiPanel{
+    left:8px; right:8px; width:auto; top:auto;
+    bottom:calc(146px + env(safe-area-inset-bottom));
+    max-height:min(66vh,600px); border-radius:16px;
+    transform:translateY(calc(100% + 24px));
+  }
+  #aiPanel.on{transform:none}
+  body.aiopen #side{opacity:1; pointer-events:auto; transform:none}
+  body.aiopen #backdrop{opacity:0; pointer-events:none}
+  /* 배경 탭으로 닫기 — 직원 도크(z 21)는 가리지 않게 그 아래에 둔다 */
+  #aiBack{display:block; position:fixed; inset:0; z-index:20; background:rgba(3,7,12,.42); opacity:0; pointer-events:none; transition:.22s}
+  #aiBack.on{opacity:1; pointer-events:auto}
+  .ai-body{padding:9px 10px 10px}
+}
+@media (max-width:720px){
+  #aiDock{bottom:calc(106px + env(safe-area-inset-bottom)); gap:2px; padding:3px 4px}
+  #aiDock .aiDock-t{display:none}
+  .aichip{height:28px; padding:0 8px; font-size:10px; gap:3px}
+  .aichip i{font-size:11px}
+  .ai-hd{padding:10px 10px 9px 11px}
+  .ai-ava{width:30px; height:30px; font-size:16px; border-radius:10px}
+  .ai-hd b{font-size:12.5px}
+  .ai-sec{padding:8px 9px}
+  .ai-qbtn{height:28px; font-size:10px}
+}
+@media (max-width:420px){
+  .aichip{padding:0 7px; font-size:9.5px}
+  .aichip i{font-size:10.5px}
+}
+@media (max-height:560px){
+  #aiDock{bottom:calc(114px + env(safe-area-inset-bottom))}
+  #aiPanel{bottom:calc(140px + env(safe-area-inset-bottom)); max-height:min(72vh,440px)}
+}
+
+/* 이름표 · 대화 블록 보조 */
+.av-label.ai{box-shadow:0 6px 18px rgba(0,0,0,.42); border-color:rgba(255,255,255,.24)}
+.av-label.ai em{color:#9fe8d8}
+.ai-line{margin:4px 0; font-size:10.5px; line-height:1.45; overflow-wrap:anywhere}
+.ai-line b{display:block; font-size:9.5px; font-weight:700; color:#8fa3b8; margin-bottom:1px}
+.ai-line span{color:#dbe7f2}
+.ai-sec-t{font-weight:800; font-size:10.5px; color:#9fe8d8; margin:6px 0 2px}
 </style>
 </head>
 <body>
@@ -805,6 +976,38 @@ body.focus #vignette{opacity:1}
     <div class="mfoot" id="mFoot"></div>
   </div>
 </div>
+
+<!-- ===== AI 직원 5명 — 하단 도크 + 카드 ===== -->
+<div id="aiDock" role="toolbar" aria-label="AI 직원 선택">
+  <span class="aiDock-t"><em>●</em>AI 직원</span>
+</div>
+<div id="aiBack" aria-hidden="true"></div>
+<section id="aiPanel" aria-hidden="true" aria-label="AI 직원 카드">
+  <div class="ai-hd">
+    <span class="ai-ava" id="aiAva">📊</span>
+    <div class="nm"><b id="aiName">시황 AI</b><i id="aiRole">시황 애널리스트</i></div>
+    <button class="ai-x" id="aiClose" type="button" aria-label="카드 닫기">✕</button>
+  </div>
+  <div class="ai-body" id="aiBody">
+    <div class="ai-sec">
+      <div class="ai-sec-h"><b>오늘 실측</b><span class="st" id="aiStamp">불러오는 중…</span>
+        <button class="rf" id="aiRefresh" type="button" title="실측 다시 불러오기" aria-label="실측 새로고침">↻</button></div>
+      <div id="aiLive"><p class="ai-empty">실측 데이터를 불러오는 중…</p></div>
+    </div>
+    <div class="ai-sec">
+      <div class="ai-sec-h"><b>담당 파일 · 소스</b></div>
+      <div class="ai-src" id="aiSrc"></div>
+    </div>
+    <div class="ai-msgs" id="aiMsgs"></div>
+  </div>
+  <div class="ai-ft">
+    <div class="ai-quick" id="aiQuick"></div>
+    <form class="ai-form" id="aiForm" autocomplete="off">
+      <input id="aiInput" maxlength="120" placeholder="이 직원에게 물어보기" aria-label="AI 직원에게 질문">
+      <button type="submit" id="aiSend" aria-label="보내기">➤</button>
+    </form>
+  </div>
+</section>
 
 <div id="boot">
   <div class="boot-in">
@@ -1594,6 +1797,7 @@ function pickAllowed(u) {
     var kl = (window.__s3d2 && window.__s3d2.keyLevel) ? (window.__s3d2.keyLevel(u.key) | 0) : 0;
     return kl === lv;
   }
+  if (u.pick === 'aiStaff') return (u.lv | 0) === lv;
   if (u.pick === 'stairs') return lv === 0;
   return true;
 }
@@ -2417,6 +2621,9 @@ function handleClick(cx, cy) {
   } else if (ud.pick === 'stairs') {
     // 1층 계단을 누르면 계단 앞까지 걸어가 2층으로 올라간다
     if (window.__s3d2 && window.__s3d2.climb) window.__s3d2.climb();
+  } else if (ud.pick === 'aiStaff') {
+    // AI 직원(책상·의자·아바타) 클릭 → 실시간 카드 열기 + 카메라 줌인
+    if (window.__aiOffice && window.__aiOffice.open) window.__aiOffice.open(ud.key);
   } else if (ud.pick === 'prop') {
     // 확장팩 소품(전광판·원칙보드·용어사전·여우·고양이·커피) — 인사이트 팝업/미니게임
     if (window.__s3dExt && window.__s3dExt.api) window.__s3dExt.api.prop(ud.key);
@@ -6535,6 +6742,7 @@ if (document.readyState === 'loading') {
   V.zone = goto2;
   V.walkAt = walkAt; V.climb = climb; V.boundsFor = boundsFor;
   V.keyLevel = function (k) { return (KEYLV[k] === undefined) ? 0 : KEYLV[k]; };
+  V.setLevel = function (lv) { applyLevel(Number(lv) | 0); };
   V.state = function () {
     return {
       level: V.level, zone: X.zone, modal: V.modal,
@@ -6558,6 +6766,942 @@ if (document.readyState === 'loading') {
     feed: feedFish, fire: fireGaze, tent: tentRest, lp: cycleLP,
     prop: function (k) { return propRoute(k) || (X.api && X.api.prop ? X.api.prop(k) : null); },
     achSet: function (o) { if (o) { for (var k in o) if (ach[k] !== undefined) ach[k] = Number(o[k]) || 0; saveAch(); refreshTrophies(); } return ach; }
+  };
+})();
+</script>
+<script>
+/* ============================================================
+   AI 직원 5명 — 전용 자리 · 역할 이름표 · 실시간 질문/응답 카드
+   기존 1층(라운지·트레이딩·스튜디오) · 2층(전략실) 위에 얹는 4번째 모듈.
+   · 3D  : 직원별 책상·모니터·명패 + 앉은 아바타 + 머리 위 역할 이름표, 클릭 시 카메라 줌인
+   · UI  : 하단 AI 직원 도크 + 카드(데스크톱 우측 / 모바일 하단 시트, 닫기 명확)
+   · 답변: 실측 API/JSON 을 컨텍스트로 /api/content-ai 에 질의,
+           실패하면 방금 받아온 실측값으로 즉석 요약(없는 숫자는 만들지 않는다)
+   ============================================================ */
+(function () {
+  'use strict';
+  if (window.__aiOffice) return;
+
+  var API = 'https://stock-dashboard-live-6frm.vercel.app';
+  var CHECKER = 'https://hwen21c-tech.github.io/foxsignal-checker/';
+  var TG = 'https://t.me/fox_signal_stock';
+  var PDATA = 'https://hwen21c-tech.github.io/stock-dashboard/data/';
+  var FY2 = 3.90;                       /* 2층 바닥면(s3d2 와 동일) */
+  var CAM_A = 3.80, CAM_B = 4.00, CAM_Y = 2.02, CAM_Y2 = 2.05;
+
+  /* ---------------- 0. 직원 정의 ---------------- */
+  var STAFF = [
+    {
+      k: 'market', emoji: '📊', name: '시황 AI', role: '시황 애널리스트', where: '1층 · 트레이딩 데스크',
+      accent: '#8fd6ff', hex: 0x8fd6ff, shirt: 0x39536e, pants: 0x2b3442, hair: 0x241c16, skin: 0xf3cea9,
+      pos: [-11.50, -2.05], face: [0.33, 0.94], lv: 0, side: 1, deskW: 2.10,
+      quick: ['📊 지금 실시간 시황 알려줘', '📈 주도 테마 상승 종목만'],
+      src: [['/api/stock-live', API + '/api/stock-live'],
+            ['/api/tabs-live', API + '/api/tabs-live?tab=themes'],
+            ['last-dynamic-themes.json', API + '/data/last-dynamic-themes.json'],
+            ['supply-latest.json', API + '/data/supply-latest.json']],
+      links: [['🏛 관제탑 열기', API + '/'], ['🔍 1초 체커', CHECKER]]
+    },
+    {
+      k: 'content', emoji: '✍️', name: '블로그·쇼츠 AI', role: '콘텐츠 PD', where: '1층 · 스튜디오 편집 데스크',
+      accent: '#ffd28a', hex: 0xffd28a, shirt: 0x6b7f9a, pants: 0x39404e, hair: 0x2f241c, skin: 0xf5d6b6,
+      pos: [-8.40, 0.90], face: [0, 1], lv: 0, side: 1, deskW: 2.00,
+      quick: ['✍️ 오늘 초안 뭐 있어?', '🎬 주말 쇼츠 대본 요약해줘'],
+      src: [['content_auto_latest.json', API + '/data/content_auto_latest.json']],
+      links: [['✍️ 콘텐츠 스튜디오', API + '/content-v2.html'], ['📰 네이버 블로그', 'https://blog.naver.com/hwen21c']]
+    },
+    {
+      k: 'checker', emoji: '🔍', name: '1초 체커 AI', role: '종목 체커', where: '2층 · 전략실 분석 터미널',
+      accent: '#9fe8c8', hex: 0x9fe8c8, shirt: 0x4a6b5c, pants: 0x2f3947, hair: 0x2a211a, skin: 0xefc7a2,
+      pos: [-1.35, -3.00], face: [0, 1], lv: 1, side: 1, deskW: 2.10,
+      quick: ['🔍 삼성전자 지금 어때?', '📈 오늘 거래대금 1위 종목'],
+      src: [['/api/stock-live?codes=…', API + '/api/stock-live?codes=005930'],
+            ['stock_snapshot_latest.json', API + '/data/stock_snapshot_latest.json']],
+      links: [['🔍 1초 체커 열기', CHECKER], ['🏛 관제탑', API + '/']],
+      stock: true
+    },
+    {
+      k: 'deals', emoji: '🏷️', name: '특가·핫템 AI', role: '특가 레이더 MD', where: '2층 · 코너 라운지 데스크',
+      accent: '#ff9a9a', hex: 0xff9a9a, shirt: 0x8a5a5f, pants: 0x39404e, hair: 0x241c16, skin: 0xf6d9bb,
+      pos: [5.50, 0.95], face: [0, -1], lv: 1, side: 1, camA: 2.4, camB: 4.4, deskW: 2.00,
+      quick: ['🏷️ 오늘 특가 뭐 있어?', '🧳 가족 여행 숙소 특가만'],
+      src: [['latest-deals.json', API + '/data/latest-deals.json'],
+            ['hot-items-latest.json', API + '/data/hot-items-latest.json']],
+      links: [['🏷️ 특가 레이더', API + '/deals.html'], ['🛍 추천샵', API + '/picks.html']]
+    },
+    {
+      k: 'revu', emoji: '🍯', name: '체험단·알림 AI', role: '생활·텔레그램 비서', where: '1층 · 리셉션 데스크',
+      accent: '#b6a4ff', hex: 0xb6a4ff, shirt: 0x7a6f9e, pants: 0x2f3947, hair: 0x3a2b22, skin: 0xf3cea9,
+      pos: [4.30, 2.85], face: [-1, 0], lv: 0, side: 1, deskW: 2.00,
+      quick: ['🍯 오늘 새 체험단 있어?', '📣 텔레그램 채널 알려줘'],
+      src: [['revu-campaigns.json', PDATA + 'revu-campaigns.json']],
+      links: [['📣 텔레그램 채널', TG], ['🍯 레뷰 캠페인', 'https://www.revu.net/']]
+    }
+  ];
+
+  var R = {};                            /* k → 실행 상태 */
+  var cur = null, ready = false;
+  var gAi1 = null, gAi2 = null;
+
+  /* ---------------- 1. 유틸 ---------------- */
+  function el(s, r) { return (r || document).querySelector(s); }
+  function els(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function esc(s) {
+    return String(s === undefined || s === null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function nf(v, d) {
+    var n = Number(v);
+    if (!isFinite(n)) return '—';
+    var f = d || 0;
+    return n.toLocaleString('ko-KR', { minimumFractionDigits: f, maximumFractionDigits: f });
+  }
+  function spct(v) {
+    var n = Number(v);
+    if (!isFinite(n)) return '—';
+    return (n > 0 ? '+' : '') + n.toFixed(2) + '%';
+  }
+  function tone(v) { var n = Number(v); return n > 0 ? 'up' : (n < 0 ? 'dn' : 'fl'); }
+  function cut(s, n) {
+    s = String(s === undefined || s === null ? '' : s).replace(/\s+/g, ' ').trim();
+    return s.length > n ? s.slice(0, n - 1) + '…' : s;
+  }
+  function briefTitle(t) { return String(t || '').replace(/^[^0-9A-Za-z가-힣]+/, '').trim(); }
+  function tm(v) {
+    var m = String(v === undefined || v === null ? '' : v).match(/(\d{1,2}):(\d{2})/);
+    return m ? ((m[1].length < 2 ? '0' : '') + m[1] + ':' + m[2]) : '';
+  }
+  function hhmm(iso) {
+    if (!iso) return '';
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return cut(iso, 16);
+    try { return d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false }); }
+    catch (e) { return ''; }
+  }
+  function getJSON(url, ms) {
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    var to = ctl ? setTimeout(function () { try { ctl.abort(); } catch (e) { } }, ms || 14000) : 0;
+    return fetch(url, { cache: 'no-store', signal: ctl ? ctl.signal : undefined }).then(function (r) {
+      if (to) clearTimeout(to);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).catch(function (e) {
+      if (to) clearTimeout(to);
+      throw e;
+    });
+  }
+  function byKey(k) { for (var i = 0; i < STAFF.length; i++) if (STAFF[i].k === k) return STAFF[i]; return null; }
+
+  /* ---------------- 2. 3D — 자리 · 명패 · 아바타 ---------------- */
+  function screenCanvas(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+
+  function plateTex(text, sub, accent) {
+    var c = screenCanvas(384, 112), x = c.getContext('2d');
+    x.fillStyle = '#0d1522'; x.fillRect(0, 0, 384, 112);
+    x.strokeStyle = accent; x.globalAlpha = 0.85; x.lineWidth = 4; x.strokeRect(5, 5, 374, 102); x.globalAlpha = 1;
+    x.fillStyle = '#ffffff'; x.textBaseline = 'middle';
+    x.font = 'bold 30px system-ui,"Apple SD Gothic Neo",sans-serif';
+    x.fillText(text, 20, sub ? 42 : 56);
+    if (sub) { x.fillStyle = accent; x.font = '600 19px system-ui,sans-serif'; x.fillText(sub, 20, 78); }
+    return mkTex(c, false);
+  }
+
+  function paintScreen(st, head, lines, accent) {
+    var o = st.scr; if (!o) return;
+    var c = o.c, x = c.getContext('2d'), W2 = c.width, H2 = c.height;
+    x.fillStyle = '#08101c'; x.fillRect(0, 0, W2, H2);
+    x.fillStyle = accent; x.globalAlpha = 0.16; x.fillRect(0, 0, W2, 44); x.globalAlpha = 1;
+    x.fillStyle = accent; x.fillRect(0, 44, W2, 2);
+    x.fillStyle = accent; x.font = 'bold 19px system-ui,sans-serif'; x.textBaseline = 'middle';
+    x.fillText(head, 14, 21);
+    var top = 48, step = Math.max(20, Math.min(30, (H2 - 66) / 5));
+    x.font = '600 15px system-ui,"Apple SD Gothic Neo",sans-serif';
+    for (var i = 0; i < lines.length && i < 5; i++) {
+      x.fillStyle = i === 0 ? 'rgba(255,255,255,.94)' : 'rgba(214,232,246,.72)';
+      x.fillText(String(lines[i]).slice(0, 32), 14, top + i * step);
+    }
+    // 하단 게이지
+    for (var b = 0; b < 12; b++) {
+      x.fillStyle = 'rgba(255,255,255,' + (0.05 + (b % 4) * 0.02) + ')';
+      x.fillRect(14 + b * 40, H2 - 18, 30, 7);
+    }
+    x.fillStyle = accent; x.globalAlpha = 0.5;
+    x.fillRect(14 + 40 * (Math.floor(Date.now() / 3000) % 12), H2 - 18, 30, 7); x.globalAlpha = 1;
+    o.t.needsUpdate = true;
+  }
+
+  function buildStation(st) {
+    var g = new THREE.Group();
+    var fy = st.lv ? FY2 : 0;
+    var r = st.rot + Math.PI, DW = st.deskW || 2.0;
+    g.position.set(st.desk[0], fy, st.desk[1]);
+    g.rotation.y = r;
+
+    // 다리
+    [[-DW / 2 + 0.09, -0.33], [DW / 2 - 0.09, -0.33], [-DW / 2 + 0.09, 0.33], [DW / 2 - 0.09, 0.33]].forEach(function (p) {
+      g.add(box(0.055, 0.75, 0.055, 0x2a3038, p[0], 0.375, p[1], { mat: mat(0x2a3038, { rough: 0.45, metal: 0.5 }), shadow: false }));
+    });
+    // 상판
+    g.add(box(DW, 0.055, 0.88, 0x333a45, 0, 0.755, 0, { mat: mat(0x333a45, { rough: 0.55, metal: 0.12 }) }));
+    g.add(box(DW - 0.07, 0.012, 0.83, 0x404853, 0, 0.786, 0, { shadow: false, rough: 0.75 }));
+    // 앞 엣지 LED (직원 색)
+    g.add(box(DW - 0.26, 0.012, 0.028, st.hex, 0, 0.726, 0.442, { shadow: false, emissive: st.hex, ei: 1.2 }));
+    // 모니터 받침 (낮게 — 앉은 직원의 얼굴을 가리지 않도록 화면을 책상 가까이에 둔다)
+    g.add(cyl(0.06, 0.065, 0.025, 12, 0x1d232b, 0, 0.79, -0.26, { shadow: false, metal: 0.6, rough: 0.35 }));
+    g.add(box(0.05, 0.14, 0.05, 0x242a33, 0, 0.87, -0.26, { shadow: false, metal: 0.6, rough: 0.35 }));
+    // 와이드 모니터
+    var cv = screenCanvas(512, 180), tx = mkTex(cv, false);
+    var sMat = new THREE.MeshStandardMaterial({ map: tx, emissive: 0xffffff, emissiveMap: tx, emissiveIntensity: 0.5, roughness: 0.32, metalness: 0.08 });
+    var sm = new THREE.Mesh(new THREE.PlaneGeometry(1.12, 0.39), sMat);
+    sm.position.set(0, 1.00, -0.22); g.add(sm);
+    g.add(box(1.18, 0.45, 0.028, 0x151b24, 0, 1.00, -0.245, { shadow: false, rough: 0.5, metal: 0.35 }));
+    st.scr = { c: cv, t: tx, mesh: sm, mat: sMat };
+    // 보조 세로 모니터 (옆으로)
+    var cv2 = screenCanvas(200, 260), tx2 = mkTex(cv2, false);
+    var sm2 = new THREE.Mesh(new THREE.PlaneGeometry(0.30, 0.39),
+      new THREE.MeshStandardMaterial({ map: tx2, emissive: 0xffffff, emissiveMap: tx2, emissiveIntensity: 0.42, roughness: 0.34 }));
+    sm2.position.set(DW / 2 - 0.20, 1.01, -0.14); sm2.rotation.y = -0.36; g.add(sm2);
+    g.add(box(0.34, 0.43, 0.022, 0x151b24, DW / 2 - 0.21, 1.01, -0.155, { shadow: false, rotY: -0.36 }));
+    g.add(cyl(0.03, 0.035, 0.22, 10, 0x242a33, DW / 2 - 0.22, 0.90, -0.16, { shadow: false, metal: 0.5, rough: 0.4 }));
+    (function () {
+      var x = cv2.getContext('2d');
+      x.fillStyle = '#08101c'; x.fillRect(0, 0, 200, 260);
+      x.fillStyle = st.accent; x.globalAlpha = 0.9; x.fillRect(0, 0, 200, 4); x.globalAlpha = 1;
+      for (var i = 0; i < 9; i++) {
+        x.fillStyle = 'rgba(255,255,255,.12)'; x.fillRect(14, 18 + i * 26, 172, 8);
+      }
+      x.fillStyle = st.accent; x.fillRect(14, 18, 88, 8);
+    })();
+    // 키보드 · 마우스 · 노트 · 머그
+    g.add(box(0.5, 0.022, 0.16, 0x22262c, 0, 0.79, 0.14, { shadow: false, rough: 0.55 }));
+    g.add(box(0.07, 0.02, 0.11, 0x22262c, 0.34, 0.788, 0.14, { shadow: false, rough: 0.55 }));
+    g.add(box(0.24, 0.016, 0.17, 0xf0ead8, -0.62, 0.79, 0.16, { rotY: 0.18, shadow: false, rough: 0.9 }));
+    g.add(cyl(0.045, 0.038, 0.085, 10, 0xf6f2e8, -0.86, 0.82, 0.02, { shadow: false }));
+    // 명패
+    var pt = plateTex(briefTitle(st.name.replace(/\s*AI$/, '')) || st.role, st.role, st.accent);
+    var plm = new THREE.Mesh(new THREE.PlaneGeometry(0.62, 0.18),
+      new THREE.MeshStandardMaterial({ map: pt, emissive: 0xffffff, emissiveMap: pt, emissiveIntensity: 0.22, roughness: 0.6 }));
+    plm.position.set(-DW / 2 + 0.44, 0.90, -0.33); plm.rotation.set(0.30, Math.PI, 0); g.add(plm);
+    g.add(box(0.64, 0.02, 0.09, 0x1a222c, -DW / 2 + 0.44, 0.80, -0.33, { shadow: false, rotY: 0 }));
+    // 의자
+    var ch = makeChair(0, 0.82, Math.PI, 0x3d4757);
+    g.add(ch);
+    // 클릭 영역 (책상 + 앉은 직원)
+    var hit = new THREE.Mesh(new THREE.BoxGeometry(DW - 0.1, 1.55, 1.30), new THREE.MeshBasicMaterial({ visible: false }));
+    hit.position.set(0, 0.85, 0.16);
+    hit.userData.pick = 'aiStaff'; hit.userData.key = st.k; hit.userData.lv = st.lv;
+    g.add(hit); pickables.push(hit);
+
+    (st.lv ? gAi2 : gAi1).add(g);
+    st.deskGroup = g;
+    st.hit = hit;
+  }
+
+  function buildAvatar(st) {
+    var fy = st.lv ? FY2 : 0;
+    var av = new Avatar({
+      name: st.emoji + ' ' + st.name, color: st.accent, shirt: st.shirt, pants: st.pants, hair: st.hair,
+      x: st.pos[0], z: st.pos[1], rotY: st.rot, headphone: st.lv === 0, skin: st.skin
+    });
+    av.floorY = fy;
+    av.g.position.set(st.pos[0], fy, st.pos[1]);
+    av.g.rotation.y = st.rot;
+    av.statusText = st.role;
+    av.aiKey = st.k;
+    av.aiFloor = st.lv;
+    scene.add(av.g); avatars.push(av); makeLabel(av);
+    if (av.labelEl) {
+      av.labelEl.classList.add('ai');
+      av.labelEl.style.setProperty('--ai', st.accent);
+      av.labelEl.style.borderColor = 'rgba(255,255,255,.24)';
+    }
+    av.g.traverse(function (o) {
+      if (o.userData && o.userData.pick === 'avatar') { o.userData.pick = 'aiStaff'; o.userData.key = st.k; o.userData.lv = st.lv; }
+    });
+    // 의자에 앉은 상태로 고정 (좌석 오브젝트만 만들고 클릭 영역은 만들지 않는다)
+    var seat = { id: 'ai_' + st.k, pos: new THREE.Vector3(st.pos[0], fy, st.pos[1]), rotY: st.rot, type: 'desk', label: st.name, taken: av, floor: st.lv ? 1 : 0 };
+    seats.push(seat);
+    av.seat = seat; av.sitTarget = 1; av.sitT = 1; av.sitT2 = 1; av.state = 'sit';
+    av.sitFrom = av.g.position.clone(); av.rotFrom = st.rot;
+    st.av = av;
+  }
+
+  function build3D() {
+    if (!window.THREE || !scene) return;
+    if (!gAi1) { gAi1 = new THREE.Group(); scene.add(gAi1); }
+    if (!gAi2) { gAi2 = new THREE.Group(); scene.add(gAi2); }
+    STAFF.forEach(function (st) {
+      R[st.k] = R[st.k] || {};
+      // 자리 방향 · 책상 위치 계산
+      var f = st.face, L = Math.hypot(f[0], f[1]) || 1;
+      f = [f[0] / L, f[1] / L];
+      st.fdir = f;
+      st.rot = Math.atan2(f[0], f[1]);
+      st.desk = [st.pos[0] + f[0] * 0.85, st.pos[1] + f[1] * 0.85];
+      if (st.deskGroup) return;
+      try { buildStation(st); } catch (e) { console.error('[ai] desk', st.k, e); }
+      // 1층 자리는 걷기 격자에 장애물로 등록
+      if (!st.lv) {
+        try {
+          gAi1.updateMatrixWorld(true);
+          var bb = new THREE.Box3().setFromObject(st.deskGroup);
+          obstacles.push({ x1: bb.min.x - 0.05, x2: bb.max.x + 0.05, z1: bb.min.z - 0.05, z2: bb.max.z + 0.05 });
+        } catch (e) { }
+      }
+    });
+    paintAllScreens();
+  }
+
+  function paintAllScreens() {
+    var pre = {
+      market: ['시황 데스크', ['코스피 · 코스닥 실측', '주도 테마 상승 종목', '수급 확정치']],
+      content: ['콘텐츠 PD', ['블로그 초안', '쇼츠 6컷 대본', '주말 뉴스 정리']],
+      checker: ['1초 체커', ['종목명·코드 조회', '거래대금 · 등락률', '테마 소속 확인']],
+      deals: ['특가 레이더', ['여행 · 키즈 특가', '동일모델 핫템', '최저가 비교']],
+      revu: ['생활 비서', ['체험단 신규 알림', '마감 임박 캠페인', '텔레그램 전송']]
+    };
+    STAFF.forEach(function (st) {
+      var p = pre[st.k] || [st.role, []];
+      paintScreen(st, p[0], p[1], st.accent);
+    });
+  }
+
+  function buildAvatars() {
+    STAFF.forEach(function (st) {
+      R[st.k] = R[st.k] || {};
+      if (st.av) return;
+      try { buildAvatar(st); } catch (e) { console.error('[ai] avatar', st.k, e); }
+    });
+  }
+
+  /* ---------------- 3. 카메라 줌인 ---------------- */
+  function camPreset(st) {
+    var f = st.fdir || st.face, fy = st.lv ? FY2 : 0;
+    var sd = st.side || 1;
+    var rx = f[1] * sd, rz = -f[0] * sd;
+    var narrow = (W / Math.max(1, H)) < 0.78;
+    var A = (st.camA || CAM_A) * (narrow ? 1.25 : 1), B = (st.camB || CAM_B) * (narrow ? 0.55 : 1);
+    var px = st.pos[0] + f[0] * A + rx * B;
+    var pz = st.pos[1] + f[1] * A + rz * B;
+    var py = fy + (st.lv ? CAM_Y2 : CAM_Y);
+    var tx = st.pos[0], ty = fy + 1.45, tz = st.pos[1];
+    var dx = px - tx, dy = py - ty, dz = pz - tz;
+    var horiz = Math.hypot(dx, dz);
+    return { th: Math.atan2(dx, dz), ph: clamp(Math.atan2(horiz, dy), 0.62, 1.50), r: Math.hypot(horiz, dy), tx: tx, ty: ty, tz: tz };
+  }
+  function goTo(st) {
+    try {
+      var lvNow = (window.__s3d2 && typeof window.__s3d2.level === 'number') ? window.__s3d2.level : 0;
+      if (st.lv === 1 && lvNow !== 1 && window.__s3d2 && window.__s3d2.zone) window.__s3d2.zone('floor2');
+      if (st.lv === 0 && lvNow !== 0 && window.__s3d2 && window.__s3d2.setLevel) window.__s3d2.setLevel(0);
+      var p = camPreset(st);
+      cam.tTheta = p.th; cam.tPhi = p.ph; cam.tR = p.r;
+      cam.tTarget.set(p.tx, p.ty, p.tz);
+      if (window.__s3dExt) window.__s3dExt.zone = st.lv ? 'floor2' : 'ai';
+      els('#zones .zp').forEach(function (b) { b.classList.remove('active'); });
+      if (st.av) { st.av.say(st.emoji + ' ' + st.role + '입니다', 2200); }
+      toast('🎥 ' + st.name + ' 자리로 이동', 1500);
+    } catch (e) { console.error('[ai] cam', e); }
+  }
+
+  /* ---------------- 4. 실측 데이터 ---------------- */
+  function shapeMarket(live, tabs, sup, dyn) {
+    var rows = [], ctx = [], themes = [];
+    var idx = (live.indices || []).slice(0, 2);
+    idx.forEach(function (i) {
+      rows.push({ label: i.name, value: nf(i.price, 2), pct: i.changePct });
+      ctx.push(i.name + ' ' + nf(i.price, 2) + ' (' + spct(i.changePct) + ')');
+    });
+    var fut = (live.futures || [])[0];
+    if (fut) {
+      rows.push({ label: fut.name || '해외선물', value: nf(fut.price, 2), pct: fut.changePct });
+      ctx.push((fut.name || '해외선물') + ' ' + nf(fut.price, 2) + ' (' + spct(fut.changePct) + ')');
+    }
+    if (live.fx && live.fx.price) {
+      rows.push({ label: '원/달러', value: nf(live.fx.price, 1) + '원', pct: live.fx.changePct });
+      ctx.push('원/달러 ' + nf(live.fx.price, 1) + ' (' + spct(live.fx.changePct) + ')');
+    }
+    // 주도 테마 — 상승 종목만
+    (tabs.themes || []).slice(0, 3).forEach(function (t, i) {
+      var up = (t.stocks || []).filter(function (s) { return Number(s.changePct) > 0; })
+        .sort(function (a, b) { return Number(b.changePct) - Number(a.changePct); }).slice(0, 2);
+      themes.push({ rank: t.rank || i + 1, name: t.name, avg: t.avgPct, up: up });
+      ctx.push('주도 테마 ' + (t.rank || i + 1) + '위 ' + t.name + ' (테마 평균 ' + spct(t.avgPct) + ') — 상승 종목: '
+        + (up.length ? up.map(function (s) { return s.name + ' ' + spct(s.changePct); }).join(', ') : '없음'));
+    });
+    if (dyn && dyn.themes && dyn.themes.length) {
+      var d0 = dyn.themes[0];
+      ctx.push('관제소 주도 테마(대금 기준, ' + (dyn.shortLabel || '') + '): ' + d0.name + ' — '
+        + (d0.stocks || []).filter(function (s) { return Number(s.changePct) > 0; }).slice(0, 2)
+          .map(function (s) { return s.name + ' ' + spct(s.changePct); }).join(', '));
+    }
+    // 수급 (확정)
+    var g = (sup && sup.groups) || {};
+    var fb = (g.foreignBuy || [])[0], ob = (g.organBuy || [])[0];
+    if (fb) {
+      rows.push({ label: '외국인 순매수 1위', value: fb.name, pct: '+' + nf(fb.foreignEok, 0) + '억', cls: 'up' });
+      ctx.push('확정 수급(' + (sup.basisLabel || '') + '): 외국인 순매수 1위 ' + fb.name + ' +' + nf(fb.foreignEok, 1) + '억');
+    }
+    if (ob) {
+      rows.push({ label: '기관 순매수 1위', value: ob.name, pct: '+' + nf(ob.organEok, 0) + '억', cls: 'up' });
+      ctx.push('기관 순매수 1위 ' + ob.name + ' +' + nf(ob.organEok, 1) + '억');
+    }
+    var basis = tabs.sessionLabel || '';
+    var stamp = (tm(live.generatedAtKst) || hhmm(live.generatedAt)) + ' 갱신';
+    var facts = {
+      live: { indices: live.indices, futures: live.futures, fx: live.fx },
+      stocks: { stocks: live.stocks },
+      tabs: {
+        themes: (tabs.themes || []).map(function (t) {
+          var c = {}; for (var k in t) c[k] = t[k];
+          c.stocks = (t.stocks || []).filter(function (s) { return Number(s.changePct) > 0; });
+          return c;
+        }),
+        sessionLabel: tabs.sessionLabel, marketStatus: tabs.marketStatus, news: tabs.news,
+        searchTop: tabs.searchTop, aftermarket: tabs.aftermarket, upperLimit: tabs.upperLimit
+      },
+      supply: sup
+    };
+    return {
+      rows: rows, themes: themes, facts: facts, stamp: stamp,
+      note: basis ? ('기준: ' + basis) : '',
+      ctx: '[실측 시황 자료 · ' + stamp + (basis ? ' · ' + basis : '') + ']\n' + ctx.join('\n'),
+      screen: ['시황 데스크', idx.map(function (i) { return i.name + ' ' + nf(i.price, 2) + ' ' + spct(i.changePct); })
+        .concat(themes.slice(0, 2).map(function (t) { return (t.rank) + '위 ' + t.name + (t.up.length ? ' · ' + t.up[0].name + ' ' + spct(t.up[0].changePct) : ' · 상승 없음'); }))]
+    };
+  }
+
+  function shapeContent(d) {
+    var rows = [], ctx = [];
+    var wk = d.weekend_news || null;
+    var last = (d.slots && d.slots[d.latestSlot]) || null;
+    rows.push({ label: '최신 슬롯', value: cut(d.latestLabel || '—', 16), pct: '', cls: 'fl' });
+    var blog = (last && last.blog) || (wk && wk.blog) || null;
+    var shorts = (last && last.shorts) || (wk && wk.shorts) || null;
+    if (blog && blog.title) rows.push({ label: '블로그 초안', text: blog.title });
+    if (shorts && shorts.title) rows.push({ label: '쇼츠 대본', text: shorts.title + (shorts.script ? ' · ' + cut(shorts.script.split('\n')[0], 40) : '') });
+    if (wk && wk.updatedAt) rows.push({ label: '주말 뉴스', value: hhmm(wk.updatedAt) + ' 갱신', pct: '', cls: 'fl' });
+    if (d.updatedAt) ctx.push('자동 초안 파일 갱신: ' + d.updatedAt + ' / 기준: ' + (d.dateLabel || d.date || ''));
+    if (wk) {
+      ctx.push('주말 뉴스 초안 (' + (wk.date || '') + '): ' + ((wk.blog && wk.blog.title) || '제목 없음'));
+      ctx.push('주말 쇼츠: ' + ((wk.shorts && wk.shorts.title) || '없음'));
+      if (wk.blog && wk.blog.markdown) ctx.push('주말 뉴스 본문 발췌: ' + String(wk.blog.markdown).replace(/[#*>`]/g, '').replace(/\n+/g, ' ').slice(0, 1600));
+    }
+    if (last && last.blog && last.blog.markdown) {
+      ctx.push('최신 블로그 초안(' + (last.slotLabel || '') + ') 제목: ' + last.blog.title);
+      ctx.push('본문 발췌: ' + String(last.blog.markdown).replace(/[#*>`]/g, '').replace(/\n+/g, ' ').slice(0, 1200));
+    }
+    if (last && last.shorts && last.shorts.script) {
+      ctx.push('최신 쇼츠 대본(' + (last.slotLabel || '') + ') 발췌: ' + String(last.shorts.script).replace(/\[[^\]]*\]/g, ' ').replace(/\n+/g, ' ').slice(0, 1200));
+    }
+    var stamp = (d.updatedAt ? hhmm(d.updatedAt) : '') + ' 갱신';
+    return {
+      rows: rows, stamp: stamp, note: d.dateLabel || '', ctx: '[실측 콘텐츠 초안 자료]\n' + ctx.join('\n'),
+      screen: ['콘텐츠 PD', [blog ? cut(blog.title, 30) : '블로그 초안 없음', shorts ? cut(shorts.title, 30) : '쇼츠 없음', '주말 뉴스 ' + (wk ? hhmm(wk.updatedAt) : '—')]]
+    };
+  }
+
+  function shapeChecker(live) {
+    var rows = [], ctx = [];
+    (live.indices || []).slice(0, 2).forEach(function (i) {
+      rows.push({ label: i.name, value: nf(i.price, 2), pct: i.changePct });
+      ctx.push(i.name + ' ' + nf(i.price, 2) + ' (' + spct(i.changePct) + ')');
+    });
+    (live.stocks || []).slice(0, 3).forEach(function (s) {
+      rows.push({ label: s.name, value: nf(s.price, 0) + '원', pct: s.changePct });
+      ctx.push(s.name + '(' + s.code + ') ' + nf(s.price, 0) + '원 ' + spct(s.changePct) + ' · 거래대금 ' + (s.valueDispText || s.valueText || '—'));
+    });
+    var stamp = (tm(live.generatedAtKst) || hhmm(live.generatedAt)) + ' 갱신';
+    return {
+      rows: rows, stamp: stamp, note: '종목명·6자리 코드로 실측 조회',
+      ctx: '[실측 종목 시세 · ' + stamp + ']\n' + ctx.join('\n'),
+      screen: ['1초 체커', (live.stocks || []).slice(0, 4).map(function (s) { return s.name + ' ' + nf(s.price, 0) + ' ' + spct(s.changePct); })]
+    };
+  }
+
+  function shapeDeals(dd, hh) {
+    var rows = [], ctx = [];
+    var items = (dd.items || []).slice(0, 40).sort(function (a, b) { return (b.discountPct || 0) - (a.discountPct || 0); });
+    rows.push({ label: '특가', value: (dd.count || items.length) + '건', pct: dd.updatedAt ? hhmm(dd.updatedAt) : '', cls: 'fl' });
+    items.slice(0, 3).forEach(function (it) {
+      rows.push({ label: cut(briefTitle(it.title), 16), value: it.price || '—', pct: (it.discountPct ? '-' + nf(it.discountPct, 0) + '%' : ''), cls: 'fl' });
+      ctx.push('특가: ' + it.title + ' / ' + it.price + (it.origPrice ? ' (정상가 ' + it.origPrice + ')' : '') + ' / ' + (it.discountPct ? it.discountPct + '% 할인' : '') + ' / ' + (it.place || ''));
+    });
+    var hot = (hh && hh.items) || [];
+    rows.push({ label: '동일모델 핫템', value: hot.length + '건', pct: hh && hh.generatedAt ? hhmm(hh.generatedAt) : '', cls: 'fl' });
+    hot.slice(0, 2).forEach(function (it) {
+      rows.push({ label: cut(it.name, 16), value: nf(it.price, 0) + '원', pct: (it.hot ? 'HOT' : ''), cls: 'fl' });
+      ctx.push('핫템: ' + it.name + ' ' + nf(it.price, 0) + '원 · ' + (it.store || '') + (it.cat ? ' · ' + it.cat : ''));
+    });
+    return {
+      rows: rows, stamp: (dd.updatedAt ? hhmm(dd.updatedAt) : '') + ' 갱신', note: '에누리·카톡 최저가 실측',
+      ctx: '[실측 특가·핫템 자료 · ' + (dd.updatedAt || '') + ']\n' + ctx.join('\n'),
+      screen: ['특가 레이더', items.slice(0, 3).map(function (it) { return cut(it.title, 22) + ' ' + (it.price || ''); })]
+    };
+  }
+
+  function shapeRevu(d) {
+    var rows = [], ctx = [], meta = d.meta || {}, cs = d.campaigns || [];
+    rows.push({ label: '수집 캠페인', value: (meta.count || cs.length) + '건', pct: '', cls: 'fl' });
+    rows.push({ label: '오늘 신규', value: (meta.newCount || 0) + '건', pct: '', cls: 'up' });
+    if (meta.collectedAt) rows.push({ label: '수집 시각', value: hhmm(meta.collectedAt), pct: '', cls: 'fl' });
+    var news = cs.filter(function (c) { return c.isNew; }).slice(0, 3);
+    if (!news.length) news = cs.slice(0, 3);
+    news.forEach(function (c) {
+      rows.push({ label: c.platformName || c.platform, text: c.title + (c.dday ? ' · ' + c.dday : '') + (c.city ? ' · ' + c.city : '') });
+      ctx.push((c.platformName || c.platform) + ' / ' + c.title + ' / ' + (c.city || '') + ' / ' + (c.type || '') + ' / ' + (c.dday || ''));
+    });
+    ctx.unshift('플랫폼별: ' + (meta.platforms || []).map(function (p) { return p.name + ' ' + p.count + '건'; }).join(', '));
+    return {
+      rows: rows, stamp: (meta.collectedAt ? hhmm(meta.collectedAt) : '') + ' 수집', note: meta.source || '',
+      ctx: '[실측 체험단 캠페인 자료]\n' + ctx.join('\n'),
+      screen: ['생활 비서', ['신규 ' + (meta.newCount || 0) + '건', news[0] ? cut(news[0].title, 24) : '—', '텔레그램 알림']]
+    };
+  }
+
+  var LOADERS = {
+    market: function () {
+      return Promise.all([
+        getJSON(API + '/api/stock-live'),
+        getJSON(API + '/api/tabs-live?tab=themes'),
+        getJSON(API + '/data/supply-latest.json'),
+        getJSON(API + '/data/last-dynamic-themes.json').catch(function () { return null; })
+      ]).then(function (a) { return shapeMarket(a[0], a[1], a[2], a[3]); });
+    },
+    content: function () {
+      return getJSON(API + '/data/content_auto_latest.json').then(shapeContent);
+    },
+    checker: function () {
+      return getJSON(API + '/api/stock-live').then(shapeChecker);
+    },
+    deals: function () {
+      return Promise.all([
+        getJSON(API + '/data/latest-deals.json'),
+        getJSON(API + '/data/hot-items-latest.json').catch(function () { return { items: [] }; })
+      ]).then(function (a) { return shapeDeals(a[0], a[1]); });
+    },
+    revu: function () {
+      // 체험단 스캔 결과는 Pages 사본이 더 최신 — 실패하면 관제탑(Vercel) 사본으로 폴백
+      return getJSON(PDATA + 'revu-campaigns.json').catch(function () {
+        return getJSON(API + '/data/revu-campaigns.json');
+      }).then(shapeRevu);
+    }
+  };
+
+  function loadData(st, force) {
+    var r = R[st.k];
+    if (r.pending) return r.pending;
+    if (r.data && !force && (Date.now() - r.at) < 90000) return Promise.resolve(r.data);
+    r.pending = LOADERS[st.k]().then(function (d) {
+      r.data = d; r.at = Date.now(); r.err = ''; r.pending = null;
+      if (st.scr && d.screen) paintScreen(st, d.screen[0], d.screen[1], st.accent);
+      return d;
+    }).catch(function (e) {
+      r.pending = null; r.err = (e && e.message) ? e.message : '실측 자료를 불러오지 못했습니다';
+      throw e;
+    });
+    return r.pending;
+  }
+
+  /* ---------------- 5. 카드 UI ---------------- */
+  function rowHTML(r) {
+    if (r.text) {
+      return '<div class="ai-line"><b>' + esc(r.label) + '</b><span>' + esc(r.text) + '</span></div>';
+    }
+    var cls = r.cls || (typeof r.pct === 'number' ? tone(r.pct) : 'fl');
+    var pc = (typeof r.pct === 'number') ? spct(r.pct) : (r.pct || '');
+    return '<div class="ai-row ' + cls + '"><span class="lb">' + esc(r.label) + '</span>'
+      + '<span class="vl">' + esc(r.value) + '</span>'
+      + (pc ? '<span class="pc">' + esc(pc) + '</span>' : '') + '</div>';
+  }
+
+  function renderLive(st, d) {
+    var host = el('#aiLive'); if (!host) return;
+    var h = (d.rows || []).map(rowHTML).join('');
+    if (d.themes && d.themes.length) {
+      h += '<div class="ai-themes">' + d.themes.map(function (t) {
+        return '<div class="ai-theme"><b>' + t.rank + '위 ' + esc(cut(t.name, 14)) + '</b><span>'
+          + (t.up && t.up.length
+            ? t.up.map(function (s) { return esc(s.name) + ' <em style="font-style:normal;color:' + (Number(s.changePct) > 0 ? '#4fe3a6' : '#8fa3b8') + '">' + spct(s.changePct) + '</em>'; }).join(' · ')
+            : '상승 종목 없음')
+          + '</span></div>';
+      }).join('') + '</div>';
+    }
+    if (d.note) h += '<p class="ai-note">' + esc(d.note) + '</p>';
+    host.innerHTML = h || '<p class="ai-empty">표시할 실측 값이 없습니다.</p>';
+    el('#aiStamp').textContent = d.stamp || '';
+  }
+
+  function renderErr(st, e) {
+    var host = el('#aiLive'); if (!host) return;
+    host.innerHTML = '<p class="ai-empty">실측 자료를 불러오지 못했습니다 — ' + esc((e && e.message) || '네트워크 오류')
+      + '<br>잠시 뒤 ↻ 를 눌러 다시 시도해 주세요. (숫자를 지어내지 않고 비워 둡니다)</p>';
+    el('#aiStamp').textContent = '연결 실패';
+  }
+
+  function renderSources(st) {
+    var host = el('#aiSrc'); if (!host) return;
+    var h = st.src.map(function (s) {
+      return '<a href="' + esc(s[1]) + '" target="_blank" rel="noopener" class="file">🗂 ' + esc(s[0]) + '</a>';
+    }).join('');
+    h += st.links.map(function (l) {
+      return '<a href="' + esc(l[1]) + '" target="_blank" rel="noopener">' + esc(l[0]) + '</a>';
+    }).join('');
+    host.innerHTML = h;
+  }
+
+  function renderQuick(st) {
+    var host = el('#aiQuick'); if (!host) return;
+    host.innerHTML = st.quick.map(function (q) {
+      return '<button type="button" class="ai-qbtn" data-q="' + esc(q) + '">' + esc(q) + '</button>';
+    }).join('');
+    els('.ai-qbtn', host).forEach(function (b) {
+      b.addEventListener('click', function () { ask(st, b.getAttribute('data-q')); });
+    });
+  }
+
+  function renderExtra(st) {
+    var host = el('#aiLive'); if (!host) return;
+    if (!st.stock) return;
+    var box2 = document.createElement('div');
+    box2.className = 'ai-stock';
+    box2.innerHTML = '<input id="aiStock" maxlength="20" placeholder="종목명 또는 6자리 코드 (예: 삼성전자)" aria-label="종목 입력">'
+      + '<button type="button" id="aiStockGo">조회</button>';
+    host.parentNode.appendChild(box2);
+    var out = document.createElement('div'); out.id = 'aiStockOut'; out.style.marginTop = '4px';
+    host.parentNode.appendChild(out);
+    var go = function () {
+      var v = (el('#aiStock').value || '').trim();
+      if (v) lookupStock(st, v);
+    };
+    el('#aiStockGo').addEventListener('click', go);
+    el('#aiStock').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+  }
+
+  function msgHTML(m) {
+    if (m.pending) return '<span class="waits"><i></i><i></i><i></i></span> 실측 자료로 확인 중…';
+    return m.html || '';
+  }
+  function renderMsgs(st) {
+    var host = el('#aiMsgs'); if (!host) return;
+    host.innerHTML = ((R[st.k] && R[st.k].msgs) || []).map(function (m) {
+      return '<div class="am ' + (m.cls || 'bot') + '">' + msgHTML(m) + '</div>';
+    }).join('');
+  }
+  function addMsg(kind, text, state, noScroll) {
+    var st = cur; if (!st) return null;
+    R[st.k] = R[st.k] || {};
+    R[st.k].msgs = R[st.k].msgs || [];
+    var rec = state === 'pending' ? { pending: true, k: st.k } : { cls: (kind === 'me' ? 'me' : 'bot'), html: text, k: st.k };
+    R[st.k].msgs.push(rec);
+    renderMsgs(st);
+    var body = el('#aiBody');
+    if (body && !noScroll) body.scrollTop = body.scrollHeight;
+    return rec;
+  }
+  function paintMsg(rec, html, mode) {
+    if (!rec) return;
+    rec.pending = false;
+    rec.cls = 'bot' + (mode === 'fallback' ? ' fb' : (mode === 'error' ? ' er' : ''));
+    rec.html = html;
+    if (cur && cur.k === rec.k) {
+      renderMsgs(cur);
+      var body = el('#aiBody');
+      if (body) body.scrollTop = body.scrollHeight;
+    }
+  }
+
+  function greet(st) {
+    addMsg('bot', '<span class="hl">' + esc(st.emoji + ' ' + st.name + ' · ' + st.role) + '</span>'
+      + '아래 <b>오늘 실측</b>은 ' + esc(st.where) + '에서 방금 받아온 실제 값입니다. '
+      + '빠른 질문을 누르거나 직접 물어보세요. 답은 실측 자료 안에서만 만들고, 자료에 없는 숫자는 쓰지 않습니다.', '', true);
+  }
+
+
+  /* ---------------- 6. 질문 → 답변 ---------------- */
+  function setBusy(st, on) {
+    var r = R[st.k]; r.busy = !!on;
+    els('#aiQuick .ai-qbtn').forEach(function (b) { b.disabled = !!on; });
+    var s = el('#aiSend'); if (s) s.disabled = !!on;
+  }
+
+  function postAI(body) {
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    var to = ctl ? setTimeout(function () { try { ctl.abort(); } catch (e) { } }, 45000) : 0;
+    return fetch(API + '/api/content-ai', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body), cache: 'no-store', signal: ctl ? ctl.signal : undefined
+    }).then(function (r) {
+      if (to) clearTimeout(to);
+      return r.json().then(function (j) {
+        if (!r.ok || j.ok === false) {
+          var e = new Error((j && (j.message || j.reason)) || ('HTTP ' + r.status));
+          e.body = j; throw e;
+        }
+        return j;
+      });
+    }).catch(function (e) { if (to) clearTimeout(to); throw e; });
+  }
+
+  function briefAnswer(j) {
+    var h = '';
+    if (j.header) h += '<span class="hl">' + esc(j.header) + '</span>';
+    (j.sections || []).forEach(function (sec) {
+      var lines = (sec.lines || []).slice(0, 7);
+      if (!lines.length) return;
+      h += '<div style="font-weight:800;font-size:10.5px;color:#9fe8d8;margin:6px 0 2px">' + esc(sec.title) + '</div><ul>';
+      lines.forEach(function (l) { h += '<li>' + esc(l) + '</li>'; });
+      h += '</ul>';
+    });
+    var tag = '실측 ' + esc(tm(j.generatedAtKst))
+      + (j.ai && j.ai.used ? ' · Gemini(' + esc(j.ai.model || '') + ')' : ' · 실측 조립')
+      + (j.ai && j.ai.note ? ' · ' + esc(j.ai.note) : '');
+    h += '<span class="tag">' + tag + '</span>';
+    return h;
+  }
+
+  function summaryAnswer(j) {
+    var d = (j && j.data) || {};
+    var h = '';
+    if (d.headline) h += '<span class="hl">' + esc(d.headline) + '</span>';
+    var three = (d.three || []).filter(Boolean);
+    if (three.length) {
+      h += '<ul>' + three.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>';
+    }
+    var acts = (d.actions || []).filter(Boolean).slice(0, 3);
+    if (acts.length) {
+      h += '<div style="font-weight:800;font-size:10.5px;color:#9fe8d8;margin:6px 0 2px">할 일</div><ul>'
+        + acts.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul>';
+    }
+    if (!h) throw new Error('empty_answer');
+    h += '<span class="tag">실측 자료 + Gemini(' + esc(j.model || '') + ')</span>';
+    return h;
+  }
+
+  function fallbackAnswer(st, why) {
+    var d = R[st.k] && R[st.k].data;
+    if (!d) {
+      return '<span class="hl">실측 자료가 아직 없습니다</span>'
+        + 'AI 호출과 실측 조회가 모두 실패해 답을 만들지 않았습니다(' + esc((why && why.message) || why || '') + '). '
+        + '↻ 로 다시 불러온 뒤 질문해 주세요.';
+    }
+    var rows = (d.rows || []).slice(0, 6).map(rowHTML).join('');
+    var th = (d.themes || []).map(function (t) {
+      return '<div class="ai-theme"><b>' + t.rank + '위 ' + esc(t.name) + '</b><span>'
+        + ((t.up && t.up.length) ? t.up.map(function (s) { return esc(s.name) + ' ' + spct(s.changePct); }).join(' · ') : '상승 종목 없음')
+        + '</span></div>';
+    }).join('');
+    return '<span class="hl">방금 받아온 실측값 그대로 정리했습니다</span>'
+      + rows + (th ? '<div class="ai-themes">' + th + '</div>' : '')
+      + '<span class="tag">AI 호출 실패 → 실측 즉석 요약 · ' + esc(d.stamp || '') + '</span>';
+  }
+
+  function isBriefQ(q) {
+    return /시황|브리핑|장\s*(어때|상황)|지금\s*시장|지수\s*어때/.test(q);
+  }
+
+  function ask(st, q) {
+    q = String(q || '').trim();
+    if (!q || cur !== st) return;
+    var r = R[st.k];
+    if (r.busy) return;
+    setBusy(st, true);
+    addMsg('me', esc(q));
+    var box2 = addMsg('bot', '', 'pending');
+    loadData(st).then(function (d) {
+      if (st.k === 'market' && d.facts && isBriefQ(q)) {
+        return postAI({ mode: 'live_briefing', facts: d.facts }).then(briefAnswer);
+      }
+      return postAI({
+        action: 'summarize', kind: 'doc', mode: 'three',
+        title: st.role + ' 실측 자료',
+        focus: q + ' — 위 실측 자료에 있는 값만 써서 답해라.',
+        text: d.ctx
+      }).then(summaryAnswer);
+    }).then(function (html) {
+      paintMsg(box2, html, 'ok');
+    }).catch(function (e) {
+      paintMsg(box2, fallbackAnswer(st, e), 'fallback');
+    }).then(function () { setBusy(st, false); });
+  }
+
+  function lookupStock(st, q) {
+    if (cur !== st) return;
+    var out = el('#aiStockOut');
+    if (out) out.innerHTML = '<p class="ai-empty">' + esc(q) + ' 실측 조회 중…</p>';
+    addMsg('me', esc(q) + ' 조회');
+    var box2 = addMsg('bot', '', 'pending');
+    getJSON(API + '/api/stock-live?codes=' + encodeURIComponent(q), 18000).then(function (live) {
+      var res = (live.resolved && live.resolved[0]) || null;
+      if (res && !res.code) throw new Error('종목을 찾지 못했습니다: ' + q);
+      var s = (live.stocks || [])[0];
+      if (!s) throw new Error('시세 응답이 비어 있습니다');
+      var row = '<div class="ai-row ' + tone(s.changePct) + '"><span class="lb">' + esc(s.name) + ' <span style="color:#7b8b9e;font-size:9.5px">' + esc(s.code) + '</span></span>'
+        + '<span class="vl">' + nf(s.price, 0) + '원</span><span class="pc">' + spct(s.changePct) + '</span></div>'
+        + '<div class="ai-row fl"><span class="lb">거래대금</span><span class="vl">' + esc(s.valueDispText || s.valueText || '—') + '</span></div>'
+        + '<div class="ai-row fl"><span class="lb">체결 시각</span><span class="vl">' + esc(s.tradedAtKst || '—') + '</span></div>';
+      if (out) out.innerHTML = row;
+      return postAI({
+        action: 'summarize', kind: 'doc', mode: 'three',
+        title: s.name + ' 실측 시세',
+        focus: q + ' — 아래 실측 시세만 근거로 3줄로 답해라.',
+        text: '[실측 시세]\n' + s.name + '(' + s.code + ') 현재가 ' + nf(s.price, 0) + '원, 등락률 ' + spct(s.changePct)
+          + ', 거래대금 ' + (s.valueDispText || s.valueText || '—') + ', 체결 ' + (s.tradedAtKst || '—')
+          + ' (' + (live.generatedAtKst || '') + ' 기준)'
+      }).then(function (j) {
+        paintMsg(box2, summaryAnswer(j), 'ok');
+      }).catch(function () {
+        paintMsg(box2, '<span class="hl">' + esc(s.name) + ' 실측값</span>' + row
+          + '<span class="tag">AI 설명 없이 실측값만 표시</span>', 'fallback');
+      });
+    }).catch(function (e) {
+      if (out) out.innerHTML = '<p class="ai-empty">' + esc((e && e.message) || '조회 실패') + '</p>';
+      paintMsg(box2, '<span class="hl">조회 결과가 없습니다</span>' + esc((e && e.message) || '') + '<br>종목명을 정확히 쓰거나 6자리 코드로 다시 시도해 주세요.', 'error');
+    }).then(function () { /* noop */ });
+  }
+
+  /* ---------------- 7. 열기 / 닫기 ---------------- */
+  function open(k, opts) {
+    var st = byKey(k); if (!st) return;
+    R[st.k] = R[st.k] || {};
+    cur = st;
+    el('#aiAva').textContent = st.emoji;
+    el('#aiName').textContent = st.name;
+    el('#aiRole').textContent = st.role + ' · ' + st.where;
+    var p = el('#aiPanel');
+    p.classList.add('on'); p.setAttribute('aria-hidden', 'false');
+    el('#aiBack').classList.add('on');
+    document.body.classList.add('aiopen');
+    els('#aiDock .aichip').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-ai') === k); });
+    renderSources(st);
+    renderQuick(st);
+    if (!R[st.k].extra) { R[st.k].extra = true; renderExtra(st); }
+    renderMsgs(st);
+    if (!R[st.k].greeted) { R[st.k].greeted = true; greet(st); }
+    var bd = el('#aiBody'); if (bd) bd.scrollTop = 0;
+    if (!(opts && opts.zoom === false)) goTo(st);
+    loadData(st).then(function (d) { if (cur === st) renderLive(st, d); })
+      .catch(function (e) { if (cur === st) renderErr(st, e); });
+  }
+
+  function close() {
+    var p = el('#aiPanel'); if (!p) return;
+    p.classList.remove('on'); p.setAttribute('aria-hidden', 'true');
+    el('#aiBack').classList.remove('on');
+    document.body.classList.remove('aiopen');
+    els('#aiDock .aichip').forEach(function (b) { b.classList.remove('on'); });
+    cur = null;
+  }
+
+  /* ---------------- 8. 부팅 · 훅 ---------------- */
+  function bindUI() {
+    var host = el('#aiDock');
+    if (host && !host.getAttribute('data-bound')) {
+      host.setAttribute('data-bound', '1');
+      STAFF.forEach(function (st) {
+        var b = document.createElement('button');
+        b.type = 'button'; b.className = 'aichip'; b.setAttribute('data-ai', st.k);
+        b.title = st.role + ' · ' + st.where;
+        b.innerHTML = '<i>' + st.emoji + '</i><span>' + esc(st.name.replace(/\s*AI$/, '')) + '</span><em class="dot"></em>';
+        b.addEventListener('click', function () { open(st.k); });
+        host.appendChild(b);
+      });
+    }
+    var c = el('#aiClose'); if (c && !c.getAttribute('data-bound')) { c.setAttribute('data-bound', '1'); c.addEventListener('click', close); }
+    var bk = el('#aiBack'); if (bk && !bk.getAttribute('data-bound')) { bk.setAttribute('data-bound', '1'); bk.addEventListener('click', close); }
+    var rf = el('#aiRefresh');
+    if (rf && !rf.getAttribute('data-bound')) {
+      rf.setAttribute('data-bound', '1');
+      rf.addEventListener('click', function () {
+        if (!cur) return;
+        rf.classList.add('spin');
+        el('#aiStamp').textContent = '불러오는 중…';
+        loadData(cur, true).then(function (d) { renderLive(cur, d); })
+          .catch(function (e) { renderErr(cur, e); })
+          .then(function () { rf.classList.remove('spin'); });
+      });
+    }
+    var fm = el('#aiForm');
+    if (fm && !fm.getAttribute('data-bound')) {
+      fm.setAttribute('data-bound', '1');
+      fm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!cur) return;
+        var inp = el('#aiInput'); var v = (inp.value || '').trim();
+        if (!v) return; inp.value = '';
+        ask(cur, v);
+      });
+    }
+    if (!window.__aiEsc) {
+      window.__aiEsc = true;
+      window.addEventListener('keydown', function (e) { if (e.code === 'Escape' && cur) close(); });
+    }
+  }
+
+  function tick() {
+    if (!ready) return;
+    var lv = (window.__s3d2 && typeof window.__s3d2.level === 'number') ? window.__s3d2.level : 0;
+    if (gAi1) gAi1.visible = lv === 0;
+    if (gAi2) gAi2.visible = lv === 1;
+    for (var i = 0; i < STAFF.length; i++) {
+      var st = STAFF[i], av = st.av;
+      if (!av) continue;
+      var on = (st.lv === lv);
+      av.g.visible = on;
+      if (av.labelEl) av.labelEl.style.display = on ? '' : 'none';
+      if (av.bubbleEl && !on) av.bubbleEl.classList.remove('on');
+    }
+  }
+
+  var pBuild = window.__extBuild, pAfter = window.__extAfter, pTick = window.__extTick;
+  window.__extBuild = function () {
+    if (typeof pBuild === 'function') { try { pBuild(); } catch (e) { } }
+    try { build3D(); } catch (e) { console.error('[ai] build', e); }
+  };
+  window.__extAfter = function () {
+    if (typeof pAfter === 'function') { try { pAfter(); } catch (e) { } }
+    try { buildAvatars(); } catch (e) { console.error('[ai] avatars', e); }
+    try { bindUI(); } catch (e) { console.error('[ai] ui', e); }
+    ready = true;
+    var h = el('#hint');
+    if (h && !h.getAttribute('data-ai')) { h.setAttribute('data-ai', '1'); }
+  };
+  window.__extTick = function (dt, now) {
+    if (typeof pTick === 'function') { try { pTick(dt, now); } catch (e) { } }
+    try { tick(); } catch (e) { }
+  };
+
+  /* ---------------- 9. 테스트 훅 ---------------- */
+  window.__aiOffice = {
+    staff: STAFF.map(function (s) { return { k: s.k, name: s.name, role: s.role, lv: s.lv, pos: s.pos }; }),
+    open: open, close: close,
+    open1: function (k) { open(k, { zoom: true }); },
+    ask: function (k, q) { if (!cur || cur.k !== k) open(k); setTimeout(function () { ask(byKey(k), q); }, 60); },
+    lookup: function (k, q) { open(k); setTimeout(function () { lookupStock(byKey(k), q); }, 60); },
+    cam: function (k) { var st = byKey(k); if (st) goTo(st); },
+    state: function () {
+      var r = cur ? R[cur.k] : null;
+      return {
+        open: !!cur, cur: cur ? cur.k : null, ready: ready,
+        dock: els('#aiDock .aichip').length,
+        chipOn: (function () { var b = el('#aiDock .aichip.on'); return b ? b.getAttribute('data-ai') : null; })(),
+        rows: el('#aiLive') ? el('#aiLive').children.length : 0,
+        stamp: el('#aiStamp') ? el('#aiStamp').textContent : '',
+        msgs: el('#aiMsgs') ? el('#aiMsgs').children.length : 0,
+        busy: r ? !!r.busy : false,
+        err: r ? r.err : '', hasData: r ? !!r.data : false,
+        cam: { th: +cam.theta.toFixed(2), ph: +cam.phi.toFixed(2), r: +cam.r.toFixed(1),
+               tx: +cam.target.x.toFixed(2), ty: +cam.target.y.toFixed(2), tz: +cam.target.z.toFixed(2) },
+        level: (window.__s3d2 && window.__s3d2.level) || 0,
+        avatars: STAFF.map(function (s) { return { k: s.k, has: !!s.av, vis: s.av ? s.av.g.visible : null }; })
+      };
+    },
+    panelRect: function () {
+      var p = el('#aiPanel'); if (!p) return null;
+      var b = p.getBoundingClientRect();
+      return { x: Math.round(b.x), y: Math.round(b.y), w: Math.round(b.width), h: Math.round(b.height) };
+    }
   };
 })();
 </script>
