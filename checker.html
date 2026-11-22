@@ -401,9 +401,9 @@
   var insSeq = 0;
 
   function fmtRank(t){
-    if (t.prevExposed && t.prevTopRank) return '관제탑 ' + t.prevTopRank + '위';
+    if (t.prevExposed && t.prevTopRank) return '주도 테마 Top8 ' + t.prevTopRank + '위';
     if (t.rank) return t.rank + '/' + (t.total || '—') + '위';
-    if (t.prevTopRank) return '관제탑 ' + t.prevTopRank + '위(구성)';
+    if (t.prevTopRank) return 'Top8 ' + t.prevTopRank + '위(구성)';
     return '순위 확인 불가';
   }
   function chipClass(t){
@@ -432,7 +432,7 @@
       if (p.rank) meta.push('네이버 테마 순위 ' + p.rank + '/' + (p.total || '—') + '위');
       if (p.changeRate != null) meta.push('테마 평균 ' + pct(p.changeRate));
       if (p.riseCount != null) meta.push('상승 ' + p.riseCount + ' / 하락 ' + p.fallCount + ' (구성 ' + (p.stockCount || '—') + ')');
-      if (p.prevTopRank) meta.push('직전 거래일 관제탑 ' + p.prevTopRank + '위' + (p.prevExposed ? ' · 노출 종목' : ' 구성종목'));
+      if (p.prevTopRank) meta.push('직전 거래일 주도 테마 Top8 ' + p.prevTopRank + '위' + (p.prevExposed ? ' · 노출 종목' : ' 구성종목'));
       h += '<div class="tmeta">' + esc(meta.join(' · ')) + '</div>';
       if (sc && sc.score != null){
         h += '<div class="scoreline">테마 점수 <b>' + sc.score + '</b><span style="font-size:10.5px">/100</span>' +
@@ -456,7 +456,7 @@
       h += '<div class="tbox"><div class="tname">등록된 테마 구성종목에 없음</div>' +
            '<div class="tmeta">네이버 테마 ' + (j.themeTotal || '—') + '개 구성종목 색인에서 이 종목을 찾지 못했습니다 — 개별주로 봅니다.</div></div>';
     }
-    h += '<div class="rule">판정 기준 — <b>🟢 주요 주도테마</b>: 관제탑 직전 거래일 주도 테마 Top8의 노출 종목, 또는 테마 순위 10위 이내이면서 (테마 평균 +1% 이상 또는 상위4 평균 +3% 이상). <b>🟡 순환·관심 테마</b>: 테마 순위 30위 이내이거나 테마 평균 +1% 이상·상위4 평균 0% 이상. <b>⚪ 비주류·개별주</b>: 그 밖. 테마 점수 = 순위 백분위 40% + 테마 강도(상위4 평균) 60%.</div>';
+    h += '<div class="rule">판정 기준 — <b>🟢 주요 주도테마</b>: 직전 거래일 주도 테마 Top8의 노출 종목, 또는 테마 순위 10위 이내이면서 (테마 평균 +1% 이상 또는 상위4 평균 +3% 이상). <b>🟡 순환·관심 테마</b>: 테마 순위 30위 이내이거나 테마 평균 +1% 이상·상위4 평균 0% 이상. <b>⚪ 비주류·개별주</b>: 그 밖. 테마 점수 = 순위 백분위 40% + 테마 강도(상위4 평균) 60%.</div>';
     h += '</div>';
 
     /* 📰 재료 카드 */
@@ -554,13 +554,13 @@
         var sigKey = p.prevExposed ? 'green' : (p.prevTopRank ? 'yellow' : 'gray');
         var sigLabel = p.prevExposed ? '🟢 주요 주도테마' : (p.prevTopRank ? '🟡 순환·관심 테마' : '⚪ 비주류·개별주');
         h += '<div class="sigrow"><span class="sig ' + sigKey + '">' + sigLabel + '</span>' +
-             '<span class="signote">' + (p.prevExposed ? '직전 거래일 관제탑 주도 테마 ' + p.prevTopRank + '위 · 노출 종목'
-               : p.prevTopRank ? '직전 거래일 관제탑 ' + p.prevTopRank + '위 구성종목' : '직전 거래일 주도 테마 Top8 밖') + '</span></div>';
+             '<span class="signote">' + (p.prevExposed ? '직전 거래일 주도 테마 Top8 ' + p.prevTopRank + '위 · 노출 종목'
+               : p.prevTopRank ? '직전 거래일 주도 테마 Top8 ' + p.prevTopRank + '위 구성종목' : '직전 거래일 주도 테마 Top8 밖') + '</span></div>';
         h += '<div class="tbox"><div class="tname">' + esc(p.name) + '</div>' +
              '<div class="tmeta">실시간 테마 순위·점수·재료는 API 응답이 필요합니다(지금은 정적 색인만 표시).</div></div>';
         if (themes.length > 1){
           h += '<div class="tchips">' + themes.slice(0, 8).map(function(t){
-            var rk = t.prevExposed ? ('관제탑 ' + t.prevTopRank + '위') : (t.prevTopRank ? ('관제탑 ' + t.prevTopRank + '위(구성)') : '순위 미확인');
+            var rk = t.prevExposed ? ('Top8 ' + t.prevTopRank + '위') : (t.prevTopRank ? ('Top8 ' + t.prevTopRank + '위(구성)') : '순위 미확인');
             return '<span class="tchip ' + chipClass(t) + '"><b>' + esc(t.name) + '</b> ' + esc(rk) + '</span>';
           }).join('') + '</div>';
         }
