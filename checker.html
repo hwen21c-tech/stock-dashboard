@@ -783,6 +783,8 @@
     var krxOk = !!(krx && krx.ok !== false);
     var krxHit = !!(row && (row.tradeStop || row.alertLabel));
     var key = 'unknown', label = '⚪ 공시·경보 미확인', note = '';
+    /* DART 응답 전에는 처음의 '확인 중' 표시를 그대로 둔다(KRX 만 먼저 와서 '미확인'으로 단정하지 않게) */
+    if (!dart && state.risk.dartP && !krxHit) return;
     if (ds.key === 'red'){
       key = 'red'; label = '🔴 투자주의·희석성 공시 주의'; note = ds.note || '';
     } else if (krxHit){
