@@ -1514,8 +1514,11 @@
     host.innerHTML = (j.tiles || []).map(function(t){
       var p = n(t.avgPct);
       var tip = (t.name || '') + ' · 평균 ' + pct(p) + ' · 대금 ' + eok(t.valueEok) + ' · 구성 ' + (t.stockCount || '—') + '종목';
+      /* 진한 타일에서 얇은 '-' 가 안 보이므로 부호 대신 ▲▼ 로 방향을 보여 준다(색과 함께 두 번 확인) */
+      var mark = p == null ? '' : (p > 0.04 ? '▲' : p < -0.04 ? '▼' : '·');
+      var num = p == null ? '—' : Math.abs(p).toFixed(2) + '%';
       return '<button class="tile ' + tileClass(p) + '" type="button" data-no="' + esc(t.no) + '" data-name="' + esc(t.name || t.label) + '" style="' + tileFlex(t.valueEok) + '" title="' + esc(tip) + '">' +
-        '<b>' + esc(t.label || t.name) + '</b><small>' + (p == null ? '—' : pct(p)) + '</small></button>';
+        '<b>' + esc(t.label || t.name) + '</b><small>' + mark + ' ' + num + '</small></button>';
     }).join('');
     Array.prototype.forEach.call(host.querySelectorAll('.tile'), function(btn){
       btn.addEventListener('click', function(){
