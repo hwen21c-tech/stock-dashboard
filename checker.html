@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F7F3E9">
-<meta name="description" content="종목명이나 코드 하나로 오늘 거래대금 300억 통과 여부·등락률·시가/고가/저가 대비 위치와 소속 테마·최근 재료를 1초에 확인하는 폭스시그널 무료 체커.">
-<title>🔍 내 종목 300억·추세 1초 체커 — 폭스시그널</title>
+<meta name="description" content="종목명이나 코드 하나로 오늘 통합 거래대금·등락률·시가/고가/저가 대비 위치와 소속 테마·최근 재료를 1초에 확인하는 폭스시그널 무료 체커.">
+<title>🔍 내 종목 수급·테마 1초 체커 — 폭스시그널</title>
 <!-- 📲 이 페이지 전용 PWA (관제탑과 id·start_url·scope 를 분리해 따로 설치된다) -->
 <link rel="manifest" href="manifest-checker.json">
 <meta name="mobile-web-app-capable" content="yes">
@@ -60,6 +60,7 @@
   .chip small{font-weight:700;color:var(--mute);font-size:10.5px}
   .chip:active{background:#F2EADB}
   .chiphead{display:flex;align-items:center;gap:6px;margin:12px 0 2px;font-size:11.5px;font-weight:900;color:var(--sub)}
+  .chiphead[hidden]{display:none}
   #msg{margin-top:10px;font-size:12.5px;font-weight:800;border-radius:11px;padding:10px 12px;display:none}
   #msg.show{display:block}
   #msg.bad{background:#FDECEA;color:#8B1A12;border:1px solid #F3C6C0}
@@ -80,12 +81,24 @@
   .kpi .k b{font-size:15.5px;font-weight:900;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
   .bar{height:9px;border-radius:999px;background:#EDE4D3;overflow:hidden;margin-top:10px;position:relative}
   .bar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#C9A25E,#781B33)}
-  .bar.miss i{background:linear-gradient(90deg,#E0C48A,#C58B3A)}
+  .bar.liq-hot i{background:linear-gradient(90deg,#C9A25E,#781B33)}
+  .bar.liq-warm i{background:linear-gradient(90deg,#E0C48A,#B45309)}
+  .bar.liq-mid i{background:linear-gradient(90deg,#D8CDB8,#8E8271)}
+  .bar.liq-low i{background:linear-gradient(90deg,#E4DCCB,#B7AB96)}
   .barlabel{display:flex;justify-content:space-between;font-size:10.8px;font-weight:800;color:var(--mute);margin-top:5px}
+  .kpi .k .liq{display:inline-block;margin-top:5px;font-size:10px;font-weight:900;border-radius:999px;padding:2px 8px;letter-spacing:-.01em}
+  .liq-hot{background:#781B33;color:#FFF9EC}
+  .liq-warm{background:#F6E3C4;color:#8A5A0B}
+  .liq-mid{background:#EFE9DC;color:#5E5546}
+  .liq-low{background:#F1EEE7;color:#7A7163}
   .verdict{margin-top:12px;border-radius:12px;padding:11px 12px;font-size:13.2px;font-weight:750;line-height:1.6;background:#FBF7EC;border:1px solid var(--line)}
   .verdict b{font-weight:900}
   .verdict .tag{display:inline-block;font-size:10.8px;font-weight:900;border-radius:6px;padding:2px 7px;margin-right:6px;background:#781B33;color:#FFF9EC;vertical-align:1px}
   .verdict .tag.no{background:#8E8271}
+  .verdict .tag.liq-hot{background:#781B33;color:#FFF9EC}
+  .verdict .tag.liq-warm{background:#B45309;color:#FFF9EC}
+  .verdict .tag.liq-mid{background:#8E8271;color:#FFF9EC}
+  .verdict .tag.liq-low{background:#B7AB96;color:#3A332A}
   .pos{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
   .pos div{background:#FBF7EC;border:1px solid var(--line);border-radius:10px;padding:7px 8px;text-align:center}
   .pos span{display:block;font-size:10.4px;font-weight:800;color:var(--mute)}
@@ -133,8 +146,32 @@
   .retry{margin-top:10px;border:1px solid rgba(120,27,51,.3);background:rgba(120,27,51,.05);color:var(--wine);font-weight:900;font-size:11.5px;border-radius:9px;padding:7px 11px}
   .iload{font-size:11.5px;font-weight:800;color:var(--mute);margin-top:9px}
 
-  .links{margin-top:14px;display:grid;gap:7px}
-  .links a{
+  /* ---- ⭐ 관심종목 · 📋 요약 복사 · 📊 52주 위치 ---- */
+  .acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .acts button{
+    border:1px solid rgba(120,27,51,.3);background:rgba(120,27,51,.05);color:var(--wine);
+    font-size:11.8px;font-weight:900;border-radius:9px;padding:7px 11px;letter-spacing:-.01em;
+  }
+  .acts button.on{background:#781B33;color:#FFF9EC;border-color:#781B33}
+  .acts button:active{transform:translateY(1px)}
+  .chip.watch{border-color:#DCC08A;background:#FFF9EC}
+  .chip .x{margin-left:5px;color:var(--mute);font-weight:900}
+  .w52{margin-top:10px;background:#FBF7EC;border:1px solid var(--line);border-radius:12px;padding:9px 10px}
+  .w52 .h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;font-size:10.8px;font-weight:800;color:var(--mute)}
+  .w52 .h b{font-size:14px;font-weight:900;color:var(--wine);font-variant-numeric:tabular-nums}
+  .w52 .track{position:relative;height:9px;border-radius:999px;background:linear-gradient(90deg,#E7DCC7,#C9A25E,#781B33);margin-top:8px}
+  .w52 .track i{position:absolute;top:-3px;width:2px;height:15px;background:var(--ink);border-radius:2px;transform:translateX(-1px)}
+  .w52 .track i::after{content:'';position:absolute;left:-3px;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--ink)}
+  .w52 .ends{display:flex;justify-content:space-between;gap:8px;font-size:10.2px;font-weight:800;color:var(--sub);margin-top:5px}
+  .w52 .note{font-size:10px;font-weight:750;color:var(--mute);margin-top:4px}
+  .toast{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:88vw;
+    background:#20180F;color:#FFF9EC;font-size:12.5px;font-weight:850;border-radius:12px;
+    padding:11px 15px;box-shadow:0 8px 24px rgba(32,24,15,.28);opacity:0;pointer-events:none;transition:opacity .18s;z-index:99;
+  }
+  .toast.show{opacity:1}
+
+  .links{margin-top:14px;display:grid;gap:7px}  .links a{
     display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);
     background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:800;
   }
@@ -162,7 +199,7 @@
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand">🦊 폭스시그널<small>300억·추세 1초 체커</small></div>
+    <div class="brand">🦊 폭스시그널<small>수급·테마 1초 체커</small></div>
     <nav class="toplinks">
       <a href="https://foxsignal.tistory.com" target="_blank" rel="noopener">🟠 티스토리</a>
       <a href="https://blog.naver.com/hwen21c" target="_blank" rel="noopener">🟢 네이버 블로그</a>
@@ -171,14 +208,16 @@
   </header>
 
   <section class="hero">
-    <h1>내 종목, 300억은 넘었나?</h1>
-    <p>종목명·코드 하나면 <b>거래대금 300억 통과 여부 · 등락률 · 시가/고가/저가 대비 위치</b>에 더해 <b>소속 테마 신호등 · 최근 재료</b>까지 바로 보여 줍니다. 가격이 올라도 돈이 안 실리면 신호가 아닙니다.</p>
+    <h1>내 종목, 오늘 수급과 테마는?</h1>
+    <p>종목명·코드 하나면 <b>통합 거래대금</b>, <b>시가·고가·저가 대비 위치</b>, <b>소속 테마 신호등</b>, <b>최근 재료</b>까지 1초 만에 확인합니다. 숫자는 실측 그대로 보여 줍니다.</p>
     <div class="search">
       <input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" spellcheck="false"
              placeholder="종목명 또는 코드 (예: 한미약품 · 128940)" maxlength="30" aria-label="종목명 또는 6자리 종목코드">
       <button id="go" type="button">1초 체커</button>
     </div>
-    <div class="chiphead" id="chipHead" hidden>오늘의 300억↑ 대장주</div>
+    <div class="chiphead" id="watchHead" hidden>⭐ 내 관심종목</div>
+    <div class="chips" id="watchChips"></div>
+    <div class="chiphead" id="chipHead" hidden>오늘의 거래대금 상위 종목</div>
     <div class="chips" id="chips"></div>
     <div id="msg" role="status" aria-live="polite"></div>
   </section>
@@ -194,8 +233,8 @@
   </section>
 
   <footer>
-    <b>기준</b> — 거래대금 300억은 폭스시그널 <b>만쥬 ②차트·거래대금</b> 기준선입니다. 대금은 통합(KRX+NXT·시간외) 실측이고, 위치(%)는 그날 시가·고가·저가 대비 현재가입니다.
-    값은 실측 시세 API를 그대로 보여 주며, 통신이 막히면 <b>마지막 거래일 스냅샷</b>으로 대신합니다(그때는 화면에 기준일을 표시). 이 도구는 정보 정리이고 투자 권유가 아닙니다 — 판단과 책임은 본인 몫입니다.
+    <b>안내</b> — 거래대금은 통합(KRX+NXT·시간외) 실측 기준이며, 위치(%)는 당일 시가·고가·저가 대비 현재 위치입니다. 이 도구는 정보 정리용이며 투자 판단과 책임은 본인에게 있습니다.
+    값은 실측 시세 API를 그대로 보여 주며, 통신이 막히면 <b>마지막 거래일 스냅샷</b>으로 대신합니다(그때는 화면에 기준일을 표시).
   </footer>
 </div>
 
@@ -204,7 +243,7 @@
   'use strict';
   var $ = function(id){ return document.getElementById(id); };
   var LIVE_BASE = 'https://stock-dashboard-live-6frm.vercel.app';
-  var state = { snap: null, score: null, busy: false, last: null };
+  var state = { snap: null, score: null, busy: false, last: null, sigLabel: null, sigP: null, sigResolve: null, w52Seq: 0 };
 
   /* ---------- 숫자·색 도우미 ---------- */
   function n(v){ var x = Number(v); return isFinite(x) ? x : null; }
@@ -228,6 +267,212 @@
     m.textContent = text;
   }
 
+  /* ---------- 유동성 체급 ----------
+     거래대금은 '한 숫자를 넘었나/못 넘었나'로 재단하지 않고, 규모만 객관적으로 나눠 보여 준다.
+     경계는 금액 구간일 뿐이며 합격·불합격 판정이 아니다. */
+  var LIQ_TIERS = [
+    { min: 1e11, key: 'hot',  label: '대금 집중', note: '거래대금이 1,000억을 넘어 자금이 몰린 구간입니다.' },
+    { min: 3e10, key: 'warm', label: '대금 활발', note: '거래가 활발해 체결이 비교적 수월한 구간입니다.' },
+    { min: 1e10, key: 'mid',  label: '대금 보통', note: '보통 수준의 거래대금입니다.' },
+    { min: 0,    key: 'low',  label: '대금 한산', note: '거래대금이 적어 호가·체결이 얇은 구간입니다.' }
+  ];
+  function liqTier(v){
+    var x = n(v); if (x == null) return null;
+    for (var i = 0; i < LIQ_TIERS.length; i++){ if (x >= LIQ_TIERS[i].min) return LIQ_TIERS[i]; }
+    return LIQ_TIERS[LIQ_TIERS.length - 1];
+  }
+  function liqChip(tier){
+    if (!tier) return '';
+    return '<span class="liq liq-' + tier.key + '">' + esc(tier.label) + '</span>';
+  }
+
+  /* ---------- 🔔 토스트 ---------- */
+  var toastTm = null;
+  function toast(text){
+    var el = document.getElementById('toast');
+    if (!el){
+      el = document.createElement('div');
+      el.id = 'toast'; el.className = 'toast';
+      el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+      document.body.appendChild(el);
+    }
+    el.textContent = text;
+    el.className = 'toast show';
+    clearTimeout(toastTm);
+    toastTm = setTimeout(function(){ el.className = 'toast'; }, 2400);
+  }
+
+  /* ---------- ⭐ 내 관심종목 (localStorage · 최대 6개) ---------- */
+  var WATCH_KEY = 'foxsignal_checker_watch_v1';
+  var WATCH_MAX = 6;
+  function watchList(){
+    try {
+      var raw = localStorage.getItem(WATCH_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(arr)) return [];
+      return arr.filter(function(x){ return x && (x.code || x.name); }).slice(0, WATCH_MAX);
+    } catch(e){ return []; }
+  }
+  function watchSave(arr){
+    try { localStorage.setItem(WATCH_KEY, JSON.stringify(arr.slice(0, WATCH_MAX))); return true; }
+    catch(e){ return false; }
+  }
+  function watchSame(x, code, name){
+    var c = String(code || ''), nm = String(name || '');
+    if (c && String(x.code || '') === c) return true;
+    return !c && nm && String(x.name || '') === nm;
+  }
+  function watchIndexOf(arr, code, name){
+    for (var i = 0; i < arr.length; i++){ if (watchSame(arr[i], code, name)) return i; }
+    return -1;
+  }
+  function watchRender(){
+    var head = $('watchHead'), host = $('watchChips');
+    if (!host) return;
+    var arr = watchList();
+    if (head) head.hidden = !arr.length;
+    if (!arr.length){ host.innerHTML = ''; return; }
+    host.innerHTML = arr.map(function(x){
+      return '<button class="chip watch" type="button" data-code="' + esc(x.code || '') + '" data-name="' + esc(x.name || '') + '">' +
+        '<b>★ ' + esc(x.name || x.code) + '</b><span class="x" data-rm="1">✕</span></button>';
+    }).join('');
+    Array.prototype.forEach.call(host.querySelectorAll('.chip'), function(btn){
+      btn.addEventListener('click', function(ev){
+        var t = ev.target;
+        if (t && t.getAttribute && t.getAttribute('data-rm')){
+          ev.preventDefault(); ev.stopPropagation();
+          var c = btn.getAttribute('data-code'), nm = btn.getAttribute('data-name');
+          watchSave(watchList().filter(function(x){ return !watchSame(x, c, nm); }));
+          watchRender(); syncStar();
+          toast('관심종목에서 뻐어요');
+          return;
+        }
+        $('q').value = btn.getAttribute('data-name') || btn.getAttribute('data-code') || '';
+        checkStock(btn.getAttribute('data-code') || btn.getAttribute('data-name'));
+      });
+    });
+  }
+  function syncStar(){
+    var btn = $('starBtn'); if (!btn) return;
+    var d = state.last; if (!d) return;
+    var on = watchIndexOf(watchList(), d.code, d.name) > -1;
+    btn.className = on ? 'on' : '';
+    btn.textContent = on ? '★ 관심종목' : '☆ 관심종목';
+  }
+  function watchToggle(d){
+    if (!d) return;
+    var c = String(d.code || ''), nm = String(d.name || '');
+    var arr = watchList();
+    var ix = watchIndexOf(arr, c, nm);
+    if (ix > -1){
+      arr.splice(ix, 1);
+      watchSave(arr); watchRender(); syncStar();
+      toast('관심종목에서 뻐어요');
+      return;
+    }
+    if (arr.length >= WATCH_MAX){
+      toast('관심종목은 최대 ' + WATCH_MAX + '개까지 저장할 수 있어요');
+      return;
+    }
+    arr.push({ code: c || null, name: nm || c });
+    if (!watchSave(arr)){ toast('이 브라우저에서는 저장이 막혀 있어요'); return; }
+    watchRender(); syncStar();
+    toast('⭐ 관심종목에 담았어요 (' + arr.length + '/' + WATCH_MAX + ')');
+  }
+
+  /* ---------- 📋 한 줄 요약 복사 ---------- */
+  function summaryText(sigLabel){
+    var d = state.last; if (!d) return '';
+    var v = n(d.valueTotal);
+    var code = String(d.code || '');
+    var url = 'https://hwen21c-tech.github.io/foxsignal-checker/' + (code ? '?q=' + encodeURIComponent(code) : '');
+    return [
+      '[' + (d.name || '') + (code ? '(' + code + ')' : '') + '] ' + won(d.price) + ' (' + pct(d.changePct) + ')',
+      '대금 ' + (v == null ? '—' : eok(Math.round(v / 1e8))),
+      sigLabel || '테마 확인 전',
+      '체커: ' + url
+    ].join(' | ');
+  }
+  function legacyCopy(txt){
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = txt; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+      document.body.removeChild(ta);
+      return ok;
+    } catch(e){ return false; }
+  }
+  function copyText(txt, done){
+    if (!txt) { done(false); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){ done(true); }, function(){ done(legacyCopy(txt)); });
+      return;
+    }
+    done(legacyCopy(txt));
+  }
+  function copySummary(){
+    if (!state.last) return;
+    function go(sigLabel){
+      copyText(summaryText(sigLabel), function(ok){
+        toast(ok ? '복사됐어요! 카톡에 붙여넣기 하세요' : '복사가 막혀 있어요 — 요약을 길게 눌러 직접 복사해 주세요');
+      });
+    }
+    /* 테마 신호는 따로 불러오므로, 아직이면 잠시(최대 2.5초) 기다렸다 붙인다 */
+    if (!state.sigLabel && state.sigP){
+      var done = false;
+      var fin = function(lbl){ if (done) return; done = true; go(lbl || state.sigLabel || '테마 확인 전'); };
+      state.sigP.then(fin);
+      setTimeout(function(){ fin(state.sigLabel || '테마 확인 전'); }, 2500);
+      return;
+    }
+    go(state.sigLabel || '테마 확인 전');
+  }
+
+  /* ---------- 📊 52주(최근 1년) 위치 — 실측 일봉으로만 계산 ---------- */
+  function chartApi(){ return apiBase() + '/api/stock-chart'; }
+  function spanDays(a, b){
+    if (!/^\d{8}$/.test(String(a)) || !/^\d{8}$/.test(String(b))) return 0;
+    var d1 = Date.UTC(+a.slice(0,4), +a.slice(4,6) - 1, +a.slice(6,8));
+    var d2 = Date.UTC(+b.slice(0,4), +b.slice(4,6) - 1, +b.slice(6,8));
+    return Math.round((d2 - d1) / 86400000);
+  }
+  function fmtDate(s){
+    s = String(s || '');
+    return /^\d{8}$/.test(s) ? s.slice(0,4) + '.' + s.slice(4,6) + '.' + s.slice(6,8) : s;
+  }
+  function load52(code, mySeq){
+    var host = $('w52'); if (!host) return;
+    host.hidden = true; host.innerHTML = '';
+    if (!code) return;
+    fetchJson(chartApi() + '?code=' + encodeURIComponent(code) + '&count=260', 12000).then(function(j){
+      if (mySeq !== state.w52Seq) return;
+      var cs = (j && j.candles) || [];
+      if (cs.length < 60) return;      /* 일봉이 모자라면 52주 줄은 조용히 숨긴다(가짜 값 금지) */
+      var hi = null, lo = null;
+      for (var i = 0; i < cs.length; i++){
+        var h = n(cs[i].h), l = n(cs[i].l);
+        if (h != null && h > 0) hi = (hi == null || h > hi) ? h : hi;
+        if (l != null && l > 0) lo = (lo == null || l < lo) ? l : lo;
+      }
+      if (hi == null || lo == null || hi <= lo) return;
+      var p = n(state.last && state.last.price);
+      if (p == null) p = n(cs[cs.length - 1].c);
+      if (p == null) return;
+      var pos = Math.max(0, Math.min(100, (p - lo) / (hi - lo) * 100));
+      var from = String(cs[0].date || ''), to = String(cs[cs.length - 1].date || '');
+      var label = spanDays(from, to) >= 300 ? '52주' : ('최근 ' + cs.length + '거래일');
+      host.innerHTML =
+        '<div class="h"><span>📊 ' + esc(label) + ' 위치</span><b>' + pos.toFixed(1) + '%</b></div>' +
+        '<div class="track"><i style="left:' + pos.toFixed(1) + '%"></i></div>' +
+        '<div class="ends"><span>최저 ' + won(lo) + '</span><span>최고 ' + won(hi) + '</span></div>' +
+        '<div class="note">' + esc(label) + ' 실측 일봉 ' + esc(fmtDate(from)) + '~' + esc(fmtDate(to)) + ' · 0%=최저 · 100%=최고</div>';
+      host.hidden = false;
+    }).catch(function(){ /* 실측 일봉을 받지 못하면 52주 줄만 숨긴다 */ });
+  }
+
   /* ---------- 데이터: 실측 API → 없으면 정적 스냅샷 ---------- */
   function fetchJson(url, ms){
     var ctrl = window.AbortController ? new AbortController() : null;
@@ -249,10 +494,13 @@
     }).catch(function(){ state.score = null; return null; });
   }
 
+  function apiBase(){
+    return (location.pathname.indexOf('/stock-dashboard') > -1 || /github\.io$/.test(location.hostname))
+      ? LIVE_BASE : '';
+  }
+
   function apiQuery(){
-    var api = (location.pathname.indexOf('/stock-dashboard') > -1 || /github\.io$/.test(location.hostname))
-      ? LIVE_BASE + '/api/stock-live' : '/api/stock-live';
-    return api;
+    return apiBase() + '/api/stock-live';
   }
 
   function checkStock(q){
@@ -332,19 +580,17 @@
     var val = n(d.valueTotal), chg = n(d.changePct), pos = positionPct(d.price, d.low, d.high);
     var highGap = (n(d.high) && n(d.price) != null) ? (n(d.price) - n(d.high)) / n(d.high) * 100 : null;
     var openGap = (n(d.open) && n(d.price) != null) ? (n(d.price) - n(d.open)) / n(d.open) * 100 : null;
-    var pass = val != null && val >= 300e8;
-    var tag = pass ? '<span class="tag">300억 통과</span>' : '<span class="tag no">300억 미달</span>';
+    var tier = liqTier(val);
+    var tag = tier ? '<span class="tag liq-' + tier.key + '">' + tier.label + '</span>' : '';
     var body = [];
     if (val == null){
-      body.push('거래대금 값을 받지 못해 ②대금 기준은 판정하지 않았습니다(없는 숫자를 만들지 않습니다).');
-    } else if (!pass){
-      body.push('오늘 통합 거래대금 <b>' + eok(Math.round(val / 1e8)) + '</b>으로 기준선 <b>300억</b>에 못 미칩니다 — 가격이 올라도 자금이 안 실린 상승이라 폭스시그널 <b>②대금 기준 탈락</b>입니다.');
+      body.push('거래대금 값을 받지 못해 유동성 체급은 표시하지 않았습니다(없는 숫자를 만들지 않습니다).');
     } else {
-      body.push('오늘 통합 거래대금 <b>' + eok(Math.round(val / 1e8)) + '</b>으로 <b>300억을 넘겼습니다</b> — 가격에 자금이 실린 축입니다.');
+      body.push('오늘 통합 거래대금 <b>' + eok(Math.round(val / 1e8)) + '</b> — ' + tier.note);
     }
     if (highGap != null){
-      if (highGap > -2) body.push('현재가가 <b>고가권</b>(고가 대비 ' + highGap.toFixed(2) + '%)에 붙어 있어 <b>고가권 유지</b>로 봅니다.');
-      else if (highGap < -7) body.push('고가 대비 <b>' + highGap.toFixed(2) + '%</b>로 밀려 <b>윗꼬리 물림 구간</b>입니다 — 추격 매수 자리 아닙니다.');
+      if (highGap > -2) body.push('현재가가 <b>고가권</b>(고가 대비 ' + highGap.toFixed(2) + '%)에 붙어 있어 고가를 지키는 모양입니다.');
+      else if (highGap < -7) body.push('고가 대비 <b>' + highGap.toFixed(2) + '%</b>로 밀려 윗꼬리가 길게 남은 모양입니다.');
       else body.push('고가 대비 ' + highGap.toFixed(2) + '% — 고가와 저가 사이 중간권입니다.');
     }
     if (pos != null) body.push('오늘 범위의 <b>' + pos.toFixed(1) + '%</b> 지점(0%=저가 · 100%=고가)에 있습니다.');
@@ -362,12 +608,12 @@
     var price = n(d.price), chg = n(d.changePct);
     var val = n(d.valueTotal);
     var valEok = val == null ? null : Math.round(val / 1e8);
-    var pass = valEok != null && valEok >= 300;
+    var tier = liqTier(val);
     var pos = positionPct(d.price, d.low, d.high);
     var closePos = (n(d.high) && price != null && n(d.high) > 0) ? (price - n(d.high)) / n(d.high) * 100 : null;
     var openPos = (n(d.open) && price != null && n(d.open) > 0) ? (price - n(d.open)) / n(d.open) * 100 : null;
     var lowPos = (n(d.low) && price != null && n(d.low) > 0) ? (price - n(d.low)) / n(d.low) * 100 : null;
-    var pctOfBar = valEok == null ? 0 : Math.max(2, Math.min(100, valEok / 300 * 100));
+    var pctOfBar = val == null ? 0 : Math.max(2, Math.min(100, val / 1e11 * 100));   /* 막대는 0~1,000억 눈금 */
     var h = '';
     h += '<div class="card">';
     h += '<div class="res-head"><div><span class="res-name">' + esc(d.name || '') + '</span>' +
@@ -379,9 +625,9 @@
          '<span class="c ' + dirClass(chg) + '">' + pct(chg) + '</span>' +
          (n(d.change) != null ? '<span style="font-size:12px;font-weight:800;color:var(--mute)">' + (n(d.change) > 0 ? '+' : '') + Math.round(n(d.change)).toLocaleString('ko-KR') + '원</span>' : '') + '</div>';
     h += '<div class="kpi">' +
-      '<div class="k"><span>통합 거래대금</span><b class="' + (pass ? 'up' : 'flat') + '">' + (valEok == null ? '—' : eok(valEok)) + '</b>' +
-      '<div class="bar ' + (pass ? '' : 'miss') + '"><i style="width:' + pctOfBar + '%"></i></div>' +
-      '<div class="barlabel"><span>0</span><span>기준 300억</span></div></div>' +
+      '<div class="k"><span>통합 거래대금</span><b>' + (valEok == null ? '—' : eok(valEok)) + '</b>' + liqChip(tier) +
+      '<div class="bar' + (tier ? ' liq-' + tier.key : '') + '"><i style="width:' + pctOfBar + '%"></i></div>' +
+      '<div class="barlabel"><span>0</span><span>1,000억 ↑</span></div></div>' +
       '<div class="k"><span>시가 / 고가 / 저가</span><b style="font-size:12.6px">' + won(d.open) + '</b>' +
       '<div style="font-size:12.2px;font-weight:850;color:var(--sub);margin-top:2px">고 ' + won(d.high) + ' · 저 ' + won(d.low) + '</div>' +
       (d.prevClose != null ? '<div style="font-size:11px;font-weight:750;color:var(--mute);margin-top:2px">전일 종가 ' + won(d.prevClose) + '</div>' : '') +
@@ -391,7 +637,11 @@
       '<div><span>고가 대비</span><b class="' + dirClass(closePos) + '">' + (closePos == null ? '—' : pct(closePos)) + '</b></div>' +
       '<div><span>저가 대비</span><b class="' + dirClass(lowPos) + '">' + (lowPos == null ? '—' : pct(lowPos)) + '</b></div>' +
       '</div>';
+    h += '<div class="acts">' +
+      '<button id="starBtn" type="button">☆ 관심종목</button>' +
+      '<button id="copyBtn" type="button">📋 요약 복사</button></div>';
     h += '<div class="verdict">' + diagnosis(d) + '</div>';
+    h += '<div class="w52" id="w52" hidden></div>';
     h += '<div style="margin-top:9px;font-size:10.8px;color:var(--mute);font-weight:750">기준일 ' + esc(meta.tradeDate || (d.tradedAt || '').slice(0,10) || '—') +
       ' · 대금은 통합(KRX+NXT·시간외) 기준 · 위치 %는 그날 시가·고가·저가 대비입니다.' +
       (meta.live ? '<br>※ 등락률·전일 종가는 네이버 폴링 값(시간외 반영)이라 일봉 종가 기준과 소수점이 다를 수 있습니다.' : '') + '</div>';
@@ -400,6 +650,11 @@
     out.hidden = false;
     out.scrollIntoView({ behavior: 'smooth', block: 'start' });
     state.last = d;
+    var stBtn = $('starBtn'); if (stBtn) stBtn.addEventListener('click', function(){ watchToggle(d); });
+    var cpBtn = $('copyBtn'); if (cpBtn) cpBtn.addEventListener('click', copySummary);
+    syncStar();
+    state.w52Seq = (state.w52Seq || 0) + 1;
+    load52(d.code, state.w52Seq);
     loadInsight(d.code, d.name, d.changePct);
   }
 
@@ -428,6 +683,7 @@
     var host = $('insight');
     if (!host) return;
     var sig = j.signal || {};
+    setSig(sig.label || '⚪ 확인 불가');
     var sc = j.score || null;
     var p = j.primary || null;
     var top4 = j.top4 || [];
@@ -525,6 +781,7 @@
       fetchJson('./data/last-dynamic-themes.json', 8000).catch(function(){ return null; })
     ]).then(function(rows){
       if (my !== insSeq || !host) return;
+      setSig('⚪ 확인 불가');
       var mem = rows[0], prev = rows[1];
       if (!mem || !mem.byCode){
         host.innerHTML = '<div class="card"><div class="ihead"><span>🧭 소속 테마 · 오늘 주도 테마 신호등</span><span class="ibasis">정적 폴백</span></div>' +
@@ -589,10 +846,17 @@
       window.__checkerCode = code;
     }).catch(function(){
       if (my !== insSeq || !host) return;
+      setSig('⚪ 확인 불가');
       host.innerHTML = '<div class="card"><div class="iload">테마·재료를 불러오지 못했습니다.</div>' +
         '<button class="retry" type="button" onclick="window.__checkerRetry && window.__checkerRetry()">♻︎ 다시 시도</button></div>';
       host.hidden = false;
     });
+  }
+
+  function setSig(label){
+    state.sigLabel = label || null;
+    var r = state.sigResolve; state.sigResolve = null;
+    if (r){ try { r(state.sigLabel); } catch(e){} }
   }
 
   function loadInsight(code, name, stockPct){
@@ -600,9 +864,13 @@
     if (!host) return;
     if (!code){
       host.hidden = true; host.innerHTML = '';
+      state.sigLabel = null; state.sigP = null; state.sigResolve = null;
       return;
     }
     var my = ++insSeq;
+    /* 요약 복사가 테마 신호를 기다릴 수 있도록 약속을 만들어 둔다 */
+    state.sigLabel = null;
+    state.sigP = new Promise(function(res){ state.sigResolve = res; });
     host.hidden = false;
     host.innerHTML = '<div class="card"><div class="ihead"><span>🧭 소속 테마 · 오늘 주도 테마 신호등</span><span class="ibasis">실측 확인 중…</span></div>' +
       '<div class="iload">테마 순위·재료를 읽는 중…</div>' +
@@ -625,7 +893,7 @@
     if (d && d.code) loadInsight(d.code, d.name, d.changePct);
   };
 
-  /* ---------- 300억↑ 대장주 1클릭 ---------- */
+  /* ---------- 거래대금 상위 종목 1클릭 ---------- */
   function chips(){
     var host = $('chips'); if (!host) return;
     var list = [];
@@ -635,7 +903,7 @@
         return { name: x.name, code: x.code, valueEok: x.valueEok, changePct: x.changePct, from: '성적표' };
       });
     } else if (state.snap && (state.snap.stocks || []).length){
-      list = state.snap.stocks.filter(function(s){ return (n(s.valueEok) || 0) >= 300; })
+      list = state.snap.stocks.slice()
         .sort(function(a, b){ return (n(b.valueEok) || 0) - (n(a.valueEok) || 0); })
         .slice(0, 4)
         .map(function(s){ return { name: s.name, code: s.code, valueEok: s.valueEok, changePct: s.changePct, from: '스냅샷' }; });
@@ -643,7 +911,7 @@
     if (!list.length){ host.innerHTML = ''; $('chipHead').hidden = true; return; }
     var date = (sc && sc.asOfTradingDay) || (state.snap && state.snap.tradeDate) || '';
     $('chipHead').hidden = false;
-    $('chipHead').innerHTML = '오늘의 300억↑ 대장주' + (date ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(date) + ' 기준</span>' : '');
+    $('chipHead').innerHTML = '오늘의 거래대금 상위 종목' + (date ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(date) + ' 기준</span>' : '');
     host.innerHTML = list.map(function(x){
       var cls = dirClass(x.changePct);
       return '<button class="chip" type="button" data-code="' + esc(x.code || x.name) + '" data-name="' + esc(x.name) + '">' +
@@ -658,6 +926,7 @@
   }
 
   /* ---------- 시작 ---------- */
+  watchRender();
   $('go').addEventListener('click', function(){ checkStock($('q').value); });
   $('q').addEventListener('keydown', function(e){
     if (e.key === 'Enter'){ e.preventDefault(); checkStock($('q').value); }
