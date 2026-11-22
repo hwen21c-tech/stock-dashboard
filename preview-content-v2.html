@@ -2488,7 +2488,7 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
 
   <!-- ⚙️ 나머지 세부 옵션 — 기본 접힘. 펼치면 기존 기능 그대로 -->
   <details class="shelf" id="detailPanel">
-    <summary><span>⚙️ 세부 옵션 펼치기 — 양식 · 참고 글 · 실사진 · 차트 PNG · 자가진단</span><span class="n" id="detailPanelTag">접힘</span><span class="arw">▾</span></summary>
+    <summary><span id="detailPanelLbl">⚙️ 세부 옵션 펼치기 — 양식 · 참고 글 · 실사진 · 차트 PNG · 자가진단</span><span class="n" id="detailPanelTag">접힘</span><span class="arw">▾</span></summary>
     <div class="shelfbody">
   <details class="shelf" id="blogAutoGuide">
     <summary><span>📋 이 테마 참고 틀</span><span class="n" id="blogAutoGuideNo">—</span><span class="arw">▾</span></summary>
@@ -26571,9 +26571,13 @@ var CSVoice = (function () {
     mirror();
     try { new MutationObserver(mirror).observe(outStat, { childList: true, characterData: true, subtree: true }); } catch (e) {}
   }
-  var dp = document.getElementById('detailPanel'), dpTag = document.getElementById('detailPanelTag');
+  var dp = document.getElementById('detailPanel'), dpTag = document.getElementById('detailPanelTag'), dpLbl = document.getElementById('detailPanelLbl');
   if (dp && dpTag){
-    function tag(){ dpTag.textContent = dp.open ? '펼침' : '접힘'; }
+    var dpText = '⚙️ 세부 옵션 펼치기 — 양식 · 참고 글 · 실사진 · 차트 PNG · 자가진단';
+    function tag(){
+      dpTag.textContent = dp.open ? '펼침' : '접힘';
+      if (dpLbl) dpLbl.textContent = dp.open ? '⚙️ 세부 옵션 접기 — 양식 · 참고 글 · 실사진 · 차트 PNG · 자가진단' : dpText;
+    }
     dp.addEventListener('toggle', tag); tag();
   }
   /* 탭이 블로그가 아니면 하단 바 여백 속성도 맞춘다(첫 진입·딥링크) */
