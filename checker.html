@@ -1535,7 +1535,8 @@
     mapLoaded = true;
     if (head) head.hidden = false;
     if (basis) basis.textContent = '불러오는 중…';
-    host.hidden = false;
+    /* 접어 둔 사용자에게는 '읽는 중' 자리도 잠깐 보이지 않게 — 상태를 그대로 지킨다 */
+    host.hidden = !mapOpen;
     host.innerHTML = '<div class="tmapnote" style="padding:6px 0">테마맵을 읽는 중…</div>';
     fetchJson(apiQuery() + '?mode=theme_map', 18000).then(function(j){
       if (!j || !j.ok || !(j.tiles || []).length) throw new Error('theme_map_empty');
@@ -1763,7 +1764,7 @@
     var host = $('schedBody'), head = $('schedHead'), basis = $('schedBasis');
     if (!host) return;
     head.hidden = false;
-    host.hidden = false;
+    host.hidden = !SCHED.open;
     if (basis) basis.textContent = '오늘 포함 7일 · 불러오는 중…';
     host.innerHTML = '<div class="schednote" style="padding:4px 0">일정을 읽는 중…</div>';
     var win = schedWindow();
