@@ -961,7 +961,7 @@
     var news = (t && t.news && t.news.recent) ? t.news.recent[0] : null;
     if (news && news.title) tail.push('최근 재료 “' + news.title + '”');
     var dart = state.risk.dart, ds = dartSignal(dart);
-    if (ds.key !== 'unknown') tail.push('공시 ' + ds.label.replace(/^[^ ]+ /, ''));
+    if (ds.key !== 'unknown') tail.push(ds.label.replace(/^[^ ]+\s*/, ''));
     var row = krxRow(state.risk.krx);
     if (row && row.tradeStop) tail.push('거래정지 종목');
     else if (row && row.alertLabel) tail.push('KRX ' + row.alertLabel + ' 지정');
