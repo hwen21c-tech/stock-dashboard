@@ -1828,9 +1828,10 @@
           <span class="flabel" style="margin:0">🦊 폭스시그널 시간대 1클릭</span>
           <button class="btn small primary" id="slotPreBtn" type="button" title="장전 재료(밤사이 미 증시·야간선물·원달러)를 채우고 📈 주식 시황 + 🦊 장전 양식(5번)으로 바꿉니다">🌅 장전</button>
           <button class="btn small primary" id="slotCloseBtn" type="button" title="정규장 결산 + NXT 애프터장(15:30~20:00) + 야간선물·일정 재료를 채우고 📈 주식 시황 + 🦊 통합 마감(정규+애프터) 양식(6번)으로 바꿉니다">🌙 통합 마감(정규+애프터)</button>
+          <button class="btn small primary" id="slotWeekendBtn" type="button" title="피클이 주말에 만들어 둔 주말 뉴스 초안(data/content_auto_latest.json → weekend_news)을 불러와 주제·참고 자료·본문을 채우고 복사/생성 영역으로 이동합니다 — 쿠션 vs 리스크 + 월요일 체크포인트 3가지 + 시초가 원칙">🗞️ 주말 뉴스</button>
         </div>
         <div class="matpanel-row" style="margin-top:4px">
-          <span class="hint" id="slotHint">블로그는 <b>🌅 장전</b>·<b>🌙 통합 마감(정규+애프터)</b> <b>2종</b>입니다. 누르면 그 시간대 <b>관제탑 실측</b>(지수·수급·NXT 애프터·야간선물·뉴스)으로 [참고 자료]·[주제]를 채우고, <b>📈 주식 시황 + 폭스시그널 양식</b>으로 바꾼 뒤 <b>크림 그래프·대표 썸네일</b>까지 다시 그립니다. 받지 못한 값은 비워 둡니다.</span>
+          <span class="hint" id="slotHint">블로그는 <b>🌅 장전</b>·<b>🌙 통합 마감(정규+애프터)</b> <b>2종</b>, 주말에는 <b>🗞️ 주말 뉴스</b>입니다. 누르면 그 시간대 <b>관제탑 실측</b>(지수·수급·NXT 애프터·야간선물·뉴스)으로 [참고 자료]·[주제]를 채우고, <b>📈 주식 시황 + 폭스시그널 양식</b>으로 바꾼 뒤 <b>크림 그래프·대표 썸네일</b>까지 다시 그립니다. <b>🗞️ 주말 뉴스</b>는 새 시세 대신 <b>피클이 주말에 써 둔 초안</b>(쿠션 vs 리스크 · 월요일 체크 3가지 · 시초가 원칙)을 그대로 올립니다. 받지 못한 값은 비워 둡니다.</span>
         </div>
           <div class="foxsc" id="foxScBlog" hidden></div>
         <div class="matpanel-row">
@@ -2357,13 +2358,14 @@
             <button class="btn small primary" type="button" data-cs-slot="noon">☀️ 점심</button>
             <button class="btn small primary" type="button" data-cs-slot="close">🌆 정규마감</button>
             <button class="btn small primary" type="button" data-cs-slot="after">🌙 애프터장</button>
+            <button class="btn small primary" type="button" data-cs-slot="weekend" title="피클이 주말에 써 둔 주말 뉴스 6컷 대본(weekend_news)을 불러와 🗞️ 주말 뉴스 정리 공식 · 성우 현수 1.25x · 미리보기까지 세팅합니다">🗞️ 주말 뉴스</button>
             <button class="btn small" type="button" data-cs-slot="dict" title="토요일 에버그린 — 사이드카·VIX·거래대금 300억·NXT 같은 용어를 5컷으로">📘 30초 사전</button>
             <button class="btn small" type="button" data-cs-slot="review" title="일요일 복기 — 이번 주 성적표·맞춘 판단·빗나간 포인트·다음 주 if→then">📊 주간 오답노트</button>
             <button class="btn small" type="button" data-feed-draft="shorts" title="피클이 만들어 둔 최신 초안(블로그·쇼츠)을 이 화면에 다시 불러옵니다">📥 피클 최신 초안 다시 불러오기</button>
           </div>
           <div class="slotstate" id="shSlotState" hidden></div>
           <div class="foxsc" id="foxScShorts" hidden></div>
-          <p class="hint" style="margin-top:6px">누르면 그 시간대 <b>관제탑 실측·NXT 애프터마켓·뉴스</b>를 읽어 참고 자료와 주제를 채우고, <b>폭스시그널 공식</b>과 <b>🎬 영상 레이아웃</b>을 그 시간대로 바꿉니다. <b>블로그 글을 쓰지 않아도</b> 바로 동작합니다. 주말의 <b>📘 30초 사전(토)</b>·<b>📊 주간 오답노트(일)</b>는 새 시세가 없어 <b>공식과 5컷 샘플만</b> 올립니다(확인된 사례·브리핑 기록만).</p>
+          <p class="hint" style="margin-top:6px">누르면 그 시간대 <b>관제탑 실측·NXT 애프터마켓·뉴스</b>를 읽어 참고 자료와 주제를 채우고, <b>폭스시그널 공식</b>과 <b>🎬 영상 레이아웃</b>을 그 시간대로 바꿉니다. <b>블로그 글을 쓰지 않아도</b> 바로 동작합니다. 주말의 <b>📘 30초 사전(토)</b>·<b>📊 주간 오답노트(일)</b>는 새 시세가 없어 <b>공식과 5컷 샘플만</b> 올립니다(확인된 사례·브리핑 기록만). <b>🗞️ 주말 뉴스</b>는 <b>피클이 주말에 써 둔 6컷 대본</b>을 그대로 불러와 🗞️ 주말 뉴스 정리 공식·성우 현수 1.25x·미리보기까지 세팅합니다.</p>
           <div class="store-note">
             <span id="shThemeInfo">테마를 고르면 이 브라우저에 저장됩니다</span>
             <button class="linkbtn" id="shThemeReset" type="button">이 테마만 1번으로</button>
@@ -12007,7 +12009,9 @@ var CSVoice = (function () {
     after: { icon: '🌙', name: '애프터장', label: '통합 마감(정규+애프터)', blogNo: 6, foxNo: '4' },
     /* 📘📊 주말 전용 — 새 시세가 없으므로 실측을 읽지 않고 공식·샘플만 세팅한다(weekend: true) */
     dict:   { icon: '📘', name: '30초 사전',  label: '토요일 30초 증시 사전', blogNo: 0, foxNo: '6', weekend: true },
-    review: { icon: '📊', name: '주간 오답노트', label: '일요일 주간 오답노트',  blogNo: 0, foxNo: '7', weekend: true }
+    review: { icon: '📊', name: '주간 오답노트', label: '일요일 주간 오답노트',  blogNo: 0, foxNo: '7', weekend: true },
+    /* 🗞️ 주말 뉴스 — 새 시세가 없는 주말에 '피클이 써 둔 초안'(content_auto_latest.json → weekend_news)을 그대로 올린다 */
+    weekend: { icon: '🗞️', name: '주말 뉴스', label: '주말 뉴스 정리(금요일 마감~일요일)', blogNo: 6, foxNo: '8', weekendNews: true }
   };
   var SLOT_EXT = { at: 0, livebrief: null, macro: null, econ: null, alerts: null, err: [] };
   function slotExtra(force){
@@ -12516,10 +12520,110 @@ var CSVoice = (function () {
       voice: vName, cuts: cuts, applied: cuts > 0, weekend: true, ok: !!r });
   }
 
+  /* ---------- 🗞️ 주말 뉴스 — 피클 초안 전용 (data/content_auto_latest.json → weekend_news) ----------
+     · 블로그: 쿠션 vs 리스크 · 월요일 체크 3가지 초안을 그대로 올리고 📈 주식 시황 6번 양식으로 맞춘 뒤 복사/생성 영역으로 이동한다.
+     · 쇼츠 : 6컷 대본 → 🗞️ 주말 뉴스 정리 공식 → 성우 현수 1.25x → 🎬 생성기 미리보기까지 세팅한다.
+     · 오늘자 초안이 아니면 지어내지 않고 초안 날짜를 그대로 밝힌다. 초안이 아예 없으면 없다고 알린다. */
+  function weekendVoice(speed){
+    var out = { voice: '' };
+    var sel = document.getElementById('wvVoice'), sp = document.getElementById('wvSpeed');
+    try {
+      if (sel && sel.options){
+        for (var i = 0; i < sel.options.length; i++){
+          var ov = String(sel.options[i].value || ''), ot = String(sel.options[i].textContent || '');
+          if (/Hyunsu|현수/.test(ov) || /현수/.test(ot)){
+            if (sel.value !== sel.options[i].value){
+              sel.value = sel.options[i].value;
+              try { sel.dispatchEvent(new Event('change', { bubbles: true })); } catch (e0) {}
+            }
+            break;
+          }
+        }
+      }
+    } catch (e1) {}
+    try {
+      if (sp){ sp.value = String(speed); sp.dispatchEvent(new Event('input', { bubbles: true })); }
+    } catch (e2) {}
+    try { out.voice = csVoice(); } catch (e3) { out.voice = ''; }
+    return out;
+  }
+  function weekendNewsRun(mode, btn){
+    mode = (mode === 'shorts' || mode === 'wvid') ? mode : 'blog';
+    var st = $('#matState'), sst = $('#shSlotState');
+    if (btn) spinner(btn, true, '주말 뉴스 초안 읽는 중…');
+    if (st) st.textContent = '주말 뉴스 초안 읽는 중…';
+    if (sst && mode !== 'blog'){ sst.hidden = false; sst.className = 'slotstate'; sst.textContent = '🗞️ 주말 뉴스 초안 읽는 중…'; }
+    return feedFetch(true).then(function (j) {
+      var node = feedNode(j, 'weekend');
+      if (!node) throw new Error('주말 뉴스 초안이 아직 없습니다');
+      var when = String(node.date || node.updatedAt || '').slice(0, 10);
+      var stale = !feedIsToday(node);
+      var stamp = when ? ' (' + when + ' 초안)' : '';
+      if (mode === 'blog'){
+        if (!node.blog) throw new Error('주말 뉴스 블로그 초안이 비어 있습니다');
+        var rb = feedApplyBlog(node, true);
+        if (!rb.ok) throw new Error('블로그 초안을 올리지 못했습니다(' + rb.why + ')');
+        if (st) st.textContent = '🗞️ 주말 뉴스 피클 초안';
+        /* [참고 자료]도 이 초안 기준으로 채운다 — 글을 다시 쓸 때 근거가 화면에 남아 있게 */
+        var srcM = $('#srcMaterial');
+        if (srcM){
+          var mdHead = String(node.blog.markdown || '').split('\n').filter(function (x) { return String(x).trim(); }).slice(0, 3).join('\n');
+          srcM.value = '🗞️ 주말 뉴스 피클 초안 — ' + when + (stale ? ' (오늘자 초안 아님)' : '') + '\n' +
+            '출처: ' + (node.source || 'data/content_auto_latest.json') + '\n' +
+            '제목: ' + String(node.blog.title || '') + '\n\n' + mdHead +
+            '\n\n※ 본문·주제는 이미 채워져 있습니다. 이 칸은 다시 쓸 때 쓰는 참고 자료입니다. 확인되지 않은 값은 넣지 않았습니다.';
+          try { srcM.dispatchEvent(new Event('input', { bubbles: true })); } catch (eS) {}
+        }
+        feedBanner('📥 <b>피클 주말 뉴스 초안' + esc(stamp) + '</b> — 블로그 <b>' + Number(rb.chars || 0).toLocaleString('ko-KR') +
+          '자</b> · 태그 <b>' + rb.tags + '개</b> · <b>📈 주식 시황 ' + feedBlogFormNo('weekend') + '번 양식</b>으로 올렸습니다' +
+          (stale ? ' · ⚠️ 오늘자 초안이 아니니 날짜를 확인하세요' : ''));
+        toast('🗞️ 주말 뉴스 블로그 초안을 불러왔습니다 — ' + Number(rb.chars || 0).toLocaleString('ko-KR') + '자 · 아래 복사/생성 영역에서 바로 쓰세요.');
+        var oc = $('#outCard');
+        if (oc && oc.scrollIntoView) setTimeout(function(){ try { oc.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} }, 120);
+        return { ok: true, mode: 'blog', stale: stale, date: when, chars: rb.chars, tags: rb.tags };
+      }
+      if (!node.shorts) throw new Error('주말 뉴스 쇼츠 대본이 비어 있습니다');
+      var rs = feedApplyShorts(node, true, false);
+      if (!rs.ok) throw new Error('쇼츠 대본을 올리지 못했습니다(' + rs.why + ')');
+      var vv = weekendVoice(1.25);
+      /* 이 컨셉의 고정 성우·속도 안내 줄이 이전 값(1.20x)으로 남아 있으면 실제 값으로 다시 쓴다 */
+      try {
+        if (window.WVID && window.WVID.say) window.WVID.say('🦊 <b>폭스시그널 에디토리얼</b> · 🗞️ <b>주말 뉴스 정리</b> — 피클 초안 ' + rs.cuts +
+          '컷을 올렸습니다 · 🎙️ <b>' + esc(vv.voice || '현수') + '</b> · <b>[▶ 생성]</b>만 누르면 됩니다.', 'good');
+      } catch (eSay) {}
+      if (sst){
+        sst.hidden = false;
+        sst.className = 'slotstate ok';
+        sst.innerHTML = '🗞️ <b>주말 뉴스</b>' + esc(stamp) + ' · 📥 피클 초안 <b>' + rs.cuts + '컷</b> · 폭스시그널 공식 <b>🗞️ 주말 뉴스 정리</b>' +
+          (vv.voice ? ' · 성우 <b>' + esc(vv.voice) + '</b>' : '') + ' — 대본·양식·성우·미리보기까지 세팅했습니다' +
+          (stale ? ' · ⚠️ 오늘자 초안이 아닙니다' : '');
+      }
+      if (st) st.textContent = '🗞️ 주말 뉴스 피클 초안';
+      feedBanner('⚡ <b>주말 뉴스 쇼츠 세팅</b>' + esc(stamp) + ' — 📥 피클 초안 <b>' + rs.cuts + '컷</b> · 🗞️ 주말 뉴스 정리' +
+        (vv.voice ? ' · 성우 <b>' + esc(vv.voice) + '</b>' : '') + (stale ? ' · ⚠️ 오늘자 초안이 아니니 날짜를 확인하세요' : '') +
+        ' — <b>[▶ 생성]</b>만 누르면 됩니다.');
+      toast('🗞️ 주말 뉴스 ' + rs.cuts + '컷 대본을 불러왔습니다 — ' + (vv.voice || '성우 고정값') + ' · [▶ 생성]만 누르세요.');
+      if (mode === 'wvid') { try { csGenReady(); } catch (e4) {} }
+      return { ok: true, mode: mode, stale: stale, date: when, cuts: rs.cuts, voice: vv.voice };
+    }).catch(function (e) {
+      var msg = (e && e.message) ? e.message : '초안을 읽지 못했습니다';
+      if (st) st.textContent = '🗞️ 주말 뉴스 — ' + msg;
+      if (sst){ sst.hidden = false; sst.className = 'slotstate bad'; sst.textContent = '🗞️ 주말 뉴스 — ' + msg; }
+      feedBanner('⚠️ <b>주말 뉴스 초안을 불러오지 못했습니다</b> — ' + esc(msg) + ' · 값을 지어내지 않습니다. <b>[📥 피클 최신 초안 다시 불러오기]</b>로 확인해 주세요.');
+      toast('주말 뉴스 초안을 불러오지 못했습니다 — ' + msg);
+      return { ok: false, mode: mode, error: msg };
+    }).then(function (r) {
+      if (btn) spinner(btn, false);
+      return r;
+    });
+  }
+
+
   function runSlot(slot, mode, btn){
     var def = SLOT_DEF[slot];
     if (!def) return Promise.resolve(false);
     var m = (mode === 'shorts' || mode === 'wvid') ? mode : 'blog';
+    if (def.weekendNews) return weekendNewsRun(m, btn);
     if (def.weekend) return weekendSlot(slot, m, btn);
     var st = $('#matState'), sst = $('#shSlotState');
     if (m === 'blog'){
@@ -12790,7 +12894,7 @@ var CSVoice = (function () {
   })();
 
   (function(){
-    [['slotPreBtn', 'pre'], ['slotCloseBtn', 'after'],
+    [['slotPreBtn', 'pre'], ['slotCloseBtn', 'after'], ['slotWeekendBtn', 'weekend'],
      ['slotPreBtn2', 'pre'], ['slotCloseBtn2', 'after']].forEach(function(pair){
       var el = document.getElementById(pair[0]);
       if (el) el.addEventListener('click', function(){ runSlot(pair[1], 'blog', el); });
@@ -12863,11 +12967,17 @@ var CSVoice = (function () {
     return one(0);
   }
   function feedSlotWord(slot){
-    return ({ pre: '🌅 장전', lunch: '☀️ 점심', noon: '☀️ 점심', close: '🌆 정규마감', after: '🌙 통합 마감(정규+애프터)' })[slot] || '📥 초안';
+    return ({ pre: '🌅 장전', lunch: '☀️ 점심', noon: '☀️ 점심', close: '🌆 정규마감', after: '🌙 통합 마감(정규+애프터)', weekend: '🗞️ 주말 뉴스' })[slot] || '📥 초안';
   }
   /* 슬롯 하나를 꺼낸다 — slots[slot] 우선, 없으면 최신 슬롯의 top-level 사본 */
   function feedNode(j, slot){
     if (!j) return null;
+    /* 🗞️ 주말 뉴스는 slots 가 아니라 top-level weekend_news 키에 보관한다(평일 4슬롯은 그대로) */
+    if (slot === 'weekend' && j.weekend_news && (j.weekend_news.blog || j.weekend_news.shorts)){
+      var w = j.weekend_news;
+      return { slot: 'weekend', slotLabel: w.slotLabel || '🗞️ 주말 뉴스', updatedAt: w.updatedAt, date: w.date,
+        source: w.source, blog: w.blog || null, shorts: w.shorts || null, note: w.note || '' };
+    }
     var s = (j.slots && slot) ? j.slots[slot] : null;
     if (s && (s.blog || s.shorts)) return s;
     var latest = j.latestSlot || j.slot || '';
@@ -19071,7 +19181,7 @@ var CSVoice = (function () {
   }
 
   /* 🏷️ 시간대 배지 — 지금 선택된 폭스시그널 공식을 상단에 한 글자로 못 박는다 */
-  var FOX_SLOT_LABEL = { '1': '🌅 장전', '2': '☀️ 점심', '3': '🌆 정규마감', '4': '🌙 애프터장', '5': '🚨 긴급 장분석', '6': '📘 30초 사전', '7': '📊 주간 오답노트' };
+  var FOX_SLOT_LABEL = { '1': '🌅 장전', '2': '☀️ 점심', '3': '🌆 정규마감', '4': '🌙 애프터장', '5': '🚨 긴급 장분석', '6': '📘 30초 사전', '7': '📊 주간 오답노트', '8': '🗞️ 주말 뉴스' };
   /* 🏷️ 상단 배지 — 사용자가 직접 쓴 문구(자유 배지)가 있으면 그 값이, 없으면 그 공식의 기본 배지가 나온다 */
   function foxBadgeMax() { return 18; }
   function foxBadgeOverride() {
@@ -21378,7 +21488,17 @@ var CSVoice = (function () {
                   '28~38초 다음 주 체크 if → then 2쌍 — 조건과 대응을 한 문장씩 짝으로',
                   '38~45초 이번 주 복기는 여기까지 · 다음 주도 같은 기준으로 보자고 정리'],
            caption: '날짜·수치는 기록 그대로, 판단은 "맞음/빗나감"으로 나눠서 — 한 컷 15~20자', tone: '복기하는 톤 · 변명 없이, 자랑도 없이',
-           avoid: ['브리핑·관제탑 기록에 없는 수치를 복기로 만들지 않는다', '틀린 판단을 지우거나 말 바꾸지 않는다', '다음 주 방향을 단정하지 않는다'] }
+           avoid: ['브리핑·관제탑 기록에 없는 수치를 복기로 만들지 않는다', '틀린 판단을 지우거나 말 바꾸지 않는다', '다음 주 방향을 단정하지 않는다'] },
+      8: { tag: '🗞️', name: '주말 뉴스 정리', desc: '출발 전제→쿠션→악재→월요일 체크 3', eye: 'WEEKEND NEWS', card: 'fox', cardName: '빅넘버 + 여우 카드 + 쿠션/리스크 비교',
+           hook: '주말에 가장 많이 도는 말(예: 블랙 먼데이)을 먼저 던지고 "숫자로 보면 이미 금요일 밤에 나왔다"로 뒤집으며 시작한다 — 첫 인사·"주말 잘 보내셨나요" 금지',
+           plan: ['0~4초 훅 — 주말에 도는 말 vs 이미 공개된 숫자로 뒤집기(출발 전제)',
+                  '4~14초 출발 전제 — 금요일 우리 장 종가와 그 뒤 밤 미장·야간선물 마감을 한 번에 숫자로',
+                  '14~24초 쿠션 재료 — 정책 대응·방어주·실적처럼 확인된 플러스만(추측·전망 금지)',
+                  '24~36초 악재 재료 — 반도체·VIX·예탁금·공매도처럼 확인된 숫자만',
+                  '36~46초 월요일 체크 3 — 외인 수급 기준선·환율/유가·시초가 기준선을 숫자로',
+                  '46~54초 원칙·엔딩 — "09:00엔 사지 않는다"와 비중, 다음 확인 시각'],
+           caption: '화면 자막은 숫자 표기(4,831.69 · -6.99%), 한 컷 15~20자', tone: '주말에 정리해 주는 톤 · 공포도 낙관도 없이 숫자만',
+           avoid: ['주말에 확인되지 않은 전망·관계자 발언을 쓰지 않는다', '지수 방향을 단정하지 않는다', '"안녕하세요 폭스시그널입니다" 첫 인사 금지'] }
     },
     shiba: {
       1: { tag: '①', name: '가격 충격 비교형', desc: '정가 → 오늘가 낙차', eye: 'DEAL', card: 'shock', cardName: '정가 취소선 + 오늘가 빅넘버 카드',
@@ -22242,7 +22362,16 @@ var CSVoice = (function () {
       { text: '빗나간 점 — 큐로셀 +19.58%를 후보로 봤지만 대금 82.5억으로 300억 기준 미달, 계획을 철회했습니다', hook: '빗나간 점도 그대로' },
       { text: '다음 주 if 시초가가 4,869.96 위 → then 대금 300억↑부터 / if 야간선물 740선 아래 → then 지수 관련주 관망', hook: '다음 주 if → then' },
       { text: '복기는 여기까지, 다음 주도 같은 기준으로 보겠습니다 · 감사합니다', hook: '복기 끝' }
-    ], '주간 오답노트 · 11/16~11/20', '이번 주 우리 판단, 맞은 것과 틀린 것', ['오답노트', '사이드카', 'if→then'])
+    ], '주간 오답노트 · 11/16~11/20', '이번 주 우리 판단, 맞은 것과 틀린 것', ['오답노트', '사이드카', 'if→then']),
+    /* 🗞️ 주말 뉴스 정리 — 일요일(11/22) 실측: 11/20 우리 장 종가 + 11/20(현지) 뉴욕 종가 */
+    'fox:8': mkSample([
+      { text: '주말에 끝난 건 없습니다, 금요일 밤 -5.28%가 남아 있었습니다', hook: '주말에 끝난 건 없다' },
+      { text: '코스피 4,869.96(-5.21%) · 나스닥 -5.28% · 반도체 -10.73% · 야간선물 -6.99%', hook: '금요일 밤 숫자' },
+      { text: '쿠션 — 일요일 긴급 F4 회의 · 월마트 +1.52% · 엔비디아 매출 1,158억 달러', hook: '쿠션 재료' },
+      { text: '악재 — 엔비디아 -14.01% · VIX 35.89 · 예탁금 81조5,669억 · 공매도 1조4,113억', hook: '악재 재료' },
+      { text: '월요일 09:00 — 외인 선물 플러스 · 원/달러 1,340원 · 4,831.69 회복', hook: '월요일 체크 3' },
+      { text: '09:00엔 사지 않습니다, 비중 0% · 09:30 이후 두 숫자만', hook: '원칙 · 비중 0%' }
+    ], '주말 뉴스 정리 · 11/20 마감~11/22', '주말에 끝난 건 없습니다', ['주말뉴스', '야간선물', '4,831.69']),
   };
   function sampleFor(d, f) { return SAMPLE_F[d + ':' + f] || SAMPLE_F[d + ':1'] || SAMPLE_SPEC; }
 
@@ -22374,7 +22503,7 @@ var CSVoice = (function () {
         lh.innerHTML = ROLE[roleD].name + ' · <b>' + (rf ? rf.tag + ' ' + rf.name : '') + '</b> — 브랜드 필 → <b>훅 + ' + (rf ? rf.cardName : '카드') + ' + ' + (roleD === 'shiba' ? '시바견' : roleD === 'bunny' ? '토끼' : '펭귄') + '</b> → <b>자막 카드</b> 고정 레이아웃입니다. 대본·샘플·카드가 모두 이 공식으로 그려집니다(테마색·내 사진은 🌙 다크 시네마 전용).';
       } else if (isFox) {
         var xf = formulaOf('fox');
-        lh.innerHTML = '🦊 <b>폭스시그널 에디토리얼</b>' + (xf ? ' · <b>' + xf.tag + ' ' + xf.name + '</b>' : '') + ' — 브랜드 필 → <b>빅넘버 + 여우</b> → <b>에디토리얼 자막</b> 고정 레이아웃입니다. 아래 <b>🎯 분야 흥행 공식</b>에서 장전·점심·정규마감·애프터장·긴급 장분석을 고르면 대본·샘플이 함께 바뀌고, <b>🏷️ 상단 배지</b> 문구는 직접 고칠 수 있습니다.';
+        lh.innerHTML = '🦊 <b>폭스시그널 에디토리얼</b>' + (xf ? ' · <b>' + xf.tag + ' ' + xf.name + '</b>' : '') + ' — 브랜드 필 → <b>빅넘버 + 여우</b> → <b>에디토리얼 자막</b> 고정 레이아웃입니다. 아래 <b>🎯 분야 흥행 공식</b>에서 장전·점심·정규마감·애프터장·긴급 장분석·30초 사전·주간 오답노트·주말 뉴스 정리를 고르면 대본·샘플이 함께 바뀌고, <b>🏷️ 상단 배지</b> 문구는 직접 고칠 수 있습니다.';
       } else {
         lh.innerHTML = '쇼츠 세이프 존(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 배지·카드·차트·자막을 그립니다 — 양식 4종(카드·차트·꺾은선·사진) 모두 같은 3단 슬롯(훅 → 메인 → 자막)을 씁니다.';
       }
@@ -24040,7 +24169,7 @@ var CSVoice = (function () {
      · 디자인은 🦊 폭스시그널로, 공식은 그 시간대(1 장전 / 2 점심 / 3 정규마감 / 4 애프터장)로 바꾸고
        그 공식의 5컷 샘플을 미리보기에 올린다. 성우·말 속도는 이 컨셉의 고정값(없으면 기본 현수 1.20x)을 그대로 쓴다. */
   function slotApply(slot) {
-    var map = { pre: '1', noon: '2', close: '3', after: '4', dict: '6', review: '7' };
+    var map = { pre: '1', noon: '2', close: '3', after: '4', dict: '6', review: '7', weekend: '8' };
     var k = map[slot] || '1';
     setDesign('fox');
     S.cfg.formula = S.cfg.formula || {};
@@ -24063,7 +24192,7 @@ var CSVoice = (function () {
      · slotKey: pre | lunch | noon | close | after, formulaKey: '1'~'4'
      · 디자인·성우는 이 컨셉의 고정값(현수 1.20x 등)을 그대로 두고 공식만 그 시간대로 바꾼다. */
   function feedDraftWv(slotKey, formulaKey, script, label, quiet) {
-    var map = { pre: '1', lunch: '2', noon: '2', close: '3', after: '4' };
+    var map = { pre: '1', lunch: '2', noon: '2', close: '3', after: '4', weekend: '8' };
     var k = String(formulaKey == null ? '' : formulaKey).trim();
     if (!FORMULA.fox[k]) k = map[slotKey] || '1';
     setDesign('fox');
