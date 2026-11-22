@@ -240,6 +240,8 @@ main{max-width:1080px; margin:0 auto; padding:2px 14px 30px}
 }
 .buy.rocket{background:var(--accent); color:#fff; box-shadow:0 4px 12px rgba(255,90,60,.22)}
 .buy.direct{background:var(--card); color:var(--ink); border-color:var(--ink)}
+.buy.best{background:linear-gradient(135deg,#ff8a5c,#ff4f2e); color:#fff; box-shadow:0 4px 12px rgba(255,90,60,.24)}
+.buy.sim{background:var(--card); color:var(--ink2); border-color:var(--line); border-style:dashed}
 .buy:active{transform:translateY(1px)}
 .buy[aria-disabled="true"]{opacity:.45}
 .meta{display:flex; flex-wrap:wrap; align-items:center; gap:4px 8px; font-size:10.8px; color:var(--mut2); min-width:0}
@@ -482,6 +484,11 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 .cmp{border:1px solid var(--line); border-radius:12px; padding:8px 9px; background:var(--inset); display:flex; flex-direction:column; gap:5px}
 .cmp-h{display:flex; align-items:center; gap:5px; font-size:10.5px; font-weight:900; color:var(--ink2)}
 .cmp-h .t{margin-left:auto; font-weight:700; color:var(--mut2); font-size:9.5px}
+.mt{display:inline-flex; align-items:center; gap:3px; margin-left:auto; font-size:9.6px; font-weight:900; padding:2px 7px; border-radius:999px; letter-spacing:-.02em; white-space:nowrap}
+.mt.exact{background:rgba(15,157,88,.13); color:var(--ok); border:1px solid rgba(15,157,88,.40)}
+.mt.similar{background:var(--notice-bg); color:var(--notice-tx); border:1px solid var(--notice-bd)}
+.mt.none{background:var(--inset); color:var(--mut2); border:1px solid var(--line)}
+.cmp-warn{font-size:9.8px; font-weight:800; color:var(--notice-tx); background:var(--notice-bg); border:1px solid var(--notice-bd); border-radius:8px; padding:4px 7px; line-height:1.35}
 .cmp-r{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:800; color:var(--ink2)}
 .cmp-r .lab{flex:0 0 auto; width:50px; color:var(--mut); white-space:nowrap}
 .cmp-r .bar{flex:1 1 auto; height:7px; border-radius:99px; background:var(--line); overflow:hidden}
@@ -553,7 +560,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 
   <div class="notice" id="hotNotice" hidden>
     <span>🛰️</span>
-    <span><b id="hotNoticeN">실측 핫템</b> — 국내 최저가는 <b>에누리 가격비교</b>, 해외직구가는 <b>알리익스프레스</b>에서 받아온 실제 값입니다. 직구 가격은 같은 검색어로 나온 상품이라 구성·옵션이 다를 수 있습니다. <span id="hotNoticeAt" style="color:var(--mut2)"></span></span>
+    <span><b id="hotNoticeN">실측 핫템</b> — 국내 최저가는 <b>에누리 가격비교</b>, 해외직구가는 <b>알리익스프레스</b>에서 받아온 실제 값입니다. 카드마다 <b style="color:var(--ok)">✅ 동일 모델</b> / <b style="color:var(--notice-tx)">🔎 유사 제품 비교</b> 배지로 같은 제품인지 먼저 구분해 보여줍니다. <span id="hotNoticeAt" style="color:var(--mut2)"></span></span>
     <button type="button" id="hotNoticeClose" aria-label="안내 닫기">×</button>
   </div>
 
@@ -1164,6 +1171,42 @@ function linkOf(it, kind){
   return l.naver || searchUrl('naver', it.name);
 }
 
+/* ── 🎯 알리 매칭이 '동일 모델'인지 '유사 제품'인지 (데이터의 compare.overseas.matchType) ──
+   exact  : 브랜드 + 모델번호/규격이 실제로 일치 (fetch_hot_items.py 가 판정)
+   similar: 검색어로 찾은 다른 브랜드·유사 스펙 상품 → 동일 모델 아님을 먼저 알린다
+   none   : 직구 매칭 자체가 없음(#34 전기요 등) */
+function ovMatch(it){
+  var ov = ((it.compare || {}).overseas) || null;
+  if (!ov) return { type:'none', label:'직구 미확인', cls:'none' };
+  var t = String(ov.matchType || '').toLowerCase();
+  if (t === 'exact') return { type:'exact', label:'✅ 동일 모델', cls:'exact' };
+  return { type:'similar', label:'🔎 유사 제품 비교', cls:'similar' };
+}
+
+/* ── 카드 하단 주 버튼 ──
+   국내: 관리자가 쿠팡 파트너스 링크를 넣었으면 🚀 로켓배송,
+         아니면 에누리에서 찾은 그 상품의 실제 판매처·상세 페이지로 직통 (검색창으로 보내지 않는다)
+   직구: 동일 모델 / 유사 제품 / 직구 검색 세 가지를 누르기 전에 구분해 보여준다 */
+function actsHtml(it){
+  var l = it.links || {}, c = it.compare || {}, dom = c.domestic || null, m = ovMatch(it), out = [];
+  var domUrl = (dom && (dom.url || dom.buyUrl)) || '';
+  if (l.rocket){
+    out.push('<a class="buy rocket" href="' + esc(l.rocket) + '" target="_blank" rel="noopener sponsored nofollow" data-buy="' + esc(it.id) + '" data-kind="rocket">🚀 로켓배송</a>');
+  } else if (domUrl){
+    out.push('<a class="buy best" href="' + esc(domUrl) + '" target="_blank" rel="noopener sponsored nofollow" data-buy="' + esc(it.id) + '" data-kind="best">🛒 최저가 바로가기' + (dom.seller ? ' · ' + esc(dom.seller) : '') + '</a>');
+  } else {
+    out.push('<a class="buy best" href="' + esc(linkOf(it, 'naver')) + '" target="_blank" rel="noopener nofollow" data-buy="' + esc(it.id) + '" data-kind="naver">🛒 최저가 비교</a>');
+  }
+  if (m.type === 'exact'){
+    out.push('<a class="buy direct" href="' + esc(linkOf(it, 'direct')) + '" target="_blank" rel="noopener sponsored nofollow" data-buy="' + esc(it.id) + '" data-kind="direct">💸 동일 모델 직구</a>');
+  } else if (m.type === 'similar'){
+    out.push('<a class="buy sim" href="' + esc(linkOf(it, 'direct')) + '" target="_blank" rel="noopener sponsored nofollow" data-buy="' + esc(it.id) + '" data-kind="similar">🔎 알리 유사제품 보기</a>');
+  } else {
+    out.push('<a class="buy sim" href="' + esc(mallUrl('ali', it.name)) + '" target="_blank" rel="noopener sponsored nofollow" data-buy="' + esc(it.id) + '" data-kind="search">🔎 직구 검색해보기</a>');
+  }
+  return '<div class="acts">' + out.join('') + '</div>';
+}
+
 /* ══════════════════════════════════════════════════════
    서버 (Supabase REST)
    ══════════════════════════════════════════════════════ */
@@ -1255,20 +1298,20 @@ function cmpDate(iso){
   return (d.getMonth() + 1) + '.' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
 }
 function cmpLinks(it){
-  var l = it.links || {}, nm = it.name || '', c = it.compare || {}, ov = c.overseas || null;
+  var l = it.links || {}, nm = it.name || '', c = it.compare || {}, ov = c.overseas || null, m = ovMatch(it);
   var coupang = l.rocket || mallUrl('coupang', nm);
   var naver = l.naverBrand || mallUrl('naver', nm);
   var temu = l.temu || mallUrl('temu', nm);
   var ali = (ov && ov.url) || mallUrl('ali', nm);
   return [
-    { cls: l.rocket ? 'aff' : '', url: coupang, label: '🚀 쿠팡' },
-    { cls: l.naverBrand ? 'aff' : '', url: naver, label: '🔎 네이버' },
-    { cls: l.temu ? 'aff' : '', url: temu, label: '💸 테무' },
-    { cls: 'aff', url: ali, label: '🌏 알리' }
+    { cls: l.rocket ? 'aff' : '', url: coupang, label: l.rocket ? '🚀 쿠팡' : '🚀 쿠팡 검색' },
+    { cls: l.naverBrand ? 'aff' : '', url: naver, label: l.naverBrand ? '🔎 네이버' : '🔎 네이버 검색' },
+    { cls: l.temu ? 'aff' : '', url: temu, label: l.temu ? '💸 테무' : '💸 테무 검색' },
+    { cls: 'aff', url: ali, label: m.type === 'exact' ? '🌏 알리 동일' : (m.type === 'similar' ? '🌏 알리 유사' : '🌏 알리 검색') }
   ];
 }
 function cmpHtml(it){
-  var c = it.compare || {}, dom = c.domestic || {}, ov = c.overseas || null;
+  var c = it.compare || {}, dom = c.domestic || {}, ov = c.overseas || null, m = ovMatch(it);
   var dp = Number(dom.price || it.price) || 0;
   var op = ov ? (Number(ov.krw) || 0) : 0;
   var max = Math.max(dp, op, 1);
@@ -1277,7 +1320,9 @@ function cmpHtml(it){
   var when = cmpDate(it.measuredAt);
   var noteCls = '', note = '';
   if (ov && c.diffKrw) {
-    if (c.cheaper === 'overseas'){ note = '직구가 <b>' + won(Math.abs(c.diffKrw)) + '원(' + c.diffPct + '%)</b> 더 쌉니다'; }
+    if (c.cheaper === 'overseas'){
+      note = (m.type === 'similar' ? '직구 유사 상품이 <b>' : '직구가 <b>') + won(Math.abs(c.diffKrw)) + '원(' + c.diffPct + '%)</b> 더 쌉니다';
+    }
     else if (c.cheaper === 'domestic'){ note = '국내가 <b>' + won(Math.abs(c.diffKrw)) + '원(' + c.diffPct + '%)</b> 더 쌉니다'; noteCls = ' dn'; }
     else note = '가격이 거의 같습니다';
   } else {
@@ -1287,14 +1332,16 @@ function cmpHtml(it){
   if (dom.delivery) ship.push('국내 ' + dom.delivery);
   if (ov) ship.push('직구 해외배송 7~14일');
   var fine = [];
-  fine.push('국내 ' + (dom.seller ? esc(dom.seller) : '최저가') + ' 기준');
-  if (ov) fine.push('직구는 같은 검색어의 알리 상품 — 구성·옵션 차이 확인');
+  fine.push('국내 최저가 ' + (dom.seller ? esc(dom.seller) : '판매처') + ' · 상세에서 바로 구매');
+  if (ov) fine.push(m.type === 'exact' ? '알리 동일 모델 확인' : '알리는 같은 검색어의 유사 상품');
   var lc = c.lowConfidence || (op && dp && (op < dp * 0.25 || op > dp * 3));
   if (lc) fine.push('⚠️ 가격 차가 커서 구성·용량이 다른 상품일 수 있습니다');
   var time = when ? (' · ' + when + ' 실측') : '';
+  fine.push(ov ? ('직구 $' + (Number(ov.usd) || 0) + time) : '직구 가격 미확인');
 
   return '<div class="cmp">' +
-    '<div class="cmp-h">🌏 직구 vs 🇰🇷 국내<span class="t">' + (ov ? '$' + (Number(ov.usd) || 0) + time : '직구 미확인') + '</span></div>' +
+    '<div class="cmp-h"><span>🌏 직구 vs 🇰🇷 국내</span><span class="mt ' + m.cls + '">' + m.label + '</span></div>' +
+    (m.type === 'similar' ? '<div class="cmp-warn">동일 모델 아님 · 스펙/용량 비교용</div>' : '') +
     '<div class="cmp-r"><span class="lab">해외직구</span><span class="bar"><i style="width:' + ow + '%"></i></span><span class="val">' + (op ? won(op) + '원' : '확인') + '</span></div>' +
     '<div class="cmp-r"><span class="lab">국내 최저</span><span class="bar d"><i style="width:' + dw + '%"></i></span><span class="val">' + (dp ? won(dp) + '원' : '확인') + '</span></div>' +
     '<div class="cmp-note' + noteCls + '">' + note + '</div>' +
@@ -1335,10 +1382,7 @@ function cardHtml(it){
       (pros ? '<ul class="pros">' + pros + '</ul>' : '') +
       (it.pass ? '<button class="pass-t" type="button" data-pass="1" aria-expanded="false">이런 분은 패스 ▾</button><p class="pass" hidden>' + esc(it.pass) + '</p>' : '') +
       (it.compare ? cmpHtml(it) : '') +
-      '<div class="acts">' +
-        '<a class="buy rocket" href="' + esc(linkOf(it, 'rocket')) + '" target="_blank" rel="noopener sponsored nofollow" data-buy="' + esc(it.id) + '" data-kind="rocket">🚀 로켓배송</a>' +
-        '<a class="buy direct" href="' + esc(linkOf(it, 'direct')) + '" target="_blank" rel="noopener sponsored nofollow" data-buy="' + esc(it.id) + '" data-kind="direct">💸 직구 최저가</a>' +
-      '</div>' +
+      actsHtml(it) +
       '<div class="meta">' +
         (save ? '<span>' + refLabel + ' ' + won(ref) + '원</span>' : '<span>' + esc(it.store || '판매처') + ' 기준</span>') +
         '<a href="' + esc(linkOf(it, 'naver')) + '" target="_blank" rel="noopener nofollow">🔎 최저가 비교</a>' +
