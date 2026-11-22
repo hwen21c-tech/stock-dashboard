@@ -307,7 +307,8 @@
     h += '<div class="res-head"><div><span class="res-name">' + esc(d.name || '') + '</span>' +
          (d.code ? '<span class="res-code">' + esc(d.code) + '</span>' : '') +
          (d.market ? ' <span class="res-code">' + esc(d.market) + '</span>' : '') + '</div>' +
-         '<div class="res-basis">' + esc(meta.basis || '') + (meta.live ? '<br>실시간 값' : '<br>종가 기준') + '</div></div>';
+         '<div class="res-basis">' + esc(meta.basis || '') +
+         (meta.live ? (meta.marketStatus === 'CLOSE' ? '<br>마감 후 시간외 반영' : '<br>장중 실시간') : '<br>종가 스냅샷') + '</div></div>';
     h += '<div class="price"><span class="p ' + dirClass(chg) + '">' + won(price) + '</span>' +
          '<span class="c ' + dirClass(chg) + '">' + pct(chg) + '</span>' +
          (n(d.change) != null ? '<span style="font-size:12px;font-weight:800;color:var(--mute)">' + (n(d.change) > 0 ? '+' : '') + Math.round(n(d.change)).toLocaleString('ko-KR') + '원</span>' : '') + '</div>';
@@ -326,7 +327,8 @@
       '</div>';
     h += '<div class="verdict">' + diagnosis(d) + '</div>';
     h += '<div style="margin-top:9px;font-size:10.8px;color:var(--mute);font-weight:750">기준일 ' + esc(meta.tradeDate || (d.tradedAt || '').slice(0,10) || '—') +
-      ' · 대금은 통합(KRX+NXT·시간외) 기준 · 위치 %는 그날 시가·고가·저가 대비입니다.</div>';
+      ' · 대금은 통합(KRX+NXT·시간외) 기준 · 위치 %는 그날 시가·고가·저가 대비입니다.' +
+      (meta.live ? '<br>※ 등락률·전일 종가는 네이버 폴링 값(시간외 반영)이라 일봉 종가 기준과 소수점이 다를 수 있습니다.' : '') + '</div>';
     h += '</div>';
     out.innerHTML = h;
     out.hidden = false;
