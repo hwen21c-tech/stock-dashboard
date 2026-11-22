@@ -13563,8 +13563,14 @@ var CSVoice = (function () {
     jump();
     try { b.classList.add('bauto-hi'); } catch (e4) {}
     /* 그래프·카드가 늦게 그려져 높이가 밀리면 다시 맞춘다(화면 안에 들어오면 멈춘다) */
-    [260, 700, 1400, 2200, 3200, 4200].forEach(function (ms) { setTimeout(function () { if (!seen()) jump(); }, ms); });
-    setTimeout(function () { try { b.classList.remove('bauto-hi'); } catch (e5) {} }, 4800);
+    [260, 700, 1400, 2200, 3200, 4200].forEach(function (ms) {
+      setTimeout(function () {
+        if (seen()) return;
+        jump();
+        try { b.classList.add('bauto-hi'); } catch (eH) {}   /* 다른 자동 이동이 끌고 갔으면 하이라이트도 다시 */
+      }, ms);
+    });
+    setTimeout(function () { try { b.classList.remove('bauto-hi'); } catch (e5) {} }, 5400);
     return true;
   }
   function blogAutoStart(btn){
