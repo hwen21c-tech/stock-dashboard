@@ -1037,6 +1037,7 @@ body.aiopen #side{opacity:0; pointer-events:none; transform:translateX(14px); tr
 
 
 
+
 <div id="boot">
   <div class="boot-in">
     <div class="boot-emoji">🪑</div>
@@ -6881,8 +6882,8 @@ if (document.readyState === 'loading') {
       accent: '#9be36b', hex: 0x9be36b, shirt: 0x4f6a44, pants: 0x2f3947, hair: 0x241c16, skin: 0xf5d6b6,
       pos: [-1.55, 4.70], face: [0, 1], lv: 0, side: 1, deskW: 2.05,
       quick: ['📈 dQ/dV 피크 해석·열화 원인', '📄 실리콘 음극 최신 논문 분석'],
-      src: [['OpenAlex 논문', 'https://api.openalex.org/works?search=lithium-ion+battery'],
-            ['CrossRef 논문', 'https://api.crossref.org/works?query=lithium+ion+battery']],
+      src: [['OpenAlex 논문 검색', 'https://openalex.org/works?search=lithium-ion%20battery'],
+            ['CrossRef 논문 검색', 'https://search.crossref.org/?q=lithium-ion+battery']],
       links: [['🔋 이차전지 실무 대백과', BIBLE]]
     }
   ];
@@ -7760,6 +7761,13 @@ if (document.readyState === 'loading') {
         + '↻ 로 다시 불러온 뒤 질문해 주세요.';
     }
     var rows = (d.rows || []).slice(0, 6).map(rowHTML).join('');
+    if (d.papers && d.papers.length) {
+      rows += '<div class="ai-papers">' + d.papers.map(function (p) {
+        return '<div class="ai-pp"><b>' + p.n + '. ' + esc(cut(p.title, 88)) + '</b>'
+          + '<span class="meta">' + esc([p.journal, p.year, p.cited ? '피인용 ' + p.cited : ''].filter(Boolean).join(' · ')) + '</span>'
+          + (p.doi ? '<a href="' + esc(p.doi) + '" target="_blank" rel="noopener">DOI</a>' : '') + '</div>';
+      }).join('') + '</div>';
+    }
     var th = (d.themes || []).map(function (t) {
       return '<div class="ai-theme"><b>' + t.rank + '위 ' + esc(t.name) + '</b><span>'
         + ((t.up && t.up.length) ? t.up.map(function (s) { return esc(s.name) + ' ' + spct(s.changePct); }).join(' · ') : '상승 종목 없음')
