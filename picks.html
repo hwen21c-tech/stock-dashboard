@@ -240,7 +240,8 @@ main{max-width:1080px; margin:0 auto; padding:2px 14px 30px}
 }
 .buy.rocket{background:var(--accent); color:#fff; box-shadow:0 4px 12px rgba(255,90,60,.22)}
 .buy.direct{background:var(--card); color:var(--ink); border-color:var(--ink)}
-.buy.best{background:linear-gradient(135deg,#ff8a5c,#ff4f2e); color:#fff; box-shadow:0 4px 12px rgba(255,90,60,.24)}
+.buy.best{background:linear-gradient(135deg,#ff8a5c,#ff4f2e); color:#fff; box-shadow:0 4px 12px rgba(255,90,60,.24); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; line-height:1.15}
+.buy.best .bs{font-size:9.6px; font-weight:800; opacity:.92; max-width:100%; overflow:hidden; text-overflow:ellipsis}
 .buy.sim{background:var(--card); color:var(--ink2); border-color:var(--line); border-style:dashed}
 .buy:active{transform:translateY(1px)}
 .buy[aria-disabled="true"]{opacity:.45}
@@ -501,6 +502,10 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 .cmp-btns{display:flex; gap:5px; flex-wrap:wrap; margin-top:1px}
 .cmp-btns a{flex:1 1 0; min-width:0; text-align:center; text-decoration:none; font-size:10.5px; font-weight:900; padding:6px 3px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:var(--ink2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .cmp-btns a.aff{border-color:var(--save-bd); color:var(--accent)}
+@media (max-width:380px){
+  .cmp-btns a{font-size:9.6px; padding:6px 2px}
+  .buy{font-size:12px; padding:10px 5px}
+}
 .cmp-btns a:active{transform:translateY(1px)}
 .ck{display:flex; align-items:flex-start; gap:7px; font-size:11.5px; font-weight:800; color:var(--body); line-height:1.4}
 .ck input{flex:0 0 auto; width:16px; height:16px; margin-top:2px; accent-color:var(--accent)}
@@ -554,7 +559,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     <div class="steps">
       <div class="step"><b>1. 영상 번호 확인</b>쇼츠 자막·고정 댓글의 #번호</div>
       <div class="step"><b>2. 위에 검색</b>#12 또는 상품명 일부</div>
-      <div class="step"><b>3. 맞는 판매처 선택</b>로켓배송 / 직구 최저가</div>
+      <div class="step"><b>3. 맞는 판매처 선택</b>최저가 바로가기 / 동일·유사 직구</div>
     </div>
   </section>
 
@@ -840,7 +845,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     <h2 id="affTitle">🔗 제휴 링크 · 필수 고지</h2>
     <p class="small" id="affSub">—</p>
     <div class="formgrid">
-      <div class="fld full"><label for="a_coupang">🚀 쿠팡 파트너스 단축링크</label><input id="a_coupang" placeholder="https://link.coupang.com/a/..."><div class="tip">비우면 상품명으로 쿠팡 검색 링크가 들어갑니다</div></div>
+      <div class="fld full"><label for="a_coupang">🚀 쿠팡 파트너스 단축링크</label><input id="a_coupang" placeholder="https://link.coupang.com/a/..."><div class="tip">비우면 카드에 🛒 최저가 바로가기(에누리 실측 판매처)가 나갑니다</div></div>
       <div class="fld full"><label for="a_nbc">🟢 네이버 브랜드 커넥트 단축링크</label><input id="a_nbc" placeholder="https://naver.me/..."><div class="tip">비우면 상품명으로 네이버 쇼핑 검색 링크가 들어갑니다</div></div>
       <div class="fld full"><label for="a_temu">💸 테무·알리 단축링크 (선택)</label><input id="a_temu" placeholder="https://..."></div>
       <div class="fld full"><label class="ck"><input type="checkbox" id="a_disc" checked> <span><b>필수 고지 자동 포함</b> — 쇼츠 고정댓글·블로그 초안에 대가성 문구를 넣습니다</span></label></div>
@@ -1193,7 +1198,7 @@ function actsHtml(it){
   if (l.rocket){
     out.push('<a class="buy rocket" href="' + esc(l.rocket) + '" target="_blank" rel="noopener sponsored nofollow" data-buy="' + esc(it.id) + '" data-kind="rocket">🚀 로켓배송</a>');
   } else if (domUrl){
-    out.push('<a class="buy best" href="' + esc(domUrl) + '" target="_blank" rel="noopener sponsored nofollow" data-buy="' + esc(it.id) + '" data-kind="best">🛒 최저가 바로가기' + (dom.seller ? ' · ' + esc(dom.seller) : '') + '</a>');
+    out.push('<a class="buy best" href="' + esc(domUrl) + '" target="_blank" rel="noopener sponsored nofollow" data-buy="' + esc(it.id) + '" data-kind="best"><span>🛒 최저가 바로가기</span>' + (dom.seller ? '<span class="bs">' + esc(dom.seller) + '</span>' : '') + '</a>');
   } else {
     out.push('<a class="buy best" href="' + esc(linkOf(it, 'naver')) + '" target="_blank" rel="noopener nofollow" data-buy="' + esc(it.id) + '" data-kind="naver">🛒 최저가 비교</a>');
   }
