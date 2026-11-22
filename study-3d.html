@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0b1220">
-<meta name="description" content="따뜻한 3D 라운지에서 25분 집중 타이머·오늘 할 일·라운지 채팅을 함께 쓰는 집중 공간. Three.js 웹 3D.">
-<title>🪑 3D 집중 라운지 · 투자·공부</title>
+<meta name="description" content="3D 사무실에서 25분 집중 타이머·할 일·채팅과 함께 트레이딩 데스크·폭스시그널 스튜디오·야외 테라스를 오가는 집중 공간. 시황 전광판·매매 원칙 보드·증시 퀴즈·코인 상점까지. Three.js 웹 3D.">
+<title>🏢 3D 사무실 · 트레이딩·스튜디오·테라스</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1220'/%3E%3Ctext x='32' y='45' font-size='32' text-anchor='middle'%3E%F0%9F%AA%91%3C/text%3E%3C/svg%3E">
 <style>
 /* ================= 1. 토큰 ================= */
@@ -380,6 +380,238 @@ body.focus #vignette{opacity:1}
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01ms !important;transition-duration:.06s !important}
 }
+/* ================= 10. 3D 사무실 확장팩 (3구역 · 인사이트 소품 · 미니게임) ================= */
+/* 구역 프리셋 */
+#zones{
+  position:fixed; z-index:19; left:50%; transform:translateX(-50%);
+  bottom:calc(72px + env(safe-area-inset-bottom));
+  display:flex; align-items:center; gap:3px; padding:4px; max-width:calc(100vw - 12px);
+  border-radius:999px; overflow-x:auto; scrollbar-width:none;
+  background:linear-gradient(180deg,rgba(19,29,46,.93),rgba(10,17,28,.96));
+  border:1px solid var(--line); box-shadow:0 12px 30px rgba(0,0,0,.42); backdrop-filter:blur(14px);
+}
+#zones::-webkit-scrollbar{display:none}
+.zp{
+  display:flex; align-items:center; gap:5px; height:32px; padding:0 11px; border-radius:999px;
+  color:#c2d2e2; font-size:11px; font-weight:700; white-space:nowrap; flex:0 0 auto;
+  transition:background .15s,color .15s,box-shadow .15s,transform .12s;
+}
+.zp span{font-size:13px; line-height:1}
+.zp b{font-weight:700}
+.zp:hover{background:rgba(255,255,255,.08); color:#fff}
+.zp:active{transform:scale(.96)}
+.zp.active{background:rgba(79,227,193,.17); color:#b6ffee; box-shadow:inset 0 0 0 1px rgba(79,227,193,.36)}
+
+/* 코인 칩 · 카페인 버프 */
+.chip.coin{gap:4px}
+.chip.coin b{font-family:var(--mono); font-size:11.5px; color:#ffd98a; letter-spacing:0}
+.chip.coin.buff{border-color:rgba(255,203,107,.45); background:rgba(46,34,14,.8)}
+#buffTag{display:none; font-family:var(--mono); font-size:9px; color:#ffd0a0; background:rgba(255,203,107,.16); border-radius:999px; padding:1px 5px; margin-left:2px}
+#buffTag.on{display:inline-block}
+
+/* 소품 배지 (3D 위에 뜨는 탭 안내) */
+#propBadges{position:fixed; inset:0; z-index:16; pointer-events:none; overflow:hidden}
+.pbadge{
+  position:absolute; left:0; top:0; display:flex; align-items:center; gap:3px;
+  padding:3px 8px 3px 6px; border-radius:999px; pointer-events:none; opacity:0;
+  background:rgba(9,20,32,.84); border:1px solid rgba(79,227,193,.34); color:#d9fff7;
+  font-size:9.5px; font-weight:700; white-space:nowrap; box-shadow:0 6px 16px rgba(0,0,0,.36);
+  backdrop-filter:blur(6px); transition:opacity .18s,border-color .15s,background .15s;
+  will-change:transform,opacity;
+}
+.pbadge i{font-style:normal; font-size:9px; animation:pbob 1.9s ease-in-out infinite}
+.pbadge:hover{background:rgba(14,44,40,.96); border-color:rgba(79,227,193,.62)}
+@keyframes pbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+
+#ptip{
+  position:fixed; z-index:36; left:0; top:0; transform:translate(-50%,-150%);
+  padding:4px 9px; border-radius:8px; background:rgba(12,26,40,.96); border:1px solid rgba(79,227,193,.3);
+  color:#c9fff2; font-size:10.5px; font-weight:700; white-space:nowrap; pointer-events:none;
+  opacity:0; transition:opacity .12s;
+}
+#ptip.on{opacity:1}
+
+#pbubs{position:fixed; inset:0; z-index:17; pointer-events:none; overflow:hidden}
+.pbub{
+  position:absolute; transform:translate(-50%,-100%) scale(.92);
+  padding:4px 9px; border-radius:999px; background:#fdfbf6; color:#22303d;
+  font-size:11px; font-weight:800; box-shadow:0 8px 18px rgba(0,0,0,.3);
+  opacity:0; transition:opacity .2s, transform .6s cubic-bezier(.2,.8,.2,1);
+}
+.pbub.on{opacity:1; transform:translate(-50%,-190%) scale(1)}
+
+/* 공용 모달 */
+#m3d{position:fixed; inset:0; z-index:52; display:none; place-items:center; padding:14px;
+  background:rgba(4,8,14,.68); backdrop-filter:blur(7px)}
+#m3d.on{display:grid}
+.mbox{
+  width:min(96vw,470px); max-height:min(88vh,780px); display:flex; flex-direction:column;
+  border-radius:18px; overflow:hidden; border:1px solid var(--line2);
+  background:linear-gradient(180deg,#182742,#0b1420); box-shadow:0 26px 64px rgba(0,0,0,.58);
+  animation:mpop .18s ease-out;
+}
+@keyframes mpop{from{transform:translateY(8px) scale(.985);opacity:.6}to{transform:none;opacity:1}}
+.mhead{display:flex; align-items:center; gap:8px; padding:13px 13px 11px 15px;
+  border-bottom:1px solid rgba(255,255,255,.08); font-size:13.5px; font-weight:800}
+.mhead span{flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.mx{width:26px; height:26px; border-radius:9px; color:var(--faint); font-size:14px; display:grid; place-items:center; flex:0 0 auto}
+.mx:hover{background:rgba(255,255,255,.09); color:#fff}
+.mbody{padding:12px 14px 4px; overflow-y:auto; flex:1; font-size:12px; color:#dbe7f2; overscroll-behavior:contain}
+.mfoot{display:flex; gap:7px; padding:10px 14px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid rgba(255,255,255,.07)}
+.mbtn{flex:1; height:38px; border-radius:11px; background:linear-gradient(180deg,#57e8c6,#22bfa0);
+  color:#04231e; font-size:12.5px; font-weight:800; transition:filter .15s,transform .12s}
+.mbtn:hover{filter:brightness(1.06)}
+.mbtn:active{transform:scale(.98)}
+.mbtn.ghost{flex:0 0 auto; padding:0 16px; background:rgba(255,255,255,.07); border:1px solid var(--line); color:#cfdcea}
+
+/* 시장 전광판 */
+.mk-top{display:flex; align-items:center; gap:7px; margin-bottom:9px}
+.mk-top .badge{font-size:9.5px; font-weight:800; padding:2px 8px; border-radius:999px; letter-spacing:.02em}
+.mk-top .badge.on{background:rgba(79,227,193,.16); color:#9ff5e2; border:1px solid rgba(79,227,193,.3)}
+.mk-top .badge.off{background:rgba(255,203,107,.14); color:#ffdfa3; border:1px solid rgba(255,203,107,.3)}
+.mk-top .stamp{margin-left:auto; font-family:var(--mono); font-size:9.5px; color:var(--faint)}
+.mkt-rows{display:flex; flex-direction:column; gap:6px}
+.mkt-row{display:grid; grid-template-columns:1fr auto auto auto; gap:2px 8px; align-items:baseline;
+  padding:8px 10px; border-radius:11px; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.06)}
+.mkt-row .nm{font-size:11.5px; font-weight:700; color:#cfdcea}
+.mkt-row .pv{font-family:var(--mono); font-size:15px; font-weight:800; color:#fff}
+.mkt-row .ch{font-family:var(--mono); font-size:10.5px; font-weight:700; color:#8fa3b8}
+.mkt-row .pc{font-family:var(--mono); font-size:11px; font-weight:800}
+.mkt-row .sb{grid-column:1/-1; font-size:9.5px; color:var(--faint)}
+.mkt-row.up .ch,.mkt-row.up .pc,.up em,.up .pc{color:#4fe3a6}
+.mkt-row.dn .ch,.mkt-row.dn .pc,.dn em{color:#ff8095}
+.mkt-sub{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px}
+.fx{display:inline-flex; align-items:center; gap:5px; padding:4px 8px; border-radius:8px;
+  background:rgba(255,255,255,.05); font-size:10px; border:1px solid rgba(255,255,255,.05)}
+.fx i{font-style:normal; color:#9fb3c6}
+.fx b{font-family:var(--mono); font-size:10.5px; color:#eaf4ff}
+.fx em{font-style:normal; font-family:var(--mono); font-size:9.5px; color:#8fa3b8}
+.mkt-sec{margin:12px 0 6px; font-size:10px; font-weight:800; letter-spacing:.08em; color:#8fa3b8}
+.mkt-tape{display:flex; flex-direction:column; gap:4px}
+.tp{display:grid; grid-template-columns:1fr auto auto; gap:2px 6px; align-items:center;
+  padding:5px 8px; border-radius:8px; background:rgba(255,255,255,.035); font-size:10.5px}
+.tp span{color:#dbe7f2; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.tp b{font-family:var(--mono); color:#fff}
+.tp em{font-family:var(--mono); font-style:normal; font-size:10px; color:#8fa3b8}
+.tp u{grid-column:1/-1; text-decoration:none; font-size:9px; color:var(--faint)}
+.mkt-note{margin:10px 0 2px; font-size:10px; color:#7b8b9e; line-height:1.55}
+.mkt-err{padding:20px 10px; text-align:center; font-size:12.5px; color:#ffd9a0; line-height:1.7}
+.mkt-err span{font-size:10.5px; color:#8fa3b8}
+.mkt-brief b{display:block; font-size:12px; color:#9fe8d8; margin-bottom:5px}
+.mkt-brief p{margin:0; font-size:11.5px; line-height:1.6; color:#dbe7f2}
+.mkt-picks{display:flex; flex-wrap:wrap; gap:5px; margin-top:8px}
+.mkt-picks .pk{display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:8px;
+  background:rgba(255,255,255,.05); font-size:10px}
+.mkt-picks .pk i{font-style:normal; color:#cfdcea}
+.mkt-picks .pk em{font-style:normal; font-family:var(--mono); color:#8fa3b8}
+
+/* 매매 4대 원칙 */
+.mlead{margin:0 0 10px; font-size:11.5px; color:#a9bccf; line-height:1.6}
+.pc-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(148px,1fr)); gap:7px}
+.pc-card{padding:9px 10px; border-radius:12px; border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg,rgba(32,46,66,.92),rgba(16,26,40,.92))}
+.pc-h{display:flex; align-items:center; gap:6px; margin-bottom:5px}
+.pc-h .no{width:17px; height:17px; border-radius:6px; background:rgba(79,227,193,.16); color:#9ff5e2;
+  font-size:10px; font-weight:800; display:grid; place-items:center; flex:0 0 auto}
+.pc-h b{font-size:11.5px; letter-spacing:-.01em}
+.pc-card ul{margin:0; padding-left:13px; font-size:10.5px; color:#bfd0e0; line-height:1.55}
+.pc-card li{margin:2px 0}
+.tl{display:flex; align-items:center; gap:4px; justify-content:space-between; padding:10px 8px;
+  border-radius:12px; background:rgba(255,255,255,.04); border:1px dashed rgba(255,255,255,.13)}
+.tl-i{display:flex; flex-direction:column; align-items:center; gap:2px; flex:1; min-width:0}
+.tl-i b{font-family:var(--mono); font-size:11px; color:#eaf4ff}
+.tl-i span{font-size:9.5px; color:#8fa3b8}
+.tl-i.hot b{color:#ffd98a}
+.tl-i.hot span{color:#ffcb6b}
+.tl-a{color:#4a5a6c; font-size:11px}
+
+/* 30초 용어 카드 */
+.term-card{padding:14px; border-radius:14px; border:1px solid rgba(79,227,193,.18);
+  background:linear-gradient(160deg,rgba(31,47,69,.96),rgba(14,24,37,.96))}
+.tc-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px}
+.tc-no{font-family:var(--mono); font-size:10px; color:var(--faint)}
+.tc-badge{font-size:9px; font-weight:800; color:#9ff5e2; background:rgba(79,227,193,.14);
+  border:1px solid rgba(79,227,193,.28); padding:2px 7px; border-radius:999px}
+.term-card h4{margin:0 0 7px; font-size:19px; letter-spacing:-.02em}
+.term-card p{margin:0 0 10px; font-size:12px; line-height:1.65; color:#cfe0ee}
+.tc-tip{display:flex; gap:6px; padding:8px 9px; border-radius:10px; font-size:10.5px; line-height:1.5;
+  background:rgba(255,203,107,.09); border:1px solid rgba(255,203,107,.2); color:#ffe0ab}
+.term-dots{display:flex; gap:4px; justify-content:center; margin:11px 0 2px; flex-wrap:wrap}
+.term-dots i{width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.16)}
+.term-dots i.on{background:var(--mint); box-shadow:0 0 7px rgba(79,227,193,.6)}
+
+/* 증시 미니 퀴즈 */
+.q-top{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+.q-no{font-family:var(--mono); font-size:10px; color:var(--mint); font-weight:800}
+.q-stat{margin-left:auto; font-size:10px; color:var(--faint)}
+.q-stat b{color:#ffd98a; font-family:var(--mono); font-size:11px}
+.q-text{margin:0 0 11px; font-size:13.5px; font-weight:700; line-height:1.55; color:#eef6ff}
+.q-opts{display:flex; flex-direction:column; gap:6px}
+.q-opt{display:flex; align-items:center; justify-content:center; min-height:42px; padding:8px 12px;
+  border-radius:11px; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.09);
+  font-size:12.5px; font-weight:700; color:#dbe7f2; transition:.14s}
+.q-opt:hover{background:rgba(79,227,193,.12); border-color:rgba(79,227,193,.3)}
+.q-opt.right{background:rgba(79,227,193,.2); border-color:rgba(79,227,193,.5); color:#c6ffee}
+.q-opt.wrong{background:rgba(255,107,125,.16); border-color:rgba(255,107,125,.45); color:#ffd0d6}
+.q-opt.dim{opacity:.45}
+.q-why{margin-top:9px; padding:9px 10px; border-radius:10px; font-size:11px; line-height:1.55}
+.q-why.ok{background:rgba(79,227,193,.1); border:1px solid rgba(79,227,193,.24); color:#b8ffe9}
+.q-why.no{background:rgba(255,107,125,.1); border:1px solid rgba(255,107,125,.24); color:#ffd2d8}
+
+/* 코인 상점 */
+.sh-top{display:flex; align-items:center; gap:8px; margin-bottom:9px; font-size:11.5px; color:#a9bccf}
+.sh-top b{font-family:var(--mono); color:#ffd98a; font-size:13px}
+.sh-hint{margin-left:auto; font-size:9.5px; color:var(--faint); text-align:right; max-width:60%; line-height:1.4}
+.sh-list{display:flex; flex-direction:column; gap:6px}
+.sh-card{display:grid; grid-template-columns:34px 1fr auto; gap:9px; align-items:center;
+  padding:8px 9px; border-radius:12px; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.07)}
+.sh-card.owned{border-color:rgba(79,227,193,.3); background:rgba(79,227,193,.07)}
+.sh-ic{width:34px; height:34px; border-radius:10px; background:rgba(255,255,255,.07); display:grid; place-items:center; font-size:17px}
+.sh-body{min-width:0; display:flex; flex-direction:column; gap:1px}
+.sh-body b{font-size:11.5px}
+.sh-body span{font-size:10px; color:#9fb3c6; line-height:1.4}
+.sh-body em{font-style:normal; font-size:9px; color:#6f8296}
+.sh-buy{height:30px; padding:0 11px; border-radius:9px; white-space:nowrap;
+  background:rgba(255,203,107,.16); border:1px solid rgba(255,203,107,.34); color:#ffe1a8;
+  font-size:10.5px; font-weight:800}
+.sh-buy:disabled{opacity:.45; background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1); color:#93a6b8}
+.sh-buy:not(:disabled):active{transform:scale(.97)}
+
+/* 반응형 */
+@media (max-width:900px){
+  #zones{bottom:calc(74px + env(safe-area-inset-bottom))}
+}
+@media (max-width:720px){
+  #zones{bottom:calc(66px + env(safe-area-inset-bottom)); gap:2px; padding:3px}
+  #hint{bottom:calc(112px + env(safe-area-inset-bottom)) !important; font-size:9.5px}
+  #toast{top:calc(96px + env(safe-area-inset-top)) !important}
+  .zp{height:30px; padding:0 9px; font-size:10px; gap:4px}
+  .zp span{font-size:12px}
+  .mbox{width:min(97vw,440px); max-height:min(90vh,700px)}
+  .mbody{padding:11px 12px 4px}
+  .mfoot{padding:9px 12px calc(10px + env(safe-area-inset-bottom))}
+  .mhead{font-size:12.5px; padding:11px 11px 10px 13px}
+  .pbadge{font-size:9px; padding:2px 7px 2px 5px}
+}
+@media (max-width:420px){
+  .zp b{display:none}
+  .zp{padding:0 10px}
+  .pc-grid{grid-template-columns:1fr}
+  .term-card h4{font-size:17px}
+  .mkt-row .pv{font-size:14px}
+  .sh-body em{display:none}
+}
+@media (max-height:520px){
+  #zones{bottom:calc(72px + env(safe-area-inset-bottom))}
+  #hint{bottom:calc(114px + env(safe-area-inset-bottom)) !important}
+  .mbox{max-height:94vh}
+}
+
+/* 힌트는 구역 바 위로 */
+@media (min-width:901px){
+  #hint{bottom:calc(116px + env(safe-area-inset-bottom)) !important}
+}
+
 </style>
 </head>
 <body>
@@ -393,6 +625,7 @@ body.focus #vignette{opacity:1}
 <header id="top">
   <div class="brand"><span class="logo">🪑</span><div><b>집중 라운지</b><i>STUDY · FOCUS ROOM</i></div></div>
   <div class="top-actions">
+    <button id="coinChip" class="chip coin" title="코인 상점 열기" aria-label="코인 상점"><span>🪙</span><b id="coinN">0</b><span id="buffTag">☕ 2×</span></button>
     <button id="btnReset" class="chip" title="시점 초기화">↺<span>시점 초기화</span></button>
     <span id="fps" class="chip mono">– FPS</span>
     <button id="btnTheme" class="chip" title="낮/밤 전환">🌙<span>밤</span></button>
@@ -461,6 +694,8 @@ body.focus #vignette{opacity:1}
   <button class="dock-btn" data-act="audio" id="dockAudio"><span class="ic">🎧</span><span>배경음</span><span class="badge" id="audioBadge">on</span></button>
   <div class="dock-sep"></div>
   <button class="dock-btn" data-act="panel" id="dockPanel"><span class="ic">⏱</span><span>기록</span></button>
+  <button class="dock-btn" id="dockQuiz" title="증시 미니 퀴즈"><span class="ic">🎲</span><span>퀴즈</span></button>
+  <button class="dock-btn" id="dockShop" title="코인 상점"><span class="ic">🛒</span><span>상점</span></button>
   <a class="dock-btn" href="index.html" id="dockHome" title="관제탑으로"><span class="ic">🏛</span><span>관제탑</span></a>
 </nav>
 
@@ -481,6 +716,25 @@ body.focus #vignette{opacity:1}
     </ul>
     <p style="color:#7b8b9e;font-size:10.5px">Three.js · 단일 HTML · 서버 저장 없음(localStorage)</p>
     <button class="btn primary" id="helpClose" style="width:100%;margin-top:4px">좋아요, 시작할게요</button>
+  </div>
+</div>
+
+<!-- ===== 3D 사무실 확장팩 UI ===== -->
+<div id="zones" role="group" aria-label="구역 카메라 이동">
+  <button class="zp active" data-zone="all" title="전체 보기" aria-label="전체 보기"><span>🏛</span><b>전체</b></button>
+  <button class="zp" data-zone="trade" title="트레이딩 데스크 존" aria-label="트레이딩 데스크 존"><span>📈</span><b>트레이딩</b></button>
+  <button class="zp" data-zone="studio" title="폭스시그널 스튜디오 존" aria-label="폭스시그널 스튜디오 존"><span>🎙</span><b>스튜디오</b></button>
+  <button class="zp" data-zone="terrace" title="야외 테라스 & 휴식 코너" aria-label="야외 테라스"><span>🌿</span><b>테라스</b></button>
+</div>
+<div id="propBadges"></div>
+<div id="pbubs"></div>
+<div id="ptip"></div>
+
+<div id="m3d" aria-hidden="true">
+  <div class="mbox" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="mhead"><span id="mTitle">제목</span><button class="mx" id="mClose" aria-label="닫기">✕</button></div>
+    <div class="mbody" id="mBody"></div>
+    <div class="mfoot" id="mFoot"></div>
   </div>
 </div>
 
@@ -1127,18 +1381,16 @@ function buildRoom() {
 
   // 바닥
   var wood = woodTexture();
-  wood.repeat.set(8.6, 6.3);
-  var floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(30, 22), new THREE.MeshStandardMaterial({ map: wood, roughness: 0.72, metalness: 0.03 }));
+  wood.repeat.set(6.6, 3.9);
+  var floorMesh = new THREE.Mesh(new THREE.PlaneGeometry(23.2, 13.4), new THREE.MeshStandardMaterial({ map: wood, roughness: 0.72, metalness: 0.03 }));
   floorMesh.rotation.x = -Math.PI / 2;
+  floorMesh.position.set(-3.8, 0, 0.4);
   floorMesh.receiveShadow = true;
   floorMesh.name = 'floor';
   floorMesh.userData.pick = 'floor';
   room.add(floorMesh);
   pickables.push(floorMesh);
 
-  // 바닥 테두리
-  var edgeMat = mat(WOOD_D, { rough: 0.6 });
-  room.add(box(0.12, 0.1, 10.1, WOOD_D, -6.98, 0.05, 0, { mat: edgeMat }));
 
   // 러그
   var rug = new THREE.Mesh(new THREE.CircleGeometry(2.45, 48), new THREE.MeshStandardMaterial({ map: rugTexture(), roughness: 0.95 }));
@@ -1173,45 +1425,12 @@ function buildRoom() {
   sheen.position.set(0, 0.34 + (WH - 0.95) / 2, -4.89);
   sheen.rotation.z = 0; room.add(sheen); glassPanes.push(sheen);
 
-  // 왼쪽 벽
-  var leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, WH, 10), wallMat);
-  leftWall.position.set(-7.05, WH / 2, 0);
-  leftWall.receiveShadow = true; leftWall.castShadow = false;
-  room.add(leftWall);
-  // 걸레받이 + 몰딩
-  room.add(box(0.06, 0.14, 10, 0, -6.88, 0.07, 0, { mat: mat(0xfaf3e6, { rough: 0.7 }) }));
-  room.add(box(0.06, 0.9, 10, 0, -6.9, 0.45, 0, { mat: mat(0xe7dbc6, { rough: 0.9 }) }));
-  room.add(box(0.05, 0.05, 10, 0, -6.87, 0.92, 0, { mat: mat(WOOD_D, { rough: 0.6 }) }));
+  // 왼쪽 벽 → 확장팩(__extBuild)이 트레이딩·스튜디오 윙과 통유리 슬라이딩 도어를 세운다.
+  //   라운지는 윙과 하나의 큰 오피스로 이어지고, 기존 책장이 자연스러운 파티션 역할을 한다.
 
   // 벽 상단 크라운(룸 프레임)
   room.add(box(14.0, 0.16, 0.34, 0, 0, WH + 0.08, -4.93, { mat: mat(0xe6d6ba, { rough: 0.8 }) }));
-  room.add(box(0.34, 0.16, 10.0, 0, -7.06, WH + 0.08, 0, { mat: mat(0xe6d6ba, { rough: 0.8 }) }));
-  room.add(box(0.06, 0.1, 10.0, 0, -6.9, WH - 0.12, 0, { mat: mat(0xdccbb0, { rough: 0.85 }) }));
-  // 벽 선반 + 소품
-  var shelf = new THREE.Group();
-  shelf.add(box(2.2, 0.05, 0.3, WOOD_L, 0, 2.5, 0, { rough: 0.6 }));
-  shelf.add(box(0.05, 0.22, 0.26, WOOD_D, -1.0, 2.39, 0, { shadow: false }));
-  shelf.add(box(0.05, 0.22, 0.26, WOOD_D, 1.0, 2.39, 0, { shadow: false }));
-  var bcol = [0xd4785d, 0x6f8fa8, 0xe0c07a, 0x8aa88b, 0xb07fa0];
-  var bx = -0.9;
-  while (bx < 0.75) {
-    var bw = rnd(0.05, 0.08), bh = rnd(0.18, 0.26);
-    shelf.add(box(bw, bh, 0.19, pick(bcol), bx + bw / 2, 2.53 + bh / 2, 0.02, { shadow: false, rough: 0.9 }));
-    bx += bw + 0.015;
-  }
-  shelf.position.set(-6.82, 0, 1.05); shelf.rotation.y = Math.PI / 2;
-  scene.add(shelf);
-  // 행잉 화분
-  var hang = new THREE.Group();
-  hang.add(cyl(0.012, 0.012, 0.75, 6, 0x8a7256, 0, 0.4, 0, { shadow: false }));
-  hang.add(cyl(0.15, 0.1, 0.18, 12, 0xd9c8b0, 0, 0.02, 0, { rough: 0.9 }));
-  for (var hi = 0; hi < 9; hi++) {
-    var ha = (hi / 9) * Math.PI * 2;
-    var hv = sph(rnd(0.07, 0.11), pick([0x6f9e6d, 0x84b47f, 0x5e8c60]), Math.cos(ha) * rnd(0.06, 0.17), rnd(-0.06, 0.14), Math.sin(ha) * rnd(0.06, 0.17), { flat: true, seg: 7, shadow: false });
-    hv.scale.set(1, rnd(0.5, 0.9), 1); hang.add(hv);
-  }
-  hang.position.set(-6.55, 2.55, -0.7);
-  scene.add(hang);
+  // 벽 선반·행잉 화분은 확장팩이 윙 쪽에 새로 세운다(기존 왼쪽 벽 자리에는 파티션 책장만 남긴다).
 
   // 오른쪽 낮은 유리 난간 (컷어웨이 마감)
   room.add(box(0.14, 1.0, 10, 0, 6.95, 0.5, 0, { mat: mat(0xe9dcc6, { rough: 0.85 }) }));
@@ -1263,8 +1482,8 @@ function buildRoom() {
   sun.castShadow = true;
   var shSize = Math.min(W, H) < 520 ? 1024 : 1536;
   sun.shadow.mapSize.width = shSize; sun.shadow.mapSize.height = shSize;
-  sun.shadow.camera.left = -12; sun.shadow.camera.right = 12;
-  sun.shadow.camera.top = 12; sun.shadow.camera.bottom = -12;
+  sun.shadow.camera.left = -22; sun.shadow.camera.right = 13;
+  sun.shadow.camera.top = 13; sun.shadow.camera.bottom = -13;
   sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 40;
   sun.shadow.bias = -0.0008; sun.shadow.normalBias = 0.03;
   scene.add(sun); scene.add(sun.target);
@@ -1402,18 +1621,7 @@ function buildFurniture() {
   var fl3 = makeFloorLamp(-2.6, -3.7, 0xffd8a8); scene.add(fl3);
 
   // ---- 벽 장식 ----
-  var clockObj = makeClock(-6.82, 2.55, 2.6, Math.PI / 2);
-  scene.add(clockObj); scene.userData.clock = clockObj;
-  scene.add(makeFrame(1.15, 0.86, -6.82, 2.35, 0.35, Math.PI / 2, 0xe8dcc6));
-  scene.add(makeFrame(0.62, 0.8, -6.82, 2.4, -0.62, Math.PI / 2, 0xdfe8dc));
-  scene.add(makeFrame(0.5, 0.62, -6.82, 1.62, -0.55, Math.PI / 2, 0xefe0c8));
-  // 둥근 거울
-  var mir = new THREE.Group(); mir.position.set(-6.84, 2.35, 2.55); mir.rotation.y = Math.PI / 2;
-  mir.add(cyl(0.44, 0.44, 0.04, 28, WOOD_D, 0, 0, 0, { rough: 0.55 }));
-  var mirFace = new THREE.Mesh(new THREE.CircleGeometry(0.38, 28), new THREE.MeshStandardMaterial({ color: 0xdce9f2, roughness: 0.12, metalness: 0.55 }));
-  mirFace.position.z = 0.028; mir.add(mirFace);
-  scene.add(mir);
-  scene.add(makeCorkBoard(-5.0, 2.1, -4.72, 0));
+  // 시계·거울·액자·코르크보드는 확장팩이 윙 뒷벽으로 옮겨 세운다(전광판·4대 원칙 보드와 나란히).
   scene.add(makeFrame(1.1, 0.75, 5.4, 2.3, -4.72, 0, 0xefe2cc));
 
   // ---- 고양이 ----
@@ -1459,7 +1667,8 @@ function applyTheme(night) {
    ============================================================ */
 
 /* ---------- 7. 길찾기 ---------- */
-var GW = 56, GH = 40, CELL = 0.25, GX0 = -7, GZ0 = -5;
+var BND = { x1: -19.12, x2: 6.5, z1: -4.38, z2: 4.5 };   // 걸을 수 있는 바닥(라운지 + 윙 + 테라스)
+var GW = 106, GH = 40, CELL = 0.25, GX0 = -19.4, GZ0 = -5;
 var blockedGrid = null;
 
 function buildGrid() {
@@ -1467,7 +1676,7 @@ function buildGrid() {
   for (var ix = 0; ix < GW; ix++) {
     for (var iz = 0; iz < GH; iz++) {
       var wx = GX0 + (ix + 0.5) * CELL, wz = GZ0 + (iz + 0.5) * CELL;
-      var out = wx < -6.55 || wx > 6.55 || wz < -4.5 || wz > 4.55;
+      var out = wx < BND.x1 || wx > BND.x2 || wz < BND.z1 || wz > BND.z2;
       blockedGrid[iz * GW + ix] = out ? 1 : 0;
     }
   }
@@ -1941,19 +2150,19 @@ var cam = {
 };
 function defaultRadius() {
   var aspect = W / Math.max(1, H);
-  var r = 16.5;
-  if (aspect < 0.55) r = 17.5;
-  else if (aspect < 0.75) r = 17.5;
-  else if (aspect < 1.15) r = 18.0;
-  else if (aspect > 1.9) r = 15.4;
+  var r = 21.5;                       // 라운지 + 트레이딩·스튜디오 윙 + 테라스 전체
+  if (aspect < 0.55) r = 25.5;        // 폴드8 외부 400px 세로
+  else if (aspect < 0.75) r = 24.5;
+  else if (aspect < 1.15) r = 23.5;
+  else if (aspect > 1.9) r = 20.5;    // 와이드 가로
   return r;
 }
 function resetCamera(animate) {
   var narrow = W / H < 0.75;
-  cam.tTheta = narrow ? 0.50 : 0.52;
-  cam.tPhi = narrow ? 1.12 : 1.06;
+  cam.tTheta = narrow ? 0.5 : 0.55;
+  cam.tPhi = narrow ? 1.14 : 1.06;
   cam.tR = defaultRadius();
-  cam.tTarget.set(narrow ? -1.0 : -0.3, narrow ? 1.2 : 1.15, narrow ? 1.0 : 0.4);
+  cam.tTarget.set(narrow ? -6.6 : -6.3, narrow ? 1.2 : 1.15, narrow ? 0.8 : 0.3);
   if (!animate) { cam.theta = cam.tTheta; cam.phi = cam.tPhi; cam.r = cam.tR; cam.target.copy(cam.tTarget); }
 }
 function focusCamera(on) {
@@ -2048,7 +2257,7 @@ function bindInput() {
       var fx = Math.sin(ang) * -1, fz = Math.cos(ang) * -1;
       var rx = Math.cos(ang), rz = -Math.sin(ang);
       var wx = (fx * -m[1] + rx * m[0]) * 2, wz = (fz * -m[1] + rz * m[0]) * 2;
-      var nx = clamp(me.g.position.x + wx, -6.3, 6.3), nz = clamp(me.g.position.z + wz, -4.3, 4.3);
+      var nx = clamp(me.g.position.x + wx, BND.x1 + 0.15, BND.x2 - 0.15), nz = clamp(me.g.position.z + wz, BND.z1 + 0.15, BND.z2 - 0.15);
       var c = cellOf(nx, nz);
       if (isFree(c.ix, c.iz)) { me.state = 'walk'; me.path = [new THREE.Vector3(nx, 0, nz)]; me.pendingSeat = null; }
     }
@@ -2083,11 +2292,14 @@ function handleClick(cx, cy) {
     else av.say(pick(['안녕하세요! 👋', '같이 집중해요 🙌', '오늘 목표는 뭐예요?']), 2600);
   } else if (ud.pick === 'floor') {
     var p = hits[0].point;
-    if (Math.abs(p.x) > 6.5 || Math.abs(p.z) > 4.5) return;
+    if (p.x < BND.x1 + 0.1 || p.x > BND.x2 - 0.1 || p.z < BND.z1 + 0.1 || p.z > BND.z2 - 0.1) return;
     if (me.sitTarget) me.stand();
     me.goTo(new THREE.Vector3(p.x, 0, p.z), null);
     // 도착 지점 표시
     showTargetMark(p);
+  } else if (ud.pick === 'prop') {
+    // 확장팩 소품(전광판·원칙보드·용어사전·여우·고양이·커피) — 인사이트 팝업/미니게임
+    if (window.__s3dExt && window.__s3dExt.api) window.__s3dExt.api.prop(ud.key);
   }
 }
 var markMesh = null, markT = 0;
@@ -2275,6 +2487,7 @@ function timerComplete() {
     toast('🎉 25분 집중 완료! 5분 쉬어요', 3400);
     if (me) { me.say('25분 집중 완료! 🎉', 5000); me.setStatus('휴식 중'); }
     pushChat('시스템', '#8fa3b8', '🎉 25분 집중을 마쳤어요. 이제 5분 쉬어 갑니다.', false, true);
+    if (window.__extSessionDone) window.__extSessionDone();
   } else {
     timer.mode = 'focus';
     timer.total = 25 * 60;
@@ -2721,6 +2934,7 @@ function animate() {
   catUpdate(dt, now / 1000);
   updateMark(dt);
   updateLabels(dt, camera);
+  if (window.__extTick) window.__extTick(dt, now);
   tickTimer();
   if (now - lastSecond > 400) { lastSecond = now; timerRender(); }
   // 벽시계
@@ -2771,6 +2985,7 @@ function init3D() {
 
   buildRoom();
   buildFurniture();
+  if (window.__extBuild) window.__extBuild();
   buildGrid();
 
   // 내 아바타
@@ -2816,6 +3031,7 @@ function init3D() {
   resetCamera(false);
   onResize();
   applyTheme(settings.night);
+  if (window.__extAfter) window.__extAfter();
   $('#btnTheme').innerHTML = settings.night ? '☀<span>낮</span>' : '🌙<span>밤</span>';
   $('#btnTheme').classList.toggle('on', settings.night);
 
@@ -2980,6 +3196,1724 @@ if (document.readyState === 'loading') {
 } else {
   boot();
 }
+
+</script>
+<script>
+/* ===== 3D 사무실 확장팩
+/* ============================================================
+   3D 사무실 확장팩 — study-3d.html 부착용
+   ① 3구역(트레이딩 데스크 · 폭스시그널 스튜디오 · 야외 테라스) 확장
+   ② 클릭하면 인사이트가 나오는 소품(시황 전광판 · 4대 원칙 보드 · 용어 사전)
+   ③ 미니게임 & 코인 성장(여우·고양이 쓰다듬기 · 커피 머신 · 증시 퀴즈 · 상점)
+   기존 코어(아바타·고양이·책장·소파·타이머·할 일·채팅)는 그대로 두고
+   window.__extBuild / __extAfter / __extTick 훅으로만 붙는다.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  /* ---------------- 0. 레이아웃 / 상태 ---------------- */
+  var L = {
+    x0: -14.55,       // 윙 ↔ 테라스 유리벽
+    xt: -19.45,       // 테라스 난간
+    z0: -4.92,        // 뒷벽
+    z1: 4.95,         // 앞쪽 컷어웨이
+    H: 3.5,
+    doorA: -2.6, doorB: 1.4
+  };
+  var X = {
+    pets: {}, props: {}, puffs: [], badges: [],
+    market: null, marketErr: '', marketTried: 0,
+    zone: 'all', built: false, after: false
+  };
+  window.__s3dExt = X;
+  window.__EXT_LAYOUT = L;
+
+  var DAY = function () { var d = new Date(); return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate(); };
+  function esc(s) { return String(s === undefined || s === null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function nfmt(v, d) {
+    if (v === undefined || v === null || isNaN(v)) return '—';
+    var n = Number(v);
+    return n.toLocaleString('ko-KR', { minimumFractionDigits: d === undefined ? 2 : d, maximumFractionDigits: d === undefined ? 2 : d });
+  }
+  function pctTxt(v) {
+    if (v === undefined || v === null || isNaN(v)) return '—';
+    var n = Number(v);
+    return (n > 0 ? '+' : '') + n.toFixed(2) + '%';
+  }
+  function udCol(v) { return Number(v) > 0 ? 'up' : (Number(v) < 0 ? 'dn' : 'flat'); }
+
+  /* ---------------- 1. 캔버스 텍스처 ---------------- */
+  function makeTex(w, h, draw) {
+    var c = mkCanvas(w, h), x = c.getContext('2d');
+    draw(x, w, h);
+    return mkTex(c, false);
+  }
+  function liveTex(w, h, draw) {
+    var c = mkCanvas(w, h), x = c.getContext('2d');
+    draw(x, w, h);
+    return { canvas: c, texture: mkTex(c, false) };
+  }
+
+  /* 차트 화면 */
+  function chartScreen(seed, accent) {
+    return makeTex(320, 190, function (x, w, h) {
+      x.fillStyle = '#08131f'; x.fillRect(0, 0, w, h);
+      var g = x.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, 'rgba(79,227,193,.10)'); g.addColorStop(1, 'rgba(79,227,193,0)');
+      x.strokeStyle = 'rgba(120,190,230,.13)'; x.lineWidth = 1;
+      for (var gy = 26; gy < h; gy += 26) { x.beginPath(); x.moveTo(0, gy); x.lineTo(w, gy); x.stroke(); }
+      for (var gx = 0; gx < w; gx += 40) { x.beginPath(); x.moveTo(gx, 0); x.lineTo(gx, h); x.stroke(); }
+      x.fillStyle = 'rgba(120,200,255,.13)'; x.fillRect(0, 0, w, 20);
+      x.fillStyle = accent || '#8fd6ff'; x.font = 'bold 11px "SF Mono",monospace';
+      x.fillText(seed === 0 ? 'KOSPI 1D · 수급' : seed === 1 ? '체결강도 · 호가' : '거래대금 순위', 8, 14);
+      // 캔들
+      var px = 24, py = 108, candle = '#2fd6a4';
+      var r = seed * 7 + 3;
+      function rnd2() { r = (r * 9301 + 49297) % 233280; return r / 233280; }
+      for (var i = 0; i < 30; i++) {
+        var up = rnd2() > 0.42, ch = 6 + rnd2() * 26, cy = py + (rnd2() - 0.5) * 26;
+        candle = up ? '#37e0a6' : '#ff6f85';
+        x.fillStyle = candle;
+        x.fillRect(px - 1.6, cy, 3.2, ch);
+        x.fillStyle = 'rgba(255,255,255,.16)';
+        x.fillRect(px - 5, cy + ch * 0.4, 10, 1.4);
+        px += 9.6;
+      }
+      // 라인
+      x.beginPath(); x.strokeStyle = 'rgba(255,203,107,.85)'; x.lineWidth = 1.6;
+      var ly = 70;
+      for (var k = 0; k < w; k += 12) { ly = clamp(ly + (rnd2() - 0.5) * 12, 34, 150); if (k === 0) x.moveTo(k, ly); else x.lineTo(k, ly); }
+      x.stroke();
+      // 우측 숫자
+      x.fillStyle = '#dff5ff'; x.font = 'bold 12px "SF Mono",monospace';
+      x.fillText('▲ 2,584.12', w - 108, 40);
+      x.fillStyle = '#7fe3c8'; x.font = '10px "SF Mono",monospace';
+      x.fillText('외국인 +1,204억', w - 108, 54);
+    });
+  }
+
+  /* 폼보드(흡음재) */
+  function foamTexture() {
+    return makeTex(256, 256, function (x, w, h) {
+      x.fillStyle = '#20283a'; x.fillRect(0, 0, w, h);
+      for (var i = 0; i < 8; i++) for (var j = 0; j < 8; j++) {
+        var cxp = i * 32 + 16, cyp = j * 32 + 16;
+        var g = x.createRadialGradient(cxp - 5, cyp - 5, 2, cxp, cyp, 15);
+        g.addColorStop(0, '#2c3850'); g.addColorStop(1, '#1a2233');
+        x.fillStyle = g; x.fillRect(i * 32 + 1, j * 32 + 1, 30, 30);
+      }
+    });
+  }
+
+  /* 테라스 너머 풍경 */
+  function viewTexture() {
+    return makeTex(512, 256, function (x, w, h) {
+      var g = x.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, '#8fbcdd'); g.addColorStop(0.42, '#bcd8ea'); g.addColorStop(0.72, '#d9e6ec'); g.addColorStop(1, '#c3d4c6');
+      x.fillStyle = g; x.fillRect(0, 0, w, h);
+      // 먼 능선
+      x.fillStyle = 'rgba(140,166,175,.55)';
+      x.beginPath(); x.moveTo(0, h * 0.66);
+      for (var i = 0; i <= w; i += 26) x.lineTo(i, h * 0.66 - Math.sin(i * 0.014) * 16 - Math.random() * 8);
+      x.lineTo(w, h); x.lineTo(0, h); x.fill();
+      // 도시 실루엣
+      x.fillStyle = 'rgba(110,132,150,.62)';
+      var bx = 0;
+      while (bx < w) {
+        var bw = 12 + Math.random() * 20, bh = 20 + Math.random() * 54;
+        x.fillRect(bx, h * 0.72 - bh, bw, bh);
+        bx += bw + 5;
+      }
+      x.fillStyle = 'rgba(92,120,110,.5)';
+      for (var t = 0; t < 22; t++) {
+        var tx2 = Math.random() * w, ty2 = h * 0.74 + Math.random() * 10, r2 = 6 + Math.random() * 12;
+        x.beginPath(); x.arc(tx2, ty2, r2, 0, 6.3); x.fill();
+      }
+      x.fillStyle = '#8fae8f'; x.fillRect(0, h * 0.78, w, h * 0.22);
+    });
+  }
+
+  /* 네온 간판 */
+  function neonTexture(text, color) {
+    return makeTex(512, 160, function (x, w, h) {
+      x.fillStyle = '#0a0f18'; x.fillRect(0, 0, w, h);
+      x.font = 'bold 76px "SF Mono",monospace';
+      x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.shadowColor = color; x.shadowBlur = 26;
+      x.fillStyle = color; x.fillText(text, w / 2, h / 2 + 4);
+      x.shadowBlur = 10; x.fillStyle = '#ffffff';
+      x.globalAlpha = 0.72; x.fillText(text, w / 2, h / 2 + 4);
+      x.globalAlpha = 1;
+      x.strokeStyle = 'rgba(255,255,255,.22)'; x.lineWidth = 3;
+      x.strokeRect(10, 10, w - 20, h - 20);
+    });
+  }
+
+  /* 종이 라벨(작은 안내판) */
+  function labelTexture(title, sub, accent) {
+    return makeTex(256, 128, function (x, w, h) {
+      x.fillStyle = '#0e1726'; x.fillRect(0, 0, w, h);
+      x.strokeStyle = accent || '#4fe3c1'; x.lineWidth = 3; x.strokeRect(4, 4, w - 8, h - 8);
+      x.textAlign = 'center';
+      x.fillStyle = accent || '#4fe3c1'; x.font = 'bold 30px "Noto Sans KR",sans-serif';
+      x.fillText(title, w / 2, h * 0.5);
+      if (sub) { x.fillStyle = 'rgba(226,240,250,.66)'; x.font = '15px "Noto Sans KR",sans-serif'; x.fillText(sub, w / 2, h * 0.76); }
+    });
+  }
+
+  /* 하트 스프라이트(쓰다듬기 이펙트) */
+  function heartTexture(color) {
+    return makeTex(96, 96, function (x, w, h) {
+      x.clearRect(0, 0, w, h);
+      x.fillStyle = color;
+      x.beginPath();
+      x.moveTo(48, 82);
+      x.bezierCurveTo(6, 52, 14, 16, 48, 34);
+      x.bezierCurveTo(82, 16, 90, 52, 48, 82);
+      x.fill();
+      x.globalAlpha = 0.5; x.fillStyle = '#fff';
+      x.beginPath(); x.ellipse(36, 40, 7, 5, -0.5, 0, 6.3); x.fill();
+    });
+  }
+  /* 연기/김 스프라이트 */
+  function puffTexture() {
+    return makeTex(96, 96, function (x, w, h) {
+      x.clearRect(0, 0, w, h);
+      var g = x.createRadialGradient(48, 48, 2, 48, 48, 46);
+      g.addColorStop(0, 'rgba(255,255,255,.85)');
+      g.addColorStop(0.55, 'rgba(238,246,252,.32)');
+      g.addColorStop(1, 'rgba(238,246,252,0)');
+      x.fillStyle = g; x.beginPath(); x.arc(48, 48, 46, 0, 6.3); x.fill();
+    });
+  }
+  /* 클릭 유도 글로우 링 */
+  function glowTexture() {
+    return makeTex(128, 128, function (x, w, h) {
+      var g = x.createRadialGradient(64, 64, 6, 64, 64, 62);
+      g.addColorStop(0, 'rgba(79,227,193,0)');
+      g.addColorStop(0.62, 'rgba(79,227,193,.55)');
+      g.addColorStop(0.8, 'rgba(79,227,193,.18)');
+      g.addColorStop(1, 'rgba(79,227,193,0)');
+      x.fillStyle = g; x.beginPath(); x.arc(64, 64, 62, 0, 6.3); x.fill();
+    });
+  }
+
+  /* ---------------- 2. 공용 헬퍼 ---------------- */
+  function screenPanel(w, h, tex, x, y, z, rotY) {
+    var g = new THREE.Group(); g.position.set(x, y, z); g.rotation.y = rotY || 0;
+    g.add(box(w + 0.035, h + 0.035, 0.022, 0x151b24, 0, 0, 0, { rough: 0.45, metal: 0.35, shadow: false }));
+    var m = new THREE.MeshStandardMaterial({ map: tex, emissive: 0xffffff, emissiveMap: tex, emissiveIntensity: 0.34, roughness: 0.32, metalness: 0.1 });
+    var p = new THREE.Mesh(new THREE.PlaneGeometry(w, h), m);
+    p.position.z = 0.016; g.add(p);
+    return g;
+  }
+
+  function glassPanel(w, h, opacity) {
+    return new THREE.Mesh(
+      new THREE.PlaneGeometry(w, h),
+      new THREE.MeshStandardMaterial({ color: 0xdcf0ff, transparent: true, opacity: opacity || 0.16, roughness: 0.07, metalness: 0.05, side: THREE.DoubleSide, depthWrite: false })
+    );
+  }
+
+  function addPick(obj, key, label, badgePos, size) {
+    var hit = new THREE.Mesh(new THREE.BoxGeometry(size[0], size[1], size[2]), new THREE.MeshBasicMaterial({ visible: false }));
+    hit.position.set(size[3] || 0, size[4] || 0, 0);
+    obj.add(hit);
+    hit.userData.pick = 'prop';
+    hit.userData.key = key;
+    pickables.push(hit);
+    var glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: X.glowTex, transparent: true, opacity: 0.55, depthWrite: false, depthTest: false }));
+    glow.scale.set(0.75, 0.75, 1);
+    glow.position.set(size[3] || 0, (size[4] || 0) + size[1] * 0.5 + 0.16, 0);
+    obj.add(glow);
+    X.props[key] = X.props[key] || {};
+    X.props[key].glow = glow;
+    X.props[key].hit = hit;
+    X.props[key].label = label;
+    X.props[key].badge = badgePos ? new THREE.Vector3(badgePos[0], badgePos[1], badgePos[2]) : null;
+    return hit;
+  }
+
+  /* ============================================================
+     3. 껍데기 — 윙 뒷벽 · 통유리 슬라이딩 도어 · 테라스
+     ============================================================ */
+  function buildShell() {
+    var WH = L.H;
+    var plaster = plasterTexture('#efe3cc');
+    plaster.repeat.set(3.2, 2);
+    var wallMat = new THREE.MeshStandardMaterial({ map: plaster, roughness: 0.95 });
+    var g = new THREE.Group(); scene.add(g); X.shell = g;
+
+    /* --- 윙 뒷벽 (전광판·원칙보드 자리) --- */
+    g.add(box(7.85, WH, 0.3, 0, -10.72, WH / 2, -4.92, { mat: wallMat, shadow: false }));
+    g.add(box(7.85, 0.14, 0.06, 0, -10.72, 0.07, -4.74, { mat: mat(0xfaf3e6, { rough: 0.7 }), shadow: false }));
+    g.add(box(7.85, 0.1, 0.06, 0, -10.72, WH - 0.13, -4.74, { mat: mat(0xdccbb0, { rough: 0.85 }), shadow: false }));
+    g.add(box(8.0, 0.16, 0.34, 0, -10.72, WH + 0.08, -4.93, { mat: mat(0xe6d6ba, { rough: 0.8 }), shadow: false }));
+    // 벽-유리 경계 기둥 (윙 끝)
+    g.add(box(0.16, WH, 0.32, 0, -14.5, WH / 2, -4.92, { mat: mat(0xe9dcc6, { rough: 0.85 }), shadow: false }));
+
+    /* --- 윙/테라스 유리벽 + 슬라이딩 도어 --- */
+    var fx = L.x0;
+    var glassH = WH - 0.55;
+    // 좌(뒤) 유리
+    var p1 = glassPanel(L.doorA - L.z0, glassH); p1.rotation.y = Math.PI / 2;
+    p1.position.set(fx, 0.35 + glassH / 2, (L.z0 + L.doorA) / 2); g.add(p1); glassPanes.push(p1);
+    // 우(앞) 유리
+    var p2 = glassPanel(L.z1 - L.doorB, glassH); p2.rotation.y = Math.PI / 2;
+    p2.position.set(fx, 0.35 + glassH / 2, (L.doorB + L.z1) / 2); g.add(p2); glassPanes.push(p2);
+    // 상단 헤더(유리 위만) + 도어 구간은 얇은 상부 트랙만
+    g.add(box(0.3, 0.42, L.doorA - L.z0, 0, fx, WH - 0.21, (L.z0 + L.doorA) / 2, { mat: wallMat, shadow: false }));
+    g.add(box(0.3, 0.42, L.z1 - L.doorB, 0, fx, WH - 0.21, (L.doorB + L.z1) / 2, { mat: wallMat, shadow: false }));
+    g.add(box(0.16, 0.1, L.doorB - L.doorA, 0, fx, WH - 0.55, (L.doorA + L.doorB) / 2, { mat: mat(0x8f7d68, { rough: 0.45, metal: 0.3 }), shadow: false }));
+    g.add(box(0.34, 0.12, L.z1 - L.z0, 0, fx, 0.06, (L.z0 + L.z1) / 2, { mat: mat(WOOD_D, { rough: 0.6 }), shadow: false }));
+    // 기둥(문틀) — 유리 끝/도어 양옆
+    [L.z0 + 0.04, L.z1 - 0.04].forEach(function (z) {
+      g.add(box(0.18, WH, 0.1, 0, fx, WH / 2, z, { mat: mat(0xb9a58c, { rough: 0.5 }), shadow: false }));
+    });
+    // 도어 옆 얇은 브론즈 트림 (시야를 가리지 않게)
+    [L.doorA, L.doorB].forEach(function (z) {
+      g.add(box(0.09, WH, 0.05, 0, fx, WH / 2, z, { mat: mat(0x8f7d68, { rough: 0.45, metal: 0.3 }), shadow: false }));
+    });
+    // 열린 슬라이딩 패널(도어 옆으로 겹쳐 열어 둔 모습)
+    var slid = new THREE.Group(); slid.position.set(fx + 0.09, 0.35 + glassH / 2, L.doorA - (L.doorA - L.z0) * 0.5);
+    var sp = glassPanel((L.doorA - L.z0) * 0.92, glassH - 0.06, 0.2); slid.add(sp); glassPanes.push(sp);
+    slid.add(box(0.05, glassH, 0.09, 0x2f3a48, 0, 0, (L.doorA - L.z0) * 0.46, { mat: mat(0x2f3a48, { rough: 0.4, metal: 0.5 }), shadow: false }));
+    slid.add(box(0.05, glassH, 0.09, 0x2f3a48, 0, 0, -(L.doorA - L.z0) * 0.46, { mat: mat(0x2f3a48, { rough: 0.4, metal: 0.5 }), shadow: false }));
+    g.add(slid);
+    // 손잡이
+    g.add(box(0.06, 0.5, 0.04, 0xc9d6e2, 0.16, 1.15, L.doorB - 0.16, { mat: mat(0xc9d6e2, { rough: 0.3, metal: 0.8 }), shadow: false }));
+    // 도어 통행 obstacle (유리벽만 막고 개구부는 비워 둔다)
+    obstacles.push({ x1: fx - 0.14, x2: fx + 0.14, z1: L.z0, z2: L.doorA });
+    obstacles.push({ x1: fx - 0.14, x2: fx + 0.14, z1: L.doorB, z2: L.z1 });
+
+    /* --- 윙 바닥 존 표시(카펫) --- */
+    var rug = new THREE.Mesh(new THREE.PlaneGeometry(4.6, 4.0), new THREE.MeshStandardMaterial({ map: rugTexture(), color: 0x9aa9b4, roughness: 0.96 }));
+    rug.rotation.x = -Math.PI / 2; rug.position.set(-11.6, 0.014, 2.6); rug.receiveShadow = true; g.add(rug);
+    var rug2 = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 3.4), new THREE.MeshStandardMaterial({ map: rugTexture(), color: 0x8e9aa6, roughness: 0.96 }));
+    rug2.rotation.x = -Math.PI / 2; rug2.position.set(-11.4, 0.014, -2.2); rug2.receiveShadow = true; g.add(rug2);
+
+    /* --- 윙 벽 장식(라운지에서 옮겨 온 시계·거울·액자) --- */
+    var clock = makeClock(-7.62, 2.56, -4.72, 0); g.add(clock); scene.userData.clock = clock;
+    var mir = new THREE.Group(); mir.position.set(-8.58, 2.4, -4.74);
+    mir.add(cyl(0.44, 0.44, 0.04, 26, WOOD_D, 0, 0, 0, { rough: 0.55 }));
+    var mirFace = new THREE.Mesh(new THREE.CircleGeometry(0.38, 26), new THREE.MeshStandardMaterial({ color: 0xdce9f2, roughness: 0.14, metalness: 0.5 }));
+    mirFace.position.z = 0.03; mir.add(mirFace); g.add(mir);
+    g.add(makeFrame(0.62, 0.8, -7.62, 1.62, -4.72, 0, 0xdfe8dc));
+    g.add(makeFrame(0.5, 0.62, -8.58, 1.55, -4.72, 0, 0xefe0c8));
+    return g;
+  }
+
+  /* ---------------- 테라스 ---------------- */
+  function railAlongZ(x, z1, z2) {
+    var g = new THREE.Group();
+    var len = z2 - z1, n = Math.max(2, Math.round(len / 1.15));
+    for (var i = 0; i <= n; i++) {
+      var z = z1 + (len / n) * i;
+      g.add(box(0.07, 1.0, 0.07, 0x4a4238, x, 0.5, z, { mat: mat(0x4a4238, { rough: 0.6, metal: 0.35 }), shadow: false }));
+    }
+    var pane = glassPanel(len, 0.84, 0.13);
+    pane.rotation.y = Math.PI / 2; pane.position.set(x, 0.5, (z1 + z2) / 2); g.add(pane); glassPanes.push(pane);
+    g.add(box(0.12, 0.06, len + 0.1, WOOD_L, x, 1.02, (z1 + z2) / 2, { mat: mat(WOOD_L, { rough: 0.5 }), shadow: false }));
+    return g;
+  }
+  function railAlongX(z, x1, x2) {
+    var g = new THREE.Group();
+    var len = x2 - x1, n = Math.max(2, Math.round(len / 1.15));
+    for (var i = 0; i <= n; i++) {
+      var x = x1 + (len / n) * i;
+      g.add(box(0.07, 1.0, 0.07, 0x4a4238, x, 0.5, z, { mat: mat(0x4a4238, { rough: 0.6, metal: 0.35 }), shadow: false }));
+    }
+    var pane = glassPanel(len, 0.84, 0.13);
+    pane.position.set((x1 + x2) / 2, 0.5, z); g.add(pane); glassPanes.push(pane);
+    g.add(box(len + 0.1, 0.06, 0.12, WOOD_L, (x1 + x2) / 2, 1.02, z, { mat: mat(WOOD_L, { rough: 0.5 }), shadow: false }));
+    return g;
+  }
+
+  function buildTerrace() {
+    var g = new THREE.Group(); scene.add(g); X.terrace = g;
+
+    /* 데크 */
+    var deckTex = woodTexture(); deckTex.repeat.set(1.4, 3.4);
+    var deck = new THREE.Mesh(new THREE.PlaneGeometry(4.95, 9.9), new THREE.MeshStandardMaterial({ map: deckTex, color: 0xa9997f, roughness: 0.92 }));
+    deck.rotation.x = -Math.PI / 2; deck.position.set((L.xt + L.x0) / 2, 0.02, 0);
+    deck.receiveShadow = true; deck.userData.pick = 'floor'; deck.name = 'deck';
+    g.add(deck); pickables.push(deck);
+    // 데크 테두리(단차)
+    g.add(box(0.18, 0.08, 9.9, WOOD_D, L.xt + 0.05, 0.02, 0, { mat: mat(WOOD_D, { rough: 0.7 }), shadow: false }));
+
+    /* 난간 */
+    g.add(railAlongZ(L.xt, L.z0 + 0.1, L.z1 - 0.1));
+    g.add(railAlongX(L.z0 + 0.1, L.xt, L.x0 - 0.1));
+    g.add(railAlongX(L.z1 - 0.1, L.xt, L.x0 - 0.1));
+
+    /* 테라스 소파 + 티테이블 */
+    var sofa = makeSofa(-18.4, 0.4, Math.PI / 2);
+    sofa.traverse(function (o) { if (o.material && o.material.color && o.material.color.getHex() === 0xdcd0bd) o.material = mat(0xd7d2c4, { rough: 0.98 }); });
+    g.add(sofa); obstacles.push({ x1: -18.9, x2: -17.9, z1: -0.7, z2: 1.5 });
+    addSeat('ter0', -18.28, 0.07, Math.PI / 2, 'sofa', '테라스 소파');
+    addSeat('ter1', -18.28, 0.73, Math.PI / 2, 'sofa', '테라스 소파');
+    var tea = makeRoundTable(-17.1, 0.4, 0.52, 0.52);
+    g.add(tea); obstacles.push({ x1: -17.6, x2: -16.6, z1: -0.1, z2: 0.9 });
+    // 파라솔 (상점 아이템 자리 표시는 place()가 채운다)
+
+    /* 안락의자 2 */
+    var ac1 = makeArmchair(-16.9, -1.7, 2.5, 0xd9d2c2); g.add(ac1); obstacles.push({ x1: -17.4, x2: -16.4, z1: -2.2, z2: -1.2 });
+    addSeat('ter2', -16.9, -1.7, 2.5, 'sofa', '테라스 의자');
+    var ac2 = makeArmchair(-16.9, 2.6, -2.5, 0xd9d2c2); g.add(ac2); obstacles.push({ x1: -17.4, x2: -16.4, z1: 2.1, z2: 3.1 });
+    addSeat('ter3', -16.9, 2.6, -2.5, 'sofa', '테라스 의자');
+
+    /* 화분들 */
+    [[-19.0, -3.9, 1.1], [-19.0, -2.3, 0.95], [-19.0, 3.5, 1.05], [-15.3, -4.2, 0.9], [-15.4, 4.2, 0.85]].forEach(function (p) {
+      g.add(makePlant(p[0], p[1], p[2], 'big'));
+      obstacles.push({ x1: p[0] - 0.28, x2: p[0] + 0.28, z1: p[1] - 0.28, z2: p[1] + 0.28 });
+    });
+
+    /* 스트링 라이트 */
+    var wire = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 4.6, 4), mat(0x2b3138, { rough: 0.9 }));
+    wire.rotation.z = Math.PI / 2; wire.position.set(-17.1, 2.85, -3.4); g.add(wire);
+    var wire2 = wire.clone(); wire2.position.set(-17.1, 2.85, 3.4); g.add(wire2);
+    var bulbs = new THREE.Group();
+    for (var i = 0; i < 9; i++) {
+      var bz = -4.3 + i * 1.07;
+      var b = sph(0.055, 0xfff0cf, -17.1, 2.78, bz, { seg: 8, shadow: false, emissive: 0xffd9a0, ei: 1.5, rough: 0.4 });
+      bulbs.add(b);
+    }
+    g.add(bulbs); X.bulbs = bulbs;
+    var pl = new THREE.PointLight(0xffd9a8, 0.5, 9, 2); pl.position.set(-17.2, 2.6, 0); g.add(pl);
+    lamps.push({ light: pl, base: 0.5, mesh: null, meshBase: 1 });
+
+    /* 커피 스테이션 */
+    var coffee = makeCoffeeStation(-15.45, 4.05, -0.35);
+    g.add(coffee); obstacles.push({ x1: -16.2, x2: -14.7, z1: 3.7, z2: 4.4 });
+    X.props.coffeeGrp = coffee;
+    addPick(coffee, 'coffee', '☕ 커피 머신', [-15.45, 1.82, 4.05], [1.45, 1.5, 0.95, 0, 0.8]);
+
+    /* 윙 그늘 보정용 테라스 보조광 */
+    var tSun = new THREE.DirectionalLight(0xfff1dc, 0.55);
+    tSun.position.set(-8, 8.5, 7); tSun.target.position.set(-17.4, 1, 0.4);
+    scene.add(tSun); scene.add(tSun.target);
+    X.terraceSun = tSun;
+
+    /* 너머 풍경 */
+    var vt = viewTexture();
+    var back = new THREE.Mesh(new THREE.PlaneGeometry(52, 26), new THREE.MeshBasicMaterial({ map: vt, depthWrite: false, fog: false }));
+    back.position.set(L.xt - 5.2, 6.4, 0); back.rotation.y = Math.PI / 2; g.add(back);
+    var back2 = back.clone(); back2.position.set(L.xt - 5.21, 6.4, 0); back2.rotation.y = -Math.PI / 2; g.add(back2);
+    // 난간 밖 나무·지붕
+    for (var t = 0; t < 9; t++) {
+      var tx = L.xt - rnd(1.2, 4.4), tz = rnd(-7, 7), s = rnd(0.9, 1.6);
+      var tree = new THREE.Group(); tree.position.set(tx, 0, tz); tree.scale.setScalar(s);
+      tree.add(cyl(0.1, 0.13, 1.4, 7, 0x6d5136, 0, 0.7, 0, { shadow: false }));
+      var cr = sph(0.85, pick([0x5f8a63, 0x6f9a6c, 0x517a58]), 0, 1.9, 0, { flat: true, seg: 8, seg2: 6, shadow: false });
+      cr.scale.set(1, 0.92, 1); tree.add(cr);
+      g.add(tree);
+    }
+    return g;
+  }
+
+  /* ---------------- 커피 스테이션 ---------------- */
+  function makeCoffeeStation(x, z, rotY) {
+    var g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY || 0;
+    // 캐비닛
+    g.add(box(1.3, 0.86, 0.56, 0x6f5540, 0, 0.43, 0, { rough: 0.75 }));
+    g.add(box(1.36, 0.05, 0.6, WOOD_L, 0, 0.88, 0, { rough: 0.5 }));
+    g.add(box(0.02, 0.62, 0.5, 0x503c2c, 0, 0.55, 0.03, { shadow: false }));
+    g.add(cyl(0.03, 0.03, 0.02, 8, 0xc9a96f, 0.13, 0.56, 0.3, { shadow: false, metal: 0.7, rough: 0.3 }));
+    // 머신 본체
+    var m = new THREE.Group(); m.position.set(0, 0.9, -0.02);
+    m.add(box(0.44, 0.42, 0.34, 0x2b323c, 0, 0.21, 0, { rough: 0.4, metal: 0.45 }));
+    m.add(box(0.4, 0.09, 0.3, 0x3a4350, 0, 0.44, 0, { rough: 0.35, metal: 0.6 }));
+    m.add(box(0.2, 0.05, 0.06, 0x9fa9b4, 0, 0.13, 0.18, { shadow: false, metal: 0.8, rough: 0.25 }));
+    m.add(box(0.5, 0.03, 0.1, 0x1d232b, 0, 0.03, 0.2, { shadow: false }));
+    // 그룹 헤드 + 포트
+    m.add(cyl(0.055, 0.055, 0.07, 12, 0x8d97a2, 0, 0.1, 0.2, { shadow: false, metal: 0.85, rough: 0.28 }));
+    // 상태등
+    var led = sph(0.022, 0x6ff0c8, 0.16, 0.36, 0.18, { seg: 8, shadow: false, emissive: 0x3fe0b0, ei: 1.6 });
+    m.add(led); X.coffeeLed = led;
+    // 컵
+    m.add(cyl(0.045, 0.038, 0.07, 10, 0xf6f2e8, 0, 0.06, 0.2, { shadow: false }));
+    g.add(m);
+    // 머그 트레이 + 원두 자루
+    g.add(cyl(0.11, 0.11, 0.02, 14, 0xdcd3c2, -0.42, 0.92, 0.02, { shadow: false }));
+    g.add(cyl(0.05, 0.042, 0.075, 10, 0xf6f2e8, -0.42, 0.96, 0.02, { shadow: false }));
+    g.add(cyl(0.05, 0.042, 0.075, 10, 0xd8b48b, -0.3, 0.96, 0.02, { shadow: false }));
+    g.add(box(0.2, 0.26, 0.12, 0x4a3324, 0.44, 1.0, -0.02, { rotY: 0.2, rough: 0.95 }));
+    // 메뉴판
+    var menu = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.24), new THREE.MeshStandardMaterial({ map: labelTexture('COFFEE', '정성 한 잔 · 30초', '#ffcb6b'), roughness: 0.9 }));
+    menu.position.set(0, 1.44, -0.16); g.add(menu);
+    g.add(box(0.54, 0.28, 0.03, WOOD_D, 0, 1.44, -0.18, { shadow: false }));
+    menu.position.z = -0.16;
+    // 스팀용 기준점
+    g.userData.steamAt = new THREE.Vector3(0, 1.08, 0.2);
+    return g;
+  }
+
+  /* ---------------- 폭스 마스코트(여우) ---------------- */
+  function makeFox() {
+    var g = new THREE.Group();
+    var fur = 0xe08b45, fur2 = 0xf2b071, cream = 0xfbe6d0, dark = 0x3a2a22;
+    // 몸통(앉은 자세)
+    var body = sph(0.26, fur, 0, 0.36, 0, { seg: 16 }); body.scale.set(1, 1.15, 0.92); g.add(body);
+    var chest = sph(0.17, cream, 0, 0.36, 0.15, { seg: 14 }); chest.scale.set(0.9, 1.2, 0.6); g.add(chest);
+    // 머리
+    var head = new THREE.Group(); head.position.set(0, 0.76, 0.04);
+    head.add(sph(0.205, fur, 0, 0, 0, { seg: 16 }));
+    var snoutG = new THREE.Group(); snoutG.position.set(0, -0.05, 0.16);
+    var snout = sph(0.09, cream, 0, -0.02, 0.03, { seg: 12 }); snout.scale.set(1.05, 0.78, 1.15); snoutG.add(snout);
+    snoutG.add(sph(0.028, dark, 0, 0.01, 0.115, { seg: 8, rough: 0.4 }));
+    head.add(snoutG);
+    // 눈
+    var eyeGeo = new THREE.SphereGeometry(0.032, 10, 8), eyeMat = mat(0x241a14, { rough: 0.35 });
+    var e1 = new THREE.Mesh(eyeGeo, eyeMat); e1.position.set(-0.082, 0.045, 0.168); head.add(e1);
+    var e2 = new THREE.Mesh(eyeGeo, eyeMat); e2.position.set(0.082, 0.045, 0.168); head.add(e2);
+    var g1 = new THREE.Mesh(new THREE.SphereGeometry(0.011, 6, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    g1.position.set(-0.072, 0.058, 0.192); head.add(g1);
+    var g2 = g1.clone(); g2.position.set(0.092, 0.058, 0.192); head.add(g2);
+    // 귀
+    function ear(sx) {
+      var e = new THREE.Group(); e.position.set(sx * 0.13, 0.17, -0.01); e.rotation.z = sx * -0.16;
+      var c1 = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.2, 5), mat(fur, { rough: 0.9, flat: true }));
+      e.add(c1);
+      var inner = new THREE.Mesh(new THREE.ConeGeometry(0.042, 0.13, 5), mat(0xffc9a8, { rough: 0.95, flat: true }));
+      inner.position.set(0, 0.005, 0.028); e.add(inner);
+      var tip = new THREE.Mesh(new THREE.ConeGeometry(0.036, 0.07, 5), mat(dark, { rough: 0.9, flat: true }));
+      tip.position.set(0, 0.08, 0); e.add(tip);
+      return e;
+    }
+    var earL = ear(-1), earR = ear(1); head.add(earL); head.add(earR);
+    g.add(head);
+    // 앞다리
+    [-0.11, 0.11].forEach(function (sx) {
+      g.add(cyl(0.05, 0.055, 0.26, 8, fur, sx, 0.16, 0.16, { shadow: false }));
+      g.add(sph(0.056, cream, sx, 0.04, 0.2, { seg: 8, shadow: false }));
+    });
+    // 꼬리(흰 끝)
+    var tail = new THREE.Group(); tail.position.set(0.16, 0.32, -0.2); tail.rotation.z = -0.5;
+    var t1 = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.1, 0.42, 8), mat(fur2, { rough: 0.92 }));
+    t1.position.set(0, 0.18, -0.04); t1.rotation.x = -0.5; tail.add(t1);
+    var t2 = sph(0.085, cream, 0, 0.36, -0.16, { seg: 10 }); tail.add(t2);
+    g.add(tail);
+    // 목 스카프(폭스시그널)
+    var scarf = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.035, 6, 16), mat(0x2aa79a, { rough: 0.9 }));
+    scarf.rotation.x = Math.PI / 2; scarf.position.set(0, 0.62, 0.02); g.add(scarf);
+    g.userData.tail = tail; g.userData.head = head; g.userData.ears = [earL, earR];
+    g.userData.eyes = [e1, e2];
+    return g;
+  }
+
+  /* ---------------- 고양이 쓰다듬기 히트박스 ---------------- */
+  function petHit(group, key, label, w, h) {
+    var hit = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), new THREE.MeshBasicMaterial({ visible: false }));
+    hit.position.y = h / 2;
+    group.add(hit);
+    hit.userData.pick = 'prop';
+    hit.userData.key = key;
+    pickables.push(hit);
+    X.props[key] = X.props[key] || {};
+    X.props[key].label = label;
+    X.props[key].hit = hit;
+    return hit;
+  }
+
+  /* ============================================================
+     4. ① 트레이딩 데스크 존
+     ============================================================ */
+  function makeTradingDesk(x, z) {
+    var g = new THREE.Group(); g.position.set(x, 0, z);
+    var DW = 3.1, DD = 0.95, DH = 0.76;
+    // 상판 (월넛)
+    g.add(box(DW, 0.06, DD, 0x3b2f26, 0, DH, 0, { rough: 0.5, metal: 0.06 }));
+    g.add(box(DW - 0.05, 0.02, DD - 0.05, 0x4a3a2d, 0, DH + 0.04, 0, { shadow: false, rough: 0.55 }));
+    // 측판 + 케이블 트레이
+    [-1, 1].forEach(function (s) {
+      g.add(box(0.07, DH, DD - 0.1, 0x2f2620, s * (DW / 2 - 0.07), DH / 2, 0, { rough: 0.6 }));
+    });
+    g.add(box(DW - 0.4, 0.12, 0.16, 0x22282f, 0, DH - 0.2, -0.3, { shadow: false, rough: 0.5, metal: 0.4 }));
+    // LED 언더글로우
+    var ledStrip = box(DW - 0.5, 0.012, 0.03, 0x6ff0c8, 0, DH - 0.07, DD / 2 - 0.06, { shadow: false, emissive: 0x2fe0b8, ei: 1.2, rough: 0.4 });
+    g.add(ledStrip);
+    // 모니터 암 + 3면 커브드
+    g.add(cyl(0.05, 0.05, 0.06, 12, 0x1d232b, 0, DH + 0.06, -0.34, { shadow: false, metal: 0.6, rough: 0.35 }));
+    g.add(cyl(0.032, 0.032, 0.5, 10, 0x242a33, 0, DH + 0.3, -0.34, { shadow: false, metal: 0.6, rough: 0.35 }));
+    g.add(box(1.15, 0.05, 0.06, 0x242a33, 0, DH + 0.53, -0.3, { shadow: false, metal: 0.6, rough: 0.35 }));
+    var sg = new THREE.Group();
+    sg.add(screenPanel(0.98, 0.52, chartScreen(0, '#8fd6ff'), 0, DH + 0.86, -0.26, 0));
+    sg.add(screenPanel(0.6, 0.44, chartScreen(1, '#ffd28a'), -0.76, DH + 0.78, -0.1, 0.52));
+    sg.add(screenPanel(0.6, 0.44, chartScreen(2, '#9fe8c8'), 0.76, DH + 0.78, -0.1, -0.52));
+    // 세로 보조 모니터
+    sg.add(screenPanel(0.42, 0.62, chartScreen(1, '#c9b6ff'), 1.28, DH + 0.42, 0.06, -0.72));
+    sg.add(cyl(0.05, 0.05, 0.32, 8, 0x242a33, 1.28, DH + 0.16, 0.04, { shadow: false, metal: 0.5, rough: 0.4 }));
+    g.add(sg);
+    g.userData.screens = sg;
+    // 키보드·마우스·헤드셋·노트
+    g.add(box(0.44, 0.02, 0.15, 0x22262c, 0, DH + 0.055, 0.16, { shadow: false, rough: 0.55 }));
+    g.add(box(0.07, 0.02, 0.11, 0x22262c, 0.3, DH + 0.055, 0.16, { shadow: false, rough: 0.55 }));
+    var hs = new THREE.Group(); hs.position.set(-1.06, DH + 0.06, 0.16); hs.rotation.z = 0.4;
+    hs.add(new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.022, 6, 16, Math.PI * 1.2), mat(0x2b3038, { rough: 0.5 })));
+    hs.add(cyl(0.045, 0.045, 0.03, 10, 0x2b3038, -0.11, -0.02, 0, { shadow: false }));
+    hs.add(cyl(0.045, 0.045, 0.03, 10, 0x2b3038, 0.11, -0.02, 0, { shadow: false }));
+    g.add(hs);
+    g.add(box(0.28, 0.02, 0.2, 0xf0ead8, 0.62, DH + 0.055, 0.2, { rotY: -0.18, shadow: false, rough: 0.9 }));
+    g.add(box(0.16, 0.01, 0.01, 0x30506a, 0.62, DH + 0.068, 0.2, { rotY: -0.18, shadow: false }));
+    // 머그
+    g.add(cyl(0.045, 0.038, 0.085, 10, 0xf6f2e8, -0.62, DH + 0.09, 0.24, { shadow: false }));
+    // PC 본체(책상 아래) + LED
+    var pc = new THREE.Group(); pc.position.set(-1.05, 0, -0.05);
+    pc.add(box(0.3, 0.56, 0.5, 0x1c222a, 0, 0.28, 0, { rough: 0.45, metal: 0.3 }));
+    for (var i = 0; i < 3; i++) pc.add(box(0.02, 0.03, 0.03, 0x5ff0c0, 0.16, 0.4 - i * 0.06, 0.2, { shadow: false, emissive: 0x2fe0b8, ei: 1.4 }));
+    g.add(pc);
+    return g;
+  }
+
+  function buildTradingZone() {
+    var g = new THREE.Group(); scene.add(g); X.trade = g;
+
+    /* 책상 + 의자 */
+    var desk = makeTradingDesk(-10.85, -3.78);
+    g.add(desk); obstacles.push({ x1: -12.45, x2: -9.25, z1: -4.3, z2: -3.3 });
+    X.deskScreens = desk.userData.screens;
+    var chair = makeChair(-10.85, -2.72, Math.PI, 0x3c4553);
+    chair.traverse(function (o) {
+      if (o.material && o.material === mat(0xf0e3cb)) o.material = mat(0x404a58, { rough: 0.85 });
+      if (o.material && o.material === mat(0xd9c8ab)) o.material = mat(0x39424e, { rough: 0.9 });
+    });
+    g.add(chair); obstacles.push({ x1: -11.2, x2: -10.5, z1: -3.1, z2: -2.4 });
+    addSeat('trade0', -10.85, -2.72, Math.PI, 'desk', '트레이딩 데스크');
+
+    /* 서류 캐비닛 + 바인더 */
+    var cab = new THREE.Group(); cab.position.set(-13.5, 0, -3.95);
+    cab.add(box(0.95, 0.72, 0.5, 0x4a4640, 0, 0.36, 0, { rough: 0.7 }));
+    cab.add(box(1.0, 0.04, 0.54, 0x5b564e, 0, 0.74, 0, { rough: 0.6 }));
+    [0, 1, 2].forEach(function (i) {
+      cab.add(box(0.8, 0.16, 0.02, 0x585349, 0, 0.6 - i * 0.2, 0.26, { shadow: false, rough: 0.6 }));
+      cab.add(box(0.16, 0.02, 0.04, 0xc9c2b4, 0, 0.6 - i * 0.2, 0.28, { shadow: false, metal: 0.6, rough: 0.3 }));
+    });
+    for (var b = 0; b < 5; b++) cab.add(box(0.07, 0.28, 0.3, pick([0x8f4f3f, 0x365a72, 0x6a7a58, 0x7a6440, 0x44495e]), -0.32 + b * 0.13, 0.9, 0, { shadow: false, rough: 0.9 }));
+    g.add(cab); obstacles.push({ x1: -14.0, x2: -13.0, z1: -4.25, z2: -3.65 });
+    // 캐비닛 위 작은 여우 피규어
+    var fig = makeFox(); fig.scale.setScalar(0.34); fig.position.set(-13.62, 0.78, -3.92); fig.rotation.y = 0.5; g.add(fig);
+    X.figFox = fig;
+
+    /* 벽면 시황 전광판 */
+    var board = new THREE.Group(); board.position.set(-10.85, 2.35, -4.74);
+    board.add(box(3.24, 1.16, 0.07, 0x121a24, 0, 0, 0, { rough: 0.5, metal: 0.4 }));
+    board.add(box(3.32, 1.24, 0.03, 0x2a333f, 0, 0, -0.03, { shadow: false, rough: 0.5, metal: 0.5 }));
+    var bm = new THREE.MeshStandardMaterial({ map: null, emissive: 0xffffff, emissiveIntensity: 0.78, roughness: 0.35 });
+    var bp = new THREE.Mesh(new THREE.PlaneGeometry(3.1, 1.04), bm);
+    bp.position.z = 0.045; board.add(bp);
+    X.boardMesh = bp; X.boardMat = bm;
+    g.add(board); X.boardGrp = board;
+    addPick(board, 'ticker', '📊 시황 전광판', [-10.85, 3.12, -4.6], [3.3, 1.2, 0.4, 0]);
+    // 전광판 위 스포트
+    var sl = new THREE.PointLight(0x9fe8ff, 0.5, 5.5, 2); sl.position.set(0, 0.7, 0.55); board.add(sl);
+
+    /* 매매 4대 원칙 코르크보드 */
+    var cb = new THREE.Group(); cb.position.set(-13.55, 2.3, -4.74);
+    cb.add(box(1.62, 1.12, 0.06, 0x6a4a2c, 0, 0, 0, { rough: 0.7 }));
+    cb.add(box(1.5, 1.0, 0.02, 0xd8b48b, 0, 0, 0.035, { rough: 0.98 }));
+    var cols = [0xffe9a8, 0xffd2d2, 0xc8e6d4, 0xcfdcff];
+    var labels = ['이슈', '차트', '거래대금', '수급'];
+    for (var i = 0; i < 4; i++) {
+      var cx = -0.55 + (i % 2) * 0.58, cy = 0.34 - Math.floor(i / 2) * 0.34;
+      var card = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.28), new THREE.MeshStandardMaterial({ map: labelTexture(labels[i], '', '#20303c'), color: cols[i], roughness: 0.95 }));
+      card.position.set(cx, cy, 0.05); card.rotation.z = rnd(-0.05, 0.05); cb.add(card);
+      var pin = sph(0.022, 0xd35b4a, cx, cy + 0.13, 0.06, { seg: 6, shadow: false });
+      cb.add(pin);
+    }
+    cb.add(box(0.52, 0.1, 0.01, 0xf5e6c8, 0, -0.46, 0.05, { shadow: false }));
+    g.add(cb);
+    addPick(cb, 'principles', '🗂️ 매매 4대 원칙', [-13.55, 3.02, -4.6], [1.7, 1.25, 0.35, 0]);
+
+    /* 30초 증시 용어 책장 */
+    var ts = new THREE.Group(); ts.position.set(-8.2, 0, -4.5);
+    ts.add(box(1.28, 0.72, 0.46, 0x5c4632, 0, 0.36, 0, { rough: 0.75 }));   // 낮은 캐비닛
+    ts.add(box(1.34, 0.05, 0.5, WOOD_L, 0, 0.74, 0, { rough: 0.5 }));
+    var shelf = makeBookshelf(0, 1.34, 0, 1.24, 0.72, 0.32);
+    shelf.position.set(0, 0, -0.04); ts.add(shelf);
+    // 펼친 책 + 발광 라벨
+    var openBook = new THREE.Group(); openBook.position.set(0, 0.79, 0.12); openBook.rotation.y = 0.1;
+    openBook.add(box(0.36, 0.02, 0.26, 0xfdf6e6, 0, 0, 0, { shadow: false, rough: 0.9 }));
+    openBook.add(box(0.17, 0.012, 0.26, 0xffffff, -0.09, 0.016, 0, { rotY: 0.06, shadow: false, rough: 0.9 }));
+    openBook.add(box(0.17, 0.012, 0.26, 0xffffff, 0.09, 0.016, 0, { rotY: -0.06, shadow: false, rough: 0.9 }));
+    ts.add(openBook);
+    var sign = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.3), new THREE.MeshStandardMaterial({ map: labelTexture('30초 용어', '증시 미니 사전', '#ffcb6b'), emissive: 0xffffff, emissiveMap: labelTexture('30초 용어', '증시 미니 사전', '#ffcb6b'), emissiveIntensity: 0.45, roughness: 0.8 }));
+    sign.position.set(0, 1.68, -0.2); ts.add(sign);
+    g.add(ts); obstacles.push({ x1: -8.85, x2: -7.55, z1: -4.75, z2: -4.2 });
+    addPick(ts, 'terms', '📚 30초 증시 용어', [-8.2, 2.0, -4.3], [1.35, 1.9, 0.5, 0]);
+
+    /* 트로피 자리(상점 해금) */
+    var plinth = box(0.5, 0.9, 0.5, 0x4c443a, -12.6, 0.45, -2.0, { rough: 0.7 });
+    g.add(plinth); obstacles.push({ x1: -12.9, x2: -12.3, z1: -2.3, z2: -1.7 });
+    X.plinth = plinth;
+
+    /* 플로어 램프 */
+    g.add(makeFloorLamp(-9.0, -2.4, 0xffc98e));
+    obstacles.push({ x1: -9.25, x2: -8.75, z1: -2.65, z2: -2.15 });
+    return g;
+  }
+
+  /* ============================================================
+     5. ① 폭스시그널 스튜디오 존
+     ============================================================ */
+  function makeSoftbox(x, z, aim) {
+    var g = new THREE.Group(); g.position.set(x, 0, z);
+    // 스탠드
+    g.add(cyl(0.03, 0.035, 1.9, 8, 0x2b3038, 0, 0.95, 0, { shadow: false, metal: 0.6, rough: 0.4 }));
+    g.add(cyl(0.22, 0.26, 0.03, 12, 0x2b3038, 0, 0.02, 0, { shadow: false, metal: 0.4, rough: 0.5 }));
+    var head = new THREE.Group(); head.position.set(0, 1.86, 0);
+    head.rotation.set(0, aim || 0, 0.06);
+    head.add(box(0.02, 0.02, 0.3, 0x2b3038, 0, 0, -0.15, { shadow: false }));
+    // 사각 소프트박스
+    head.add(box(0.72, 0.72, 0.14, 0x24282e, 0, 0, 0.06, { shadow: false, rough: 0.6 }));
+    var diff = new THREE.Mesh(new THREE.PlaneGeometry(0.66, 0.66), new THREE.MeshBasicMaterial({ color: 0xfff6e2 }));
+    diff.position.z = 0.14; head.add(diff);
+    var led = new THREE.PointLight(0xfff3dc, 0.55, 6, 2); led.position.set(0, 0, 0.35); head.add(led);
+    g.add(head);
+    g.userData.head = head;
+    lamps.push({ light: led, base: 0.55, mesh: diff, meshBase: 1 });
+    return g;
+  }
+
+  function makeMicStand(x, z, rotY) {
+    var g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY || 0;
+    // 삼각 받침
+    g.add(cyl(0.24, 0.26, 0.02, 12, 0x24282e, 0, 0.02, 0, { shadow: false, metal: 0.4, rough: 0.5 }));
+    g.add(cyl(0.022, 0.026, 1.35, 8, 0x30353d, 0, 0.68, 0, { shadow: false, metal: 0.7, rough: 0.35 }));
+    // 붐 암
+    var boom = new THREE.Group(); boom.position.set(0, 1.33, 0); boom.rotation.z = -0.55; boom.rotation.x = 0.18;
+    boom.add(cyl(0.016, 0.016, 0.85, 8, 0x30353d, 0, 0, 0, { shadow: false, metal: 0.7, rough: 0.35 }));
+    boom.add(cyl(0.06, 0.05, 0.05, 10, 0x1d2126, 0, 0.44, 0, { shadow: false, metal: 0.5, rough: 0.4 }));
+    // 마이크
+    var mic = new THREE.Group(); mic.position.set(0, 0.56, 0); mic.rotation.z = 0.9;
+    mic.add(cyl(0.045, 0.045, 0.17, 12, 0x24282e, 0, 0, 0, { rough: 0.4, metal: 0.5 }));
+    mic.add(sph(0.048, 0x9aa4b0, 0, 0.1, 0, { seg: 12, metal: 0.7, rough: 0.3 }));
+    mic.add(cyl(0.02, 0.02, 0.06, 8, 0x24282e, 0, -0.11, 0, { shadow: false }));
+    boom.add(mic);
+    // 팝필터
+    var pf = new THREE.Mesh(new THREE.TorusGeometry(0.1, 0.012, 6, 18), mat(0x1f2328, { rough: 0.7 }));
+    pf.position.set(0, 0.5, 0.17); pf.rotation.x = 0.1; boom.add(pf);
+    var net = new THREE.Mesh(new THREE.CircleGeometry(0.095, 18), new THREE.MeshBasicMaterial({ color: 0x2b3038, transparent: true, opacity: 0.55, side: THREE.DoubleSide }));
+    net.position.set(0, 0.5, 0.17); boom.add(net);
+    g.add(boom);
+    return g;
+  }
+
+  function makeStudioCam(x, z, rotY) {
+    var g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY || 0;
+    // 삼각대
+    g.add(cyl(0.02, 0.02, 1.15, 8, 0x24282e, 0, 0.58, 0, { shadow: false, metal: 0.6, rough: 0.4 }));
+    [0, 2.09, 4.19].forEach(function (a) {
+      var leg = cyl(0.014, 0.014, 0.9, 6, 0x24282e, Math.sin(a) * 0.16, 0.42, Math.cos(a) * 0.16, { shadow: false, metal: 0.6, rough: 0.4 });
+      leg.rotation.z = Math.sin(a) * 0.3; leg.rotation.x = -Math.cos(a) * 0.3; g.add(leg);
+    });
+    var body = new THREE.Group(); body.position.set(0, 1.22, 0);
+    body.add(box(0.24, 0.18, 0.2, 0x1d2229, 0, 0, 0, { rough: 0.45, metal: 0.35 }));
+    body.add(cyl(0.07, 0.075, 0.11, 14, 0x22282f, 0, 0.0, 0.15, { rotX: Math.PI / 2, shadow: false, metal: 0.6, rough: 0.3 }));
+    var lens = new THREE.Mesh(new THREE.CylinderGeometry(0.062, 0.07, 0.03, 16), new THREE.MeshStandardMaterial({ color: 0x2a3f52, roughness: 0.15, metalness: 0.7 }));
+    lens.rotation.x = Math.PI / 2; lens.position.set(0, 0, 0.21); body.add(lens);
+    body.add(sph(0.018, 0xff5f5f, 0.1, 0.07, 0.1, { seg: 6, shadow: false, emissive: 0xff3b3b, ei: 1.8 }));
+    // 작은 모니터
+    body.add(box(0.16, 0.12, 0.02, 0x11161d, 0.2, 0.06, -0.04, { shadow: false, rough: 0.4 }));
+    g.add(body);
+    return g;
+  }
+
+  function buildStudioZone() {
+    var g = new THREE.Group(); scene.add(g); X.studio = g;
+
+    /* 백드롭 패널 (앞면 폼보드 / 뒷면 목재) */
+    var foam = foamTexture(); foam.repeat.set(3, 2);
+    var panel = new THREE.Group(); panel.position.set(-11.35, 0, 1.15);
+    panel.add(box(3.6, 2.3, 0.14, 0x1b2230, 0, 1.15, 0, { rough: 0.9 }));
+    var fp = new THREE.Mesh(new THREE.PlaneGeometry(3.45, 2.2), new THREE.MeshStandardMaterial({ map: foam, roughness: 0.98 }));
+    fp.position.set(0, 1.15, 0.075); panel.add(fp);
+    // 프레임
+    panel.add(box(3.7, 0.08, 0.2, 0x2f2a24, 0, 2.34, 0, { shadow: false, rough: 0.7 }));
+    panel.add(box(0.08, 2.3, 0.2, 0x2f2a24, -1.8, 1.15, 0, { shadow: false, rough: 0.7 }));
+    panel.add(box(0.08, 2.3, 0.2, 0x2f2a24, 1.8, 1.15, 0, { shadow: false, rough: 0.7 }));
+    // 상단 얇은 우드 트림 (정적 로고는 네온사인 해금 자리를 비워 둔다)
+    panel.add(box(3.1, 0.04, 0.02, 0x8f7d68, 0, 2.12, 0.08, { shadow: false, rough: 0.6 }));
+    g.add(panel); obstacles.push({ x1: -13.2, x2: -9.5, z1: 1.0, z2: 1.35 });
+
+    /* ON AIR 사인 */
+    var onair = new THREE.Group(); onair.position.set(-11.35, 2.52, 1.05);
+    onair.add(box(8, 8, 8, 0x000000, 0, 0, 0, { mat: new THREE.MeshBasicMaterial({ visible: false }), shadow: false }));
+    onair.children = [];
+    onair.add(box(0.9, 0.26, 0.08, 0x1a1116, 0, 0, 0, { rough: 0.6 }));
+    var onm = new THREE.Mesh(new THREE.PlaneGeometry(0.84, 0.2), new THREE.MeshStandardMaterial({ map: neonTexture('ON AIR', '#ff5d6c'), emissive: 0xff4455, emissiveIntensity: 0.9, emissiveMap: neonTexture('ON AIR', '#ff5d6c'), roughness: 0.6 }));
+    onm.position.z = 0.05; onair.add(onm);
+    g.add(onair); X.onair = onm;
+
+    /* 진행대 스툴 + 인물 자리 */
+    var st = makeStool(-11.35, 2.72, 0x2f3a48);
+    g.add(st); obstacles.push({ x1: -11.6, x2: -11.1, z1: 2.45, z2: 2.99 });
+    addSeat('studio0', -11.35, 2.72, Math.PI, 'stool', '스튜디오 진행석');
+
+    /* 마이크 · 카메라 · 조명 */
+    g.add(makeMicStand(-11.35, 3.35, 0));
+    obstacles.push({ x1: -11.6, x2: -11.1, z1: 3.1, z2: 3.6 });
+    g.add(makeStudioCam(-11.35, 4.42, Math.PI));
+    obstacles.push({ x1: -11.65, x2: -11.05, z1: 4.15, z2: 4.7 });
+    g.add(makeSoftbox(-13.5, 3.3, 0.9));
+    obstacles.push({ x1: -13.75, x2: -13.25, z1: 3.05, z2: 3.55 });
+    g.add(makeSoftbox(-9.25, 3.95, -0.9));
+    obstacles.push({ x1: -9.5, x2: -9.0, z1: 3.7, z2: 4.2 });
+
+    /* 장비 카트 + 노트북 */
+    var cart = new THREE.Group(); cart.position.set(-13.6, 0, 4.3);
+    cart.add(box(0.8, 0.04, 0.5, 0x3a4048, 0, 0.72, 0, { rough: 0.5, metal: 0.3 }));
+    [[-0.34, -0.2], [0.34, -0.2], [-0.34, 0.2], [0.34, 0.2]].forEach(function (p) {
+      cart.add(cyl(0.018, 0.018, 0.72, 6, 0x2a3038, p[0], 0.36, p[1], { shadow: false }));
+    });
+    cart.add(cyl(0.02, 0.02, 0.9, 6, 0x2a3038, 0.32, 1.16, 0.14, { shadow: false }));
+    cart.add(screenPanel(0.5, 0.32, chartScreen(2, '#9fe8c8'), 0, 0.95, -0.06, 0.3));
+    g.add(cart); obstacles.push({ x1: -14.0, x2: -13.2, z1: 4.05, z2: 4.55 });
+
+    /* 여우 마스코트 (쓰다듬기 가능) */
+    var fox = makeFox(); fox.scale.setScalar(1.2); fox.position.set(-10.3, 0, 3.55); fox.rotation.y = -1.2;
+    scene.add(fox);
+    X.pets.fox = {
+      g: fox, key: 'fox', name: '폭스', home: fox.position.clone(),
+      base: 1.2, bounce: 0, happy: 0, tail: fox.userData.tail, head: fox.userData.head, ears: fox.userData.ears
+    };
+    petHit(fox, 'fox', '🦊 폭스 쓰다듬기', 0.72, 1.0);
+    X.props.fox.badge = new THREE.Vector3(-10.3, 1.42, 3.55);
+
+    /* 바닥 스테이지 마크 */
+    var mark = new THREE.Mesh(new THREE.RingGeometry(0.52, 0.56, 32), new THREE.MeshBasicMaterial({ color: 0x4fe3c1, transparent: true, opacity: 0.28, side: THREE.DoubleSide }));
+    mark.rotation.x = -Math.PI / 2; mark.position.set(-11.35, 0.03, 2.72); g.add(mark);
+
+    return g;
+  }
+
+  /* ============================================================
+     6. 시장 데이터 — 실제 관제탑 API(/api/stock-live) + 브리핑 JSON 폴백
+     ============================================================ */
+  function statusKo(s) {
+    s = String(s || '');
+    if (/CLOSE/i.test(s)) return '장 마감';
+    if (/OPEN|REGULAR/i.test(s)) return '장중';
+    if (/PRE/i.test(s)) return '장전';
+    return s ? s : '';
+  }
+  function normLive(d) {
+    var byKey = {};
+    (d.indices || []).forEach(function (o) { if (o && o.key) byKey[o.key] = o; });
+    var rows = [];
+    if (byKey.KOSPI) rows.push({ n: '코스피', p: byKey.KOSPI.price, c: byKey.KOSPI.change, pct: byKey.KOSPI.changePct, sub: byKey.KOSPI.valueText || '' });
+    if (byKey.KOSDAQ) rows.push({ n: '코스닥', p: byKey.KOSDAQ.price, c: byKey.KOSDAQ.change, pct: byKey.KOSDAQ.changePct, sub: byKey.KOSDAQ.valueText || '' });
+    if (d.fx) rows.push({ n: '원/달러', p: d.fx.price, c: d.fx.change, pct: d.fx.changePct, sub: d.fx.tradedDate ? d.fx.tradedDate + ' 고시' : 'FX' });
+    var fut = (d.futures || []).map(function (f) {
+      return { n: /나스닥/.test(f.name) ? '나스닥100 선물' : (/S&P/.test(f.name) ? 'S&P500 선물' : f.name), p: f.price, c: f.change, pct: f.changePct };
+    });
+    var macro = [];
+    if (d.macro) Object.keys(d.macro).forEach(function (k) {
+      var m = d.macro[k]; if (!m) return;
+      macro.push({ n: m.name || k, p: m.price, c: m.change, pct: m.changePct });
+    });
+    var stocks = (d.stocks || []).slice().sort(function (a, b) {
+      return (Number(b.valueTotal) || Number(b.value) || 0) - (Number(a.valueTotal) || Number(a.value) || 0);
+    }).slice(0, 5).map(function (s) {
+      return { n: s.label || s.name, p: s.price, pct: s.changePct, v: s.valueDispText || s.valueText || '' };
+    });
+    return {
+      src: 'live', stamp: d.generatedAtKst || '', status: statusKo(d.marketStatus),
+      rows: rows, futures: fut, macro: macro, stocks: stocks,
+      note: '네이버 금융 · 한국투자증권(KIS) 실시간 시세 (30초 캐시)'
+    };
+  }
+  function normBrief(d) {
+    return {
+      src: 'briefing', stamp: (d.updatedAt || '').replace('T', ' ').slice(0, 16), status: '브리핑',
+      rows: [], futures: [], macro: [], stocks: [],
+      briefLine: d.summaryLine || '', briefTitle: d.slotLabel || d.title || '',
+      picks: (d.picks || []).slice(0, 3),
+      note: '실시간 시세를 못 받아 관제탑 최신 브리핑(data/latest-briefing.json)을 보여 드려요.'
+    };
+  }
+
+  function drawBoard(ctx, w, h) {
+    var m = X.market;
+    ctx.clearRect(0, 0, w, h);
+    var bg = ctx.createLinearGradient(0, 0, 0, h);
+    bg.addColorStop(0, '#071825'); bg.addColorStop(1, '#030c14');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = 'rgba(79,227,193,.05)';
+    for (var sy = 0; sy < h; sy += 4) ctx.fillRect(0, sy, w, 1);
+    // 헤더
+    ctx.fillStyle = 'rgba(79,227,193,.15)'; ctx.fillRect(0, 0, w, 42);
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#5cf0cd'; ctx.font = 'bold 21px "SF Mono",monospace';
+    ctx.fillText('LIVE · 시황 전광판', 16, 22);
+    ctx.textAlign = 'right'; ctx.font = '15px "SF Mono",monospace'; ctx.fillStyle = '#7fa8bd';
+    ctx.fillText(m ? ((m.stamp || '') + (m.status ? '  ·  ' + m.status : '')) : '데이터 연결 중…', w - 16, 22);
+
+    if (!m) {
+      ctx.textAlign = 'center'; ctx.fillStyle = '#4fe3c1'; ctx.font = 'bold 30px "Noto Sans KR",sans-serif';
+      ctx.fillText('오늘의 시장을 불러오는 중…', w / 2, h * 0.52);
+      ctx.fillStyle = '#8fa8bd'; ctx.font = '17px "Noto Sans KR",sans-serif';
+      ctx.fillText('전광판을 눌러 실시간 지수·수급을 확인하세요', w / 2, h * 0.52 + 34);
+      return;
+    }
+    if (!m.rows.length) {
+      // 브리핑 폴백
+      var line = m.briefLine || '최근 브리핑 요약이 없습니다.';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#9fd8c9'; ctx.font = 'bold 17px "Noto Sans KR",sans-serif';
+      ctx.fillText((m.briefTitle || '최근 브리핑').slice(0, 46), 16, 66);
+      ctx.fillStyle = '#dbe9f2'; ctx.font = '19px "Noto Sans KR",sans-serif';
+      var words = line.split(' '), row = '', y = 104;
+      for (var i = 0; i < words.length; i++) {
+        var test = row + (row ? ' ' : '') + words[i];
+        if (ctx.measureText(test).width > w - 40) { ctx.fillText(row, 16, y); y += 30; row = words[i]; }
+        else row = test;
+        if (y > h - 60) break;
+      }
+      if (row) ctx.fillText(row, 16, y);
+      ctx.fillStyle = '#6f8ba0'; ctx.font = '14px "Noto Sans KR",sans-serif';
+      ctx.fillText(m.note || '', 16, h - 22);
+      return;
+    }
+    // 지수 카드 3개
+    var cw = (w - 4 * 16) / 3;
+    for (var c = 0; c < 3; c++) {
+      var r = m.rows[c];
+      var x0 = 16 + c * (cw + 16), y0 = 56, ch = 150;
+      ctx.fillStyle = 'rgba(12,28,40,.92)'; ctx.fillRect(x0, y0, cw, ch);
+      ctx.strokeStyle = 'rgba(79,227,193,.18)'; ctx.lineWidth = 1.5; ctx.strokeRect(x0 + 0.75, y0 + 0.75, cw - 1.5, ch - 1.5);
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#8fb3c6'; ctx.font = 'bold 17px "Noto Sans KR",sans-serif';
+      ctx.fillText(r ? r.n : '—', x0 + 14, y0 + 26);
+      if (!r) continue;
+      var up = Number(r.c) >= 0;
+      ctx.fillStyle = '#f2fbff'; ctx.font = 'bold 40px "SF Mono",monospace';
+      ctx.fillText(nfmt(r.p, r.n === '원/달러' ? 2 : 2), x0 + 14, y0 + 74);
+      ctx.fillStyle = up ? '#4fe3a6' : '#ff8095'; ctx.font = 'bold 21px "SF Mono",monospace';
+      ctx.fillText((up ? '▲ ' : '▼ ') + nfmt(Math.abs(Number(r.c) || 0), 2) + '  ' + pctTxt(r.pct), x0 + 14, y0 + 108);
+      ctx.fillStyle = '#6f8ba0'; ctx.font = '14px "Noto Sans KR",sans-serif';
+      ctx.fillText(r.sub || '', x0 + 14, y0 + 132);
+    }
+    // 선물·매크로 한 줄
+    var extra = (m.futures || []).concat(m.macro || []);
+    if (extra.length) {
+      ctx.textAlign = 'left';
+      var ex = 16, ey = 232;
+      ctx.font = '15px "SF Mono",monospace';
+      extra.slice(0, 4).forEach(function (f) {
+        var txt = f.n + ' ' + nfmt(f.p, 2) + ' ' + pctTxt(f.pct);
+        var wdt = ctx.measureText(txt).width + 24;
+        if (ex + wdt > w - 16) return;
+        ctx.fillStyle = 'rgba(12,28,40,.92)'; ctx.fillRect(ex, ey - 14, wdt, 26);
+        ctx.fillStyle = Number(f.c) >= 0 ? '#8ff0c8' : '#ff9aab';
+        ctx.fillText(txt, ex + 12, ey);
+        ex += wdt + 8;
+      });
+    }
+    // 거래대금 상위 종목 테이프
+    if (m.stocks && m.stocks.length) {
+      ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(79,227,193,.12)'; ctx.fillRect(0, 268, w, 30);
+      ctx.fillStyle = '#7fd8c4'; ctx.font = 'bold 14px "Noto Sans KR",sans-serif';
+      ctx.fillText('거래대금 상위', 16, 283);
+      var sx = 118;
+      ctx.font = '15px "SF Mono",monospace';
+      m.stocks.forEach(function (s) {
+        var txt = (s.n || '') + ' ' + nfmt(s.p, 0) + ' ' + pctTxt(s.pct);
+        if (sx + ctx.measureText(txt).width > w - 16) return;
+        ctx.fillStyle = Number(s.pct) >= 0 ? '#d9f6ec' : '#ffd3da';
+        ctx.fillText(txt, sx, 283);
+        sx += ctx.measureText(txt).width + 22;
+      });
+    }
+    ctx.textAlign = 'left'; ctx.fillStyle = 'rgba(143,168,189,.75)'; ctx.font = '13px "Noto Sans KR",sans-serif';
+    ctx.fillText((m.note || '') + ' · 클릭하면 자세히', 16, h - 16);
+  }
+
+  function refreshBoard() {
+    if (!X.boardCanvas) return;
+    drawBoard(X.boardCanvas.getContext('2d'), 1024, 352);
+    if (X.boardTexture) X.boardTexture.needsUpdate = true;
+  }
+
+  function fetchMarket() {
+    X.marketTried = Date.now();
+    function okish(d) { return d && (d.ok !== false); }
+    fetch('/api/stock-live', { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) {
+        if (!okish(d) || !(d.indices || []).length) throw new Error('empty');
+        X.market = normLive(d); X.marketErr = ''; refreshBoard();
+        if (MODAL.kind === 'ticker') renderTicker();
+      })
+      .catch(function () {
+        fetch('data/latest-briefing.json', { cache: 'no-store' })
+          .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(function (d) {
+            X.market = normBrief(d); X.marketErr = ''; refreshBoard();
+            if (MODAL.kind === 'ticker') renderTicker();
+          })
+          .catch(function (e) {
+            X.marketErr = String((e && e.message) || e || 'network');
+            refreshBoard();
+            if (MODAL.kind === 'ticker') renderTicker();
+          });
+      });
+  }
+
+  /* ============================================================
+     7. 공용 모달
+     ============================================================ */
+  var MODAL = { kind: '' };
+  function modalOpen(kind, title, body, foot) {
+    var el = $('#m3d'); if (!el) return;
+    MODAL.kind = kind;
+    $('#mTitle').innerHTML = title;
+    $('#mBody').innerHTML = body || '';
+    $('#mFoot').innerHTML = foot || '';
+    el.classList.add('on'); el.setAttribute('aria-hidden', 'false');
+    $('#mBody').scrollTop = 0;
+    if (isNarrow()) closeSheets();
+  }
+  function modalClose() {
+    var el = $('#m3d'); if (!el) return null;
+    el.classList.remove('on'); el.setAttribute('aria-hidden', 'true');
+    MODAL.kind = '';
+    return null;
+  }
+
+  /* ============================================================
+     8. ② 시황 전광판 팝업
+     ============================================================ */
+  function rowHTML(r, isIdx) {
+    var cl = udCol(r.c);
+    return '<div class="mkt-row ' + cl + '">' +
+      '<span class="nm">' + esc(r.n) + '</span>' +
+      '<b class="pv">' + nfmt(r.p, 2) + '</b>' +
+      '<span class="ch">' + (Number(r.c) > 0 ? '▲' : Number(r.c) < 0 ? '▼' : '·') + ' ' + nfmt(Math.abs(Number(r.c) || 0), 2) + '</span>' +
+      '<span class="pc">' + pctTxt(r.pct) + '</span>' +
+      (isIdx && r.sub ? '<span class="sb">' + esc(r.sub) + '</span>' : '') +
+      '</div>';
+  }
+  function renderTicker(force) {
+    if (!force && MODAL.kind !== 'ticker') return;
+    var m = X.market;
+    var head = '<div class="mk-top">' +
+      '<span class="badge ' + (m && m.src === 'live' ? 'on' : 'off') + '">' + (m && m.src === 'live' ? '실시간' : '브리핑 사본') + '</span>' +
+      '<span class="stamp">' + esc(m ? (m.stamp || '') : '') + (m && m.status ? ' · ' + esc(m.status) : '') + '</span></div>';
+    var body;
+    if (X.marketErr && !m) {
+      body = '<div class="mkt-err">지금은 실시간 시세를 받지 못했어요.<br><span>(' + esc(X.marketErr) + ') — 정적 페이지이거나 네트워크가 막혔을 수 있어요. 잠시 뒤 ‘새로고침’을 눌러 주세요.</span></div>';
+    } else if (!m) {
+      body = '<div class="mkt-err">전광판을 켜는 중…</div>';
+    } else if (!m.rows.length) {
+      body = head +
+        '<div class="mkt-brief"><b>' + esc(m.briefTitle || '최근 브리핑') + '</b><p>' + esc(m.briefLine || '요약이 없습니다.') + '</p>' +
+        (m.picks && m.picks.length ? '<div class="mkt-picks">' + m.picks.map(function (p) {
+          return '<span class="pk"><i>' + esc(p.name || '') + '</i><em class="' + udCol(String(p.change || '').indexOf('-') === 0 ? -1 : 1) + '">' + esc(p.price || '') + ' ' + esc(p.change || '') + '</em></span>';
+        }).join('') + '</div>' : '') +
+        '</div><p class="mkt-note">' + esc(m.note || '') + '</p>';
+    } else {
+      body = head + '<div class="mkt-rows">' + m.rows.map(function (r) { return rowHTML(r, true); }).join('') + '</div>';
+      var ex = (m.futures || []).concat(m.macro || []);
+      if (ex.length) body += '<div class="mkt-sub">' + ex.map(function (f) {
+        return '<span class="fx ' + udCol(f.c) + '"><i>' + esc(f.n) + '</i><b>' + nfmt(f.p, 2) + '</b><em>' + pctTxt(f.pct) + '</em></span>';
+      }).join('') + '</div>';
+      if (m.stocks && m.stocks.length) {
+        body += '<div class="mkt-sec">거래대금 상위</div><div class="mkt-tape">' + m.stocks.map(function (s) {
+          return '<div class="tp ' + udCol(s.pct) + '"><span>' + esc(s.n) + '</span><b>' + nfmt(s.p, 0) + '</b><em>' + pctTxt(s.pct) + '</em><u>' + esc(s.v || '') + '</u></div>';
+        }).join('') + '</div>';
+      }
+      body += '<p class="mkt-note">' + esc(m.note || '') + '</p>';
+    }
+    modalOpen('ticker', '📊 오늘의 시황 전광판',
+      body,
+      '<button class="mbtn ghost" data-act="mk-refresh">↻ 새로고침</button><button class="mbtn" data-act="mk-close">닫기</button>');
+  }
+  function openTicker() {
+    renderTicker(true);
+    if (!X.market || Date.now() - X.marketTried > 45000) fetchMarket();
+  }
+
+  /* ============================================================
+     9. ② 매매 4대 원칙 보드 팝업
+     ============================================================ */
+  var PRINCIPLES = [
+    { ic: '📰', t: '이슈 (재료)', q: ['오늘 왜 이 종목인가 — 뉴스·공시가 붙었나?', '재료가 하루짜리인지, 며칠 이어질 재료인지', '이미 다 알려진 재료로 윗꼬리만 남기진 않았나'] },
+    { ic: '📈', t: '차트', q: ['전고점·이평선 위에 있는가', '눌림목인지, 이탈인지 — 자리(가격대)가 좋은가', '거래량이 실린 상승인가'] },
+    { ic: '💵', t: '거래대금 300억↑', q: ['내 기준: 거래대금 300억 이상', '얇은 종목은 다음 날 못 나온다', '거래대금 순증(늘어나는 방향)인지 확인'] },
+    { ic: '⚖️', t: '수급 · 시장분위기', q: ['외국인·기관이 사는 방향인가', '지수 방향·선물·VIX가 우호적인가', '사이드카·급락 같은 위험 신호는 없나'] }
+  ];
+  function openPrinciples() {
+    var cards = PRINCIPLES.map(function (p, i) {
+      return '<div class="pc-card"><div class="pc-h"><span class="no">' + (i + 1) + '</span><b>' + p.ic + ' ' + p.t + '</b></div><ul>' +
+        p.q.map(function (q) { return '<li>' + q + '</li>'; }).join('') + '</ul></div>';
+    }).join('');
+    var timeline = '<div class="tl"><div class="tl-i"><b>17:30</b><span>탐색</span></div><div class="tl-a">→</div>' +
+      '<div class="tl-i hot"><b>19:30~19:50</b><span>매수</span></div><div class="tl-a">→</div>' +
+      '<div class="tl-i"><b>익일 09:00</b><span>매도</span></div></div>';
+    modalOpen('principles', '🗂️ 내 매매 4대 원칙',
+      '<p class="mlead">종가베팅 전에 이 네 칸을 그대로 확인합니다. 하나라도 비면 비중은 0%.</p>' +
+      '<div class="pc-grid">' + cards + '</div>' +
+      '<div class="mkt-sec">실행 타임라인</div>' + timeline +
+      '<p class="mkt-note">정리해 둔 내 기준(이슈·차트·거래대금 300억↑·수급/시장분위기)과 종가베팅 타임라인입니다. 투자 권유가 아니라 판단 보조용 메모예요.</p>',
+      '<button class="mbtn" data-act="mk-close">확인</button>');
+  }
+
+  /* ============================================================
+     10. ② 오늘의 30초 증시 용어 (플래시 카드)
+     ============================================================ */
+  var TERMS = [
+    { t: '사이드카', d: '선물이 급변할 때 프로그램 매매 호가 효력을 5분간 멈추는 제도.', tip: '발동되면 변동성이 커진 날로 봅니다.' },
+    { t: '서킷브레이커', d: '지수가 크게 빠지면 시장 전체 거래를 잠시 멈추는 장치.', tip: '1단계 8% · 2단계 15% · 3단계 20% 기준.' },
+    { t: '동시호가', d: '개장·마감 전 주문을 모아 하나의 가격으로 체결하는 방식.', tip: '종가 동시호가는 15:20~15:30.' },
+    { t: '시간외 단일가', d: '정규장 뒤 15:40~18:00에 10분 단위 단일가로 체결.', tip: '종가베팅의 연장선에서 체결 강도를 봅니다.' },
+    { t: '베이시스', d: '선물 가격에서 현물 지수를 뺀 값.', tip: '플러스면 콘탱고, 마이너스면 백워데이션.' },
+    { t: '백워데이션', d: '선물이 현물보다 낮게 거래되는 상태.', tip: '만기 부담·배당·수급 불안이 겹칠 때 자주 나옵니다.' },
+    { t: 'VIX', d: 'S&P500 옵션 가격으로 계산한 변동성 기대지수.', tip: '오르면 공포가 커진 것으로 읽습니다.' },
+    { t: '체결강도', d: '매수 체결량을 매도 체결량으로 나눈 비율(100% 기준).', tip: '100% 위면 매수가 더 강했다는 뜻.' },
+    { t: '거래대금', d: '하루 동안 체결된 금액의 합계.', tip: '내 기준은 300억 이상 — 얇으면 다음 날 못 나옵니다.' },
+    { t: '수급', d: '외국인·기관·개인이 어느 쪽으로 순매수했는지의 흐름.', tip: '가격보다 하루 먼저 움직이기도 합니다.' },
+    { t: '공매도', d: '주식을 빌려서 팔고 나중에 되사서 갚는 거래.', tip: '주가가 내려야 이익이 납니다.' },
+    { t: '액면분할', d: '주식 수를 늘리고 1주 가격을 낮추는 것.', tip: '거래 접근성이 좋아져 거래대금이 늘기도 합니다.' },
+    { t: '배당락', d: '배당을 받을 권리가 사라지는 날 주가가 배당만큼 조정되는 것.', tip: '배당수익률만 보고 사면 배당락을 놓칩니다.' },
+    { t: '눌림목', d: '상승 추세 중 잠깐 쉬어 가는 조정 자리.', tip: '거래대금이 마르는 눌림이 더 좋습니다.' },
+    { t: '윗꼬리', d: '고가에서 밀려 생긴 긴 위쪽 그림자.', tip: '매도 물량이 나왔다는 흔적으로 읽습니다.' },
+    { t: '야간선물', d: 'KRX에서 밤에 거래되는 국내 지수 선물.', tip: '익일 시가의 방향을 미리 보여줍니다.' }
+  ];
+  function openTerms() {
+    if (X.termI === undefined || X.termI === null) X.termI = Math.floor(Math.random() * TERMS.length);
+    renderTerms();
+  }
+  function renderTerms() {
+    var i = ((X.termI % TERMS.length) + TERMS.length) % TERMS.length;
+    var t = TERMS[i];
+    var dots = '';
+    for (var d = 0; d < TERMS.length; d++) dots += '<i class="' + (d === i ? 'on' : '') + '"></i>';
+    modalOpen('terms', '📚 오늘의 30초 증시 용어',
+      '<div class="term-card"><div class="tc-top"><span class="tc-no">' + (i + 1) + ' / ' + TERMS.length + '</span><span class="tc-badge">30초</span></div>' +
+      '<h4>' + esc(t.t) + '</h4><p>' + esc(t.d) + '</p>' +
+      '<div class="tc-tip"><span>💡</span>' + esc(t.tip) + '</div></div>' +
+      '<div class="term-dots">' + dots + '</div>',
+      '<button class="mbtn ghost" data-act="term-prev">← 이전</button><button class="mbtn" data-act="term-next">다음 카드 →</button>');
+  }
+
+  /* ============================================================
+     11. ③ 코인 · 상점 · 퀴즈 · 미니게임
+     ============================================================ */
+  var eco = {
+    coins: 0, day: '', petDay: '', petAt: {}, brewAt: 0, buffUntil: 0,
+    owned: {}, q: { i: 0, right: 0, wrong: 0 }, qFirst: '', welcome: false, buffGone: false
+  };
+  function loadEco() {
+    var s = store.get('eco', null);
+    if (s && typeof s === 'object') {
+      eco.coins = Math.max(0, Number(s.coins) || 0);
+      eco.day = s.day || '';
+      eco.petDay = s.petDay || '';
+      eco.petAt = (s.petAt && typeof s.petAt === 'object') ? s.petAt : {};
+      eco.brewAt = Number(s.brewAt) || 0;
+      eco.buffUntil = Number(s.buffUntil) || 0;
+      eco.owned = (s.owned && typeof s.owned === 'object') ? s.owned : {};
+      eco.q = (s.q && typeof s.q === 'object') ? { i: Number(s.q.i) || 0, right: Number(s.q.right) || 0, wrong: Number(s.q.wrong) || 0 } : { i: 0, right: 0, wrong: 0 };
+      eco.qFirst = s.qFirst || '';
+      eco.welcome = !!s.welcome;
+      eco.buffGone = !!s.buffGone;
+    }
+  }
+  function saveEco() { store.set('eco', eco); }
+  function coinMult() { return eco.buffUntil > Date.now() ? 2 : 1; }
+  function coinUI() {
+    var n = $('#coinN'); if (n) n.textContent = String(eco.coins);
+    var tag = $('#buffTag');
+    if (tag) {
+      var left = eco.buffUntil - Date.now();
+      if (left > 0) {
+        var mm2 = Math.floor(left / 60000), ss2 = Math.floor((left % 60000) / 1000);
+        tag.textContent = '☕ 2× ' + mm2 + ':' + (ss2 < 10 ? '0' : '') + ss2;
+        tag.classList.add('on');
+      } else tag.classList.remove('on');
+    }
+    var cc = $('#coinChip');
+    if (cc) cc.classList.toggle('buff', eco.buffUntil > Date.now());
+  }
+  function gain(base, why) {
+    var n = Math.max(1, Math.round(base * coinMult()));
+    eco.coins += n; saveEco(); coinUI();
+    toast('+' + n + ' 🪙' + (why ? ' · ' + why : ''), 1700);
+    return n;
+  }
+  function welcomeCoins() {
+    if (eco.welcome) return;
+    eco.welcome = true; eco.coins += 20; saveEco(); coinUI();
+    setTimeout(function () { toast('🎁 첫 방문 웰컴 코인 +20 🪙 · 상점을 열어 보세요', 4200); }, 2600);
+  }
+
+  /* --- 파티클 (하트·김) --- */
+  function hearts(pos, warm) {
+    for (var i = 0; i < 6; i++) {
+      var s = new THREE.Sprite(new THREE.SpriteMaterial({ map: warm ? X.heartWarm : X.heartMint, transparent: true, opacity: 0.95, depthWrite: false }));
+      s.position.copy(pos).add(new THREE.Vector3(rnd(-0.28, 0.28), rnd(0.15, 0.45), rnd(-0.2, 0.2)));
+      s.scale.setScalar(rnd(0.14, 0.26));
+      scene.add(s);
+      X.puffs.push({ o: s, t: -i * 0.05, life: rnd(0.9, 1.5), vy: rnd(0.5, 0.9), sway: rnd(-0.25, 0.25), spin: rnd(-1, 1) });
+    }
+  }
+  function steamBurst(pos) {
+    for (var i = 0; i < 14; i++) {
+      var s = new THREE.Sprite(new THREE.SpriteMaterial({ map: X.puffTex, transparent: true, opacity: 0.42, depthWrite: false }));
+      s.position.copy(pos).add(new THREE.Vector3(rnd(-0.06, 0.06), rnd(0, 0.05), rnd(-0.06, 0.06)));
+      s.scale.setScalar(rnd(0.08, 0.16));
+      scene.add(s);
+      X.puffs.push({ o: s, t: -i * 0.05, life: rnd(1.1, 2.1), vy: rnd(0.22, 0.45), sway: rnd(-0.1, 0.1), spin: 0 });
+    }
+  }
+  function stepPuffs(dt) {
+    for (var i = X.puffs.length - 1; i >= 0; i--) {
+      var p = X.puffs[i]; p.t += dt;
+      if (p.t < 0) continue;
+      var k = p.t / p.life;
+      if (k >= 1) { scene.remove(p.o); X.puffs.splice(i, 1); continue; }
+      p.o.position.y += p.vy * dt;
+      p.o.position.x += p.sway * dt;
+      p.o.material.opacity = (p.life > 1.5 ? 0.42 : 0.95) * (1 - k);
+      var sc = (p.o.scale.x) * (1 + dt * 0.5);
+      p.o.scale.setScalar(sc);
+      if (p.spin) p.o.material.rotation += p.spin * dt * 2;
+    }
+  }
+
+  function floatText(pos, text, ms) {
+    var host = $('#pbubs'); if (!host || !camera) return;
+    var pr = project(pos);
+    if (pr.z > 1) return;
+    var el = document.createElement('div');
+    el.className = 'pbub'; el.textContent = text;
+    el.style.left = pr.x + 'px'; el.style.top = pr.y + 'px';
+    host.appendChild(el);
+    requestAnimationFrame(function () { el.classList.add('on'); });
+    setTimeout(function () { el.classList.remove('on'); setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 300); }, ms || 1600);
+  }
+
+  /* --- 쓰다듬기 --- */
+  function petPet(key) {
+    var p = X.pets[key]; if (!p) return;
+    var now = Date.now();
+    p.bounce = 1; p.happy = now + 1500;
+    var top = p.g.position.clone(); top.y += (key === 'fox' ? 0.95 : 0.55);
+    hearts(top, key === 'fox');
+    var last = Number(eco.petAt[key]) || 0;
+    var wait = 9000 - (now - last);
+    if (wait > 0) {
+      floatText(top.clone().add(new THREE.Vector3(0, 0.2, 0)), pick(['기분 좋아~', '또 쓰다듬어 줘!', '골골송 ♪', '히히']), 1500);
+      return;
+    }
+    eco.petAt[key] = now;
+    var first = eco.petDay !== DAY();
+    if (first) eco.petDay = DAY();
+    var n = gain(first ? 5 : 2, first ? '오늘 첫 쓰다듬기!' : (p.name + ' 쓰다듬기'));
+    floatText(top.clone().add(new THREE.Vector3(0, 0.2, 0)), '+' + n + ' 🪙', 1700);
+  }
+
+  /* --- 커피 --- */
+  function brew() {
+    var now = Date.now();
+    var cd = 25000;
+    if (now - eco.brewAt < cd) {
+      toast('☕ 아직 내리는 중… ' + Math.ceil((cd - (now - eco.brewAt)) / 1000) + '초', 1600);
+      return;
+    }
+    eco.brewAt = now;
+    gain(3, '커피 한 잔');
+    eco.buffUntil = now + 10 * 60 * 1000; eco.buffGone = false;
+    saveEco(); coinUI();
+    steamBurst(new THREE.Vector3(-15.43, 1.0, 4.28));
+    try { chime(); } catch (e) { }
+    floatText(new THREE.Vector3(-15.43, 1.55, 4.3), '☕ 2× 버프!', 2000);
+  }
+
+  /* --- 증시 퀴즈 --- */
+  var QUIZ = [
+    { q: '코스피·코스닥 종가 동시호가는 15:20~15:30에 이뤄진다.', a: ['O', 'X'], i: 0, w: '맞습니다. 장 마감 10분 전 주문을 모아 단일가로 종가를 정합니다.' },
+    { q: '상한가·하한가는 전일 종가 대비 ±30%다.', a: ['O', 'X'], i: 0, w: '맞습니다. 가격제한폭은 ±30%입니다.' },
+    { q: '사이드카는 선물 급변 시 프로그램 매매 호가 효력을 5분간 멈춘다.', a: ['O', 'X'], i: 0, w: '맞습니다. 매매 자체가 멈추는 서킷브레이커와 다릅니다.' },
+    { q: '서킷브레이커는 지수 8% · 15% · 20% 하락에서 단계적으로 발동될 수 있다.', a: ['O', 'X'], i: 0, w: '맞습니다. 1단계 8%, 2단계 15%, 3단계 20%입니다.' },
+    { q: '거래대금이 크면 주가도 반드시 오른다.', a: ['O', 'X'], i: 1, w: '아닙니다. 거래대금은 관심과 자금의 크기일 뿐, 방향은 수급과 가격이 정합니다.' },
+    { q: '외국인 순매수는 외국인이 산 금액에서 판 금액을 뺀 값이다.', a: ['O', 'X'], i: 0, w: '맞습니다. 순매수 = 매수 - 매도.' },
+    { q: '공매도는 주가가 오를 때 수익이 나는 거래다.', a: ['O', 'X'], i: 1, w: '아닙니다. 빌려서 팔고 되사므로 주가가 내려야 이익입니다.' },
+    { q: '베이시스는 선물 가격에서 현물 지수를 뺀 값이다.', a: ['O', 'X'], i: 1, w: '반대입니다. 베이시스 = 선물 - 현물.' },
+    { q: '백워데이션은 선물이 현물보다 낮게 거래되는 상태다.', a: ['O', 'X'], i: 0, w: '맞습니다. 반대는 콘탱고입니다.' },
+    { q: 'VIX가 오르면 시장의 변동성 기대(공포)가 커진 것으로 본다.', a: ['O', 'X'], i: 0, w: '맞습니다. VIX는 S&P500 옵션 기반 변동성 지수입니다.' },
+    { q: '프로그램 매매는 차익거래와 비차익거래로 나뉜다.', a: ['O', 'X'], i: 0, w: '맞습니다. 차익은 선현물 가격차, 비차익은 바스켓 주문입니다.' },
+    { q: 'KRX 시간외 단일가 매매는 15:40~18:00에 10분 단위로 체결된다.', a: ['O', 'X'], i: 0, w: '맞습니다(넥스트레이드 애프터마켓은 20:00까지 별도 운영).' },
+    { q: '체결강도가 100%보다 크면 매수 체결이 매도 체결보다 많았다는 뜻이다.', a: ['O', 'X'], i: 0, w: '맞습니다. 매수 체결량 ÷ 매도 체결량입니다.' },
+    { q: 'PER이 낮으면 무조건 싼 주식이다.', a: ['O', 'X'], i: 1, w: '아닙니다. 업종·성장성·이익의 질에 따라 기준이 다릅니다.' },
+    { q: '액면분할은 주식 수를 늘리고 1주 가격을 낮춘다.', a: ['O', 'X'], i: 0, w: '맞습니다. 기업가치는 그대로, 접근성만 좋아집니다.' },
+    { q: '동시호가 시간에는 시장가 주문을 낼 수 없다.', a: ['O', 'X'], i: 0, w: '맞습니다. 동시호가는 지정가 주문만 받습니다.' },
+    { q: '야간선물은 밤에 국내 주식 현물을 사고팔 수 있는 시장이다.', a: ['O', 'X'], i: 1, w: '아닙니다. 밤에 거래되는 것은 지수 선물(야간 KRX)입니다.' },
+    { q: '내 매매 4대 기준에 들어가지 않는 것은?', a: ['이슈(재료)', '차트', '거래대금', '공매도 잔고'], i: 3, w: '내 4대 기준은 이슈·차트·거래대금(300억↑)·수급/시장분위기입니다.' },
+    { q: '내 종가베팅 타임라인에서 매수 시간대는?', a: ['09:00~09:30', '12:00~13:00', '17:30~19:50', '22:00~23:00'], i: 2, w: '17:30 탐색 → 19:30~19:50 매수 → 익일 09:00 매도가 내 순서입니다.' },
+    { q: '내가 쓰는 거래대금 최소 기준은?', a: ['30억', '100억', '300억', '3,000억'], i: 2, w: '내 기준은 300억 이상입니다. 얇은 종목은 다음 날 못 나옵니다.' },
+    { q: '지수가 8% 빠질 때 발동될 수 있는 것은?', a: ['사이드카', '서킷브레이커 1단계', '상한가', '배당락'], i: 1, w: '1단계 8%에서 시장 전체 거래가 20분 중단됩니다.' },
+    { q: '선물이 현물보다 낮은 상태를 부르는 말은?', a: ['콘탱고', '백워데이션', '괴리율', '베이시스'], i: 1, w: '백워데이션입니다. 반대는 콘탱고.' }
+  ];
+  function openQuiz() { X.qPick = -1; renderQuiz(); }
+  function renderQuiz() {
+    var i = ((eco.q.i % QUIZ.length) + QUIZ.length) % QUIZ.length;
+    var q = QUIZ[i];
+    var picked = X.qPick;
+    var opts = q.a.map(function (o, k) {
+      var cls = 'q-opt';
+      if (picked !== undefined && picked >= 0) {
+        if (k === q.i) cls += ' right';
+        else if (k === picked) cls += ' wrong';
+        else cls += ' dim';
+      }
+      return '<button class="' + cls + '" data-act="q-opt" data-i="' + k + '"><span>' + esc(o) + '</span></button>';
+    }).join('');
+    var done = picked !== undefined && picked >= 0;
+    var correct = done && picked === q.i;
+    var foot = done
+      ? '<button class="mbtn" data-act="q-next">' + (correct ? '정답! 다음 문제 →' : '다음 문제 →') + '</button>'
+      : '<button class="mbtn ghost" data-act="mk-close">그만 풀기</button>';
+    modalOpen('quiz', '🎲 증시 미니 퀴즈',
+      '<div class="q-top"><span class="q-no">Q' + (i + 1) + '/' + QUIZ.length + '</span>' +
+      '<span class="q-stat">오늘 정답 <b>' + (eco.q.right || 0) + '</b> · 연속 <b>' + (X.qStreak || 0) + '</b></span></div>' +
+      '<p class="q-text">' + esc(q.q) + '</p>' +
+      '<div class="q-opts">' + opts + '</div>' +
+      (done ? '<div class="q-why ' + (correct ? 'ok' : 'no') + '">' + (correct ? '⭕ 정답!' : '❌ 아쉬워요') + ' ' + esc(q.w) + '</div>' : '') +
+      '<p class="mkt-note">정답 1개당 5🪙 · 오늘 첫 정답은 보너스 +10🪙 · 커피 버프 중엔 2배</p>',
+      foot);
+  }
+  function answerQuiz(k) {
+    var i = ((eco.q.i % QUIZ.length) + QUIZ.length) % QUIZ.length;
+    var q = QUIZ[i];
+    if (X.qPick !== undefined && X.qPick >= 0) return;
+    X.qPick = k;
+    var ok = k === q.i;
+    if (ok) {
+      eco.q.right = (eco.q.right || 0) + 1;
+      X.qStreak = (X.qStreak || 0) + 1;
+      var first = eco.qFirst !== DAY();
+      if (first) eco.qFirst = DAY();
+      gain(first ? 15 : 5, first ? '오늘 첫 정답 보너스' : '퀴즈 정답');
+    } else {
+      eco.q.wrong = (eco.q.wrong || 0) + 1;
+      X.qStreak = 0;
+      saveEco();
+    }
+    renderQuiz();
+  }
+
+  /* --- 상점 --- */
+  var SHOP = [
+    { k: 'cushion', ic: '🐈', n: '고양이 쿠션', p: 20, d: '라운지 소파에 고양이 쿠션을 놓아요.', at: '라운지 소파' },
+    { k: 'plants', ic: '🪴', n: '화분 세트', p: 25, d: '테라스·스튜디오에 화분 3개를 더 놓아요.', at: '테라스 · 스튜디오' },
+    { k: 'moodlamp', ic: '💡', n: '아치 무드 조명', p: 35, d: '테라스 문가에 은은한 아치 조명.', at: '테라스 입구' },
+    { k: 'curved', ic: '🖥', n: '커브드 와이드 모니터', p: 45, d: '트레이딩 데스크에 49형 커브드 모니터.', at: '트레이딩 데스크' },
+    { k: 'parasol', ic: '⛱', n: '테라스 파라솔', p: 50, d: '티테이블 위로 파라솔을 펼쳐요.', at: '테라스' },
+    { k: 'neon', ic: '🦊', n: '폭스시그널 네온사인', p: 60, d: '스튜디오 백드롭에 네온사인이 켜져요.', at: '스튜디오' },
+    { k: 'trophy', ic: '🏆', n: '골드 트로피', p: 80, d: '트레이딩 존 받침대에 금빛 트로피.', at: '트레이딩 존' }
+  ];
+  function openShop() { renderShop(); }
+  function renderShop() {
+    var cards = SHOP.map(function (it) {
+      var own = !!eco.owned[it.k];
+      var can = eco.coins >= it.p;
+      return '<div class="sh-card' + (own ? ' owned' : '') + '">' +
+        '<div class="sh-ic">' + it.ic + '</div>' +
+        '<div class="sh-body"><b>' + it.n + '</b><span>' + it.d + '</span><em>' + it.at + '</em></div>' +
+        '<button class="sh-buy" data-act="shop-buy" data-k="' + it.k + '"' + (own ? ' disabled' : (!can ? ' disabled' : '')) + '>' +
+        (own ? '보유 중' : '🪙 ' + it.p) + '</button></div>';
+    }).join('');
+    modalOpen('shop', '🪙 코인 상점',
+      '<div class="sh-top"><span>보유 <b>🪙 ' + eco.coins + '</b></span>' +
+      '<span class="sh-hint">쓰다듬기 · 커피 · 퀴즈 · 25분 집중으로 모아요</span></div>' +
+      '<div class="sh-list">' + cards + '</div>',
+      '<button class="mbtn" data-act="mk-close">닫기</button>');
+  }
+  function buyItem(k) {
+    var it = null;
+    for (var i = 0; i < SHOP.length; i++) if (SHOP[i].k === k) it = SHOP[i];
+    if (!it || eco.owned[k]) return;
+    if (eco.coins < it.p) { toast('코인이 ' + (it.p - eco.coins) + '개 부족해요', 1800); return; }
+    eco.coins -= it.p; eco.owned[k] = Date.now(); saveEco(); coinUI();
+    placeItem(k);
+    renderShop();
+    try { chime(); } catch (e) { }
+    toast(it.ic + ' ' + it.n + ' 해금! 공간에 바로 놓았어요', 2600);
+  }
+
+  /* --- 상점 아이템 실제 배치 --- */
+  function placeItem(k) {
+    if (!scene) return;
+    if (k === 'cushion') {
+      var g = new THREE.Group(); g.position.set(-4.42, 0.62, 2.45); g.rotation.y = Math.PI / 2;
+      var cu = sph(0.3, 0xf0e0c8, 0, 0, 0, { seg: 16 }); cu.scale.set(1, 0.42, 1); g.add(cu);
+      g.add(sph(0.17, 0xe8a45c, 0, 0.08, 0.2, { seg: 14 }));
+      g.add(sph(0.08, 0xf6e2c8, 0, 0.02, 0.3, { seg: 10 }));
+      [-0.07, 0.07].forEach(function (sx) {
+        var ear = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.1, 5), mat(0xe8a45c, { rough: 0.9 }));
+        ear.position.set(sx, 0.21, 0.19); g.add(ear);
+      });
+      scene.add(g);
+    } else if (k === 'plants') {
+      [[-14.05, -1.15, 1.05], [-9.05, 4.5, 0.9], [-7.75, 1.75, 0.85]].forEach(function (p) {
+        scene.add(makePlant(p[0], p[1], p[2], 'big'));
+      });
+    } else if (k === 'moodlamp') {
+      var m = new THREE.Group(); m.position.set(-14.05, 0, 2.95);
+      m.add(cyl(0.2, 0.24, 0.04, 16, 0x2f353d, 0, 0.02, 0, { shadow: false, metal: 0.5, rough: 0.4 }));
+      var arm1 = cyl(0.022, 0.022, 1.5, 8, 0x2f353d, 0.02, 0.78, 0, { shadow: false, metal: 0.6, rough: 0.35 });
+      m.add(arm1);
+      var arc = new THREE.Mesh(new THREE.TorusGeometry(0.72, 0.022, 6, 18, Math.PI * 0.62), mat(0x2f353d, { metal: 0.6, rough: 0.35 }));
+      arc.position.set(0.02, 1.52, 0); arc.rotation.z = -0.2; m.add(arc);
+      var shade = cyl(0.2, 0.13, 0.22, 14, 0xfff0d4, 0.62, 1.72, 0, { emissive: 0xffc98a, ei: 1.1, rough: 0.8, shadow: false, side: THREE.DoubleSide });
+      m.add(shade);
+      var pl = new THREE.PointLight(0xffc78e, 0.8, 6, 2); pl.position.set(0.62, 1.66, 0); m.add(pl);
+      lamps.push({ light: pl, base: 0.8, mesh: shade, meshBase: 1.1 });
+      scene.add(m);
+    } else if (k === 'curved') {
+      if (X.deskScreens) X.deskScreens.visible = false;
+      var cm = new THREE.Group(); cm.position.set(-10.85, 1.12, -4.0);
+      var R = 1.75;
+      for (var i = 0; i < 10; i++) {
+        var a = -0.66 + (1.32 * i) / 9;
+        var seg = new THREE.Mesh(new THREE.PlaneGeometry(0.23, 0.66), new THREE.MeshStandardMaterial({ map: X.curvedTex[i % 3], emissive: 0xffffff, emissiveMap: X.curvedTex[i % 3], emissiveIntensity: 0.55, roughness: 0.3 }));
+        seg.position.set(Math.sin(a) * R, 0, R * (1 - Math.cos(a)) - 0.2);
+        seg.rotation.y = a; cm.add(seg);
+      }
+      cm.add(box(2.15, 0.05, 0.1, 0x1a212a, 0, -0.36, 0.2, { shadow: false, rough: 0.4, metal: 0.4 }));
+      cm.add(cyl(0.032, 0.032, 0.24, 8, 0x1a212a, 0, -0.5, 0.12, { shadow: false }));
+      scene.add(cm); X.curved = cm;
+    } else if (k === 'parasol') {
+      var ps = new THREE.Group(); ps.position.set(-17.15, 0, 0.35);
+      ps.add(cyl(0.2, 0.26, 0.1, 14, 0x6b5641, 0, 0.05, 0, { rough: 0.7 }));
+      ps.add(cyl(0.032, 0.045, 2.3, 10, 0x6b5641, 0, 1.2, 0, { shadow: false, rough: 0.6 }));
+      var canopy = new THREE.Mesh(new THREE.ConeGeometry(1.62, 0.5, 10), new THREE.MeshStandardMaterial({ color: 0xefe3cb, roughness: 0.95 }));
+      canopy.position.y = 2.15; canopy.castShadow = true; ps.add(canopy);
+      var skirt = new THREE.Mesh(new THREE.CylinderGeometry(1.62, 1.5, 0.1, 10, 1, true), new THREE.MeshStandardMaterial({ color: 0xe3d2b4, roughness: 0.95, side: THREE.DoubleSide }));
+      skirt.position.y = 1.92; ps.add(skirt);
+      ps.add(sph(0.055, 0xc9795a, 0, 2.44, 0, { seg: 8, shadow: false }));
+      X.parasol = ps;
+      scene.add(ps);
+    } else if (k === 'neon') {
+      var ng = new THREE.Group(); ng.position.set(-11.35, 1.98, 1.28);
+      ng.add(box(1.94, 0.44, 0.05, 0x0e1620, 0, 0, 0, { shadow: false, rough: 0.6 }));
+      var nt = neonTexture('FOX SIGNAL', '#ff7a59');
+      var nm = new THREE.Mesh(new THREE.PlaneGeometry(1.86, 0.38), new THREE.MeshStandardMaterial({ map: nt, emissive: 0xffffff, emissiveMap: nt, emissiveIntensity: 1.15, roughness: 0.45 }));
+      nm.position.z = 0.032; ng.add(nm);
+      var nl = new THREE.PointLight(0xff8a66, 0.65, 4, 2); nl.position.set(0, 0, 0.45); ng.add(nl);
+      lamps.push({ light: nl, base: 0.65, mesh: null, meshBase: 1 });
+      scene.add(ng); X.neon = ng;
+    } else if (k === 'trophy') {
+      var tg = new THREE.Group(); tg.position.set(-12.6, 0.9, -2.0); tg.scale.setScalar(1.55);
+      tg.add(cyl(0.14, 0.16, 0.05, 16, 0x2f2a24, 0, 0.03, 0, { rough: 0.5 }));
+      tg.add(cyl(0.045, 0.06, 0.14, 12, 0xd8b04a, 0, 0.13, 0, { metal: 0.85, rough: 0.25 }));
+      tg.add(box(0.05, 0.05, 0.05, 0xd8b04a, 0, 0.21, 0, { metal: 0.85, rough: 0.25, shadow: false }));
+      var cup = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.09, 0.2, 16, 1, true), new THREE.MeshStandardMaterial({ color: 0xe8c35a, metalness: 0.9, roughness: 0.2, side: THREE.DoubleSide }));
+      cup.position.y = 0.34; tg.add(cup);
+      var base = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.1, 0.02, 16), mat(0xd8b04a, { metal: 0.9, rough: 0.2 })); base.position.y = 0.24; tg.add(base);
+      [-1, 1].forEach(function (sx) {
+        var h = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.014, 6, 12), mat(0xe8c35a, { metal: 0.9, rough: 0.2 }));
+        h.position.set(sx * 0.16, 0.35, 0); h.rotation.y = Math.PI / 2; tg.add(h);
+      });
+      var tl = new THREE.PointLight(0xffd98a, 0.5, 2.2, 2); tl.position.set(0, 0.45, 0); tg.add(tl);
+      lamps.push({ light: tl, base: 0.5, mesh: null, meshBase: 1 });
+      scene.add(tg); X.trophy = tg;
+    }
+  }
+  function applyOwned() {
+    Object.keys(eco.owned).forEach(function (k) { try { placeItem(k); } catch (e) { } });
+  }
+
+  /* ============================================================
+     12. 카메라 프리셋 · 배지 · 상호작용 · 프레임 틱
+     ============================================================ */
+  var _pv = null;
+  function project(v) {
+    if (!_pv) _pv = new THREE.Vector3();
+    _pv.copy(v).project(camera);
+    return { x: (_pv.x * 0.5 + 0.5) * W, y: (-_pv.y * 0.5 + 0.5) * H, z: _pv.z };
+  }
+
+  var ZONES = {
+    all: { label: '전체 보기', th: 0.55, ph: 1.06, r: 0, tx: -6.3, ty: 1.1, tz: 0.3 },
+    trade: { label: '트레이딩 데스크 존', th: 0.58, ph: 0.96, r: 7.2, tx: -10.85, ty: 1.42, tz: -2.5 },
+    studio: { label: '폭스시그널 스튜디오', th: 0.44, ph: 1.0, r: 7.4, tx: -11.2, ty: 1.3, tz: 2.55 },
+    terrace: { label: '야외 테라스', th: 0.64, ph: 1.0, r: 7.0, rn: 5.1, tx: -18.0, ty: 1.15, tz: 0.1 }
+  };
+  function gotoZone(k) {
+    var z = ZONES[k] || ZONES.all;
+    X.zone = ZONES[k] ? k : 'all';
+    var narrow = (W / H) < 0.8;
+    cam.tTheta = z.th;
+    cam.tPhi = clamp(z.ph + (narrow ? 0.06 : 0), 0.56, 1.3);
+    cam.tR = z.r ? (narrow ? (z.rn || z.r * 0.84) : z.r) : (narrow ? 25.5 : 21);
+    cam.tTarget.set(z.tx, z.ty, z.tz);
+    $$('#zones .zp').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-zone') === X.zone); });
+    toast('🎥 ' + z.label, 1500);
+    if (focusMode) { /* 집중 중엔 시점 변경만 */ }
+  }
+
+  function buildBadges() {
+    var host = $('#propBadges'); if (!host) return;
+    Object.keys(X.props).forEach(function (k) {
+      var p = X.props[k];
+      if (!p || !p.label || (!p.badge && !p.follow)) return;
+      var el = document.createElement('button');
+      el.type = 'button'; el.className = 'pbadge'; el.setAttribute('data-k', k);
+      el.innerHTML = '<i>👆</i><span>' + p.label + '</span>';
+      host.appendChild(el);
+      X.badges.push({ el: el, key: k, pos: p.badge || null, follow: p.follow || null });
+    });
+  }
+
+  var _bp = null;
+  function stepBadges() {
+    if (!camera || !X.badges.length) return;
+    var modalNow = MODAL.kind !== '';
+    for (var i = 0; i < X.badges.length; i++) {
+      var b = X.badges[i], p = X.props[b.key];
+      if (!b.pos && !b.follow) continue;
+      if (!_bp) _bp = new THREE.Vector3();
+      if (b.follow) _bp.set(b.follow.position.x, b.follow.position.y + 1.0, b.follow.position.z);
+      else _bp.copy(b.pos);
+      var pr = project(_bp);
+      var vis = !modalNow && pr.z < 1 && pr.x > 10 && pr.x < W - 10 && pr.y > 58 && pr.y < H - 92;
+      b.el.style.opacity = vis ? '1' : '0';
+      b.el.style.pointerEvents = vis ? 'auto' : 'none';
+      if (vis) b.el.style.transform = 'translate(-50%,-100%) translate(' + pr.x.toFixed(1) + 'px,' + pr.y.toFixed(1) + 'px)';
+    }
+  }
+
+  function stepPets(dt, t) {
+    Object.keys(X.pets).forEach(function (k) {
+      var p = X.pets[k]; if (!p || !p.g) return;
+      if (p.bounce > 0) p.bounce = Math.max(0, p.bounce - dt * 1.9);
+      var b = p.bounce, happy = p.happy > Date.now(), base = p.base || 1;
+      var breathe = 1 + Math.sin(t * 1.7 + (k === 'fox' ? 1 : 0)) * 0.012;
+      p.g.scale.set(base * breathe * (1 + b * 0.05), base * breathe * (1 - b * 0.07), base * breathe);
+      if (p.tail) {
+        if (p.tailBase === undefined) p.tailBase = p.tail.rotation.z;
+        if (k !== 'cat' || happy) p.tail.rotation.z = p.tailBase + Math.sin(t * (happy ? 9 : 2.4)) * (happy ? 0.26 : 0.1);
+      }
+      if (p.head) {
+        p.head.rotation.z = happy ? Math.sin(t * 11) * 0.05 : 0;
+        p.head.rotation.x = Math.sin(t * 0.8) * 0.03;
+      }
+      if (happy && p.ears) {
+        p.ears[0].rotation.x = Math.sin(t * 14) * 0.12;
+        p.ears[1].rotation.x = Math.sin(t * 14 + 1) * 0.12;
+      }
+    });
+  }
+
+  function triggerProp(k) {
+    if (k === 'ticker') openTicker();
+    else if (k === 'principles') openPrinciples();
+    else if (k === 'terms') openTerms();
+    else if (k === 'coffee') brew();
+    else if (k === 'fox') petPet('fox');
+    else if (k === 'cat') petPet('cat');
+  }
+
+  var RC = null, NDC = null;
+  function bindHover() {
+    if (!renderer) return;
+    var cv = renderer.domElement, last = 0, tip = $('#ptip');
+    cv.addEventListener('pointermove', function (e) {
+      var now = performance.now(); if (now - last < 80) return; last = now;
+      if (!canRender || dragState || MODAL.kind) { if (tip) tip.classList.remove('on'); return; }
+      if (!RC) { RC = new THREE.Raycaster(); NDC = new THREE.Vector2(); }
+      var rect = cv.getBoundingClientRect();
+      NDC.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      NDC.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      RC.setFromCamera(NDC, camera);
+      var hs = RC.intersectObjects(pickables, false);
+      var ud = hs.length ? hs[0].object.userData : null;
+      var key = (ud && ud.pick === 'prop') ? ud.key : '';
+      cv.style.cursor = key ? 'pointer' : '';
+      if (key && X.props[key] && tip) {
+        tip.textContent = X.props[key].label;
+        tip.style.left = e.clientX + 'px'; tip.style.top = e.clientY + 'px';
+        tip.classList.add('on');
+      } else if (tip) tip.classList.remove('on');
+    });
+    cv.addEventListener('pointerleave', function () { if (tip) tip.classList.remove('on'); });
+  }
+
+  /* ============================================================
+     13. UI 배선
+     ============================================================ */
+  function bindExtUI() {
+    var z = $('#zones');
+    if (z) z.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('.zp') : null;
+      if (!b) return;
+      gotoZone(b.getAttribute('data-zone'));
+    });
+    var cc = $('#coinChip'); if (cc) cc.addEventListener('click', openShop);
+    var qb = $('#dockQuiz'); if (qb) qb.addEventListener('click', openQuiz);
+    var sb = $('#dockShop'); if (sb) sb.addEventListener('click', openShop);
+    var pb = $('#propBadges');
+    if (pb) pb.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('.pbadge') : null;
+      if (!b) return;
+      triggerProp(b.getAttribute('data-k'));
+    });
+    var mc = $('#mClose'); if (mc) mc.addEventListener('click', modalClose);
+    var m = $('#m3d');
+    if (m) m.addEventListener('click', function (e) {
+      if (e.target === m) { modalClose(); return; }
+      var b = e.target.closest ? e.target.closest('[data-act]') : null;
+      if (!b) return;
+      var a = b.getAttribute('data-act');
+      if (a === 'mk-close') modalClose();
+      else if (a === 'mk-refresh') { b.textContent = '↻ 불러오는 중…'; fetchMarket(); setTimeout(renderTicker, 900); }
+      else if (a === 'term-prev') { X.termI = (X.termI - 1 + TERMS.length) % TERMS.length; renderTerms(); }
+      else if (a === 'term-next') { X.termI = (X.termI + 1) % TERMS.length; renderTerms(); }
+      else if (a === 'q-opt') answerQuiz(Number(b.getAttribute('data-i')));
+      else if (a === 'q-next') { eco.q.i = (eco.q.i + 1) % QUIZ.length; X.qPick = -1; saveEco(); renderQuiz(); }
+      else if (a === 'shop-buy') buyItem(b.getAttribute('data-k'));
+    });
+    window.addEventListener('keydown', function (e) {
+      if (e.code === 'Escape' && MODAL.kind) modalClose();
+    });
+    bindHover();
+  }
+
+  /* ============================================================
+     14. 코어 훅
+     ============================================================ */
+  function buildAll() {
+    X.glowTex = glowTexture();
+    X.heartMint = heartTexture('#ff8fa8');
+    X.heartWarm = heartTexture('#ff9f45');
+    X.puffTex = puffTexture();
+    X.curvedTex = [chartScreen(0, '#8fd6ff'), chartScreen(1, '#ffd28a'), chartScreen(2, '#9fe8c8')];
+
+    try { buildShell(); } catch (e) { console.error('[ext] shell', e); }
+    try { buildTerrace(); } catch (e) { console.error('[ext] terrace', e); }
+    try { buildTradingZone(); } catch (e) { console.error('[ext] trading', e); }
+    try { buildStudioZone(); } catch (e) { console.error('[ext] studio', e); }
+
+    if (X.boardMat) {
+      X.boardCanvas = mkCanvas(1024, 352);
+      X.boardTexture = mkTex(X.boardCanvas, false);
+      X.boardMat.map = X.boardTexture;
+      X.boardMat.emissiveMap = X.boardTexture;
+      X.boardMat.needsUpdate = true;
+      refreshBoard();
+    }
+    if (cat) {
+      petHit(cat, 'cat', '🐈 고양이 쓰다듬기', 0.55, 0.62);
+      X.pets.cat = { g: cat, key: 'cat', name: '고양이', base: 0.9, bounce: 0, happy: 0, tail: cat.userData.tail };
+      X.props.cat.follow = cat;
+    }
+    // 윙 쪽 바닥 경계 마감(라운지 ↔ 윙 연결부)
+    var trim = box(0.5, 0.02, 9.6, WOOD_D, -7.1, 0.012, 0, { mat: mat(WOOD_D, { rough: 0.7 }), shadow: false });
+    scene.add(trim);
+    // 라운지와 윙 사이 완충 공간(러그 + 푸프)
+    var rug3 = new THREE.Mesh(new THREE.CircleGeometry(2.15, 40), new THREE.MeshStandardMaterial({ map: rugTexture(), roughness: 0.96 }));
+    rug3.rotation.x = -Math.PI / 2; rug3.position.set(-5.6, 0.013, 0.2); rug3.receiveShadow = true; scene.add(rug3);
+    [-1.15, 1.55].forEach(function (pz, i) {
+      var pf = new THREE.Group(); pf.position.set(-5.9, 0, pz);
+      pf.add(cyl(0.36, 0.33, 0.34, 20, i ? 0xd8c8ac : 0xc9b48f, 0, 0.17, 0, { rough: 0.95 }));
+      var top = sph(0.36, i ? 0xe6d8c1 : 0xd8c6a8, 0, 0.33, 0, { seg: 16 }); top.scale.set(1, 0.28, 1); pf.add(top);
+      scene.add(pf);
+      obstacles.push({ x1: -6.3, x2: -5.5, z1: pz - 0.4, z2: pz + 0.4 });
+    });
+  }
+
+  window.__extBuild = function () {
+    if (X.built) return;
+    X.built = true;
+    try { buildAll(); } catch (e) { console.error('[ext] build', e); }
+  };
+
+  window.__extAfter = function () {
+    if (X.after) return;
+    X.after = true;
+    loadEco(); coinUI();
+    try { buildBadges(); } catch (e) { console.error('[ext] badges', e); }
+    try { bindExtUI(); } catch (e) { console.error('[ext] ui', e); }
+    try { applyOwned(); } catch (e) { console.error('[ext] owned', e); }
+    welcomeCoins();
+    fetchMarket();
+    gotoZone('all');
+    var h = $('#hint');
+    if (h) h.textContent = '구역 버튼으로 이동 · 소품 배지를 눌러 인사이트 · 여우·고양이를 쓰다듬어 코인';
+    var helpUl = document.querySelector('#help .box ul');
+    if (helpUl) {
+      var li = document.createElement('li');
+      li.innerHTML = '<b>구역 이동</b> — 아래 <b>전체·트레이딩·스튜디오·테라스</b> 버튼으로 카메라가 이동합니다. 테라스는 유리문으로 걸어 나갈 수도 있어요.';
+      helpUl.appendChild(li);
+      var li2 = document.createElement('li');
+      li2.innerHTML = '<b>인사이트 소품</b> — 시황 전광판(실시간 지수) · 매매 4대 원칙 보드 · 30초 용어 사전을 누르면 열립니다.';
+      helpUl.appendChild(li2);
+      var li3 = document.createElement('li');
+      li3.innerHTML = '<b>미니게임</b> — 여우·고양이 쓰다듬기, 테라스 커피 머신, 증시 퀴즈로 코인을 모아 상점에서 소품을 해금하세요.';
+      helpUl.appendChild(li3);
+    }
+  };
+
+  var _lastUI = 0;
+  window.__extTick = function (dt, now) {
+    if (!X.after) return;
+    var t = now / 1000;
+    try {
+      stepPuffs(dt);
+      stepPets(dt, t);
+      stepBadges();
+      if (X.terraceSun) X.terraceSun.intensity = isNight ? 0.14 : 0.55;
+      if (X.onair) X.onair.material.emissiveIntensity = 0.65 + Math.sin(t * 1.7) * 0.35;
+      if (X.coffeeLed) X.coffeeLed.material.emissiveIntensity = 1.0 + Math.sin(t * 2.6) * 0.5;
+      if (X.bulbs) X.bulbs.children.forEach(function (b, i) { b.material.emissiveIntensity = 1.1 + Math.sin(t * 1.4 + i * 0.7) * 0.35; });
+      if (X.neon) X.neon.children.forEach(function (o) { if (o.isMesh && o.material && o.material.emissiveIntensity) o.material.emissiveIntensity = 1.0 + Math.sin(t * 3.1) * 0.12; });
+    } catch (e) { }
+    if (now - _lastUI > 1000) {
+      _lastUI = now;
+      coinUI();
+      if (eco.buffUntil && Date.now() > eco.buffUntil && !eco.buffGone) {
+        eco.buffGone = true; saveEco(); coinUI();
+        toast('☕ 카페인 버프가 끝났어요', 2000);
+      }
+    }
+  };
+
+  window.__extSessionDone = function () {
+    if (!X.after) return;
+    try {
+      gain(10, '25분 집중 완료');
+      if (me) hearts(new THREE.Vector3(me.g.position.x, 1.7, me.g.position.z), true);
+    } catch (e) { }
+  };
+
+  /* 테스트/자동화 훅 */
+  X.api = {
+    zone: gotoZone, prop: triggerProp, shop: openShop, quiz: openQuiz, terms: openTerms,
+    state: function () {
+      return {
+        zone: X.zone, coins: eco.coins, owned: Object.keys(eco.owned),
+        props: Object.keys(X.props), pets: Object.keys(X.pets),
+        market: X.market ? (X.market.src + ':' + X.market.rows.length) : 'none',
+        err: X.marketErr, modal: MODAL.kind, badges: X.badges.length,
+        buff: Math.max(0, eco.buffUntil - Date.now()), petDay: eco.petDay,
+        seats: seats.length, obstacles: obstacles.length, pickables: pickables.length,
+        owned3d: { curved: !!X.curved, neon: !!X.neon, trophy: !!X.trophy }
+      };
+    },
+    give: function (n) { eco.coins += Number(n) || 0; saveEco(); coinUI(); return eco.coins; },
+    term: function (i) { X.termI = i; renderTerms(); },
+    q: function (k) { answerQuiz(k); },
+    brew: brew, pet: petPet, modalClose: modalClose, zones: ZONES,
+    path: function (x, z) {
+      var pth = findPath(new THREE.Vector3(me.g.position.x, 0, me.g.position.z), new THREE.Vector3(x, 0, z));
+      return pth.map(function (v) { return [+v.x.toFixed(2), +v.z.toFixed(2)]; });
+    },
+    deskScreens: function () { return X.deskScreens ? X.deskScreens.visible : null; },
+    termsCount: TERMS.length, quizCount: QUIZ.length, shopCount: SHOP.length
+  };
+})();
 
 </script>
 </body>
