@@ -581,6 +581,12 @@ body.focus #vignette{opacity:1}
   font-size:10.5px; font-weight:800}
 .sh-buy:disabled{opacity:.45; background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.1); color:#93a6b8}
 .sh-buy:not(:disabled):active{transform:scale(.97)}
+.sh-all{display:block; width:100%; height:38px; margin:0 0 9px; border-radius:11px;
+  background:linear-gradient(180deg,#ffd98a,#efb04a); border:1px solid rgba(255,217,138,.5); color:#3a2a10;
+  font-size:12px; font-weight:800; letter-spacing:-.2px}
+.sh-all:hover{filter:brightness(1.05)}
+.sh-all:active{transform:scale(.985)}
+.sh-all:disabled{opacity:.5; background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.1); color:#93a6b8}
 
 /* 반응형 */
 @media (max-width:900px){
@@ -4368,6 +4374,8 @@ if (document.readyState === 'loading') {
   /* ============================================================
      11. ③ 코인 · 상점 · 퀴즈 · 미니게임
      ============================================================ */
+  /* 상점 아이템은 전부 살 수 있게 — 코인 무제한 모드 (사용자 요청) */
+  var UNLIMITED = true;
   var eco = {
     coins: 0, day: '', petDay: '', petAt: {}, brewAt: 0, buffUntil: 0,
     owned: {}, q: { i: 0, right: 0, wrong: 0 }, qFirst: '', welcome: false, buffGone: false
@@ -4391,7 +4399,7 @@ if (document.readyState === 'loading') {
   function saveEco() { store.set('eco', eco); }
   function coinMult() { return eco.buffUntil > Date.now() ? 2 : 1; }
   function coinUI() {
-    var n = $('#coinN'); if (n) n.textContent = String(eco.coins);
+    var n = $('#coinN'); if (n) n.textContent = UNLIMITED ? '\u221e' : String(eco.coins);
     var tag = $('#buffTag');
     if (tag) {
       var left = eco.buffUntil - Date.now();
@@ -4583,19 +4591,26 @@ if (document.readyState === 'loading') {
     { k: 'trophy', ic: '🏆', n: '골드 트로피', p: 80, d: '트레이딩 존 받침대에 금빛 트로피.', at: '트레이딩 존' }
   ];
   function openShop() { renderShop(); }
+  function ownedCount() {
+    var c = 0;
+    for (var i = 0; i < SHOP.length; i++) if (eco.owned[SHOP[i].k]) c++;
+    return c;
+  }
   function renderShop() {
+    var left = SHOP.length - ownedCount();
     var cards = SHOP.map(function (it) {
       var own = !!eco.owned[it.k];
-      var can = eco.coins >= it.p;
+      var can = UNLIMITED || eco.coins >= it.p;
       return '<div class="sh-card' + (own ? ' owned' : '') + '">' +
         '<div class="sh-ic">' + it.ic + '</div>' +
         '<div class="sh-body"><b>' + it.n + '</b><span>' + it.d + '</span><em>' + it.at + '</em></div>' +
         '<button class="sh-buy" data-act="shop-buy" data-k="' + it.k + '"' + (own ? ' disabled' : (!can ? ' disabled' : '')) + '>' +
-        (own ? '보유 중' : '🪙 ' + it.p) + '</button></div>';
+        (own ? '보유 중' : (UNLIMITED ? '해금' : '🪙 ' + it.p)) + '</button></div>';
     }).join('');
     modalOpen('shop', '🪙 코인 상점',
-      '<div class="sh-top"><span>보유 <b>🪙 ' + eco.coins + '</b></span>' +
-      '<span class="sh-hint">쓰다듬기 · 커피 · 퀴즈 · 25분 집중으로 모아요</span></div>' +
+      '<div class="sh-top"><span>보유 <b>🪙 ' + (UNLIMITED ? '\u221e 무제한' : eco.coins) + '</b></span>' +
+      '<span class="sh-hint">' + (UNLIMITED ? '무제한 모드 — 모든 아이템을 그냥 해금할 수 있어요' : '쓰다듬기 · 커피 · 퀴즈 · 25분 집중으로 모아요') + '</span></div>' +
+      '<button class="sh-all" data-act="shop-all"' + (left ? '' : ' disabled') + '>✨ 전부 구매하기' + (left ? ' (' + left + '개)' : ' · 모두 보유') + '</button>' +
       '<div class="sh-list">' + cards + '</div>',
       '<button class="mbtn" data-act="mk-close">닫기</button>');
   }
@@ -4603,12 +4618,29 @@ if (document.readyState === 'loading') {
     var it = null;
     for (var i = 0; i < SHOP.length; i++) if (SHOP[i].k === k) it = SHOP[i];
     if (!it || eco.owned[k]) return;
-    if (eco.coins < it.p) { toast('코인이 ' + (it.p - eco.coins) + '개 부족해요', 1800); return; }
-    eco.coins -= it.p; eco.owned[k] = Date.now(); saveEco(); coinUI();
+    if (!UNLIMITED && eco.coins < it.p) { toast('코인이 ' + (it.p - eco.coins) + '개 부족해요', 1800); return; }
+    if (!UNLIMITED) eco.coins = Math.max(0, eco.coins - it.p);
+    eco.owned[k] = Date.now(); saveEco(); coinUI();
     placeItem(k);
     renderShop();
     try { chime(); } catch (e) { }
     toast(it.ic + ' ' + it.n + ' 해금! 공간에 바로 놓았어요', 2600);
+  }
+
+  function buyAll() {
+    var n = 0;
+    for (var i = 0; i < SHOP.length; i++) {
+      var it = SHOP[i];
+      if (eco.owned[it.k]) continue;
+      if (!UNLIMITED && eco.coins < it.p) continue;
+      if (!UNLIMITED) eco.coins = Math.max(0, eco.coins - it.p);
+      eco.owned[it.k] = Date.now(); n++;
+      try { placeItem(it.k); } catch (e) { }
+    }
+    saveEco(); coinUI(); renderShop();
+    if (!n) { toast('이미 모든 아이템을 보유하고 있어요', 2200); return; }
+    try { chime(); } catch (e) { }
+    toast('✨ 아이템 ' + n + '개 전부 해금! 공간에 바로 놓았어요', 2900);
   }
 
   /* --- 상점 아이템 실제 배치 --- */
@@ -4843,6 +4875,7 @@ if (document.readyState === 'loading') {
       else if (a === 'q-opt') answerQuiz(Number(b.getAttribute('data-i')));
       else if (a === 'q-next') { eco.q.i = (eco.q.i + 1) % QUIZ.length; X.qPick = -1; saveEco(); renderQuiz(); }
       else if (a === 'shop-buy') buyItem(b.getAttribute('data-k'));
+      else if (a === 'shop-all') buyAll();
     });
     window.addEventListener('keydown', function (e) {
       if (e.code === 'Escape' && MODAL.kind) modalClose();
@@ -4920,7 +4953,7 @@ if (document.readyState === 'loading') {
       li2.innerHTML = '<b>인사이트 소품</b> — 시황 전광판(실시간 지수) · 매매 4대 원칙 보드 · 30초 용어 사전을 누르면 열립니다.';
       helpUl.appendChild(li2);
       var li3 = document.createElement('li');
-      li3.innerHTML = '<b>미니게임</b> — 여우·고양이 쓰다듬기, 테라스 커피 머신, 증시 퀴즈로 코인을 모아 상점에서 소품을 해금하세요.';
+      li3.innerHTML = '<b>미니게임</b> — 여우·고양이 쓰다듬기, 테라스 커피 머신, 증시 퀴즈로 코인을 모아요. 상점은 코인 무제한이라 <b>전부 구매하기</b> 한 번이면 모든 소품이 해금됩니다.';
       helpUl.appendChild(li3);
     }
   };
@@ -4962,7 +4995,7 @@ if (document.readyState === 'loading') {
     zone: gotoZone, prop: triggerProp, shop: openShop, quiz: openQuiz, terms: openTerms,
     state: function () {
       return {
-        zone: X.zone, coins: eco.coins, owned: Object.keys(eco.owned),
+        zone: X.zone, coins: eco.coins, unlimited: UNLIMITED, owned: Object.keys(eco.owned),
         props: Object.keys(X.props), pets: Object.keys(X.pets),
         market: X.market ? (X.market.src + ':' + X.market.rows.length) : 'none',
         err: X.marketErr, modal: MODAL.kind, badges: X.badges.length,
