@@ -4526,7 +4526,7 @@
     </div>
     <div class="header-actions" style="display:flex; gap:6px; flex-wrap:wrap;">
       <button class="btn-action" style="background:#2a1215; color:#fda4af; border-color:#f43f5e; font-weight:800; cursor:pointer;" onclick="lockDashboard()" title="보안 잠금">🔒 잠금</button>
-      <a href="checker.html" class="btn-action" style="background:#3b1220; color:#fde8c8; border-color:#c9a25e; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;" title="내 종목 300억·테마·재료 1초 체커">🔍 1초 체커</a>
+      <a href="checker.html" class="btn-action" style="background:#3b1220; color:#fde8c8; border-color:#c9a25e; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;" title="내 종목 수급·테마 1초 체커">🔍 1초 체커</a>
       <a href="deals.html" class="btn-action" style="background:#022c22; color:#6ee7b7; border-color:#10b981; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;">✈️ 특가 레이더</a>
       <a href="saju.html" class="btn-action" style="background:#1f1235; color:#e9d5ff; border-color:#a78bfa; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;" title="사주·운세 (명리 풀업그레이드)">🔮 사주·운세</a>
       <a href="preview-content-v2.html" class="btn-action" style="background:#1b1234; color:#d8b4fe; border-color:#a855f7; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;">✍️ 콘텐츠</a>
@@ -13817,7 +13817,7 @@
     <div class="chip-note" id="hiChipNote">—</div>
     <div class="stock-grid" id="hiStockGrid"></div>
     <div class="tl-next" style="margin-top:7px">
-      ※ 11/20 종가 실측 복기이고 <b>매수 신호가 아닙니다</b>. 배지는 그 종목이 11/13에 어느 단계였는지 —
+      ※ 11/20 종가 실측 복기이고 <b>매수 신호가 아닙니다</b>. 배지는 그 종목이 기준일(직전 거래일 종가)에 어느 단계였는지 —
       <b>D+0 기준봉</b>(전고점 돌파 장대양봉) · <b>D+1 눌림</b>(기준봉 다음 날) · <b>D+2 연장</b>(D+1 종가 +2%↑ 유지) · <b>근접</b>(6단계 1~2개 미달)입니다.
     </div>
   </section>
@@ -13910,7 +13910,7 @@
       </div>
       <div class="guide-caption">
         <b>「홍인기 D+0 · D+1 매매법 한눈에 보기」</b><br>
-        종목선정 6단계 → 1분봉 5단 타점 → 매도·손절 4트리거. PDF 4페이지 + 영상 1편에서 <b>화면·자막·차트로 확인된 것만</b> 담았습니다. 도해 안의 가격은 <b>개념 설명용</b>이고, 카드 수치는 <b>2026-11/11~11/13 실제 일봉</b>입니다.
+        종목선정 6단계 → 1분봉 5단 타점 → 매도·손절 4트리거. PDF 4페이지 + 영상 1편에서 <b>화면·자막·차트로 확인된 것만</b> 담았습니다. 도해 안의 가격은 <b>개념 설명용</b>이고, 카드 수치는 <b>최근 3거래일(11/18~11/20) 실제 일봉</b>입니다.
         <div style="margin-top:7px;display:flex;gap:6px;flex-wrap:wrap">
           <button class="hi-btn-action" style="background:#1b1234;color:#d8b4fe;border-color:#a855f7" onclick="HonginkiTab.openGuide()">📐 크게 보기</button>
           <a class="hi-btn-action" href="assets/honginki-guide.png" target="_blank" rel="noopener" style="background:#0f172a;color:#7dd3fc">↗ 원본 새 창</a>
@@ -15895,23 +15895,31 @@ function openDetail(title, v1, v2, desc) {
         } catch (eRisk) { /* 진단 실패가 모달 열기를 막지 않는다 */ }
 
         // 4. Match Stock Code & Update Deep Links
-        var matchedCode = '005930';
-        var sCodes = window.stockCodes || {};
-        for (var name in sCodes) {
-          if (title.indexOf(name) !== -1 || desc.indexOf(name) !== -1) {
-            matchedCode = sCodes[name];
-            break;
+        //    · 코드를 못 찾았을 때 '005930'(삼성전자)으로 넘겨 다른 종목을 열던 기본값 제거(2026-11-22).
+        //    · 이름 부분일치도 금지 — 정확히 같은 이름만 코드로 이어 준다.
+        var matchedCode = null;
+        try {
+          matchedCode = (typeof checkerCodeOf === 'function') ? checkerCodeOf(title, desc || '') : null;
+        } catch (eCode) { matchedCode = null; }
+        if (!matchedCode) {
+          var sCodes = window.stockCodes || {};
+          var exactTitle = String(title || '').replace(/\s*\(\d{6}\)\s*$/, '').trim();
+          for (var name in sCodes) {
+            if (!name || name.length < 2) continue;
+            if (String(title || '') === name || exactTitle === name) { matchedCode = sCodes[name]; break; }
           }
         }
         var btnNaver = document.getElementById('btnNaverQuote');
         var btnToss = document.getElementById('btnTossQuote');
         if (btnNaver) {
           btnNaver.innerText = '📊 네이버 증권 1초 실시간 호가창';
-          btnNaver.href = 'https://m.stock.naver.com/item/' + matchedCode;
+          btnNaver.href = matchedCode ? ('https://m.stock.naver.com/item/' + matchedCode) : 'https://m.stock.naver.com/';
+          btnNaver.style.display = matchedCode ? '' : 'none';
         }
         if (btnToss) {
           btnToss.innerText = '📱 토스증권 실시간 차트';
-          btnToss.href = 'https://tossinvest.com/stocks/' + matchedCode;
+          btnToss.href = matchedCode ? ('https://tossinvest.com/stocks/' + matchedCode) : 'https://tossinvest.com/';
+          btnToss.style.display = matchedCode ? '' : 'none';
         }
 
         // 5. Open Modal
@@ -15921,6 +15929,8 @@ function openDetail(title, v1, v2, desc) {
         setTimeout(function() {
           renderUniversalModalChart(null, title);
           try { window.renderModalRS(); } catch (eRs) { /* RS 실패가 모달을 막지 않는다 */ }
+          /* 내장 DB(직전 스냅샷)로 먼저 그린 뒤, 코드를 알면 /api/stock-chart 실측 일봉으로 교체 */
+          try { window.loadStockModalCandles(title, matchedCode); } catch (eC) { /* 실패해도 모달은 그대로 */ }
         }, 60);
       } catch (err) {
         console.error("Error in master openDetail:", err);
@@ -15955,7 +15965,7 @@ function openDetail(title, v1, v2, desc) {
             "에스켐(OLED 소재) 일반 공모청약 2일차 마감 (한국투자증권, 환불일 11/14)",
             "<a href='https://m.stock.naver.com/ipo' target='_blank' style='color:#38bdf8; font-weight:700;'>🔗 [네이버 증권 IPO] 에스켐 청약 경쟁률 확인 &rsaquo;</a>"
           ] },
-          { date: "11/13 (금) 오늘 ⭐", events: [
+          { date: "11/13 (금)", events: [
             "미국 10월 PPI(생산자물가지수) 발표 (22:30)",
             "주간 결산 마감 및 외국인·기관 프로그램 수급 리밸런싱",
             "🚀 닷밀(dotmill) 글로벌 실감미디어 전문기업 코스닥 신규 상장 (미래에셋증권, 확정공모가 13,000원)",
@@ -18521,34 +18531,22 @@ window.DAILY_500_CANDLES = {"451760":[["20251105",8460.0,8500.0,8200.0,8280.0,72
       var cleanTitle = (title || '').replace(/[★👑🎯🏆⚡\[\]()0-9.,%+원]/g, '').replace(/상한가|대장|수혜|원탑|상|주의|경보|돌파|안착/g, '').trim();
 
       var matchedName = null;
-      if (cleanTitle && db[cleanTitle]) {
+      /* ① 제목에 적힌 6자리 종목코드가 내장 DB에 있으면 그것이 가장 확실하다.
+            (이름 부분일치로 'HLB'가 'HLB생명과학'을 잡아 다른 종목 차트를 그리던 문제 — 2026-11-22 수리) */
+      var codeM = String(title || '').match(/\((\d{6})\)/);
+      if (codeM && db[codeM[1]]) matchedName = codeM[1];
+      if (!matchedName && cleanTitle && db[cleanTitle]) {
         matchedName = cleanTitle;
-      } else if (title && db[title]) {
+      } else if (!matchedName && title && db[title]) {
         matchedName = title;
-      } else if (seriesKey && db[seriesKey]) {
+      } else if (!matchedName && seriesKey && db[seriesKey]) {
         matchedName = seriesKey;
       }
 
+      /* ② 종목명 → 코드 표에서 '이름이 정확히 같을 때'만 코드로 이어 준다(부분 일치 금지) */
       if (!matchedName) {
-        for (var name in codes) {
-          if ((cleanTitle && (cleanTitle.indexOf(name) !== -1 || name.indexOf(cleanTitle) !== -1)) ||
-              (title && (title.indexOf(name) !== -1 || name.indexOf(title) !== -1))) {
-            var c = codes[name];
-            if (db[c]) { matchedName = c; break; }
-            if (db[name]) { matchedName = name; break; }
-          }
-        }
-      }
-
-      if (!matchedName) {
-        for (var sName in db) {
-          if ((cleanTitle && (cleanTitle.indexOf(sName) !== -1 || sName.indexOf(cleanTitle) !== -1)) ||
-              (title && (title.indexOf(sName) !== -1 || sName.indexOf(title) !== -1)) ||
-              (seriesKey && seriesKey.toUpperCase().indexOf(sName.toUpperCase()) !== -1)) {
-            matchedName = sName;
-            break;
-          }
-        }
+        var exactName = cleanTitle || title;
+        if (exactName && codes[exactName] && db[codes[exactName]]) matchedName = codes[exactName];
       }
 
       if (matchedName && db[matchedName] && db[matchedName].length > 0) {
@@ -18579,6 +18577,41 @@ window.DAILY_500_CANDLES = {"451760":[["20251105",8460.0,8500.0,8200.0,8280.0,72
       setupModalCanvasInteraction();
       drawModalCandles();
     }
+
+    /* 종목 모달 전용 — /api/stock-chart 실측 일봉(최대 250봉)으로 차트를 교체한다.
+       내장 DB 는 스냅샷(11/13)이라 현재가와 축이 어긋나므로, 코드를 아는 종목은 실측을 우선한다. */
+    var stockModalReqId = 0;
+    function loadStockModalCandles(title, code) {
+      if (!code) return;
+      stockModalReqId += 1;
+      var reqId = stockModalReqId;
+      fetch('/api/stock-chart?code=' + encodeURIComponent(code) + '&count=250', { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (reqId !== stockModalReqId) return;                 /* 그 사이 다른 종목을 열었으면 버린다 */
+          if (!j || j.ok !== true || !j.candles || !j.candles.length) return;
+          var arr = j.candles.map(function (c) {
+            return { date: c.date, open: c.o, high: c.h, low: c.l, close: c.c, vol: c.v };
+          });
+          if (!arr.length) return;
+          modalAllCandles = arr;
+          modalViewCount = Math.min(60, arr.length);
+          modalViewOffset = 0;
+          try { setModalValueUnit('원', 0); } catch (eU) {}
+          try { modalClearNotice(); } catch (eN) {}
+          var tt = document.getElementById('modalChartTitleTxt');
+          if (tt) tt.textContent = '📊 실측 일봉 ' + arr.length + '봉 · ' + (j.name || title || '');
+          var tr = document.getElementById('modalChartTrend');
+          var last = arr[arr.length - 1];
+          var dLbl = String(last.date || '');
+          if (dLbl.length === 8) dLbl = dLbl.slice(4, 6) + '/' + dLbl.slice(6, 8);
+          if (tr) tr.textContent = dLbl + ' 종가 ' + Math.round(last.close).toLocaleString('ko-KR') + '원 · ' + arr.length + '봉';
+          try { setupModalCanvasInteraction(); } catch (eI) {}
+          try { drawModalCandles(); } catch (eD) {}
+        })
+        .catch(function () { /* 실패하면 이미 그려진 상태를 그대로 둔다 */ });
+    }
+    window.loadStockModalCandles = loadStockModalCandles;
 
     window.openIndexChart = openIndexChart;
 
@@ -19198,6 +19231,7 @@ const DAYLBL = (DATA.days || []).map(function (d) { var s = String(d); return s.
 const L0 = DAYLBL[0] || '', L1 = DAYLBL[1] || '', L2 = DAYLBL[2] || '';
 const L_BASE = DATA.basisLongLabel || '';
 const NEXT_S = DATA.nextLongLabel || DATA.nextLabel || '';
+window.SD_BASE_LABEL = L2 || '';   /* 카드 배지 폴백 문구('11/13 종가 스냅샷' 고정) 방지 */
 const NEAR_NAME = ((DATA.cards || []).filter(function (c) { return c.kind === 'NEAR'; })[0] || {}).name || '—';
 
 /* ===== 카페 실전 통계 기준 (불개미홍인기주식No.1 · 56717 / 38802) =====
@@ -20294,8 +20328,8 @@ window.__HONGINKI.ready = true;
   /* ==========================================================================
      ⚡ 실시간 시세 엔진 — 기존 서버리스 함수(/api/stock-live) 그대로 재사용
        · 후보 11종목의 현재가·등락률·통합거래대금을 한 번에 받아 카드에 반영
-       · 11/16 기준선(= 11/13 종가, plan.base) 대비 +5%/+10%/−3% 상태를 실시간 계산
-       · 장외·주말이거나 API 가 실패하면 내장 11/13 종가 스냅샷으로 조용히 폴백(오류 없음)
+       · 기준선(= 직전 거래일 종가, plan.base) 대비 +5%/+10%/−3% 상태를 실시간 계산
+       · 장외·주말이거나 API 가 실패하면 내장 직전 거래일 종가 스냅샷으로 조용히 폴백(오류 없음)
      ========================================================================== */
   var LIVE_URL = '/api/stock-live';
   var LIVE_POLL_MS = 20000;
@@ -20423,7 +20457,7 @@ window.__HONGINKI.ready = true;
       badgeEl.className = 'lv-badge ' + st.cls;
       node.className = 'hi-live is-live';
     } else {
-      badgeEl.textContent = '11/13 종가 스냅샷 · ' + st.text;
+      badgeEl.textContent = (window.SD_BASE_LABEL || '직전 거래일') + ' 종가 스냅샷 · ' + st.text;
       badgeEl.className = 'lv-badge ' + (live.tried && !live.ok ? 'snap' : 'snap');
       node.className = 'hi-live ' + (live.tried && !live.ok ? 'is-fail' : 'is-wait');
     }
@@ -20443,7 +20477,7 @@ window.__HONGINKI.ready = true;
         live.count + '/' + live.total + '종목 (20초 갱신)';
       el.className = 'srb-last-sync hi-stamp-ok';
     } else {
-      el.textContent = '⚠️ 실시간 응답 없음 — 11/13 종가 스냅샷으로 표시(화면 정상)';
+      el.textContent = '⚠️ 실시간 응답 없음 — ' + (window.SD_BASE_LABEL || '직전 거래일') + ' 종가 스냅샷으로 표시(화면 정상)';
       el.className = 'srb-last-sync hi-stamp-warn';
     }
   }
@@ -20551,7 +20585,7 @@ window.__HONGINKI.ready = true;
       el.textContent = '⚡ 지금 ' + nf(q.price) + '원 (' + sign(st.diff.toFixed(2)) + '% · ' + st.text + ') · 대금 ' + (q.valueDispText || q.valueIntegText || q.valueText || '—');
       el.className = 'm-status ok';
     } else {
-      el.textContent = '⚪ 실시간 시세 미수신 — 11/13 종가 스냅샷 기준으로 표시 중입니다.';
+      el.textContent = '⚪ 실시간 시세 미수신 — ' + (window.SD_BASE_LABEL || '직전 거래일') + ' 종가 스냅샷 기준으로 표시 중입니다.';
       el.className = 'm-status err';
     }
   }
