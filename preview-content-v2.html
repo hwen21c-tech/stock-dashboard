@@ -12887,6 +12887,18 @@ var CSVoice = (function () {
       })();
     });
   }
+  /* 배너용 짧은 표기 — slotLabel 끝에 붙은 내부 작업 괄호(… (6종 무기 v2 — 훅·수급…) )를 떼어 1~2줄을 유지한다 */
+  function goShSlotShort(label){
+    var s = String(label || '').replace(/\s+/g, ' ').trim();
+    var m = s.match(/^(.*?)\s*\(([^()]*)\)\s*$/);
+    if (m && (m[2].length > 10 || /[—·]/.test(m[2]))) s = m[1].trim();
+    return s;
+  }
+  /* 배너용 짧은 날짜 — 2026-11-21 → 11/21 */
+  function goShDateShort(node){
+    var m = String((node && (node.date || node.updatedAt)) || '').match(/^(\d{4})-(\d{2})-(\d{2})/);
+    return m ? (Number(m[2]) + '/' + Number(m[3])) : String((node && node.date) || '').slice(0, 10);
+  }
   /* 자동 세팅 본체 — 초안 읽기와 생성기 준비를 동시에 기다린 뒤 한 번에 세팅한다 */
   function goShortsBoot(){
     try { if (window.CS2_TAB) window.CS2_TAB('shorts'); } catch (e) {}
@@ -12904,18 +12916,18 @@ var CSVoice = (function () {
       var scrollOk = goShScroll();
       /* 캔버스·미리보기가 그려지며 높이가 바뀌므로 한 번 더 맞춘다 */
       setTimeout(function(){ goShOpen(); if (!scrollOk) scrollOk = goShScroll(); }, 700);
-      var got = [];
-      if (rs.ok) got.push('쇼츠 ' + rs.cuts + '컷 · 폭스시그널 ' + (rs.formula || ''));
-      if (rb.ok) got.push('블로그 ' + Number(rb.chars || 0).toLocaleString('ko-KR') + '자');
       var who = rs.voice || '현수 1.20x';
       var stale = !!(node && !feedIsToday(node));
-      if (got.length){
-        feedBanner('⚡ <b>?go=shorts 자동 세팅</b>' + (stale ? ' ⚠ 오늘자가 아닌 최신 초안(' + esc(String(node.date || node.updatedAt || '').slice(0, 10)) + ')' : '') +
-          ' — ' + esc(node.slotLabel || feedSlotWord(node.slot)) + ' 초안을 ' +
-          esc(got.join(' · ')) + ' 으로 올렸습니다 · 성우 <b>' + esc(who) + '</b> · 양식 <b>🎨 내용 맞춤(스마트)</b>' +
-          (scrollOk ? ' · <b>[▶ 생성]</b>만 누르면 됩니다.' : ' — [▶ 생성] 버튼 자리를 찾지 못했습니다.'));
+      /* 배너는 1~2줄 — 슬롯 이름 · 컷 수 · 성우 · [▶ 생성]만 남긴다(내부 작업 태그는 goShSlotShort 가 뗀다) */
+      if (rs.ok){
+        feedBanner('⚡ <b>쇼츠 세팅 완료</b> — ' + (stale ? '📅 이전 초안(' + esc(goShDateShort(node)) + ') · ' : '') +
+          esc(goShSlotShort(node.slotLabel || feedSlotWord(node.slot))) + ' · ' +
+          (rs.cuts ? rs.cuts + '컷 · ' : '') + esc(who) + ' · ' +
+          (scrollOk ? '<b>[▶ 생성]</b>만 누르면 됩니다' : '[▶ 생성] 버튼을 찾지 못했습니다 — 아래로 내려 눌러 주세요'));
+      } else if (rb.ok){
+        feedBanner('⚡ <b>쇼츠 대본은 비어 있습니다</b> — 블로그 초안만 올렸습니다. <b>[📥 피클 최신 초안 다시 불러오기]</b>를 눌러 주세요');
       } else {
-        feedBanner('⚡ <b>?go=shorts 자동 세팅</b> — 오늘자 피클 초안이 없어 대본은 비어 있습니다. 대본을 붙여넣고 <b>[▶ 생성]</b>을 누르세요.');
+        feedBanner('⚡ <b>쇼츠 세팅</b> — 오늘자 초안이 없어 대본이 비어 있습니다. 대본을 붙여넣고 <b>[▶ 생성]</b>을 누르세요');
       }
       var info = {
         go: 'shorts', wvid: !!wv, slot: node ? (node.slot || '') : '', slotLabel: node ? (node.slotLabel || '') : '',
