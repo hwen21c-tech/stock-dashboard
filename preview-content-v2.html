@@ -3,7 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#070c14">
+<meta name="theme-color" id="themeColorMeta" content="#070c14">
+<script>
+/* 첫 페인트 전 테마 적용 — localStorage 'studio_theme' (기본 dark). 새로고침·재방문에도 깜빡임 없음 */
+(function(){
+  var t = 'dark';
+  try { t = localStorage.getItem('studio_theme') === 'light' ? 'light' : 'dark'; } catch(e){}
+  document.documentElement.setAttribute('data-theme', t);
+  /* 결과 카드(#outCard)로 부드럽게 착지 — 피클 초안 불러오기 뒤 자동 이동에 쓴다 */
+  window.studioLandOut = function(){
+    var oc = document.getElementById('outCard');
+    if (!oc || oc.hidden) return false;
+    function go(){
+      try {
+        if (window.STUDIO_GO) { window.STUDIO_GO('#outCard', 'start', 8, 900); return; }
+      } catch(e){}
+      try { oc.scrollIntoView({ behavior:'smooth', block:'start' }); } catch(e2){ try { oc.scrollIntoView(); } catch(e3){} }
+    }
+    setTimeout(go, 90);
+    setTimeout(go, 620);
+    try { oc.classList.add('studio-outflash'); setTimeout(function(){ oc.classList.remove('studio-outflash'); }, 1800); } catch(e4){}
+    return true;
+  };
+})();
+</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1442,6 +1465,502 @@
   .pk-scriptbox[hidden]{display:none}
   .pk-scriptbox textarea{width:100%;min-height:128px;background:#0e131a;border:1px solid #2a3444;border-radius:9px;color:#cfd8e6;padding:9px 10px;font-size:11px;line-height:1.55;font-family:inherit;resize:vertical}
 
+
+/* ===== ☀️ 라이트 모드 오버라이드 (자동 생성 · 다크 규칙 159개 대응) ===== */
+html[data-theme="light"] .brand h1 .v2{font-size:11px;font-weight:900;color:#ffffff;background:linear-gradient(135deg,#0284c7,#7c3aed);border-radius:6px;padding:1px 5px;vertical-align:2px;margin-left:3px;letter-spacing:0}
+html[data-theme="light"] .btn-guide{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:#0369a1;background:#ffffff;border:1px solid rgba(2,132,199,.42);border-radius:9px;padding:6px 10px;white-space:nowrap}
+html[data-theme="light"] .btn-install{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:900;color:#ffffff;background:linear-gradient(135deg,#047857,#0284c7);border:1px solid rgba(2,132,199,.55);border-radius:9px;padding:6px 10px;white-space:nowrap;box-shadow:0 2px 10px rgba(15,23,42,.18)}
+html[data-theme="light"] .guide{background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(255,255,255,.96));border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;margin-bottom:12px}
+html[data-theme="light"] .guide code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.3px;background:#ffffff;border:1px solid rgba(2,132,199,.28);color:#0369a1;border-radius:5px;padding:1px 5px}
+html[data-theme="light"] .tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;background:#ffffff;border:1px solid var(--line);border-radius:13px;padding:5px;margin-bottom:13px}
+html[data-theme="light"] .submode{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 11px;border-radius:11px;border:1px solid var(--line);background:#ffffff;font-size:12.5px;font-weight:800;color:#27364a;min-width:0;text-align:left}
+html[data-theme="light"] .card{background:linear-gradient(150deg,rgba(255,255,255,.94),rgba(255,255,255,.94));border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:11px}
+html[data-theme="light"] .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:9px 14px;font-size:12.5px;font-weight:800;border:1px solid var(--line);background:#ffffff;color:#27364a;transition:filter .15s,background .15s;min-width:0}
+html[data-theme="light"] .btn.primary{background:linear-gradient(135deg,#0284c7,#4f46e5);color:#ffffff;border:none;box-shadow:0 4px 16px rgba(15,23,42,.24)}
+html[data-theme="light"] .btn.ghost{background:#ffffff;color:#0369a1;border-color:rgba(2,132,199,.34)}
+html[data-theme="light"] .drop{border:1.5px dashed rgba(2,132,199,.34);border-radius:12px;background:radial-gradient(400px 160px at 50% 0%,rgba(2,132,199,.08),transparent 70%),#ffffff;padding:16px 14px;text-align:center;transition:border-color .15s,background .15s}
+html[data-theme="light"] .drop.drag{border-color:rgba(2,132,199,.85);background:#ffffff}
+html[data-theme="light"] .fcard{background:#ffffff;border:1px solid var(--line);border-radius:11px;overflow:hidden;min-width:0}
+html[data-theme="light"] .fthumb .dur{position:absolute;right:6px;bottom:6px;font-size:10px;font-weight:900;color:#0f172a;background:rgba(255,255,255,.72);border-radius:5px;padding:1px 5px;letter-spacing:0}
+html[data-theme="light"] .fthumb .rm{position:absolute;right:5px;top:5px;width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,.68);color:#0f172a;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:1px solid rgba(15,23,42,.2)}
+html[data-theme="light"] textarea, html[data-theme="light"] input[type=text], html[data-theme="light"] input[type=url], html[data-theme="light"] input[type=search], html[data-theme="light"] select{width:100%;background:#ffffff;border:1px solid rgba(15,23,42,.24);border-radius:10px;padding:10px 11px;font-size:12.8px;font-weight:600;color:var(--text);outline:none;max-width:100%}
+html[data-theme="light"] .qchip{font-size:11px;font-weight:700;color:#334155;background:#ffffff;border:1px solid var(--line);border-radius:999px;padding:5px 9px}
+html[data-theme="light"] .seg{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:#ffffff;min-width:0;text-align:left}
+html[data-theme="light"] .step{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:#ffffff;min-width:0}
+html[data-theme="light"] .vcard{position:relative;display:flex;gap:9px;padding:8px;border-radius:11px;background:#ffffff;border:1px solid var(--line);text-align:left;min-width:0;align-items:stretch;transition:border-color .15s,background .15s}
+html[data-theme="light"] .vcard:hover{background:#ffffff}
+html[data-theme="light"] .vthumb .d{position:absolute;right:3px;bottom:3px;font-size:8.5px;font-weight:900;color:#0f172a;background:rgba(255,255,255,.7);border-radius:3px;padding:0 3px;letter-spacing:0}
+html[data-theme="light"] .vck{position:absolute;right:8px;top:8px;width:17px;height:17px;border-radius:5px;border:1.5px solid rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:transparent;background:rgba(255,255,255,.6)}
+html[data-theme="light"] .vcard.on .vck{background:#0284c7;border-color:#0284c7;color:#ffffff}
+html[data-theme="light"] .pitem{display:flex;gap:9px;align-items:flex-start;border:1px solid var(--line);background:#ffffff;border-radius:10px;padding:8px 10px;min-width:0}
+html[data-theme="light"] .timeline i{display:block;height:100%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:900;color:#ffffff;font-style:normal;overflow:hidden;white-space:nowrap}
+html[data-theme="light"] .tl1{background:linear-gradient(135deg,#0284c7,#dae3ef)}
+html[data-theme="light"] .fchip{display:inline-flex;align-items:center;gap:5px;max-width:100%;font-size:12px;font-weight:800;color:#27364a;background:#ffffff;border:1px solid rgba(2,132,199,.3);border-radius:999px;padding:7px 12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .15s}
+html[data-theme="light"] .fchip:hover{background:#ffffff}
+html[data-theme="light"] .chipedit{display:inline-flex;align-items:center;justify-content:center;width:26px;border-radius:0 999px 999px 0;font-size:10.5px;background:#ffffff;border:1px solid rgba(2,132,199,.3);color:#0369a1}
+html[data-theme="light"] .chipedit:hover{background:#fbfcfe}
+html[data-theme="light"] .sec-list li{display:flex;gap:8px;align-items:flex-start;font-size:11.8px;font-weight:700;color:#1b2534;background:rgba(255,255,255,.5);border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-width:0}
+html[data-theme="light"] .out-card{border:1px solid rgba(2,132,199,.26);border-radius:12px;background:#ffffff;overflow:hidden}
+html[data-theme="light"] .out-foot{padding:8px 11px;border-top:1px solid var(--line);font-size:10.8px;font-weight:700;color:var(--faint);line-height:1.55;background:rgba(255,255,255,.6)}
+html[data-theme="light"] .overlay{position:fixed;inset:0;background:rgba(255,255,255,.78);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:14px;z-index:60}
+html[data-theme="light"] .modal{width:100%;max-width:520px;max-height:88vh;overflow-y:auto;background:linear-gradient(160deg,#ffffff,#ffffff);border:1px solid rgba(2,132,199,.32);border-radius:16px;box-shadow:0 24px 70px rgba(15,23,42,.6)}
+html[data-theme="light"] .modal-head{display:flex;align-items:center;gap:8px;padding:13px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#ffffff;z-index:2;border-radius:16px 16px 0 0}
+html[data-theme="light"] .modal-head .x{width:28px;height:28px;border-radius:8px;background:#ffffff;border:1px solid var(--line);color:#334155;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+html[data-theme="light"] .epick{width:30px;height:30px;border-radius:8px;background:#ffffff;border:1px solid var(--line);font-size:14px;display:flex;align-items:center;justify-content:center}
+html[data-theme="light"] #toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,16px);max-width:calc(100% - 28px);width:max-content;background:#ffffff;border:1px solid rgba(2,132,199,.45);color:#0c4a6e;font-size:12px;font-weight:800;padding:10px 14px;border-radius:11px;box-shadow:0 10px 34px rgba(15,23,42,.5);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:80}
+html[data-theme="light"] .bat{flex:0 0 auto;border:1px solid rgba(15,23,42,.34);background:#ffffff;color:#27364a;border-radius:999px;padding:4px 9px;font-size:10.6px;font-weight:900;letter-spacing:0;white-space:nowrap}
+html[data-theme="light"] .wvopt{border:1px solid var(--line);border-radius:10px;background:#ffffff;overflow:hidden}
+html[data-theme="light"] .wvrow select, html[data-theme="light"] .wvrow input[type=text]{min-width:0;flex:1 1 120px;background:#ffffff;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:11.6px;font-weight:700}
+html[data-theme="light"] .wvrow input[type=color]{width:40px;height:30px;padding:0;border:1px solid var(--line);border-radius:8px;background:#ffffff}
+html[data-theme="light"] #wvCanvas{flex:0 0 auto;width:164px;max-width:100%;aspect-ratio:9/16;height:auto;border-radius:12px;border:1px solid var(--line);background:#ffffff}
+html[data-theme="light"] .wvtpl{flex:1 1 132px;min-width:0;display:flex;flex-direction:column;gap:2px;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:#ffffff;text-align:left;cursor:pointer}
+html[data-theme="light"] .wvdesign{flex:1 1 158px;min-width:0;display:flex;flex-direction:column;gap:3px;padding:9px 11px;border-radius:11px;border:1px solid var(--line);background:#ffffff;text-align:left;cursor:pointer}
+html[data-theme="light"] .wvdesign.on{border-color:rgba(220,38,38,.74);background:linear-gradient(135deg,#ffffff,#ffffff);box-shadow:0 6px 18px rgba(15,23,42,.28)}
+html[data-theme="light"] .wvdesign.on b{color:#ffffff}
+html[data-theme="light"] .wvfoxcut{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:9px;background:#ffffff;padding:3px 7px;font-size:10.4px;font-weight:900;color:#27364a}
+html[data-theme="light"] .wvfoxcut select{flex:0 0 auto;width:auto;min-width:0;max-width:104px;background:#ffffff;border:1px solid var(--line);border-radius:7px;padding:3px 5px;font-size:10.4px;font-weight:800;color:#1b2534}
+html[data-theme="light"] .wvcutnote{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3px 7px;align-items:center;border:1px solid var(--line);border-radius:9px;background:#ffffff;padding:6px 8px;min-width:0}
+html[data-theme="light"] .wvcutnote input{grid-column:1/-1;width:100%;min-width:0;background:#ffffff;border:1px solid rgba(15,23,42,.28);border-radius:7px;padding:6px 8px;font-size:11.4px;font-weight:700;color:#1b2534;letter-spacing:0}
+html[data-theme="light"] .wvevichip{grid-column:3;grid-row:1;align-self:center;font:900 13px/1 inherit;padding:5px 7px;border-radius:8px;border:1px solid rgba(15,23,42,.34);background:#ffffff;color:#334155;cursor:pointer;filter:grayscale(1);opacity:.72}
+html[data-theme="light"] .wvbadgerow input[type=text]{min-width:0;flex:1 1 120px;width:auto;background:#ffffff;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:11.6px;font-weight:800;color:#1b2534}
+html[data-theme="light"] .wvformula{flex:1 1 172px;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left;cursor:pointer;border:1px solid var(--line);border-radius:9px;background:#ffffff;padding:7px 9px}
+html[data-theme="light"] .wvdesign.on[data-wvdesign="penguin"] b{color:#ffffff}
+html[data-theme="light"] .wvdesign.on[data-wvdesign="penguin"] span{color:#0f172a}
+html[data-theme="light"] .wvbody textarea{width:100%;min-width:0;max-width:100%;background:#ffffff;border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:11.4px;font-weight:700;color:#1b2534;resize:vertical;font-family:inherit}
+html[data-theme="light"] .wvpaste textarea{width:100%;min-width:0;max-width:100%;background:#ffffff;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:11.4px;font-weight:700;color:#1b2534;resize:vertical;font-family:inherit;line-height:1.55;height:104px}
+html[data-theme="light"] footer .shelf{background:#ffffff;margin:0;font-size:10.9px;font-weight:600;line-height:1.66;color:var(--faint)}
+html[data-theme="light"] .shelf{background:linear-gradient(150deg,rgba(255,255,255,.94),rgba(255,255,255,.94));border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;overflow:hidden}
+html[data-theme="light"] .sitem{border:1px solid var(--line);border-radius:10px;background:#ffffff;padding:8px 10px;min-width:0}
+html[data-theme="light"] details.ref{border:1px solid var(--line);border-radius:11px;background:#ffffff;margin-top:8px;overflow:hidden}
+html[data-theme="light"] .refitem{display:block;text-decoration:none;border:1px solid var(--line);border-radius:9px;background:#ffffff;padding:8px 10px;min-width:0;transition:border-color .15s,background .15s}
+html[data-theme="light"] .refitem:hover{border-color:rgba(2,132,199,.5);background:#ffffff}
+html[data-theme="light"] .banchip.off{color:#0f172a;background:#ffffff;border-color:var(--line);text-decoration:none}
+html[data-theme="light"] .titem{display:flex;flex-wrap:wrap;align-items:center;gap:6px;width:100%;text-align:left;border:1px solid var(--line);border-radius:10px;background:#ffffff;padding:8px 10px;min-width:0}
+html[data-theme="light"] .naver .nhead{display:flex;align-items:center;gap:5px;font-size:10.4px;font-weight:800;color:#334155;letter-spacing:0}
+html[data-theme="light"] .naver .nhead .nlogo{font-weight:900;color:#334155;font-size:11.5px}
+html[data-theme="light"] .check{display:flex;align-items:flex-start;gap:8px;border:1px solid var(--line);border-radius:9px;background:#ffffff;padding:8px 10px;min-width:0;font-size:11.7px;font-weight:700;color:#1b2534;text-align:left}
+html[data-theme="light"] .check.on .bx{background:#0284c7;border-color:#0284c7;color:#ffffff}
+html[data-theme="light"] .pslot{border:1px solid var(--line);border-radius:11px;background:#ffffff;padding:9px 10px;margin-top:9px;min-width:0}
+html[data-theme="light"] .pnum{flex:0 0 auto;font-size:10px;font-weight:900;color:#ffffff;background:#0369a1;border-radius:5px;padding:1px 5px;letter-spacing:0}
+html[data-theme="light"] .prow input, html[data-theme="light"] .padd input{flex:1;min-width:0;font-size:12px;font-weight:700;padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:#ffffff;color:#1b2534;letter-spacing:0}
+html[data-theme="light"] .pthumb{position:relative;display:block;width:100%;padding:0;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:#ffffff;aspect-ratio:4/3;cursor:pointer}
+html[data-theme="light"] .pthumb .pdl{position:absolute;right:4px;bottom:4px;font-size:9.6px;font-weight:900;color:#ffffff;background:#0369a1;border-radius:5px;padding:2px 5px;opacity:.95;letter-spacing:0}
+html[data-theme="light"] .thumbcard input[type=text]{width:100%;font-size:12px;font-weight:700;padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:#ffffff;color:#1b2534;letter-spacing:0}
+html[data-theme="light"] #thumbCanvas{width:100%;height:auto;display:block;border-radius:9px;border:1px solid var(--line);background:#ffffff;margin-top:7px}
+html[data-theme="light"] .presh{display:flex;flex-direction:column;gap:1px;padding:8px;border-radius:10px;border:1px solid var(--line);background:#ffffff;text-align:left;min-width:0}
+html[data-theme="light"] .phone{position:relative;width:100%;max-width:228px;aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,#fbfcfe,#ffffff);border:1px solid rgba(15,23,42,.28)}
+html[data-theme="light"] .phone .fakeclip{position:absolute;inset:0;background:radial-gradient(120px 90px at 30% 28%,rgba(2,132,199,.28),transparent 70%),
+      radial-gradient(150px 110px at 76% 72%,rgba(124,58,237,.24),transparent 70%),
+      linear-gradient(135deg,#ffffff,#ffffff)}
+html[data-theme="light"] .phone .ratioTag{position:absolute;left:8px;top:8px;font-size:8.5px;font-weight:900;color:#ffffff;background:#0369a1;border-radius:4px;padding:1px 4px;letter-spacing:0;z-index:3}
+html[data-theme="light"] .pv1 .lower{position:absolute;left:8%;right:8%;bottom:16%;border-radius:8px;padding:7px 9px;background:rgba(15,23,42,.94);color:#ffffff;font-size:11px;font-weight:800;line-height:1.4;box-shadow:0 6px 18px rgba(15,23,42,.35);z-index:2}
+html[data-theme="light"] .pv1 .lower small{display:block;font-size:8.3px;font-weight:900;color:#0f172a;letter-spacing:0;margin-bottom:2px}
+html[data-theme="light"] .pv2 .cap{position:absolute;left:6%;right:6%;bottom:20%;text-align:center;font-size:18px;font-weight:900;color:#0f172a;text-shadow:0 2px 0 #ffffff,0 0 10px rgba(15,23,42,.75);line-height:1.22;letter-spacing:-.04em;z-index:2}
+html[data-theme="light"] .pv2 .cap em{font-style:normal;color:#27364a;text-shadow:0 2px 0 #ffffff,0 0 12px rgba(15,23,42,.8)}
+html[data-theme="light"] .hk{display:flex;gap:8px;align-items:flex-start;width:100%;text-align:left;border:1px solid var(--line);border-radius:10px;background:#ffffff;padding:8px 10px;min-width:0}
+html[data-theme="light"] input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:15px;height:15px;border-radius:50%;background:#0284c7;border:2px solid #d9e2ee;box-shadow:0 0 0 1px rgba(15,23,42,.5);margin-top:-5px}
+html[data-theme="light"] input[type=range]::-moz-range-thumb{width:13px;height:13px;border:2px solid #d9e2ee;border-radius:50%;background:#0284c7}
+html[data-theme="light"] textarea.outedit{width:100%;min-height:min(52vh,520px);border:none;border-radius:0;background:#ffffff;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace;font-size:11.3px;padding:12px;line-height:1.62;color:#1b2534;letter-spacing:0;resize:vertical}
+html[data-theme="light"] .gitem{display:flex;align-items:flex-start;gap:8px;border:1px solid var(--line);border-radius:9px;background:#ffffff;padding:7px 9px;font-size:11.4px;font-weight:700;color:#1b2534;min-width:0;text-align:left}
+html[data-theme="light"] .rrow .todayTag{flex:0 0 auto;font-size:9.2px;font-weight:900;color:#ffffff;background:#0369a1;border-radius:5px;padding:1px 4px;letter-spacing:0}
+html[data-theme="light"] .status-badge.ok .dot{background:#15803d;box-shadow:0 0 0 3px rgba(15,23,42,.18)}
+html[data-theme="light"] .ainote{font-size:11.9px;line-height:1.6;color:#27364a;background:#ffffff;border:1px solid rgba(15,23,42,.18);border-radius:10px;padding:9px 10px;margin-top:8px}
+html[data-theme="light"] .aicutwrap{overflow-x:auto;border:1px solid rgba(15,23,42,.16);border-radius:11px;background:#ffffff;padding:4px 8px;margin-top:9px}
+html[data-theme="light"] .ytres{margin-top:9px;background:#ffffff;border:1px solid rgba(2,132,199,.24);border-radius:11px;padding:10px 11px}
+html[data-theme="light"] .ytres-text{margin-top:8px;max-height:132px;overflow:auto;white-space:pre-wrap;font-size:11.6px;line-height:1.6;color:#27364a;background:#ffffff;border:1px solid rgba(15,23,42,.16);border-radius:8px;padding:8px 9px;font-family:inherit}
+html[data-theme="light"] .mktbox{margin-top:9px;background:#ffffff;border:1px solid rgba(21,128,61,.26);border-radius:11px;padding:10px 11px}
+html[data-theme="light"] .naver .nbar i{display:block;height:5px;border-radius:3px;background:linear-gradient(90deg,#dae3ef,#0284c7)}
+html[data-theme="light"] .multi-lines .ml{font-size:12.6px;line-height:1.55;color:#1b2534;background:#ffffff;border:1px solid rgba(15,23,42,.18);border-radius:9px;padding:7px 9px}
+html[data-theme="light"] .rpub input[type=checkbox]{width:14px;height:14px;accent-color:#15803d;flex:0 0 auto}
+html[data-theme="light"] .stswitch input{width:15px;height:15px;accent-color:#15803d}
+html[data-theme="light"] .bpick{flex:1 1 calc(25% - 5px);min-width:0;border:1px solid rgba(15,23,42,.28);background:#ffffff;color:#27364a;border-radius:9px;padding:6px 3px;font-size:10.6px;font-weight:800;letter-spacing:-.03em;cursor:pointer;white-space:nowrap;line-height:1.3}
+html[data-theme="light"] .bpick.mine[aria-pressed="true"]{border-color:rgba(2,132,199,.62);color:#0369a1;background:linear-gradient(135deg,rgba(2,132,199,.2),rgba(255,255,255,.4))}
+html[data-theme="light"] .bpick .dot{display:inline-block;width:5px;height:5px;border-radius:50%;background:#15803d;margin-left:3px;vertical-align:middle}
+html[data-theme="light"] .mybox{margin-top:8px;border:1px dashed rgba(2,132,199,.45);border-radius:10px;background:rgba(255,255,255,.78);padding:9px 10px;display:grid;gap:7px}
+html[data-theme="light"] .mybox input[type=text], html[data-theme="light"] .mybox textarea{width:100%;background:#ffffff;border:1px solid rgba(15,23,42,.28);border-radius:8px;padding:7px 9px;font-size:11.6px;color:#1b2534;letter-spacing:0}
+html[data-theme="light"] .csm{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;padding:9px 11px;border-radius:12px;border:1px solid var(--line);background:#ffffff;color:#27364a;font-size:12.4px;font-weight:900;letter-spacing:-.02em;text-align:left;cursor:pointer}
+html[data-theme="light"] .minecell{position:relative;border:1px solid rgba(2,132,199,.26);border-radius:11px;background:#ffffff;overflow:hidden}
+html[data-theme="light"] .minecell img{display:block;width:100%;height:96px;object-fit:cover;background:#ffffff}
+html[data-theme="light"] .minecell .mx{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;border:none;background:rgba(255,255,255,.82);color:#b91c1c;font-size:12px;font-weight:900;cursor:pointer;line-height:1}
+html[data-theme="light"] .extcard{border:1px solid rgba(15,23,42,.22);border-radius:11px;background:#ffffff;padding:9px 10px;margin-top:8px}
+html[data-theme="light"] .extcell{border:1px solid rgba(15,23,42,.2);border-radius:10px;background:#ffffff;overflow:hidden;display:flex;flex-direction:column}
+html[data-theme="light"] .extcell img{display:block;width:100%;height:104px;object-fit:cover;background:#ffffff;cursor:pointer}
+html[data-theme="light"] .extcell.cover img{object-fit:contain;background:#ffffff;height:132px}
+html[data-theme="light"] .extcell .eb button{flex:1 1 auto;border:1px solid rgba(15,23,42,.28);background:#ffffff;color:#27364a;border-radius:7px;font-size:10px;font-weight:800;padding:3px 4px;cursor:pointer;letter-spacing:0}
+html[data-theme="light"] .pslot.mine{border-color:rgba(2,132,199,.34);background:linear-gradient(135deg,rgba(2,132,199,.08),rgba(255,255,255,.5))}
+html[data-theme="light"] .pslot.cover{border-color:rgba(161,98,7,.34);background:linear-gradient(135deg,rgba(161,98,7,.08),rgba(255,255,255,.5))}
+html[data-theme="light"] .minerow img{width:88px;height:88px;object-fit:cover;border-radius:9px;border:1px solid rgba(15,23,42,.28);background:#ffffff;flex:0 0 auto}
+html[data-theme="light"] .minerow.cover img{object-fit:contain;background:#ffffff}
+html[data-theme="light"] .keyrow input{flex:1 1 190px;min-width:0;background:#ffffff;border:1px solid rgba(2,132,199,.34);border-radius:9px;padding:8px 10px;font-size:12.5px;letter-spacing:0;color:#1b2534}
+html[data-theme="light"] .mktpaste{width:100%;margin-top:8px;background:#ffffff;border:1px solid rgba(15,23,42,.28);border-radius:9px;padding:8px 9px;font-size:11.8px;line-height:1.55;color:#1b2534;letter-spacing:0}
+html[data-theme="light"] .sums{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;padding:9px 7px;border-radius:11px;border:1px solid var(--line);background:#ffffff;color:#27364a;font-size:12px;font-weight:900;letter-spacing:-.02em;cursor:pointer}
+html[data-theme="light"] .summ{padding:9px 10px;border-radius:11px;border:1px solid var(--line);background:#ffffff;color:#27364a;font-size:11.8px;font-weight:900;letter-spacing:-.02em;text-align:left;cursor:pointer;min-width:0;line-height:1.35}
+html[data-theme="light"] .sumfile{display:flex;gap:9px;align-items:center;margin-top:8px;padding:9px 10px;min-width:0;border:1px solid rgba(15,23,42,.24);border-radius:11px;background:#ffffff}
+html[data-theme="light"] .sumline{display:flex;gap:8px;padding:9px 10px;border-radius:11px;background:#ffffff;border:1px solid rgba(15,23,42,.2);margin-bottom:6px;min-width:0}
+html[data-theme="light"] .sumtl .row{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px;padding:8px 9px;border-radius:10px;background:#ffffff;border:1px solid rgba(15,23,42,.18);min-width:0}
+html[data-theme="light"] .sumfact .fr{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:8px;padding:7px 9px;border-radius:9px;background:#ffffff;border:1px solid rgba(15,23,42,.18);min-width:0}
+html[data-theme="light"] .afrow input{min-width:0;background:#ffffff;border:1px solid rgba(15,23,42,.28);border-radius:8px;padding:7px 9px;font-size:12.2px;letter-spacing:0;color:#1b2534}
+html[data-theme="light"] .aftoggle input{width:16px;height:16px;accent-color:#15803d;flex:0 0 auto}
+html[data-theme="light"] .afarea{width:100%;min-width:0;background:#ffffff;border:1px solid rgba(15,23,42,.28);border-radius:9px;padding:7px 9px;font-size:12.2px;line-height:1.6;color:#1b2534;letter-spacing:0;resize:vertical}
+html[data-theme="light"] .afprev{margin-top:2px;padding:9px 10px;border-radius:10px;background:#ffffff;border:1px dashed rgba(15,23,42,.3);font-size:11.6px;line-height:1.6;color:#27364a;white-space:pre-wrap;word-break:break-word;letter-spacing:0;max-height:150px;overflow:auto}
+html[data-theme="light"] .sc-bar{height:6px;border-radius:999px;background:#ffffff;overflow:hidden;margin:5px 0 4px}
+html[data-theme="light"] .msb{padding:10px;border-radius:12px;background:#ffffff;border:1px solid rgba(15,23,42,.2);margin-bottom:8px;min-width:0}
+html[data-theme="light"] .msb .msp{margin-top:7px;padding:8px 9px;border-radius:9px;background:#ffffff;border:1px solid rgba(15,23,42,.22);font-size:11.4px;line-height:1.6;color:#27364a;white-space:pre-wrap;word-break:break-word;max-height:132px;overflow:auto;letter-spacing:0}
+html[data-theme="light"] .pbadge{display:inline-flex;align-items:center;gap:4px;font-size:10.6px;font-weight:800;color:#27364a;background:#ffffff;border:1px solid rgba(15,23,42,.24);border-radius:999px;padding:3px 8px;letter-spacing:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[data-theme="light"] .sperff input[type=number], html[data-theme="light"] .sperff input[type=text], html[data-theme="light"] .sperff select{min-width:0;width:100%;background:#ffffff;border:1px solid rgba(15,23,42,.26);border-radius:7px;padding:5px 7px;font-size:11.4px;color:#1b2534;letter-spacing:0}
+html[data-theme="light"] .sperff input[type=checkbox]{width:15px;height:15px;accent-color:#15803d;flex:0 0 auto}
+html[data-theme="light"] .cvitem canvas{width:100%;height:auto;display:block;border-radius:9px;background:#ffffff}
+html[data-theme="light"] .outwhite{padding:16px 15px;background:#ffffff;color:#ffffff;max-height:72vh;overflow:auto}
+html[data-theme="light"] .t11opts input{width:100%;min-width:0;background:#ffffff;border:1px solid rgba(15,23,42,.28);border-radius:9px;padding:8px 10px;font-size:12.5px;color:#1b2534;letter-spacing:0}
+html[data-theme="light"] #t11Canvas{width:100%;max-width:520px;height:auto;display:block;border-radius:13px;border:1px solid var(--line);background:#ffffff;margin:6px auto 0}
+html[data-theme="light"] .sum3wrap input{width:100%;background:#ffffff;border:1px solid rgba(15,23,42,.28);border-radius:9px;padding:8px 10px;font-size:12.5px;color:#1b2534;letter-spacing:0;margin:9px 0 3px}
+html[data-theme="light"] .gd-back{position:absolute;inset:0;background:rgba(255,255,255,.62)}
+html[data-theme="light"] .gd-panel{position:relative;width:100%;max-width:560px;max-height:90vh;display:flex;flex-direction:column;background:#ffffff;color:#1b2534;border:1px solid #d9e2ee;border-radius:16px;box-shadow:0 24px 60px rgba(15,23,42,.5);overflow:hidden}
+html[data-theme="light"] .gd-tab{flex:0 0 auto;border:1px solid #d9e2ee;background:#ffffff;color:#334155;border-radius:999px;padding:7px 11px;font-size:11.5px;font-weight:800;white-space:nowrap}
+html[data-theme="light"] .gd-tab.on{background:#b45309;border-color:#b45309;color:#ffffff}
+html[data-theme="light"] .gd-card{border:1px solid #d9e2ee;border-radius:12px;background:linear-gradient(150deg,rgba(255,255,255,.96),rgba(255,255,255,.96));padding:9px 10px 10px;display:flex;flex-direction:column;gap:7px;min-width:0}
+html[data-theme="light"] .gd-step{display:flex;gap:9px;align-items:flex-start;background:#ffffff;border:1px solid #d9e2ee;border-radius:11px;padding:10px 11px;min-width:0}
+html[data-theme="light"] .gd-card .gd-step{background:#ffffff;padding:8px 9px}
+html[data-theme="light"] .gd-step .n{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:#b45309;color:#ffffff;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;margin-top:1px}
+html[data-theme="light"] .gd-step .t .k{display:inline-block;background:#ffffff;border:1px solid #d9e2ee;border-radius:6px;padding:1px 5px;margin:1px 2px 1px 0;font-size:11px;font-weight:800;color:#b45309;white-space:nowrap}
+html[data-theme="light"] .hq{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;border:1px solid #d9e2ee;background:#ffffff;color:#b45309;font-size:11px;font-weight:900;line-height:1;margin-left:5px;vertical-align:middle;padding:0;flex:0 0 auto}
+html[data-theme="light"] .hq:active{background:#b45309;color:#ffffff}
+html[data-theme="light"] .hq-tip{position:fixed;z-index:9995;max-width:min(320px,calc(100vw - 24px));background:#ffffff;color:#1b2534;border:1px solid #d9e2ee;border-radius:10px;padding:8px 11px;font-size:11.5px;line-height:1.45;box-shadow:0 12px 30px rgba(15,23,42,.5);opacity:0;pointer-events:none;transition:opacity .14s}
+html[data-theme="light"] .pk-mallbar a{text-decoration:none;border:1px solid #d9e2ee;background:#ffffff;color:#27364a;border-radius:7px;padding:5px 8px;font-size:11px;font-weight:800;white-space:nowrap}
+html[data-theme="light"] .pk-scriptbox textarea{width:100%;min-height:128px;background:#ffffff;border:1px solid #d9e2ee;border-radius:9px;color:#27364a;padding:9px 10px;font-size:11px;line-height:1.55;font-family:inherit;resize:vertical}
+html[data-theme="light"] .brand h1 .pv{color:#b45309}
+html[data-theme="light"] .status-badge{color:#a16207}
+html[data-theme="light"] .guide li{color:#27364a}
+html[data-theme="light"] .guide .warn{color:#b45309}
+html[data-theme="light"] .tab.on{color:#0c4a6e}
+html[data-theme="light"] .submode.on{color:#0c4a6e}
+html[data-theme="light"] .submode.on .st{color:#0369a1}
+html[data-theme="light"] .card-head .num{color:#0369a1}
+html[data-theme="light"] .bdg.real{color:#27364a}
+html[data-theme="light"] .bdg.wait{color:#b45309}
+html[data-theme="light"] .bdg.info{color:#0369a1}
+html[data-theme="light"] .bdg.violet{color:#6d28d9}
+html[data-theme="light"] .btn.naver{color:#15803d}
+html[data-theme="light"] .btn.danger{color:#be123c}
+html[data-theme="light"] .fname{color:#1b2534}
+html[data-theme="light"] .fcrop{color:#0369a1}
+html[data-theme="light"] .fcrop.bad{color:#b45309}
+html[data-theme="light"] .warnline{color:#b45309}
+html[data-theme="light"] .summary{color:#166534}
+html[data-theme="light"] .flabel{color:#27364a}
+html[data-theme="light"] .qchip:hover{color:#0369a1}
+html[data-theme="light"] .seg b{color:#27364a}
+html[data-theme="light"] .seg.on b{color:#0c4a6e}
+html[data-theme="light"] .seg.on span{color:#0369a1}
+html[data-theme="light"] .step.done .ico{color:#27364a}
+html[data-theme="light"] .step.wait .ico{color:#b45309}
+html[data-theme="light"] .step .t{color:#1b2534}
+html[data-theme="light"] .realbox{color:#166534}
+html[data-theme="light"] .waitbox{color:#a16207}
+html[data-theme="light"] .demo-banner{color:#a16207}
+html[data-theme="light"] .vt{color:#1b2534}
+html[data-theme="light"] .counter{color:#0369a1}
+html[data-theme="light"] .counter.full{color:#27364a}
+html[data-theme="light"] .pitem .role{color:#6d28d9}
+html[data-theme="light"] .pitem .pt{color:#1b2534}
+html[data-theme="light"] .addchip{color:#27364a}
+html[data-theme="light"] .sec-list li .n{color:#0369a1}
+html[data-theme="light"] .hlbox{color:#a16207}
+html[data-theme="light"] .hlbox b{color:#b45309}
+html[data-theme="light"] pre.out{color:#27364a}
+html[data-theme="light"] .out-foot b{color:#b45309}
+html[data-theme="light"] .notice b{color:#0369a1}
+html[data-theme="light"] .err{color:#be123c}
+html[data-theme="light"] .slotstate{color:#27364a}
+html[data-theme="light"] .slotstate.bad{color:#be123c}
+html[data-theme="light"] .feedbanner{color:#a16207}
+html[data-theme="light"] .feedbanner #feedBannerText{color:#1b2534}
+html[data-theme="light"] .csauto-t b{color:#a16207}
+html[data-theme="light"] .csauto-s{color:#27364a}
+html[data-theme="light"] .csauto-s.ok{color:#27364a}
+html[data-theme="light"] .csauto-s.busy{color:#a16207}
+html[data-theme="light"] .csauto-s.bad{color:#b91c1c}
+html[data-theme="light"] .bat.on{color:#a16207}
+html[data-theme="light"] .brow{color:#27364a}
+html[data-theme="light"] .brow .bv b{color:#a16207}
+html[data-theme="light"] .wvchip{color:#27364a}
+html[data-theme="light"] .wvopt>summary{color:#1b2534}
+html[data-theme="light"] .wvopt>summary::after{color:#0369a1}
+html[data-theme="light"] .wvtpl b{color:#27364a}
+html[data-theme="light"] .wvtpl.on b{color:#0c4a6e}
+html[data-theme="light"] .wvtpl.on span{color:#0369a1}
+html[data-theme="light"] .wvdesign b{color:#27364a}
+html[data-theme="light"] .wvcutnote .n{color:#0369a1}
+html[data-theme="light"] .wvcutnote .t{color:#27364a}
+html[data-theme="light"] .wvevichip.on{color:#a16207}
+html[data-theme="light"] .wvformulabox[data-design="fox"] .wvformula.on b{color:#27364a}
+html[data-theme="light"] .wvformulabox[data-design="fox"] .wvformula.on span{color:#1b2534}
+html[data-theme="light"] .wvformula b{color:#27364a}
+html[data-theme="light"] .wvformula.on b{color:#3b4a5e}
+html[data-theme="light"] .wvformula.on span{color:#27364a}
+html[data-theme="light"] .wvformulabox[data-design="bunny"] .wvformula.on b{color:#27364a}
+html[data-theme="light"] .wvformulabox[data-design="bunny"] .wvformula.on span{color:#1b2534}
+html[data-theme="light"] .wvformulabox[data-design="penguin"] .wvformula.on b{color:#27364a}
+html[data-theme="light"] .wvformulabox[data-design="penguin"] .wvformula.on span{color:#0c4a6e}
+html[data-theme="light"] .wvpastelist li{color:#27364a}
+html[data-theme="light"] .wvpastelist li b{color:#0369a1}
+html[data-theme="light"] footer .shelf>summary{color:#27364a}
+html[data-theme="light"] .shelf>summary{color:#1b2534}
+html[data-theme="light"] .shelf>summary .n{color:#6d28d9}
+html[data-theme="light"] .shelf>summary .arw{color:#0369a1}
+html[data-theme="light"] .stype.blog{color:#27364a}
+html[data-theme="light"] .stype.video{color:#6d28d9}
+html[data-theme="light"] .sitem .stit{color:#1b2534}
+html[data-theme="light"] details.ref>summary{color:#1b2534}
+html[data-theme="light"] details.ref>summary::after{color:#0369a1}
+html[data-theme="light"] details.ref>summary .cnt{color:#0369a1}
+html[data-theme="light"] .refitem .rt{color:#27364a}
+html[data-theme="light"] .refitem .rt .ext{color:#27364a}
+html[data-theme="light"] .refitem .why{color:#27364a}
+html[data-theme="light"] .refitem .why b{color:#a16207}
+html[data-theme="light"] .banchip{color:#be123c}
+html[data-theme="light"] .bangauge{color:#166534}
+html[data-theme="light"] .bangauge.hit{color:#27364a}
+html[data-theme="light"] .titem .tag{color:#6d28d9}
+html[data-theme="light"] .titem .tt{color:#1b2534}
+html[data-theme="light"] .titem .len.cut{color:#b45309}
+html[data-theme="light"] .check.on{color:#166534}
+html[data-theme="light"] .check .auto{color:#27364a}
+html[data-theme="light"] .checkbar{color:#0369a1}
+html[data-theme="light"] .pdesc{color:#1b2534}
+html[data-theme="light"] .psrc{color:#27364a}
+html[data-theme="light"] .pcell .pmeta b{color:#27364a}
+html[data-theme="light"] .pcell .pmeta a{color:#0369a1}
+html[data-theme="light"] .pempty{color:#a16207}
+html[data-theme="light"] .ptoggle{color:#27364a}
+html[data-theme="light"] .thumbcard .thlabel{color:#6d28d9}
+html[data-theme="light"] .presh b{color:#27364a}
+html[data-theme="light"] .presh.on b{color:#0c4a6e}
+html[data-theme="light"] .presh.on span{color:#0369a1}
+html[data-theme="light"] .pv3 .bar-t .l2{color:#27364a}
+html[data-theme="light"] .hk .tag{color:#a16207}
+html[data-theme="light"] .hk .txt{color:#1b2534}
+html[data-theme="light"] .rangelabel{color:#27364a}
+html[data-theme="light"] .rangelabel b{color:#0369a1}
+html[data-theme="light"] .mixrow .ml{color:#27364a}
+html[data-theme="light"] .mixrow .mv{color:#0369a1}
+html[data-theme="light"] .lane .lt{color:#0369a1}
+html[data-theme="light"] .lane .lv{color:#27364a}
+html[data-theme="light"] .fseg{color:#27364a}
+html[data-theme="light"] .gaphead{color:#27364a}
+html[data-theme="light"] .gitem.on .gt{color:#1b2534}
+html[data-theme="light"] .gapnote{color:#6d28d9}
+html[data-theme="light"] .rrow .rd{color:#27364a}
+html[data-theme="light"] .rrow.today .rd{color:#0369a1}
+html[data-theme="light"] .rnote{color:#a16207}
+html[data-theme="light"] .status-badge.ok{color:#27364a}
+html[data-theme="light"] .status-badge.bad{color:#be123c}
+html[data-theme="light"] .errbox>b{color:#be123c}
+html[data-theme="light"] .errbox .em{color:#27364a}
+html[data-theme="light"] .errbox .mono{color:#be123c}
+html[data-theme="light"] .aiwait{color:#0369a1}
+html[data-theme="light"] .ainote b{color:#0369a1}
+html[data-theme="light"] .ainote li{color:#27364a}
+html[data-theme="light"] .cuttable td.n{color:#0369a1}
+html[data-theme="light"] .script .sl{color:#1b2534}
+html[data-theme="light"] .script .sl .tm{color:#0369a1}
+html[data-theme="light"] .ytres-head{color:#1b2534}
+html[data-theme="light"] .mktrow b{color:#0369a1}
+html[data-theme="light"] .mktrow span{color:#27364a}
+html[data-theme="light"] .seohead{color:#1b2534}
+html[data-theme="light"] .seotag{color:#15803d}
+html[data-theme="light"] .seotag.kw{color:#0369a1}
+html[data-theme="light"] .rpub.done label{color:#15803d}
+html[data-theme="light"] .rpub a{color:#0369a1}
+html[data-theme="light"] .stbadge{color:#27364a}
+html[data-theme="light"] .stswitch{color:#27364a}
+html[data-theme="light"] .stnow{color:#1b2534}
+html[data-theme="light"] .stnow b{color:#0369a1}
+html[data-theme="light"] .stline{color:#27364a}
+html[data-theme="light"] .stline .sk{color:#b45309}
+html[data-theme="light"] .ststeps{color:#27364a}
+html[data-theme="light"] .bpick[aria-pressed="true"]{color:#27364a}
+html[data-theme="light"] .mybox .mlabel{color:#0369a1}
+html[data-theme="light"] .mystat{color:#27364a}
+html[data-theme="light"] .mystat.bad{color:#b91c1c}
+html[data-theme="light"] .mystat .x{color:#b45309}
+html[data-theme="light"] .refnum{color:#27364a}
+html[data-theme="light"] .proofbadge{color:#166534}
+html[data-theme="light"] .proofbadge b{color:#27364a}
+html[data-theme="light"] .csm[aria-pressed="true"] span{color:#27364a}
+html[data-theme="light"] .exthead{color:#1b2534}
+html[data-theme="light"] .exthead .src{color:#27364a}
+html[data-theme="light"] .extcell b{color:#1b2534}
+html[data-theme="light"] .extcell .eb button.pri{color:#0369a1}
+html[data-theme="light"] .mineinfo b{color:#1b2534}
+html[data-theme="light"] .mineinfo span{color:#0369a1}
+html[data-theme="light"] .mineinfo em{color:#27364a}
+html[data-theme="light"] .keybar-txt b{color:#a16207}
+html[data-theme="light"] .keybar-txt span{color:#27364a}
+html[data-theme="light"] .keymask{color:#27364a}
+html[data-theme="light"] .sums[aria-pressed="true"] span{color:#27364a}
+html[data-theme="light"] .summ[aria-pressed="true"]{color:#0f172a}
+html[data-theme="light"] .sumfile b{color:#1b2534}
+html[data-theme="light"] .summeta .tag{color:#0369a1}
+html[data-theme="light"] .summeta .tag.warn{color:#a16207}
+html[data-theme="light"] .sumline .n{color:#0369a1}
+html[data-theme="light"] .sumline p{color:#1b2534}
+html[data-theme="light"] .sumtl .at{color:#b45309}
+html[data-theme="light"] .sumtl span{color:#27364a}
+html[data-theme="light"] .sumfact .fv{color:#1b2534}
+html[data-theme="light"] .sumh{color:#0369a1}
+html[data-theme="light"] .sumul li{color:#1b2534}
+html[data-theme="light"] .sumseed .sl{color:#3b4a5e}
+html[data-theme="light"] .sumseed span{color:#27364a}
+html[data-theme="light"] .stype.summary{color:#a16207}
+html[data-theme="light"] .afrow .afx{color:#be123c}
+html[data-theme="light"] .aftoggle{color:#27364a}
+html[data-theme="light"] .btn.mon{color:#a16207}
+html[data-theme="light"] .sc-dial.g-good{color:#27364a}
+html[data-theme="light"] .sc-dial.g-mid{color:#0369a1}
+html[data-theme="light"] .sc-dial.g-warn{color:#a16207}
+html[data-theme="light"] .sc-dial.g-bad{color:#be123c}
+html[data-theme="light"] .sc-rh b{color:#1b2534}
+html[data-theme="light"] .sc-rh span{color:#0369a1}
+html[data-theme="light"] .sc-risk b{color:#be123c}
+html[data-theme="light"] .sc-risk.ok b{color:#27364a}
+html[data-theme="light"] .sc-risk .snippet{color:#27364a}
+html[data-theme="light"] .sc-todo li{color:#a16207}
+html[data-theme="light"] .pbadge b{color:#0369a1}
+html[data-theme="light"] .pbadge.gold{color:#a16207}
+html[data-theme="light"] .pbadge.gold b{color:#a16207}
+html[data-theme="light"] .sperff label.spc.chk{color:#27364a}
+html[data-theme="light"] .elkey .keymask{color:#6d28d9}
+html[data-theme="light"] .elkey .keyhint b.sk{color:#6d28d9}
+html[data-theme="light"] .ttsbox .ttsh{color:#0369a1}
+html[data-theme="light"] .foxsc-h{color:#1b2534}
+html[data-theme="light"] .foxsc-t{color:#1b2534}
+html[data-theme="light"] .foxsc-t.up{color:#27364a}
+html[data-theme="light"] .foxsc-t.dn{color:#27364a}
+html[data-theme="light"] .foxsc-t.ok{color:#166534}
+html[data-theme="light"] .foxsc-t.wait{color:#a16207}
+html[data-theme="light"] .foxsc-row{color:#27364a}
+html[data-theme="light"] .foxsc-row .v.up{color:#b91c1c}
+html[data-theme="light"] .foxsc-row .v.dn{color:#3b4a5e}
+html[data-theme="light"] .foxsc-row .v.wait{color:#a16207}
+html[data-theme="light"] .foxsc-msg{color:#27364a}
+html[data-theme="light"] .btn.tistory{color:#3b4a5e}
+html[data-theme="light"] .cvnote .bad{color:#b45309}
+html[data-theme="light"] .seoauto .sh{color:#27364a}
+html[data-theme="light"] .seoauto .chip{color:#1b2534}
+html[data-theme="light"] .osbox h4{color:#1b2534}
+html[data-theme="light"] .ostit .t{color:#1b2534}
+html[data-theme="light"] .ostit .tag{color:#6d28d9}
+html[data-theme="light"] .cutlist{color:#27364a}
+html[data-theme="light"] .cutlist .at{color:#0369a1}
+html[data-theme="light"] .t11chip{color:#27364a}
+html[data-theme="light"] .t11chip:hover{color:#0c4a6e}
+html[data-theme="light"] .wvbridge .wb-t b{color:#27364a}
+html[data-theme="light"] .wvbridge .wb-t span{color:#27364a}
+html[data-theme="light"] .stype.wvid{color:#27364a}
+html[data-theme="light"] .gd-ch b{color:#b45309}
+html[data-theme="light"] .gd-step .t{color:#27364a}
+html[data-theme="light"] .hq-tip b{color:#b45309}
+
+  /* ================= ☀️ 라이트 모드 팔레트 ================= */
+  html[data-theme="light"]{
+    --bg:#f5f7fb; --panel:#ffffff; --panel2:#f2f5fa; --hover:#e9eff7;
+    --line:rgba(15,23,42,.12); --border:rgba(2,132,199,.30);
+    --text:#111a26; --sub:#465468; --faint:#6b7787;
+    --accent:#0284c7; --violet:#7c3aed; --gold:#b45309; --green:#15803d; --red:#dc2626;
+  }
+  html[data-theme="light"] body{
+    background:
+      radial-gradient(1100px 560px at 10% -12%, rgba(2,132,199,.07), transparent 60%),
+      radial-gradient(900px 500px at 98% -6%, rgba(124,58,237,.06), transparent 58%),
+      #f5f7fb;
+    color:#111a26;
+  }
+  /* 다크에서 '선택됨'을 색으로만 표현하던 곳들 — 라이트에서는 옅은 파랑 바탕으로 */
+  html[data-theme="light"] .wvdesign.on,
+  html[data-theme="light"] .wvtpl.on,
+  html[data-theme="light"] .fchip.on,
+  html[data-theme="light"] .bat.on,
+  html[data-theme="light"] .tab.on,
+  html[data-theme="light"] .vcard.on{
+    background:linear-gradient(135deg,rgba(2,132,199,.14),rgba(124,58,237,.10));
+    border-color:rgba(2,132,199,.55);
+  }
+  html[data-theme="light"] .wvdesign.on b{color:#0f172a}
+  html[data-theme="light"] .wvdesign.on span{color:#334155}
+  html[data-theme="light"] .bat.on{color:#a16207;background:rgba(245,158,11,.16);border-color:rgba(180,83,9,.6)}
+  html[data-theme="light"] .overlay{background:rgba(15,23,42,.42)}
+  html[data-theme="light"] .studiobar{background:linear-gradient(180deg,rgba(255,255,255,.92),rgba(246,249,253,.99))}
+  html[data-theme="light"] .stepn{background:rgba(2,132,199,.12);border-color:rgba(2,132,199,.4);color:#0369a1}
+  /* 배너·배지·작은 글자 — 라이트에서 대비 확보 */
+  html[data-theme="light"] .feedbanner{background:#fff8e6;border-color:rgba(180,83,9,.45);color:#7c2d12}
+  html[data-theme="light"] .feedbanner b,
+  html[data-theme="light"] .feedbanner #feedBannerText b{color:#7c2d12}
+  html[data-theme="light"] .feedbanner .linkbtn{color:#92400e}
+  html[data-theme="light"] .store-note .linkbtn,
+  html[data-theme="light"] .rnote .linkbtn{color:#0369a1}
+  html[data-theme="light"] .brow .bk{color:#475569}
+  html[data-theme="light"] .shelf>summary .n{color:#6d28d9;background:rgba(124,58,237,.10);border-color:rgba(124,58,237,.28)}
+  html[data-theme="light"] .bdg.info{color:#0369a1;background:rgba(2,132,199,.10);border-color:rgba(2,132,199,.32)}
+  html[data-theme="light"] .bdg.wait{color:#a16207;background:rgba(245,158,11,.14);border-color:rgba(180,83,9,.34)}
+  html[data-theme="light"] .bdg.real{color:#15803d;background:rgba(34,197,94,.12);border-color:rgba(21,128,61,.32)}
+  html[data-theme="light"] .bdg.violet{color:#6d28d9;background:rgba(124,58,237,.10);border-color:rgba(124,58,237,.30)}
+  html[data-theme="light"] .out-foot b{color:#b45309}
+  /* 인라인 스타일로 박힌 다크용 글자색 */
+  html[data-theme="light"] [style*="color:#fbbf24"]{color:#b45309 !important}
+  html[data-theme="light"] [style*="color:#86efac"]{color:#15803d !important}
+  html[data-theme="light"] [style*="color:#94a3b8"]{color:#475569 !important}
+  html[data-theme="light"] [style*="color:#7dd3fc"]{color:#0369a1 !important}
+  html[data-theme="light"] [style*="color:#64748b"]{color:#64748b !important}
+  html[data-theme="light"] [style*="color:#e0f2fe"]{color:#0c4a6e !important}
+
+  /* ================= 🧭 3단계 스텝 (블로그) ================= */
+  .stepcard{position:relative}
+  .stepcard+.stepcard{margin-top:-1px}
+  .stephead{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-bottom:10px;min-width:0}
+  .stephead h2{font-size:13.5px;font-weight:900;min-width:0}
+  .stephead .bdg,.stephead .n{margin-left:auto}
+  .stepn{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:7px;
+    background:rgba(56,189,248,.14);border:1px solid rgba(56,189,248,.4);color:#7dd3fc;
+    font-size:11.5px;font-weight:900;flex:0 0 auto;letter-spacing:0}
+  .stepwrap{padding:0 1px}
+  .stepwrap>.stephead{padding:4px 3px 0;margin-bottom:9px}
+  .step-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+  .step-actions .btn{width:100%;min-height:48px;padding:12px 6px;border-radius:12px;font-size:13.4px;font-weight:900}
+  .blogslot{margin-top:9px;gap:6px}
+  .blogslot .flabel{flex:1 1 100%;margin:0 0 1px}
+  #step1Card .csauto-s{margin-top:9px}
+  #step1Card>.btn.big{margin-top:9px}
+  #step2Hint{margin-top:8px}
+  #step2Card #aiNoteBlog:empty{display:none}
+  #step3Stat{font-variant-numeric:tabular-nums}
+  .studio-outflash{animation:studioFlash 1.9s ease-out}
+  @keyframes studioFlash{
+    0%{box-shadow:0 0 0 0 rgba(56,189,248,.55)}
+    60%{box-shadow:0 0 0 10px rgba(56,189,248,0)}
+    100%{box-shadow:0 0 0 0 rgba(56,189,248,0)}
+  }
+  /* ================= 📌 하단 고정 바 ================= */
+  .studiobar{position:fixed;left:0;right:0;bottom:0;z-index:65;display:none;
+    grid-template-columns:1fr 1.25fr;gap:8px;
+    padding:8px 12px calc(8px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,rgba(11,17,32,.90),rgba(7,12,20,.99));
+    border-top:1px solid var(--border);backdrop-filter:blur(10px)}
+  html[data-cs-tab="blog"] #studioBar{display:grid}
+  .studiobar .btn{width:100%;min-height:46px;padding:12px 6px;border-radius:12px;font-size:13px;font-weight:900}
+  html[data-cs-tab="blog"] body{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+  html[data-cs-tab="blog"] #toast{bottom:calc(96px + env(safe-area-inset-bottom))}
+  @media (min-width:760px){ #step1Card .blogslot .flabel{flex:0 0 auto} }
+  /* 4칸 1줄 탭바 — 520px 이하에서도 한 줄 */
+  @media (max-width:520px){
+    .tabs{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:4px}
+    .tab{font-size:12px;white-space:nowrap;line-height:1.1;padding:9px 2px;gap:4px}
+    .tab .tl{overflow:hidden;text-overflow:ellipsis}
+  }
+  /* ☀️/🌙 토글 */
+  #studioThemeBtn{gap:5px}
+  #studioThemeBtn .tico{font-size:12.5px;line-height:1}
+
 </style>
 <body>
 
@@ -1458,6 +1977,7 @@
     <button class="btn-guide" id="apiGuideBtn" aria-expanded="false" aria-controls="apiGuide">🔑 Gemini 연결 <span class="cv">▼</span></button>
     <button class="btn-guide" id="howBtn" aria-expanded="false" aria-controls="howModal">📖 사용법</button>
     <button class="btn-install" id="pwaInstallBtn" type="button" title="AI 스튜디오를 홈 화면에 앱으로 설치" hidden>📲 앱 설치</button>
+    <button class="btn-guide" id="studioThemeBtn" type="button" aria-pressed="false" title="🌒 라이트 모드로 (이 브라우저에 저장)"><span class="tico" id="studioThemeIco">☀️</span><span id="studioThemeTxt">라이트</span></button>
   </div>
 </header>
 
@@ -1519,10 +2039,10 @@
 </div>
 
 <nav class="tabs" role="tablist" aria-label="모드 전환">
-  <button class="tab on" id="tabVideo" role="tab" aria-selected="true" aria-controls="panelVideo">🎬 AI 영상 스튜디오</button>
-  <button class="tab" id="tabShorts" role="tab" aria-selected="false" aria-controls="panelShorts">📱 쇼츠 스튜디오</button>
-  <button class="tab" id="tabBlog" role="tab" aria-selected="false" aria-controls="panelBlog">✍️ 블로그 자동 작성기</button>
-  <button class="tab" id="tabSum" role="tab" aria-selected="false" aria-controls="panelSum">📋 요약</button>
+  <button class="tab on" id="tabVideo" role="tab" aria-selected="true" aria-controls="panelVideo" title="AI 영상 스튜디오 — 클립 합치기·유튜브"><span class="tl">🎬 영상</span></button>
+  <button class="tab" id="tabShorts" role="tab" aria-selected="false" aria-controls="panelShorts" title="쇼츠 스튜디오 — 대본 → 1080×1920 영상"><span class="tl">📱 쇼츠</span></button>
+  <button class="tab" id="tabBlog" role="tab" aria-selected="false" aria-controls="panelBlog" title="블로그 자동 작성기 — 테마 → 본문 → 변환·복사"><span class="tl">✍️ 블로그</span></button>
+  <button class="tab" id="tabSum" role="tab" aria-selected="false" aria-controls="panelSum" title="요약 — 유튜브·문서·영상 → 3줄/타임라인/표"><span class="tl">📋 요약</span></button>
 </nav>
 
 <div class="feedbanner" id="feedBanner" hidden role="status" aria-live="polite">
@@ -1792,14 +2312,184 @@
 <!-- ================= BLOG ================= -->
 <section id="panelBlog" role="tabpanel" aria-labelledby="tabBlog" hidden>
   <div id="blogMain">
-  <div class="csauto" id="blogAutoBar">
-    <div class="csauto-t">
-      <b>⚡ 블로그 원클릭 세팅</b>
-      <span class="csauto-s" id="blogAutoState">지금 고른 테마에 맞춰 [주제]·[참고 자료]·양식·크림 그래프까지 한 번에 세팅합니다.</span>
-      <div class="blogauto-themes" id="blogAutoThemes" role="group" aria-label="블로그 테마 빠른 선택 9개"></div>
+  <!-- ① 테마 고르고 원클릭 -->
+  <div class="card stepcard" id="step1Card" data-step="1">
+    <div class="stephead">
+      <span class="stepn">1</span><h2>테마 고르고 원클릭</h2>
+      <span class="bdg info" id="step1ThemeName">—</span>
     </div>
-    <button class="btn primary big csauto-btn" id="blogAutoBtn" type="button" title="지금 고른 블로그 테마(9개)에 맞춰 주제·참고 자료·블로거 양식·크림 그래프·증거 카드까지 자동으로 세팅하고 [🤖 AI 본문 생성] 자리로 이동합니다">⚡ 블로그 원클릭 세팅</button>
+    <div class="blogauto-themes" id="blogAutoThemes" role="group" aria-label="블로그 테마 빠른 선택 9개"></div>
+    <div class="slotrow blogslot" id="blogSlotRow" role="group" aria-label="폭스시그널 시간대 1클릭" hidden>
+      <span class="flabel">🦊 폭스시그널 시간대</span>
+      <button class="btn small primary" id="stepSlotPre" type="button" title="장전 재료(밤사이 미 증시·야간선물·원달러)를 채우고 5번 양식으로 바꿉니다">🌅 장전</button>
+      <button class="btn small primary" id="stepSlotClose" type="button" title="정규장 결산 + NXT 애프터장 + 야간선물 재료를 채우고 6번 양식으로 바꿉니다">🌙 통합 마감</button>
+      <button class="btn small primary" id="stepSlotWeekend" type="button" title="피클이 주말에 만들어 둔 주말 뉴스 초안을 불러와 주제·참고 자료·본문을 채웁니다">🗞️ 주말 뉴스</button>
+    </div>
+    <div class="csauto-s" id="blogAutoState">지금 고른 테마에 맞춰 [주제]·[참고 자료]·양식·크림 그래프까지 한 번에 세팅합니다.</div>
+    <button class="btn primary big" id="blogAutoBtn" type="button" title="지금 고른 블로그 테마(9개)에 맞춰 주제·참고 자료·블로거 양식·크림 그래프·증거 카드까지 자동으로 세팅하고 [🤖 AI 본문 생성] 자리로 이동합니다">⚡ 블로그 원클릭 세팅</button>
   </div>
+
+  <!-- ② 본문 만들기 -->
+  <div class="card stepcard" id="step2Card" data-step="2">
+    <div class="stephead">
+      <span class="stepn">2</span><h2>본문 만들기</h2>
+      <span class="bdg info" id="step2Badge">—</span>
+    </div>
+    <div class="step-actions">
+      <button class="btn primary big" id="blogDraftMain" type="button" title="피클이 시간대별로 만들어 둔 최신 초안을 읽어 제목·본문·태그를 결과 카드에 채우고 그 자리로 이동합니다">📥 피클 초안</button>
+      <button class="btn ghost big" id="stepGenBtn" type="button" title="Gemini가 선택한 테마·양식·내 문체로 본문을 새로 씁니다 (보통 10~25초)">🤖 AI 본문 생성</button>
+    </div>
+    <p class="hint" id="step2Hint">주식 = <b>📥 피클 초안</b>(크레딧 0) · 나머지 8테마 = <b>🤖 AI 본문 생성</b>(Gemini 10~25초)</p>
+    <div id="aiNoteBlog"></div>
+  </div>
+
+  <!-- ③ 변환 & 복사 -->
+  <div class="stepwrap" id="step3" data-step="3">
+    <div class="stephead">
+      <span class="stepn">3</span><h2>변환 &amp; 복사</h2>
+      <span class="bdg real" id="step3Stat">대기</span>
+    </div>
+      <div class="card" id="titleCard" hidden>
+        <div class="card-head"><span class="num">7</span><h2>제목 3종 세트</h2><span class="bdg real">✓ 이 화면에서 생성</span></div>
+        <div class="titlelist" id="titleList"></div>
+        <div class="naver" id="naverPrev"></div>
+        <button class="btn small ghost" id="copyTitleBtn" style="margin-top:8px">선택한 제목 복사</button>
+        <p class="hint" style="margin-top:8px">제목을 누르면 미리보기가 바뀝니다. 네이버 <b>모바일 검색 결과 제목</b>은 <b>30자</b>부터 줄어들고, PC 검색은 <b>32자</b>에서 잘립니다. 아래 막대의 <b style="color:#fb923c">주황 기준선</b>이 30자 위치입니다.</p>
+        <div class="seowrap">
+          <div class="seohead">🔍 검색 유입 해시태그 10개 <span class="bdg info" id="seoBadge">본문 기반</span></div>
+          <div class="seotags" id="seoTags"><span class="hint">본문을 만들고 [해시태그 10개 뽑기]를 누르면 검색어·해시태그 10개를 뽑습니다. 칩을 누르면 하나만 복사됩니다.</span></div>
+          <div class="quick" style="margin-top:9px">
+            <button class="btn small" id="seoBtn">🔍 해시태그 10개 뽑기</button>
+            <button class="btn small naver" id="seoCopyBtn" hidden>10개 복사</button>
+          </div>
+          <div id="seoNote"></div>
+          <div class="seoauto" id="seoAuto" hidden></div>
+        </div>
+      </div>
+      <div class="card" id="outCard" hidden style="padding:0;background:none;border:none">
+        <div class="out-card">
+          <div class="out-head">
+            <h3>📄 생성된 마크다운 뼈대</h3>
+            <span class="bdg real" id="outStat">생성됨</span>
+            <span class="spacer"></span>
+            <button class="btn small" id="editOutBtn">✎ 편집</button>
+            <button class="btn small ghost" id="saveBlogBtn">보관함에 저장</button>
+            <button class="btn small primary" id="copyBtn">복사</button>
+            <button class="btn small naver" id="copyHtmlBtn" title="네이버 스마트에디터에 붙여넣으면 굵은 소제목·인용구·표·형광펜·수치 색이 그대로 살아 있는 HTML로 복사합니다">📋 네이버 서식 복사</button>
+            <button class="btn small tistory" id="copyTistoryBtn" title="티스토리 글쓰기(HTML 모드·기본 모드)에 붙여넣어도 색·형광펜·표·인용구가 깨지지 않도록 인라인 스타일을 맞춘 HTML로 복사합니다">📋 티스토리 서식 복사</button>
+            <a class="btn small ghost wlink" href="https://foxsignal.tistory.com/manage/newpost" target="_blank" rel="noopener noreferrer" title="내 티스토리 글쓰기 페이지를 새 창으로 엽니다">🦊 티스토리 글쓰기 ↗</a>
+            <a class="btn small naver wlink" href="https://blog.naver.com/GoBlogWrite.naver" target="_blank" rel="noopener noreferrer" title="내 네이버 블로그 글쓰기 페이지를 새 창으로 엽니다">💚 네이버 글쓰기 ↗</a>
+          </div>
+          <div class="outact" style="padding:0 11px 9px;border-bottom:1px solid var(--line)">
+            <button class="btn small primary" id="proofBtn" type="button" title="편집장 관점으로 한 번 더 점검합니다: 거짓 경험담·AI 문구·양식 누락·맞춤법">✨ 2차 검수·다듬기</button>
+            <button class="btn small naver" id="naverToneBtn" type="button" title="티스토리 원고를 말투·도입부·소제목 구성을 바꾼 네이버용 요약본으로 다시 씁니다(같은 글 그대로 올리면 중복 문서로 노출이 떨어질 수 있음). 원본은 그대로 두고 새 카드에 만듭니다.">🟢 네이버용 톤 변환</button>
+            <button class="btn small" id="pickleCopyBtn" type="button" title="본문 + 테마·블로거 양식 정보를 피클 채팅에 붙여넣을 수 있게 복사합니다">📋 피클 점검용 복사</button>
+            <button class="btn small mon" id="affilBtn" type="button" title="저장한 제휴 링크와 필수 고지 문구를 본문 끝에 넣습니다(다시 누르면 뺍니다)">💰 제휴 링크·고지 넣기</button>
+            <button class="btn small primary" id="blogOneShotBtn" type="button" title="이 글 하나로 쇼츠 v3 대본·MP3·MP4 JSON·추천 차트 PNG를 한 번에 뽑습니다">🎬 이 글로 쇼츠 JSON·제목 한 번에</button>
+            <button class="btn small primary" id="msBtn" type="button" title="이 한 편을 네이버·티스토리·인스타·쇼츠 4채널로 한 번에 바꿉니다">🚀 4채널 동시 변환</button>
+            <button class="btn small primary" id="blogToShortsBtn" type="button" title="이 글을 50초 5컷 쇼츠 대본으로 바꿔 복사하고, 📱 쇼츠 스튜디오 대본 칸과 🎬 웹 영상 생성기에 바로 넣습니다">📱 쇼츠로 변환</button>
+          </div>
+          <div class="pubbar">
+            <button class="btn small ghost" id="whitePrevBtn" type="button" aria-pressed="false" title="티스토리·네이버 흰 바탕에 붙여넣었을 때의 색·형광펜·표·인용구 모습을 그대로 확인합니다(복사본과 같은 HTML)">📄 흰 배경 미리보기</button>
+            <label class="ptoggle"><input type="checkbox" id="ytBoxOn" checked> 📺 유튜브 @폭스시그널 박스</label>
+            <button class="btn small" id="tagCopyBtn" type="button" title="검색 태그 10개를 만들어 한 번에 복사합니다(SEO 태그가 있으면 그 값을 씁니다)">🏷️ 태그 10개 복사</button>
+            <button class="btn small primary" id="saveAllGraphs" type="button" title="대표 썸네일 + 크림 수급 차트 + 상승·하락 차트를 PNG로 한 번에 저장합니다">🖼️ 그래프 전체 저장</button>
+            <button class="btn small primary" id="sum3Btn" type="button" title="오늘 핵심 결론 1줄 + 코스피·코스닥 + 신호등만 담은 3초 요약 카드(1080×1080)를 바로 저장합니다">🦊 3초 요약 카드 저장</button>
+          </div>
+          <div class="tagstrip" id="tagStrip" hidden></div>
+          <div class="outwhite" id="outWhite" hidden></div>
+          <div class="proofbadge" id="proofNote" hidden></div>
+          <pre class="out" id="outText"></pre>
+          <textarea class="outedit" id="outEdit" hidden aria-label="초안 직접 편집"></textarea>
+          <div class="out-foot"><b>[AI 본문 생성]은 Gemini가 쓴 완성 본문입니다.</b> 값·날짜·업체명은 [확인 필요]로 남아 있을 수 있으니 발행 전에 직접 확인하세요. 여기서 고쳐 쓰면 그대로 보관함에 저장됩니다.</div>
+        </div>
+      </div>
+      <div class="card" id="naverCard" hidden>
+        <div class="card-head">
+          <span class="num">🟢</span><h2>네이버용 톤 변환 (요약본)</h2>
+          <span class="bdg real" id="naverBadge">—</span>
+          <span class="spacer"></span>
+          <button class="btn small ghost" id="naverCloseBtn" type="button">닫기</button>
+        </div>
+        <p class="hint" style="margin-bottom:6px">티스토리 원고는 <b>그대로 두고</b>, 말투·도입부·소제목 구성을 바꾼 <b>네이버용 요약본</b>을 새로 만듭니다. 같은 글을 두 곳에 그대로 올리면 중복 문서로 노출이 떨어질 수 있어 결을 다르게 씁니다.</p>
+        <div class="field">
+          <label class="flabel" for="naverTitle">네이버 제목 (모바일 30자 권장)</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <input type="text" id="naverTitle" maxlength="90" autocomplete="off" placeholder="네이버용 제목" style="flex:1 1 180px">
+            <button class="btn small ghost" id="naverTitleCopy" type="button">제목만 복사</button>
+          </div>
+        </div>
+        <div id="naverNote"></div>
+        <pre class="out" id="naverText"></pre>
+        <div class="seotags" id="naverTags"></div>
+        <div class="outact" style="padding:9px 0 0;border:none">
+          <button class="btn small primary" id="naverCopyBtn" type="button" title="제목을 뺀 본문 + 티스토리·관제탑·특가 레이더 링크 + 해시태그를 복사합니다">📋 요약본 복사</button>
+          <button class="btn small naver" id="naverRichBtn" type="button" title="네이버 스마트에디터에 붙여넣으면 소제목·인용구·굵은 글씨가 살아 있는 HTML로 복사합니다">📋 네이버 서식 복사</button>
+          <button class="btn small" id="naverTagBtn" type="button">🏷️ 태그 복사</button>
+          <button class="btn small ghost" id="naverAgainBtn" type="button">🔄 다시 변환</button>
+        </div>
+        <div class="out-foot">요약본은 <b>원본을 덮어쓰지 않습니다.</b> 숫자·날짜·[확인 필요]는 그대로 두고 문장과 구성을 바꿉니다. 발행 전 값은 직접 확인하세요.</div>
+      </div>
+      <div class="card" id="msCard" hidden>
+        <div class="card-head">
+          <span class="num">🚀</span><h2>1편 → 4채널 동시 변환</h2>
+          <span class="bdg info" id="msBadge">한 번에</span>
+          <span class="spacer"></span>
+          <button class="btn small ghost" id="msCloseBtn" type="button">닫기</button>
+        </div>
+        <div id="msBody"></div>
+      </div>
+      <div class="card" id="multiCard" hidden>
+        <div class="card-head">
+          <span class="num">✦</span><h2>📱 인스타·스레드 3줄 요약</h2>
+          <span class="bdg real" id="multiBadge">Gemini</span>
+          <span class="spacer"></span>
+          <button class="btn small naver" id="copyMultiBtn">복사</button>
+        </div>
+        <div class="multi-lines" id="multiLines"></div>
+        <div class="seotags" id="multiTags"></div>
+        <p class="hint" style="margin-top:8px">3줄 + 해시태그는 그대로 붙여넣으면 되고, 쇼츠 대본은 아래 <b>50초 쇼츠 대본</b> 카드에 같이 채워집니다.</p>
+      </div>
+      <div class="card" id="shortsCard" hidden>
+        <div class="card-head">
+          <span class="num">10</span><h2>🎬 50초 쇼츠 대본</h2>
+          <span class="bdg real" id="shortsBadge">Gemini</span>
+          <span class="spacer"></span>
+          <button class="btn small mon" id="shortsAffilBtn" type="button" title="제휴 링크·필수 고지를 넣은 고정 댓글 초안을 만듭니다">💰 제휴·고지</button>
+          <button class="btn small" id="copyShortsBtn">복사</button>
+          <button class="btn small primary" id="toVideoBtn">영상 탭으로 보내기</button>
+          <button class="btn small" id="toShortsTtsBtn" type="button" title="이 50초 대본을 ElevenLabs 성우로 읽어 봅니다">🔊 미리듣기</button>
+          <button class="btn small ghost" id="toShortsTtsMp3" type="button" title="미리듣기 음성을 .mp3로 저장" disabled>⬇ MP3</button>
+          <button class="btn small primary" id="toShortsVideoBtn" type="button" title="브라우저에서 1080×1920 쇼츠 영상을 직접 만듭니다 (크레딧 0)">🎬 웹에서 바로 영상 생성</button>
+        </div>
+        <div id="shortsOut"></div>
+        <div id="shortsPin"></div>
+        <div class="ttsbox" id="toShortsTtsBox" hidden></div>
+        <p class="hint" style="margin-top:8px">0~2초 후킹 → 3~40초 핵심 3컷 → 41~50초 엔딩. 대본은 말하는 문장이고, 합성은 <b>[🎬 웹에서 바로 영상 생성]</b>으로 이 브라우저에서 바로 합니다(서버·크레딧 0).</p>
+      </div>
+      <div class="card" id="oneShotCard" hidden>
+        <div class="card-head">
+          <span class="num">8</span><h2>🎬 이 글 하나로 쇼츠 v3 + 차트</h2>
+          <span class="bdg real" id="osStat">—</span>
+          <button class="btn small ghost" id="osClose" type="button" style="margin-left:auto">닫기</button>
+        </div>
+        <div id="osBody"></div>
+        <div class="out-foot">대본·제목·차트는 블로그 본문을 근거로 다시 씁니다. 본문에 없는 수치·업체명은 만들지 않고 [확인 필요]로 남깁니다.</div>
+      </div>
+
+      <div class="card" id="outEmpty">
+        <div class="empty">
+          <b>아직 생성된 뼈대가 없습니다.</b><br>
+          양식을 고르고 주제를 입력한 뒤 <b>[AI 본문 생성]</b>을 눌러 주세요.<br>
+          생성된 마크다운은 <b>[복사]</b>로 바로 블로그에 붙여 넣을 수 있습니다.
+        </div>
+      </div>
+  </div><!-- /#step3 -->
+
+  <!-- ⚙️ 나머지 세부 옵션 — 기본 접힘. 펼치면 기존 기능 그대로 -->
+  <details class="shelf" id="detailPanel">
+    <summary><span>⚙️ 세부 옵션 펼치기 — 양식 · 참고 글 · 실사진 · 차트 PNG · 자가진단</span><span class="n" id="detailPanelTag">접힘</span><span class="arw">▾</span></summary>
+    <div class="shelfbody">
   <details class="shelf" id="blogAutoGuide">
     <summary><span>📋 이 테마 참고 틀</span><span class="n" id="blogAutoGuideNo">—</span><span class="arw">▾</span></summary>
     <div class="shelfbody" id="blogAutoGuideBody"></div>
@@ -2017,24 +2707,6 @@
     </div>
 
     <div>
-      <div id="aiNoteBlog"></div>
-      <div class="card" id="titleCard" hidden>
-        <div class="card-head"><span class="num">7</span><h2>제목 3종 세트</h2><span class="bdg real">✓ 이 화면에서 생성</span></div>
-        <div class="titlelist" id="titleList"></div>
-        <div class="naver" id="naverPrev"></div>
-        <button class="btn small ghost" id="copyTitleBtn" style="margin-top:8px">선택한 제목 복사</button>
-        <p class="hint" style="margin-top:8px">제목을 누르면 미리보기가 바뀝니다. 네이버 <b>모바일 검색 결과 제목</b>은 <b>30자</b>부터 줄어들고, PC 검색은 <b>32자</b>에서 잘립니다. 아래 막대의 <b style="color:#fb923c">주황 기준선</b>이 30자 위치입니다.</p>
-        <div class="seowrap">
-          <div class="seohead">🔍 검색 유입 해시태그 10개 <span class="bdg info" id="seoBadge">본문 기반</span></div>
-          <div class="seotags" id="seoTags"><span class="hint">본문을 만들고 [해시태그 10개 뽑기]를 누르면 검색어·해시태그 10개를 뽑습니다. 칩을 누르면 하나만 복사됩니다.</span></div>
-          <div class="quick" style="margin-top:9px">
-            <button class="btn small" id="seoBtn">🔍 해시태그 10개 뽑기</button>
-            <button class="btn small naver" id="seoCopyBtn" hidden>10개 복사</button>
-          </div>
-          <div id="seoNote"></div>
-          <div class="seoauto" id="seoAuto" hidden></div>
-        </div>
-      </div>
       <div class="card" id="chartCard">
         <div class="card-head">
           <span class="num">8</span><h2>📊 블로그용 차트 PNG</h2>
@@ -2137,44 +2809,6 @@
         <div class="cvnote" id="cvNote">값은 관제탑이 준 실측치 그대로입니다.</div>
       </div>
 
-      <div class="card" id="outCard" hidden style="padding:0;background:none;border:none">
-        <div class="out-card">
-          <div class="out-head">
-            <h3>📄 생성된 마크다운 뼈대</h3>
-            <span class="bdg real" id="outStat">생성됨</span>
-            <span class="spacer"></span>
-            <button class="btn small" id="editOutBtn">✎ 편집</button>
-            <button class="btn small ghost" id="saveBlogBtn">보관함에 저장</button>
-            <button class="btn small primary" id="copyBtn">복사</button>
-            <button class="btn small naver" id="copyHtmlBtn" title="네이버 스마트에디터에 붙여넣으면 굵은 소제목·인용구·표·형광펜·수치 색이 그대로 살아 있는 HTML로 복사합니다">📋 네이버 서식 복사</button>
-            <button class="btn small tistory" id="copyTistoryBtn" title="티스토리 글쓰기(HTML 모드·기본 모드)에 붙여넣어도 색·형광펜·표·인용구가 깨지지 않도록 인라인 스타일을 맞춘 HTML로 복사합니다">📋 티스토리 서식 복사</button>
-            <a class="btn small ghost wlink" href="https://foxsignal.tistory.com/manage/newpost" target="_blank" rel="noopener noreferrer" title="내 티스토리 글쓰기 페이지를 새 창으로 엽니다">🦊 티스토리 글쓰기 ↗</a>
-            <a class="btn small naver wlink" href="https://blog.naver.com/GoBlogWrite.naver" target="_blank" rel="noopener noreferrer" title="내 네이버 블로그 글쓰기 페이지를 새 창으로 엽니다">💚 네이버 글쓰기 ↗</a>
-          </div>
-          <div class="outact" style="padding:0 11px 9px;border-bottom:1px solid var(--line)">
-            <button class="btn small primary" id="proofBtn" type="button" title="편집장 관점으로 한 번 더 점검합니다: 거짓 경험담·AI 문구·양식 누락·맞춤법">✨ 2차 검수·다듬기</button>
-            <button class="btn small naver" id="naverToneBtn" type="button" title="티스토리 원고를 말투·도입부·소제목 구성을 바꾼 네이버용 요약본으로 다시 씁니다(같은 글 그대로 올리면 중복 문서로 노출이 떨어질 수 있음). 원본은 그대로 두고 새 카드에 만듭니다.">🟢 네이버용 톤 변환</button>
-            <button class="btn small" id="pickleCopyBtn" type="button" title="본문 + 테마·블로거 양식 정보를 피클 채팅에 붙여넣을 수 있게 복사합니다">📋 피클 점검용 복사</button>
-            <button class="btn small mon" id="affilBtn" type="button" title="저장한 제휴 링크와 필수 고지 문구를 본문 끝에 넣습니다(다시 누르면 뺍니다)">💰 제휴 링크·고지 넣기</button>
-            <button class="btn small primary" id="blogOneShotBtn" type="button" title="이 글 하나로 쇼츠 v3 대본·MP3·MP4 JSON·추천 차트 PNG를 한 번에 뽑습니다">🎬 이 글로 쇼츠 JSON·제목 한 번에</button>
-            <button class="btn small primary" id="msBtn" type="button" title="이 한 편을 네이버·티스토리·인스타·쇼츠 4채널로 한 번에 바꿉니다">🚀 4채널 동시 변환</button>
-            <button class="btn small primary" id="blogToShortsBtn" type="button" title="이 글을 50초 5컷 쇼츠 대본으로 바꿔 복사하고, 📱 쇼츠 스튜디오 대본 칸과 🎬 웹 영상 생성기에 바로 넣습니다">📱 쇼츠로 변환</button>
-          </div>
-          <div class="pubbar">
-            <button class="btn small ghost" id="whitePrevBtn" type="button" aria-pressed="false" title="티스토리·네이버 흰 바탕에 붙여넣었을 때의 색·형광펜·표·인용구 모습을 그대로 확인합니다(복사본과 같은 HTML)">📄 흰 배경 미리보기</button>
-            <label class="ptoggle"><input type="checkbox" id="ytBoxOn" checked> 📺 유튜브 @폭스시그널 박스</label>
-            <button class="btn small" id="tagCopyBtn" type="button" title="검색 태그 10개를 만들어 한 번에 복사합니다(SEO 태그가 있으면 그 값을 씁니다)">🏷️ 태그 10개 복사</button>
-            <button class="btn small primary" id="saveAllGraphs" type="button" title="대표 썸네일 + 크림 수급 차트 + 상승·하락 차트를 PNG로 한 번에 저장합니다">🖼️ 그래프 전체 저장</button>
-            <button class="btn small primary" id="sum3Btn" type="button" title="오늘 핵심 결론 1줄 + 코스피·코스닥 + 신호등만 담은 3초 요약 카드(1080×1080)를 바로 저장합니다">🦊 3초 요약 카드 저장</button>
-          </div>
-          <div class="tagstrip" id="tagStrip" hidden></div>
-          <div class="outwhite" id="outWhite" hidden></div>
-          <div class="proofbadge" id="proofNote" hidden></div>
-          <pre class="out" id="outText"></pre>
-          <textarea class="outedit" id="outEdit" hidden aria-label="초안 직접 편집"></textarea>
-          <div class="out-foot"><b>[AI 본문 생성]은 Gemini가 쓴 완성 본문입니다.</b> 값·날짜·업체명은 [확인 필요]로 남아 있을 수 있으니 발행 전에 직접 확인하세요. 여기서 고쳐 쓰면 그대로 보관함에 저장됩니다.</div>
-        </div>
-      </div>
       <div class="card" id="scoreCard" hidden>
         <div class="card-head">
           <span class="num">🔍</span><h2>발행 전 자가 진단</h2>
@@ -2212,52 +2846,6 @@
           <button class="linkbtn" id="undoPolish" hidden>↩ 직전 초안으로 되돌리기</button>
         </div>
       </div>
-      <div class="card" id="multiCard" hidden>
-        <div class="card-head">
-          <span class="num">✦</span><h2>📱 인스타·스레드 3줄 요약</h2>
-          <span class="bdg real" id="multiBadge">Gemini</span>
-          <span class="spacer"></span>
-          <button class="btn small naver" id="copyMultiBtn">복사</button>
-        </div>
-        <div class="multi-lines" id="multiLines"></div>
-        <div class="seotags" id="multiTags"></div>
-        <p class="hint" style="margin-top:8px">3줄 + 해시태그는 그대로 붙여넣으면 되고, 쇼츠 대본은 아래 <b>50초 쇼츠 대본</b> 카드에 같이 채워집니다.</p>
-      </div>
-      <div class="card" id="msCard" hidden>
-        <div class="card-head">
-          <span class="num">🚀</span><h2>1편 → 4채널 동시 변환</h2>
-          <span class="bdg info" id="msBadge">한 번에</span>
-          <span class="spacer"></span>
-          <button class="btn small ghost" id="msCloseBtn" type="button">닫기</button>
-        </div>
-        <div id="msBody"></div>
-      </div>
-      <div class="card" id="naverCard" hidden>
-        <div class="card-head">
-          <span class="num">🟢</span><h2>네이버용 톤 변환 (요약본)</h2>
-          <span class="bdg real" id="naverBadge">—</span>
-          <span class="spacer"></span>
-          <button class="btn small ghost" id="naverCloseBtn" type="button">닫기</button>
-        </div>
-        <p class="hint" style="margin-bottom:6px">티스토리 원고는 <b>그대로 두고</b>, 말투·도입부·소제목 구성을 바꾼 <b>네이버용 요약본</b>을 새로 만듭니다. 같은 글을 두 곳에 그대로 올리면 중복 문서로 노출이 떨어질 수 있어 결을 다르게 씁니다.</p>
-        <div class="field">
-          <label class="flabel" for="naverTitle">네이버 제목 (모바일 30자 권장)</label>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <input type="text" id="naverTitle" maxlength="90" autocomplete="off" placeholder="네이버용 제목" style="flex:1 1 180px">
-            <button class="btn small ghost" id="naverTitleCopy" type="button">제목만 복사</button>
-          </div>
-        </div>
-        <div id="naverNote"></div>
-        <pre class="out" id="naverText"></pre>
-        <div class="seotags" id="naverTags"></div>
-        <div class="outact" style="padding:9px 0 0;border:none">
-          <button class="btn small primary" id="naverCopyBtn" type="button" title="제목을 뺀 본문 + 티스토리·관제탑·특가 레이더 링크 + 해시태그를 복사합니다">📋 요약본 복사</button>
-          <button class="btn small naver" id="naverRichBtn" type="button" title="네이버 스마트에디터에 붙여넣으면 소제목·인용구·굵은 글씨가 살아 있는 HTML로 복사합니다">📋 네이버 서식 복사</button>
-          <button class="btn small" id="naverTagBtn" type="button">🏷️ 태그 복사</button>
-          <button class="btn small ghost" id="naverAgainBtn" type="button">🔄 다시 변환</button>
-        </div>
-        <div class="out-foot">요약본은 <b>원본을 덮어쓰지 않습니다.</b> 숫자·날짜·[확인 필요]는 그대로 두고 문장과 구성을 바꿉니다. 발행 전 값은 직접 확인하세요.</div>
-      </div>
       <div class="card" id="photoCard" hidden>
         <div class="card-head">
           <span class="num">8</span><h2>📸 본문 추천 사진 & 썸네일</h2>
@@ -2293,41 +2881,15 @@
         <button class="btn primary big" id="toShortsBtn" style="margin-top:11px">🎬 이 글로 50초 쇼츠 대본 넘기기</button>
         <p class="hint" style="margin-top:8px">주제와 핵심 3줄을 <b>영상 탭 스토리 방향</b>으로 넘깁니다. 남의 영상 컷편집이 아니라 <b>내 클립·스톡으로 새로 만드는 50초 대본</b>입니다.</p>
       </div>
-      <div class="card" id="shortsCard" hidden>
-        <div class="card-head">
-          <span class="num">10</span><h2>🎬 50초 쇼츠 대본</h2>
-          <span class="bdg real" id="shortsBadge">Gemini</span>
-          <span class="spacer"></span>
-          <button class="btn small mon" id="shortsAffilBtn" type="button" title="제휴 링크·필수 고지를 넣은 고정 댓글 초안을 만듭니다">💰 제휴·고지</button>
-          <button class="btn small" id="copyShortsBtn">복사</button>
-          <button class="btn small primary" id="toVideoBtn">영상 탭으로 보내기</button>
-          <button class="btn small" id="toShortsTtsBtn" type="button" title="이 50초 대본을 ElevenLabs 성우로 읽어 봅니다">🔊 미리듣기</button>
-          <button class="btn small ghost" id="toShortsTtsMp3" type="button" title="미리듣기 음성을 .mp3로 저장" disabled>⬇ MP3</button>
-          <button class="btn small primary" id="toShortsVideoBtn" type="button" title="브라우저에서 1080×1920 쇼츠 영상을 직접 만듭니다 (크레딧 0)">🎬 웹에서 바로 영상 생성</button>
-        </div>
-        <div id="shortsOut"></div>
-        <div id="shortsPin"></div>
-        <div class="ttsbox" id="toShortsTtsBox" hidden></div>
-        <p class="hint" style="margin-top:8px">0~2초 후킹 → 3~40초 핵심 3컷 → 41~50초 엔딩. 대본은 말하는 문장이고, 합성은 <b>[🎬 웹에서 바로 영상 생성]</b>으로 이 브라우저에서 바로 합니다(서버·크레딧 0).</p>
-      </div>
-      <div class="card" id="oneShotCard" hidden>
-        <div class="card-head">
-          <span class="num">8</span><h2>🎬 이 글 하나로 쇼츠 v3 + 차트</h2>
-          <span class="bdg real" id="osStat">—</span>
-          <button class="btn small ghost" id="osClose" type="button" style="margin-left:auto">닫기</button>
-        </div>
-        <div id="osBody"></div>
-        <div class="out-foot">대본·제목·차트는 블로그 본문을 근거로 다시 씁니다. 본문에 없는 수치·업체명은 만들지 않고 [확인 필요]로 남깁니다.</div>
-      </div>
-
-      <div class="card" id="outEmpty">
-        <div class="empty">
-          <b>아직 생성된 뼈대가 없습니다.</b><br>
-          양식을 고르고 주제를 입력한 뒤 <b>[AI 본문 생성]</b>을 눌러 주세요.<br>
-          생성된 마크다운은 <b>[복사]</b>로 바로 블로그에 붙여 넣을 수 있습니다.
-        </div>
       </div>
     </div>
+  </div>
+  </div><!-- /#detailPanel body -->
+  </details><!-- /#detailPanel -->
+
+  <div class="studiobar" id="studioBar">
+    <button class="btn" id="barAutoBtn" type="button" title="지금 고른 테마로 원클릭 세팅">⚡ 원클릭 세팅</button>
+    <button class="btn primary" id="barStep2Btn" type="button" title="주식 = 피클 초안 · 나머지 테마 = AI 본문 생성">🤖 AI 본문 생성</button>
   </div>
   </div><!-- /#blogMain -->
 </section>
@@ -2471,7 +3033,7 @@
   </div><!-- /#shortsMain -->
 
 <!-- ================= 🎬 웹 쇼츠 영상 생성기 (Canvas 1080×1920 + MediaRecorder · 크레딧 0) ================= -->
-<details class="shelf" id="wvPanel" open>
+<details class="shelf" id="wvPanel">
   <summary><span>🎬 웹 영상 생성기 — 대본 → 🦊 폭스시그널 → 1080×1920 완성 · 크레딧 0</span><span class="n" id="wvState">대기</span><span class="arw">▾</span></summary>
   <div class="shelfbody">
     <div class="wvhead">
@@ -2608,6 +3170,26 @@
         <div class="wvthumbs" id="wvThumbs"></div>
       </div>
     </details>
+  </details><!-- /#wvPanel -->
+    <div class="wvrender">
+      <canvas id="wvCanvas" width="1080" height="1920" aria-label="쇼츠 영상 미리보기"></canvas>
+      <div class="wvside">
+        <div class="wvprog"><i id="wvBar"></i></div>
+        <div class="hint" id="wvMsg">쇼츠 카드의 [🎬 영상 생성 (크레딧 0)]을 누르면 이 브라우저가 직접 그려 녹화합니다.</div>
+        <div class="wvrow">
+          <button class="btn small primary" id="wvStart" type="button">▶ 생성</button>
+          <button class="btn small" id="wvStop" type="button" disabled>■ 중지</button>
+        </div>
+        <div class="wvrow">
+          <button class="btn small" id="wvUpBtn" type="button" title="제목 + 설명글 + 해시태그 + 고정 댓글을 한 번에 복사">📋 업로드 세트 복사</button>
+          <button class="btn small" id="wvSrtBtn" type="button" title="지금 컷들의 타임스탬프·자막을 표준 .srt 형식으로 복사 — 캡컷·프리미어에서 바로 불러옵니다">📝 자막 SRT 복사</button>
+          <button class="btn small" id="wvThumbBtn" type="button" title="유튜브 쇼츠 업로드용 대표 썸네일 1080×1920 PNG 1장을 바로 저장합니다">🖼️ 쇼츠 대표 썸네일 저장</button>
+          <a class="btn small ghost" id="wvDl" hidden download>⬇ 영상 저장</a>
+        </div>
+        <div class="hint">MP4 우선, 브라우저가 못 만들면 WebM으로 저장합니다. 생성 중에는 이 탭을 닫지 마세요.</div>
+      </div>
+    </div>
+    <video id="wvVideo" controls playsinline hidden></video>
 </section>
 
 <!-- ================= 📋 요약 ================= -->
@@ -2717,27 +3299,6 @@
 </section>
 
 
-    <div class="wvrender">
-      <canvas id="wvCanvas" width="1080" height="1920" aria-label="쇼츠 영상 미리보기"></canvas>
-      <div class="wvside">
-        <div class="wvprog"><i id="wvBar"></i></div>
-        <div class="hint" id="wvMsg">쇼츠 카드의 [🎬 영상 생성 (크레딧 0)]을 누르면 이 브라우저가 직접 그려 녹화합니다.</div>
-        <div class="wvrow">
-          <button class="btn small primary" id="wvStart" type="button">▶ 생성</button>
-          <button class="btn small" id="wvStop" type="button" disabled>■ 중지</button>
-        </div>
-        <div class="wvrow">
-          <button class="btn small" id="wvUpBtn" type="button" title="제목 + 설명글 + 해시태그 + 고정 댓글을 한 번에 복사">📋 업로드 세트 복사</button>
-          <button class="btn small" id="wvSrtBtn" type="button" title="지금 컷들의 타임스탬프·자막을 표준 .srt 형식으로 복사 — 캡컷·프리미어에서 바로 불러옵니다">📝 자막 SRT 복사</button>
-          <button class="btn small" id="wvThumbBtn" type="button" title="유튜브 쇼츠 업로드용 대표 썸네일 1080×1920 PNG 1장을 바로 저장합니다">🖼️ 쇼츠 대표 썸네일 저장</button>
-          <a class="btn small ghost" id="wvDl" hidden download>⬇ 영상 저장</a>
-        </div>
-        <div class="hint">MP4 우선, 브라우저가 못 만들면 WebM으로 저장합니다. 생성 중에는 이 탭을 닫지 마세요.</div>
-      </div>
-    </div>
-    <video id="wvVideo" controls playsinline hidden></video>
-  </div>
-</details>
 
 <footer>
 
@@ -5815,6 +6376,8 @@ var CSVoice = (function () {
     if (panelSum) panelSum.hidden = !sm;
     /* 쇼츠·블로그는 같은 스튜디오의 두 탭 — 모드 상태(SH.mode)도 같이 맞춘다 (noTab=true 로 재진입 방지) */
     if (typeof shSetMode === 'function' && (b || sh)) shSetMode(sh ? 'shorts' : 'blog', true, true);
+    /* 하단 고정 바·본문 여백용 탭 상태 (CSS html[data-cs-tab="blog"]) */
+    try { document.documentElement.setAttribute('data-cs-tab', v ? 'video' : b ? 'blog' : sh ? 'shorts' : 'sum'); } catch (eTab) {}
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   tabVideo.addEventListener('click', function(){ setTab('video'); });
@@ -7464,7 +8027,7 @@ var CSVoice = (function () {
     var note = $('#aiNoteBlog');
     note.innerHTML = '';
     try {
-      var j = await callAI('blog', blogPayload(topic, f), $('#genBtn'), 'Gemini가 본문 쓰는 중…');
+      var j = await callAI('blog', blogPayload(topic, f), document.getElementById('stepGenBtn') || $('#genBtn'), 'Gemini가 본문 쓰는 중…');
       var d = j.data || {};
       var text = String(d.body == null ? '' : d.body);
       if (!text.trim()) throw Object.assign(new Error('본문이 비어 왔습니다. 다시 눌러 주세요.'), { status: 200, payload: {} });
@@ -13111,6 +13674,8 @@ var CSVoice = (function () {
     }).then(function (r) {
       FEED_BUSY = false;
       if (btn) spinner(btn, false);
+      /* 블로그 초안이 결과 카드에 올라갔으면 그 카드 자리로 데려간다 (#outCard 착지) */
+      if (r && window.studioLandOut) setTimeout(function(){ try { window.studioLandOut(); } catch (e) {} }, 90);
       return r;
     });
   }
@@ -13657,7 +14222,7 @@ var CSVoice = (function () {
   }
   var BLOG_AUTO_BUSY = false;
   function blogAutoScroll(){
-    var b = document.getElementById('genBtn');
+    var b = document.getElementById('stepGenBtn') || document.getElementById('genBtn');
     if (!b) return false;
     function seen(){
       var r = b.getBoundingClientRect(), vh = window.innerHeight || 800;
@@ -23842,7 +24407,9 @@ var CSVoice = (function () {
        quiet=true 는 피클 초안 자동 로드 — 탭 이동·스크롤 없이 조용히 채운다. */
     if (!quiet && window.CS2_TAB) { try { window.CS2_TAB('shorts'); } catch (e) {} }
     var p = $('#wvPanel');
-    if (p) { p.open = true; if (!quiet) { try { p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} } }
+    /* quiet(피클 초안 자동 로드)일 때는 패널을 펼치지 않는다 — 쇼츠 탭 기본 화면은 접힘.
+       사용자가 직접 누른 흐름(원클릭 세팅·대본 적용·시간대 1클릭)에서만 펼친다. */
+    if (p) { if (!quiet) { p.open = true; try { p.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {} } }
   }
   function setSrcTag(spec, label) {
     var src = $('#wvSrc');
@@ -25868,7 +26435,8 @@ var CSVoice = (function () {
   }
 
   var SHORTS_APPLY = '[data-cs-slot],[data-feed-draft="shorts"]';
-  var BLOG_APPLY = '#feedDraftBtn,#slotPreBtn,#slotCloseBtn,#briefFeedBtn,#dealFeedBtn,#mktBtn,#matToBlog';
+  /* #feedDraftBtn 은 피클 초안 → #outCard 로 직접 착지하므로 여기서 뺀다 */
+  var BLOG_APPLY = '#slotPreBtn,#slotCloseBtn,#briefFeedBtn,#dealFeedBtn,#mktBtn,#matToBlog';
 
   document.addEventListener('click', function (e) {
     var t = e.target;
@@ -25911,16 +26479,116 @@ var CSVoice = (function () {
     var bApply = t.closest(BLOG_APPLY);
     if (bApply && !inShorts(bApply)) {
       hi(bApply.closest('.matpanel-row') || bApply);
-      if (bApply.id === 'matToBlog') { goWhenReady('#genBtn', 'center'); return; }
-      afterApply('#outCard', '#genBtn', 'center');
+      if (bApply.id === 'matToBlog') { goWhenReady('#stepGenBtn,#genBtn', 'center'); return; }
+      afterApply('#outCard', '#stepGenBtn,#genBtn', 'center');
       return;
     }
   }, true);
 
+  window.STUDIO_GO = goWhenReady;   /* 3단계·하단 바에서 결과 카드 착지에 쓴다 */
   window.FOXSTEP6 = true;
 })();
 
 </script>
+
+<script>
+/* ===== ☀️/🌙 테마 · 3단계 스텝 · 하단 고정 바 (2026-11-22) ===== */
+(function(){
+  var KEY = 'studio_theme';
+  var META = { dark: '#070c14', light: '#f5f7fb' };
+  function now(){ return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'; }
+  function paint(t, save){
+    document.documentElement.setAttribute('data-theme', t);
+    var ico = document.getElementById('studioThemeIco');
+    var txt = document.getElementById('studioThemeTxt');
+    var btn = document.getElementById('studioThemeBtn');
+    if (ico) ico.textContent = (t === 'light') ? '🌙' : '☀️';
+    if (txt) txt.textContent = (t === 'light') ? '다크' : '라이트';
+    if (btn) { btn.setAttribute('aria-pressed', t === 'light' ? 'true' : 'false'); btn.title = (t === 'light' ? '🌙 다크 모드로' : '☀️ 라이트 모드로') + ' (이 브라우저에 저장)'; }
+    var m = document.getElementById('themeColorMeta');
+    if (m) m.setAttribute('content', META[t] || META.dark);
+    if (save) { try { localStorage.setItem(KEY, t); } catch (e) {} }
+  }
+  paint(now(), false);
+  var tb = document.getElementById('studioThemeBtn');
+  if (tb) tb.addEventListener('click', function(){ paint(now() === 'light' ? 'dark' : 'light', true); });
+
+  /* ---------- 테마 칩 → ②번 버튼 강조 전환 ---------- */
+  var NAMES = { travel: '✈️ 여행(특가)', selfhelp: '📘 자기계발', economy: '💹 경제', novel: '📖 소설',
+    stock: '📈 주식시장분석', living: '🏠 생활지혜', cooking: '🍳 요리', parenting: '👨‍👩‍👧 육아', hottem: '🏷️ SNS 핫템' };
+  function theme(){
+    try { if (window.CS2_BLOG_AUTO && window.CS2_BLOG_AUTO.theme) return window.CS2_BLOG_AUTO.theme() || ''; } catch (e) {}
+    var on = document.querySelector('#formChips .fchip.on');
+    return on ? (on.getAttribute('data-id') || on.getAttribute('data-theme') || '') : '';
+  }
+  function stepSync(){
+    var t = theme(), stock = (t === 'stock');
+    var row = document.getElementById('blogSlotRow'); if (row) row.hidden = !stock;
+    var nm = document.getElementById('step1ThemeName'); if (nm) nm.textContent = NAMES[t] || t || '—';
+    var d = document.getElementById('blogDraftMain'), g = document.getElementById('stepGenBtn');
+    if (d) { d.classList.toggle('primary', stock); d.classList.toggle('ghost', !stock); }
+    if (g) { g.classList.toggle('primary', !stock); g.classList.toggle('ghost', stock); }
+    var bd = document.getElementById('step2Badge'); if (bd) bd.textContent = stock ? '📥 피클 초안 = 크레딧 0' : '🤖 Gemini 생성';
+    var bar = document.getElementById('barStep2Btn');
+    if (bar) { bar.textContent = stock ? '📥 피클 초안' : '🤖 AI 본문 생성'; bar.setAttribute('data-mode', stock ? 'draft' : 'gen'); }
+    var hint = document.getElementById('step2Hint');
+    if (hint) hint.innerHTML = stock
+      ? '주식 = <b>📥 피클 초안</b>(크레딧 0) — 원클릭 세팅이 오늘 초안·실측을 이미 올려 둡니다.'
+      : '이 테마 = <b>🤖 AI 본문 생성</b>(Gemini 10~25초) · 주제·참고 자료는 위 ①에서 자동으로 채워집니다.';
+  }
+  function runStepSync(){ try { stepSync(); } catch (e) {} }
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if (!t || !t.closest) return;
+    if (t.closest('#blogAutoThemes [data-bat]') || t.closest('#formChips .fchip')) setTimeout(runStepSync, 70);
+  }, true);
+  setTimeout(runStepSync, 400);
+  setTimeout(runStepSync, 1800);
+
+  /* ---------- 버튼 배선 ---------- */
+  function hit(id){ var el = document.getElementById(id); if (!el) return false; try { el.click(); return true; } catch (e) { return false; } }
+  var map = {
+    blogDraftMain: function(){ hit('feedDraftBtn'); },
+    stepGenBtn: function(){ hit('genBtn'); },
+    barAutoBtn: function(){ hit('blogAutoBtn'); },
+    stepSlotPre: function(){ hit('slotPreBtn'); },
+    stepSlotClose: function(){ hit('slotCloseBtn'); },
+    stepSlotWeekend: function(){ hit('slotWeekendBtn'); }
+  };
+  Object.keys(map).forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) el.addEventListener('click', map[id]);
+  });
+  var bar2 = document.getElementById('barStep2Btn');
+  if (bar2) bar2.addEventListener('click', function(){
+    if (theme() === 'stock') hit('feedDraftBtn'); else hit('genBtn');
+  });
+
+  /* ---------- ③번 상태 배지 미러 · 세부 옵션 태그 ---------- */
+  var outStat = document.getElementById('outStat'), s3 = document.getElementById('step3Stat');
+  if (outStat && s3){
+    function mirror(){ var v = String(outStat.textContent || '').trim(); if (v) s3.textContent = v; }
+    mirror();
+    try { new MutationObserver(mirror).observe(outStat, { childList: true, characterData: true, subtree: true }); } catch (e) {}
+  }
+  var dp = document.getElementById('detailPanel'), dpTag = document.getElementById('detailPanelTag');
+  if (dp && dpTag){
+    function tag(){ dpTag.textContent = dp.open ? '펼침' : '접힘'; }
+    dp.addEventListener('toggle', tag); tag();
+  }
+  /* 탭이 블로그가 아니면 하단 바 여백 속성도 맞춘다(첫 진입·딥링크) */
+  try {
+    var pb = document.getElementById('panelBlog');
+    document.documentElement.setAttribute('data-cs-tab', (pb && !pb.hidden) ? 'blog' : 'video');
+  } catch (e) {}
+  /* 쇼츠 탭 상단 '⚡ 생성 직전까지 원클릭 세팅'이 닫힌 생성기 패널을 펼친다 */
+  var cs = document.getElementById('csAutoBtn');
+  if (cs) cs.addEventListener('click', function(){
+    var wp = document.getElementById('wvPanel');
+    if (wp && !wp.open) { try { wp.open = true; } catch (e) {} }
+  });
+})();
+</script>
 </body>
-<!-- deploy-stamp: role-templates-2026-11-20 -->
+<!-- deploy-stamp: studio-3step-light-2026-11-22 -->
 </html>
