@@ -13294,9 +13294,10 @@ var CSVoice = (function () {
   function blogAutoSlot(){
     var d = new Date(), wd = d.getDay(), m = d.getHours() * 60 + d.getMinutes();
     var n = Number(bloggerPick['stock']);
-    if (wd === 0 || wd === 6) return 'after';     /* 주말 — 마지막 거래일 결산(통합 마감) */
-    if (n === 6) return 'after';
+    /* 양식을 직접 고른 경우(5번 장전 · 6번 통합 마감)가 우선 — 그다음 주말/시각 기본값 */
     if (n === 5) return 'pre';
+    if (n === 6) return 'after';
+    if (wd === 0 || wd === 6) return 'after';     /* 주말 — 마지막 거래일 결산(통합 마감) */
     return (m < 15 * 60) ? 'pre' : 'after';
   }
   function bStamp(v){
@@ -13503,7 +13504,7 @@ var CSVoice = (function () {
     var m = BLOG_AUTO_META[theme] || { icon: '📝', name: theme };
     if (theme === 'stock'){
       var slot = blogAutoSlot(), d = SLOT_DEF[slot] || SLOT_DEF.pre;
-      var wk = [0, 6].indexOf(new Date().getDay()) >= 0;
+      var wk = slot === 'after' && [0, 6].indexOf(new Date().getDay()) >= 0;
       return '지금 테마 <b>📈 주식시장분석</b> · ' + d.icon + ' <b>' + esc(d.name) + '</b> 실측(관제탑 지수·수급·브리핑·성적표)으로 주제·참고 자료·' +
         (slot === 'pre' ? '5번' : '6번') + ' 양식·크림 그래프·증거 카드를 채우고 <b>[🤖 AI 본문 생성]</b> 자리로 이동합니다.' +
         (wk ? ' <b class="wk">(주말 — 마지막 거래일 결산 기준)</b>' : '');
@@ -13548,15 +13549,22 @@ var CSVoice = (function () {
   function blogAutoScroll(){
     var b = document.getElementById('genBtn');
     if (!b) return false;
-    /* 즉시 이동 → 레이아웃이 밀렸으면 한 번 더(굴러가는 중에 읽는 일이 없게) */
-    try { b.scrollIntoView({ behavior: 'auto', block: 'center' }); } catch (e) { try { b.scrollIntoView(); } catch (e2) {} }
-    var r = b.getBoundingClientRect(), vh = window.innerHeight || 800;
-    if (r.top < 60 || r.bottom > vh - 20){
+    function seen(){
+      var r = b.getBoundingClientRect(), vh = window.innerHeight || 800;
+      return r.top >= 70 && r.bottom <= vh - 24 && r.height > 0;
+    }
+    function jump(){
+      try { b.scrollIntoView({ behavior: 'auto', block: 'center' }); } catch (e) { try { b.scrollIntoView(); } catch (e2) {} }
+      if (seen()) return;
+      var r = b.getBoundingClientRect(), vh = window.innerHeight || 800;
       var y = window.scrollY + r.top - Math.max(90, (vh - r.height) / 2);
       try { window.scrollTo(0, Math.max(0, y)); } catch (e3) {}
     }
+    jump();
     try { b.classList.add('bauto-hi'); } catch (e4) {}
-    setTimeout(function () { try { b.classList.remove('bauto-hi'); } catch (e5) {} }, 3400);
+    /* 그래프·카드가 늦게 그려져 높이가 밀리면 다시 맞춘다(화면 안에 들어오면 멈춘다) */
+    [260, 700, 1400].forEach(function (ms) { setTimeout(function () { if (!seen()) jump(); }, ms); });
+    setTimeout(function () { try { b.classList.remove('bauto-hi'); } catch (e5) {} }, 3600);
     return true;
   }
   function blogAutoStart(btn){
