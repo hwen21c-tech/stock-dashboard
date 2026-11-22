@@ -171,6 +171,23 @@
   }
   .toast.show{opacity:1}
 
+  /* ---- 🛡️ 공시·경보 신호등 / 📍 상태 판정 / 🧠 1초 해석 ---- */
+  .sig.red{background:#FDECEA;color:#8B1A12;border-color:#F3C6C0}
+  .statebar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:11px}
+  .statechip{font-size:12.8px;font-weight:900;border-radius:999px;padding:6px 12px;border:1px solid transparent;letter-spacing:-.02em}
+  .statechip.warn{background:#FDECEA;color:#8B1A12;border-color:#F3C6C0}
+  .statechip.hot{background:#FFF1E0;color:#9A3412;border-color:#F5CDA6}
+  .statechip.strong{background:#E8F5EC;color:#15612F;border-color:#BFE0C8}
+  .statechip.dip{background:#EFF4FF;color:#1E3A8A;border-color:#C7D6F5}
+  .statechip.weak{background:#EDF1F7;color:#334155;border-color:#D3DCE8}
+  .statechip.idle{background:#F1EEE7;color:#5E5546;border-color:#DFD7C7}
+  .statenote{font-size:10.8px;font-weight:800;color:var(--sub);line-height:1.4}
+  .stline{flex:1 1 100%;font-size:10.4px;font-weight:750;color:var(--mute);line-height:1.45}
+  .whyline{font-size:12.7px;font-weight:750;color:var(--ink);line-height:1.62;padding:3px 0;word-break:keep-all;overflow-wrap:break-word}
+  .aitag{display:inline-block;font-size:9.8px;font-weight:900;border-radius:6px;padding:2px 7px;margin-right:6px;background:#781B33;color:#FFF9EC;vertical-align:1px}
+  .aitag.rule{background:#8E8271}
+  .whynote{font-size:10.4px;font-weight:750;color:var(--mute);margin-top:6px;line-height:1.5}
+
   .links{margin-top:14px;display:grid;gap:7px}  .links a{
     display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);
     background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;font-weight:800;
@@ -243,7 +260,11 @@
   'use strict';
   var $ = function(id){ return document.getElementById(id); };
   var LIVE_BASE = 'https://stock-dashboard-live-6frm.vercel.app';
-  var state = { snap: null, score: null, busy: false, last: null, sigLabel: null, sigP: null, sigResolve: null, w52Seq: 0 };
+  var state = {
+    snap: null, score: null, busy: false, last: null, sigLabel: null, sigP: null, sigResolve: null, w52Seq: 0,
+    seq: 0, w52pos: null, market: null, themeData: null, whyShown: 'skeleton',
+    risk: { dart: null, krx: null, dartP: null, krxP: null, themeP: null, p52: null }
+  };
 
   /* ---------- 숫자·색 도우미 ---------- */
   function n(v){ var x = Number(v); return isFinite(x) ? x : null; }
@@ -431,6 +452,15 @@
     go(state.sigLabel || '테마 확인 전');
   }
 
+  /* 약속이 늦어도 UI 를 붙잡지 않도록 — ms 안에 안 오면 null 로 넘어간다 */
+  function settle(p, ms){
+    if (!p) return Promise.resolve(null);
+    return Promise.race([
+      p.catch(function(){ return null; }),
+      new Promise(function(res){ setTimeout(function(){ res(null); }, ms); })
+    ]);
+  }
+
   /* ---------- 📊 52주(최근 1년) 위치 — 실측 일봉으로만 계산 ---------- */
   function chartApi(){ return apiBase() + '/api/stock-chart'; }
   function spanDays(a, b){
@@ -446,8 +476,9 @@
   function load52(code, mySeq){
     var host = $('w52'); if (!host) return;
     host.hidden = true; host.innerHTML = '';
-    if (!code) return;
-    fetchJson(chartApi() + '?code=' + encodeURIComponent(code) + '&count=260', 12000).then(function(j){
+    state.w52pos = null;
+    if (!code){ state.risk.p52 = Promise.resolve(null); return; }
+    state.risk.p52 = fetchJson(chartApi() + '?code=' + encodeURIComponent(code) + '&count=260', 12000).then(function(j){
       if (mySeq !== state.w52Seq) return;
       var cs = (j && j.candles) || [];
       if (cs.length < 60) return;      /* 일봉이 모자라면 52주 줄은 조용히 숨긴다(가짜 값 금지) */
@@ -470,6 +501,8 @@
         '<div class="ends"><span>최저 ' + won(lo) + '</span><span>최고 ' + won(hi) + '</span></div>' +
         '<div class="note">' + esc(label) + ' 실측 일봉 ' + esc(fmtDate(from)) + '~' + esc(fmtDate(to)) + ' · 0%=최저 · 100%=최고</div>';
       host.hidden = false;
+      state.w52pos = pos;
+      stateRender();
     }).catch(function(){ /* 실측 일봉을 받지 못하면 52주 줄만 숨긴다 */ });
   }
 
@@ -529,7 +562,8 @@
       if (!hit && isCode && rows.length === 1) hit = rows[0];
       if (!hit) throw new Error('not_found');
       var basisTxt = '실측 · ' + (j.generatedAtKst || '');
-      show(hit, { live: true, basis: basisTxt, tradeDate: (hit.tradedAt || '').slice(0, 10), marketStatus: j.marketStatus });
+      show(hit, { live: true, basis: basisTxt, tradeDate: (hit.tradedAt || '').slice(0, 10), marketStatus: j.marketStatus },
+        { indices: j.indices || [], futures: j.futures || [], fx: j.fx || null, macro: j.macro || null, marketStatus: j.marketStatus || null });
       msg('', '');
     }).catch(function(){
       /* 실시간이 막히면 마지막 거래일 스냅샷으로 */
@@ -624,8 +658,14 @@
     return lines.join('<br>');
   }
 
-  function show(d, meta){
+  function show(d, meta, market){
     var out = $('out');
+    state.seq = (state.seq || 0) + 1;
+    state.market = market || null;
+    state.themeData = null;
+    state.w52pos = null;
+    state.whyShown = 'skeleton';
+    state.risk = { dart: null, krx: null, dartP: null, krxP: null, themeP: null, p52: null };
     var price = n(d.price), chg = n(d.changePct);
     var val = n(d.valueTotal);
     var valEok = val == null ? null : Math.round(val / 1e8);
@@ -645,6 +685,8 @@
     h += '<div class="price"><span class="p ' + dirClass(chg) + '">' + won(price) + '</span>' +
          '<span class="c ' + dirClass(chg) + '">' + pct(chg) + '</span>' +
          (n(d.change) != null ? '<span style="font-size:12px;font-weight:800;color:var(--mute)">' + (n(d.change) > 0 ? '+' : '') + Math.round(n(d.change)).toLocaleString('ko-KR') + '원</span>' : '') + '</div>';
+    /* 📍 현재 상태 한 줄 판정 — 실측 값 조합(투자 권유 아님) */
+    h += '<div class="statebar" id="stateBar"><span class="statechip idle">📍 판정 준비 중…</span></div>';
     h += '<div class="kpi">' +
       '<div class="k"><span>통합 거래대금</span><b>' + (valEok == null ? '—' : eok(valEok)) + '</b>' + liqChip(tier) +
       '<div class="bar' + (tier ? ' liq-' + tier.key : '') + '"><i style="width:' + pctOfBar + '%"></i></div>' +
@@ -667,6 +709,22 @@
       ' · 대금은 통합(KRX+NXT·시간외) 기준 · 위치 %는 그날 시가·고가·저가 대비입니다.' +
       (meta.live ? '<br>※ 등락률·전일 종가는 네이버 폴링 값(시간외 반영)이라 일봉 종가 기준과 소수점이 다를 수 있습니다.' : '') + '</div>';
     h += '</div>';
+
+    /* 🛡️ DART 공시 · KRX 시장경보 신호등 */
+    h += '<div class="card" id="riskCard">' +
+      '<div class="ihead"><span>🛡️ 공시 · 시장경보 신호등</span><span class="ibasis">DART · KRX</span></div>' +
+      '<div class="sigrow"><span class="sig none">⚪ 공시·경보 확인 중…</span></div>' +
+      '<div class="iload">최근 공시와 KRX 지정 현황을 읽는 중…</div></div>';
+
+    /* 🧠 왜 오르고/빠졌나 — 1초 해석 */
+    h += '<div class="card" id="whyCard">' +
+      '<div class="ihead"><span>🧠 왜 오르고/빠졌나 — 1초 해석</span><span class="ibasis">실측 + AI</span></div>' +
+      '<div id="whyBody">' +
+      '<div class="skel" style="width:92%;margin-top:9px"></div>' +
+      '<div class="skel" style="width:100%;margin-top:8px"></div>' +
+      '<div class="skel" style="width:66%;margin-top:8px"></div></div>' +
+      '<div class="rule">실측 값(등락률·시가 위치·거래대금·52주 위치·소속 테마·최근 뉴스·공시·미장 지표)만 근거로 정리한 참고 해석이며 투자 권유가 아닙니다. 받지 못한 값은 적지 않습니다.</div>' +
+      '</div>';
     out.innerHTML = h;
     out.hidden = false;
     out.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -675,8 +733,350 @@
     var cpBtn = $('copyBtn'); if (cpBtn) cpBtn.addEventListener('click', copySummary);
     syncStar();
     state.w52Seq = (state.w52Seq || 0) + 1;
+    var my = state.seq;
     load52(d.code, state.w52Seq);
     loadInsight(d.code, d.name, d.changePct);
+    if (d.code){
+      loadDart(d.code, my);
+      loadAlerts(d.code, my);
+    } else {
+      state.risk.dart = { ok: false, reason: 'no_code' };
+      state.risk.krx = { ok: false, reason: 'no_code' };
+      renderRiskCard();
+    }
+    stateRender();
+    startWhy(my);
+  }
+
+  /* ============================================================
+     🛡️ DART 공시 · KRX 시장경보 신호등
+     · DART  : /api/dart-live?code=  — corp_code 기준 '이 회사만' 최근 30일 조회
+     · KRX   : /api/stock-live?mode=alerts&code= — 공식 지정 현황에서 이 종목 한 줄
+     · 못 받은 값은 '미확인'으로 적는다(공시 없음·경보 없음으로 지어내지 않는다).
+     ============================================================ */
+  function dartSignal(dart){
+    if (!dart) return { key: 'unknown', label: '⚪ 공시 미확인', note: 'DART 조회 전' };
+    if (dart.ok && dart.signal) return dart.signal;
+    var why = dart.reason === 'DART_API_KEY_NOT_SET' ? 'DART 키 미설정'
+            : dart.reason === 'corp_not_found' ? 'DART 고유번호 미확인'
+            : dart.reason === 'no_code' ? '종목코드 없음'
+            : 'DART 응답 실패';
+    return { key: 'unknown', label: '⚪ 공시 미확인', note: why };
+  }
+  function krxRow(krx){
+    if (!krx || krx.ok === false) return null;
+    return krx.stock || null;
+  }
+  function krxLine(krx){
+    if (!krx) return 'KRX 경보 목록 확인 중…';
+    if (krx.ok === false) return 'KRX 경보 목록 미확인 — ' + (krx.reason === 'no_code' ? '종목코드 없음' : '응답을 받지 못했습니다');
+    var row = krx.stock || null;
+    if (row && row.tradeStop) return 'KRX: 거래정지 종목' + (row.haltDate ? ' (' + fmtDate(row.haltDate) + ')' : '');
+    if (row && row.alertLabel) return 'KRX: ' + row.alertLabel + ' 지정';
+    return 'KRX: 투자주의·투자경고·투자위험·거래정지 목록에 없음';
+  }
+  function renderRiskCard(){
+    var host = $('riskCard'); if (!host) return;
+    var dart = state.risk.dart, krx = state.risk.krx;
+    var ds = dartSignal(dart);
+    var row = krxRow(krx);
+    var krxOk = !!(krx && krx.ok !== false);
+    var krxHit = !!(row && (row.tradeStop || row.alertLabel));
+    var key = 'unknown', label = '⚪ 공시·경보 미확인', note = '';
+    if (ds.key === 'red'){
+      key = 'red'; label = '🔴 투자주의·희석성 공시 주의'; note = ds.note || '';
+    } else if (krxHit){
+      key = 'red'; label = '🔴 KRX 경보·거래정지 주의';
+      note = row.tradeStop ? '거래정지 종목' : (row.alertLabel || '') + ' 지정';
+    } else if (ds.key === 'yellow'){
+      key = 'yellow'; label = '🟡 최근 공시 확인 필요'; note = ds.note || '';
+    } else if (ds.key === 'green' && krxOk && !krxHit){
+      key = 'green'; label = '🟢 공시·경보 이상 없음'; note = ds.note || '';
+    } else {
+      key = 'unknown'; label = '⚪ 공시·경보 미확인';
+      note = ds.key === 'green' ? 'KRX 경보 목록을 받지 못했습니다' : (ds.note || '조회 실패');
+    }
+    var items = (dart && dart.ok && dart.items) ? dart.items.slice(0, 5) : [];
+    var h = '<div class="ihead"><span>🛡️ 공시 · 시장경보 신호등</span><span class="ibasis">DART' +
+      (dart && dart.period ? ' 최근 ' + dart.period.days + '일' : '') + ' · KRX</span></div>';
+    h += '<div class="sigrow"><span class="sig ' + esc(key) + '">' + esc(label) + '</span>' +
+      (note ? '<span class="signote">' + esc(note) + '</span>' : '') + '</div>';
+    if (items.length){
+      h += '<ul class="mlist">' + items.map(function(x){
+        var tag = x.kind === 'risk' ? '🔴' : x.kind === 'watch' ? '🟡' : '⚪';
+        var t = esc(x.reportNm || '');
+        var body = x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener"><b>' + t + '</b></a>' : '<b>' + t + '</b>';
+        var meta = [x.kindLabel, x.rceptDate, x.filerName].filter(Boolean).join(' · ');
+        return '<li>' + tag + ' ' + body + (meta ? '<span class="meta">' + esc(meta) + '</span>' : '') + '</li>';
+      }).join('') + '</ul>';
+    }
+    var dline;
+    if (dart && dart.ok){
+      var c = dart.counts || {};
+      var dd = (dart.period && dart.period.days) || 30;
+      dline = 'DART: 최근 ' + dd + '일 공시 ' + (c.total || 0) + '건' +
+        (c.total ? ' (위험 ' + (c.risk || 0) + ' · 주목 ' + (c.watch || 0) + (c.info ? ' · 일반 ' + c.info : '') + ')' : ' — 없음');
+    } else {
+      dline = 'DART: 미확인' + (ds.note ? ' — ' + ds.note : '');
+    }
+    h += '<div class="signote" style="margin-top:8px">' + esc(dline) + '</div>';
+    h += '<div class="signote" style="margin-top:4px">' + esc(krxLine(krx)) + '</div>';
+    h += '<div class="rule">① DART 는 종목코드를 공식 고유번호(corp_code)로 바꿔 <b>이 회사만</b> 최근 30일 공시를 조회합니다(전체 공시 스캔이 아니라 그 회사 전수). ' +
+      '② 공시 유형은 공시명 키워드 자동 분류입니다 — 위험(유증·CB·감자·횡령·소송 등) / 주목(수주·최대주주·실적 등) / 일반. ' +
+      '③ KRX 는 네이버 금융이 정리한 투자주의·경고·위험·거래정지 지정 현황입니다. 본문 해석·주가 판단이 아닙니다.</div>';
+    host.innerHTML = h;
+  }
+
+  function loadDart(code, my){
+    state.risk.dart = null;
+    var nm = (state.last && state.last.name) ? '&name=' + encodeURIComponent(state.last.name) : '';
+    state.risk.dartP = fetchJson(apiBase() + '/api/dart-live?code=' + encodeURIComponent(code) + nm + '&days=30', 14000)
+      .catch(function(e){ return { ok: false, reason: 'network', message: String(e && e.message || e) }; });
+    state.risk.dartP.then(function(j){
+      if (my !== state.seq) return;
+      state.risk.dart = j || { ok: false, reason: 'network' };
+      renderRiskCard();
+      stateRender();
+    });
+  }
+
+  function loadAlerts(code, my){
+    state.risk.krx = null;
+    state.risk.krxP = fetchJson(apiBase() + '/api/stock-live?mode=alerts&code=' + encodeURIComponent(code), 14000)
+      .catch(function(e){ return { ok: false, reason: 'network', message: String(e && e.message || e) }; });
+    state.risk.krxP.then(function(j){
+      if (my !== state.seq) return;
+      state.risk.krx = j || { ok: false, reason: 'network' };
+      renderRiskCard();
+      stateRender();
+    });
+  }
+
+  /* ============================================================
+     📍 현재 상태 한 줄 판정 — 실측 값만 조합한 조건 판정
+     우선순위: 공시·경보 주의 → 단기 과열 → 약세 → 수급 유입 → 눌림 → 중립
+     ============================================================ */
+  function stateJudge(){
+    var d = state.last || {};
+    var chg = n(d.changePct), cur = n(d.price), open = n(d.open), val = n(d.valueTotal);
+    var openPos = (cur != null && open) ? (cur - open) / open * 100 : null;
+    var w52 = state.w52pos;
+    var ds = dartSignal(state.risk.dart);
+    var row = krxRow(state.risk.krx);
+    var krxHit = !!(row && (row.tradeStop || row.alertLabel));
+    var tier = liqTier(val);
+    if (ds.key === 'red' || krxHit){
+      var why = [];
+      if (ds.key === 'red') why.push('위험 키워드 공시');
+      if (row && row.tradeStop) why.push('거래정지');
+      else if (row && row.alertLabel) why.push(row.alertLabel + ' 지정');
+      return { key: 'warn', label: '⚠️ 공시·경보 주의', note: why.join(' · ') };
+    }
+    if (w52 != null && w52 >= 85 && chg != null && chg >= 5){
+      return { key: 'hot', label: '🔥 단기 과열·추격 주의', note: '52주 위치 ' + w52.toFixed(0) + '% · 오늘 ' + pct(chg) };
+    }
+    if (openPos != null && openPos <= -3){
+      return { key: 'weak', label: '🧊 약세 관망', note: '시가 대비 ' + pct(openPos) + (chg != null ? ' · 오늘 ' + pct(chg) : '') };
+    }
+    if (val != null && val >= 3e10 && chg != null && chg > 0 && openPos != null && openPos >= 0){
+      return { key: 'strong', label: '🌊 수급 유입 강세', note: '거래대금 ' + eok(Math.round(val / 1e8)) + ' · 시가 대비 ' + pct(openPos) };
+    }
+    if (val != null && val >= 3e10 && openPos != null && (Math.abs(openPos) <= 1 || (chg != null && chg <= -2 && chg >= -5))){
+      return { key: 'dip', label: '👀 눌림 관찰 구간', note: '거래대금 ' + eok(Math.round(val / 1e8)) + ' · 시가 대비 ' + pct(openPos) };
+    }
+    if (chg == null && openPos == null && val == null){
+      return { key: 'idle', label: '⚪ 판정 보류', note: '실측 값이 모자랍니다' };
+    }
+    var bits = [];
+    if (openPos != null) bits.push('시가 대비 ' + pct(openPos));
+    if (chg != null) bits.push('오늘 ' + pct(chg));
+    if (tier) bits.push(tier.label);
+    return { key: 'idle', label: '⚪ 중립 관망', note: bits.join(' · ') };
+  }
+  function stateRender(){
+    var host = $('stateBar'); if (!host) return;
+    var j = stateJudge();
+    host.innerHTML = '<span class="statechip ' + esc(j.key) + '">' + esc(j.label) + '</span>' +
+      (j.note ? '<span class="statenote">' + esc(j.note) + '</span>' : '') +
+      '<span class="stline">📍 오늘 실측 값(등락률·시가 위치·거래대금·52주 위치·공시·경보)으로 고른 조건 판정이며 투자 권유가 아닙니다.</span>';
+  }
+
+  /* ============================================================
+     🧠 왜 오르고/빠졌나 — 1초 해석 (Gemini) + 실측 규칙 요약
+     ============================================================ */
+  function macroList(mk){
+    var out = [];
+    if (!mk || !mk.macro) return out;
+    Object.keys(mk.macro).forEach(function(k){
+      var x = mk.macro[k];
+      if (x && x.name) out.push({ name: String(x.name), changePct: n(x.changePct) });
+    });
+    return out;
+  }
+  function marketBits(){
+    var mk = state.market || {};
+    var bits = [];
+    macroList(mk).forEach(function(x){
+      if (/SOX|반도체/.test(x.name) && x.changePct != null) bits.push(x.name + ' ' + pct(x.changePct));
+    });
+    (mk.futures || []).slice(0, 2).forEach(function(x){
+      var c = n(x.changePct);
+      if (x && x.name && c != null) bits.push(String(x.name) + ' ' + pct(c));
+    });
+    if (!bits.length && mk.fx && mk.fx.name && n(mk.fx.changePct) != null){
+      bits.push(mk.fx.name + ' ' + pct(mk.fx.changePct));
+    }
+    if (!bits.length && mk.indices){
+      (mk.indices || []).slice(0, 2).forEach(function(x){
+        var c = n(x.changePct);
+        if (x && x.name && c != null) bits.push(String(x.name) + ' ' + pct(c));
+      });
+    }
+    return bits;
+  }
+  function whyRuleLines(){
+    var d = state.last || {}, t = state.themeData || null;
+    var chg = n(d.changePct), cur = n(d.price), open = n(d.open), val = n(d.valueTotal);
+    var openPos = (cur != null && open) ? (cur - open) / open * 100 : null;
+    var lines = [];
+    var p1 = [];
+    if (cur != null) p1.push(won(cur));
+    if (chg != null) p1.push(pct(chg));
+    if (openPos != null) p1.push(openPos >= 0 ? '시가 위' : '시가 아래');
+    if (val != null) p1.push('대금 ' + eok(Math.round(val / 1e8)));
+    lines.push(p1.length ? p1.join(' · ') : '실측 시세를 받지 못했습니다');
+    var mk = marketBits();
+    var thName = t && t.primary ? t.primary.name : null;
+    var thAvg = t && t.primary ? n(t.primary.top4Avg) : null;
+    var w = [];
+    if (mk.length) w.push('미장 ' + mk.join(' · '));
+    if (thName) w.push('소속 테마 ' + thName + (thAvg != null ? ' 상위4 평균 ' + pct(thAvg) : ''));
+    if (w.length){
+      var same = (chg != null && thAvg != null) ? ((chg >= 0) === (thAvg >= 0)) : null;
+      lines.push(w.join(' / ') + (same === true ? ' — 같은 방향' : same === false ? ' — 이 종목은 반대 방향' : ''));
+    }
+    var tail = [];
+    var news = (t && t.news && t.news.recent) ? t.news.recent[0] : null;
+    if (news && news.title) tail.push('최근 재료 “' + news.title + '”');
+    var dart = state.risk.dart, ds = dartSignal(dart);
+    if (ds.key !== 'unknown') tail.push('공시 ' + ds.label.replace(/^[^ ]+ /, ''));
+    var row = krxRow(state.risk.krx);
+    if (row && row.tradeStop) tail.push('거래정지 종목');
+    else if (row && row.alertLabel) tail.push('KRX ' + row.alertLabel + ' 지정');
+    if (tail.length) lines.push(tail.join(' · '));
+    return lines.slice(0, 3);
+  }
+  function factsForAi(){
+    var d = state.last || {}, t = state.themeData || null;
+    var chg = n(d.changePct), cur = n(d.price), open = n(d.open), val = n(d.valueTotal);
+    var openPos = (cur != null && open) ? (cur - open) / open * 100 : null;
+    var highPos = (cur != null && n(d.high)) ? (cur - n(d.high)) / n(d.high) * 100 : null;
+    var tier = liqTier(val);
+    var dart = state.risk.dart, ds = dartSignal(dart);
+    var row = krxRow(state.risk.krx);
+    var krxOk = !!(state.risk.krx && state.risk.krx.ok !== false);
+    var th = (t && t.primary) ? {
+      '대표': t.primary.name || null,
+      '순위': t.primary.rank || null,
+      '전체': t.primary.total || null,
+      '평균등락률': n(t.primary.changeRate),
+      '상위4평균': n(t.primary.top4Avg),
+      '신호': (t.signal && t.signal.label) || null,
+      '상위4': (t.top4 || []).slice(0, 4).map(function(x){ return { '이름': x.name || null, '등락률': n(x.changePct) }; })
+    } : {};
+    var news = [];
+    if (t && t.news && t.news.recent){
+      t.news.recent.slice(0, 2).forEach(function(x){
+        if (x && x.title) news.push({ '제목': x.title, '언론사': x.press || null, '시각': x.isToday ? (x.time || '오늘') : (x.date || null) });
+      });
+    }
+    var mk = state.market || {};
+    var mkFacts = {
+      '지수': (mk.indices || []).slice(0, 3).map(function(x){ return { '이름': x.name, '등락률': n(x.changePct) }; }),
+      '선물': (mk.futures || []).slice(0, 2).map(function(x){ return { '이름': x.name, '등락률': n(x.changePct) }; }),
+      '매크로': macroList(mk).map(function(x){ return { '이름': x.name, '등락률': x.changePct }; }),
+      '환율': (mk.fx && mk.fx.name) ? { '이름': mk.fx.name, '등락률': n(mk.fx.changePct) } : null
+    };
+    var items = (dart && dart.ok && dart.items) ? dart.items.slice(0, 3).map(function(x){ return { '공시명': x.reportNm, '접수일': x.rceptDate }; }) : [];
+    var judge = stateJudge();
+    return {
+      '종목': {
+        '이름': d.name || null, '코드': d.code || null,
+        '현재가': cur, '등락률': chg, '시가': open, '고가': n(d.high), '저가': n(d.low),
+        '시가대비': openPos, '고가대비': highPos,
+        '거래대금억': val == null ? null : Math.round(val / 1e8), '거래대금체급': tier ? tier.label : null,
+        '위치52주': state.w52pos == null ? null : Number(Number(state.w52pos).toFixed(1)), '시장상태': (state.market && state.market.marketStatus) || null,
+        '기준일': (d.tradedAt || '').slice(0, 10) || null
+      },
+      '테마': th,
+      '뉴스': news,
+      '미장': mkFacts,
+      '공시': {
+        '신호': ds.key === 'unknown' ? null : ds.label,
+        '위험건수': (dart && dart.ok && dart.counts) ? dart.counts.risk : null,
+        '최근': items,
+        '조회기간일': (dart && dart.period) ? dart.period.days : null
+      },
+      '경보': {
+        '지정': row ? (row.alertLabel || null) : null,
+        '거래정지': row ? !!row.tradeStop : (krxOk ? false : null)
+      },
+      '상태': judge.label
+    };
+  }
+  function renderWhy(lines, meta){
+    var host = $('whyBody'); if (!host) return;
+    var src = meta && meta.source === 'ai' ? 'ai' : 'rule';
+    state.whyShown = src;
+    var tag = src === 'ai' ? '<span class="aitag">AI 해석</span>' : '<span class="aitag rule">실측 요약</span>';
+    host.innerHTML = (lines || []).map(function(l, i){
+      return '<div class="whyline">' + (i === 0 ? tag : '') + esc(l) + '</div>';
+    }).join('') +
+      (meta && meta.note ? '<div class="whynote">' + esc(meta.note) + '</div>' : '') +
+      (meta && meta.pending ? '<div class="whynote">🧠 AI 해석을 받는 중… 도착하면 이 자리에 바뀝니다.</div>' : '');
+  }
+  function whyAiRequest(my){
+    var body;
+    try { body = JSON.stringify({ action: 'stock_insight', facts: factsForAi() }); }
+    catch(e){ return; }
+    var ctrl = window.AbortController ? new AbortController() : null;
+    var tm = setTimeout(function(){ try { if (ctrl) ctrl.abort(); } catch(e){} }, 16000);
+    fetch(apiBase() + '/api/content-ai', {
+      method: 'POST', cache: 'no-store',
+      headers: { 'Content-Type': 'application/json' },
+      body: body, signal: ctrl ? ctrl.signal : undefined
+    }).then(function(r){
+      clearTimeout(tm);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function(j){
+      if (my !== state.seq) return;
+      if (j && j.ok && (j.lines || []).length){
+        renderWhy(j.lines, { source: j.source === 'ai' ? 'ai' : 'rule', note: j.note || null });
+      } else {
+        renderWhy(whyRuleLines(), { source: 'rule', note: (j && j.message) || 'AI 해석을 받지 못해 실측 값만으로 정리했습니다.' });
+      }
+    }).catch(function(){
+      clearTimeout(tm);
+      if (my !== state.seq) return;
+      renderWhy(whyRuleLines(), { source: 'rule', note: 'AI 해석을 받지 못해 실측 값만으로 정리했습니다(수치는 실측값).' });
+    });
+  }
+  function startWhy(my){
+    /* 사실(테마·DART·경보·52주)이 늦게 오므로 최대 2.6초만 기다렸다가 AI에 묻는다 */
+    Promise.all([
+      settle(state.risk.themeP, 3000),
+      settle(state.risk.dartP, 4500),
+      settle(state.risk.krxP, 3000),
+      settle(state.risk.p52, 900)
+    ]).then(function(){
+      if (my !== state.seq) return;
+      whyAiRequest(my);
+      setTimeout(function(){
+        if (my !== state.seq || state.whyShown !== 'skeleton') return;
+        renderWhy(whyRuleLines(), { source: 'rule', pending: true });
+      }, 1400);
+    });
   }
 
   /* ============================================================
@@ -898,14 +1298,19 @@
       '<div class="skel" style="width:64%;margin-top:9px"></div><div class="skel" style="width:100%;margin-top:8px"></div></div>';
     var url = apiQuery() + '?mode=theme&code=' + encodeURIComponent(code);
     if (stockPct != null && isFinite(Number(stockPct))) url += '&pct=' + encodeURIComponent(Number(stockPct));
-    fetchJson(url, 14000).then(function(j){
-      if (my !== insSeq) return;
+    state.themeData = null;
+    state.risk.themeP = fetchJson(url, 14000).then(function(j){
+      if (my !== insSeq) return null;
       if (!j || j.ok !== true) throw new Error((j && j.reason) || 'theme_fail');
+      state.themeData = j;
       renderInsight(j, code, name, stockPct);
       window.__checkerCode = code;
+      return j;
     }).catch(function(){
-      if (my !== insSeq) return;
+      if (my !== insSeq) return null;
+      state.themeData = null;
       insightFallback(code, name, stockPct);
+      return null;
     });
   }
 
