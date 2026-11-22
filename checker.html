@@ -4,9 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#F7F3E9">
-<meta name="description" content="종목명이나 코드 하나로 오늘 거래대금 300억 통과 여부·등락률·시가/고가/저가 대비 위치를 1초에 확인하는 폭스시그널 무료 체커.">
+<meta name="description" content="종목명이나 코드 하나로 오늘 거래대금 300억 통과 여부·등락률·시가/고가/저가 대비 위치와 소속 테마·최근 재료를 1초에 확인하는 폭스시그널 무료 체커.">
 <title>🔍 내 종목 300억·추세 1초 체커 — 폭스시그널</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🦊</text></svg>">
+<!-- 📲 이 페이지 전용 PWA (관제탑과 id·start_url·scope 를 분리해 따로 설치된다) -->
+<link rel="manifest" href="manifest-checker.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="1초체커">
+<link rel="apple-touch-icon" sizes="180x180" href="checker-apple-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="checker-icon-192.png">
 <style>
   :root{
     --cream:#F7F3E9; --card:#FFFDF7; --ink:#20180F; --sub:#6B5E4C; --mute:#8E8271; --line:#E3DAC8;
@@ -84,6 +91,48 @@
   .pos span{display:block;font-size:10.4px;font-weight:800;color:var(--mute)}
   .pos b{font-size:12.8px;font-weight:900;font-variant-numeric:tabular-nums}
 
+  /* ---- 소속 테마 · 신호등 / 재료 카드 ---- */
+  .ihead{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:900;letter-spacing:-.02em}
+  .ihead .ibasis{font-size:10.5px;font-weight:800;color:var(--mute)}
+  .sigrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
+  .sig{font-size:13px;font-weight:900;border-radius:999px;padding:5px 11px;border:1px solid transparent;letter-spacing:-.02em}
+  .sig.green{background:#E8F5EC;color:#15612F;border-color:#BFE0C8}
+  .sig.yellow{background:#FFF6E0;color:#8A5A0B;border-color:#EFD9A6}
+  .sig.gray{background:#F1EEE7;color:#5E5546;border-color:#DFD7C7}
+  .sig.none{background:#F1EEE7;color:#7A7163;border-color:#DFD7C7}
+  .signote{font-size:11px;font-weight:800;color:var(--sub)}
+  .tbox{margin-top:10px;background:#FBF7EC;border:1px solid var(--line);border-radius:12px;padding:10px 11px}
+  .tname{font-size:14.5px;font-weight:900;letter-spacing:-.02em}
+  .tmeta{font-size:11px;font-weight:750;color:var(--sub);margin-top:2px}
+  .scoreline{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11.5px;font-weight:800;color:var(--sub);flex-wrap:wrap}
+  .scoreline b{font-size:17px;font-weight:900;color:var(--wine);font-variant-numeric:tabular-nums}
+  .scoreline .sbar{flex:1 1 90px;min-width:70px;height:8px;border-radius:999px;background:#EDE4D3;overflow:hidden}
+  .scoreline .sbar i{display:block;height:100%;background:linear-gradient(90deg,#C9A25E,#781B33);border-radius:999px}
+  .scoreline small{font-size:10.2px;color:var(--mute);font-weight:750}
+  .top4{margin-top:7px;font-size:11.2px;font-weight:750;color:var(--sub);line-height:1.5}
+  .align{margin-top:7px;font-size:11.5px;font-weight:850;border-radius:8px;padding:7px 9px;background:#FFFDF7;border:1px dashed var(--line);color:var(--sub)}
+  .align.against{background:#FDECEA;border-color:#F3C6C0;color:#8B1A12}
+  .align.solo{background:#FFF7E4;border-color:#EFDDAE;color:#8A5A0B}
+  .align.with{background:#EAF6EC;border-color:#C3E2C9;color:#15612F}
+  .tchips{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+  .tchip{font-size:10.8px;font-weight:800;border-radius:999px;padding:4px 9px;background:#fff;border:1px solid var(--line);color:var(--sub)}
+  .tchip b{color:var(--ink)}
+  .tchip.green{background:#E8F5EC;border-color:#BFE0C8;color:#15612F}
+  .tchip.yellow{background:#FFF6E0;border-color:#EFD9A6;color:#8A5A0B}
+  .rule{margin-top:10px;font-size:10.4px;font-weight:700;color:var(--mute);line-height:1.55;border-top:1px dashed var(--line);padding-top:8px}
+  .mt{margin-top:12px;font-size:12px;font-weight:900;letter-spacing:-.02em;color:var(--wine)}
+  .mt span{font-size:10.4px;font-weight:750;color:var(--mute);margin-left:4px}
+  .mdesc{margin:5px 0 0;font-size:11.8px;font-weight:650;color:var(--sub);line-height:1.6;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+  .mlist{margin:5px 0 0;padding:0;list-style:none}
+  .mlist li{font-size:11.8px;font-weight:700;color:var(--ink);padding:5px 0;border-bottom:1px dashed var(--line);line-height:1.45}
+  .mlist li:last-child{border-bottom:0}
+  .mlist a{color:var(--ink);text-decoration:none}
+  .mlist a b{font-weight:800}
+  .mlist .meta{display:block;font-size:10.3px;font-weight:750;color:var(--mute);margin-top:1px}
+  .mnote{margin-top:10px;font-size:10.4px;font-weight:700;color:var(--mute);line-height:1.55}
+  .retry{margin-top:10px;border:1px solid rgba(120,27,51,.3);background:rgba(120,27,51,.05);color:var(--wine);font-weight:900;font-size:11.5px;border-radius:9px;padding:7px 11px}
+  .iload{font-size:11.5px;font-weight:800;color:var(--mute);margin-top:9px}
+
   .links{margin-top:14px;display:grid;gap:7px}
   .links a{
     display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);
@@ -105,6 +154,8 @@
     .kpi{grid-template-columns:1fr 1fr}
     .res-name{font-size:17.5px}
     .toplinks a{font-size:11px;padding:4px 8px}
+    .card{padding:12px}
+    .sig{font-size:12.2px;padding:4px 9px}
   }
 </style>
 </head>
@@ -113,15 +164,15 @@
   <header class="top">
     <div class="brand">🦊 폭스시그널<small>300억·추세 1초 체커</small></div>
     <nav class="toplinks">
-      <a href="https://stock-dashboard-live-6frm.vercel.app/" target="_blank" rel="noopener">📊 관제탑</a>
-      <a href="https://foxsignal.tistory.com" target="_blank" rel="noopener">🟠 블로그</a>
+      <a href="https://foxsignal.tistory.com" target="_blank" rel="noopener">🟠 티스토리</a>
+      <a href="https://blog.naver.com/hwen21c" target="_blank" rel="noopener">🟢 네이버 블로그</a>
       <a href="https://www.youtube.com/@폭스시그널" target="_blank" rel="noopener">▶ 유튜브</a>
     </nav>
   </header>
 
   <section class="hero">
     <h1>내 종목, 300억은 넘었나?</h1>
-    <p>종목명·코드 하나면 <b>거래대금 300억 통과 여부 · 등락률 · 시가/고가/저가 대비 위치</b>를 바로 보여 줍니다. 가격이 올라도 돈이 안 실리면 신호가 아닙니다.</p>
+    <p>종목명·코드 하나면 <b>거래대금 300억 통과 여부 · 등락률 · 시가/고가/저가 대비 위치</b>에 더해 <b>소속 테마 신호등 · 최근 재료</b>까지 바로 보여 줍니다. 가격이 올라도 돈이 안 실리면 신호가 아닙니다.</p>
     <div class="search">
       <input id="q" type="search" inputmode="search" enterkeyhint="search" autocomplete="off" spellcheck="false"
              placeholder="종목명 또는 코드 (예: 한미약품 · 128940)" maxlength="30" aria-label="종목명 또는 6자리 종목코드">
@@ -133,17 +184,18 @@
   </section>
 
   <section id="out" hidden></section>
+  <section id="insight" hidden></section>
 
   <section class="links">
-    <a href="https://stock-dashboard-live-6frm.vercel.app/" target="_blank" rel="noopener"><span>📊</span><span>실시간 수급·300억↑ 관제탑<small>지수·수급·주도 테마·NXT 애프터</small></span><b>열기 ↗</b></a>
-    <a href="https://foxsignal.tistory.com" target="_blank" rel="noopener"><span>🟠</span><span>폭스시그널 블로그<small>오늘 시황 해설 · 성적표 복기</small></span><b>열기 ↗</b></a>
+    <a href="https://foxsignal.tistory.com" target="_blank" rel="noopener"><span>🟠</span><span>폭스시그널 티스토리<small>오늘 시황 해설 · 성적표 복기</small></span><b>열기 ↗</b></a>
+    <a href="https://blog.naver.com/hwen21c" target="_blank" rel="noopener"><span>🟢</span><span>네이버 블로그<small>쉬운 시황 요약 · 경제 · 알뜰 쇼핑</small></span><b>열기 ↗</b></a>
     <a href="https://www.youtube.com/@폭스시그널/shorts" target="_blank" rel="noopener"><span>▶</span><span>폭스시그널 쇼츠<small>50초로 보는 오늘의 신호</small></span><b>열기 ↗</b></a>
     <a href="https://hwen21c-tech.github.io/stock-dashboard/deals.html" target="_blank" rel="noopener"><span>🏷️</span><span>패밀리 특가 레이더<small>키즈·여행 30%↑ 특가</small></span><b>열기 ↗</b></a>
   </section>
 
   <footer>
     <b>기준</b> — 거래대금 300억은 폭스시그널 <b>만쥬 ②차트·거래대금</b> 기준선입니다. 대금은 통합(KRX+NXT·시간외) 실측이고, 위치(%)는 그날 시가·고가·저가 대비 현재가입니다.
-    값은 관제탑 API 실측을 그대로 보여 주며, 통신이 막히면 <b>마지막 거래일 스냅샷</b>으로 대신합니다(그때는 화면에 기준일을 표시). 이 도구는 정보 정리이고 투자 권유가 아닙니다 — 판단과 책임은 본인 몫입니다.
+    값은 실측 시세 API를 그대로 보여 주며, 통신이 막히면 <b>마지막 거래일 스냅샷</b>으로 대신합니다(그때는 화면에 기준일을 표시). 이 도구는 정보 정리이고 투자 권유가 아닙니다 — 판단과 책임은 본인 몫입니다.
   </footer>
 </div>
 
@@ -216,7 +268,7 @@
         return String(s.name || '').trim() === q || String(s.code || '') === q;
       })[0] || rows[0];
       if (!hit) throw new Error('not_found');
-      var basisTxt = '관제탑 실측 · ' + (j.generatedAtKst || '');
+      var basisTxt = '실측 · ' + (j.generatedAtKst || '');
       show(hit, { live: true, basis: basisTxt, tradeDate: (hit.tradedAt || '').slice(0, 10), marketStatus: j.marketStatus });
       msg('', '');
     }).catch(function(){
@@ -243,6 +295,7 @@
       else if (why === 'not_in_snapshot') msg('이 종목은 스냅샷에 없습니다. 실시간 API가 열려 있을 때 다시 시도해 주세요.', 'bad');
       else msg('시세를 받지 못했습니다. 잠시 뒤 다시 눌러 주세요(' + why + ').', 'bad');
       var out = $('out'); if (out){ out.hidden = true; out.innerHTML = ''; }
+      var ins = $('insight'); if (ins){ ins.hidden = true; ins.innerHTML = ''; }
     }).then(function(){ state.busy = false; });
   }
 
@@ -254,6 +307,7 @@
       '<div class="skel" style="width:58%;margin-top:12px"></div>' +
       '<div class="skel" style="width:100%;margin-top:10px"></div>' +
       '<div class="skel" style="width:74%;margin-top:8px"></div></div>';
+    var ins = $('insight'); ins.hidden = true; ins.innerHTML = '';
   }
 
   function positionPct(price, low, high){
@@ -334,7 +388,230 @@
     out.hidden = false;
     out.scrollIntoView({ behavior: 'smooth', block: 'start' });
     state.last = d;
+    loadInsight(d.code, d.name, d.changePct);
   }
+
+  /* ============================================================
+     🧭 소속 테마 신호등 + 📰 최근/과거 재료
+     · 서버(/api/stock-live?mode=theme)가 네이버 테마 랭킹·테마 상세·종목뉴스 실측을 그대로 계산해 준다.
+     · API 가 막히면(정적 환경·네트워크) 정적 색인(theme-membership.json)과
+       직전 거래일 주도 테마 스냅샷만으로 '확인 가능한 범위'를 보여 주고, 나머지는 못 본다고 적는다.
+     · 지어내지 않는다: 없는 순위·없는 재료 문장을 만들지 않는다.
+     ============================================================ */
+  var insSeq = 0;
+
+  function fmtRank(t){
+    if (t.prevExposed && t.prevTopRank) return '관제탑 ' + t.prevTopRank + '위';
+    if (t.rank) return t.rank + '/' + (t.total || '—') + '위';
+    if (t.prevTopRank) return '관제탑 ' + t.prevTopRank + '위(구성)';
+    return '순위 확인 불가';
+  }
+  function chipClass(t){
+    if (t.prevExposed) return 'green';
+    if (t.rank && t.rank <= 30) return 'yellow';
+    return '';
+  }
+
+  function renderInsight(j, code, name, stockPct){
+    var host = $('insight');
+    if (!host) return;
+    var sig = j.signal || {};
+    var sc = j.score || null;
+    var p = j.primary || null;
+    var top4 = j.top4 || [];
+    var themes = j.themes || [];
+    var h = '';
+    h += '<div class="card">';
+    h += '<div class="ihead"><span>🧭 소속 테마 · 오늘 주도 테마 신호등</span><span class="ibasis">' + esc(j.basisLabel || '') + '</span></div>';
+    h += '<div class="sigrow"><span class="sig ' + esc(sig.key || 'none') + '">' + esc(sig.label || '⚪ 확인 불가') + '</span>' +
+         '<span class="signote">' + esc(sig.note || '') + '</span></div>';
+    if (p){
+      h += '<div class="tbox">';
+      h += '<div class="tname">' + esc(p.name) + '</div>';
+      var meta = [];
+      if (p.rank) meta.push('네이버 테마 순위 ' + p.rank + '/' + (p.total || '—') + '위');
+      if (p.changeRate != null) meta.push('테마 평균 ' + pct(p.changeRate));
+      if (p.riseCount != null) meta.push('상승 ' + p.riseCount + ' / 하락 ' + p.fallCount + ' (구성 ' + (p.stockCount || '—') + ')');
+      if (p.prevTopRank) meta.push('직전 거래일 관제탑 ' + p.prevTopRank + '위' + (p.prevExposed ? ' · 노출 종목' : ' 구성종목'));
+      h += '<div class="tmeta">' + esc(meta.join(' · ')) + '</div>';
+      if (sc && sc.score != null){
+        h += '<div class="scoreline">테마 점수 <b>' + sc.score + '</b><span style="font-size:10.5px">/100</span>' +
+             '<span class="sbar"><i style="width:' + Math.max(2, Math.min(100, sc.score)) + '%"></i></span>' +
+             '<small>순위 ' + sc.rankScore + ' · 강도 ' + sc.strengthScore + '</small></div>';
+      }
+      if (p.top4Avg != null){
+        var t4 = top4.map(function(x){ return esc(x.name) + ' ' + pct(x.changePct); }).join(' · ');
+        h += '<div class="top4">테마 상위4 평균 <b class="' + dirClass(p.top4Avg) + '">' + pct(p.top4Avg) + '</b>' + (t4 ? ' — ' + t4 : '') + '</div>';
+      }
+      if (j.align && j.align.text){
+        h += '<div class="align ' + esc(j.align.key || '') + '">' + esc(j.align.text) + '</div>';
+      }
+      h += '</div>';
+      if (themes.length > 1){
+        h += '<div class="tchips">' + themes.slice(0, 6).map(function(t){
+          return '<span class="tchip ' + chipClass(t) + '"><b>' + esc(t.name) + '</b> ' + esc(fmtRank(t)) + '</span>';
+        }).join('') + '</div>';
+      }
+    } else {
+      h += '<div class="tbox"><div class="tname">등록된 테마 구성종목에 없음</div>' +
+           '<div class="tmeta">네이버 테마 ' + (j.themeTotal || '—') + '개 구성종목 색인에서 이 종목을 찾지 못했습니다 — 개별주로 봅니다.</div></div>';
+    }
+    h += '<div class="rule">판정 기준 — <b>🟢 주요 주도테마</b>: 관제탑 직전 거래일 주도 테마 Top8의 노출 종목, 또는 테마 순위 10위 이내이면서 (테마 평균 +1% 이상 또는 상위4 평균 +3% 이상). <b>🟡 순환·관심 테마</b>: 테마 순위 30위 이내이거나 테마 평균 +1% 이상·상위4 평균 0% 이상. <b>⚪ 비주류·개별주</b>: 그 밖. 테마 점수 = 순위 백분위 40% + 테마 강도(상위4 평균) 60%.</div>';
+    h += '</div>';
+
+    /* 📰 재료 카드 */
+    var newsed = j.news || {};
+    var recent = newsed.recent || [];
+    var past = newsed.past || [];
+    h += '<div class="card">';
+    h += '<div class="ihead"><span>📰 최근 재료 &amp; 과거 재료 이력</span><span class="ibasis">' + esc(newsed.basis ? newsed.basis : '네이버 종목뉴스') + '</span></div>';
+    h += '<div class="mt">① 어떤 테마인가</div>';
+    h += j.description
+      ? '<p class="mdesc">' + esc(j.description) + '</p>'
+      : '<p class="mdesc">테마 설명을 받지 못했습니다.</p>';
+    h += '<div class="mt">② 최근 재료 <span>제목·언론사·시각 실측</span></div>';
+    if (recent.length){
+      h += '<ul class="mlist">' + recent.map(function(x){
+        var when = [x.isToday ? (x.time || '오늘') : x.date, x.press].filter(Boolean).join(' · ');
+        var t = esc(x.title);
+        var body = x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener"><b>' + t + '</b></a>' : '<b>' + t + '</b>';
+        return '<li>' + body + (when ? '<span class="meta">' + esc(when) + '</span>' : '') + '</li>';
+      }).join('') + '</ul>';
+    } else {
+      h += '<ul class="mlist"><li>최근 종목 뉴스가 잡히지 않았습니다 — 재료 없이 움직인 날로 봅니다.<span class="meta">네이버 종목뉴스 최근 20건 기준</span></li></ul>';
+    }
+    h += '<div class="mt">③ 과거 재료 이력 <span>' + (newsed.total ? '공개 뉴스 ' + newsed.total + '건 안에서' : '공개 뉴스 안에서') + '</span></div>';
+    if (past.length){
+      h += '<ul class="mlist">' + past.map(function(x){
+        var when = [x.date, x.press].filter(Boolean).join(' · ');
+        var t = esc(x.title);
+        var body = x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener"><b>' + t + '</b></a>' : '<b>' + t + '</b>';
+        return '<li>' + body + (when ? '<span class="meta">' + esc(when) + '</span>' : '') + '</li>';
+      }).join('') + '</ul>';
+      h += '<div class="mnote">※ 네이버가 공개하는 종목뉴스 안에서 2일 이상 지난 기사만 골랐습니다. 더 이전 이력은 원문 사료가 없어 적지 않습니다.</div>';
+    } else {
+      h += '<ul class="mlist"><li>공개 뉴스 안에서는 2일 이상 지난 과거 재료가 잡히지 않았습니다.<span class="meta">없는 이력을 만들어 적지 않습니다</span></li></ul>';
+    }
+    if (j.stockNote){
+      h += '<div class="mt">이 종목이 이 테마에 들어온 이유 <span>네이버 테마 상세</span></div>';
+      h += '<p class="mdesc" style="-webkit-line-clamp:4">' + esc(j.stockNote) + '</p>';
+    }
+    h += '<div class="mnote">출처 — 네이버 증권 테마 랭킹·테마 상세·종목뉴스 실측' +
+         (j.membershipAsOf ? ' · 테마 구성 색인 ' + esc(String(j.membershipAsOf).slice(0, 10)) : '') +
+         ' · 받은 값만 적었고 해석·추정 문장은 넣지 않았습니다.</div>';
+    h += '</div>';
+
+    host.innerHTML = h;
+    host.hidden = false;
+  }
+
+  function insightFallback(code, name, stockPct){
+    var host = $('insight');
+    var my = ++insSeq;
+    Promise.all([
+      fetchJson('./data/theme-membership.json', 8000).catch(function(){ return null; }),
+      fetchJson('./data/last-dynamic-themes.json', 8000).catch(function(){ return null; })
+    ]).then(function(rows){
+      if (my !== insSeq || !host) return;
+      var mem = rows[0], prev = rows[1];
+      if (!mem || !mem.byCode){
+        host.innerHTML = '<div class="card"><div class="ihead"><span>🧭 소속 테마 · 오늘 주도 테마 신호등</span><span class="ibasis">정적 폴백</span></div>' +
+          '<div class="iload">테마 색인을 읽지 못했습니다. 실시간 API·정적 JSON 모두 닿지 않아 테마·재료를 확인할 수 없습니다.</div>' +
+          '<button class="retry" type="button" onclick="window.__checkerRetry && window.__checkerRetry()">♻︎ 다시 시도</button></div>';
+        host.hidden = false;
+        return;
+      }
+      var owned = mem.byCode[code] || [];
+      var top = (prev && prev.themes) ? prev.themes : [];
+      var themes = owned.map(function(t){
+        var hit = null;
+        for (var i = 0; i < top.length; i++){
+          var tt = top[i];
+          if (!tt || !tt.name) continue;
+          var keyA = String(tt.name).replace(/\([^)]*\)/g, '').replace(/\s/g, '');
+          var keyB = String(t.name).replace(/\([^)]*\)/g, '').replace(/\s/g, '');
+          if (keyA === keyB){ hit = tt; break; }
+        }
+        var exposed = false;
+        if (hit && hit.stocks){
+          exposed = hit.stocks.some(function(x){ return String(x.code) === String(code); });
+        }
+        return {
+          name: t.name, no: t.no,
+          prevTopRank: hit ? (hit.rank || null) : null,
+          prevExposed: exposed,
+          rank: null, total: null
+        };
+      }).sort(function(a, b){
+        var ca = a.prevExposed ? 0 : a.prevTopRank ? 1 : 2;
+        var cb = b.prevExposed ? 0 : b.prevTopRank ? 1 : 2;
+        return (ca - cb) || ((a.prevTopRank || 99) - (b.prevTopRank || 99));
+      });
+      var p = themes[0] || null;
+      var h = '<div class="card">';
+      h += '<div class="ihead"><span>🧭 소속 테마 · 오늘 주도 테마 신호등</span><span class="ibasis">정적 폴백 · ' + esc((prev && prev.shortLabel) || '직전 거래일') + ' 기준</span></div>';
+      if (p){
+        var sigKey = p.prevExposed ? 'green' : (p.prevTopRank ? 'yellow' : 'gray');
+        var sigLabel = p.prevExposed ? '🟢 주요 주도테마' : (p.prevTopRank ? '🟡 순환·관심 테마' : '⚪ 비주류·개별주');
+        h += '<div class="sigrow"><span class="sig ' + sigKey + '">' + sigLabel + '</span>' +
+             '<span class="signote">' + (p.prevExposed ? '직전 거래일 관제탑 주도 테마 ' + p.prevTopRank + '위 · 노출 종목'
+               : p.prevTopRank ? '직전 거래일 관제탑 ' + p.prevTopRank + '위 구성종목' : '직전 거래일 주도 테마 Top8 밖') + '</span></div>';
+        h += '<div class="tbox"><div class="tname">' + esc(p.name) + '</div>' +
+             '<div class="tmeta">실시간 테마 순위·점수·재료는 API 응답이 필요합니다(지금은 정적 색인만 표시).</div></div>';
+        if (themes.length > 1){
+          h += '<div class="tchips">' + themes.slice(0, 8).map(function(t){
+            var rk = t.prevExposed ? ('관제탑 ' + t.prevTopRank + '위') : (t.prevTopRank ? ('관제탑 ' + t.prevTopRank + '위(구성)') : '순위 미확인');
+            return '<span class="tchip ' + chipClass(t) + '"><b>' + esc(t.name) + '</b> ' + esc(rk) + '</span>';
+          }).join('') + '</div>';
+        }
+      } else {
+        h += '<div class="tbox"><div class="tname">등록된 테마 구성종목에 없음</div><div class="tmeta">개별주로 봅니다.</div></div>';
+      }
+      h += '<div class="rule">정적 폴백 — 테마 구성 색인과 직전 거래일 주도 테마 Top8만 대조했습니다. 오늘의 실시간 테마 순위·테마 설명·최근 재료는 실시간 API가 열려야 보입니다.</div>';
+      h += '<button class="retry" type="button" onclick="window.__checkerRetry && window.__checkerRetry()">♻︎ 실시간으로 다시 시도</button>';
+      h += '</div>';
+      h += '<div class="card"><div class="ihead"><span>📰 최근 재료 &amp; 과거 재료 이력</span><span class="ibasis">확인 불가</span></div>' +
+           '<div class="iload">실시간 API에 닿지 않아 이 종목의 테마 설명·최근 뉴스를 확인하지 못했습니다. 없는 재료를 지어내지 않습니다.</div></div>';
+      host.innerHTML = h;
+      host.hidden = false;
+      window.__checkerCode = code;
+    }).catch(function(){
+      if (my !== insSeq || !host) return;
+      host.innerHTML = '<div class="card"><div class="iload">테마·재료를 불러오지 못했습니다.</div>' +
+        '<button class="retry" type="button" onclick="window.__checkerRetry && window.__checkerRetry()">♻︎ 다시 시도</button></div>';
+      host.hidden = false;
+    });
+  }
+
+  function loadInsight(code, name, stockPct){
+    var host = $('insight');
+    if (!host) return;
+    if (!code){
+      host.hidden = true; host.innerHTML = '';
+      return;
+    }
+    var my = ++insSeq;
+    host.hidden = false;
+    host.innerHTML = '<div class="card"><div class="ihead"><span>🧭 소속 테마 · 오늘 주도 테마 신호등</span><span class="ibasis">실측 확인 중…</span></div>' +
+      '<div class="iload">테마 순위·재료를 읽는 중…</div>' +
+      '<div class="skel" style="width:64%;margin-top:9px"></div><div class="skel" style="width:100%;margin-top:8px"></div></div>';
+    var url = apiQuery() + '?mode=theme&code=' + encodeURIComponent(code);
+    if (stockPct != null && isFinite(Number(stockPct))) url += '&pct=' + encodeURIComponent(Number(stockPct));
+    fetchJson(url, 14000).then(function(j){
+      if (my !== insSeq) return;
+      if (!j || j.ok !== true) throw new Error((j && j.reason) || 'theme_fail');
+      renderInsight(j, code, name, stockPct);
+      window.__checkerCode = code;
+    }).catch(function(){
+      if (my !== insSeq) return;
+      insightFallback(code, name, stockPct);
+    });
+  }
+
+  window.__checkerRetry = function(){
+    var d = state.last;
+    if (d && d.code) loadInsight(d.code, d.name, d.changePct);
+  };
 
   /* ---------- 300억↑ 대장주 1클릭 ---------- */
   function chips(){

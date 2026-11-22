@@ -4526,6 +4526,7 @@
     </div>
     <div class="header-actions" style="display:flex; gap:6px; flex-wrap:wrap;">
       <button class="btn-action" style="background:#2a1215; color:#fda4af; border-color:#f43f5e; font-weight:800; cursor:pointer;" onclick="lockDashboard()" title="보안 잠금">🔒 잠금</button>
+      <a href="checker.html" class="btn-action" style="background:#3b1220; color:#fde8c8; border-color:#c9a25e; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;" title="내 종목 300억·테마·재료 1초 체커">🔍 1초 체커</a>
       <a href="deals.html" class="btn-action" style="background:#022c22; color:#6ee7b7; border-color:#10b981; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;">✈️ 특가 레이더</a>
       <a href="saju.html" class="btn-action" style="background:#1f1235; color:#e9d5ff; border-color:#a78bfa; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;" title="사주·운세 (명리 풀업그레이드)">🔮 사주·운세</a>
       <a href="preview-content-v2.html" class="btn-action" style="background:#1b1234; color:#d8b4fe; border-color:#a855f7; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;">✍️ 콘텐츠</a>
@@ -16586,7 +16587,72 @@
     })();
 
 
+    /* ================= 🔍 CHECKER_LINK_1122 =================
+       관제탑 종목 모달 → 1초 체커(checker.html?q=종목코드) 바로가기.
+       · 사용자 개인 편의용 링크다(체커 쪽에는 관제탑 링크를 두지 않는다).
+       · 종목코드가 확인될 때만 버튼을 보인다 — 지수·섹터 모달에서는 숨긴다.
+       ========================================================= */
+    var CHECKER_URL = (location.pathname.indexOf('/stock-dashboard') > -1 || /github\.io$/.test(location.hostname))
+      ? 'checker.html' : '/checker.html';
+
+    function checkerCodeOf(title, desc){
+      var t = String(title || '') + ' ' + String(desc || '');
+      var m = t.match(/\((\d{6})\)/);
+      if (m && m[1]) return m[1];
+      var codes = window.stockCodes || {};
+      var best = '', bestLen = 0;
+      for (var nm in codes){
+        if (!nm || !/^\d{6}$/.test(String(codes[nm]))) continue;
+        if (t.indexOf(nm) !== -1 && nm.length > bestLen){ best = codes[nm]; bestLen = nm.length; }
+      }
+      return best || null;
+    }
+    window.checkerCodeOf = checkerCodeOf;
+
+    function ensureCheckerBtn(){
+      var body = document.querySelector('#modalOverlay .modal-body') || document.querySelector('.modal-body');
+      if (!body) return null;
+      var a = document.getElementById('btnCheckerLink');
+      if (a) return a;
+      var row = document.createElement('div');
+      row.id = 'checkerLinkRow';
+      row.style.cssText = 'display:flex;gap:6px;margin:2px 0 8px;';
+      a = document.createElement('a');
+      a.id = 'btnCheckerLink';
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.style.cssText = 'flex:1;background:#3b1220;border:1px solid rgba(201,162,94,0.55);border-radius:6px;padding:8px 10px;text-decoration:none;color:#fde8c8;font-size:11.5px;font-weight:800;text-align:center;';
+      a.textContent = '🔍 이 종목 1초 체커로 보기';
+      row.appendChild(a);
+      var anchor = document.getElementById('modalChartBox');
+      if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(row, anchor);
+      else body.insertBefore(row, body.firstChild);
+      return a;
+    }
+    window.ensureCheckerBtn = ensureCheckerBtn;
+
+    function syncCheckerBtn(title, desc){
+      try {
+        var a = ensureCheckerBtn();
+        if (!a) return;
+        var code = checkerCodeOf(title, desc);
+        if (code){
+          a.href = CHECKER_URL + '?q=' + encodeURIComponent(code);
+          a.setAttribute('data-code', code);
+          a.style.display = 'block';
+          a.textContent = '🔍 이 종목 1초 체커로 보기';
+        } else {
+          a.removeAttribute('href');
+          a.removeAttribute('data-code');
+          a.style.display = 'none';
+        }
+      } catch (e) { /* 링크 실패가 모달을 막지 않는다 */ }
+    }
+    window.syncCheckerBtn = syncCheckerBtn;
 function openDetail(title, v1, v2, desc) {
+      try { if (window.syncCheckerBtn) window.syncCheckerBtn(title, desc); } catch (eCk) {}
+
+
       try {
         // 1. Text & Content
         document.getElementById('modalTitle').innerText = title;
