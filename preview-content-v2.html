@@ -508,12 +508,16 @@
   /* 📝 컷별 화면 배치 메모 */
   .wvcutbox{border:1px solid rgba(56,189,248,.26);border-radius:11px;background:rgba(56,189,248,.05);padding:9px 11px;display:grid;gap:7px;min-width:0}
   .wvcutnotes{display:grid;gap:5px;min-width:0}
-  .wvcutnote{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 7px;align-items:center;border:1px solid var(--line);border-radius:9px;background:#0a1424;padding:6px 8px;min-width:0}
+  .wvcutnote{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:3px 7px;align-items:center;border:1px solid var(--line);border-radius:9px;background:#0a1424;padding:6px 8px;min-width:0}
   .wvcutnote .n{font-size:10px;font-weight:900;color:#7dd3fc;font-variant-numeric:tabular-nums;letter-spacing:.02em}
   .wvcutnote .t{font-size:10.6px;font-weight:800;color:#cbd5e1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .wvcutnote .t i{font-style:normal;color:var(--faint);font-weight:800;font-variant-numeric:tabular-nums}
   .wvcutnote input{grid-column:1/-1;width:100%;min-width:0;background:#08111d;border:1px solid rgba(148,163,184,.28);border-radius:7px;padding:6px 8px;font-size:11.4px;font-weight:700;color:#e2e8f0;letter-spacing:0}
   .wvcutnote input:focus{outline:2px solid rgba(56,189,248,.42);outline-offset:1px}
+  .wvevichip{grid-column:3;grid-row:1;align-self:center;font:900 13px/1 inherit;padding:5px 7px;border-radius:8px;border:1px solid rgba(148,163,184,.34);background:#0b1626;color:#94a3b8;cursor:pointer;filter:grayscale(1);opacity:.72}
+  .wvevichip.on{border-color:rgba(201,162,94,.95);background:rgba(201,162,94,.20);color:#fcd34d;filter:none;opacity:1}
+  .wvevichip:hover{opacity:1}
+  .aftoggle.wvevi{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
   /* ✍️ 쇼츠 대본 접기(4번 주제 + 결과 카드) */
   .shfold{margin-bottom:12px}
   /* 접힌 동안은 오른쪽 열이 비어 보이지 않게 한 줄로 — 펼치면 원래 두 칸으로 돌아온다 */
@@ -2427,6 +2431,7 @@
       <span class="wvchip" id="wvSrc">대본 없음</span>
       <span class="wvchip" id="wvTplTag">📊 카드형</span>
       <span class="wvchip" id="wvMusic">BGM —</span>
+      <label class="aftoggle wvevi" for="wvEvi" id="wvEviLbl" title="블로그에서 만든 실측 증거 카드를 쇼츠 컷에 자동으로 넣습니다. 블로그를 만들지 않아도 그 시간대 실측으로 그 자리에서 만듭니다. 끄면 컷에 들어가지 않습니다."><input type="checkbox" id="wvEvi" checked> 📎 실측 증거 카드</label>
       <span class="spacer"></span>
       <button class="btn small primary" id="wvAutoBtn" type="button" title="이 시간대(또는 최신) 초안 → 🎨 내용 맞춤(스마트) → 성우 → [▶ 생성] 자리까지 한 번에 세팅합니다">⚡ 생성 직전 세팅</button>
       <button class="btn small" id="wvPasteBtn" type="button" aria-expanded="false" aria-controls="wvPaste">📋 대본 붙여넣기</button>
@@ -2483,6 +2488,7 @@
       <div class="wvrow" style="gap:6px;align-items:baseline"><span class="flabel" style="margin:0">📝 컷별 화면 배치 메모</span></div>
       <div class="hint" id="wvCutTag" style="margin:0">컷마다 「여기에 이걸」을 적어 두고 <b>[📋 피클 수정요청 복사]</b>로 전달하세요.</div>
       <div class="wvcutnotes" id="wvCutNotes"><span class="hint">대본을 만들면 컷별 메모 칸이 생깁니다.</span></div>
+      <div class="hint" id="wvEviHint" style="margin:0">🧾 <b>실측 증거 카드</b>는 위 <b>📎 실측 증거 카드</b>가 ON이면 대금·수급을 말하는 컷 <b>한 곳</b>에 자동으로 들어갑니다 — 컷 오른쪽 <b>🧾</b> 단추로 넣을 컷을 직접 고르거나 끌 수 있습니다.</div>
       <div class="wvrow" style="gap:6px">
         <button class="btn small primary" id="wvPickleCopy" type="button" title="지금 대본·컷별 배치 메모·디자인/양식을 한 덩어리로 복사합니다 — 채팅에 붙여넣으면 그대로 반영합니다">📋 피클 수정요청 복사</button>
       </div>
@@ -11931,6 +11937,30 @@ var CSVoice = (function () {
     var t = '코스피 ' + one(s.kospi) + ' · 코스닥 ' + one(s.kosdaq);
     return { text: t, basis: s.basis || '' };
   }
+  /* 증거 카드용 짧은 줄 — 카드 폭(900px)에서 잘리지 않게 이름·값·등락만 남긴다 */
+  function slotIndexLineCard(){
+    var L = [], ids = (V2.data && V2.data.live && V2.data.live.indices) || [];
+    ids.forEach(function(x){
+      if (!x) return;
+      if (!(/KOSPI|KOSDAQ/.test(x.key || '') || /코스피|코스닥/.test(x.name || ''))) return;
+      if (x.price == null) return;
+      L.push((x.name || x.key) + ' ' + Number(x.price).toLocaleString('ko-KR', { maximumFractionDigits: 2 }) +
+        ' (' + (x.changePct > 0 ? '+' : '') + Number(x.changePct).toFixed(2) + '%)');
+    });
+    return L.join(' · ');
+  }
+  function slotSupplyCard(){
+    var s = creamSupply(), out = [];
+    function one(o, nm){
+      if (!o) return '';
+      var t = '개인 ' + eokKo(o.indiv) + ' · 외인 ' + eokKo(o.foreign) + ' · 기관 ' + eokKo(o.organ);
+      return /[0-9]/.test(t) ? nm + ' ' + t : '';
+    }
+    var k = one(s.kospi, '코스피'), d = one(s.kosdaq, '코스닥');
+    if (k) out.push(k);
+    if (!k && d) out.push(d);
+    return out.join(' · ');
+  }
   function slotBreadthLine(){
     var b = creamBreadth();
     if (!b) return { text: '', basis: '' };
@@ -12408,6 +12438,13 @@ var CSVoice = (function () {
       var wv = null;
       try { if (window.WVID && window.WVID.slot) wv = window.WVID.slot(slot); } catch(e){ wv = null; }
       var vname = (wv && wv.voice) ? wv.voice : '';
+      /* 🧾 실측 증거 카드 — 이 시간대에 실제로 읽은 지수·수급으로 쇼츠 컷에 바로 만든다
+         (블로그 글을 만들지 않은 점심·정규마감에도 똑같이 동작한다) */
+      try {
+        if (window.WVID && window.WVID.eviSlot) {
+          window.WVID.eviSlot({ slot: slot, indexLine: slotIndexLineCard(), supplyLine: slotSupplyCard() });
+        }
+      } catch (eEv) {}
       if (sst){
         sst.className = 'slotstate ok';
         sst.innerHTML = def.icon + ' <b>' + esc(def.name + ' 시황') + '</b> 실측 준비됨 — 참고 자료 <b>' + charLen(mat.text) + '자</b> · 주제 자동 입력' +
@@ -12759,6 +12796,10 @@ var CSVoice = (function () {
     try {
       if (window.WVID && window.WVID.feed) wv = window.WVID.feed(slotKey, s.formulaKey, script, '피클 초안 · ' + feedSlotWord(slotKey), !!quiet);
     } catch (e) { wv = null; }
+    /* 🧾 이 초안의 시간대 실측으로 증거 카드도 함께 꽂는다(없는 값은 비운다) */
+    try {
+      if (window.WVID && window.WVID.eviSlot) window.WVID.eviSlot({ slot: slotKey, indexLine: slotIndexLineCard(), supplyLine: slotSupplyCard() });
+    } catch (e2) {}
     return { ok: true, slot: slotKey, title: title, cuts: (wv && wv.cuts) || 0, formula: (wv && wv.name) || '', voice: (wv && wv.voice) || '' };
   }
   function feedBanner(html){
@@ -19715,12 +19756,116 @@ var CSVoice = (function () {
     });
   }
   /* ---------- ④ 중앙 시각물 + ⑤ 여우 ---------- */
+  /* ══════════════════════════════════════════════════════════════════════
+     🧾 실측 증거 카드 → 쇼츠 컷 (자동)
+       · 블로그 탭의 증거 카드(foxEviCanvas)와 같은 실측 값(신호 스코어카드 · 확정 수급 ·
+         마지막 거래일 스냅샷)만 쓴다. 받지 못한 값은 '—' 로 남기고 지어내지 않는다.
+       · 세로 영상에서 1200×675 카드를 그대로 줄이면 글자가 7px 아래로 내려가므로,
+         window.FOXSC.eviCanvas() 가 쇼츠 세이프 슬롯 비율(900×664)로 같은 내용을 다시 그린다.
+         → 컷에는 원본 비율 그대로(contain) 1:1 로 들어가 찌그러짐·축소가 없다.
+       · 블로그를 만들지 않은 시간대(점심 · 정규마감)에도 시간대 1클릭·[⚡ 원클릭 세팅]·
+         피클 초안 불러오기가 그 자리에서 PNG 를 만들어 꽂는다(수동 첨부 없음).
+       · 세이프 존(상단 180·하단 380·좌 60·우 120) 안 시각물 슬롯에만 그리고, 자막·여우 스탬프·
+         티커와 겹치지 않는다. 끄고 싶으면 [📎 실측 증거 카드] 토글(기본 ON).
+     ══════════════════════════════════════════════════════════════════════ */
+  var EVI = { img: null, url: '', slot: '', label: '', basis: '', date: '', err: '', seq: 0, at: 0 };
+  function eviOn() { return !(S.cfg && S.cfg.eviOn === false); }
+  function eviForget() { EVI.img = null; EVI.url = ''; }
+  function eviInfo() {
+    return { on: eviOn(), has: !!EVI.img, slot: EVI.slot, label: EVI.label, basis: EVI.basis,
+      date: EVI.date, cut: (EVI.img ? eviCutIdx() + 1 : 0),
+      pinned: (S.cfg && S.cfg.eviCut != null ? Number(S.cfg.eviCut) : -1), err: EVI.err,
+      design: designOf(), pf: (EVI.url ? EVI.url.length : 0) };
+  }
+  /* 증거 카드를 넣을 컷 — 대금·수급·기준선을 말하는 컷(1번 훅·마지막 엔딩은 피한다). 없으면 끝에서 두 번째 */
+  var EVICUT_RE = /대장주|거래대금|대금|수급|외인|외국인|기관|순매수|증거|기준선|피보나치|성적표|복기/;
+  function eviCutIdx() {
+    var cuts = S.cuts || [], n = cuts.length;
+    if (!n) return -1;
+    var pin = (S.cfg && S.cfg.eviCut != null) ? Number(S.cfg.eviCut) : -1;
+    if (pin >= 0 && pin < n) return pin;
+    if (n <= 2) return 0;
+    var best = -1, bs = 0;
+    for (var i = 1; i < n - 1; i++) {
+      var t = String(cuts[i].text || '') + ' ' + String(cuts[i].hook || '');
+      var sc = EVICUT_RE.test(t) ? 3 : 0;
+      if (/\d/.test(t)) sc += 1;
+      if (sc > bs) { bs = sc; best = i; }
+    }
+    return best >= 0 ? best : Math.max(1, n - 2);
+  }
+  /* FOXSC 에 증거 카드 PNG 를 부탁하고, 오면 컷에 꽂는다(더 새로운 요청이 오면 이전 결과는 버린다) */
+  function eviRefresh(o) {
+    o = o || {};
+    if (!eviOn()) { eviForget(); return Promise.resolve(null); }
+    if (designOf() !== 'fox') { eviForget(); return Promise.resolve(null); }
+    var F = W.FOXSC;
+    if (!F || typeof F.eviCanvas !== 'function') return Promise.resolve(null);
+    var seq = ++EVI.seq;
+    EVI.err = '';
+    return Promise.resolve(F.eviCanvas({
+      slot: o.slot || '', label: o.label || '', indexLine: o.indexLine || '', supplyLine: o.supplyLine || ''
+    })).then(function (r) {
+      if (seq !== EVI.seq) return null;
+      if (!r || !r.ok || !r.dataUrl) { EVI.err = 'no-data'; eviForget(); try { redraw(); } catch (e) {} return null; }
+      EVI.slot = String(o.slot || ''); EVI.label = String(r.label || '');
+      EVI.basis = String(r.basis || ''); EVI.date = String(r.date || '');
+      return new Promise(function (res) {
+        var im = new Image();
+        im.onload = function () {
+          if (seq !== EVI.seq) { res(null); return; }
+          EVI.img = im; EVI.url = r.dataUrl; EVI.at = Date.now();
+          try { if (!S.running) redraw(); } catch (e) {}
+          try { renderCutNotes(); } catch (e3) {}
+          res(im);
+        };
+        im.onerror = function () { EVI.err = 'img'; eviForget(); res(null); };
+        im.src = r.dataUrl;
+      });
+    }).catch(function (e) {
+      if (seq === EVI.seq) EVI.err = String((e && e.message) || e);
+      return null;
+    });
+  }
+  function eviSetOn(on) {
+    on = !!on;
+    if (S.cfg) { S.cfg.eviOn = on; saveCfg(); }
+    var cb = $('#wvEvi'); if (cb) cb.checked = on;
+    if (!on) { eviForget(); try { redraw(); renderCutNotes(); } catch (e) {} }
+    else eviRefresh({ slot: EVI.slot, label: EVI.label });
+    return eviOn();
+  }
+  /* 컷에 그린다 — 원본 비율 유지(contain) · 시각물 슬롯 안에서만 */
+  function eviDraw(ctx, x, y, w, h) {
+    var im = EVI.img;
+    if (!im || !im.width || !im.height || !(w > 0) || !(h > 0)) return false;
+    var k = Math.min(w / im.width, h / im.height);
+    if (!(k > 0)) return false;
+    var dw = Math.round(im.width * k), dh = Math.round(im.height * k);
+    var dx = Math.round(x + (w - dw) / 2), dy = Math.round(y + (h - dh) / 2);
+    ctx.save();
+    ctx.shadowColor = 'rgba(16,32,47,.22)'; ctx.shadowBlur = 22; ctx.shadowOffsetY = 10;
+    ctx.fillStyle = FX.cream;
+    ctx.fillRect(dx, dy, dw, dh);
+    ctx.restore();
+    ctx.drawImage(im, dx, dy, dw, dh);
+    rec(dx, dy, dw, dh, 'evi-card');
+    return true;
+  }
   function drawFoxVisual(ctx, spec, cut, idx, pose, hero) {
     var g = FXG.vis;
     idxMaybeLoad();
     macMaybeLoad();                                        /* ④ 야간·글로벌 6지표 실측 */                                        /* 지수 꺾은선 재료 — 관제탑 /api/index-chart */
     var v = foxVisualOf(cut, idx, (S.cuts || []).length);
     var vw = hero ? g.w - 358 : g.w;
+    /* 🧾 실측 증거 카드 — 이 컷 하나에만, 그 컷의 시각물 자리에 원본 비율 그대로 넣는다
+       (다른 컷의 막대표·꺾은선은 그대로 둔다 — 가리지 않는다) */
+    if (EVI.img && eviOn() && idx === eviCutIdx()) {
+      if (eviDraw(ctx, g.x, g.y, vw, g.h)) {
+        if (hero) drawFox(ctx, pose, SAFE.r - 340, g.y + Math.round((g.h - 340) / 2), 340);
+        return;
+      }
+    }
     var ok = false;
     if (v.kind === 'line') ok = drawTrendCard(ctx, v.trend, g.x, g.y, vw, g.h, FX_TREND_PAL, cut);
     else if (v.kind === 'bar') ok = drawBarCard(ctx, v.items, g.x, g.y, vw, g.h, FX_BAR_PAL, cut);
@@ -22786,8 +22931,12 @@ var CSVoice = (function () {
     var h = '';
     cuts.forEach(function (c, i) {
       var v = cutNote(c, i), txt = String(c.text || '').replace(/\s+/g, ' ').trim();
+      var evHere = !!(EVI.img && eviOn() && designOf() === 'fox' && i === eviCutIdx());
       h += '<label class="wvcutnote"><span class="n">' + ('0' + (i + 1)).slice(-2) + '</span>'
         + '<span class="t"><i>' + (Number(c.start) || 0).toFixed(1) + '~' + (Number(c.end) || 0).toFixed(1) + '초</i> · ' + esc(clip(txt, 44)) + '</span>'
+        + '<button type="button" class="wvevichip' + (evHere ? ' on' : '') + '" data-wvevi="' + i + '" aria-pressed="' + (evHere ? 'true' : 'false') + '" title="'
+        + (evHere ? '이 컷에 실측 증거 카드가 들어갑니다 — 다시 누르면 자동 선택으로 돌아갑니다' : (designOf() === 'fox' ? '이 컷에 실측 증거 카드를 넣습니다' : '🦊 폭스시그널 디자인에서만 들어갑니다'))
+        + '">🧾</button>'
         + '<input type="text" data-wvnote="' + i + '" maxlength="160" value="' + esc(v) + '" placeholder="예: 가운데 24시간 시계 · 여우 인사 · 차트 크게" aria-label="' + (i + 1) + '번 컷 화면 배치 메모">'
         + '</label>';
     });
@@ -22898,6 +23047,7 @@ var CSVoice = (function () {
     S.cuts = pv.cuts; S.total = pv.total;
     applyPhotos();
     syncUi();
+    eviForget();                    /* 새 대본 — 이전 대본의 증거 카드는 버린다(시간대·초안 흐름이 다시 꽂는다) */
     if (designOf() === 'fox') foxLoad();
     setSrcTag(spec, label || '');
     redraw();
@@ -23268,6 +23418,24 @@ var CSVoice = (function () {
     $$('#wvPanel [data-wvdesign]').forEach(function (b) {
       b.addEventListener('click', function () { setDesign(b.getAttribute('data-wvdesign')); });
     });
+    /* 📎 실측 증거 카드 포함(기본 ON) — 끄면 컷에서 빠지고, 켜면 그 시간대 실측으로 다시 만든다 */
+    var eviCb = $('#wvEvi');
+    if (eviCb) {
+      eviCb.checked = eviOn();
+      eviCb.addEventListener('change', function () { eviSetOn(!!eviCb.checked); });
+    }
+    /* 컷 오른쪽 🧾 — 증거 카드를 넣을 컷을 직접 고른다(같은 컷을 다시 누르면 자동 선택) */
+    D.addEventListener('click', function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest('[data-wvevi]') : null;
+      if (!b) return;
+      ev.preventDefault(); ev.stopPropagation();
+      var i = Number(b.getAttribute('data-wvevi'));
+      var same = (S.cfg && S.cfg.eviCut != null && Number(S.cfg.eviCut) === i);
+      if (S.cfg) { S.cfg.eviCut = same ? -1 : i; saveCfg(); }
+      if (!eviOn()) eviSetOn(true);
+      if (!EVI.img) eviRefresh({ slot: EVI.slot, label: EVI.label });
+      try { redraw(); renderCutNotes(); } catch (e2) {}
+    }, true);
     var fcuts = $('#wvFoxCuts');
     if (fcuts) fcuts.addEventListener('change', function (ev) {
       var t = ev.target;
@@ -23701,6 +23869,10 @@ var CSVoice = (function () {
     eyes: function (p) { return foxEyeSpots(p); },
     tplNames: function () { return TPL_NAME; },
     layout: function () { return { safe: SAFE, slots: SLOTS, gap: SLOT_GAP, gapCut: GAP, cw: CW, ch: CH }; },
+    eviSlot: function (o) { return eviRefresh(o || {}); },
+    evi: eviInfo,
+    eviOn: function (v) { return arguments.length ? eviSetOn(v) : eviOn(); },
+    eviCanvas: function (o) { return (W.FOXSC && W.FOXSC.eviCanvas) ? W.FOXSC.eviCanvas(o || {}) : Promise.resolve(null); },
     parseNums: parseNums,
     paste: applyPasted,
     sample: loadSample,
@@ -24547,6 +24719,172 @@ var CSVoice = (function () {
     } catch (e) { flash('PNG 저장에 실패했습니다 — ' + ((e && e.message) || '')); }
   }
 
+  /* ---------------- 🧾 쇼츠용 증거 카드 (900×664 = 쇼츠 시각물 슬롯 1:1) ----------------
+     · 블로그 카드와 같은 값(신호 스코어카드 · 확정 수급 · 마지막 거래일 스냅샷)만 쓴다.
+     · 1200×675 카드를 세로 영상에 그대로 줄이면 글자가 7px 아래로 내려가 읽히지 않는다 →
+       같은 내용을 쇼츠 슬롯 비율로 다시 그려 1:1 로 넣는다(찌그러짐·추가 축소 없음).
+     · 지금 지수·투자자별 수급 줄은 스튜디오가 그 시간대에 실제로 읽은 값만 받아 적는다(없으면 비운다). */
+  var SHORT_W = 900, SHORT_H = 664;
+  var SFF = '-apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
+  var SHORT_SLOT = { pre: '🌅 장전 시황', noon: '☀️ 점심 시황', close: '🌆 정규마감 시황',
+    after: '🌙 애프터장 결산', dict: '📘 30초 사전', review: '📊 주간 오답노트' };
+  function pad2(n) { return ('0' + n).slice(-2); }
+  function sfont(g, size, weight) { g.font = (weight || 800) + ' ' + size + 'px ' + SFF; }
+  function sBox(g, x, y, w, h) {
+    g.fillStyle = CREAM.card; g.strokeStyle = CREAM.line; g.lineWidth = 1.5;
+    rrect(g, x, y, w, h, 16); g.fill(); g.stroke();
+  }
+  function ensureData() {
+    if (V.sc || V.snap) return Promise.resolve(true);
+    if (!V.loading) load(false);
+    return new Promise(function (res) {
+      var t0 = Date.now();
+      (function tick() {
+        if (V.sc || V.snap) { res(true); return; }
+        if (!V.loading || Date.now() - t0 > 7000) { res(!!(V.sc || V.snap)); return; }
+        setTimeout(tick, 200);
+      })();
+    });
+  }
+  function paintShort(g, W, H, o) {
+    o = o || {};
+    var s = V.sc || null, sn = V.snap || null;
+    var date = (s && s.asOfTradingDay) || (sn && sn.tradeDate) || '';
+    var d = new Date();
+    var nowTxt = pad2(d.getMonth() + 1) + '/' + pad2(d.getDate()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+    var label = String(o.label || SHORT_SLOT[o.slot] || '').trim();
+    var idxLine = String(o.indexLine || '').trim();
+    if (!/[0-9]/.test(idxLine)) idxLine = '';          /* 값이 없는 줄(— 만 있는 줄)은 비운다 */
+    var supLine = String(o.supplyLine || '').trim();
+    if (!/[0-9]/.test(supLine)) supLine = '';
+    var sup = (s && s.supply) || null;
+    var leaders = (s && s.leaders) || [];
+
+    g.fillStyle = CREAM.bg; g.fillRect(0, 0, W, H);
+    g.fillStyle = CREAM.wine; g.fillRect(0, 0, W, 6);
+
+    /* 머리 — 무엇을 보는 카드인지 + 그 시간대 */
+    txt(g, '🧾 실측 증거 카드', 32, 50, 33, CREAM.ink, 'left', 900);
+    if (label) {
+      sfont(g, 20, 900);
+      var lw = Math.min(330, Math.round(g.measureText(label).width) + 40);
+      g.fillStyle = CREAM.wine; rrect(g, W - 32 - lw, 20, lw, 42, 21); g.fill();
+      txt(g, label, W - 32 - Math.round(lw / 2), 49, 20, '#FFFDF7', 'center', 900);
+    }
+    txt(g, (date ? date + ' 종가 기준' : '기준일 확인 불가') + ' · 확정 수급 · 네이버 일봉',
+      32, 84, 18, CREAM.sub, 'left', 750, W - 260);
+    txt(g, nowTxt + ' KST', W - 32, 84, 15, CREAM.mute, 'right', 750);
+
+    /* 그 시간대에 실제로 읽은 지수(있을 때만) — 카드가 '지금' 값인지 '종가' 값인지 섞이지 않게 따로 적는다 */
+    var T = 100;
+    if (idxLine) {
+      g.fillStyle = 'rgba(201,162,94,.12)'; g.strokeStyle = 'rgba(201,162,94,.42)'; g.lineWidth = 1.5;
+      rrect(g, 32, T, W - 64, 46, 12); g.fill(); g.stroke();
+      txt(g, '지금', 48, T + 30, 18, CREAM.wine, 'left', 900);
+      txt(g, idxLine, 106, T + 30, 18, CREAM.ink, 'left', 800, W - 64 - 92);
+      T += 58;
+    }
+
+    var full = H - 62 - T;
+    var B4 = 118, Y4 = H - 180;
+    var H1 = Math.max(200, Y4 - 12 - T);
+    var rX = 568, rW = 300, H2 = Math.round(H1 * 0.58), H3 = H1 - H2 - 12;
+
+    /* ① 300억↑ 대장주 */
+    sBox(g, 32, T, 520, H1);
+    txt(g, '① 대금 300억↑ 대장주', 52, T + 34, 21, CREAM.wine, 'left', 900);
+    txt(g, '만쥬 ②차트·거래대금 기준 · 통합(KRX+NXT)', 52, T + 56, 13, CREAM.mute, 'left', 750, 480);
+    var rH = Math.floor((H1 - 68) / 3);
+    if (!leaders.length) txt(g, '300억을 넘긴 종목 기록이 아직 없습니다.', 52, T + 96, 17, CREAM.mute, 'left', 800, 480);
+    leaders.slice(0, 3).forEach(function (r2, i) {
+      var y = T + 68 + i * rH;
+      if (i === 0) { g.fillStyle = 'rgba(201,162,94,.14)'; rrect(g, 48, y, 488, Math.max(40, rH - 6), 12); g.fill(); }
+      txt(g, String(i + 1), 62, y + Math.min(44, rH - 26), 24, CREAM.gold, 'left', 900);
+      txt(g, r2.name, 92, y + Math.min(36, rH - 34), 29, CREAM.ink, 'left', 900, 232);
+      txt(g, eok(r2.valueEok) + ' · 종가 ' + won(r2.close), 92, y + Math.min(64, rH - 8), 17, CREAM.sub, 'left', 750, 300);
+      txt(g, pct(r2.changePct), 524, y + Math.min(44, rH - 20), 27,
+        (num(r2.changePct) || 0) >= 0 ? CREAM.up : CREAM.down, 'right', 900);
+    });
+
+    /* ② 외인·기관 순매수(확정) */
+    sBox(g, rX, T, rW, H2);
+    txt(g, '② 외인·기관 순매수', rX + 18, T + 32, 19, CREAM.wine, 'left', 900, rW - 36);
+    txt(g, sup && sup.basisLabel ? sup.basisLabel + ' 확정' : '확정 수급 파일 없음', rX + 18, T + 52, 12.5, CREAM.mute, 'left', 750, rW - 36);
+    var rows2 = (sup && sup.foreignBuy) || [];
+    var rH2 = Math.floor((H2 - 62) / 3);
+    if (!rows2.length) txt(g, '—', rX + 18, T + 92, 17, CREAM.mute, 'left', 800);
+    rows2.slice(0, 3).forEach(function (r2, i) {
+      var y = T + 62 + i * rH2;
+      var t1 = y + Math.max(14, Math.round(rH2 * 0.44)), t2 = t1 + 19;
+      txt(g, r2.name, rX + 18, t1, 19, CREAM.ink, 'left', 850, 172);
+      txt(g, pct(r2.pct), rX + rW - 18, t1, 15, (num(r2.pct) || 0) >= 0 ? CREAM.up : CREAM.down, 'right', 850);
+      txt(g, '외인 ' + eok(r2.foreignEok) + ' · 기관 ' + eok(r2.organEok), rX + 18, t2, 15, CREAM.sub, 'left', 800, rW - 36);
+    });
+
+    /* ③ 지수 기준선 — 지지 유지/이탈 */
+    var y3 = T + H2 + 12;
+    sBox(g, rX, y3, rW, H3);
+    txt(g, '③ 지수 기준선', rX + 18, y3 + 30, 19, CREAM.wine, 'left', 900, rW - 36);
+    var lv = ((s && s.items) || []).filter(function (r2) { return r2.kind === 'index'; }).slice(0, 2);
+    if (!lv.length) txt(g, '기준선 기록 없음', rX + 18, y3 + 62, 15, CREAM.mute, 'left', 750, rW - 36);
+    lv.forEach(function (r2, i) {
+      var y = y3 + 54 + i * 30;
+      txt(g, (r2.market || '지수') + ' ' + Number(r2.level).toLocaleString('ko-KR') + ' 지지', rX + 18, y, 16, CREAM.ink, 'left', 850, 168);
+      txt(g, String(r2.verdict || '—') + (r2.result && r2.result.close != null ? ' ' + Number(r2.result.close).toLocaleString('ko-KR') : ''),
+        rX + rW - 18, y, 15, /유지/.test(String(r2.verdict)) ? CREAM.up : CREAM.down, 'right', 900);
+    });
+
+    /* ④ 피보나치 되돌림 + 성적표 요약 */
+    sBox(g, 32, Y4, 836, B4);
+    txt(g, '④ 피보나치 되돌림 — 당일 고가·저가', 52, Y4 + 30, 19, CREAM.wine, 'left', 900);
+    var smy = (s && s.summary) || {};
+    if (smy.measured) {
+      txt(g, '성적표 ' + smy.measured + '건 · 상승 ' + (smy.up || 0) + ' / 하락 ' + (smy.down || 0) +
+        ' · 지지 ' + (smy.held || 0) + ' / 이탈 ' + (smy.broken || 0),
+        848, Y4 + 30, 14, CREAM.sub, 'right', 800, 430);
+    }
+    var top = leaders[0], sn2 = top ? (snapOf(top.code, top.name) || null) : null;
+    var fib = sn2 ? fibLevels(sn2.high, sn2.low) : null;
+    if (top && fib) {
+      txt(g, top.name + ' — 고 ' + won(sn2.high) + ' / 저 ' + won(sn2.low) + ' / 종가 ' + won(sn2.close),
+        52, Y4 + 64, 17, CREAM.sub, 'left', 800, 786);
+      txt(g, '0.382 ' + won(fib.f382) + '    0.5 ' + won(fib.f500) + '    0.618 ' + won(fib.f618),
+        52, Y4 + 98, 19, CREAM.ink, 'left', 850, 786);
+    } else if (top) {
+      txt(g, top.name + ' — 일봉 고가·저가를 받지 못해 피보나치는 비웁니다.', 52, Y4 + 74, 17, CREAM.mute, 'left', 750, 786);
+    } else {
+      txt(g, '300억↑ 종목이 기록되면 당일 범위 피보나치를 함께 그립니다.', 52, Y4 + 74, 17, CREAM.mute, 'left', 750, 786);
+    }
+
+    /* 발 — 수급 줄은 그 시간대에 실제로 읽은 값만 */
+    txt(g, 'youtube.com/@폭스시그널 · 실측 정리 · 투자 권유 아님', 32, H - 20, 13, CREAM.mute, 'left', 750, 470);
+    if (supLine) txt(g, '수급 ' + supLine, W - 32, H - 20, 13, CREAM.mute, 'right', 750, 420);
+  }
+  function shortCanvas(o) {
+    var cv = document.createElement('canvas');
+    cv.width = SHORT_W * 2; cv.height = SHORT_H * 2;
+    var g = cv.getContext('2d');
+    if (g.setTransform) g.setTransform(2, 0, 0, 2, 0, 0); else g.scale(2, 2);
+    paintShort(g, SHORT_W, SHORT_H, o || {});
+    return cv;
+  }
+  /* 쇼츠 컷에 넣을 증거 카드 PNG — 데이터가 없으면 ok:false(지어내지 않는다) */
+  function eviCanvas(o) {
+    o = o || {};
+    return ensureData().then(function () {
+      if (!V.sc && !V.snap) return { ok: false, reason: 'no-data', dataUrl: '', label: '', basis: '', date: '' };
+      var cv = shortCanvas(o);
+      var basis = (V.sc && V.sc.basis) ? V.sc.basis : '';
+      var supB = (V.sc && V.sc.supply && V.sc.supply.basisLabel) ? '확정 수급 ' + V.sc.supply.basisLabel : '';
+      return {
+        ok: true, canvas: cv, dataUrl: cv.toDataURL('image/png'),
+        date: (V.sc && V.sc.asOfTradingDay) || (V.snap && V.snap.tradeDate) || '',
+        label: String(o.label || SHORT_SLOT[o.slot] || ''),
+        basis: [basis, supB].filter(Boolean).join(' · ')
+      };
+    });
+  }
+
   /* ---------------- 이벤트 ---------------- */
   document.addEventListener('click', function (e) {
     var t = e.target;
@@ -24576,6 +24914,8 @@ var CSVoice = (function () {
     material: function () { return material(); },
     load: load,
     draw: drawEvidence,
+    eviCanvas: eviCanvas,
+    shortCanvas: shortCanvas,
     data: function () { return { scorecard: V.sc, snapshot: V.snap }; }
   };
   window.FOXSC6 = true;
