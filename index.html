@@ -14200,10 +14200,10 @@
           <div class="t-item" style="border-left-color: #10b981; grid-column: span 2; background: rgba(16,185,129,0.04);">
             <div style="display:flex; justify-content:space-between; align-items:center;">
               <div class="t-label" style="color:#34d399; font-weight:800;">🛡️ DART 공시 & 🚨 KRX 시장경보 실시간 종합 안전도</div>
-              <span id="tacKrxBadge" class="krx-safe">🟢 경보 클린 (정상)</span>
+              <span id="tacKrxBadge" class="krx-safe" style="font-size:10px; font-weight:800; padding:2px 7px; border-radius:4px; background:rgba(148,163,184,0.18); color:#94a3b8;">⏳ 조회 전</span>
             </div>
             <div class="t-val" id="tacKrxDesc" style="font-size:11.5px; font-weight:500; color:#cbd5e1; margin-top:4px; line-height:1.45;">
-              3일 100% 상승 ❌ | 5일 60% 상승 ❌ | 유상증자/CB 악재 ❌ (신용/미수 100% 정상 거래 가능)
+              <span style="color:#94a3b8;">KRX 공식 경보 조회 결과만 표시합니다 — 종목을 고르면 실시간 조회합니다.</span>
             </div>
           </div>
         </div>
@@ -16815,6 +16815,94 @@ function renderModalRisk(code, title) {
 }
 window.renderModalRisk = renderModalRisk;
 
+/* ============================================================
+   🚨 KRX 공식 경보를 지정한 배지·설명에 그린다 (공통)
+   ------------------------------------------------------------
+   · 종목마다 「경보 클린」·「3일 100% 상승 ❌」를 미리 적어 두면
+     실제 조회와 무관한 판정이 화면에 남는다 → 공식 자료(ALERTS 또는
+     /api/stock-live?mode=alerts)만 읽어 그린다. 없으면 없다고 적는다.
+   ============================================================ */
+function paintOfficialAlert(badgeEl, descEl, alertObj, at, isLive, pending, code) {
+  if (!badgeEl || !descEl) return;
+  if (pending) {
+    badgeEl.style.background = 'rgba(148,163,184,0.18)';
+    badgeEl.style.color = '#94a3b8';
+    badgeEl.textContent = '⏳ 조회 중';
+    descEl.innerHTML = '<span style="color:#94a3b8;">KRX 공식 경보 목록(관리·거래정지·경보) 실시간 조회 중…</span>';
+    return;
+  }
+  if (!code) {
+    badgeEl.style.background = 'rgba(148,163,184,0.18)';
+    badgeEl.style.color = '#94a3b8';
+    badgeEl.textContent = '⏳ 조회 전';
+    descEl.innerHTML = '<span style="color:#94a3b8;">종목코드를 확인하지 못해 KRX 경보를 조회하지 않았습니다.</span>';
+    return;
+  }
+  if (alertObj) {
+    var label = alertObj.tradeStop ? '거래정지' : (alertObj.label || '시장경보');
+    var ico = alertObj.tradeStop ? '⛔' : '⚠️';
+    badgeEl.style.background = 'rgba(245,158,11,0.18)';
+    badgeEl.style.color = '#fbbf24';
+    badgeEl.textContent = ico + ' ' + label;
+    descEl.innerHTML = '<span style="color:#fbbf24;">' + ico + ' ' + _riskEsc(label) + '</span> 지정 종목 — ' +
+      (isLive ? 'KRX 경보 실시간 조회(' + _riskEsc(at || '방금') + ')' : '내장 스냅샷 ' + _riskEsc(at) + ' 기준') +
+      ' <span style="color:#94a3b8;">· 추격 매수 주의</span>';
+    return;
+  }
+  if (isLive) {
+    badgeEl.style.background = 'rgba(16,185,129,0.18)';
+    badgeEl.style.color = '#34d399';
+    badgeEl.textContent = '🟢 경보 미지정';
+    descEl.innerHTML = '<span style="color:#4ade80;">공식 경보 지정 없음</span> ' +
+      '<span style="color:#94a3b8;">— KRX 경보 실시간 조회(' + _riskEsc(at || '방금') + ')</span>';
+    return;
+  }
+  badgeEl.style.background = 'rgba(148,163,184,0.18)';
+  badgeEl.style.color = '#94a3b8';
+  badgeEl.textContent = '⏳ 실시간 미확인';
+  descEl.innerHTML = '<span style="color:#cbd5e1;">실시간 경보 조회 결과 없음</span> ' +
+    '<span style="color:#94a3b8;">— ' + (at ? '내장 스냅샷 ' + _riskEsc(at) + ' · ' : '') + '동적 서버에서 실시간 확인</span>';
+}
+
+function bindOfficialAlert(badgeEl, descEl, code) {
+  if (!badgeEl || !descEl) return;
+  var tk = (badgeEl.__alertToken || 0) + 1;
+  badgeEl.__alertToken = tk;
+  function paint(a, at, isLive, pending) {
+    if (badgeEl.__alertToken !== tk) return;   /* 다른 종목으로 넘어갔으면 버린다 */
+    paintOfficialAlert(badgeEl, descEl, a, at, isLive, pending, code);
+  }
+  function snapshotAt2() {
+    try { if (typeof ALERTS !== 'undefined' && ALERTS && ALERTS.at) return ALERTS.at; } catch (eS) { return ''; }
+    return '';
+  }
+  var st = null;
+  try { st = (typeof ALERTS !== 'undefined' && ALERTS) ? ALERTS : null; } catch (eA) { st = null; }
+  var cache = window.__KRX_MODAL_CACHE;
+  var apiOn = true;
+  try { apiOn = (typeof API_ON === 'undefined') ? true : !!API_ON; } catch (eO) { apiOn = false; }
+
+  if (st && st.src === 'live') { paint(code ? ((st.byCode || {})[code] || null) : null, st.at || '', true, false); return; }
+  if (cache && cache.byCode && (Date.now() - cache.ts) < 300000) { paint(code ? (cache.byCode[code] || null) : null, cache.at || '', true, false); return; }
+  if (!code || !apiOn) { paint(null, snapshotAt2(), false, false); return; }
+  paint(null, '', false, true);
+  fetch('/api/stock-live?mode=alerts', { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (b) {
+      if (!b || b.ok !== true || !b.byCode) throw new Error('no alerts');
+      var by = {};
+      Object.keys(b.byCode).forEach(function (k2) {
+        var x2 = b.byCode[k2] || {};
+        by[k2] = { label: x2.alertLabel || null, grade: x2.grade || 0, tradeStop: !!x2.tradeStop };
+      });
+      window.__KRX_MODAL_CACHE = { byCode: by, at: b.generatedAtKst || '', ts: Date.now() };
+      paint(by[code] || null, b.generatedAtKst || '', true, false);
+    })
+    .catch(function () { paint(null, snapshotAt2(), false, false); });
+}
+window.bindOfficialAlert = bindOfficialAlert;
+
+
 function openDetail(title, v1, v2, desc) {
       try { if (window.syncCheckerBtn) window.syncCheckerBtn(title, desc); } catch (eCk) {}
 
@@ -18445,12 +18533,13 @@ function openDetail(title, v1, v2, desc) {
       document.getElementById('tacTarget').textContent = s.target;
       document.getElementById('tacStop').textContent = s.stop;
 
+      /* 🚨 KRX 경보: 종목마다 적어 둔 고정 판정 대신 공식 자료만 그린다(2026-11-22) */
       var krxBadgeEl = document.getElementById('tacKrxBadge');
       var krxDescEl = document.getElementById('tacKrxDesc');
       if (krxBadgeEl && krxDescEl) {
-        krxBadgeEl.className = s.krxStatus === 'warn' ? 'krx-warn' : (s.krxStatus === 'caution' ? 'krx-caution' : 'krx-safe');
-        krxBadgeEl.textContent = s.krxStatus === 'warn' ? '🔴 투자경고 위험' : (s.krxStatus === 'caution' ? '🟡 투자주의 관찰' : '🟢 경보 클린 (정상)');
-        krxDescEl.innerHTML = s.krxDesc || '3일 100% 상승 ❌ | 5일 60% 상승 ❌ | 유상증자/CB 악재 ❌ (정상)';
+        krxBadgeEl.className = 'krx-safe';
+        try { bindOfficialAlert(krxBadgeEl, krxDescEl, s.code); }
+        catch (eKrx) { paintOfficialAlert(krxBadgeEl, krxDescEl, null, '', false, false, s.code); }
       }
 
       // Sync calculator default
