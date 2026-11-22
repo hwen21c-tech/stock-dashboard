@@ -1288,7 +1288,8 @@ function cmpHtml(it){
   var fine = [];
   fine.push('국내 ' + (dom.seller ? esc(dom.seller) : '최저가') + ' 기준');
   if (ov) fine.push('직구는 같은 검색어의 알리 상품 — 구성·옵션 차이 확인');
-  if (c.lowConfidence) fine.push('⚠️ 직구가가 지나치게 낮아 다른 구성일 수 있습니다');
+  var lc = c.lowConfidence || (op && dp && (op < dp * 0.25 || op > dp * 3));
+  if (lc) fine.push('⚠️ 가격 차가 커서 구성·용량이 다른 상품일 수 있습니다');
   var time = when ? (' · ' + when + ' 실측') : '';
 
   return '<div class="cmp">' +
