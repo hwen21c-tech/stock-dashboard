@@ -1038,6 +1038,8 @@ body.aiopen #side{opacity:0; pointer-events:none; transform:translateX(14px); tr
 
 
 
+
+
 <div id="boot">
   <div class="boot-in">
     <div class="boot-emoji">🪑</div>
@@ -7329,7 +7331,7 @@ if (document.readyState === 'loading') {
   }
 
   /* -------- 📰 뉴스 데스크: tabs-live(news) + stock-live(매크로) -------- */
-  function shapeNews(live, tabs) {
+  function shapeNews(live, tabs, auto) {
     var rows = [], ctx = [], news = [];
     var idx = (live.indices || []).slice(0, 2);
     idx.forEach(function (i) {
@@ -7372,6 +7374,15 @@ if (document.readyState === 'loading') {
     var top = (tabs.searchTop || []).slice(0, 6);
     if (top.length) {
       ctx.push('검색 상위: ' + top.map(function (x) { return x.rank + '. ' + x.name + ' ' + spct(x.changePct); }).join(', '));
+    }
+    // 주말·장전 핵심 뉴스 초안(content_auto_latest.json)도 함께 본다 — 없으면 그 줄만 뺀다.
+    var wk = (auto && auto.weekend_news) || null;
+    if (wk) {
+      ctx.push('주말 뉴스 초안(' + (wk.date || '') + '): ' + ((wk.blog && wk.blog.title) || '제목 없음'));
+      if (wk.blog && wk.blog.markdown) {
+        ctx.push('주말 뉴스 발췌: ' + String(wk.blog.markdown).replace(/[#*>`]/g, '').replace(/\n+/g, ' ').slice(0, 700));
+      }
+      if (wk.shorts && wk.shorts.title) ctx.push('주말 쇼츠 제목: ' + wk.shorts.title);
     }
     var stamp = (tabs.generatedAtKst || tm(live.generatedAtKst) || '') + ' 갱신';
     var head = ns[0] ? cut(ns[0].title, 60) : '속보 없음';
@@ -7434,8 +7445,9 @@ if (document.readyState === 'loading') {
     news: function () {
       return Promise.all([
         getJSON(API + '/api/stock-live'),
-        getJSON(API + '/api/tabs-live?tab=news')
-      ]).then(function (a) { return shapeNews(a[0], a[1]); });
+        getJSON(API + '/api/tabs-live?tab=news'),
+        getJSON(API + '/data/content_auto_latest.json').catch(function () { return null; })
+      ]).then(function (a) { return shapeNews(a[0], a[1], a[2]); });
     },
     battery: function () {
       // 카드 첫 화면은 논문 목록만(lite) — Gemini 를 부르지 않아 크레딧을 쓰지 않는다.
@@ -7862,6 +7874,9 @@ if (document.readyState === 'loading') {
     p.classList.add('on'); p.setAttribute('aria-hidden', 'false');
     el('#aiBack').classList.add('on');
     document.body.classList.add('aiopen');
+    // 모바일에서 열려 있던 #side 서랍·배경을 닫아 카드와 겹치지 않게 한다
+    var sd = document.getElementById('side'); if (sd) sd.classList.remove('open');
+    var bk0 = document.getElementById('backdrop'); if (bk0) bk0.classList.remove('on');
     els('#aiDock .aichip').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-ai') === k); });
     renderSources(st);
     renderQuick(st);
