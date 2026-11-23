@@ -627,6 +627,13 @@ async function aiApply(s){
   render();toast('할 일 '+list.length+'건을 넣었어요');return;
  }
  openEv(null);
+ const rq=parseQ(s);
+ if(!d.date&&rq.date)$('f_d').value=ymd(rq.date);
+ if(!d.date2&&rq.end)$('f_e').value=ymd(rq.end);
+ if(!d.time&&rq.time)$('f_h').value=rq.time;
+ if(!d.time2&&rq.time2)$('f_h2').value=rq.time2;
+ if(!d.type&&rq.type)$('f_y').value=rq.type;
+ if(!d.title&&rq.title)$('f_t').value=rq.title;
  if(d.date)$('f_d').value=d.date;
  if(d.date2)$('f_e').value=d.date2;
  if(d.time)$('f_h').value=d.time;
