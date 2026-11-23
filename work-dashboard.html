@@ -438,6 +438,7 @@ async function apiPost(payload){
  let r;
  try{r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})}
  catch(e){toast('AI 서버에 연결하지 못했어요 — 전화·PC의 인터넷을 확인해 주세요');return null}
+ if(r.status===413){toast('파일이 커서 서버가 받지 못했어요(요청 한도 약 4.2MB) — 3MB 이하로 잘라 다시 올려 주세요');return null}
  let j=null;try{j=await r.json()}catch(e){}
  if(!j){toast('AI 응답을 읽지 못했어요 (HTTP '+r.status+')');return null}
  if(!r.ok||j.ok!==true){toast(String(j.message||('AI 호출 실패 (HTTP '+r.status+')')).slice(0,150));return null}
@@ -779,7 +780,7 @@ $('rt1').onclick=()=>recTab(1);$('rt2').onclick=()=>recTab(2);
 $('rx').onclick=()=>{stopRecog();$('ovR').classList.remove('on')};
 $('rf').onchange=()=>{const f=$('rf').files&&$('rf').files[0];rec.file=f||null;
  if(!f){$('rfs').textContent='선택된 파일 없음';return}
- const mb=f.size/1048576,big=f.size>3.2*1048576;
+ const mb=f.size/1048576,big=f.size>3.0*1048576;
  $('rfs').innerHTML='📁 '+esc(f.name)+' · '+mb.toFixed(2)+'MB'+(big?' — <b style="color:var(--red)">3MB를 넘어 전송할 수 없어요</b> (잘라서 다시 올려 주세요)':' — 전송 가능')};
 function releaseWake(){try{rec.wake&&rec.wake.release()}catch(e){}rec.wake=null}
 function stopRecog(){rec.running=false;try{rec.recog&&rec.recog.abort()}catch(e){}
@@ -815,7 +816,7 @@ async function extractRec(auto){
  let d=null;
  try{
   if(rec.mode===2&&rec.file){
-   if(rec.file.size>3.2*1048576){toast('파일이 3MB를 넘어 전송할 수 없어요 — 녹음기에서 필요한 구간만 잘라 주세요');return}
+   if(rec.file.size>3.0*1048576){toast('파일이 3MB를 넘어 전송할 수 없어요 — 녹음기에서 필요한 구간만 잘라 주세요');return}
    $('rst').textContent='📤 파일을 올려 전사하는 중… (1분 안팎 걸릴 수 있어요)';
    const b64=await fileB64(rec.file);
    const j=await apiPost({action:'work_meeting',mime:rec.file.type||guessMime(rec.file.name),data:b64,name:rec.file.name,hint:$('rtitle').value.trim()});
