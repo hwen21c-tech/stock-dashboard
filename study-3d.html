@@ -2185,7 +2185,7 @@ Avatar.prototype.build = function () {
   hairCap.position.y = 0.215; hairCap.rotation.x = -0.12; hairCap.castShadow = true; this.head.add(hairCap);
   var fringe = new THREE.Mesh(new THREE.SphereGeometry(0.256, 20, 12, 0, Math.PI * 2, 0, Math.PI * 0.3), mat(this.hair, { rough: 0.9 }));
   fringe.position.y = 0.22; fringe.rotation.x = 0.25; fringe.scale.set(1, 1, 1); this.head.add(fringe);
-  if (this.role === '독서 중' || this.name === '서연') {
+  if (this.role === '독서 중') {
     var pony = new THREE.Mesh(new THREE.SphereGeometry(0.13, 10, 8), mat(this.hair, { rough: 0.9 }));
     pony.position.set(0, 0.16, -0.24); pony.scale.set(0.8, 1.4, 0.8); pony.castShadow = true; this.head.add(pony);
   }
@@ -2388,37 +2388,6 @@ Avatar.prototype.update = function (dt) {
   }
 };
 
-/* ---------- 9. NPC 사고 ---------- */
-function npcUpdate(n, dt) {
-  if (n.state === 'walk') return;
-  n.thinkT -= dt;
-  if (n.thinkT > 0) return;
-  n.thinkT = rnd(6, 14);
-  var r = Math.random();
-  if (n.seat) {
-    if (r < 0.35) {
-      n.stand();
-      var p = freeSpot();
-      if (p) n.goTo(p, null);
-      n.say(pick(['잠깐 스트레칭… 🧘', '물 한 잔 마시고 올게요', '집중 25분 끝! ☕']), 2600);
-    } else if (r < 0.55) {
-      n.say(pick(['이번 분기 실적 체크 중 📊', '차트가 예쁘게 올라오네요', '집중 잘 되네요 ✍️']), 2600);
-    }
-    return;
-  }
-  if (r < 0.66) {
-    var free = seats.filter(function (s) { return !s.taken && !s.floor; });   // NPC는 1층 의자만 (상층은 내 자리)
-    if (free.length) {
-      var seat = pick(free);
-      var ap = approachPoint(seat);
-      n.goTo(ap, seat);
-    }
-  } else {
-    var spot = freeSpot();
-    if (spot) n.goTo(spot, null);
-  }
-  if (Math.random() < 0.4) n.say(pick(['같이 집중해요 🙌', '오늘도 화이팅!', '여기 조명 좋네요 ✨', '라운지 분위기 최고']), 2400);
-}
 function freeSpot() {
   for (var i = 0; i < 40; i++) {
     var x = rnd(-5.8, 5.8), z = rnd(-4.0, 4.0);
@@ -3288,7 +3257,6 @@ function animate() {
   }
   updateCamera(dt);
   for (var i = 0; i < avatars.length; i++) avatars[i].update(dt);
-  for (var n = 0; n < npcs.length; n++) npcUpdate(npcs[n], dt);
   catUpdate(dt, now / 1000);
   updateMark(dt);
   updateLabels(dt, camera);
@@ -3315,7 +3283,6 @@ function animate() {
 }
 
 /* ---------- 25. 3D 초기화 ---------- */
-var npcs = [];
 function init3D() {
   var canvas = $('#c');
   W = window.innerWidth; H = window.innerHeight;
@@ -3354,34 +3321,6 @@ function init3D() {
   });
   scene.add(me.g); avatars.push(me);
 
-  // NPC
-  var npcDefs = [
-    { name: '도현', color: '#ffcb6b', shirt: 0xc9795a, pants: 0x39404e, hair: 0x241c16, seat: 'desk0', st: '집중 중' },
-    { name: '서연', color: '#b6a4ff', shirt: 0x7f9e86, pants: 0x4a5568, hair: 0x3a2b22, seat: 'chair1', st: '독서 중' },
-    { name: '지민', color: '#ff9a9a', shirt: 0xd8c3a4, pants: 0x556070, hair: 0x2f241c, seat: 'sofa0', st: '휴식 중' },
-    { name: '수빈', color: '#7fd1ff', shirt: 0x6f8fa8, pants: 0x2f3947, hair: 0x241c16, seat: 'bench0', st: '집중 중' }
-  ];
-  npcDefs.forEach(function (d, i) {
-    var av = new Avatar({
-      name: d.name, color: d.color, shirt: d.shirt, pants: d.pants, hair: d.hair,
-      x: 0, z: 0, headphone: i !== 2, skin: [0xf3cea9, 0xf5d6b6, 0xefc7a2, 0xf6d9bb][i]
-    });
-    av.statusText = d.st;
-    av.focusSec = [738, 2927, 1950, 1521][i] + Math.floor(Math.random() * 60);
-    scene.add(av.g); avatars.push(av); npcs.push(av);
-    var seat = null;
-    for (var s = 0; s < seats.length; s++) if (seats[s].id === d.seat) seat = seats[s];
-    if (seat) {
-      av.g.position.copy(seat.pos);
-      av.g.rotation.y = seat.rotY;
-      av.seat = seat; seat.taken = av;
-      av.sitTarget = 1; av.sitT = 1; av.sitT2 = 1; av.state = 'sit';
-    } else {
-      av.g.position.set(rnd(-4, 4), 0, rnd(-3, 3));
-    }
-    av.thinkT = 6 + i * 3;
-  });
-
   avatars.forEach(makeLabel);
   me.setStatus('집중 준비');
 
@@ -3400,12 +3339,7 @@ function init3D() {
   // 첫 인사
   setTimeout(function () {
     pushChat('시스템', '#8fa3b8', '라운지에 입장했어요. 바닥을 눌러 이동하고, 의자를 눌러 앉아 보세요.', false, true);
-    pushChat('도현', '#ffcb6b', '어서 오세요! 오늘도 화이팅 💪', false);
-    if (npcs[0]) npcs[0].say('어서 오세요! 👋', 3600);
   }, 1200);
-  setTimeout(function () {
-    pushChat('서연', '#b6a4ff', '오전에는 코스피 수급 체크하고 있어요 📊', false);
-  }, 6000);
   setTimeout(function () {
     if (me) me.say('바닥을 눌러 이동해 보세요 🙂', 4200);
   }, 4200);
@@ -3490,9 +3424,7 @@ function boot() {
   }
 
   var msgs = [
-    ['시스템', '#8fa3b8', '라운지에 오신 걸 환영해요 🪑 25분 집중 · 할 일 · 메모를 함께 써 보세요.'],
-    ['도현', '#ffcb6b', '다들 오늘도 화이팅! 💪'],
-    ['서연', '#b6a4ff', '조금 후에 코스피 수급 체크하는 중이에요 📊']
+    ['시스템', '#8fa3b8', '라운지에 오신 걸 환영해요 🪑 25분 집중 · 할 일 · 메모를 함께 써 보세요.']
   ];
   msgs.forEach(function (m) { pushChat(m[0], m[1], m[2], false, m[0] === '시스템'); });
 
