@@ -276,6 +276,7 @@ body.locked .gate{display:flex}
 <label>액션아이템 (줄바꿈으로 구분 · 아래에서 기한을 정하면 달력에 업무로 등록돼요)</label><textarea id="f_a"></textarea><div id="a_dt"></div>
 <label>요약</label><textarea id="f_s" placeholder="비워두면 메모에서 자동 생성돼요"></textarea>
 <button type="button" id="ma" style="margin-top:8px;padding:4px 10px;font-size:12px">✨ 회의 메모를 요약·결정·액션으로 정리</button>
+<button type="button" id="mr" style="margin-top:6px;padding:4px 10px;font-size:12px;display:none;border-color:var(--m-meeting);color:var(--m-meeting);font-weight:700">🎙️ 이 회의 녹음·요약 넣기</button>
 </div><div class="foot"><button id="e_s">메모로 요약 생성</button><button id="e_d" style="color:var(--red)">삭제</button><button id="e_x">닫기</button><button class="pri" id="e_ok">저장</button></div></div></div>
 <div id="zbd" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:55"></div>
 <div class="ov" id="ov5"><div class="md" style="max-width:480px"><h3 style="margin:0 0 6px">🎤 빠른 입력</h3>
@@ -289,7 +290,8 @@ body.locked .gate{display:flex}
 <textarea id="bkt" style="min-height:220px;margin-top:8px;font-size:11px"></textarea>
 <div class="row" style="margin-top:8px"><button id="bk_dl">⬇ 파일로 내려받기</button><button id="bk_undo">↩ 샘플 비우기 되돌리기</button></div>
 <div class="foot"><button id="bk_x">닫기</button><button id="bk_c">복사</button><button class="pri" id="bk_r">불러오기</button></div></div></div>
-<div class="ov" id="ovR"><div class="md" style="max-width:560px"><h3 style="margin:0 0 8px">🎙️ 회의 녹음</h3>
+<div class="ov" id="ovR"><div class="md" style="max-width:560px"><h3 style="margin:0 0 8px" id="r_h">🎙️ 회의 녹음</h3>
+<div id="rtgt" class="hint" style="display:none;border-left:3px solid var(--m-meeting);background:color-mix(in srgb,var(--m-meeting) 9%,transparent);font-weight:600">📌 대상 회의: <b id="rtgt_t"></b><br><span id="rtgt_s" style="font-weight:400">요약·결정·액션이 이 일정에 바로 들어갑니다</span></div>
 <div class="tabs"><button id="rt1" class="on">실시간 받아쓰기</button><button id="rt2">녹음파일 업로드</button></div>
 <div id="rp1">
 <div class="hint">📱 <b>화면을 켜 둔 채로</b> 두세요 — 화면이 꺼지면 받아쓰기가 끊깁니다. 지원되는 기기에서는 화면이 꺼지지 않게 자동으로 잡아 둡니다.</div>
@@ -302,7 +304,7 @@ body.locked .gate{display:flex}
 <input type="file" id="rf" accept=".m4a,.mp3,.wav,.webm,.ogg,.aac,audio/*">
 <div id="rfs" class="hint">선택된 파일 없음</div>
 </div>
-<div class="row" style="margin-top:6px"><div><label>회의 제목</label><input type="text" id="rtitle" placeholder="비우면 날짜로 저장"></div><div><label>날짜</label><input type="date" id="rdate"></div><div><label>시작 시간</label><input type="text" id="rtime" placeholder="14:30" inputmode="numeric"></div></div>
+<div class="row" id="rwhen" style="margin-top:6px"><div><label>회의 제목</label><input type="text" id="rtitle" placeholder="비우면 날짜로 저장"></div><div><label>날짜</label><input type="date" id="rdate"></div><div><label>시작 시간</label><input type="text" id="rtime" placeholder="14:30" inputmode="numeric"></div></div>
 <div id="role" style="display:none"><div class="sec">추출 결과 <small>고쳐도 됩니다</small></div>
 <label>요약</label><textarea id="rsum" style="min-height:56px"></textarea>
 <label>결정사항 (줄바꿈)</label><textarea id="rdec" style="min-height:56px"></textarea>
@@ -560,6 +562,8 @@ if(d.summary)$('f_s').value=d.summary;
 if((d.decisions||[]).length)$('f_c').value=d.decisions.join('\n');
 if((d.actions||[]).length)$('f_a').value=d.actions.join('\n');
 renderAdt();toast('요약·결정·액션을 채웠어요 — 확인 후 저장하세요')};
+/* 이 회의 일정에 바로 녹음·요약을 넣는다 — 대상 회의를 정해 녹음 모달을 연다 */
+$('mr').onclick=()=>{if(!cur||cur.type!=='meeting'){toast('회의 일정을 열어 주세요');return}openRec(cur.id)};
 function setFit(on,st){document.body.classList.toggle('fit',on);$('bf').textContent=on?'▢ 기본 보기':'⛶ 한 화면';if(st){try{localStorage.setItem('wfit',on?'1':'0')}catch(e){}}}
 
 /* ---------------- 문장 해석 (정규식) */
@@ -689,7 +693,7 @@ calBig=on&&!!c.querySelector('#cal');render()}
 document.querySelectorAll('.main .card').forEach(c=>{const b=document.createElement('button');b.className='zb';b.type='button';b.title='확대/축소';b.textContent='⤢';b.onclick=e=>{e.stopPropagation();zoom(c)};c.appendChild(b)});
 $('zbd').onclick=()=>{const c=document.querySelector('.card.big');if(c)zoom(c)};
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){const c=document.querySelector('.card.big');if(c){zoom(c);return}
-const anyOv=document.querySelector('.ov.on');if(anyOv&&anyOv.id!=='ov4')anyOv.classList.remove('on')}});
+const ovs=[...document.querySelectorAll('.ov.on')].filter(o=>o.id!=='ov4');const anyOv=ovs[ovs.length-1];if(anyOv){if(anyOv.id==='ovR')stopRecog();anyOv.classList.remove('on')}}});
 let _aqr=null;
 function ask(m){return new Promise(r=>{_aqr=r;$('aq').textContent=m;$('ov4').classList.add('on')})}
 $('aq_y').onclick=()=>{$('ov4').classList.remove('on');if(_aqr)_aqr(true);_aqr=null};
@@ -767,14 +771,24 @@ $('bk_undo').onclick=async()=>{let raw=null;try{raw=localStorage.getItem('wd3.un
  S=d;mig(S);S.v=4;S.ut=Date.now();lastJ='';localSave();$('ov3').classList.remove('on');render();toast('되돌렸어요')};
 
 /* ---------------- 🎙️ 회의 녹음 */
-const rec={mode:1,file:null,recog:null,running:false,ended:false,wake:null,savedId:null};
+const rec={mode:1,file:null,recog:null,running:false,ended:false,wake:null,savedId:null,tgt:null};
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 function recTab(n){rec.mode=n;$('rt1').classList.toggle('on',n===1);$('rt2').classList.toggle('on',n===2);$('rp1').style.display=n===1?'':'none';$('rp2').style.display=n===2?'':'none'}
-function openRec(){rec.file=null;rec.savedId=null;rec.ended=false;$('rf').value='';$('rfs').textContent='선택된 파일 없음';$('rt_t').value='';$('rsum').value='';$('rdec').value='';$('ract').value='';$('role').style.display='none';$('rsave2').style.display='none';
- $('rdate').value=TD;const n=new Date();$('rtime').value=Z(n.getHours())+':'+Z(n.getMinutes());$('rtitle').value='';
+function openRec(tgtId){rec.tgt=(tgtId!=null&&typeof tgtId!=='object'&&tgtId!=='')?String(tgtId):null;
+ const ev=rec.tgt?S.ev.find(e=>String(e.id)===rec.tgt):null;if(!ev)rec.tgt=null;
+ rec.file=null;rec.savedId=null;rec.ended=false;$('rf').value='';$('rfs').textContent='선택된 파일 없음';$('rt_t').value='';$('rsum').value='';$('rdec').value='';$('ract').value='';$('role').style.display='none';$('rsave2').style.display='none';
+ if(ev){
+  $('rtgt').style.display='';$('rtgt_t').textContent=ev.title;$('r_h').textContent='🎙️ 회의 녹음 — 이 일정에 기입';
+  $('rwhen').style.display='none';$('rsave').textContent='이 회의에 넣기';
+  $('rdate').value=ev.date;$('rtime').value=ev.time||'';$('rtitle').value=ev.title;
+  $('rtgt_s').textContent=[ev.summary,ev.decision,ev.actions].some(x=>String(x||'').trim())?'이미 적힌 요약·결정·액션이 있어요 — 넣을 때 덧붙일지 새로 쓸지 물어봅니다':'요약·결정·액션이 이 일정에 바로 들어갑니다';
+ }else{
+  $('rtgt').style.display='none';$('r_h').textContent='🎙️ 회의 녹음';$('rwhen').style.display='';$('rsave').textContent='회의로 저장';
+  $('rdate').value=TD;const n=new Date();$('rtime').value=Z(n.getHours())+':'+Z(n.getMinutes());$('rtitle').value='';
+ }
  $('rst').textContent=SR?'대기 중 — 시작을 누르고 말하면 글이 쌓입니다.':'이 브라우저는 실시간 받아쓰기를 지원하지 않아요 — 녹음파일 업로드를 쓰세요.';
  recTab(SR?1:2);$('ovR').classList.add('on')}
-$('br').onclick=openRec;
+$('br').onclick=()=>openRec();
 $('rt1').onclick=()=>recTab(1);$('rt2').onclick=()=>recTab(2);
 $('rx').onclick=()=>{stopRecog();$('ovR').classList.remove('on')};
 $('rf').onchange=()=>{const f=$('rf').files&&$('rf').files[0];rec.file=f||null;
@@ -835,10 +849,12 @@ async function extractRec(auto){
   $('rdec').value=(d.decisions||[]).join('\n');
   $('ract').value=(d.actions||[]).join('\n');
   $('role').style.display='';
+  if(rec.tgt){await fillTarget(true);return}
   saveMeeting(true);
   $('rst').textContent='✅ AI 정리 완료 — 회의로 저장했어요';
   toast('요약·결정·액션을 뽑아 회의로 저장했어요');
  }else if(auto){
+  if(rec.tgt){$('rst').textContent='AI 정리에 실패했어요 — 받아쓴 내용은 그대로 두었습니다. 직접 고쳐 [이 회의에 넣기]를 누르세요.';return}
   saveMeeting(true);
   $('rst').textContent='AI 정리에 실패해 받아쓴 내용만 회의 메모로 저장했어요';
   toast('AI 정리는 실패 — 받아쓴 내용만 저장했어요');
@@ -846,6 +862,7 @@ async function extractRec(auto){
 }
 $('rgo').onclick=()=>extractRec(false);
 function saveMeeting(quiet){
+ if(rec.tgt){fillTarget(quiet);return}
  const date=$('rdate').value||TD,time=normT($('rtime').value);
  const title=$('rtitle').value.trim()||('회의 '+md(date));
  let e=rec.savedId?S.ev.find(z=>z.id===rec.savedId):null;
@@ -856,6 +873,32 @@ function saveMeeting(quiet){
  const note=$('rsave2');note.style.display='';
  note.textContent='✅ '+md(date)+' "'+title+'" 회의로 저장했어요 — 고친 내용은 [회의로 저장]을 다시 누르면 반영됩니다.';
  if(!quiet)toast('회의로 저장했어요');
+}
+/* 대상 회의 기입 — 새 일정을 만들지 않고 편집 중인 회의에 요약·결정·액션을 반영 */
+async function fillTarget(quiet){
+ const ev=rec.tgt?S.ev.find(z=>String(z.id)===rec.tgt):null;
+ if(!ev){toast('대상 회의를 찾지 못했어요 — 일정을 다시 열어 주세요');return}
+ const same=!!(cur&&String(cur.id)===String(ev.id));
+ const base={s:same?$('f_s').value:(ev.summary||''),d:same?$('f_c').value:(ev.decision||''),a:same?$('f_a').value:(ev.actions||'')};
+ const nw={s:$('rsum').value.trim(),d:$('rdec').value.trim(),a:$('ract').value.trim()};
+ if(!nw.s&&!nw.d&&!nw.a){$('rst').textContent='넣을 요약·결정·액션이 비어 있어요 — ✨ AI로 정리하거나 직접 적어 주세요.';toast('넣을 요약·결정·액션이 없어요 — ✨ AI로 정리하거나 직접 적어 주세요');return}
+ const hasOld=lines(base.s).length>0||lines(base.d).length>0||lines(base.a).length>0;
+ let merge=true;
+ if(hasOld)merge=await ask('이 회의에는 이미 적힌 내용이 있어요.\n\n[확인] 기존 내용에 이어 붙이기\n[취소] 새 내용으로 바꾸기');
+ const jS=(o,n)=>!n?String(o||''):(!o?n:(String(o).trim()===String(n).trim()?String(o):String(o).replace(/\s+$/,'')+'\n'+n));
+ const jL=(o,n)=>{const L=lines(o);lines(n).forEach(x=>{if(!L.includes(x))L.push(x)});return L.join('\n')};
+ const v={s:merge?jS(base.s,nw.s):(nw.s||base.s),d:merge?jL(base.d,nw.d):(nw.d||base.d),a:merge?jL(base.a,nw.a):(nw.a||base.a)};
+ const oldA=lines(base.a),tr=$('rt_t').value.trim(),added=[];
+ ev.summary=v.s;ev.decision=v.d;ev.actions=v.a;
+ ev.ad=(ev.ad||[]).filter(x=>lines(ev.actions).includes(x));
+ if(tr&&!String(ev.memo||'').trim())ev.memo=tr;
+ lines(v.a).filter(x=>!oldA.includes(x)).forEach(x=>{if(!S.td.some(t=>t.t===x&&!t.done)){S.td.push({id:S.nid++,g:1,t:x,done:0,due:(ev.adt||{})[x]||''});added.push(x)}});
+ if(same){$('f_s').value=v.s;$('f_c').value=v.d;$('f_a').value=v.a;renderAdt()}
+ syncLinks(ev);render();
+ $('ovR').classList.remove('on');
+ $('rst').textContent='✅ "'+ev.title+'"에 요약·결정·액션을 넣었어요';
+ if(same)$('f_s').scrollIntoView({block:'nearest'});
+ toast('"'+ev.title+'" 회의에 넣었어요'+(added.length?' · 할 일 '+added.length+'건 추가':'')+' — 확인 후 [저장]을 누르세요');
 }
 $('rsave').onclick=()=>{if(!$('rt_t').value.trim()&&!$('rsum').value.trim()&&!$('ract').value.trim()){toast('받아쓴 내용이나 요약이 없어요');return}saveMeeting(false)};
 
@@ -873,7 +916,7 @@ if(t.dataset.ae){const ev=S.ev.find(y=>y.id==t.dataset.ae);const x=lines(ev.acti
 [1].forEach(g=>$('a'+g).addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim()){S.td.push({id:S.nid++,g,t:e.target.value.trim(),done:0,due:$('a1d').value});e.target.value='';$('a1d').value='';render()}}));
 $('pm').onclick=()=>{vm=new Date(vm.getFullYear(),vm.getMonth()-1,1);cal()};
 $('nm').onclick=()=>{vm=new Date(vm.getFullYear(),vm.getMonth()+1,1);cal()};
-function tg(){const y=$('f_y').value,r=y==='run',p=y==='etc',mt=y==='meeting';$('rb').style.display=r?'':'none';$('pb').style.display=(p||mt)?'':'none';$('who_w').style.display=p?'':'none';$('loc_l').textContent=mt?'회의장소':'장소';$('mb').style.display=(r||p)?'none':'';$('e_s').style.display=(r||p)?'none':''}
+function tg(){const y=$('f_y').value,r=y==='run',p=y==='etc',mt=y==='meeting';$('rb').style.display=r?'':'none';$('pb').style.display=(p||mt)?'':'none';$('who_w').style.display=p?'':'none';$('loc_l').textContent=mt?'회의장소':'장소';$('mb').style.display=(r||p)?'none':'';$('e_s').style.display=(r||p)?'none':'';$('mr').style.display=(mt&&cur)?'':'none'}
 
 /* ---------------- 🔒 PIN 잠금 */
 const PIN='0623';
