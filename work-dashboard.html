@@ -411,7 +411,7 @@ async function initSync(){
   if(remote&&Array.isArray(remote.ev)&&Array.isArray(remote.td)){
     if(rt>((S.ut||0)+800)){
       S=mig(remote);S.v=4;S.ut=rt;S.nid=Math.max(S.nid||10,400);lastJ=cj();localSave();
-      sy.ok=true;sy.msg='동기화됨(다른 기기 내용)';sy.at=rt;renderSync();render();
+      sy.ok=true;sy.msg='동기화됨(다른 기기 내용)';sy.at=Date.now();renderSync();render();
       return;
     }
   }
@@ -426,7 +426,7 @@ async function pullIfNewer(){
   const rt=(data&&Number(data.ut))||0;
   if(remote&&Array.isArray(remote.ev)&&Array.isArray(remote.td)&&rt>((S.ut||0)+800)){
     S=mig(remote);S.v=4;S.ut=rt;S.nid=Math.max(S.nid||10,400);lastJ=cj();localSave();
-    sy.at=rt;render();toast('다른 기기에서 바뀐 내용을 불러왔어요');
+    sy.at=Date.now();render();toast('다른 기기에서 바뀐 내용을 불러왔어요');
   }
  }catch(e){}
 }
