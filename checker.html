@@ -234,6 +234,62 @@
   .schrow .sa{flex:0 0 auto;color:var(--mute);font-size:11.5px;font-weight:900}
   .schednote{margin-top:6px;font-size:10.1px;font-weight:750;color:var(--mute);line-height:1.5}
   .schmore{width:100%;border:1px dashed var(--line);background:#FFFDF7;color:var(--sub);border-radius:9px;padding:6px 8px;font-size:10.8px;font-weight:900}
+  /* ---- 🗓️ 증시 일정 달력 보기 ---- */
+  .schedbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 6px}
+  .schedbar[hidden]{display:none}
+  .seg{display:inline-flex;border:1px solid var(--line);background:#fff;border-radius:999px;padding:2px;gap:2px}
+  .seg button{border:0;background:transparent;color:var(--mute);border-radius:999px;padding:3px 11px;font-size:10.8px;font-weight:900;letter-spacing:-.02em;font-family:inherit}
+  .seg button.on{background:var(--wine);color:#FFF9EC}
+  .schedbar .calhint{margin-left:auto;font-size:9.8px;font-weight:800;color:var(--mute);letter-spacing:-.02em}
+  .cal{display:flex;flex-direction:column;gap:4px}
+  .cal[hidden]{display:none}
+  .caldow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;font-size:9.6px;font-weight:900;color:var(--mute);text-align:center}
+  .caldow span.sat{color:#1E3A8A}
+  .caldow span.sun{color:#B3261E}
+  .calrow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;align-items:stretch}
+  .calcell{display:flex;flex-direction:column;gap:2px;min-width:0;overflow:hidden;border:1px solid var(--line);background:var(--card);border-radius:9px;padding:4px 3px 5px;text-align:left;font:inherit;color:var(--ink);min-height:64px}
+  .calcell:active{transform:translateY(1px)}
+  .calcell .cdn{display:flex;align-items:baseline;gap:2px;min-width:0;font-variant-numeric:tabular-nums}
+  .calcell .cdn b{font-size:11.6px;font-weight:900;letter-spacing:-.04em}
+  .calcell .cdn i{font-style:normal;font-size:8.4px;font-weight:850;color:var(--mute);letter-spacing:-.04em}
+  .calcell.sat .cdn b{color:#1E3A8A}
+  .calcell.sun .cdn b{color:#B3261E}
+  .calcell.today{border-color:var(--wine);background:#FFF8F4;box-shadow:inset 0 0 0 1px rgba(120,27,51,.22)}
+  .calcell.today .cdn b{color:var(--wine)}
+  .calcell.off{background:#F4EFE3;border-style:dashed;opacity:.5}
+  .cchips{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .cchip{display:block;font-size:9.1px;font-weight:850;line-height:1.22;border-radius:4px;padding:1px 3px;background:#EFE7D7;color:#5E5546;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.04em}
+  .cchip.ipo{background:#FDECEA;color:#8B1A12}
+  .cchip.bok{background:#EFF4FF;color:#1E3A8A}
+  .cchip.us{background:#EDF1F7;color:#334155}
+  .cchip.exp{background:#FFF1E0;color:#9A3412}
+  .cchip.hol{background:#E8F5EC;color:#15612F}
+  .cmore{font-size:8.8px;font-weight:900;color:var(--mute);padding-left:1px}
+  .cdots{display:none;gap:2px;flex-wrap:nowrap;align-items:center;margin-top:1px;min-width:0}
+  .cdots i{width:5px;height:5px;border-radius:50%;background:#C9C0AE}
+  .cdots i.ipo{background:#C0392B}
+  .cdots i.bok{background:#1E3A8A}
+  .cdots i.us{background:#64748B}
+  .cdots i.exp{background:#C2410C}
+  .cdots i.hol{background:#1F6B3A}
+  .cdots em{font-style:normal;font-size:8.6px;font-weight:900;color:var(--mute);font-variant-numeric:tabular-nums}
+  .calleg{display:flex;gap:8px;flex-wrap:wrap;font-size:9.4px;font-weight:800;color:var(--mute);margin-top:2px;letter-spacing:-.02em}
+  .calleg span{display:inline-flex;align-items:center;gap:3px}
+  .calleg i{width:6px;height:6px;border-radius:50%}
+  .calleg i.ipo{background:#C0392B}
+  .calleg i.bok{background:#1E3A8A}
+  .calleg i.us{background:#64748B}
+  .calleg i.exp{background:#C2410C}
+  .calleg i.hol{background:#1F6B3A}
+  /* 좁은 화면(폴드8 외부 400px 등): 7열 글자 칩은 뭉개지므로 점+건수 요약으로 바꾼다 */
+  @media (max-width:430px){
+    .caldow,.calrow{gap:3px}
+    .calcell{min-height:52px;padding:3px 2px 4px}
+    .calcell .cdn b{font-size:11px}
+    .cchips{display:none}
+    .cdots{display:flex}
+    .calleg{font-size:9px;gap:6px}
+  }
   /* ---- 📅 일정 상세 시트 ---- */
   .kv{display:grid;grid-template-columns:74px 1fr;gap:5px 8px;padding:8px 2px 2px;font-size:11.5px;line-height:1.45}
   .kv dt{font-size:10.6px;font-weight:900;color:var(--mute)}
@@ -250,8 +306,9 @@
   .livebox{font-size:11.6px;font-weight:850;color:var(--ink);line-height:1.5;padding:7px 9px;border-radius:9px;background:#F2F7F3;border:1px solid #CFE3D6;margin:7px 2px 0}
 
   /* ---- 📋 테마 구성종목 시트(모달) ---- */
-  .sheet-bg{position:fixed;inset:0;background:rgba(32,24,15,.46);display:flex;align-items:flex-end;justify-content:center;z-index:90}
-  .sheet{background:var(--card);width:100%;max-width:520px;max-height:88vh;border-radius:18px 18px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 28px rgba(32,24,15,.25)}
+  /* 시트는 바텀시트가 아니라 '화면 정중앙 모달' — 위아래 여백을 같은 값으로 두어 눈높이 중앙에 앉힌다 */
+  .sheet-bg{position:fixed;inset:0;background:rgba(32,24,15,.46);display:flex;align-items:center;justify-content:center;z-index:90;padding:calc(14px + env(safe-area-inset-top)) 12px calc(14px + env(safe-area-inset-bottom))}
+  .sheet{background:var(--card);width:100%;max-width:520px;max-height:82vh;border-radius:18px;display:flex;flex-direction:column;box-shadow:0 14px 38px rgba(32,24,15,.28)}
   .sheet .sh{display:flex;align-items:center;gap:8px;padding:13px 14px 10px;border-bottom:1px solid var(--line)}
   .sheet .sh h3{margin:0;font-size:16px;font-weight:900;letter-spacing:-.03em}
   .sheet .sh .sx{margin-left:auto;border:0;background:#F2EADB;color:var(--sub);border-radius:999px;width:30px;height:30px;font-size:15px;font-weight:900}
@@ -265,7 +322,7 @@
   .srow .cd{display:block;font-size:10.2px;font-weight:800;color:var(--mute);margin-top:1px}
   .srow .pc{margin-left:auto;font-size:13px;font-weight:900;font-variant-numeric:tabular-nums}
   .srow .vl{width:66px;text-align:right;font-size:11px;font-weight:850;color:var(--sub);font-variant-numeric:tabular-nums}
-  .sheet .snote{padding:8px 14px 4px;font-size:10.3px;font-weight:750;color:var(--mute);line-height:1.5}
+  .sheet .snote{padding:8px 14px 13px;font-size:10.3px;font-weight:750;color:var(--mute);line-height:1.5}
 
   /* ---- 📰 [특징주] 이력 · 과거 파동 ---- */
   .wave{background:#FBF7EC;border:1px solid var(--line);border-radius:11px;padding:9px 10px;margin-top:7px}
@@ -330,6 +387,12 @@
     <div class="tmap" id="themeMap" hidden></div>
     <div class="schedhead" id="schedHead" hidden>📅 이번 주 증시 일정 <span class="tb" id="schedBasis"></span>
       <button class="tg" id="schedToggle" type="button">접기</button></div>
+    <div class="schedbar" id="schedBar" hidden>
+      <div class="seg" role="group" aria-label="증시 일정 보기 방식">
+        <button type="button" id="schedViewList" aria-pressed="false">리스트</button>
+        <button type="button" id="schedViewCal" aria-pressed="true">🗓️ 달력</button>
+      </div>
+      <span class="calhint" id="schedHint">날짜 칸을 누르면 그날 일정</span></div>
     <div class="sched" id="schedBody" hidden></div>
     <div class="schednote" id="schedNote" hidden></div>
     <div id="msg" role="status" aria-live="polite"></div>
@@ -1581,7 +1644,7 @@
      · 국내 공표 일정        : 한국은행 2026년 금통위 일정 + 파생 만기 규칙(매월 둘째 목요일)
      · 없는 일정·없는 경쟁률을 만들지 않는다. 받지 못한 값은 '미확인'.
      ============================================================ */
-  var SCHED = { loaded: false, open: true, expanded: false, items: [], info: { ipo: null, econ: null }, mood: null };
+  var SCHED = { loaded: false, open: true, expanded: false, view: 'cal', items: [], info: { ipo: null, econ: null }, mood: null };
   var SCHED_LIMIT = 14;
 
   /* 한국은행 2026년 금통위 정기회의
@@ -1779,40 +1842,34 @@
       renderSchedule(items);
     }).catch(function(){
       host.hidden = true; head.hidden = true;
+      if ($('schedBar')) $('schedBar').hidden = true;
+      if ($('schedNote')) $('schedNote').hidden = true;
     });
+  }
+
+  /* 한 번만 그리는 UI 상태(접기/보기)를 한곳에서 맞춘다 — 토글·보기 전환·렌더가 같은 규칙을 쓰게 */
+  function syncSchedUI(){
+    var bar = $('schedBar'), host = $('schedBody'), btn = $('schedToggle'), hint = $('schedHint');
+    var has = !!(SCHED.items && SCHED.items.length);
+    if (bar) bar.hidden = !(SCHED.open && has);
+    if (host) host.hidden = !SCHED.open;
+    if (btn) btn.textContent = SCHED.open ? '접기' : '펼치기';
+    var lb = $('schedViewList'), cb = $('schedViewCal');
+    if (lb){ lb.className = SCHED.view === 'list' ? 'on' : ''; lb.setAttribute('aria-pressed', SCHED.view === 'list' ? 'true' : 'false'); }
+    if (cb){ cb.className = SCHED.view === 'cal' ? 'on' : ''; cb.setAttribute('aria-pressed', SCHED.view === 'cal' ? 'true' : 'false'); }
+    if (hint) hint.textContent = SCHED.view === 'cal' ? '날짜 칸을 누르면 그날 일정' : '';
   }
 
   function renderSchedule(items){
     var host = $('schedBody'), head = $('schedHead'), basis = $('schedBasis'), note = $('schedNote');
     if (!host) return;
+    head.hidden = false;
     if (!items.length){
       host.innerHTML = '<div class="schednote" style="padding:4px 0">이번 주(오늘 포함 7일)에 확인된 증시 일정이 없습니다.</div>';
+    } else if (SCHED.view === 'list'){
+      renderSchedList(host);
     } else {
-      var shown = SCHED.expanded ? items : items.slice(0, SCHED_LIMIT);
-      host.innerHTML = shown.map(function(e){
-        var dl = dLabel(e.date), wh = whenLabel(e.date);
-        return '<button class="schrow" type="button" data-k="' + esc(e.key) + '">' +
-          '<span class="sd"><b>' + esc(dl.md) + '</b><i>' + esc(dl.wd + (wh ? ' · ' + wh : '')) + '</i></span>' +
-          '<span class="sk ' + esc(e.kind) + '">' + esc(e.tag) + '</span>' +
-          '<span class="st">' + esc(e.title) + '<small>' + esc(e.time ? (e.time + ' ' + (e.sub || '')) : (e.sub || '')) + '</small></span>' +
-          '<span class="sa">›</span></button>';
-      }).join('');
-      if (items.length > SCHED_LIMIT && !SCHED.expanded){
-        host.innerHTML += '<button class="schmore" type="button" id="schedMore">＋ ' + (items.length - SCHED_LIMIT) + '건 더 보기 (' + items.length + '건)</button>';
-        var more = $('schedMore');
-        if (more) more.addEventListener('click', function(){ SCHED.expanded = true; renderSchedule(SCHED.items); });
-      } else if (SCHED.expanded && items.length > SCHED_LIMIT){
-        host.innerHTML += '<button class="schmore" type="button" id="schedLess">− 접어서 ' + SCHED_LIMIT + '건만 보기</button>';
-        var less = $('schedLess');
-        if (less) less.addEventListener('click', function(){ SCHED.expanded = false; renderSchedule(SCHED.items); });
-      }
-      Array.prototype.forEach.call(host.querySelectorAll('.schrow'), function(btn){
-        btn.addEventListener('click', function(){
-          var k = btn.getAttribute('data-k');
-          var it = SCHED.items.filter(function(x){ return x.key === k; })[0];
-          if (it) openSchedSheet(it);
-        });
-      });
+      renderSchedCal(host);
     }
     if (basis){
       var upd = (SCHED.info.ipo && SCHED.info.ipo.updatedAt) ? String(SCHED.info.ipo.updatedAt).slice(0, 10) : '';
@@ -1825,8 +1882,120 @@
       note.hidden = !bad.length;
       note.textContent = bad.length ? (bad.join('·') + '을 받지 못했습니다 — 받은 일정만 보여 줍니다(일정을 지어내지 않습니다).') : '';
     }
-    head.hidden = false;
-    host.hidden = !SCHED.open;
+    syncSchedUI();
+  }
+
+  function renderSchedList(host){
+    var items = SCHED.items, shown = SCHED.expanded ? items : items.slice(0, SCHED_LIMIT);
+    host.innerHTML = shown.map(function(e){
+      var dl = dLabel(e.date), wh = whenLabel(e.date);
+      return '<button class="schrow" type="button" data-k="' + esc(e.key) + '">' +
+        '<span class="sd"><b>' + esc(dl.md) + '</b><i>' + esc(dl.wd + (wh ? ' · ' + wh : '')) + '</i></span>' +
+        '<span class="sk ' + esc(e.kind) + '">' + esc(e.tag) + '</span>' +
+        '<span class="st">' + esc(e.title) + '<small>' + esc(e.time ? (e.time + ' ' + (e.sub || '')) : (e.sub || '')) + '</small></span>' +
+        '<span class="sa">›</span></button>';
+    }).join('');
+    if (items.length > SCHED_LIMIT && !SCHED.expanded){
+      host.innerHTML += '<button class="schmore" type="button" id="schedMore">＋ ' + (items.length - SCHED_LIMIT) + '건 더 보기 (' + items.length + '건)</button>';
+      var more = $('schedMore');
+      if (more) more.addEventListener('click', function(){ SCHED.expanded = true; renderSchedule(SCHED.items); });
+    } else if (SCHED.expanded && items.length > SCHED_LIMIT){
+      host.innerHTML += '<button class="schmore" type="button" id="schedLess">− 접어서 ' + SCHED_LIMIT + '건만 보기</button>';
+      var less = $('schedLess');
+      if (less) less.addEventListener('click', function(){ SCHED.expanded = false; renderSchedule(SCHED.items); });
+    }
+    Array.prototype.forEach.call(host.querySelectorAll('.schrow'), function(btn){
+      btn.addEventListener('click', function(){
+        var k = btn.getAttribute('data-k');
+        var it = SCHED.items.filter(function(x){ return x.key === k; })[0];
+        if (it) openSchedSheet(it);
+      });
+    });
+  }
+
+  /* ---------- 🗓️ 달력 보기 — 오늘 포함 7일 창을 월~일 격자로 ---------- */
+  /* 칸 폭이 60px 안팎이라 제목을 통째로 넣으면 뭉개진다. 칸에는 접미사만 덜어 낸 이름을 쓰고,
+     누르면 그날 일정(상세)이 원래 제목·시각·세부 그대로 열린다 — 정보를 줄이지는 않는다. */
+  function schedShort(e){
+    var t = String((e && e.title) || '');
+    t = t.replace(/\s+—\s+.*$/, '');
+    t = t.replace(/\s*속보$/, '');
+    t = t.replace(/\s*\((?:전월비|전분기비|MoM|YoY)\)/g, '');
+    t = t.replace('한국은행 금융안정회의', '한은 금융안정회의').replace('한국은행 금통위', '한은 금통위');
+    t = t.replace(' 신규 상장', ' 상장').replace(' 공모청약 시작', ' 청약시작').replace(' 공모청약 마감', ' 청약마감');
+    t = t.replace(' 기관 수요예측 마감', ' 수요예측');
+    t = t.replace('선물옵션 동시만기', '동시만기').replace('KOSPI200 옵션만기', '옵션만기');
+    return t;
+  }
+  var SCHED_KIND = [['us', '거시'], ['ipo', '공모주'], ['bok', '한은'], ['exp', '만기'], ['hol', '휴장']];
+  function schedGridRange(){
+    var t = kstToday0();
+    var start = dayShift(t, -((t.getDay() + 6) % 7));   /* 이번 주 월요일 */
+    var last = dayShift(t, 6);
+    var end = dayShift(last, (7 - last.getDay()) % 7);  /* 7일 창의 마지막 주 일요일 — 주가 중간에 끝나지 않게 */
+    return { start: start, end: end };
+  }
+  function renderSchedCal(host){
+    var map = {}, win = schedWindow(), tIso = ymdOf(kstToday0());
+    SCHED.items.forEach(function(e){ (map[e.date] = map[e.date] || []).push(e); });
+    var g = schedGridRange(), d = new Date(g.start.getTime()), h = [];
+    h.push('<div class="caldow">' + ['월', '화', '수', '목', '금', '토', '일'].map(function(w, i){
+      return '<span' + (i === 5 ? ' class="sat"' : i === 6 ? ' class="sun"' : '') + '>' + w + '</span>';
+    }).join('') + '</div>');
+    while (d <= g.end){
+      h.push('<div class="calrow">');
+      for (var i = 0; i < 7; i++){
+        var iso = ymdOf(d), wd = d.getDay(), inWin = win.indexOf(iso) >= 0;
+        var evs = map[iso] || [], cls = ['calcell'], sub = '';
+        if (wd === 0) cls.push('sun'); else if (wd === 6) cls.push('sat');
+        if (iso === tIso) cls.push('today');
+        if (!inWin) cls.push('off');
+        if (d.getDate() === 1 || iso === ymdOf(g.start)) sub = (d.getMonth() + 1) + '월';
+        var chips = '', dots = '';
+        if (evs.length){
+          var MAXC = 3;
+          chips = evs.slice(0, MAXC).map(function(e){ return '<span class="cchip ' + esc(e.kind) + '">' + esc(schedShort(e)) + '</span>'; }).join('');
+          if (evs.length > MAXC) chips += '<span class="cmore">+' + (evs.length - MAXC) + '</span>';
+          dots = evs.slice(0, 4).map(function(e){ return '<i class="' + esc(e.kind) + '"></i>'; }).join('') + '<em>' + evs.length + '</em>';
+        }
+        h.push('<button class="' + cls.join(' ') + '" type="button" data-date="' + iso + '"' +
+          (inWin ? '' : ' disabled aria-disabled="true" tabindex="-1"') +
+          (evs.length ? ' title="' + esc(evs.map(function(e){ return (e.time ? e.time + ' ' : '') + e.title; }).join(' / ')) + '"' : '') +
+          ' aria-label="' + esc((d.getMonth() + 1) + '/' + d.getDate() + ' ' + (WD_KO[wd] || '') + '요일 · ' + (evs.length ? '일정 ' + evs.length + '건' : '일정 없음')) + '">' +
+          '<span class="cdn"><b>' + d.getDate() + '</b>' + (sub ? '<i>' + esc(sub) + '</i>' : '') + '</span>' +
+          '<span class="cchips">' + chips + '</span><span class="cdots">' + dots + '</span></button>');
+        d = dayShift(d, 1);
+      }
+      h.push('</div>');
+    }
+    h.push('<div class="calleg">' + SCHED_KIND.map(function(k){ return '<span><i class="' + k[0] + '"></i>' + k[1] + '</span>'; }).join('') + '</div>');
+    host.innerHTML = '<div class="cal" id="schedCal">' + h.join('') + '</div>';
+    Array.prototype.forEach.call(host.querySelectorAll('.calcell'), function(btn){
+      btn.addEventListener('click', function(){ openSchedDay(btn.getAttribute('data-date')); });
+    });
+  }
+
+  /* 날짜 칸 → 그날 일정. 한 건이면 바로 상세, 여러 건이면 목록에서 골라 상세 */
+  function openSchedDay(iso){
+    var evs = SCHED.items.filter(function(x){ return x.date === iso; });
+    if (!evs.length){ toast('이 날은 확인된 증시 일정이 없습니다'); return; }
+    if (evs.length === 1){ openSchedSheet(evs[0]); return; }
+    var dl = dLabel(iso), wh = whenLabel(iso);
+    var bg = openSheet(dl.md + '(' + dl.wd + ') 증시 일정', esc(evs.length + '건' + (wh ? ' · ' + wh : '') + ' · 항목을 누르면 상세'));
+    var body = bg.querySelector('#sheetBody'), note = bg.querySelector('#sheetNote');
+    body.innerHTML = '<div class="sched" style="padding:2px 0 2px">' + evs.map(function(e, i){
+      return '<button class="schrow" type="button" data-i="' + i + '">' +
+        '<span class="sk ' + esc(e.kind) + '">' + esc(e.tag) + '</span>' +
+        '<span class="st">' + esc(e.title) + '<small>' + esc(e.time ? (e.time + ' ' + (e.sub || '')) : (e.sub || '')) + '</small></span>' +
+        '<span class="sa">›</span></button>';
+    }).join('') + '</div>';
+    if (note) note.innerHTML = '받은 값은 실측·공표 자료 그대로입니다. 받지 못한 값은 <b>미확인</b>으로 둡니다.';
+    Array.prototype.forEach.call(body.querySelectorAll('.schrow'), function(btn){
+      btn.addEventListener('click', function(){
+        var it = evs[Number(btn.getAttribute('data-i'))];
+        if (it) openSchedSheet(it);
+      });
+    });
   }
 
   /* ---------- 지금 분위기(실측) ---------- */
@@ -2286,19 +2455,25 @@
       try { localStorage.setItem('foxsignal_checker_tmap', mapOpen ? 'open' : 'closed'); } catch(e){}
     });
   }
-  /* 📅 이번 주 증시 일정 — 접기/펼치기 상태도 기억한다 */
+  /* 📅 이번 주 증시 일정 — 접기/펼치기·보기(리스트/달력) 상태도 기억한다 */
   try { SCHED.open = localStorage.getItem('foxsignal_checker_sched') !== 'closed'; } catch(e){ SCHED.open = true; }
+  try { SCHED.view = localStorage.getItem('foxsignal_checker_schedview') === 'list' ? 'list' : 'cal'; } catch(e){ SCHED.view = 'cal'; }
   var schedBtn = $('schedToggle');
   if (schedBtn){
-    schedBtn.textContent = SCHED.open ? '접기' : '펼치기';
     schedBtn.addEventListener('click', function(){
       SCHED.open = !SCHED.open;
-      var host = $('schedBody');
-      if (host) host.hidden = !SCHED.open;
-      schedBtn.textContent = SCHED.open ? '접기' : '펼치기';
       try { localStorage.setItem('foxsignal_checker_sched', SCHED.open ? 'open' : 'closed'); } catch(e){}
+      syncSchedUI();
     });
   }
+  function setSchedView(v){
+    SCHED.view = v === 'list' ? 'list' : 'cal';
+    try { localStorage.setItem('foxsignal_checker_schedview', SCHED.view); } catch(e){}
+    if (SCHED.items && SCHED.items.length) renderSchedule(SCHED.items); else syncSchedUI();
+  }
+  if ($('schedViewList')) $('schedViewList').addEventListener('click', function(){ setSchedView('list'); });
+  if ($('schedViewCal')) $('schedViewCal').addEventListener('click', function(){ setSchedView('cal'); });
+  syncSchedUI();
   loadSchedule();
   loadThemeMap();
   document.addEventListener('keydown', function(ev){ if (ev.key === 'Escape') closeSheet(); });
