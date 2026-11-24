@@ -5332,6 +5332,31 @@
 
   </div>
 
+<!-- 🌙 오늘 종가베팅 공략 후보 (2트랙) — 2026-11-24 신설 · 1번 메인 탭 · /api/tabs-live closingPicks · 30초 갱신
+     🔥 테마주도주: 당일 거래대금 300억↑ · +3%↑ · 윗꼬리 5% 이내 / 💰 수급주도주: KIS 가집계 외·기 양매수 + 500억↑
+     값은 서버(closingPicks)만 쓴다 — 화면은 계산·추정하지 않고, 기준 미달이면 '조건 충족 종목 없음'만 적는다. -->
+<!-- CLOSING_PICKS_START -->
+<div class="op-box" id="closingPicksBox">
+  <div class="op-head">
+    <div class="op-title">🌙 오늘 종가베팅 공략 후보 <span class="op-sub">(2트랙: 🔥 테마주도주 / 💰 수급주도주)</span></div>
+    <div class="op-badges">
+      <span class="op-badge op-time" id="cpTimeBadge">⏱ 장전 대기</span>
+      <span class="op-badge" id="cpBadge">⏱ 로딩 중</span>
+      <button type="button" class="op-toggle" id="cpToggleBtn" aria-expanded="true">접기</button>
+    </div>
+  </div>
+  <div class="op-tabs" id="cpTabs" role="tablist" aria-label="종가베팅 공략 후보 트랙">
+    <button type="button" class="op-tab active" id="cpTabTheme" role="tab" aria-selected="true">🔥 테마주도주 (신정재·만쥬 결) <span class="op-tab-n" id="cpTabThemeN">0</span></button>
+    <button type="button" class="op-tab" id="cpTabSupply" role="tab" aria-selected="false">💰 수급주도주 (침착해·홍인기 결) <span class="op-tab-n" id="cpTabSupplyN">0</span></button>
+  </div>
+  <div class="op-note" id="cpNote"></div>
+  <div class="op-grid" id="cpBody"></div>
+  <div class="op-principle" id="cpPrinciple"></div>
+  <div class="op-foot" id="cpFoot"></div>
+</div>
+<script defer src="live-closing.js"></script>
+<!-- CLOSING_PICKS_END -->
+
   <!-- 🧭 시간별 수급 이동 타임라인 (08:50 → 16:00 · 실측만 · 장중 상시 펼침) -->
   <div class="tl-box" id="tlBox">
     <div class="tl-head">
@@ -25167,7 +25192,7 @@ window.BijoongTab = {
   function tlInvRowsHtml(rows){
     return rows.map(function(r,i){
       var a=tlInvAmt(r);
-      var ex=(tlNum(r.chg)!==null?(' <span style="color:'+(r.chg>0?'#f87171':'#38bdf8')+'; font-weight:800;">'+tlSigned(r.chg,'%')+'</span>'):'')+
+      var ex=(tlNum(r.chg)!==null?(' <span style="color:'+(r.chg>0?'#f87171':'#38bdf8')+'; font-weight:800;">'+(r.chg>0?'+':'')+Number(r.chg).toFixed(2)+'%</span>'):'')+
              (tlNum(r.price)!==null?(' <span style="color:#64748b;">'+Math.round(r.price).toLocaleString('ko-KR')+'원</span>'):'');
       return (i+1)+'. <b style="color:#fff;">'+esc(r.name)+'</b> <span style="color:#94a3b8;">('+esc(r.code)+')</span> '+
         '<b class="'+a.cls+'">'+a.txt+'</b>'+ex;
@@ -25193,7 +25218,7 @@ window.BijoongTab = {
       html+='<div style="font-size:10.5px; color:#cbd5e1; line-height:1.8; margin-top:3px;"><b style="color:#fcd34d;">기관계</b> '+tlInvRowsHtml(orgRows)+'</div>';
     }
     if(srcKis) html+='<div style="font-size:9px; color:#fbbf24; margin-top:2px; line-height:1.5;">※ 네이버 trendForeignOrg 응답 없음(404) → 한투 KIS '+(inv.confirmed?'확정치':'가집계')+'로 대체했습니다. 이 값은 그 슬롯 시각이 아니라 '+(inv.confirmed?'직전 거래일 확정':'최신 가집계')+' 시점 값입니다.</div>';
-    if(inv.note) html+='<div style="font-size:9.5px; color:#94a3b8; margin-top:4px; line-height:1.55;">※ '+esc(inv.note)+'</div>';
+    if(inv.note && !srcKis) html+='<div style="font-size:9.5px; color:#94a3b8; margin-top:4px; line-height:1.55;">※ '+esc(inv.note)+'</div>';
     html+='</div>';
     return html;
   }
