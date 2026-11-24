@@ -197,9 +197,11 @@
     if (!DATA) {
       body.innerHTML = '<div style="font-size:11.5px; color:#94a3b8; padding:8px;">⏳ 종가베팅 후보를 불러오는 중…</div>';
     } else if (!list.length) {
+      var nts = ((DATA && DATA.notes) || []).filter(Boolean);
       body.innerHTML = '<div style="font-size:11.5px; color:#fca5a5; padding:8px; line-height:1.7;">' +
         '조건 충족 종목 없음 — ' + esc(track === 'theme' ? rt.theme : rt.supply) +
-        ' <span style="color:#94a3b8;">(기준을 임의로 완화해 채우지 않습니다)</span></div>';
+        ' <span style="color:#94a3b8;">(기준을 임의로 완화해 채우지 않습니다)</span>' +
+        (nts.length ? '<br><span style="color:#fcd34d;">' + esc(nts.join(' ')) + '</span>' : '') + '</div>';
     } else {
       body.innerHTML = list.map(track === 'theme' ? themeCard : supplyCard).join('');
     }
