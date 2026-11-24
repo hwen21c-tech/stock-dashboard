@@ -245,6 +245,8 @@ main{padding:6px 0 40px;min-height:60vh}
 .flag.visit{background:rgba(167,139,250,.14);color:#ddd6fe;border-color:rgba(167,139,250,.3)}
 .flag.face{background:rgba(125,211,252,.13);color:#bae6fd;border-color:rgba(125,211,252,.3)}
 .flag.plain{background:rgba(148,163,184,.10);color:#cbd5e1;border-color:var(--line)}
+/* 🆕 NEW — 직전 수집 이후 새로 등록된 캠페인(플랫폼별 최신 3건)만 */
+.flag.new{background:linear-gradient(135deg,rgba(52,211,153,.22),rgba(56,189,248,.18));color:#a7f3d0;border-color:rgba(52,211,153,.42)}
 .cfoot{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
 .done{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:900;padding:3px 8px;border-radius:8px;background:rgba(52,211,153,.16);color:#a7f3d0;border:1px solid rgba(52,211,153,.34)}
 .done.off{background:rgba(148,163,184,.14);color:#c3cfdf;border-color:var(--line2)}
@@ -580,6 +582,7 @@ html[data-theme="light"] .flag.cost{background:#fef3c7;color:#854d0e;border-colo
 html[data-theme="light"] .flag.visit{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
 html[data-theme="light"] .flag.face{background:#e0f2fe;color:#075985;border-color:#bae6fd}
 html[data-theme="light"] .flag.plain{background:#eef2f7;color:#3f556b;border-color:var(--line)}
+html[data-theme="light"] .flag.new{background:linear-gradient(135deg,#dcfce7,#e0f2fe);color:#0f7a53;border-color:#a7e8c6}
 html[data-theme="light"] .done{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
 html[data-theme="light"] .done.off{background:#eef2f7;color:#44586e;border-color:var(--line2)}
 
@@ -1188,6 +1191,16 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     if (d <= 5) return 'soon';
     return 'safe';
   }
+  /* 카드 뱃지 — 🆕 NEW 는 '직전 수집 이후 새로 등록'만, 나머지는 마감임박을 앞세운다 */
+  function newBadge(r) {
+    if (!r.isNew) return '';
+    return '<span class="flag new" title="직전 수집 이후 새로 등록된 캠페인">🆕 NEW</span>';
+  }
+  function ddayChipText(d) {
+    if (d === 0) return '🔥 오늘마감';
+    if (d !== null && d !== undefined && d >= 1 && d <= 3) return '⏰ D-' + d;
+    return ddayText(d);
+  }
   function rateText(r) {
     if (r === null) return '경쟁 미확인';
     return (r >= 10 ? Math.round(r) : Math.round(r * 10) / 10) + ':1';
@@ -1785,7 +1798,8 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
         '<span class="cat ' + catClass(r.category) + '">' + esc(r.category || '기타') + '</span>' +
         (r.type ? '<span class="flag plain">' + esc(r.type) + '</span>' : '') +
         (r.region && r.region !== REGION_ALL ? '<span class="flag plain">📍 ' + esc(r.region) + '</span>' : '') +
-        '<span class="dday ' + ddayClass(r.d) + '">' + ddayText(r.d) + '</span>' +
+        newBadge(r) +
+        '<span class="dday ' + ddayClass(r.d) + '">' + ddayChipText(r.d) + '</span>' +
       '</div>' +
       '<h3>' + esc(r.title) + '</h3>' +
       '<div class="offer">' + (r.offer ? '제공 · ' + esc(slice(r.offer, 46)) : (r.missionSummary ? esc(slice(r.missionSummary, 46)) : '제공내역 미확인')) + '</div>' +
@@ -2184,8 +2198,8 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     }
     return '<div class="item" data-item="' + esc(r.id) + '">' +
       '<div class="itemtop"><h3>' + esc(r.title) + '</h3>' +
-        platBadge(r) +
-        '<span class="dday ' + ddayClass(r.d) + '">' + ddayText(r.d) + '</span></div>' +
+        platBadge(r) + newBadge(r) +
+        '<span class="dday ' + ddayClass(r.d) + '">' + ddayChipText(r.d) + '</span></div>' +
       '<div class="meta">' + esc(r.category || '기타') + ' · 신청 ' + (r.applicants || '–') + '/' + (r.capacity || '–') +
         ' · 경쟁 ' + rateText(r.rate) + (r.announce ? ' · 발표 ' + mdLabel(r.announce) : '') + '</div>' +
       '<div class="missionbox"><div class="ttl">📌 신청 전 미션 체크</div>' + checksHtml(r) + '</div>' +
