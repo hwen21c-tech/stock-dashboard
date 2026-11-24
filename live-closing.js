@@ -5,8 +5,10 @@
  *
  *  트랙 ①  🔥 테마주도주 (신정재·만쥬 결)
  *           당일 거래대금 300억↑ · 등락률 +3%↑ · 윗꼬리 5% 이내 (상한가 포함)
+ *           정렬은 테마 강도 우선(테마 1위 > 2~3위 > 그 외 · 상한가 가점 → 등락률·대금)
  *  트랙 ②  💰 수급주도주 (침착해·홍인기 결)
  *           KIS 장중 가집계 외인·기관 양매수(또는 한쪽 강한 매수) + 거래대금 500억↑
+ *           카드에 외인·기관 **양쪽 금액**을 적고 매도는 파란 칩 + '매도', 확인 불가면 '미확인'
  *
  *  · 값은 /api/tabs-live 의 closingPicks 만 쓴다 — 화면은 계산·추정하지 않는다.
  *    (서버가 기준 미달이면 빈 배열로 내려주고, 화면은 '조건 충족 종목 없음'만 적는다.
@@ -108,6 +110,20 @@
     return '<span class="op-chip ' + cls + '">' + esc(text) + '</span>';
   }
 
+  /* 수급 한쪽 표기 — 매수/매도/미확인을 글자로 구분한다(수치가 없으면 절대 0으로 적지 않는다) */
+  function sideText(v) {
+    if (!isNum(v)) return '미확인';
+    if (v > 0) return '매수 ' + signedEok(v);
+    if (v < 0) return '매도 ' + signedEok(v);
+    return '0억';
+  }
+  function sideChip(label, v) {
+    if (!isNum(v)) return chip('mute', label + ' 미확인');
+    if (v > 0) return chip('st-up', label + ' 매수 ' + signedEok(v));
+    if (v < 0) return chip('st-dn', label + ' 매도 ' + signedEok(v));
+    return chip('mute', label + ' 0억');
+  }
+
   function themeCard(p, i) {
     var chips = [];
     if (isNum(p.upperTailPct)) chips.push(chip(p.upperTailPct <= 2 ? 'ok' : 'warm', '윗꼬리 ' + p.upperTailPct.toFixed(2) + '%'));
@@ -127,9 +143,12 @@
 
   function supplyCard(p, i) {
     var chips = [];
-    if (isNum(p.foreignEok)) chips.push(chip(p.foreignEok > 0 ? 'st-up' : p.foreignEok < 0 ? 'st-dn' : 'mute', '외 ' + signedEok(p.foreignEok)));
-    if (isNum(p.organEok)) chips.push(chip(p.organEok > 0 ? 'st-up' : p.organEok < 0 ? 'st-dn' : 'mute', '기 ' + signedEok(p.organEok)));
-    if (isNum(p.totalEok)) chips.push(chip('ok', '합 ' + signedEok(p.totalEok)));
+    /* 외인·기관 **양쪽을 항상** 적는다 — 반대쪽이 매도면 파란 칩 + '매도', 확인 불가면 '미확인'(임의 0 금지) */
+    chips.push(sideChip('외', p.foreignEok));
+    chips.push(sideChip('기', p.organEok));
+    if ((p.totalKnown === true || (!('totalKnown' in p) && isNum(p.foreignEok) && isNum(p.organEok))) && isNum(p.totalEok)) {
+      chips.push(chip('ok', '합 ' + signedEok(p.totalEok)));
+    }
     if (p.supplyKind) chips.push(chip('warm', p.supplyKind));
     return '<div class="op-card" data-cp-track="supply" data-cp-idx="' + i + '" role="button" tabindex="0">' +
       '<div class="op-card-top"><span class="op-rank">' + (p.rank || i + 1) + '</span>' +
@@ -187,7 +206,8 @@
     var rt = rulesText();
     if (note) {
       var line = track === 'theme'
-        ? '🔥 <b style="color:#fda4af;">테마주도주</b> — ' + esc(rt.theme)
+        ? '🔥 <b style="color:#fda4af;">테마주도주</b> — ' + esc(rt.theme) +
+          (DATA && DATA.rules && DATA.rules.themeSort ? '<br><span style="color:#94a3b8;">정렬: ' + esc(DATA.rules.themeSort) + '</span>' : '')
         : '💰 <b style="color:#fcd34d;">수급주도주</b> — ' + esc(rt.supply);
       var extra = track === 'theme' ? (DATA && DATA.themeAsOfLabel) : (DATA && DATA.supplyAsOfLabel);
       note.innerHTML = line + (extra ? '<br><span style="color:#94a3b8;">기준: ' + esc(extra) + '</span>' : '');
@@ -241,12 +261,15 @@
     var meta;
     var desc;
     if (t === 'supply') {
-      meta = '대금 ' + eok(p.valueEok) + ' · 외 ' + signedEok(p.foreignEok) + ' · 기 ' + signedEok(p.organEok);
+      meta = '대금 ' + eok(p.valueEok) + ' · 외 ' + sideText(p.foreignEok) + ' · 기 ' + sideText(p.organEok);
       desc = '<div style="font-size:10.5px; color:#e2e8f0; line-height:1.6;">' +
         '· 현재가 <b>' + won(p.price) + '</b> · 등락률 <b style="color:' + upColor(p.changePct) + ';">' + pctf(p.changePct) + '</b><br>' +
         '· 당일 거래대금 <b>' + eok(p.valueEok) + '</b><br>' +
-        '· 외국인 ' + signedEok(p.foreignEok) + ' · 기관 ' + signedEok(p.organEok) +
-        (isNum(p.totalEok) ? ' · 합산 <b>' + signedEok(p.totalEok) + '</b>' : '') +
+        '· 외국인 <b style="color:' + (isNum(p.foreignEok) ? upColor(p.foreignEok) : '#94a3b8') + ';">' + sideText(p.foreignEok) + '</b>' +
+        ' · 기관 <b style="color:' + (isNum(p.organEok) ? upColor(p.organEok) : '#94a3b8') + ';">' + sideText(p.organEok) + '</b>' +
+        ((p.totalKnown === true || (!('totalKnown' in p) && isNum(p.foreignEok) && isNum(p.organEok))) && isNum(p.totalEok)
+          ? ' · 합산 <b>' + signedEok(p.totalEok) + '</b>'
+          : ' · <span style="color:#94a3b8;">합산 미확인(반대쪽 수치 확인 불가)</span>') +
         (p.supplyKind ? ' <span style="color:#fcd34d;">(' + esc(p.supplyKind) + ')</span>' : '') + '<br>' +
         '· <span style="color:#fcd34d;">' + esc(p.ruleHint || '') + '</span></div>' +
         '<br><span style="color:#94a3b8; font-size:10px;">수급: ' + esc((DATA && DATA.supplyAsOfLabel) || 'KIS 가집계') +
