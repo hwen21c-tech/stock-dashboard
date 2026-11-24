@@ -259,7 +259,6 @@
     });
   }
 
-  function open(t, i) {
   /* ================== 📘 3번째 탭: 침착해 종가베팅 (프로그램 수급 1순위) ==================
    *  같은 박스(#closingPicksBox)의 3번째 탭(track='chim')으로 그린다.
    *  값은 서버 closingPicks.chimchakhae 만 쓴다(프로그램 = KIS 종목별 프로그램매매추이 0465).
@@ -439,7 +438,7 @@
     } catch (e) { /* noop */ }
   }
 
-
+  function open(t, i) {
     var p = (t === 'supply' ? listOf('supply') : listOf('theme'))[i];
     if (!p) return;
     var title = p.name + (p.code ? ' (' + p.code + ')' : '');
