@@ -1822,17 +1822,17 @@
     var x = n(v); if (x == null) return '0';
     return (x > 0 ? '+' : '') + Math.round(x).toLocaleString('ko-KR');
   }
-  /* 괄호 안 금액 — 양쪽 다 ±10억 이상이면 `외+2,188·기+865억`, 한쪽만 주력이면 그쪽만 */
+  /* 괄호 안 금액 — 양쪽 다 +10억 이상이면 `외+2,188·기+865억`, 한쪽이 주력이거나
+     반대쪽이 순매도(음수)·10억 미만이면 주력 쪽만 간결하게 적는다. */
   function supplyAmount(x){
     var f = n(x && x.foreignEok), o = n(x && x.organEok);
-    var fMain = f != null && Math.abs(Math.round(f)) >= 10;
-    var oMain = o != null && Math.abs(Math.round(o)) >= 10;
+    var fMain = f != null && Math.round(f) >= 10;
+    var oMain = o != null && Math.round(o) >= 10;
     if (fMain && oMain) return '외' + signedEok(f) + '·기' + signedEok(o) + '억';
-    if (fMain) return '외' + signedEok(f) + '억';
-    if (oMain) return '기' + signedEok(o) + '억';
-    if (f == null && o == null) return '';
-    var pickF = Math.abs(f || 0) >= Math.abs(o || 0);
-    return (pickF ? '외' : '기') + signedEok(pickF ? f : o) + '억';
+    var fv = f == null ? -Infinity : f, ov = o == null ? -Infinity : o;
+    if (fv === -Infinity && ov === -Infinity) return '';
+    var pickF = fv >= ov;
+    return (pickF ? '외' : '기') + signedEok(pickF ? fv : ov) + '억';
   }
 
   function supplyChips(){
