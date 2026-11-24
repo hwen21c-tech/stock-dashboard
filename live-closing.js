@@ -328,7 +328,10 @@
     var tail = g.label
       ? ' → <b style="color:' + (g.advice === 'normal' ? '#6ee7b7' : '#fda4af') + ';">' + esc(g.label) + '</b>'
       : '';
-    var ff = g.foreignFutNote ? ' <span style="color:#94a3b8;">(외인선물 미수신)</span>' : '';
+    var ff = isNum(g.foreignFut)
+      ? ' <span style="color:#94a3b8;">외인선물 ' + (g.foreignFut > 0 ? '+' : g.foreignFut < 0 ? '-' : '') +
+        Math.abs(Math.round(g.foreignFut)).toLocaleString('ko-KR') + '계약</span>'
+      : ' <span style="color:#94a3b8;">(외인선물 미수신)</span>';
     return '🌡 시장: ' + (parts.length ? parts.join(' · ') : '지수 미수신') + tail + ff;
   }
 
