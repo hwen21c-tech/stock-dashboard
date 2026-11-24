@@ -172,6 +172,8 @@
   }
 
   function render() {
+    /* 🧭 1번 메인 탭 상단 콤팩트 장세 배너 — 어느 트랙을 보고 있어도 같이 갱신한다 */
+    renderMainBanner();
     /* 📘 3번째 탭(침착해)은 자체 렌더로 넘긴다 — 기존 테마·수급 렌더는 그대로 둔다 */
     if (track === 'chim') { renderChimTab(); return; }
     var box = $('closingPicksBox');
@@ -350,8 +352,19 @@
     var c = CHIM_BANNER_STYLE[b.kind] || CHIM_BANNER_STYLE.neutral;
     var ev = (b.reasons || []).filter(Boolean).join(' · ');
     var hits = (b.hits || []).filter(Boolean).join(' · ');
+    /* 🌙 장전 한정 야간선물 한 줄 — 서버가 못 받았으면(b.nightLine 없음) 줄 자체를 그리지 않는다.
+     *   등락 방향은 앱의 등락 색(상승 빨강·하락 파랑)을 그대로 쓴다. */
+    var nf = b.nightFutures || null;
+    var nl = b.nightLine || (nf && nf.line) || '';
+    var nCol = (nf && isNum(nf.changePct))
+      ? (nf.changePct > 0 ? '#f43f5e' : nf.changePct < 0 ? '#38bdf8' : '#cbd5e1')
+      : '#cbd5e1';
+    var nBg = (nf && isNum(nf.changePct))
+      ? (nf.changePct > 0 ? 'rgba(244,63,94,.13)' : nf.changePct < 0 ? 'rgba(56,189,248,.13)' : 'rgba(148,163,184,.10)')
+      : 'rgba(148,163,184,.10)';
     return '<div style="margin:0 0 9px; padding:9px 10px; border:1px solid ' + c.bd + '; border-radius:9px; background:' + c.bg + '; font-size:11.5px; line-height:1.55; color:' + c.fg + ';">' +
       '<div style="font-weight:800;">' + esc(b.line) + '</div>' +
+      (nl ? '<div title="KIS 코스피200 야간선물(CM) — 장전 참고 줄이며 장세 판정(kind)에는 넣지 않습니다" style="margin-top:4px; padding:3px 7px; border-radius:6px; background:' + nBg + '; border:1px solid ' + nCol + '55; color:' + nCol + '; font-weight:800;">' + esc(nl) + '</div>' : '') +
       (ev ? '<div style="margin-top:3px; color:#cbd5e1;">' + esc(ev) + '</div>' : '') +
       (hits ? '<div style="margin-top:2px; color:' + c.fg + ';">근거: ' + esc(hits) + '</div>' : '') +
       '<div style="margin-top:3px; color:#94a3b8; font-size:10px;">' + esc(b.asOf || '') +
@@ -359,10 +372,85 @@
       '</div>';
   }
 
+  /* ================== 🧭 1번 메인 탭 상단 콤팩트 배너 (#mainMarketGateBanner) ==================
+   *  index.html 을 건드리지 않고 이 스크립트가 직접 넣는다(07:45 콘텐츠 생성 작업과의 충돌 방지).
+   *  · 자리: #tabOverview 첫 자식 (없으면 #openingPicksBox 바로 위)
+   *  · 2줄: ① 장세 판정 + 행동 + 기준 시각 ② 장전에는 야간선물 한 줄, 그 밖에는 지수·수급 근거
+   *  · 값은 같은 응답의 closingPicks.chimchakhae.marketBanner 만 쓴다(화면은 계산하지 않는다).
+   *  · 누르면 📘 침착해 종베 탭으로 내려간다.
+   * ========================================================================== */
+  function ensureMainBanner() {
+    var el = document.getElementById('mainMarketGateBanner');
+    if (el) return el;
+    var host = document.getElementById('tabOverview');
+    var op = document.getElementById('openingPicksBox');
+    if (!host && !op) return null;
+    el = document.createElement('div');
+    el.id = 'mainMarketGateBanner';
+    el.setAttribute('role', 'status');
+    el.style.cssText = 'margin:0 0 10px; padding:8px 10px; border-radius:9px; border:1px solid #334155; background:rgba(15,23,42,0.85); cursor:pointer;';
+    if (host) host.insertBefore(el, host.firstChild);
+    else op.parentNode.insertBefore(el, op);
+    el.addEventListener('click', function () {
+      try {
+        if (track !== 'chim') setTrack('chim');
+        if (collapsed) {
+          collapsed = false;
+          var box = $('closingPicksBox');
+          var tg = $('cpToggleBtn');
+          if (box) box.classList.remove('collapsed');
+          if (tg) { tg.textContent = '접기'; tg.setAttribute('aria-expanded', 'true'); }
+          render();
+        }
+        var target = $('closingPicksBox');
+        if (target && target.scrollIntoView) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (e) { /* noop */ }
+    });
+    return el;
+  }
+
+  function renderMainBanner() {
+    var el = ensureMainBanner();
+    if (!el) return;
+    var b = CHIM && CHIM.marketBanner;
+    if (!b || !b.line) {
+      el.style.display = 'none';
+      el.innerHTML = '';
+      return;
+    }
+    el.style.display = '';
+    var c = CHIM_BANNER_STYLE[b.kind] || CHIM_BANNER_STYLE.neutral;
+    var nf = b.nightFutures || null;
+    var nl = b.nightLine || (nf && nf.line) || '';
+    var row2col = nl
+      ? (nf && isNum(nf.changePct)
+        ? (nf.changePct > 0 ? '#f43f5e' : nf.changePct < 0 ? '#38bdf8' : '#e2e8f0')
+        : '#e2e8f0')
+      : '#cbd5e1';
+    var tip = [b.line, (b.reasons || []).join(' · '), (b.hits || []).length ? '근거: ' + b.hits.join(' · ') : '', b.asOf || '']
+      .filter(Boolean).join('\n');
+    el.style.borderColor = c.bd;
+    el.style.background = c.bg;
+    el.title = tip + '\n(누르면 📘 침착해 종베 탭으로 이동)';
+    /* 2줄 고정 — ① 판정(한 줄 고정·넘치면 …) + 기준 시각 ② 장전에는 야간선물, 그 밖에는 행동 지침 */
+    var row2fallback = (b.action || '') + ((b.reasons || []).length && !nl ? ' · ' + (b.reasons || []).slice(0, 2).join(' · ') : '');
+    el.innerHTML =
+      '<div style="display:flex; align-items:center; gap:6px; flex-wrap:nowrap;">' +
+        '<span style="font-size:12px; font-weight:800; color:' + c.fg + '; flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + esc(b.icon || '') + ' ' + esc(b.title || '') + '</span>' +
+        (b.asOf ? '<span style="font-size:9px; font-weight:700; color:#94a3b8; white-space:nowrap; flex:none;">' + esc(b.asOf) + '</span>' : '') +
+      '</div>' +
+      ((nl || row2fallback) ? '<div style="margin-top:3px; font-size:11px; font-weight:700; color:' + row2col + '; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + esc(nl || row2fallback) + '</div>' : '');
+  }
+
   /* 📘 탭 렌더 — render() 가 track==='chim' 일 때 여기로 온다 */
   function renderChimTab() {
     var body = $('cpBody');
     if (!body) return;
+    /* 탭 선택 표시 — render() 의 초기 반환 경로에서는 세 탭 클래스를 못 맞춰서 여기서 맞춘다 */
+    var tTh = $('cpTabTheme'), tSup = $('cpTabSupply'), tCh = $('cpTabChim');
+    if (tTh) { tTh.classList.toggle('active', false); tTh.setAttribute('aria-selected', 'false'); }
+    if (tSup) { tSup.classList.toggle('active', false); tSup.setAttribute('aria-selected', 'false'); }
+    if (tCh) { tCh.classList.add('active'); tCh.setAttribute('aria-selected', 'true'); }
     var badge = $('cpBadge');
     if (badge) {
       var bt;
