@@ -26,6 +26,7 @@
   var lastAt = 0;
   var busy = false;
   var DATA = null;      /* 마지막 성공 응답의 closingPicks */
+  var CHIM = null;      /* 같은 응답의 closingPicks.chimchakhae (📘 3번째 탭) */
   var FAIL = null;      /* 마지막 실패 사유(문자열) */
   var track = 'theme';
   var collapsed = false;
@@ -171,6 +172,8 @@
   }
 
   function render() {
+    /* 📘 3번째 탭(침착해)은 자체 렌더로 넘긴다 — 기존 테마·수급 렌더는 그대로 둔다 */
+    if (track === 'chim') { renderChimTab(); return; }
     var box = $('closingPicksBox');
     var body = $('cpBody');
     if (!box || !body) return;
@@ -180,9 +183,12 @@
 
     if ($('cpTabThemeN')) $('cpTabThemeN').textContent = themeN;
     if ($('cpTabSupplyN')) $('cpTabSupplyN').textContent = supplyN;
+    if ($('cpTabChimN')) $('cpTabChimN').textContent = (CHIM && (CHIM.rows || []).length) || 0;
     var tt = $('cpTabTheme'), ts = $('cpTabSupply');
     if (tt) { tt.classList.toggle('active', track === 'theme'); tt.setAttribute('aria-selected', track === 'theme' ? 'true' : 'false'); }
     if (ts) { ts.classList.toggle('active', track === 'supply'); ts.setAttribute('aria-selected', track === 'supply' ? 'true' : 'false'); }
+    var tc = $('cpTabChim');
+    if (tc) { tc.classList.toggle('active', track === 'chim'); tc.setAttribute('aria-selected', track === 'chim' ? 'true' : 'false'); }
 
     var tb = $('cpTimeBadge'), ti = timeInfo();
     if (tb) { tb.className = 'op-badge op-time ' + ti.cls; tb.textContent = ti.text; }
@@ -254,6 +260,186 @@
   }
 
   function open(t, i) {
+  /* ================== 📘 3번째 탭: 침착해 종가베팅 (프로그램 수급 1순위) ==================
+   *  같은 박스(#closingPicksBox)의 3번째 탭(track='chim')으로 그린다.
+   *  값은 서버 closingPicks.chimchakhae 만 쓴다(프로그램 = KIS 종목별 프로그램매매추이 0465).
+   *  카드 클릭 → openDetail + '📘 침착해 관점 종배 분석' 박스(접기/펼치기).
+   * ========================================================================== */
+
+  function ckList() {
+    return (CHIM && CHIM.rows) || [];
+  }
+
+  function trendCls(kind) {
+    if (kind === 'flip') return 'hot';
+    if (kind === 'up') return 'ok';
+    if (kind === 'flat') return 'warm';
+    if (kind === 'down') return 'st-dn';
+    return 'mute';
+  }
+
+  function qtyText(v) {
+    if (!isNum(v)) return '—';
+    var a = Math.abs(v);
+    var s = a >= 10000
+      ? (Math.round(a / 1000) / 10).toLocaleString('ko-KR') + '만주'
+      : a.toLocaleString('ko-KR') + '주';
+    return (v > 0 ? '+' : v < 0 ? '-' : '') + s;
+  }
+
+  function chimCard(p, i) {
+    var chips = [];
+    chips.push(chip(trendCls(p.programTrend),
+      '프로그램 ' + (isNum(p.programEok) ? signedEok(p.programEok) : '미수신')));
+    if (isNum(p.programQty)) chips.push(chip('mute', qtyText(p.programQty)));
+    if (p.programStatus !== '미수신' && p.programTrendLabel) chips.push(chip(trendCls(p.programTrend), p.programTrendLabel));
+    chips.push(sideChip('외', p.foreignEok));
+    chips.push(sideChip('기', p.organEok));
+    if (p.warnLabel) chips.push(chip('st-dn', '⚠️ ' + p.warnLabel));
+    if (p.shortOver) chips.push(chip('st-dn', '⛔ 단기과열'));
+    return '<div class="op-card" data-ck-idx="' + i + '" role="button" tabindex="0">' +
+      '<div class="op-card-top"><span class="op-rank">' + (p.rank || i + 1) + '</span>' +
+      '<span class="op-name">' + esc(p.name) + '</span>' +
+      '<span class="op-price">' + won(p.price) + '</span>' +
+      '<span class="op-chg" style="color:' + upColor(p.changePct) + ';">' + pctf(p.changePct) + '</span></div>' +
+      '<div class="op-meta">대금 ' + eok(p.valueEok) +
+      (p.themeName ? ' · ' + esc(p.themeName) : '') +
+      (p.tag ? ' · ' + esc(p.tag) : '') + '</div>' +
+      '<div class="op-chips">' + chips.join('') + '</div>' +
+      '<div class="op-why">' + esc(p.chimchakhaeReason || '') + '</div>' +
+      '</div>';
+  }
+
+  /* 시장 게이트 한 줄 — 지수 등락 + 판정(외인선물은 공개 실시간 소스가 없어 미수신 표기) */
+  function gateLine() {
+    var g = (CHIM && CHIM.marketGate) || null;
+    if (!g) return '';
+    var parts = [];
+    if (isNum(g.kospiPct)) parts.push('코스피 ' + pctf(g.kospiPct));
+    if (isNum(g.kosdaqPct)) parts.push('코스닥 ' + pctf(g.kosdaqPct));
+    var tail = g.label
+      ? ' → <b style="color:' + (g.advice === 'normal' ? '#6ee7b7' : '#fda4af') + ';">' + esc(g.label) + '</b>'
+      : '';
+    var ff = g.foreignFutNote ? ' <span style="color:#94a3b8;">(외인선물 미수신)</span>' : '';
+    return '🌡 시장: ' + (parts.length ? parts.join(' · ') : '지수 미수신') + tail + ff;
+  }
+
+  /* 📘 탭 렌더 — render() 가 track==='chim' 일 때 여기로 온다 */
+  function renderChimTab() {
+    var body = $('cpBody');
+    if (!body) return;
+    var badge = $('cpBadge');
+    if (badge) {
+      var bt;
+      if (CHIM && CHIM.ok) {
+        bt = '⏱ ' + (CHIM.programAsOfLabel || CHIM.asOfLabel || '기준 확인 중');
+        if (FAIL) bt += ' · ⚠️ 갱신 실패(마지막 성공 유지)';
+      } else if (FAIL) {
+        bt = '⚠️ ' + FAIL;
+      } else {
+        bt = '⏱ 로딩 중';
+      }
+      badge.className = 'op-badge' + (collapsed ? ' closed' : '') + ' lead';
+      badge.textContent = bt;
+    }
+    var tb = $('cpTimeBadge');
+    if (tb) { var ti = timeInfo(); tb.className = 'op-badge op-time ' + ti.cls; tb.textContent = ti.text; }
+
+    var note = $('cpNote');
+    if (note) {
+      var r = (CHIM && CHIM.rules) || {};
+      note.innerHTML = '📘 <b style="color:#c7d2fe;">침착해 종가베팅</b> — ' + esc(r.select || '프로그램 순매수 최우선') +
+        (r.sort ? '<br><span style="color:#94a3b8;">정렬: ' + esc(r.sort) + '</span>' : '') +
+        (gateLine() ? '<br>' + gateLine() : '') +
+        (CHIM && CHIM.asOfLabel ? '<br><span style="color:#94a3b8;">기준: ' + esc(CHIM.asOfLabel) +
+          (CHIM.programAsOfLabel ? ' · ' + esc(CHIM.programAsOfLabel) : '') + '</span>' : '');
+    }
+
+    var list = ckList();
+    if (!CHIM) {
+      body.innerHTML = DATA
+        ? '<div style="font-size:11.5px; color:#94a3b8; padding:8px;">이 응답에 침착해 트랙(closingPicks.chimchakhae)이 없습니다 — 서버 배포본을 확인하세요.</div>'
+        : '<div style="font-size:11.5px; color:#94a3b8; padding:8px;">⏳ 침착해 종가베팅 후보를 불러오는 중…</div>';
+    } else if (!list.length) {
+      var nts = ((CHIM && CHIM.notes) || []).filter(Boolean);
+      body.innerHTML = '<div style="font-size:11.5px; color:#fca5a5; padding:8px; line-height:1.7;">' +
+        '프로그램 순매수·방어 조건을 통과한 종목이 없습니다' +
+        ' <span style="color:#94a3b8;">(기준을 임의로 완화해 채우지 않습니다)</span>' +
+        (nts.length ? '<br><span style="color:#fcd34d;">' + esc(nts.join(' ')) + '</span>' : '') + '</div>';
+    } else {
+      body.innerHTML = list.map(chimCard).join('');
+    }
+
+    var prin = $('cpPrinciple');
+    if (prin) {
+      var rr = (CHIM && CHIM.rules) || {};
+      prin.innerHTML = '<b>📘 침착해 원칙</b> ' + esc(rr.entry || '13시 이후 프로그램이 받아주는 눌림에서 분할매수') +
+        ' · ' + esc(rr.exit || '당일 고점 프로그램 매도 전환 시 청산') +
+        ' · ' + esc(rr.stop || '프로그램 매도세로 저점 이탈 시 즉시 손절');
+    }
+
+    var foot = $('cpFoot');
+    if (foot) {
+      var rl = (CHIM && CHIM.rules) || {};
+      foot.innerHTML = '출처: ' + esc((CHIM && CHIM.programSource) || 'KIS 종목별 프로그램매매추이(0465)') +
+        (CHIM && CHIM.generatedAtKst ? ' · ' + esc(CHIM.generatedAtKst) + ' 갱신' : '') +
+        (CHIM && CHIM.afterHoursGuide ? '<br>시간외·익일 08:50: ' + esc(CHIM.afterHoursGuide) : '') +
+        (rl.caveat ? '<br><span style="color:#94a3b8;">' + esc(rl.caveat) + '</span>' : '') +
+        '<br>카드를 누르면 상세 차트와 함께 <b style="color:#c7d2fe;">📘 침착해 관점 종배 분석(선정 사유·매수타점·손절)</b>이 열립니다.';
+    }
+
+    Array.prototype.forEach.call(body.querySelectorAll('[data-ck-idx]'), function (el) {
+      var idx = parseInt(el.getAttribute('data-ck-idx'), 10);
+      function go() { openChim(idx); }
+      el.addEventListener('click', go);
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
+      });
+    });
+  }
+
+  function openChim(i) {
+    var p = ckList()[i];
+    if (!p) return;
+    var title = p.name + (p.code ? ' (' + p.code + ')' : '');
+    var meta = '대금 ' + eok(p.valueEok) + ' · 프로그램 ' + (isNum(p.programEok) ? signedEok(p.programEok) : '미수신');
+    var s = p.strategy || {};
+    var line = function (label, text) {
+      return text
+        ? '<div style="margin:3px 0;"><span style="color:#a5b4fc; font-weight:700;">' + esc(label) + '</span> ' + esc(text) + '</div>'
+        : '';
+    };
+    var head = '<div style="font-size:10.5px; color:#e2e8f0; line-height:1.6;">' +
+      '· 현재가 <b>' + won(p.price) + '</b> · 등락률 <b style="color:' + upColor(p.changePct) + ';">' + pctf(p.changePct) + '</b><br>' +
+      '· 당일 거래대금 <b>' + eok(p.valueEok) + '</b><br>' +
+      '· 프로그램 순매수 <b style="color:' + (isNum(p.programEok) ? upColor(p.programEok) : '#94a3b8') + ';">' +
+        (isNum(p.programEok) ? signedEok(p.programEok) : '미수신') + '</b>' +
+        (isNum(p.programQty) ? ' (' + qtyText(p.programQty) + ')' : '') +
+        (p.programStatus !== '미수신' && p.programTrendLabel ? ' · <span style="color:#fcd34d;">' + esc(p.programTrendLabel) + '</span>' : '') + '<br>' +
+      '· 외국인 <b>' + sideText(p.foreignEok) + '</b> · 기관 <b>' + sideText(p.organEok) + '</b>' +
+      (p.supplyKind ? ' <span style="color:#fcd34d;">(' + esc(p.supplyKind) + ')</span>' : '') + '<br>' +
+      (p.warnLabel ? '· <span style="color:#fda4af;">⚠️ ' + esc(p.warnLabel) + '</span>' : '') +
+      (p.shortOver ? ' <span style="color:#fda4af;">⛔ 단기과열</span>' : '') +
+      '</div>';
+
+    var box = '<details open style="margin-top:8px; padding:7px 9px; border:1px solid rgba(129,140,248,.5); border-radius:8px; background:rgba(49,46,129,.25);">' +
+      '<summary style="cursor:pointer; font-size:11px; font-weight:700; color:#c7d2fe; outline:none;">📘 침착해 관점 종배 분석 <span style="font-weight:400; color:#94a3b8;">(접기/펼치기)</span></summary>' +
+      '<div style="margin-top:6px; font-size:10.5px; color:#e2e8f0; line-height:1.65;">' +
+      '<div style="margin:4px 0 2px; color:#fda4af; font-weight:700;">① 종배 선정 사유</div>' +
+      line('·', p.chimchakhaeReason || '') +
+      '<div style="margin:7px 0 2px; color:#6ee7b7; font-weight:700;">② 매수타점 및 전략</div>' +
+      line('타점', s.entry) +
+      line('분할/비중', s.sizing) +
+      line('시간외·익일', s.afterHours || p.nextDayGuide) +
+      line('즉시 손절', s.stop) +
+      '</div></details>';
+
+    try {
+      if (typeof window.openDetail === 'function') window.openDetail(title, pctf(p.changePct), meta, head + box);
+    } catch (e) { /* noop */ }
+  }
+
+
     var p = (t === 'supply' ? listOf('supply') : listOf('theme'))[i];
     if (!p) return;
     var title = p.name + (p.code ? ' (' + p.code + ')' : '');
@@ -304,6 +490,7 @@
         var cp = body && body.closingPicks;
         if (!cp || cp.ok !== true) throw new Error('closingPicks 없음');
         DATA = cp;
+        CHIM = cp.chimchakhae || null;
         FAIL = null;
         lastAt = Date.now();
         render();
@@ -324,7 +511,7 @@
   }
 
   function setTrack(k) {
-    if (k !== 'theme' && k !== 'supply') return;
+    if (k !== 'theme' && k !== 'supply' && k !== 'chim') return;
     track = k;
     render();
   }
@@ -349,6 +536,8 @@
     var t1 = $('cpTabTheme'), t2 = $('cpTabSupply'), tg = $('cpToggleBtn'), box = $('closingPicksBox');
     if (t1) t1.addEventListener('click', function () { setTrack('theme'); });
     if (t2) t2.addEventListener('click', function () { setTrack('supply'); });
+    var t3 = $('cpTabChim');
+    if (t3) t3.addEventListener('click', function () { setTrack('chim'); });
     if (tg && box) {
       tg.addEventListener('click', function () {
         collapsed = !collapsed;
