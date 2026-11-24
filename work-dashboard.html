@@ -806,7 +806,7 @@ $('wp').onclick=()=>{wo--;weekly()};$('wn').onclick=()=>{wo++;weekly()};$('w_x')
 $('w_c').onclick=()=>{const t=$('wk');t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}
 $('w_c').textContent=ok?'복사됨 ✓':'길게 눌러 복사';setTimeout(()=>$('w_c').textContent='복사',1800)};
 /* ✨ AI 개조식 주간보고 — 로컬 초안 즉시 → Gemini 다듬기(실패해도 초안 유지) */
-const flatS=v=>String(v||'').replace(/\s*\n+\s*/g,' / ').trim();
+const flatS=v=>String(v||'').replace(/\s*\n+\s*/g,' / ').replace(/^[·\-•]\s*/,'').trim();
 const stepSum=e=>STEPS.map(([k,n])=>{const st=(e.f||{})[k+'st'];return st?n+' '+st:''}).filter(Boolean).join(', ');
 function localWeekly(){const[a,b]=range();const n=new Date(b+'T00:00');n.setDate(n.getDate()+1);const na=ymd(n);n.setDate(n.getDate()+6);const nb=ymd(n);
 const inW=e=>e.date<=b&&(e.end||e.date)>=a;
@@ -814,14 +814,15 @@ const L=['【주간업무 보고】 '+md(a)+' ~ '+md(b)];
 const meets=S.ev.filter(e=>e.type==='meeting'&&inW(e)).sort((x,y)=>x.date.localeCompare(y.date));
 const runs=S.ev.filter(e=>e.type==='run');
 const live=runs.filter(e=>inW(e)||(e.st&&e.st!=='완료'));
+const wRuns=runs.filter(e=>inW(e)||STEPS.some(([k])=>((e.f||{})[k+'st']||'')!==''));
 const done=S.td.filter(t=>t.done&&t.at&&t.at>=a&&t.at<=b);
 let A=[];
 meets.forEach(e=>{const d=lines(e.decision),ac=pend(e);let x='· '+md(e.date)+' '+e.title;
  if(d.length)x+=' — '+d.join(', ');
  if(ac.length)x+=' (액션: '+ac.slice(0,3).join(', ')+')';
  A.push(x)});
-live.forEach(e=>{const st=stepSum(e),i=flatS((e.f||{}).iss);
- A.push('· '+(e.grp||e.title)+(e.part?' '+e.part:'')+' '+(e.st||'대기')+(st?' ('+st+')':'')+(i?' / 이슈: '+i:''))});
+wRuns.forEach(e=>{const st=stepSum(e);
+ A.push('· '+(e.grp||e.title)+(e.part?' '+e.part:'')+' '+(e.st||'대기')+(st?' ('+st+')':''))});
 done.forEach(t=>A.push('· '+t.t+' — 완료('+md(t.at)+')'));
 L.push('■ 금주 실적');L.push(A.length?A.slice(0,12).join('\n'):'· 해당 없음');
 let B=[];
