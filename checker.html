@@ -61,6 +61,12 @@
   .chip:active{background:#F2EADB}
   .chiphead{display:flex;align-items:center;gap:6px;margin:12px 0 2px;font-size:11.5px;font-weight:900;color:var(--sub)}
   .chiphead[hidden]{display:none}
+  .chip .ck{font-style:normal;font-size:9.5px;font-weight:900;border-radius:6px;padding:2px 5px;margin-right:5px;letter-spacing:-.03em;vertical-align:1px}
+  .chip .ck-pct{background:#FDECEA;color:#B3261E}
+  .chip .ck-eok{background:#FFF1D6;color:#8A5A0B}
+  .chipload{display:flex;align-items:center;gap:7px;margin-top:10px;font-size:11.8px;font-weight:800;color:var(--mute)}
+  .chipload i{width:11px;height:11px;border-radius:50%;border:2px solid #E4D9C4;border-top-color:var(--wine);animation:chkspin .8s linear infinite}
+  @keyframes chkspin{to{transform:rotate(360deg)}}
   #msg{margin-top:10px;font-size:12.5px;font-weight:800;border-radius:11px;padding:10px 12px;display:none}
   #msg.show{display:block}
   #msg.bad{background:#FDECEA;color:#8B1A12;border:1px solid #F3C6C0}
@@ -422,7 +428,7 @@
   var state = {
     snap: null, score: null, busy: false, last: null, sigLabel: null, sigP: null, sigResolve: null, w52Seq: 0,
     seq: 0, w52pos: null, market: null, themeData: null, whyShown: 'skeleton', hist: null,
-    live: null, liveAt: 0, liveP: null,
+    live: null, liveAt: 0, liveP: null, liveTried: false,
     risk: { dart: null, krx: null, dartP: null, krxP: null, themeP: null, p52: null, pHist: null }
   };
 
@@ -683,7 +689,8 @@
   function loadScore(){
     if (state.score) return Promise.resolve(state.score);
     return fetchJson('./data/signal_scorecard.json', 7000).then(function(j){
-      state.score = j || null; chips(); return state.score;
+      /* 여기서 chips() 를 부르지 않는다 — 실시간(/api/tabs-live)이 끝난 뒤에만 그린다 */
+      state.score = j || null; return state.score;
     }).catch(function(){ state.score = null; return null; });
   }
 
@@ -702,18 +709,24 @@
 
   /* ============================================================
      🔍 테마주도주 상위 — 관제탑 실시간 API(/api/tabs-live)
-     · 정적 성적표(leaders)는 '마지막으로 저장한 날'의 값이라 11/20 처럼 며칠 전
-       주도주가 그대로 남는다. 그래서 화면은 tabs-live 의 지금 장중 테마 8개를
-       먼저 읽고, 그것이 비거나 실패할 때만 정적 JSON 으로 내려간다.
-     · 주도주 규칙(성적표 leaders 와 같은 잣대) —
-       ① 테마 강도(순위 = 대금 300억↑ 종목 평균 등락률) 순으로 테마를 돈다.
-       ② 그 테마 안에서 '실제로 오르고(changePct > 0) 거래대금 300억↑' 인 종목 중
-          등락률 1위 = 그 테마의 대장주. 같은 종목은 한 번만 올린다(중복 제거).
-       ③ 4종목을 채우고도 모자라면 남은 300억↑ 상승 종목을 등락률·대금 순으로 채운다.
+     · 정적 성적표(leaders)는 '마지막으로 저장한 날'의 값이라 며칠 전 주도주가 그대로
+       남는다. 그래서 화면은 tabs-live 의 지금 장중 테마를 먼저 읽고, 그것이 비거나
+       실패로 끝났을 때만 정적 JSON 으로 내려간다.
+     · 4종목 = ① 상승률 대장 2 + ② 실질 거래대금 대장 2 (사용자 확정 규칙)
+       ① 테마 강도(순위 = 대금 300억↑ 종목 평균 등락률) 순으로 테마를 돌며 그 테마 안
+          '실제로 오르고(changePct > 0) 거래대금 300억↑' 인 등락률 1위를 하나씩.
+          → 상한가 3종이 한 테마에 겹쳐도 테마마다 하나라 칩을 독식하지 않는다.
+       ② 이미 뽑힌 종목을 뺀 나머지 중 '거래대금 300억↑ & +10%↑' 를 대금 내림차순으로 2개.
+          → 삼성전자 +8% 같은 초대형 지수주가 대금 1위를 차지하지 않고, 실제 테마 주도주
+            (로보티즈·현대오토에버 등)가 잡힌다. +10%↑ 후보가 2개 미만이면 +3%↑ 로 보충.
      · 값을 만들지 않는다 — 받은 changePct·거래대금만 쓰고, 없으면 그 칸을 비운다.
      ============================================================ */
-  var LEADER_MIN_EOK = 300;      /* 테마 주도주 최소 거래대금(억) */
-  var LEADER_TOP = 4;            /* 상위 몇 종목 */
+  var LEADER_MIN_EOK = 300;      /* 주도주 최소 거래대금(억) */
+  var LEADER_TOP = 4;            /* 상위 몇 종목 = 상승률 대장 2 + 거래대금 대장 2 */
+  var LEADER_PCT_N = 2;          /* ① 상승률 대장 2종목 */
+  var LEADER_EOK_N = 2;          /* ② 실질 거래대금 대장 2종목 */
+  var LEADER_EOK_MIN_PCT = 10;   /* ② 대금 대장은 +10%↑ 만 — 지수 대형주 대금 독식 방지 */
+  var LEADER_EOK_FILL_PCT = 3;   /* ② +10%↑ 후보가 2개 미만일 때만 쓰는 보충 기준 */
   var LIVE_TTL_MS = 60000;       /* 60초 안에 받은 값은 다시 부르지 않는다 */
   var LIVE_REFRESH_MS = 90000;   /* 장중에는 90초마다 갱신(화면이 보일 때만) */
   var liveTimer = null;
@@ -733,13 +746,20 @@
     return p != null && p > 0 && !(s && s.missing);
   }
 
+  function byPctDesc(a, b){
+    return (n(b && b.changePct) || 0) - (n(a && a.changePct) || 0) || (stockEok(b) || 0) - (stockEok(a) || 0);
+  }
+  function byEokDesc(a, b){
+    return (stockEok(b) || 0) - (stockEok(a) || 0) || (n(b && b.changePct) || 0) - (n(a && a.changePct) || 0);
+  }
+
   function liveLeaders(j){
     var themes = ((j && j.themes) || []).slice().sort(function(a, b){
       var ra = n(a && a.rank), rb = n(b && b.rank);
       return (ra == null ? 999 : ra) - (rb == null ? 999 : rb);
     });
     var seen = {}, out = [];
-    function push(s, t){
+    function take(s, t, kind){
       var code = String((s && s.code) || '');
       if (!code || seen[code] || !isRiser(s)) return false;
       var e = stockEok(s);
@@ -747,33 +767,49 @@
       seen[code] = 1;
       out.push({
         code: code, name: s.name, valueEok: e, changePct: n(s.changePct),
-        theme: (t && t.name) || '', themeRank: n(t && t.rank), upperLimit: !!s.upperLimit
+        theme: (t && t.name) || '', themeRank: n(t && t.rank), upperLimit: !!s.upperLimit,
+        kind: kind
       });
       return true;
     }
-    /* ① 테마 강도 순 → 그 테마의 대장주(300억↑ 상승 중 등락률 1위) 하나씩 */
+    /* 테마 8개를 납작하게 편 (테마, 종목) 쌍 — 같은 종목 중복은 take() 의 seen 이 막는다 */
+    function pairs(){
+      var arr = [];
+      themes.forEach(function(t){
+        ((t && t.stocks) || []).forEach(function(s){ arr.push({ s: s, t: t }); });
+      });
+      return arr;
+    }
+    function pool(minPct){
+      return pairs().filter(function(p){
+        var e = stockEok(p.s);
+        return isRiser(p.s) && e != null && e >= LEADER_MIN_EOK && (n(p.s.changePct) || 0) >= minPct;
+      });
+    }
+    /* ① 상승률 대장 2 — 테마 순위대로 그 테마의 상승률 1위 하나씩 */
     themes.forEach(function(t){
-      if (out.length >= LEADER_TOP) return;
+      if (out.length >= LEADER_PCT_N) return;
       var cands = ((t && t.stocks) || []).filter(function(s){
         var e = stockEok(s);
         return isRiser(s) && e != null && e >= LEADER_MIN_EOK;
-      }).sort(function(a, b){
-        return (n(b.changePct) || 0) - (n(a.changePct) || 0) || (stockEok(b) || 0) - (stockEok(a) || 0);
-      });
-      for (var i = 0; i < cands.length; i++){ if (push(cands[i], t)) break; }
+      }).sort(byPctDesc);
+      for (var i = 0; i < cands.length; i++){ if (take(cands[i], t, 'pct')) break; }
     });
-    /* ③ 모자라면 남은 300억↑ 상승 종목으로 채운다 */
-    if (out.length < LEADER_TOP){
-      var rest = [];
-      themes.forEach(function(t){
-        ((t && t.stocks) || []).forEach(function(s){ rest.push({ s: s, t: t }); });
-      });
-      rest.sort(function(a, b){
-        return (n(b.s.changePct) || 0) - (n(a.s.changePct) || 0) || (stockEok(b.s) || 0) - (stockEok(a.s) || 0);
-      });
-      for (var k = 0; k < rest.length && out.length < LEADER_TOP; k++) push(rest[k].s, rest[k].t);
+    /* ① 테마가 2개 미만이면 남은 300억↑ 상승 종목을 등락률 순으로 보충 */
+    if (out.length < LEADER_PCT_N){
+      pool(0).sort(function(a, b){ return byPctDesc(a.s, b.s); })
+        .forEach(function(p){ if (out.length < LEADER_PCT_N) take(p.s, p.t, 'pct'); });
     }
-    return out;
+    /* ② 실질 거래대금 대장 2 — +10%↑ & 300억↑ 을 대금 내림차순으로 */
+    var goal = LEADER_PCT_N + LEADER_EOK_N;
+    pool(LEADER_EOK_MIN_PCT).sort(function(a, b){ return byEokDesc(a.s, b.s); })
+      .forEach(function(p){ if (out.length < goal) take(p.s, p.t, 'eok'); });
+    /* ② +10%↑ 후보가 모자라면 +3%↑ 로 부족분만 보충 */
+    if (out.length < goal){
+      pool(LEADER_EOK_FILL_PCT).sort(function(a, b){ return byEokDesc(a.s, b.s); })
+        .forEach(function(p){ if (out.length < goal) take(p.s, p.t, 'eok'); });
+    }
+    return out.slice(0, LEADER_TOP);
   }
 
   /* 응답이 만들어진 한국시간 HH:MM (서버가 준 실측 시각) */
@@ -1689,9 +1725,31 @@
     if (d && d.code) loadInsight(d.code, d.name, d.changePct);
   };
 
+  /* 초기 로딩 — 실시간(/api/tabs-live) 응답이 오기 전에는 옛 저장본(성적표 leaders)을 그리지 않는다 */
+  function chipsLoading(){
+    var host = $('chips'); if (!host) return;
+    var head = $('chipHead');
+    if (head){ head.hidden = false; head.textContent = '테마주도주 상위'; }
+    host.innerHTML = '<div class="chipload"><i></i>실시간 테마 주도주 불러오는 중…</div>';
+  }
+
+  /* 선정 구분 — ① 상승률 대장 / ② 실질 거래대금 대장 (툴팁·배지) */
+  function leaderKindLabel(k){
+    if (k === 'pct') return '상승률 대장';
+    if (k === 'eok') return '대금 대장';
+    return '';
+  }
+  function leadBadge(k){
+    if (k === 'pct') return '<em class="ck ck-pct">상승률</em>';
+    if (k === 'eok') return '<em class="ck ck-eok">대금</em>';
+    return '';
+  }
+
   /* ---------- 거래대금 상위 종목 1클릭 ---------- */
   function chips(){
     var host = $('chips'); if (!host) return;
+    /* 실시간 응답이 아직 안 끝났으면 옛 저장본을 먼저 그리지 않고 '불러오는 중' 을 유지한다 */
+    if (!state.liveTried && !(state.live && (state.live.themes || []).length)){ chipsLoading(); return; }
     var list = [], liveOn = false, stamp = '', note = '';
     /* ① 관제탑 실시간(장중) 주도주 — 있으면 이것이 먼저다 */
     if (state.live && (state.live.themes || []).length){
@@ -1707,7 +1765,10 @@
       /* ② 실시간이 비거나 실패했을 때만 — 마지막 저장본(정적 폴백) */
       if (sc && (sc.leaders || []).length){
         list = sc.leaders.slice(0, 4).map(function(x){
-          return { name: x.name, code: x.code, valueEok: x.valueEok, changePct: x.changePct, from: '성적표' };
+          /* 저장본에도 선정 구분이 적혀 있으면 그대로 배지로 보여 준다 */
+          return { name: x.name, code: x.code, valueEok: x.valueEok, changePct: x.changePct, from: '성적표',
+                   theme: x.theme || '', themeRank: x.themeRank,
+                   kind: x.leaderKind === '상승률 대장' ? 'pct' : (x.leaderKind === '대금 대장' ? 'eok' : '') };
         });
       } else if (state.snap && (state.snap.stocks || []).length){
         /* 성적표 leaders가 비었을 때의 대체 경로 — 이때도 '오른 종목'만 올린다(하락 종목은 테마주도주가 아니다) */
@@ -1719,17 +1780,21 @@
     }
     if (!list.length){ host.innerHTML = ''; $('chipHead').hidden = true; return; }
     $('chipHead').hidden = false;
+    $('chipHead').title = '상승률 대장 2 + 거래대금 대장 2 (거래대금 300억↑ · 대금 대장은 +10%↑)';
     if (liveOn){
       $('chipHead').innerHTML = '테마주도주 상위' + (note ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(note) + '</span>' : '');
     } else {
       var date = (sc && sc.asOfTradingDay) || (state.snap && state.snap.tradeDate) || '';
-      $('chipHead').innerHTML = '테마주도주 상위' + (date ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(date) + ' 기준</span>' : '');
+      $('chipHead').innerHTML = '테마주도주 상위' + (date ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(date) + ' 저장본</span>' : '');
     }
     host.innerHTML = list.map(function(x){
       var cls = dirClass(x.changePct);
-      var tip = x.theme ? (x.theme + (x.themeRank ? ' · 주도 테마 ' + x.themeRank + '위' : '') + ' 대장주') : '';
+      var bits = [];
+      if (leaderKindLabel(x.kind)) bits.push(leaderKindLabel(x.kind));
+      if (x.theme) bits.push(x.theme + (x.themeRank ? ' 주도 테마 ' + x.themeRank + '위' : ''));
+      var tip = bits.join(' · ');
       return '<button class="chip" type="button" data-code="' + esc(x.code || x.name) + '" data-name="' + esc(x.name) + '"' +
-        (tip ? ' title="' + esc(tip) + '"' : '') + '>' +
+        (tip ? ' title="' + esc(tip) + '"' : '') + '>' + leadBadge(x.kind) +
         '<b>' + esc(x.name) + '</b> <small>' + eok(x.valueEok) + ' · <span class="' + cls + '">' + pct(x.changePct) + '</span></small></button>';
     }).join('');
     Array.prototype.forEach.call(host.querySelectorAll('.chip'), function(btn){
@@ -2618,9 +2683,14 @@
     var m2 = /[?&]code=([^&]+)/.exec(location.search);
     if (!pre && m2) pre = decodeURIComponent(m2[1]);
   } catch(e){ pre = ''; }
-  /* 실시간 주도주는 정적 성적표와 따로, 먼저 부른다(정적이 먼저 떠도 실시간이 오면 갈아 끼운다) */
-  loadLiveThemes().catch(function(){});
-  loadScore().then(loadSnapshot).then(function(){ chips(); }).catch(function(){});
+  /* 실시간 주도주는 정적 성적표와 따로, 먼저 부른다.
+     · 실시간 응답(/api/tabs-live)이 성공·실패로 '끝난 뒤에만' 칩을 그린다 → 옛 저장본(삼성전기 등)이
+       먼저 깜빡이는 일이 없다. 실패했을 때만 정적 성적표(signal_scorecard.json)로 내려간다. */
+  chipsLoading();
+  var liveFirst = loadLiveThemes().catch(function(){ return null; });
+  Promise.all([liveFirst, loadScore(), loadSnapshot()]).then(function(){
+    state.liveTried = true; chips();
+  }).catch(function(){ state.liveTried = true; chips(); });
   /* 폰 화면을 다시 켰을 때 — 1분 넘게 묵은 값이면 새로 읽는다 */
   document.addEventListener('visibilitychange', function(){
     if (document.visibilityState !== 'visible') return;
