@@ -388,6 +388,8 @@
     <div class="chips" id="watchChips"></div>
     <div class="chiphead" id="chipHead" hidden>테마주도주 상위</div>
     <div class="chips" id="chips"></div>
+    <div class="chiphead" id="supplyHead" hidden>외인·기관 수급 상위</div>
+    <div class="chips" id="supplyChips"></div>
     <div class="tmaphead" id="tmapHead" hidden>🗺️ 오늘의 테마맵 <span class="tb" id="tmapBasis"></span>
       <button class="tg" id="tmapToggle" type="button">접기</button></div>
     <div class="tmap" id="themeMap" hidden></div>
@@ -429,6 +431,7 @@
     snap: null, score: null, busy: false, last: null, sigLabel: null, sigP: null, sigResolve: null, w52Seq: 0,
     seq: 0, w52pos: null, market: null, themeData: null, whyShown: 'skeleton', hist: null,
     live: null, liveAt: 0, liveP: null, liveTried: false,
+    supply: null, supplyAt: 0, supplyP: null, supplyTried: false,
     risk: { dart: null, krx: null, dartP: null, krxP: null, themeP: null, p52: null, pHist: null }
   };
 
@@ -862,6 +865,7 @@
       if (document.visibilityState === 'hidden') return;        /* 화면이 꺼져 있으면 쉰다 */
       if (state.live && state.live.marketStatus && state.live.marketStatus !== 'OPEN') return; /* 장이 끝났으면 더 부르지 않는다 */
       loadLiveThemes().catch(function(){});
+      loadSupply().catch(function(){});
     }, LIVE_REFRESH_MS);
   }
 
@@ -1806,6 +1810,79 @@
   }
 
   /* ============================================================
+     💰 외인·기관 수급 상위 — /api/tabs-live?mode=supply_live
+     · 외국인+기관 합산 순매수 상위 4종목. 장중엔 KIS 가집계, 15:30 이후·휴장일엔
+       확정치(supply-latest.json)로 서버가 알아서 내려주고 asOfLabel 에 기준을 적는다.
+     · 실패·타임아웃이면 이 줄만 조용히 숨긴다 — 1초 체커 로딩은 막지 않는다.
+     ============================================================ */
+  var SUPPLY_TTL_MS = 60000;
+  function supplyApi(){ return tabsApi() + '?mode=supply_live&top=4'; }
+
+  function signedEok(v){
+    var x = n(v); if (x == null) return '0';
+    return (x > 0 ? '+' : '') + Math.round(x).toLocaleString('ko-KR');
+  }
+  /* 괄호 안 금액 — 양쪽 다 ±10억 이상이면 `외+2,188·기+865억`, 한쪽만 주력이면 그쪽만 */
+  function supplyAmount(x){
+    var f = n(x && x.foreignEok), o = n(x && x.organEok);
+    var fMain = f != null && Math.abs(Math.round(f)) >= 10;
+    var oMain = o != null && Math.abs(Math.round(o)) >= 10;
+    if (fMain && oMain) return '외' + signedEok(f) + '·기' + signedEok(o) + '억';
+    if (fMain) return '외' + signedEok(f) + '억';
+    if (oMain) return '기' + signedEok(o) + '억';
+    if (f == null && o == null) return '';
+    var pickF = Math.abs(f || 0) >= Math.abs(o || 0);
+    return (pickF ? '외' : '기') + signedEok(pickF ? f : o) + '억';
+  }
+
+  function supplyChips(){
+    var host = $('supplyChips'), head = $('supplyHead');
+    if (!host || !head) return;
+    var s = state.supply;
+    var list = (s && s.top) || [];
+    if (!list.length){ head.hidden = true; host.innerHTML = ''; return; }
+    head.hidden = false;
+    head.innerHTML = '외인·기관 수급 상위' +
+      (s.asOfLabel ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(s.asOfLabel) + '</span>' : '');
+    head.title = '외국인+기관 합산 순매수 상위 — 장중엔 KIS 가집계, 마감 뒤엔 확정치';
+    host.innerHTML = list.slice(0, 4).map(function(x){
+      var amt = supplyAmount(x);
+      var tip = '외국인 ' + (x.foreignEok == null ? '—' : signedEok(x.foreignEok) + '억') +
+                ' · 기관 ' + (x.organEok == null ? '—' : signedEok(x.organEok) + '억') +
+                ' · 합산 ' + signedEok(x.totalEok) + '억' +
+                (n(x.changePct) == null ? '' : ' · ' + pct(x.changePct));
+      return '<button class="chip" type="button" data-code="' + esc(x.code || x.name) + '" data-name="' + esc(x.name) + '" title="' + esc(tip) + '">' +
+        '<b>' + esc(x.name) + '</b>' + (amt ? ' <small>(' + esc(amt) + ')</small>' : '') + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(host.querySelectorAll('.chip'), function(btn){
+      btn.addEventListener('click', function(){
+        $('q').value = btn.getAttribute('data-name') || btn.getAttribute('data-code') || '';
+        checkStock(btn.getAttribute('data-code') || btn.getAttribute('data-name'));
+      });
+    });
+  }
+
+  function loadSupply(){
+    var now = Date.now();
+    if (state.supply && now - state.supplyAt < SUPPLY_TTL_MS) return Promise.resolve(state.supply);
+    if (state.supplyP) return state.supplyP;
+    state.supplyP = fetchJson(supplyApi(), 12000).then(function(j){
+      state.supplyP = null; state.supplyTried = true;
+      if (!j || j.ok !== true || j.empty === true || !((j.top4 || []).length)) throw new Error('supply_empty');
+      state.supply = { top: j.top4, asOfLabel: j.asOfLabel || '', confirmed: !!j.confirmed };
+      state.supplyAt = Date.now();
+      supplyChips();
+      return state.supply;
+    }).catch(function(){
+      state.supplyP = null; state.supplyTried = true;
+      /* 실패·타임아웃 — 받아 둔 값이 있으면 그대로 두고, 없으면 이 줄만 숨긴다 */
+      if (!state.supply) supplyChips();
+      return null;
+    });
+    return state.supplyP;
+  }
+
+  /* ============================================================
      🗺️ 오늘의 테마맵(히트맵) · 테마 구성종목 시트 · 테마 이름 찾기
      · 타일의 평균 등락률·거래대금은 서버(/api/stock-live?mode=theme_map)가
        네이버 테마 상세 실측으로 계산해 준 값을 그대로 쓴다(값을 만들지 않는다).
@@ -2687,6 +2764,7 @@
      · 실시간 응답(/api/tabs-live)이 성공·실패로 '끝난 뒤에만' 칩을 그린다 → 옛 저장본(삼성전기 등)이
        먼저 깜빡이는 일이 없다. 실패했을 때만 정적 성적표(signal_scorecard.json)로 내려간다. */
   chipsLoading();
+  loadSupply().catch(function(){});   /* 외인·기관 수급 줄 — 실패해도 기존 화면을 막지 않는다 */
   var liveFirst = loadLiveThemes().catch(function(){ return null; });
   Promise.all([liveFirst, loadScore(), loadSnapshot()]).then(function(){
     state.liveTried = true; chips();
@@ -2695,6 +2773,7 @@
   document.addEventListener('visibilitychange', function(){
     if (document.visibilityState !== 'visible') return;
     if (!state.live || Date.now() - state.liveAt > LIVE_TTL_MS) loadLiveThemes().catch(function(){});
+    if (!state.supply || Date.now() - state.supplyAt > LIVE_TTL_MS) loadSupply().catch(function(){});
   });
   /* 🗺️ 테마맵 — 처음 한 번만 읽고, 접기/펼치기는 기억한다 */
   try { mapOpen = localStorage.getItem('foxsignal_checker_tmap') !== 'closed'; } catch(e){ mapOpen = true; }
