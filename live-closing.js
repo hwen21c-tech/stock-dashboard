@@ -294,8 +294,17 @@
     if (p.programStatus !== '미수신' && p.programTrendLabel) chips.push(chip(trendCls(p.programTrend), p.programTrendLabel));
     chips.push(sideChip('외', p.foreignEok));
     chips.push(sideChip('기', p.organEok));
-    if (p.warnLabel) chips.push(chip('st-dn', '⚠️ ' + p.warnLabel));
-    if (p.shortOver) chips.push(chip('st-dn', '⛔ 단기과열'));
+    /* 경보·악재 뱃지 — 서버가 만든 riskBadges(지정·경고 예고·관리종목·DART)를 그대로 적는다.
+     *  riskBadges 가 없는 예전 응답은 warnLabel·shortOver 만으로 되돌아간다. */
+    var badges = p.riskBadges || [];
+    if (badges.length) {
+      badges.forEach(function (b) { if (b && b.text) chips.push(chip('st-dn', b.text)); });
+    } else {
+      if (p.warnLabel) chips.push(chip('st-dn', '⚠️ ' + p.warnLabel));
+      if (p.shortOver) chips.push(chip('st-dn', '⛔ 단기과열'));
+    }
+    var ek = (p.strategy && p.strategy.entryKind) || null;
+    if (ek === '눌림' || ek === '돌파·불타기') chips.push(chip(ek === '돌파·불타기' ? 'hot' : 'warm', ek));
     return '<div class="op-card" data-ck-idx="' + i + '" role="button" tabindex="0">' +
       '<div class="op-card-top"><span class="op-rank">' + (p.rank || i + 1) + '</span>' +
       '<span class="op-name">' + esc(p.name) + '</span>' +
@@ -321,6 +330,30 @@
       : '';
     var ff = g.foreignFutNote ? ' <span style="color:#94a3b8;">(외인선물 미수신)</span>' : '';
     return '🌡 시장: ' + (parts.length ? parts.join(' · ') : '지수 미수신') + tail + ff;
+  }
+
+  /* 📘 탭 상단 — 시장 판별 배너(3강 Ch.1): 지수·외인 현물·외인 선물로 장세를 판별한다.
+   *  서버가 marketBanner 를 안 내려주는 예전 응답이면 아무것도 그리지 않는다. */
+  var CHIM_BANNER_STYLE = {
+    warn: { bd: '#fda4af', bg: 'rgba(244,63,94,.14)', fg: '#fecdd3' },
+    strong: { bd: '#6ee7b7', bg: 'rgba(16,185,129,.14)', fg: '#bbf7d0' },
+    caution: { bd: '#fcd34d', bg: 'rgba(245,158,11,.14)', fg: '#fde68a' },
+    neutral: { bd: '#94a3b8', bg: 'rgba(148,163,184,.10)', fg: '#e2e8f0' },
+    unknown: { bd: '#64748b', bg: 'rgba(100,116,139,.12)', fg: '#cbd5e1' }
+  };
+  function chimBannerHtml() {
+    var b = CHIM && CHIM.marketBanner;
+    if (!b || !b.line) return '';
+    var c = CHIM_BANNER_STYLE[b.kind] || CHIM_BANNER_STYLE.neutral;
+    var ev = (b.reasons || []).filter(Boolean).join(' · ');
+    var hits = (b.hits || []).filter(Boolean).join(' · ');
+    return '<div style="margin:0 0 9px; padding:9px 10px; border:1px solid ' + c.bd + '; border-radius:9px; background:' + c.bg + '; font-size:11.5px; line-height:1.55; color:' + c.fg + ';">' +
+      '<div style="font-weight:800;">' + esc(b.line) + '</div>' +
+      (ev ? '<div style="margin-top:3px; color:#cbd5e1;">' + esc(ev) + '</div>' : '') +
+      (hits ? '<div style="margin-top:2px; color:' + c.fg + ';">근거: ' + esc(hits) + '</div>' : '') +
+      '<div style="margin-top:3px; color:#94a3b8; font-size:10px;">' + esc(b.asOf || '') +
+        (b.stale ? ' · 장 시작 후 실시간으로 다시 판별됩니다' : '') + '</div>' +
+      '</div>';
   }
 
   /* 📘 탭 렌더 — render() 가 track==='chim' 일 때 여기로 온다 */
@@ -361,12 +394,13 @@
         : '<div style="font-size:11.5px; color:#94a3b8; padding:8px;">⏳ 침착해 종가베팅 후보를 불러오는 중…</div>';
     } else if (!list.length) {
       var nts = ((CHIM && CHIM.notes) || []).filter(Boolean);
-      body.innerHTML = '<div style="font-size:11.5px; color:#fca5a5; padding:8px; line-height:1.7;">' +
+      body.innerHTML = chimBannerHtml() +
+        '<div style="font-size:11.5px; color:#fca5a5; padding:8px; line-height:1.7;">' +
         '프로그램 순매수·방어 조건을 통과한 종목이 없습니다' +
         ' <span style="color:#94a3b8;">(기준을 임의로 완화해 채우지 않습니다)</span>' +
         (nts.length ? '<br><span style="color:#fcd34d;">' + esc(nts.join(' ')) + '</span>' : '') + '</div>';
     } else {
-      body.innerHTML = list.map(chimCard).join('');
+      body.innerHTML = chimBannerHtml() + list.map(chimCard).join('');
     }
 
     var prin = $('cpPrinciple');
@@ -383,8 +417,10 @@
       foot.innerHTML = '출처: ' + esc((CHIM && CHIM.programSource) || 'KIS 종목별 프로그램매매추이(0465)') +
         (CHIM && CHIM.generatedAtKst ? ' · ' + esc(CHIM.generatedAtKst) + ' 갱신' : '') +
         (CHIM && CHIM.afterHoursGuide ? '<br>시간외·익일 08:50: ' + esc(CHIM.afterHoursGuide) : '') +
+        (rl.split ? '<br>3단 분할: ' + esc(rl.split) : '') +
+        (CHIM && CHIM.warnSource ? '<br><span style="color:#94a3b8;">경보 출처: ' + esc(CHIM.warnSource) + '</span>' : '') +
         (rl.caveat ? '<br><span style="color:#94a3b8;">' + esc(rl.caveat) + '</span>' : '') +
-        '<br>카드를 누르면 상세 차트와 함께 <b style="color:#c7d2fe;">📘 침착해 관점 종배 분석(선정 사유·매수타점·손절)</b>이 열립니다.';
+        '<br>카드를 누르면 상세 차트와 함께 <b style="color:#c7d2fe;">📘 침착해 관점 종배 분석(선정 사유·매수타점·3단 분할·손절)</b>이 열립니다.';
     }
 
     Array.prototype.forEach.call(body.querySelectorAll('[data-ck-idx]'), function (el) {
@@ -417,21 +453,37 @@
         (p.programStatus !== '미수신' && p.programTrendLabel ? ' · <span style="color:#fcd34d;">' + esc(p.programTrendLabel) + '</span>' : '') + '<br>' +
       '· 외국인 <b>' + sideText(p.foreignEok) + '</b> · 기관 <b>' + sideText(p.organEok) + '</b>' +
       (p.supplyKind ? ' <span style="color:#fcd34d;">(' + esc(p.supplyKind) + ')</span>' : '') + '<br>' +
-      (p.warnLabel ? '· <span style="color:#fda4af;">⚠️ ' + esc(p.warnLabel) + '</span>' : '') +
-      (p.shortOver ? ' <span style="color:#fda4af;">⛔ 단기과열</span>' : '') +
+      ((p.riskBadges || []).length
+        ? '· 경보·악재 ' + (p.riskBadges || []).map(function (b) { return '<b style="color:#fda4af;">' + esc(b.text) + '</b>'; }).join(' · ') +
+          (p.krxWarnAsOf ? ' <span style="color:#94a3b8;">(종목마스터 ' + esc(p.krxWarnAsOf) + ')</span>' : '') + '<br>'
+        : (p.warnLabel ? '· <span style="color:#fda4af;">⚠️ ' + esc(p.warnLabel) + '</span>' : '') +
+          (p.shortOver ? ' <span style="color:#fda4af;">⛔ 단기과열</span>' : '') + ((p.warnLabel || p.shortOver) ? '<br>' : '')) +
       '</div>';
+
+    var dartBox = p.dartRisk
+      ? '<div style="margin-top:8px; padding:7px 9px; border:1px solid rgba(244,63,94,.5); border-radius:8px; background:rgba(127,29,29,.22);">' +
+        '<div style="font-size:11px; font-weight:700; color:#fda4af;">⛔ DART 희석·악재 공시</div>' +
+        '<div style="margin-top:3px; font-size:10.5px; color:#e2e8f0; line-height:1.6;">' +
+        esc(p.dartRisk.label) + ' — ' + esc(p.dartRisk.reportNm || '') +
+        (p.dartRisk.rceptDate ? ' <span style="color:#94a3b8;">(' + esc(p.dartRisk.rceptDate) + ' 접수)</span>' : '') +
+        '<br><span style="color:#fcd34d;">공시 확인 종목은 원전대로 패스 · 보유 중이면 즉시 정리 검토</span>' +
+        (p.dartRisk.url ? '<br><a href="' + esc(p.dartRisk.url) + '" target="_blank" rel="noopener" style="color:#93c5fd;">공시 원문 보기</a>' : '') +
+        '</div></div>'
+      : '';
 
     var box = '<details open style="margin-top:8px; padding:7px 9px; border:1px solid rgba(129,140,248,.5); border-radius:8px; background:rgba(49,46,129,.25);">' +
       '<summary style="cursor:pointer; font-size:11px; font-weight:700; color:#c7d2fe; outline:none;">📘 침착해 관점 종배 분석 <span style="font-weight:400; color:#94a3b8;">(접기/펼치기)</span></summary>' +
       '<div style="margin-top:6px; font-size:10.5px; color:#e2e8f0; line-height:1.65;">' +
       '<div style="margin:4px 0 2px; color:#fda4af; font-weight:700;">① 종배 선정 사유</div>' +
       line('·', p.chimchakhaeReason || '') +
-      '<div style="margin:7px 0 2px; color:#6ee7b7; font-weight:700;">② 매수타점 및 전략</div>' +
+      '<div style="margin:7px 0 2px; color:#6ee7b7; font-weight:700;">② 매수타점 및 3단 분할</div>' +
       line('타점', s.entry) +
+      line('진입 구분', s.entryKind ? s.entryKind + (s.entryRule ? ' — ' + s.entryRule : '') : '') +
+      line('3단 분할', s.split3 || (CHIM && CHIM.split3) || '') +
       line('분할/비중', s.sizing) +
       line('시간외·익일', s.afterHours || p.nextDayGuide) +
       line('즉시 손절', s.stop) +
-      '</div></details>';
+      '</div></details>' + dartBox;
 
     try {
       if (typeof window.openDetail === 'function') window.openDetail(title, pctf(p.changePct), meta, head + box);
