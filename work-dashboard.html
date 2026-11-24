@@ -581,7 +581,7 @@ $('rl').innerHTML=gs.map(([k,l])=>{const s=gst(l),seen=[];
 const cells=parts.map(function(p){const e=l.filter(x=>runPart(x)===p&&seen.indexOf(x)<0)[0];
  if(!e)return'<div class="pt em" data-ng="'+esc(k)+'" data-np="'+p+'">＋ '+p+' 입력</div>';seen.push(e);return pb(e)});
 const ot=l.filter(x=>seen.indexOf(x)<0);
-return'<div class="rn"><div class="h"><b>'+esc(k)+'</b><span class="bd" style="--c:'+ST[s]+'">'+s+'</span><button class="x" data-ng="'+esc(k)+'">+ 파트</button></div><div class="pg'+(cells.length===1?' one':'')+'">'+cells.join('')+'</div>'+ot.map(pb).join('')+'</div>'}).join('')||'<div class="empty">'+(Q?'검색과 맞는 런이 없어요':(PF!=='전체'?'“'+PF+'”에 해당하는 런이 없어요':'달력에서 구분을 “런”으로 일정을 추가하면 여기에 표시돼요'))+'</div>'}
+return'<div class="rn"><div class="h"><b>'+esc(k)+'</b><span class="bd" style="--c:'+ST[s]+'">'+s+'</span><button class="x" data-ng="'+esc(k)+'">+ 파트</button></div><div class="pg'+(cells.length===1?' one':'')+'">'+cells.join('')+'</div>'+ot.map(pb).join('')+'</div>'}).join('')||'<div class="empty">'+(Q?'검색과 맞는 런이 없어요':(PF!=='전체'?'“'+PF+'”에 해당하는 런이 없어요':(RF==='진행'?'진행 중인 런이 없어요 — 전체를 눌러 확인하세요':'달력에서 구분을 “런”으로 일정을 추가하면 여기에 표시돼요')))+'</div>'}
 function pb(e){const s=e.st||'대기',lbl=e.part||((runPart(e)==='기타')?'일정':runPart(e));return'<div class="pt" data-e="'+e.id+'">'+stepsBar(e)+'<div class="h"><b>'+esc(lbl)+'</b><small>'+md(e.date)+'</small><span class="bd" style="--c:'+(ST[s]||ST['대기'])+'">'+s+'</span></div>'+fh(e)+'</div>'}
 function pcell(k,l,p){const e=l.find(x=>x.part===p);return e?pb(e):'<div class="pt em" data-ng="'+esc(k)+'" data-np="'+p+'">＋ '+p+' 입력</div>'}
 let meetN=0;
