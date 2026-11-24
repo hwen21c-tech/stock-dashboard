@@ -2170,6 +2170,44 @@
 .ipo-part{font-size:9px; color:#67e8f9; margin-top:3px; word-break:keep-all;}
 .ipo-foot{font-size:9.5px; color:#94a3b8; margin-top:10px; line-height:1.6;}
 
+/* ⚡ 신규상장주 카드 — 실시간 시세 · 공모가 대비 수익률 (IpoTab 내부에서 60초 갱신) */
+.ipo-live{margin-top:6px; border-top:1px solid rgba(34,211,238,0.25); padding-top:5px; display:flex; flex-direction:column; gap:3px;}
+.ipo-live .lv-row{display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; font-size:10.5px;}
+.ipo-live .lv-tag{font-size:8.5px; font-weight:900; color:#0b1120; background:#22d3ee; border-radius:3px; padding:0 4px;}
+.ipo-live .lv-k{font-size:9px; color:#94a3b8; font-weight:800;}
+.ipo-live .lv-v{font-weight:900; color:#e2e8f0; font-feature-settings:'tnum';}
+.ipo-live .lv-wait{font-size:9.5px; color:#94a3b8; font-weight:700;}
+.ipo-live .lv-roi{font-size:11.5px; font-weight:900; font-feature-settings:'tnum';}
+#ipoLiveStamp{font-size:9.5px; color:#94a3b8; margin-top:7px; line-height:1.5;}
+/* ⚡ 5번 수급 탭 — KIS 장중 가집계 상위 패널 */
+#kisSupplyPanel{background:#0b1120;border:1px solid #0369a1;border-radius:8px;padding:8px 10px;margin:0 0 12px;}
+#kisSupplyPanel .ksp-hd{display:flex;justify-content:space-between;align-items:baseline;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+#kisSupplyPanel .ksp-title{font-size:12px;font-weight:900;color:#7dd3fc;}
+#kisSupplyPanel .ksp-kis{font-size:8.5px;font-weight:900;color:#0b1120;background:#38bdf8;border-radius:3px;padding:0 4px;margin-left:4px;}
+#kisSupplyPanel .ksp-stamp{font-size:9.5px;font-weight:800;color:#94a3b8;}
+#kisSupplyPanel .ksp-stamp.live{color:#6ee7b7;}
+#kisSupplyPanel .ksp-stamp.warn{color:#fbbf24;}
+#kisSupplyPanel .ksp-grid{display:grid;grid-template-columns:1fr;gap:6px;}
+@media (min-width:560px){#kisSupplyPanel .ksp-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+#kisSupplyPanel .ksp-col{background:rgba(2,6,23,0.62);border:1px solid #1e3a8a;border-radius:6px;padding:5px 6px;min-width:0;}
+#kisSupplyPanel .ksp-col-h{font-size:9.5px;font-weight:900;color:#93c5fd;margin-bottom:3px;display:flex;justify-content:space-between;gap:4px;}
+#kisSupplyPanel .ksp-col-h span{color:#64748b;font-weight:800;}
+#kisSupplyPanel .ksp-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;grid-column-gap:5px;align-items:center;
+  font-size:10.5px;line-height:1.5;padding:2px 0;border-bottom:1px dashed rgba(51,65,85,0.6);cursor:pointer;}
+#kisSupplyPanel .ksp-row:last-child{border-bottom:0;}
+#kisSupplyPanel .ksp-rk{font-size:8.5px;font-weight:900;color:#64748b;text-align:center;}
+#kisSupplyPanel .ksp-nm{color:#e2e8f0;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#kisSupplyPanel .ksp-meta{grid-column:2/4;font-size:9px;color:#94a3b8;display:flex;gap:6px;flex-wrap:wrap;}
+#kisSupplyPanel .ksp-net{font-weight:900;font-feature-settings:'tnum';white-space:nowrap;}
+#kisSupplyPanel .ksp-net.buy{color:#6ee7b7;}
+#kisSupplyPanel .ksp-net.sell{color:#fda4af;}
+#kisSupplyPanel .ksp-up{color:#f87171;}
+#kisSupplyPanel .ksp-down{color:#38bdf8;}
+#kisSupplyPanel .ksp-flat{color:#94a3b8;}
+#kisSupplyPanel .ksp-dual{font-size:8px;font-weight:900;color:#0b1120;background:#6ee7b7;border-radius:3px;padding:0 3px;margin-left:3px;}
+#kisSupplyPanel .ksp-note{font-size:9px;color:#94a3b8;margin-top:6px;line-height:1.55;word-break:keep-all;}
+#kisSupplyPanel .ksp-empty{font-size:10px;color:#94a3b8;border:1px dashed #334155;border-radius:6px;padding:8px;line-height:1.5;}
+
 .premarket-radar-box > div:first-child{flex-wrap:wrap !important; gap:6px !important;}
 .pm-toggle{font-size:10px; font-weight:900; padding:2px 8px; border-radius:4px; cursor:pointer;
   background:rgba(99,102,241,0.18); color:#c7d2fe; border:1px solid rgba(99,102,241,0.6); font-family:inherit; white-space:nowrap;}
@@ -6075,6 +6113,12 @@
       <div style="background:#111827; border:1px solid #1e3a8a; border-radius:8px; padding:10px 12px; margin-bottom:12px; font-size:11.5px; color:#cbd5e1; line-height:1.45;">
         <strong style="color:#38bdf8;">⏱️ 당일 시간대별 수급 유지도 총평:</strong><br>
         📋 거래소 확정 수급 기준일 2026-11-23(월) — 아래 카드의 외인·기관 금액은 그날 종가 × 순매수 주수입니다(장중 실시간 아님 · 확정 233종목 후보).<strong style="color:#fef08a;">시간별 수급 추이 바</strong>를 통해 장 막판까지 자금이 유지되었는지 즉시 확인하실 수 있습니다.
+      </div>
+
+      <!-- ⚡ KIS 장중 가집계 상위 패널 — live-kis-supply.js (/api/tabs-live?mode=supply_live · 60초) -->
+      <div id="kisSupplyPanel" data-state="wait">
+        <div class="ksp-hd"><span class="ksp-title">⚡ 장중 외인·기관 가집계 상위<span class="ksp-kis">KIS</span></span>
+          <span class="ksp-stamp">⏳ 불러오는 중…</span></div>
       </div>
 
       <div class="supply-grid-4">
@@ -15513,6 +15557,7 @@
     </div>
     <div class="ipo-sum" id="ipoSummary"></div>
     <div class="ipo-dday" id="ipoDday"></div>
+    <div id="ipoLiveStamp">⚡ 상장 종목 실시간 시세 · 공모가 대비 수익률 연결 중…</div>
     <div class="ipo-filters">
       <button type="button" class="ipo-chip on" data-ipo-sort="score" onclick="IpoTab.setSort('score')">🏆 점수순</button>
       <button type="button" class="ipo-chip" data-ipo-sort="date" onclick="IpoTab.setSort('date')">📅 일정순</button>
@@ -15573,6 +15618,120 @@
         return out;
       }
 
+      /* ⚡ 상장 종목 실시간 시세 — /api/stock-live?codes=… (60초 · 통합 KRX+NXT)
+         · 상장일이 지난(당일 포함) 종목만 조회한다 — 청약·수요예측 단계 종목에는 시세가 없다.
+         · 공모가 대비 수익률 = (현재가 - 확정공모가) ÷ 확정공모가 × 100. 확정공모가가 없으면 '—'.
+         · 응답이 없으면 값을 만들지 않는다('—' + '시세 미수신'). 장외 시간에는 직전 체결값 그대로. */
+      var LV = { map: {}, at: '', err: '', busy: false, last: 0 };
+
+      function lvKstNow(){ var d = new Date(); return new Date(d.getTime() + d.getTimezoneOffset() * 60000 + 9 * 3600000); }
+      function lvHm(){ var d = lvKstNow(), p = function(n){ return (n < 10 ? '0' : '') + n; }; return p(d.getHours()) + ':' + p(d.getMinutes()); }
+      function lvPct(v){ var n = num(v); return n === null ? '—' : (n > 0 ? '+' : '') + n.toFixed(2) + '%'; }
+      function lvCol(v){ var n = num(v); return n === null ? '#94a3b8' : (n > 0 ? '#f43f5e' : (n < 0 ? '#38bdf8' : '#94a3b8')); }
+      function lvEok(v){ var n = num(v); if (n === null) return '—';
+        return n >= 1e12 ? (n / 1e12).toFixed(2) + '조' : Math.round(n / 1e8).toLocaleString('ko-KR') + '억'; }
+
+      function listedCode(it){
+        if (!it || !it.code) return null;
+        var dd = it.listingDateDday;
+        if (dd === null || dd === undefined) return null;   /* 상장일 미정 */
+        if (dd > 0) return null;                            /* 아직 상장 전 */
+        return String(it.code);
+      }
+      function offerRoi(it, q){
+        var px = q ? num(q.price) : null, offer = num(it.fixedPrice);
+        if (px === null || offer === null || offer <= 0) return null;
+        return (px - offer) / offer * 100;
+      }
+      function liveInner(it, q){
+        var px = q ? num(q.price) : null, chg = q ? num(q.changePct) : null;
+        var roi = offerRoi(it, q);
+        var val = q ? (q.valueTotalText || q.valueDispText || lvEok(q.valueTotal)) : '—';
+        var pre = q && String(q.marketStatus || '').toUpperCase() === 'PREOPEN';
+        return '<div class="lv-row"><span class="lv-tag">⚡ 실시간</span>' +
+          '<b class="lv-v">' + (px === null ? '—' : Math.round(px).toLocaleString('ko-KR') + '원') + '</b>' +
+          '<b class="lv-v" style="color:' + lvCol(chg) + ';">' + lvPct(chg) + '</b>' +
+          '<span class="lv-k">거래대금</span><b class="lv-v">' + esc(val) + '</b>' +
+          (pre ? '<span class="lv-k">장전(체결 전)</span>' : '') + '</div>' +
+          '<div class="lv-row"><span class="lv-k">공모가 대비</span>' +
+          '<b class="lv-roi" style="color:' + lvCol(roi) + ';">' + (roi === null ? '—' : (roi > 0 ? '+' : '') + roi.toFixed(2) + '%') + '</b>' +
+          '<span class="lv-k">공모가</span><b class="lv-v">' + (num(it.fixedPrice) === null ? '—' : num(it.fixedPrice).toLocaleString('ko-KR') + '원') + '</b>' +
+          '</div>';
+      }
+      function liveBox(it){
+        var code = listedCode(it);
+        if (!code) return '';
+        var q = LV.map[code];
+        var inner = q ? liveInner(it, q)
+          : ('<div class="lv-row"><span class="lv-tag">⚡ 실시간</span><span class="lv-wait">' +
+             (LV.err ? '시세 미수신 — 공모가·일정만 표시' : '시세 확인 중…') + '</span></div>');
+        return '<div class="ipo-live" data-ipo-live="' + esc(code) + '">' + inner + '</div>';
+      }
+      function liveCodes(){
+        var out = [];
+        list().forEach(function(it){ var c = listedCode(it); if (c && out.indexOf(c) < 0) out.push(c); });
+        return out.slice(0, 32);
+      }
+      function paintLive(){
+        var n = 0;
+        Array.prototype.forEach.call(document.querySelectorAll('[data-ipo-live]'), function(el){
+          var code = el.getAttribute('data-ipo-live'), it = null;
+          list().forEach(function(x){ if (String(x.code) === code) it = x; });
+          if (!it) return;
+          var q = LV.map[code];
+          if (!q) return;
+          el.innerHTML = liveInner(it, q);
+          n++;
+        });
+        var st = $('ipoLiveStamp');
+        if (st) {
+          if (n) {
+            st.innerHTML = '⚡ <b style="color:#67e8f9;">실시간 ' + n + '종목</b> · ' + esc(LV.at) +
+              ' 갱신 (/api/stock-live) — 현재가 · 당일 등락률 · <b style="color:#67e8f9;">공모가 대비 수익률</b> · 거래대금(억).';
+            st.style.color = '#94a3b8';
+          } else {
+            st.innerHTML = '⚠ 실시간 시세 미수신 — 아래 카드는 공모가·일정·점수만 표시합니다(값을 만들지 않음).';
+            st.style.color = '#fbbf24';
+          }
+        }
+        window.__IPO_LIVE = { count: n, at: LV.at, codes: Object.keys(LV.map), err: LV.err };
+      }
+      function fetchLive(force){
+        if (!window.fetch) { paintLive(); return; }
+        var codes = liveCodes();
+        if (!codes.length) { paintLive(); return; }
+        if (LV.busy) return;
+        if (!force && Date.now() - LV.last < 55000) return;
+        LV.busy = true;
+        var chunks = [], i;
+        for (i = 0; i < codes.length; i += 8) chunks.push(codes.slice(i, i + 8));
+        Promise.all(chunks.map(function(cs){
+          return fetch('/api/stock-live?codes=' + encodeURIComponent(cs.join(',')), { cache: 'no-store' })
+            .then(function(r){ return r.ok ? r.json() : null; })
+            .catch(function(){ return null; });
+        })).then(function(res){
+          LV.busy = false;
+          LV.last = Date.now();
+          var map = {}, any = false;
+          res.forEach(function(j){
+            if (j && j.ok && j.stocks) (j.stocks || []).forEach(function(s){ if (s && s.code) { map[s.code] = s; any = true; } });
+          });
+          LV.map = map;
+          LV.err = any ? '' : '시세 미수신';
+          LV.at = any ? lvHm() : '';
+          paintLive();
+        });
+      }
+      /* 13번 탭이 열려 있을 때만 60초마다 — 숨은 탭에서 호출을 낭비하지 않는다. */
+      function liveTick(){
+        if (document.visibilityState !== 'visible') return;
+        var tab = $('tabIpo');
+        if (!tab || tab.offsetParent === null) return;
+        fetchLive(false);
+      }
+      setInterval(liveTick, 15000);
+      document.addEventListener('visibilitychange', function(){ if (!document.hidden) liveTick(); });
+
       function card(it){
         var sc = num(it.score);
         var cls = 'ipo-card' + (sc !== null && sc >= 70 ? ' hot' : '') + (it.listingDateDday !== null && it.listingDateDday !== undefined && it.listingDateDday < 0 ? ' past' : '');
@@ -15621,6 +15780,7 @@
           '<div class="ipo-hd"><span class="ipo-nm">' + esc(it.name) + '</span>' + scoreTxt + '</div>' +
           '<div class="ipo-badges">' + badges + '</div>' +
           '<div class="ipo-rows">' + rows + '</div>' +
+          liveBox(it) +
           (bars ? '<div class="ipo-bars">' + bars + '</div>' + legend : '') +
           '<div class="ipo-src">주간사 ' + esc(it.managers || '—') + (it.products ? ' · ' + esc(it.products) : '') + '</div>' +
           '</div>';
@@ -15681,7 +15841,9 @@
         toggleSpac: function(){ S.spac = !S.spac; render(); },
         togglePast: function(){ S.past = !S.past; render(); },
         render: render,
-        onShow: render
+        refreshLive: function(){ LV.last = 0; fetchLive(true); },
+        onShow: function(){ render(); LV.last = 0; fetchLive(true); },
+        live: function(){ return window.__IPO_LIVE || null; }
       };
       /* DOMContentLoaded 가 늦거나(대용량 페이지·느린 요청) 아예 안 와도 그린다 — '로딩 중'에 멈추지 않게 */
       var ipoBooted = false;
@@ -24627,6 +24789,7 @@ window.BijoongTab = {
   <script defer src="strategy-pins.js"></script>
   <script defer src="live-kkangto.js"></script>
   <script defer src="live-strategy-panels.js"></script>
+<script defer src="live-kis-supply.js"></script>
   <!-- 📅 증시 일정 — 오늘(KST) 기준 D-DAY~D-3 임박 고정 + 지난 일정 자동 접힘 -->
   <script defer src="live-schedule.js"></script>
 <script src="live-manju.js" defer></script>
@@ -24996,20 +25159,40 @@ window.BijoongTab = {
     return html;
   }
 
+  function tlInvAmt(r){
+    var e=tlNum(r.eok);
+    if(e!==null) return { cls: tlCls(e), txt: tlSigned(e,'억') };
+    return { cls: tlCls(r.vol), txt: tlSigned(r.vol,'주') };
+  }
+  function tlInvRowsHtml(rows){
+    return rows.map(function(r,i){
+      var a=tlInvAmt(r);
+      var ex=(tlNum(r.chg)!==null?(' <span style="color:'+(r.chg>0?'#f87171':'#38bdf8')+'; font-weight:800;">'+tlSigned(r.chg,'%')+'</span>'):'')+
+             (tlNum(r.price)!==null?(' <span style="color:#64748b;">'+Math.round(r.price).toLocaleString('ko-KR')+'원</span>'):'');
+      return (i+1)+'. <b style="color:#fff;">'+esc(r.name)+'</b> <span style="color:#94a3b8;">('+esc(r.code)+')</span> '+
+        '<b class="'+a.cls+'">'+a.txt+'</b>'+ex;
+    }).join(' · ');
+  }
   function tlInvestorBox(s){
     var inv=s.investor||{};
     var rows=(inv.foreign||[]).slice(0,5);
-    if(!rows.length && !inv.note) return '';
+    var orgRows=(inv.organ||[]).slice(0,3);
+    if(!rows.length && !orgRows.length && !inv.note) return '';
+    var srcKis=(inv.source==='kis');
+    var unitTxt=(inv.unit==='억')?'억 원':(srcKis?'억 원':'주수');
+    var srcLab=srcKis?('KIS '+(inv.confirmed?'확정':'장중 가집계')):'거래소 장중 잠정';
+    var when=(inv.at||inv.label)?(esc(inv.at||inv.label)+' · '):'';
     var html='<div class="sup-box">'+
-      '<div class="sup-h">🎯 장중 잠정 수급 포착 <span>'+(inv.at?esc(inv.at)+' · ':'')+'외국인 순매수 상위(주수 기준)</span></div>';
+      '<div class="sup-h">🎯 장중 잠정 수급 포착 <span>'+when+esc(srcLab)+' 순매수 상위('+unitTxt+' 기준)</span></div>';
     if(rows.length){
-      html+='<div style="font-size:10.5px; color:#cbd5e1; line-height:1.8;">'+rows.map(function(r,i){
-        return (i+1)+'. <b style="color:#fff;">'+esc(r.name)+'</b> <span style="color:#94a3b8;">('+esc(r.code)+')</span> '+
-          '<b class="'+tlCls(r.vol)+'">'+tlSigned(r.vol,'주')+'</b>';
-      }).join(' · ')+'</div>';
+      html+='<div style="font-size:10.5px; color:#cbd5e1; line-height:1.8;"><b style="color:#93c5fd;">외국인</b> '+tlInvRowsHtml(rows)+'</div>';
     }else{
-      html+='<div style="font-size:10.5px; color:#94a3b8;">외국인 잠정 순매수 상위 응답을 받지 못했습니다(수치 없음).</div>';
+      html+='<div style="font-size:10.5px; color:#94a3b8;">외국인 순매수 상위 응답을 받지 못했습니다(수치 없음).</div>';
     }
+    if(orgRows.length){
+      html+='<div style="font-size:10.5px; color:#cbd5e1; line-height:1.8; margin-top:3px;"><b style="color:#fcd34d;">기관계</b> '+tlInvRowsHtml(orgRows)+'</div>';
+    }
+    if(srcKis) html+='<div style="font-size:9px; color:#fbbf24; margin-top:2px; line-height:1.5;">※ 네이버 trendForeignOrg 응답 없음(404) → 한투 KIS '+(inv.confirmed?'확정치':'가집계')+'로 대체했습니다. 이 값은 그 슬롯 시각이 아니라 '+(inv.confirmed?'직전 거래일 확정':'최신 가집계')+' 시점 값입니다.</div>';
     if(inv.note) html+='<div style="font-size:9.5px; color:#94a3b8; margin-top:4px; line-height:1.55;">※ '+esc(inv.note)+'</div>';
     html+='</div>';
     return html;
@@ -25033,7 +25216,7 @@ window.BijoongTab = {
     var bits=[];
     Object.keys(th.buyHits).forEach(function(k){
       (th.buyHits[k]||[]).forEach(function(r){
-        bits.push((k==='foreign'?'외인':'기관')+' '+esc(r.name)+' '+(r.rank?r.rank+'위 ':'')+tlSigned(r.vol,'주'));
+        bits.push((k==='foreign'?'외인':'기관')+' '+esc(r.name)+' '+(r.rank?r.rank+'위 ':'')+(tlNum(r.eok)!==null?tlSigned(r.eok,'억'):tlSigned(r.vol,'주')));
       });
     });
     return bits.length ? ('<div style="font-size:9.5px; color:#86efac; margin-top:2px;">▸ '+bits.join(' · ')+'</div>') : '';
