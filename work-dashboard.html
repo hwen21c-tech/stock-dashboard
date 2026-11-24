@@ -64,7 +64,9 @@ button:disabled{opacity:.55;cursor:default}
 .wr{flex:1;min-width:0}.w7{display:flex;justify-content:space-between;text-align:center;gap:2px}
 .wd{display:flex;flex-direction:column;gap:1px;flex:1;min-width:0}.wd small{color:var(--mut);font-size:.85em}.wd em{font-style:normal;font-weight:800;font-size:1.35em}
 #msg{margin-top:4px;font-size:.95em}.lb{color:var(--m-meeting);font-weight:700;font-size:.85em}
-.main{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px}
+.main{display:grid;grid-template-columns:1fr;gap:10px}
+#colA,#colB{min-width:0}
+@media(min-width:721px){.main{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:14px}}
 .mh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}.mh b{font-size:1.6em;font-weight:800}
 .mh button{padding:2px 10px;background:transparent;border-color:var(--line);color:var(--tx)}
 .lg{margin-left:auto;display:flex;gap:10px;font-size:.85em;color:var(--mut);flex-wrap:wrap}.lg i{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--c);margin-right:4px}
@@ -133,19 +135,15 @@ body.fit{font-size:12px}
 .fit .nav{margin:0;flex-wrap:wrap;flex:none;gap:5px}.fit .nav button{padding:5px 8px;font-size:11.5px;white-space:nowrap}
 .fit .wcard{flex:1 1 240px;min-width:0;padding:6px 8px}.fit .wb{min-width:52px;padding:3px 8px;font-size:11px}.fit .wb b{font-size:1.3em}.fit .wd em{font-size:1.1em}.fit #msg{display:none}
 .fit .main{flex:1;min-height:0;grid-template-columns:1.25fr .95fr 1.05fr;grid-template-rows:1fr 1fr .8fr;grid-template-areas:"cal todo run" "cal act run" "today up meet";gap:8px}
-.fit .main>div,.fit .main>div>.two{display:contents}
+.fit .main>div,.fit .main>.two,.fit .main>div>.two{display:contents}
 .fit .main .card{margin:0;padding:10px;min-width:0;min-height:0;overflow:auto}
-.fit .main>div:nth-child(1)>.card:nth-child(1){grid-area:cal}
-.fit .main>div:nth-child(1)>.card:nth-child(2){grid-area:today}
-.fit .main>div:nth-child(1)>.card:nth-child(3){grid-area:meet}
-.fit .main>div:nth-child(2)>.card:nth-child(1){grid-area:todo}
-.fit .main>div:nth-child(2)>.two>.card:nth-child(1){grid-area:act}
-.fit .main>div:nth-child(2)>.two>.card:nth-child(2){grid-area:up}
-.fit .main>div:nth-child(2)>.card:nth-child(3){grid-area:run}
+.fit #cardCal{grid-area:cal}.fit #cardToday{grid-area:today}.fit #cardMeet{grid-area:meet}
+.fit #cardTodo{grid-area:todo}.fit #cardAct{grid-area:act}.fit #cardUp{grid-area:up}.fit #cardRun{grid-area:run}
 .fit .cell{min-height:clamp(40px,8vh,68px)}.fit .ct{margin-bottom:4px}.fit .td{padding:3px 0}.fit .mh b{font-size:1.25em}
+.fit .fbar{margin:2px 0 6px;gap:5px}.fit .fbar .fl{font-size:10.5px}.fit .fchip{font-size:10.5px;padding:2px 9px}
 .fit .bar2{margin:6px 0 0;padding:4px 10px;font-size:11px;flex:none;flex-wrap:wrap;gap:6px 10px}
 .fit .pg{grid-template-columns:1fr;gap:6px}
-.fit .steps{gap:3px;margin:1px 0 3px}.fit .stp{font-size:9px;padding:1px 5px;border-radius:8px}
+.fit .steps{gap:3px;margin:1px 0 3px}.fit .stp{font-size:9px;padding:2px 6px;min-height:16px;border-radius:8px}
 .fit .rn .h b{font-size:12px}.fit .rn .h button.x{font-size:10px;padding:0 4px}
 .fit .pt{padding:3px 0 3px 7px;margin:3px 0}
 .fit .td input.tdd{flex:0 0 92px;width:92px;font-size:10px}
@@ -184,6 +182,10 @@ body .card.big .cell{min-height:clamp(70px,13vh,140px)}
   .md{padding:14px;max-height:92vh}
   .row>*{min-width:0}
   .td input.tdd{flex:0 0 104px;width:104px}
+  /* 📱 모바일 우선순위 — 내 할 일 → 런 현황 → 일정 → 액션 → 회의 요약 → 달력 */
+  #colB{order:1}#colA{order:2}
+  .stp{font-size:11.5px;padding:6px 11px;min-height:28px}
+  .fchip{padding:7px 13px;font-size:12.5px}
   body{font-size:13px}
 }
 @media(max-width:420px){
@@ -200,7 +202,19 @@ body .card.big .cell{min-height:clamp(70px,13vh,140px)}
 .sbar .sx{display:none;border:0;background:transparent;color:var(--mut);padding:0 6px;font-size:17px;line-height:1}
 /* 🚦 런 5단계 미니 진행 바 */
 .steps{display:flex;gap:4px;flex-wrap:wrap;margin:2px 0 5px}
-.stp{position:relative;font-size:10px;font-weight:800;padding:2px 7px;border-radius:99px;background:color-mix(in srgb,var(--mut) 15%,transparent);color:var(--mut);border:1px solid var(--line);white-space:nowrap;letter-spacing:-.2px}
+.stp{position:relative;font-size:11px;font-weight:800;padding:4px 9px;min-height:24px;display:inline-flex;align-items:center;border-radius:99px;background:color-mix(in srgb,var(--mut) 15%,transparent);color:var(--mut);border:1px solid var(--line);white-space:nowrap;letter-spacing:-.2px;cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;transition:background .12s ease,color .12s ease,transform .06s ease}
+.stp:active{transform:scale(.96)}
+.stp .sc{font-style:normal;font-size:.92em;margin-right:3px;line-height:1;opacity:.95}
+.pg.one{grid-template-columns:1fr}
+/* 🧭 파트 필터 칩 */
+.fbar{display:flex;gap:6px;align-items:center;margin:0 0 10px;overflow-x:auto;padding:1px;scrollbar-width:none}
+.fbar::-webkit-scrollbar{display:none}
+.fbar .fl{font-size:11.5px;color:var(--mut);font-weight:700;flex:none;margin-right:1px}
+.fchip{flex:none;font-size:12px;font-weight:800;padding:6px 12px;border-radius:999px;border:1px solid var(--bd);background:var(--btnbg);color:var(--btntx);white-space:nowrap;line-height:1.2}
+.fchip.on{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+/* 📑 회의 요약 접기/펼치기 */
+#cardMeet.collapsed #ml{display:none}
+.meeth{cursor:pointer;-webkit-user-select:none;user-select:none}
 .stp.done{background:color-mix(in srgb,#1f8a52 20%,transparent);color:#1a7345;border-color:color-mix(in srgb,#1f8a52 40%,transparent)}
 .stp.doing{background:color-mix(in srgb,#2f66c4 18%,transparent);color:#2a5fb8;border-color:color-mix(in srgb,#2f66c4 38%,transparent)}
 .stp.iss{box-shadow:0 0 0 1px color-mix(in srgb,var(--red) 30%,transparent)}
@@ -237,16 +251,19 @@ body.locked .gate{display:flex}
 <div><div class="nav"><button id="bq" class="on">🎤 빠른 입력</button><button id="bw">📝 주간업무 정리</button><button id="br">🎙️ 회의 녹음</button><button id="bn">＋ 일정/회의</button><button id="tb" title="테마 바꾸기">🎨 스카이</button><button id="bf">⛶ 한 화면</button><button id="lk" title="잠금">🔒</button></div>
 <div class="card wcard" style="margin:0"><div class="wb"><span>향후 7일</span><b id="w7n"></b></div><div class="wr"><div class="w7" id="w7"></div><div id="msg"></div></div></div></div></div>
 <div class="sbar"><span class="si">🔍</span><input id="sq" type="text" placeholder="런·회의·할 일 검색" autocomplete="off"><span class="sn" id="sn"></span><button class="sx" id="sx" title="지우기">×</button></div>
-<div class="main"><div>
-<div class="card"><div class="mh"><button id="pm">‹</button><b id="mt"></b><button id="nm">›</button>
+<div class="fbar" id="fbar"><span class="fl">파트</span><button type="button" class="fchip on" data-pf="전체">전체</button><button type="button" class="fchip" data-pf="양극">양극</button><button type="button" class="fchip" data-pf="음극">음극</button><button type="button" class="fchip" data-pf="회의">회의</button><button type="button" class="fchip" data-pf="기타">기타</button></div>
+<div class="main">
+<div id="colA">
+<div class="card" id="cardCal"><div class="mh"><button id="pm">‹</button><b id="mt"></b><button id="nm">›</button>
 <div class="lg" id="lg"></div></div><div class="cal" id="cal"></div></div>
-<div class="card"><div class="two"><div><div class="sub" id="h0" style="color:var(--red)"></div><div id="l0"></div></div><div><div class="sub" id="h1" style="color:var(--blue)"></div><div id="l1"></div></div></div><div class="nx" id="nx"></div></div>
-<div class="card"><div class="ct" style="--c:var(--m-work)">회의 요약<small>눌러서 수정</small></div><div id="ml"></div></div>
-</div><div>
-<div class="card"><div class="ct" style="--c:var(--m-meeting)">내 할 일<small id="c1"></small></div><div id="t1"></div><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="ad" id="a1" placeholder="+ 추가 (Enter)" style="flex:1 1 55%;min-width:0"><input class="ad" type="date" id="a1d" title="기한" style="flex:0 0 128px;min-width:0"></div></div>
-<div class="two"><div class="card"><div class="ct" style="--c:var(--m-run)">회의 액션아이템<small id="ac"></small></div><div id="al"></div></div>
-<div class="card"><div class="ct" style="--c:var(--warn)">다가오는 일정</div><div id="dl"></div></div></div>
-<div class="card"><div class="ct" style="--c:var(--m-run)">런 현황<small id="rc"></small></div><div id="rl"></div></div>
+<div class="card" id="cardToday"><div class="two"><div><div class="sub" id="h0" style="color:var(--red)"></div><div id="l0"></div></div><div><div class="sub" id="h1" style="color:var(--blue)"></div><div id="l1"></div></div></div><div class="nx" id="nx"></div></div>
+</div>
+<div id="colB">
+<div class="card" id="cardTodo"><div class="ct" style="--c:var(--m-meeting)">내 할 일<small id="c1"></small></div><div id="t1"></div><div class="row" style="gap:6px;flex-wrap:nowrap"><input class="ad" id="a1" placeholder="+ 추가 (Enter)" style="flex:1 1 55%;min-width:0"><input class="ad" type="date" id="a1d" title="기한" style="flex:0 0 128px;min-width:0"></div></div>
+<div class="card" id="cardRun"><div class="ct" style="--c:var(--m-run)">런 현황<small id="rc"></small></div><div id="rl"></div></div>
+<div class="two"><div class="card" id="cardUp"><div class="ct" style="--c:var(--warn)">다가오는 일정</div><div id="dl"></div></div>
+<div class="card" id="cardAct"><div class="ct" style="--c:var(--m-run)">회의 액션아이템<small id="ac"></small></div><div id="al"></div></div></div>
+<div class="card" id="cardMeet"><div class="ct meeth" id="meetH" style="--c:var(--m-work)">회의 요약<small id="meetS"></small></div><div id="ml"></div></div>
 </div></div>
 <div class="bar2" id="bar">
 <span>이번 주 회의 <b id="b_m">0건</b></span><span>완료 <b class="up" id="b_d">▲0</b></span><span>남은 할 일 <b class="dn" id="b_o">▼0</b></span><span>미결 액션 <b id="b_a">0건</b></span>
@@ -313,6 +330,7 @@ body.locked .gate{display:flex}
 <div class="foot"><button id="rx">닫기</button><button id="rgo">✨ AI로 정리</button><button class="pri" id="rsave">회의로 저장</button></div></div></div>
 <div class="ov" id="ov2"><div class="md"><div class="mh"><button id="wp">‹</button><b id="wt" style="font-size:16px"></b><button id="wn">›</button></div>
 <div class="row" style="margin-bottom:8px"><button id="wm1">간략 요약</button><button id="wm2">상세 정리</button></div>
+<button type="button" id="w_ai" style="width:100%;margin-bottom:8px;background:var(--ac);color:var(--acx);border-color:var(--ac);font-weight:800;padding:10px">✨ AI 개조식 보고서 생성 &amp; 복사</button>
 <textarea id="wk"></textarea><div class="foot"><button id="w_x">닫기</button><button id="w_p">✨ 보고용 문구 다듬기</button><button class="pri" id="w_c">복사</button></div></div></div>
 <div id="ts"></div>
 <script>
@@ -487,36 +505,76 @@ function stepState(f,k,mode){
  else if(!st&&res)s='done';
  return {s:s,iss:!!iss,st:st,res:res};
 }
-function stepsBar(f){
- return '<div class="steps">'+STEPS.map(([k,n,mode])=>{const x=stepState(f,k,mode);
-  const tip=n+(x.st?' · '+x.st:' · 미입력')+(x.iss?' · 이슈 있음':'')+(x.res?' · 결과: '+x.res:'');
-  return '<span class="stp '+x.s+(x.iss?' iss':'')+'" title="'+esc(tip)+'">'+esc(n)+(x.iss?'<i></i>':'')+'</span>'}).join('')+'</div>';
+function stepsBar(e){const f=e.f||e||{};
+ return '<div class="steps" title="단계 칩을 누르면 대기 → 진행중 → 완료로 바로 바뀝니다">'+STEPS.map(([k,n,mode])=>{const x=stepState(f,k,mode);
+  const tip=n+' · '+(x.st||'대기')+' — 눌러서 변경'+(x.iss?' (이슈 있음)':'')+(x.res?' · 결과: '+x.res:'');
+  return '<span class="stp '+x.s+(x.iss?' iss':'')+'" data-st="'+esc(e.id)+'" data-sk="'+k+'" title="'+esc(tip)+'"><b class="sc">'+(x.s==='done'?'✓':x.s==='doing'?'▶':'○')+'</b>'+esc(n)+(x.iss?'<i></i>':'')+'</span>'}).join('')+'</div>';
 }
+/* 🚦 런 단계 원클릭 전환 — -(대기) → 진행중 → 완료 → - */
+function cycleStep(id,k){const ev=S.ev.find(x=>String(x.id)===String(id));if(!ev)return;
+ const f=ev.f=ev.f||{};const cur=f[k+'st']||'';
+ const nx=cur==='완료'?'':cur==='진행중'?'완료':'진행중';
+ f[k+'st']=nx;
+ if(nx){if(!f[k+'d'])f[k+'d']=TD}else f[k+'d']='';
+ if(!/평가|보류/.test(ev.st||'')){const v=STEPS.map(([kk])=>f[kk+'st']||'');
+  ev.st=v.every(x=>x==='완료')?'완료':v.some(x=>x==='진행중'||x==='완료')?'진행중':'대기'}
+ try{syncTodos(ev)}catch(e_){}
+ try{syncLinks(ev)}catch(e_){}
+ render();
+ const nm=STEPS.filter(s=>s[0]===k)[0];
+ toast(((ev.grp||ev.title)+(ev.part?' '+ev.part:''))+' · '+(nm?nm[1]:k)+' → '+(nx||'대기'));
+}
+/* 🧭 파트 분류 · 필터 */
+function runPart(e){if(!e)return '기타';if(e.type==='meeting')return '회의';if(e.type!=='run')return '기타';
+ const p=String(e.part||'').trim();if(p==='양극'||p==='음극')return p;
+ const s2=String(e.grp||'')+' '+String(e.title||'');
+ if(/양극/.test(s2))return '양극';if(/음극/.test(s2))return '음극';return '기타'}
+const evPart=runPart;
+function tPart(t){if(t&&t.ref){const ev=S.ev.find(z=>String(z.id)===String(t.ref).split(':')[0]);if(ev)return runPart(ev)}
+ const s2=String((t&&t.t)||'');if(/양극/.test(s2))return '양극';if(/음극/.test(s2))return '음극';
+ if(S.ev.some(e=>e.type==='meeting'&&lines(e.actions).some(a=>s2.indexOf(a)>=0)))return '회의';
+ return '기타'}
+let PF='전체';try{PF=localStorage.getItem('wd3.pf')||'전체'}catch(e_){}
+function setPF(p){PF=p;try{localStorage.setItem('wd3.pf',p)}catch(e_){}
+ document.querySelectorAll('#fbar .fchip').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-pf')===p)});
+ render()}
+$('fbar').addEventListener('click',e=>{const b=e.target.closest('.fchip');if(!b)return;setPF(b.getAttribute('data-pf'))});
+const RUNORD=s=>s==='완료'?2:s==='대기'?1:0;
 function runc3(){const m={};S.ev.filter(e=>e.type==='run').forEach(e=>(m[gk(e)]=m[gk(e)]||[]).push(e));
-let gs=Object.entries(m).filter(([k,l])=>l.some(e=>e.st!=='완료'||e.date>=add(-7))).map(([k,l])=>[k,l.sort((a,b)=>a.date.localeCompare(b.date))]).sort((a,b)=>(gst(a[1])==='완료')-(gst(b[1])==='완료')||a[1][0].date.localeCompare(b[1][0].date));
-const all=gs.length;
+let gs=Object.entries(m).filter(([k,l])=>l.some(e=>e.st!=='완료'||e.date>=add(-7))).map(([k,l])=>[k,l.slice().sort((a,b)=>a.date.localeCompare(b.date))]).sort((a,b)=>RUNORD(gst(a[1]))-RUNORD(gst(b[1]))||a[1][0].date.localeCompare(b[1][0].date));
+const raw=gs.length;
+if(PF==='회의')gs=[];else if(PF!=='전체')gs=gs.map(([k,l])=>[k,l.filter(e=>runPart(e)===PF)]).filter(([k,l])=>l.length);
 if(Q)gs=gs.filter(([k,l])=>hit(k,l.map(e=>[e.title,e.part,e.st,Object.values(e.f||{}).join(' '),e.memo,e.decision,e.actions].join(' ')).join(' ')));
 sInfo.run=gs.length;
-$('rc').textContent=gs.filter(g=>gst(g[1])!=='완료').length+'건 진행'+(Q?' ('+gs.length+'/'+all+' 표시)':'');
-$('rl').innerHTML=gs.map(([k,l])=>{const s=gst(l),ot=l.filter(x=>x.part!=='양극'&&x.part!=='음극');
-return'<div class="rn"><div class="h"><b>'+esc(k)+'</b><span class="bd" style="--c:'+ST[s]+'">'+s+'</span><button class="x" data-ng="'+esc(k)+'">+ 파트</button></div><div class="pg">'+pcell(k,l,'양극')+pcell(k,l,'음극')+'</div>'+ot.map(pb).join('')+'</div>'}).join('')||'<div class="empty">'+(Q?'검색과 맞는 런이 없어요':'달력에서 구분을 “런”으로 일정을 추가하면 여기에 표시돼요')+'</div>'}
-function pb(e){const s=e.st||'대기';return'<div class="pt" data-e="'+e.id+'">'+stepsBar(e.f)+'<div class="h"><b>'+esc(e.part||'일정')+'</b><small>'+md(e.date)+'</small><span class="bd" style="--c:'+(ST[s]||ST['대기'])+'">'+s+'</span></div>'+fh(e)+'</div>'}
+$('rc').textContent=gs.filter(g=>gst(g[1])!=='완료').length+'건 진행'+((Q||PF!=='전체')?' ('+gs.length+'/'+raw+' 표시)':'');
+const parts=PF==='양극'?['양극']:PF==='음극'?['음극']:(PF==='기타'?[]:['양극','음극']);
+$('rl').innerHTML=gs.map(([k,l])=>{const s=gst(l),seen=[];
+const cells=parts.map(function(p){const e=l.filter(x=>runPart(x)===p&&seen.indexOf(x)<0)[0];
+ if(!e)return'<div class="pt em" data-ng="'+esc(k)+'" data-np="'+p+'">＋ '+p+' 입력</div>';seen.push(e);return pb(e)});
+const ot=l.filter(x=>seen.indexOf(x)<0);
+return'<div class="rn"><div class="h"><b>'+esc(k)+'</b><span class="bd" style="--c:'+ST[s]+'">'+s+'</span><button class="x" data-ng="'+esc(k)+'">+ 파트</button></div><div class="pg'+(cells.length===1?' one':'')+'">'+cells.join('')+'</div>'+ot.map(pb).join('')+'</div>'}).join('')||'<div class="empty">'+(Q?'검색과 맞는 런이 없어요':(PF!=='전체'?'“'+PF+'”에 해당하는 런이 없어요':'달력에서 구분을 “런”으로 일정을 추가하면 여기에 표시돼요'))+'</div>'}
+function pb(e){const s=e.st||'대기',lbl=e.part||((runPart(e)==='기타')?'일정':runPart(e));return'<div class="pt" data-e="'+e.id+'">'+stepsBar(e)+'<div class="h"><b>'+esc(lbl)+'</b><small>'+md(e.date)+'</small><span class="bd" style="--c:'+(ST[s]||ST['대기'])+'">'+s+'</span></div>'+fh(e)+'</div>'}
 function pcell(k,l,p){const e=l.find(x=>x.part===p);return e?pb(e):'<div class="pt em" data-ng="'+esc(k)+'" data-np="'+p+'">＋ '+p+' 입력</div>'}
+let meetN=0;
 function meet(){let l=S.ev.filter(e=>e.type==='meeting'&&(e.memo||e.summary||e.decision||e.actions)).sort((a,b)=>b.date.localeCompare(a.date));
 const all=l.length;
 if(Q)l=l.filter(e=>hit(e.title,e.memo,e.summary,e.decision,e.actions));
-sInfo.meet=l.length;
-$('ml').innerHTML=l.slice(0,LIM(3)).map(e=>'<div class="ms" data-e="'+e.id+'"><b data-e="'+e.id+'">'+esc(e.title)+'</b> <small>'+md(e.date)+(e.time?' '+e.time+(e.time2?'~'+e.time2:''):'')+(e.loc?' · '+esc(e.loc):'')+'</small><div class="s" data-e="'+e.id+'">'+esc(sum(e))+'</div></div>').join('')||'<div class="empty">'+(Q?'검색과 맞는 회의가 없어요':'회의 일정에 내용을 입력하면 여기에 요약돼요')+'</div>'}
+if(PF!=='전체'&&PF!=='회의')l=[];
+sInfo.meet=l.length;meetN=l.length;
+$('ml').innerHTML=l.slice(0,LIM(3)).map(e=>'<div class="ms" data-e="'+e.id+'"><b data-e="'+e.id+'">'+esc(e.title)+'</b> <small>'+md(e.date)+(e.time?' '+e.time+(e.time2?'~'+e.time2:''):'')+(e.loc?' · '+esc(e.loc):'')+'</small><div class="s" data-e="'+e.id+'">'+esc(sum(e))+'</div></div>').join('')||'<div class="empty">'+(Q?'검색과 맞는 회의가 없어요':(PF!=='전체'&&PF!=='회의'?'“'+PF+'”에 해당하는 회의가 없어요':'회의 일정에 내용을 입력하면 여기에 요약돼요'))+'</div>';
+applyMeetOpen()}
 function acts(){let l=[];S.ev.filter(e=>e.type==='meeting'&&e.date>=add(-21)).sort((a,b)=>b.date.localeCompare(a.date)).forEach(e=>lines(e.actions).forEach((x,i)=>{if(!(e.ad||[]).includes(x))l.push([e,x,i])}));
 const all=l.length;
 if(Q)l=l.filter(([e,x])=>hit(x,e.title,e.memo));
+if(PF!=='전체')l=l.filter(([e])=>runPart(e)===PF);
 sInfo.act=l.length;
 $('ac').textContent=l.length+'건'+(Q&&all!==l.length?' ('+all+'중)':'');
-$('al').innerHTML=l.slice(0,LIM(6)).map(([e,x,i])=>'<div class="ar"><input type="checkbox" style="--c:var(--m-run)" class="td-i" data-ae="'+e.id+'" data-ai="'+i+'"><div>'+esc(x)+'<small data-e="'+e.id+'">'+esc(e.title)+' · '+md(e.date)+((e.adt||{})[x]?' · 기한 '+md(e.adt[x]):'')+'</small></div></div>').join('')||'<div class="empty">'+(Q?'검색과 맞는 액션이 없어요':'미결 액션이 없어요')+'</div>'}
+$('al').innerHTML=l.slice(0,LIM(6)).map(([e,x,i])=>'<div class="ar"><input type="checkbox" style="--c:var(--m-run)" class="td-i" data-ae="'+e.id+'" data-ai="'+i+'"><div>'+esc(x)+'<small data-e="'+e.id+'">'+esc(e.title)+' · '+md(e.date)+((e.adt||{})[x]?' · 기한 '+md(e.adt[x]):'')+'</small></div></div>').join('')||'<div class="empty">'+(Q?'검색과 맞는 액션이 없어요':(PF!=='전체'?'“'+PF+'”에 해당하는 액션이 없어요':'미결 액션이 없어요'))+'</div>'}
 function todos(){[1].forEach(g=>{const c='var(--m-meeting)',K=x=>x.due||'9999';let l=S.td.filter(t=>t.g===g).slice();
 if(Q)l=l.filter(t=>hit(t.t));
+if(PF!=='전체')l=l.filter(t=>tPart(t)===PF);
 l.sort((a,b)=>(a.done?1:0)-(b.done?1:0)||(K(a)<K(b)?-1:K(a)>K(b)?1:0));$('c'+g).textContent=l.filter(t=>!t.done).length;
-$('t'+g).innerHTML=l.map(t=>{const od=t.due&&!t.done&&t.due<TD,tdy=t.due&&!t.done&&t.due===TD;return'<div class="td'+(t.done?' done':'')+'" style="--c:'+c+'"><input type="checkbox" data-t="'+t.id+'"'+(t.done?' checked':'')+'><span>'+esc(t.t)+'</span><input type="date" class="tdd" title="기한" data-td="'+t.id+'" value="'+(t.due||'')+'" style="'+(od?'color:var(--red);font-weight:700;opacity:1':tdy?'color:var(--warn);font-weight:700;opacity:1':t.due?'opacity:1':'')+'"><button class="x" data-r="'+t.id+'">×</button></div>'}).join('')||'<div class="empty">'+(Q?'검색과 맞는 할 일이 없어요':'비어 있어요')+'</div>'})}
+$('t'+g).innerHTML=l.map(t=>{const od=t.due&&!t.done&&t.due<TD,tdy=t.due&&!t.done&&t.due===TD;return'<div class="td'+(t.done?' done':'')+'" style="--c:'+c+'"><input type="checkbox" data-t="'+t.id+'"'+(t.done?' checked':'')+'><span>'+esc(t.t)+'</span><input type="date" class="tdd" title="기한" data-td="'+t.id+'" value="'+(t.due||'')+'" style="'+(od?'color:var(--red);font-weight:700;opacity:1':tdy?'color:var(--warn);font-weight:700;opacity:1':t.due?'opacity:1':'')+'"><button class="x" data-r="'+t.id+'">×</button></div>'}).join('')||'<div class="empty">'+(Q?'검색과 맞는 할 일이 없어요':(PF!=='전체'?'“'+PF+'”에 해당하는 할 일이 없어요':'비어 있어요'))+'</div>'})}
 function clock(){const n=new Date(),h=n.getHours();$('dt').textContent=(n.getMonth()+1)+'월 '+n.getDate()+'일 '+DW[n.getDay()]+'요일';
 $('ap').textContent=h<12?'오전':'오후';$('tm').textContent=(h%12||12)+':'+Z(n.getMinutes())}
 function head(){let h='',tot=0;for(let i=0;i<7;i++){const d=new Date(now);d.setDate(d.getDate()+i);const k=ymd(d),n=evs(k).length,w=d.getDay();tot+=n;
@@ -535,12 +593,18 @@ $('h'+i).innerHTML=(i?'내일':'오늘')+'<small>'+(d.getMonth()+1)+'/'+(d.getDa
 $('l'+i).innerHTML=evs(k).map(e=>'<div class="it" data-e="'+e.id+'"><i class="tm">'+(e.time?e.time+(e.time2?'~'+e.time2:''):'종일')+'</i><span class="bar" style="--c:'+col(e)+'" data-e="'+e.id+'">'+esc(e.title)+((e.loc||e.who)?' <small style="color:var(--mut)">'+[e.loc,e.who].filter(Boolean).map(esc).join(' · ')+'</small>':'')+'</span></div>').join('')||'<div class="empty">일정 없음</div>'});
 const n=S.ev.filter(e=>e.date>add(1)).sort((a,b)=>a.date.localeCompare(b.date))[0];
 $('nx').innerHTML=n?'다음 '+md(n.date)+' · '+esc(n.title):''}
-function dday(){const l=S.ev.filter(e=>(e.end||e.date)>=TD).sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||'')).slice(0,LIM(6));
+function dday(){let l=S.ev.filter(e=>(e.end||e.date)>=TD).sort((a,b)=>a.date.localeCompare(b.date)||(a.time||'').localeCompare(b.time||''));
+if(PF!=='전체')l=l.filter(e=>runPart(e)===PF);
+l=l.slice(0,LIM(6));
 $('dl').innerHTML=l.map(e=>{const n=dd(e.date);return'<div class="dd" data-e="'+e.id+'"><b style="--c:'+col(e)+'" data-e="'+e.id+'">'+(n>0?'D-'+n:e.end&&e.date<TD?'진행중':'D-DAY')+'</b><span data-e="'+e.id+'">'+esc(e.title)+'</span><small>'+md(e.date)+(e.end?'~'+md(e.end):'')+'</small></div>'}).join('')||'<div class="empty">예정 없음</div>'}
 function bar(){const w=range(),m=S.ev.filter(e=>e.type==='meeting'&&e.date>=w[0]&&e.date<=w[1]).length,d=S.td.filter(t=>t.done&&t.at>=w[0]&&t.at<=w[1]).length,o=S.td.filter(t=>!t.done).length,a=S.ev.reduce((s,e)=>s+pend(e).length,0);
 $('b_m').textContent=m+'건';$('b_d').textContent='▲'+d;$('b_o').textContent='▼'+o;$('b_a').textContent=a+'건';renderSync()}
 const gk=e=>e.grp||e.title;
 function gst(l){const s=l.map(e=>e.st||'대기');return s.every(x=>x==='완료')?'완료':s.every(x=>x==='대기')?'대기':'진행중'}
+let MOPEN=false;try{MOPEN=localStorage.getItem('wd3.meetOpen')==='1'}catch(e_){}
+function applyMeetOpen(){const c=$('cardMeet');if(!c)return;const open=!!Q||MOPEN;
+ c.classList.toggle('collapsed',!open);$('meetS').textContent=meetN+'건 · '+(open?'접기 ▾':'펼치기 ▸')}
+$('meetH').onclick=()=>{MOPEN=!MOPEN;try{localStorage.setItem('wd3.meetOpen',MOPEN?'1':'0')}catch(e_){}applyMeetOpen()};
 function render(){head();cal();two();meet();todos();acts();dday();runc3();bar();searchUI();save()}
 /* ---------------- 일정/회의 편집 */
 function openEv(id){cur=id?S.ev.find(e=>e.id==id):null;const e=cur||{date:sel,time:'',title:'',type:'meeting',memo:'',decision:'',actions:'',summary:''};
@@ -741,6 +805,55 @@ $('bw').onclick=()=>{wo=0;wmode=1;weekly();$('ov2').classList.add('on')};$('wm1'
 $('wp').onclick=()=>{wo--;weekly()};$('wn').onclick=()=>{wo++;weekly()};$('w_x').onclick=()=>$('ov2').classList.remove('on');
 $('w_c').onclick=()=>{const t=$('wk');t.select();let ok=false;try{ok=document.execCommand('copy')}catch(e){}
 $('w_c').textContent=ok?'복사됨 ✓':'길게 눌러 복사';setTimeout(()=>$('w_c').textContent='복사',1800)};
+/* ✨ AI 개조식 주간보고 — 로컬 초안 즉시 → Gemini 다듬기(실패해도 초안 유지) */
+const flatS=v=>String(v||'').replace(/\s*\n+\s*/g,' / ').trim();
+const stepSum=e=>STEPS.map(([k,n])=>{const st=(e.f||{})[k+'st'];return st?n+' '+st:''}).filter(Boolean).join(', ');
+function localWeekly(){const[a,b]=range();const n=new Date(b+'T00:00');n.setDate(n.getDate()+1);const na=ymd(n);n.setDate(n.getDate()+6);const nb=ymd(n);
+const inW=e=>e.date<=b&&(e.end||e.date)>=a;
+const L=['【주간업무 보고】 '+md(a)+' ~ '+md(b)];
+const meets=S.ev.filter(e=>e.type==='meeting'&&inW(e)).sort((x,y)=>x.date.localeCompare(y.date));
+const runs=S.ev.filter(e=>e.type==='run');
+const live=runs.filter(e=>inW(e)||(e.st&&e.st!=='완료'));
+const done=S.td.filter(t=>t.done&&t.at&&t.at>=a&&t.at<=b);
+let A=[];
+meets.forEach(e=>{const d=lines(e.decision),ac=pend(e);let x='· '+md(e.date)+' '+e.title;
+ if(d.length)x+=' — '+d.join(', ');
+ if(ac.length)x+=' (액션: '+ac.slice(0,3).join(', ')+')';
+ A.push(x)});
+live.forEach(e=>{const st=stepSum(e),i=flatS((e.f||{}).iss);
+ A.push('· '+(e.grp||e.title)+(e.part?' '+e.part:'')+' '+(e.st||'대기')+(st?' ('+st+')':'')+(i?' / 이슈: '+i:''))});
+done.forEach(t=>A.push('· '+t.t+' — 완료('+md(t.at)+')'));
+L.push('■ 금주 실적');L.push(A.length?A.slice(0,12).join('\n'):'· 해당 없음');
+let B=[];
+live.forEach(e=>{const f=e.f||{};[['mix','믹싱'],['coat','코팅'],['press','프레스']].forEach(([k,nm2])=>{const i=flatS(f[k+'i']);if(i)B.push('· '+(e.grp||e.title)+(e.part?' '+e.part:'')+' '+nm2+': '+i)})});
+live.forEach(e=>{const f=e.f||{};const i=flatS(f.iss);if(i&&!flatS(f.mixi)&&!flatS(f.coati)&&!flatS(f.pressi))B.push('· '+(e.grp||e.title)+(e.part?' '+e.part:'')+': '+i)});
+S.ev.filter(e=>e.type==='meeting'&&e.date<=b).forEach(e=>pend(e).forEach(x=>{const d=(e.adt||{})[x];B.push('· 미결 액션: '+x+' ('+e.title+(d?', 기한 '+md(d):'')+')')}));
+S.td.filter(t=>!t.done).forEach(t=>B.push('· '+t.t+(t.due?(t.due<TD?' — 기한 '+md(t.due)+' 경과, 보완 필요':' — '+md(t.due)+'까지 진행 중'):' — 계속 진행')));
+L.push('■ 진행 이슈');L.push(B.length?B.slice(0,10).join('\n'):'· 특이 이슈 없음');
+let C=[];
+S.ev.filter(e=>e.date<=nb&&(e.end||e.date)>=na&&e.type!=='etc').sort((x,y)=>x.date.localeCompare(y.date)).forEach(e=>C.push('· '+md(e.date)+' '+(e.time?e.time+' ':'')+e.title+' — 예정'));
+runs.filter(e=>e.st!=='완료').forEach(e=>{const f=e.f||{};const nx=STEPS.filter(([k])=>(f[k+'st']||'')!=='완료').map(([k,nm2])=>nm2);
+ if(nx.length)C.push('· '+(e.grp||e.title)+(e.part?' '+e.part:'')+' — '+nx.join(' → ')+' 예정')});
+L.push('■ 차주 계획');L.push(C.length?C.slice(0,10).join('\n'):'· 해당 없음');
+return L.join('\n')}
+async function copyText(t){try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(t);return true}}catch(e_){}
+ try{const ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.top='-1000px';document.body.appendChild(ta);
+  ta.focus();ta.select();const ok=document.execCommand('copy');ta.remove();return !!ok}catch(e_){return false}}
+async function polishWk(text){const ctl=typeof AbortController!=='undefined'?new AbortController():null;
+ const tm=ctl?setTimeout(function(){try{ctl.abort()}catch(e_){}},25000):null;
+ try{const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'work_polish',kind:'wk',text:text}),signal:ctl?ctl.signal:undefined});
+  const j=await r.json();
+  if(j&&j.ok===true&&j.data&&j.data.text)return String(j.data.text).trim();
+  return ''}catch(e_){return ''}finally{if(tm)clearTimeout(tm)}}
+$('w_ai').onclick=async()=>{const b=$('w_ai'),o=b.textContent;const d=localWeekly();
+ $('wk').value=d;
+ const ok0=await copyText(d);
+ toast(ok0?'개조식 초안을 복사했어요 — AI가 다듬는 중…':'초안을 만들었어요 — 복사 버튼을 눌러 주세요');
+ b.disabled=true;b.textContent='✨ AI가 다듬는 중…';
+ const t=await polishWk(d);
+ b.disabled=false;b.textContent=o;
+ if(t){$('wk').value=t;const ok=await copyText(t);toast(ok?'AI 개조식 보고서를 복사했어요':'AI 보고서를 만들었어요 — 복사 버튼을 눌러 주세요')}
+ else toast('AI에 연결하지 못해 로컬 개조식 초안을 그대로 썼어요')};
 
 /* ---------------- 🔍 검색 */
 $('sq').addEventListener('input',e=>{Q=String(e.target.value||'').trim().toLowerCase();render()});
@@ -904,6 +1017,8 @@ $('rsave').onclick=()=>{if(!$('rt_t').value.trim()&&!$('rsum').value.trim()&&!$(
 
 /* ---------------- 공통 클릭·변경 */
 document.addEventListener('click',e=>{const t=e.target;
+const sp=t.closest?t.closest('.stp[data-st]'):null;
+if(sp){e.stopPropagation();e.preventDefault();cycleStep(sp.getAttribute('data-st'),sp.getAttribute('data-sk'));return}
 if(t.dataset.ng!==undefined){e.stopPropagation();newPart(t.dataset.ng,t.dataset.np);return}
 if(t.dataset.e){e.stopPropagation();openEv(t.dataset.e);return}
 const it=t.closest('[data-e]');if(it){openEv(it.dataset.e);return}
@@ -947,6 +1062,7 @@ function startApp(){
  if(started)return;started=true;
  applyTheme((function(){try{return localStorage.getItem('wd3.theme')||'sky'}catch(e){return 'sky'}})());
  $('lg').innerHTML=Object.values(TY).map(v=>'<span><i style="--c:'+v[1]+'"></i>'+v[0]+'</span>').join('');
+ document.querySelectorAll('#fbar .fchip').forEach(function(b){b.classList.toggle('on',b.getAttribute('data-pf')===PF)});
  $('f_y').innerHTML=Object.entries(TY).map(([k,v])=>'<option value="'+k+'">'+v[0]+'</option>').join('');
  $('f_y').onchange=tg;tg();
  let fu=null;try{fu=localStorage.getItem('wfit')}catch(e){}
@@ -960,4 +1076,5 @@ function startApp(){
 }
 try{if(sessionStorage.getItem('wd3.pin')==='1'){document.body.classList.remove('locked');startApp()}}catch(e){}
 })();
-</script></body></html>
+</script>
+</body></html>
