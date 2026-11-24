@@ -232,6 +232,23 @@
       var res = moodWithFutures(nq.price, fnum(nq.changePct));
       if (res) applied += moodDom(res.closeScore, res.nightScore, nq.price, fnum(nq.changePct), nq.live);
     }
+    // 애프터마켓 탭 '선물·글로벌' 요약도 같은 실측값으로
+    var afEl = document.getElementById('afFutText');
+    if (afEl) {
+      var seg = [];
+      function push(name, q) {
+        if (!q || fnum(q.price) === null) return;
+        var p = fnum(q.changePct);
+        seg.push(name + ' ' + q.price.toFixed(2) + (p === null ? '' : ' (' + (p > 0 ? '+' : '') + p.toFixed(2) + '%)') + (q.live ? ' 실시간' : ' ' + (q.badge || '마감')));
+      }
+      push('주간선물', fk.day && fk.day.ok ? fk.day : null);
+      push('야간선물', fk.night && fk.night.ok ? fk.night : null);
+      if (seg.length) {
+        var txt = seg.join(' · ');
+        if (afEl.textContent !== txt) afEl.textContent = txt;
+        applied += 1;
+      }
+    }
     return applied;
   }
 
