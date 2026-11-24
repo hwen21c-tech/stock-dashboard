@@ -422,6 +422,7 @@
   var state = {
     snap: null, score: null, busy: false, last: null, sigLabel: null, sigP: null, sigResolve: null, w52Seq: 0,
     seq: 0, w52pos: null, market: null, themeData: null, whyShown: 'skeleton', hist: null,
+    live: null, liveAt: 0, liveP: null,
     risk: { dart: null, krx: null, dartP: null, krxP: null, themeP: null, p52: null, pHist: null }
   };
 
@@ -697,6 +698,160 @@
 
   function apiQuery(){
     return apiBase() + '/api/stock-live';
+  }
+
+  /* ============================================================
+     🔍 테마주도주 상위 — 관제탑 실시간 API(/api/tabs-live)
+     · 정적 성적표(leaders)는 '마지막으로 저장한 날'의 값이라 11/20 처럼 며칠 전
+       주도주가 그대로 남는다. 그래서 화면은 tabs-live 의 지금 장중 테마 8개를
+       먼저 읽고, 그것이 비거나 실패할 때만 정적 JSON 으로 내려간다.
+     · 주도주 규칙(성적표 leaders 와 같은 잣대) —
+       ① 테마 강도(순위 = 대금 300억↑ 종목 평균 등락률) 순으로 테마를 돈다.
+       ② 그 테마 안에서 '실제로 오르고(changePct > 0) 거래대금 300억↑' 인 종목 중
+          등락률 1위 = 그 테마의 대장주. 같은 종목은 한 번만 올린다(중복 제거).
+       ③ 4종목을 채우고도 모자라면 남은 300억↑ 상승 종목을 등락률·대금 순으로 채운다.
+     · 값을 만들지 않는다 — 받은 changePct·거래대금만 쓰고, 없으면 그 칸을 비운다.
+     ============================================================ */
+  var LEADER_MIN_EOK = 300;      /* 테마 주도주 최소 거래대금(억) */
+  var LEADER_TOP = 4;            /* 상위 몇 종목 */
+  var LIVE_TTL_MS = 60000;       /* 60초 안에 받은 값은 다시 부르지 않는다 */
+  var LIVE_REFRESH_MS = 90000;   /* 장중에는 90초마다 갱신(화면이 보일 때만) */
+  var liveTimer = null;
+
+  function tabsApi(){ return apiBase() + '/api/tabs-live'; }
+
+  /* 거래대금(원) → 억. tabs-live 는 통합(KRX+NXT) value 를 우선 준다. */
+  function stockEok(s){
+    var v = n(s && s.value);
+    if (v == null) v = n(s && s.valueRegular);
+    if (v == null) v = n(s && s.valueTotal);
+    return v == null || v <= 0 ? null : v / 1e8;
+  }
+
+  function isRiser(s){
+    var p = n(s && s.changePct);
+    return p != null && p > 0 && !(s && s.missing);
+  }
+
+  function liveLeaders(j){
+    var themes = ((j && j.themes) || []).slice().sort(function(a, b){
+      var ra = n(a && a.rank), rb = n(b && b.rank);
+      return (ra == null ? 999 : ra) - (rb == null ? 999 : rb);
+    });
+    var seen = {}, out = [];
+    function push(s, t){
+      var code = String((s && s.code) || '');
+      if (!code || seen[code] || !isRiser(s)) return false;
+      var e = stockEok(s);
+      if (e == null || e < LEADER_MIN_EOK) return false;
+      seen[code] = 1;
+      out.push({
+        code: code, name: s.name, valueEok: e, changePct: n(s.changePct),
+        theme: (t && t.name) || '', themeRank: n(t && t.rank), upperLimit: !!s.upperLimit
+      });
+      return true;
+    }
+    /* ① 테마 강도 순 → 그 테마의 대장주(300억↑ 상승 중 등락률 1위) 하나씩 */
+    themes.forEach(function(t){
+      if (out.length >= LEADER_TOP) return;
+      var cands = ((t && t.stocks) || []).filter(function(s){
+        var e = stockEok(s);
+        return isRiser(s) && e != null && e >= LEADER_MIN_EOK;
+      }).sort(function(a, b){
+        return (n(b.changePct) || 0) - (n(a.changePct) || 0) || (stockEok(b) || 0) - (stockEok(a) || 0);
+      });
+      for (var i = 0; i < cands.length; i++){ if (push(cands[i], t)) break; }
+    });
+    /* ③ 모자라면 남은 300억↑ 상승 종목으로 채운다 */
+    if (out.length < LEADER_TOP){
+      var rest = [];
+      themes.forEach(function(t){
+        ((t && t.stocks) || []).forEach(function(s){ rest.push({ s: s, t: t }); });
+      });
+      rest.sort(function(a, b){
+        return (n(b.s.changePct) || 0) - (n(a.s.changePct) || 0) || (stockEok(b.s) || 0) - (stockEok(a.s) || 0);
+      });
+      for (var k = 0; k < rest.length && out.length < LEADER_TOP; k++) push(rest[k].s, rest[k].t);
+    }
+    return out;
+  }
+
+  /* 응답이 만들어진 한국시간 HH:MM (서버가 준 실측 시각) */
+  function liveStamp(j){
+    var s = String((j && j.generatedAtKst) || '').slice(0, 5);
+    if (/^\d{2}:\d{2}$/.test(s)) return s;
+    var g = j && j.generatedAt ? new Date(j.generatedAt) : null;
+    if (!g || !isFinite(g.getTime())) return '';
+    var k = new Date(g.getTime() + 9 * 3600 * 1000);
+    return ('0' + k.getUTCHours()).slice(-2) + ':' + ('0' + k.getUTCMinutes()).slice(-2);
+  }
+
+  /* 테마맵 타일용 짧은 이름 — '피지컬 AI/휴머노이드 로봇' → '피지컬 AI' */
+  function shortTheme(nm){
+    var s = String(nm == null ? '' : nm);
+    s = s.split('/')[0].replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
+    if (s.length > 10) s = s.slice(0, 10) + '…';
+    return s;
+  }
+
+  /* theme_map 실측이 막혔을 때 — tabs-live 의 지금 테마 8개로 타일을 그린다 */
+  function renderMapFromLive(){
+    var live = state.live;
+    if (!live || !(live.themes || []).length) return false;
+    var tiles = live.themes.map(function(t){
+      var eok = n(t.sumValue);
+      if (eok == null) eok = n(t.top4Sum);
+      var p = n(t.avgPct);
+      if (p == null) p = n(t.basisPct);
+      if (p == null) p = n(t.top4Avg);
+      return {
+        no: t.themeNo || ('se-' + (t.seRank || t.rank || '')),
+        name: t.name,
+        label: shortTheme(t.name),
+        avgPct: p,
+        valueEok: eok == null ? null : eok / 1e8,
+        stockCount: n(t.stockCount)
+      };
+    }).filter(function(t){ return t.name; });
+    if (!tiles.length) return false;
+    mapTiles = tiles;
+    renderThemeMap({ tiles: tiles, tradeDate: '', asOf: '실시간 ' + (live.kst || '') });
+    return true;
+  }
+
+  function scheduleLive(){
+    if (liveTimer){ clearTimeout(liveTimer); liveTimer = null; }
+    liveTimer = setTimeout(function(){
+      liveTimer = null;
+      if (document.visibilityState === 'hidden') return;        /* 화면이 꺼져 있으면 쉰다 */
+      if (state.live && state.live.marketStatus && state.live.marketStatus !== 'OPEN') return; /* 장이 끝났으면 더 부르지 않는다 */
+      loadLiveThemes().catch(function(){});
+    }, LIVE_REFRESH_MS);
+  }
+
+  function loadLiveThemes(){
+    var now = Date.now();
+    if (state.live && now - state.liveAt < LIVE_TTL_MS) return Promise.resolve(state.live);
+    if (state.liveP) return state.liveP;
+    state.liveP = fetchJson(tabsApi(), 16000).then(function(j){
+      state.liveP = null;
+      if (!j || !j.ok || !((j.themes || []).length)) throw new Error('tabs_live_empty');
+      state.live = {
+        at: Date.now(), kst: liveStamp(j), marketStatus: j.marketStatus || '',
+        sessionPhase: j.sessionPhase || '', themes: j.themes,
+        themeSeUpdatedAt: j.themeSeUpdatedAt || '', generatedAtLabel: j.generatedAtLabel || ''
+      };
+      state.liveAt = state.live.at;
+      chips();
+      if (!mapTiles.length) renderMapFromLive();
+      scheduleLive();
+      return state.live;
+    }).catch(function(){
+      state.liveP = null;
+      scheduleLive();   /* 실패해도 정적 폴백으로 화면은 그대로 — 90초 뒤 다시 시도 */
+      return null;
+    });
+    return state.liveP;
   }
 
   function checkStock(q){
@@ -1537,26 +1692,44 @@
   /* ---------- 거래대금 상위 종목 1클릭 ---------- */
   function chips(){
     var host = $('chips'); if (!host) return;
-    var list = [];
+    var list = [], liveOn = false, stamp = '', note = '';
+    /* ① 관제탑 실시간(장중) 주도주 — 있으면 이것이 먼저다 */
+    if (state.live && (state.live.themes || []).length){
+      list = liveLeaders(state.live);
+      if (list.length){
+        liveOn = true;
+        stamp = state.live.kst || '';
+        note = state.live.marketStatus === 'OPEN' ? '실시간 ' + stamp + ' 기준' : (stamp ? stamp + ' 기준' : '');
+      }
+    }
     var sc = state.score;
-    if (sc && (sc.leaders || []).length){
-      list = sc.leaders.slice(0, 4).map(function(x){
-        return { name: x.name, code: x.code, valueEok: x.valueEok, changePct: x.changePct, from: '성적표' };
-      });
-    } else if (state.snap && (state.snap.stocks || []).length){
-      /* 성적표 leaders가 비었을 때의 대체 경로 — 이때도 '오른 종목'만 올린다(하락 종목은 테마주도주가 아니다) */
-      list = state.snap.stocks.filter(function(s){ return (n(s.changePct) || 0) > 0; }).slice()
-        .sort(function(a, b){ return (n(b.valueEok) || 0) - (n(a.valueEok) || 0); })
-        .slice(0, 4)
-        .map(function(s){ return { name: s.name, code: s.code, valueEok: s.valueEok, changePct: s.changePct, from: '스냅샷' }; });
+    if (!liveOn){
+      /* ② 실시간이 비거나 실패했을 때만 — 마지막 저장본(정적 폴백) */
+      if (sc && (sc.leaders || []).length){
+        list = sc.leaders.slice(0, 4).map(function(x){
+          return { name: x.name, code: x.code, valueEok: x.valueEok, changePct: x.changePct, from: '성적표' };
+        });
+      } else if (state.snap && (state.snap.stocks || []).length){
+        /* 성적표 leaders가 비었을 때의 대체 경로 — 이때도 '오른 종목'만 올린다(하락 종목은 테마주도주가 아니다) */
+        list = state.snap.stocks.filter(function(s){ return (n(s.changePct) || 0) > 0; }).slice()
+          .sort(function(a, b){ return (n(b.valueEok) || 0) - (n(a.valueEok) || 0); })
+          .slice(0, 4)
+          .map(function(s){ return { name: s.name, code: s.code, valueEok: s.valueEok, changePct: s.changePct, from: '스냅샷' }; });
+      }
     }
     if (!list.length){ host.innerHTML = ''; $('chipHead').hidden = true; return; }
-    var date = (sc && sc.asOfTradingDay) || (state.snap && state.snap.tradeDate) || '';
     $('chipHead').hidden = false;
-    $('chipHead').innerHTML = '테마주도주 상위' + (date ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(date) + ' 기준</span>' : '');
+    if (liveOn){
+      $('chipHead').innerHTML = '테마주도주 상위' + (note ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(note) + '</span>' : '');
+    } else {
+      var date = (sc && sc.asOfTradingDay) || (state.snap && state.snap.tradeDate) || '';
+      $('chipHead').innerHTML = '테마주도주 상위' + (date ? ' <span style="font-weight:750;color:var(--mute)">· ' + esc(date) + ' 기준</span>' : '');
+    }
     host.innerHTML = list.map(function(x){
       var cls = dirClass(x.changePct);
-      return '<button class="chip" type="button" data-code="' + esc(x.code || x.name) + '" data-name="' + esc(x.name) + '">' +
+      var tip = x.theme ? (x.theme + (x.themeRank ? ' · 주도 테마 ' + x.themeRank + '위' : '') + ' 대장주') : '';
+      return '<button class="chip" type="button" data-code="' + esc(x.code || x.name) + '" data-name="' + esc(x.name) + '"' +
+        (tip ? ' title="' + esc(tip) + '"' : '') + '>' +
         '<b>' + esc(x.name) + '</b> <small>' + eok(x.valueEok) + ' · <span class="' + cls + '">' + pct(x.changePct) + '</span></small></button>';
     }).join('');
     Array.prototype.forEach.call(host.querySelectorAll('.chip'), function(btn){
@@ -1606,7 +1779,9 @@
       mapTiles = j.tiles || [];
       renderThemeMap(j);
     }).catch(function(){
-      /* 테마맵이 없어도 체커는 그대로 쓴다 — 조용히 숨긴다 */
+      /* theme_map 실측이 막히면 — tabs-live 로 받아 둔 지금 테마가 있으면 그것으로 그린다 */
+      if (renderMapFromLive()){ mapLoaded = true; return; }
+      /* 그것도 없으면 조용히 숨긴다 */
       mapLoaded = false;
       host.hidden = true;
       if (head) head.hidden = true;
@@ -1616,8 +1791,10 @@
     var host = $('themeMap'), basis = $('tmapBasis'), head = $('tmapHead');
     if (!host) return;
     if (basis){
-      var d = String(j.tradeDate || '');
-      basis.textContent = (d ? '직전 거래일 ' + d.slice(5).replace('-', '/') + ' · ' : '') + '타일 크기=거래대금';
+      var d = String(j.tradeDate || ''), asOf = String(j.asOf || '');
+      /* 서버가 '언제 값인지'(asOf)를 주면 그 시각을 그대로 적는다 — 장중 값에 '직전 거래일'이라 적지 않는다 */
+      basis.textContent = (asOf ? asOf + ' 기준 · '
+        : d ? '직전 거래일 ' + d.slice(5).replace('-', '/') + ' · ' : '') + '타일 크기=거래대금';
     }
     host.innerHTML = (j.tiles || []).map(function(t){
       var p = n(t.avgPct);
@@ -2441,7 +2618,14 @@
     var m2 = /[?&]code=([^&]+)/.exec(location.search);
     if (!pre && m2) pre = decodeURIComponent(m2[1]);
   } catch(e){ pre = ''; }
+  /* 실시간 주도주는 정적 성적표와 따로, 먼저 부른다(정적이 먼저 떠도 실시간이 오면 갈아 끼운다) */
+  loadLiveThemes().catch(function(){});
   loadScore().then(loadSnapshot).then(function(){ chips(); }).catch(function(){});
+  /* 폰 화면을 다시 켰을 때 — 1분 넘게 묵은 값이면 새로 읽는다 */
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState !== 'visible') return;
+    if (!state.live || Date.now() - state.liveAt > LIVE_TTL_MS) loadLiveThemes().catch(function(){});
+  });
   /* 🗺️ 테마맵 — 처음 한 번만 읽고, 접기/펼치기는 기억한다 */
   try { mapOpen = localStorage.getItem('foxsignal_checker_tmap') !== 'closed'; } catch(e){ mapOpen = true; }
   var tmapBtn = $('tmapToggle');
