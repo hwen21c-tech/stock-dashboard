@@ -429,6 +429,18 @@
     var fc = els.foot.querySelector('#sdmFootClose');
     if (fc) fc.addEventListener('click', close);
 
+    /* 실시간 조회로 막 올린 종목은 60봉만 들고 올 수 있다 — 모달이 250봉(1년) RN 차트를
+       보여 주도록, 봉이 모자랄 때만 /api/stock-chart 로 한 번 더 받아 합친다(실패해도 그대로). */
+    if (kind === 'rn' && s) {
+      var nCandles = (s.candles || []).length;
+      if (nCandles < 200 && window.LiveAPI && typeof window.LiveAPI.refreshStockData === 'function') {
+        try {
+          var pr = window.LiveAPI.refreshStockData(code);
+          if (pr && pr.then) pr.then(function () { redraw(); });
+        } catch (e) { /* */ }
+      }
+    }
+
     redraw();
     return true;
   }
