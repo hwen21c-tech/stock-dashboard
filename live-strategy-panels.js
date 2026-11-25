@@ -161,7 +161,7 @@
 
   function jbRow(c) {
     var L = c.live;
-    var track = c.track === 'shin' ? '신정재' : c.track === 'kang' ? '강창권' : '';
+    var track = c.track ? '신정재' : '';  /* 강창권 트랙은 2026-11-25 폐지(신정재 p1~p4만) */
     if (!L) return '<div style="font-size:11px;color:#94a3b8;padding:5px 8px;">' + esc(c.name) + ' — 실시간 시세 미수신</div>';
     var right =
       (track ? '<b style="color:#fbbf24;">' + track + '</b> · ' : '') +
