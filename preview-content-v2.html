@@ -4794,7 +4794,9 @@ a) 말투: "~했습니다" 대신 "~했죠", "~인데요", "이거 모르면", "
 b) hookTitle: 첫 1.5초 화면 절반을 채우는 대형 타이틀, 12자 이내. 비우면 실패다. 질문·숫자·반전 중 하나로. hook 문장을 그대로 줄이지 말고 화면용으로 다시 쓴다.
 c) highlightWords: 카라오케 자막에서 노랗게 칠할 단어 3~6개. 숫자·고유명사 위주, 조사 없이.
 d) bgmMood: news | calm | tension | upbeat 중 하나.${v3Num ? `
-e) 숫자: spoken 안의 숫자는 자막과 똑같이 숫자로 쓴다(예: "5,090", "3,400억"). 읽는 소리 변환은 합성 엔진이 알아서 하므로 한글로 풀어 쓰지 않는다.` : ''}` : '';
+e) 숫자: spoken 안의 숫자는 자막과 똑같이 숫자로 쓴다(예: "5,090", "3,400억"). 읽는 소리 변환은 합성 엔진이 알아서 하므로 한글로 풀어 쓰지 않는다.
+f) 화면=숫자, 나레이션=의미: 그래프·KPI가 이미 수치를 보여 주므로 spoken 에서 억·계약·퍼센트를 하나씩 낭독하지 않는다. 컷마다 '무슨 일이 있었고 → 그래서 시장·투자자에게 어떤 의미인지'를 45~60자 두 문장 안에 완결한다(예: "외국인은 현물을 팔고도 막판에 선물을 사자로 돌아섰습니다. 급락 베팅을 접은 숏커버, 하방 방어 신호입니다.").
+g) 시각 표기: '두 시 마흔'·'세 시 넉 분' 같은 순우리말 분을 쓰지 않고 '두 시 사십이 분'·'세 시 사 분'·'세 시 반'처럼 적는다. 24시간제 '열다섯 시'도 쓰지 않는다.` : ''}` : '';
   const duration = Math.min(90, Math.max(20, Number(b.durationSec) || 50));
   const src = s(b.sourceMaterial, 6000);
   const note = s(b.experienceNote, 1500);
@@ -19347,7 +19349,14 @@ var CSVoice = (function () {
      · 화면: 5.21% · 300억 · 740선 · 11:54  (자막은 c.text / c.tts 를 그대로 그린다)
      · 성우: 마이너스 오 점 이일 퍼센트 · 삼백억 · 칠백사십선 · 열한 시 오십사 분
      · 4,869.96 → 사천팔백육십구 점 구육 · 1,346.50원 → 천삼백사십육 원 오십 전 */
-  /* 시(時)는 고유어로 읽는다 — 11:54 → 열한 시 오십사 분 · 14:34 → 열네 시 삼십사 분 */
+  /* 시(時)는 고유어로 읽되, 12시간제 아나운서식으로 적는다 —
+     14:34 → 오후 두 시 삼십사 분 · 15:04 → 오후 세 시 사 분 · 15:30 → 오후 세 시 반
+     (순우리말 분 '마흔·넉'과 24시간제 '열네 시·열다섯 시'는 쓰지 않는다) */
+  function koClock(hh, mm) {
+    var ap = (hh >= 21 || hh === 0) ? '밤 ' : (hh >= 12 ? '오후 ' : '');
+    var h12 = hh % 12; if (!h12) h12 = 12;
+    return ap + koHour(h12) + ' 시' + (mm ? (mm === 30 ? ' 반' : ' ' + koInt(mm) + ' 분') : '');
+  }
   function koHour(h) {
     var low = ['한', '두', '세', '네', '다섯', '여섯', '일곱', '여덟', '아홉', '열', '열한', '열두'];
     var tee = ['열세', '열네', '열다섯', '열여섯', '열일곱', '열여덟', '열아홉'];
@@ -19368,16 +19377,23 @@ var CSVoice = (function () {
     });
     /* ⓪ 목록 번호('1. ' '2) ')는 읽지 않는다 — 문장만 남긴다 */
     s = s.replace(/(^|[\s.·])(\d{1,2})[.)]\s+/g, '$1');
-    /* ① 시각 — 11:54 → 열한 시 오십사 분 (15:30 → 열다섯 시 삼십 분) */
-    s = s.replace(/(\d{1,2}):(\d{2})/g, function (m, h, mi) {
+    /* ① 시각 — 14:34 → 오후 두 시 삼십사 분 · 15:30 → 오후 세 시 반 */
+    s = s.replace(/(\d{1,2}):(\d{2})/g, function (m, h, mi, off, all) {
       var hh = parseInt(h, 10), mm = parseInt(mi, 10);
       if (!(hh >= 0 && hh <= 24) || !(mm >= 0 && mm <= 59)) return m;
-      return koHour(hh) + ' 시' + (mm ? ' ' + koInt(mm) + ' 분' : '');
+      var pre = String(all).slice(Math.max(0, off - 4), off);
+      var txt = koClock(hh, mm);
+      if (/(오전|오후|밤|낮|새벽|아침|저녁)\s*$/.test(pre)) txt = txt.replace(/^(오후|밤) /, '');
+      return txt;
     });
     /* ①' '09시' → 아홉 시 */
-    s = s.replace(/(\d{1,2})\s*시(?![간])/g, function (m, h) {
+    s = s.replace(/(\d{1,2})\s*시(?![간])/g, function (m, h, off, all) {
       var hh = parseInt(h, 10);
-      return (hh >= 0 && hh <= 24) ? koHour(hh) + ' 시' : m;
+      if (!(hh >= 0 && hh <= 24)) return m;
+      var pre = String(all).slice(Math.max(0, off - 4), off);
+      var txt = koClock(hh, 0);
+      if (/(오전|오후|밤|낮|새벽|아침|저녁)\s*$/.test(pre)) txt = txt.replace(/^(오후|밤) /, '');
+      return txt;
     });
     /* ② 기호는 쉼으로 — TTS 가 괄호·가운뎃점·화살표를 글자로 읽지 않게 */
     s = s.replace(/[()\[\]{}]/g, ' ').replace(/[·•ㆍ]/g, ' ')
@@ -19891,7 +19907,7 @@ var CSVoice = (function () {
     title: { x: SAFE.x, y: 284, w: SAFE.w, h: 158 },   /* ② 53px 800 · 1.22 행간 — 상단 바와 16px 더 띄운다 */
     kpi:   { x: SAFE.x, y: 468, w: SAFE.w, h: 132 },   /* ② 제목보다 큰 78px 900 앵커 숫자(라벨·시각물과 안 겹치게) */
     vis:   { x: SAFE.x, y: 618, w: SAFE.w, h: 664 },
-    cap:   { x: SAFE.x, y: 1324, w: SAFE.w, h: 158 },
+    cap:   { x: SAFE.x, y: 1306, w: SAFE.w, h: 178 },     /* 11/25 — 3~4줄도 잘리지 않게 위로 18px 확장(시각물 밴드 1282 아래 유지) */
     foot:  { x: SAFE.x, y: 1490, w: SAFE.w, h: 34 },
     tick:  { y: 1780, h: 48 }
   };
@@ -19903,7 +19919,7 @@ var CSVoice = (function () {
     char:  { x: 676, y: 248, size: 264 },
     kpi:   { x: SAFE.x, y: 508, w: SAFE.w, h: 120 },
     vis:   { x: SAFE.x, y: 652, w: SAFE.w, h: 644 },
-    cap:   { x: SAFE.x, y: 1312, w: SAFE.w, h: 168 }
+    cap:   { x: SAFE.x, y: 1298, w: SAFE.w, h: 182 }
   };
   /* 헤드라인 자간 — 브라우저가 letterSpacing 을 지원하면 -1.5px, 아니면 무시(측정값도 같이 바뀐다) */
   function fxTight(ctx, on) {
@@ -20974,6 +20990,9 @@ var CSVoice = (function () {
     var tts = String((cut && cut.tts) || '').replace(/\s+/g, ' ').trim();
     var head = fxNorm(cut && cut.text);
     if (!tts) return '';
+    /* 11/25 — 나레이션은 '팩트 + 그래서 어떤 의미인지' 두 문장(≤60자)이 기본값.
+       한 문장만 골라 쓰면 의미 문장이 잘려 사라지므로, 짧으면 두 문장을 통째로 그린다. */
+    if (tts.length <= 62) return tts;
     var safe = tts.replace(/(\d)\.(\d)/g, '$1\u0001$2');
     var sents = safe.split(/[.。!?]/).map(function (s) { return s.replace(/\u0001/g, '.').trim().replace(/^[·,]\s*/, ''); })
       .filter(function (s) { return s.length >= 8; });
@@ -20991,6 +21010,8 @@ var CSVoice = (function () {
       if (/\d/.test(s)) sc += 3;
       if (s.length >= 12 && s.length <= 64) sc += 2;
       if (CAP_WARN.test(s) || CAP_UP.test(s)) sc += 1;
+      if (/의미|해석|신호|여지|방어|숏커버|심리|부담|기대|판단|대응|위험|기회|결과/.test(s)) sc += 2;   /* 11/25 — 의미·해석 문장 우선 */
+      if (s.length > 56) sc -= 1;                                                                  /* 너무 긴 문장은 잘릴 위험 */
       sc += i * .2;                            /* 뒤 문장(결론부)을 살짝 선호 */
       if (sc > bs) { bs = sc; best = s; }
     });
@@ -21439,8 +21460,10 @@ var CSVoice = (function () {
     var bf = fitText(ctx, ic.summary || '', { w: w - 66, h: 32, base: 21, min: 13, weight: 900, lh: 1.1 });
     txLine(ctx, bf.lines[0] || '', x + 34, y + 45, bf.font, '#FFFFFF', 'left', 'im-rot-banner-t');
     var colW = Math.round((w - 36 - 16) / 2), top = y + 86, colH = h - 104;
-    imGroupCol(ctx, ic['in'] || [], x + 18, top, colW, colH, '받는 쪽 (강세)', true);
-    imGroupCol(ctx, ic.out || [], x + 18 + colW + 16, top, colW, colH, '빠지는 쪽 (약세)', false);
+    /* 11/25 — 상단 제목·배너 화살표(빠짐 → 유입)와 같은 방향으로 통일:
+       왼쪽 = 빠지는 쪽(약세) · 오른쪽 = 받는 쪽(강세) */
+    imGroupCol(ctx, ic.out || [], x + 18, top, colW, colH, '빠지는 쪽 (약세)', false);
+    imGroupCol(ctx, ic['in'] || [], x + 18 + colW + 16, top, colW, colH, '받는 쪽 (강세)', true);
     return true;
   }
   function imList(ctx, items, x, y, w, h, head, bg, edge, col) {
@@ -21560,7 +21583,8 @@ var CSVoice = (function () {
     var textW = hero ? g.w : g.w - FX_STAMP - 28;
     var line = foxNarLine(cut);
     if (line) {
-      var fit = fitText(ctx, line, { w: textW, h: g.h - 12, base: 54, min: 26, weight: 800, lh: 1.24 });
+      /* 11/25 — 2줄에서 잘리던 자막: 밴드 높이에 맞춰 3~4줄까지 자동 축소, 말줄임 금지 */
+      var fit = fitText(ctx, line, { w: textW, h: g.h - 24, base: 52, min: 24, weight: 800, lh: 1.2 });
       var warn = foxTone(cut.text) === 'warn';
       panel(ctx, g.x, g.y + 4, 56, 7, 3.5, warn ? '#DC2626' : C.accent, null, 0, 'fx-cap-rule');
       var y0 = g.y + 18 + Math.max(0, (g.h - 24 - fit.height) / 2);
