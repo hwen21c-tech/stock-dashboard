@@ -21632,8 +21632,7 @@ var CSVoice = (function () {
     var a = Math.min(1, Math.max(0, (1.5 - left) / .24));
     if (a <= 0.01) return;
     var x = FXG.title.x, y = FXG.title.y, w = FXG.title.w;
-    /* 인포그래픽 톤 — 큰 빈 카드 대신 내용 높이에 맞춘 카드 */
-    var h = Math.min(FXG.vis.y + FXG.vis.h - FXG.title.y, 430);
+    var h = FXG.vis.y + FXG.vis.h - FXG.title.y;
     ctx.save();
     ctx.globalAlpha = a;
     ctx.shadowColor = 'rgba(16,32,47,.26)';
@@ -21656,7 +21655,9 @@ var CSVoice = (function () {
     txLine(ctx, 'youtube.com/@폭스시그널', x + 78, cy0 + 282, '800 26px ' + FF, FX.wine, 'left', 'fx-end-3');
     var fs = 320;
     drawFox(ctx, foxPoseOf(cut, 0), x + w - fs - 40, y + h - fs - 46, fs);
-    txLine(ctx, '폭스시그널 · 고밀도 리서치 노트 · 1080 × 1920', x + 78, y + h - 60,
+    var noteTxt = '폭스시그널 · 고밀도 리서치 노트 · 1080 × 1920';
+    ctx.font = '800 22px ' + FF;
+    txLine(ctx, trimTo(ctx, noteTxt, Math.max(120, w - 470)), x + 78, y + h - 60,
       '800 22px ' + FF, 'rgba(16,32,47,.38)', 'left', 'fx-end-note');
     ctx.restore();
   }
