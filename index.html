@@ -4673,7 +4673,7 @@
         네이버증권 실시간 체결 · 네이버 테마 랭킹 · 만쥬 매매법 팩트 결합
       </div>
     </div>
-    <div class="header-actions" style="display:flex; gap:6px; flex-wrap:wrap;">
+    <div class="header-actions sd-quickrow" id="sdQuickRow1" style="display:flex; gap:6px; flex-wrap:wrap; margin:0;">
       <button class="btn-action" style="background:#2a1215; color:#fda4af; border-color:#f43f5e; font-weight:800; cursor:pointer;" onclick="lockDashboard()" title="보안 잠금">🔒 잠금</button>
       <a href="checker.html" class="btn-action" style="background:#3b1220; color:#fde8c8; border-color:#c9a25e; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;" title="내 종목 수급·테마 1초 체커">🔍 1초 체커</a>
       <a href="deals.html" class="btn-action" style="background:#022c22; color:#6ee7b7; border-color:#10b981; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;">✈️ 특가 레이더</a>
@@ -4681,13 +4681,30 @@
       <a href="preview-content-v2.html" class="btn-action" style="background:#1b1234; color:#d8b4fe; border-color:#a855f7; font-weight:800; cursor:pointer; text-decoration:none; display:inline-flex; align-items:center;">✍️ 콘텐츠</a>
       <button class="btn-action" style="background:#1e1b4b; color:#c7d2fe; border-color:#6366f1; font-weight:800; cursor:pointer;" onclick="openPwaInstallGuide()">📲 앱 설치 가이드</button>
       <button class="btn-action" style="background:#06281e; color:#34d399; border-color:#10b981; font-weight:800; cursor:pointer;" onclick="openDartModal()">🛡️ DART 레이더</button>
-      <button class="btn-action" style="background:#0e2638; color:#38bdf8; border-color:#38bdf8; font-weight:800; cursor:pointer;" onclick="switchView('rnzone', null)">🎯 RN존 탭</button>
-      <button class="btn-action" style="background:#2a2113; color:#fbbf24; border-color:#f59e0b; font-weight:800; cursor:pointer;" onclick="switchView('jongbe', null)">🏆 종베 탭</button>
-      <button class="btn-action" style="background:#0284c7; color:#ffffff; border-color:#38bdf8; font-weight:800; box-shadow:0 2px 8px rgba(2,132,199,0.4); cursor:pointer;" onclick="openLiveBriefingModal()">📋 최근 동기화 브리핑</button>
+            <!-- 2026-11-26 사용자 요청: 퀵 1줄 — 브리핑 → 홍인기 → 비중법사 → 깡토 → 만쥬 → 신정재 → RN → 저장 → 보관함 -->
+      <button class="btn-action" style="background:#0284c7; color:#ffffff; border-color:#38bdf8; font-weight:800; box-shadow:0 2px 8px rgba(2,132,199,0.4); cursor:pointer;" onclick="openLiveBriefingModal()">⚡ 실시간 브리핑</button>
+      <button class="btn-action" data-quick="honginki" style="background:#1b1234; color:#d8b4fe; border-color:#a855f7; font-weight:800; cursor:pointer;" onclick="switchView('honginki', null)" title="홍인기 D+0·D+1·D+2">🎯 홍인기</button>
+      <button class="btn-action" data-quick="bijoong" style="background:#052e23; color:#6ee7b7; border-color:#34d399; font-weight:800; cursor:pointer;" onclick="switchView('bijoong', null)" title="비중법사 기준봉·1일차·4분할">📊 비중법사</button>
+      <button class="btn-action" data-quick="kkangto" style="background:#0c2a33; color:#67e8f9; border-color:#22d3ee; font-weight:800; cursor:pointer;" onclick="switchView('kkangto', null)" title="깡토 추세추종">📈 깡토</button>
+      <button class="btn-action" data-quick="manju" style="background:#2a1030; color:#f9a8d4; border-color:#ec4899; font-weight:800; cursor:pointer;" onclick="switchView('manju', null)" title="만쥬 매매법">🎯 만쥬</button>
+      <button class="btn-action" data-quick="jongbe" style="background:#2a2113; color:#fbbf24; border-color:#f59e0b; font-weight:800; cursor:pointer;" onclick="switchView('jongbe', null)" title="신정재 종가매매 4패턴·6대 팁">🏆 신정재</button>
+      <button class="btn-action" data-quick="rnzone" style="background:#0e2638; color:#38bdf8; border-color:#38bdf8; font-weight:800; cursor:pointer;" onclick="switchView('rnzone', null)" title="RN존(차트박사 21선)">🎯 RN</button>
       <button class="btn-action" style="color:#34d399; border-color:#059669;" onclick="saveTodayToStorage()">💾 오늘 저장</button>
       <button class="btn-action" style="color:#fbbf24; border-color:#b45309;" onclick="openHistoryModal()">📁 보관함</button>
     </div>
   </header>
+
+  <!-- 2026-11-26 사용자 요청: 퀵 2줄 — 나머지 화면 바로가기(가로 스크롤 탭 바 대신 여기서 한 번에) -->
+  <div class="header-actions sd-quickrow" id="sdQuickRow2" style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:0 0 8px 0;">
+    <button class="btn-action" data-quick="supply" style="background:#052e23; color:#6ee7b7; border-color:#10b981; font-weight:800; cursor:pointer;" onclick="switchView('supply', null)">💰 수급주도주</button>
+    <button class="btn-action" data-quick="aftermarket" style="background:#2a1a33; color:#c4b5fd; border-color:#8b5cf6; font-weight:800; cursor:pointer;" onclick="switchView('aftermarket', null)">🌙 애프터마켓</button>
+    <button class="btn-action" data-quick="analysis" style="background:#0c2a38; color:#7dd3fc; border-color:#0ea5e9; font-weight:800; cursor:pointer;" onclick="switchView('analysis', null)">📊 시장&amp;수급심층분석</button>
+    <button class="btn-action" data-quick="news" style="background:#2a2113; color:#fcd34d; border-color:#eab308; font-weight:800; cursor:pointer;" onclick="switchView('news', null)">📰 시간별 뉴스</button>
+    <button class="btn-action" data-quick="calendar" style="background:#122033; color:#93c5fd; border-color:#3b82f6; font-weight:800; cursor:pointer;" onclick="switchView('calendar', null)">📅 증시일정</button>
+    <button class="btn-action" data-quick="ipo" style="background:#0e2a2e; color:#67e8f9; border-color:#06b6d4; font-weight:800; cursor:pointer;" onclick="switchView('ipo', null)">🆕 신규상장</button>
+    <button class="btn-action" id="sdOhQuick" style="background:#2b1216; color:#fda4af; border-color:#fb7185; font-weight:800; cursor:pointer;" onclick="if(window.OhBadge&amp;&amp;window.OhBadge.toggleExclude){window.OhBadge.toggleExclude();}else{var t=document.getElementById('ohToggle');if(t)t.click();}" title="단기과열·시장경보 종목 흐리게 표시(켜기/끄기) — 탭 바의 '📈 과열 제외'와 같은 동작">🚫 과열제외</button>
+  </div>
+
 
   <!-- VIEW TABS (7 TABS IN EXACT REQUESTED ORDER) -->
   
@@ -20829,6 +20846,9 @@ window.BijoongTab = {
 <!-- /📊 비중법사 탭 엔진 END -->
   <script defer src="strategy-pins.js"></script>
   <script defer src="strat-card-mini.js"></script>
+  <script defer src="overheat-badge.js"></script>
+  <script defer src="strat-detail-modal.js"></script>
+  <script defer src="quick-tabs.js"></script>
   <script defer src="live-kkangto.js"></script>
   <script defer src="live-strategy-panels.js"></script>
 <script defer src="live-kis-supply.js"></script>
