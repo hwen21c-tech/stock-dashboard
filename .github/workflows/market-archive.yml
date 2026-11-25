@@ -1,0 +1,66 @@
+name: market-archive
+
+# 💾 관제탑 일별 아카이브 자동 저장 (정적 GitHub Pages 쪽) — 평일 장마감 뒤 2회
+#   16:10 KST → 07:10 UTC   (cron '10 7 * * 1-5')
+#   20:10 KST → 11:10 UTC   (cron '10 11 * * 1-5')
+#  sd_live 쪽 워크플로우와 같은 스크립트를 써서 deploy_repo/data/archives/ 를 갱신한다.
+#  (정적 관제탑 보관함도 같은 날짜 아카이브를 읽으므로 두 저장소를 각자 갱신한다.)
+
+on:
+  schedule:
+    - cron: '10 7 * * 1-5'
+    - cron: '10 11 * * 1-5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-archive-static
+  cancel-in-progress: false
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: deploy_repo
+          fetch-depth: 1
+
+      - name: 동적 관제탑 읽기용 클론
+        run: git clone --depth 1 https://github.com/hwen21c-tech/stock-dashboard-live.git sd_live
+
+      - name: 스크립트 배치
+        run: |
+          mkdir -p scripts
+          cp deploy_repo/scripts/automation/archive_daily_snapshot.py scripts/
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 아카이브 생성 (deploy_repo)
+        run: python3 scripts/archive_daily_snapshot.py --only deploy_repo
+
+      - name: 커밋·푸시 (deploy_repo → GitHub Pages)
+        working-directory: deploy_repo
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/archives
+          if git diff --cached --quiet; then
+            echo "변경 없음 — 커밋 생략"
+            exit 0
+          fi
+          DATE=$(TZ=Asia/Seoul date '+%Y-%m-%d')
+          STAMP=$(TZ=Asia/Seoul date '+%H:%M')
+          git commit -q -m "chore(보관함): ${DATE} 장마감 아카이브 ${STAMP} KST (정적)"
+          for i in 1 2 3; do
+            git pull --rebase --autostash -q origin main || true
+            if git push -q origin main; then echo "푸시 완료"; exit 0; fi
+            echo "푸시 재시도 $i"; sleep 8
+          done
+          echo "푸시 실패"; exit 1

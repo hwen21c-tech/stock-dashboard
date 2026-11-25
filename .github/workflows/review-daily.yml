@@ -1,0 +1,71 @@
+name: review-daily
+
+# 🍯 오늘의 체험단 아침 데이터 갱신 — 매일 06:50 KST (21:50 UTC 전날)
+#  10개 체험단 플랫폼을 다시 수집해 deploy_repo(정적 GitHub Pages)의
+#  data/revu-campaigns.json · data/revu-seen.json 을 갱신한다.
+#  서버 API가 필요 없으므로 Vercel(sd_live)에는 푸시하지 않는다.
+
+on:
+  schedule:
+    - cron: '50 21 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: review-daily
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 의존성 설치
+        run: pip install --quiet requests
+
+      - name: 체험단 수집
+        run: python3 scripts/automation/scan_review_campaigns.py --out data/revu-campaigns.json
+
+      - name: 커밋·푸시 (GitHub Pages 배포)
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/revu-campaigns.json data/revu-seen.json 2>/dev/null || git add data/revu-campaigns.json
+          if git diff --cached --quiet; then
+            echo "변경 없음 — 커밋 생략"
+            exit 0
+          fi
+          COUNT=$(python3 -c "import json;print(json.load(open('data/revu-campaigns.json'))['meta']['count'])")
+          STAMP=$(TZ=Asia/Seoul date '+%m-%d %H:%M')
+          git commit -q -m "chore(리뷰): 체험단 데이터 갱신 ${STAMP} KST — ${COUNT}건"
+          for i in 1 2 3; do
+            git pull --rebase --autostash -q origin main || true
+            if git push -q origin main; then echo "푸시 완료"; exit 0; fi
+            echo "푸시 재시도 $i"; sleep 8
+          done
+          echo "푸시 실패"; exit 1
+
+      - name: 배포 확인 (정적 주소의 collectedAt)
+        run: |
+          set -e
+          URL="https://hwen21c-tech.github.io/stock-dashboard/data/revu-campaigns.json"
+          LOCAL=$(python3 -c "import json;print(json.load(open('data/revu-campaigns.json'))['meta']['collectedAt'])")
+          for i in $(seq 1 10); do
+            CODE=$(curl -s -o /tmp/live.json -m 30 -w '%{http_code}' "$URL" || true)
+            LIVE=$(python3 -c "import json;print(json.load(open('/tmp/live.json'))['meta']['collectedAt'])" 2>/dev/null || echo none)
+            echo "  $CODE  live=$LIVE  local=$LOCAL"
+            if [ "$LIVE" = "$LOCAL" ]; then echo "배포 확인 완료"; exit 0; fi
+            sleep 20
+          done
+          echo "⚠️ 아직 이전 값이 보입니다(Pages 반영 지연 가능) — 커밋은 완료 상태입니다"

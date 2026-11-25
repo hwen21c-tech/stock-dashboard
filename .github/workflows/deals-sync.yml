@@ -1,0 +1,83 @@
+name: deals-sync
+
+# ✈️ 특가 레이더 정기 자동 동기화 (하루 3회)
+#   08:15 KST  → 23:15 UTC 전날  (cron '15 23 * * *')  + 추천샵 핫템 갱신
+#   10:25 KST  → 01:25 UTC       (cron '25 1 * * *')
+#   18:15 KST  → 09:15 UTC       (cron '15 9 * * *')   + 추천샵 핫템 갱신
+#  등록 상품을 카카오 예약하기 공개 API 로 재확인해 deals.html 배열을 교체하고
+#  정적 GitHub Pages 로만 배포한다(Vercel 빌드 한도 절약).
+
+on:
+  schedule:
+    - cron: '15 23 * * *'
+    - cron: '25 1 * * *'
+    - cron: '15 9 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deals-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: 의존성 설치
+        run: pip install --quiet requests esprima
+
+      - name: 지금 시각(KST)
+        id: kst
+        run: |
+          echo "hour=$(TZ=Asia/Seoul date +%H)" >> "$GITHUB_OUTPUT"
+          echo "stamp=$(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M')" >> "$GITHUB_OUTPUT"
+          echo "KST $(TZ=Asia/Seoul date '+%Y-%m-%d %H:%M')"
+
+      - name: 특가 검증·교체 (deals.html)
+        run: python3 scripts/automation/deals_refresh.py
+
+      - name: 추천샵 핫템 실측 갱신 (08:15 · 18:15 회차만)
+        if: steps.kst.outputs.hour == '08' || steps.kst.outputs.hour == '18'
+        continue-on-error: true
+        run: python3 scripts/automation/fetch_hot_items.py
+
+      - name: 커밋·푸시 (GitHub Pages 배포)
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deals.html data/latest_scanned_deals.json data/hot-items-latest.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "변경 없음 — 커밋 생략"
+            exit 0
+          fi
+          git commit -q -m "chore(deals): 정기 스캔 동기화 ${{ steps.kst.outputs.stamp }} KST"
+          for i in 1 2 3; do
+            git pull --rebase --autostash -q origin main || true
+            if git push -q origin main; then echo "푸시 완료"; exit 0; fi
+            echo "푸시 재시도 $i"; sleep 8
+          done
+          echo "푸시 실패"; exit 1
+
+      - name: 배포 확인 (deals.html)
+        run: |
+          set -e
+          URL="https://hwen21c-tech.github.io/stock-dashboard/deals.html"
+          for i in $(seq 1 6); do
+            CODE=$(curl -s -o /dev/null -m 30 -w '%{http_code}' "$URL" || true)
+            echo "  $CODE $URL"
+            if [ "$CODE" = "200" ]; then exit 0; fi
+            sleep 20
+          done
+          echo "⚠️ 배포 주소가 200 이 아닙니다 — 커밋은 완료 상태이니 Pages 상태를 확인하세요"
