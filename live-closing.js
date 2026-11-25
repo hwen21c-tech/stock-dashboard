@@ -576,18 +576,13 @@
     var matDart = p.materialDart || null;
     var materialBlock =
       '<div style="margin:4px 0 2px; color:#fcd34d; font-weight:700;">재료 · 이슈</div>' +
-      (p.materialTag ? line('뱃지', p.materialTag) : '') +
       line('재료', p.materialLine || '재료 미확인') +
       (matNews && matNews.url
         ? '<div style="margin:3px 0;"><span style="color:#a5b4fc; font-weight:700;">근거</span> ' +
-          '<a href="' + esc(matNews.url) + '" target="_blank" rel="noopener" style="color:#93c5fd;">' + esc(matNews.title) + '</a>' +
+          '<a href="' + esc(matNews.url) + '" target="_blank" rel="noopener" style="color:#93c5fd;">기사 원문 보기</a>' +
           (matNews.press ? ' <span style="color:#94a3b8;">(' + esc(matNews.press) + (matNews.time ? ' ' + esc(matNews.time) : '') + ')</span>' : '') +
           '</div>'
-        : (matNews
-          ? '<div style="margin:3px 0;"><span style="color:#a5b4fc; font-weight:700;">근거</span> ' + esc(matNews.title) +
-            (matNews.press ? ' <span style="color:#94a3b8;">(' + esc(matNews.press) + (matNews.time ? ' ' + esc(matNews.time) : '') + ')</span>' : '') +
-            '</div>'
-          : '')) +
+        : '') +
       (matDart
         ? '<div style="margin:3px 0;"><span style="color:#a5b4fc; font-weight:700;">공시</span> ' + esc(matDart.label) +
           ' — ' + esc(matDart.reportNm || '') +
