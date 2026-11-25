@@ -62,13 +62,67 @@
     return '#94a3b8';
   }
 
-  function box(title, sub, accent, body) {
+  /* ---------- 상자 접기/펼치기 (11/26 · 동적 live-api.js 와 같은 규격/같은 저장 키) ----------
+   *  · 헤더 오른쪽 [접기 ▾] / [펼치기 ▸] 하나. 기본 펼침.
+   *  · 접힘은 localStorage(sd_strat_box_fold_v1)에 남겨 30초 새로고침·페이지 재방문 뒤에도 유지.
+   *  · 접어도 카드·차트는 그대로 — 상자 본문만 숨긴다. 400px에서 제목은 한 줄 말줌임. */
+  var BOX_FOLD_STORE = 'sd_strat_box_fold_v1';
+
+  function folds() {
+    try {
+      var raw = window.localStorage ? window.localStorage.getItem(BOX_FOLD_STORE) : null;
+      var o = raw ? JSON.parse(raw) : {};
+      return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {};
+    } catch (e) { return {}; }
+  }
+
+  function collapsed(key) {
+    return key ? Boolean(folds()[key]) : false;
+  }
+
+  function setCollapsed(key, on) {
+    if (!key) return;
+    var all = folds();
+    if (on) all[key] = 1; else delete all[key];
+    try { if (window.localStorage) window.localStorage.setItem(BOX_FOLD_STORE, JSON.stringify(all)); } catch (e) { /* 저장 실패 — 이번 화면에서만 */ }
+  }
+
+  function toggle(key) {
+    var next = !collapsed(key);
+    setCollapsed(key, next);
+    Array.prototype.forEach.call(document.querySelectorAll('[data-lsp-box="' + key + '"]'), function (el) {
+      el.style.display = next ? 'none' : 'block';
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-lsp-boxtog="' + key + '"]'), function (btn) {
+      btn.textContent = next ? '펼치기 ▸' : '접기 ▾';
+      btn.setAttribute('aria-expanded', next ? 'false' : 'true');
+      btn.title = next ? '이 판정 상자를 펼칩니다' : '이 판정 상자를 접습니다(접어도 아래 종목 카드·차트는 그대로)';
+    });
+    return next;
+  }
+  window.LiveStrategyPanels = window.LiveStrategyPanels || {};
+  window.LiveStrategyPanels.boxToggle = toggle;
+
+  function toggleBtn(key, accent, isCollapsed) {
+    if (!key) return '';
+    return '<button type="button" data-lsp-boxtog="' + esc(key) + '" aria-expanded="' + (isCollapsed ? 'false' : 'true') + '"' +
+      ' title="' + (isCollapsed ? '이 판정 상자를 펼칩니다' : '이 판정 상자를 접습니다(접어도 아래 종목 카드·차트는 그대로)') + '"' +
+      ' onclick="' + esc("if(window.LiveStrategyPanels&&LiveStrategyPanels.boxToggle){LiveStrategyPanels.boxToggle('" + key + "')}") + '"' +
+      ' style="flex:0 0 auto;padding:3px 9px;border-radius:6px;background:rgba(148,163,184,0.10);border:1px solid ' + accent +
+      ';color:' + accent + ';font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap;line-height:1.5;">' +
+      (isCollapsed ? '펼치기 ▸' : '접기 ▾') + '</button>';
+  }
+
+  function box(title, sub, accent, body, foldKey) {
+    var isCollapsed = collapsed(foldKey);
     return (
       '<div style="background:#0b1220;border:1px solid ' + accent + ';border-radius:10px;padding:10px 11px;margin:10px 0;">' +
-      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;">' +
-      '<span style="font-size:12px;font-weight:800;color:' + accent + ';">' + title + '</span>' +
-      '<span style="font-size:10px;color:#94a3b8;font-weight:700;">' + sub + '</span>' +
-      '</div>' + body + '</div>'
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:nowrap;">' +
+      '<span style="font-size:12px;font-weight:800;color:' + accent + ';min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + title + '</span>' +
+      toggleBtn(foldKey, accent, isCollapsed) +
+      '</div>' +
+      '<div style="font-size:10px;color:#94a3b8;font-weight:700;margin-top:2px;line-height:1.4;">' + sub + '</div>' +
+      '<div data-lsp-box="' + esc(foldKey || '') + '" style="display:' + (isCollapsed ? 'none' : 'block') + ';">' + body + '</div></div>'
     );
   }
 
@@ -129,13 +183,13 @@
     return row(c, L, 'rnzone', right);
   }
 
-  function panel(sec, title, accent, rowFn) {
+  function panel(sec, title, accent, rowFn, foldKey) {
     if (!sec || !sec.cards || !sec.cards.length) return null;
     var head =
       '<div style="font-size:10px;color:#94a3b8;margin:3px 0 6px;line-height:1.5;">' +
       '기준 ' + esc(sec.basisLabel || sec.basisDate || '—') + ' · 오늘 <b style="color:#e2e8f0;">' + esc(sec.dayLabel || '—') + '</b>' +
       (sec.basisStale ? ' <span style="color:#fbbf24;font-weight:800;">⚠️ 재스캔 필요</span>' : '') + '</div>';
-    return box(title, '실시간 ' + (sec.live || 0) + '/' + (sec.total || 0) + '종목', accent, head + sec.cards.map(rowFn).join(''));
+    return box(title, '실시간 ' + (sec.live || 0) + '/' + (sec.total || 0) + '종목', accent, head + sec.cards.map(rowFn).join(''), foldKey);
   }
 
   function host(tabId, hostId) {
@@ -192,9 +246,9 @@
         host('tabKkangto', 'stratLiveKkangtoHost');
         host('tabJongbe', 'stratLiveJongbeHost');
         host('tabRnzone', 'stratLiveRnzoneHost');
-        applied += paint('stratLiveKkangtoHost', panel(sl.kkangto, '⚡ 깡토 추세추종 · 실시간 조건 판정', '#38bdf8', kkRow));
-        applied += paint('stratLiveJongbeHost', panel(sl.jongbe, '💪 종가베팅 마스터 · 실시간 조건 판정', '#fbbf24', jbRow));
-        applied += paint('stratLiveRnzoneHost', panel(sl.rnzone, '🎯 RN존 · 실시간 구간 판정', '#f472b6', rnRow));
+        applied += paint('stratLiveKkangtoHost', panel(sl.kkangto, '⚡ 깡토 추세추종 · 실시간 조건 판정', '#38bdf8', kkRow, 'kkangto'));
+        applied += paint('stratLiveJongbeHost', panel(sl.jongbe, '💪 종가베팅 마스터 · 실시간 조건 판정', '#fbbf24', jbRow, 'jongbe'));
+        applied += paint('stratLiveRnzoneHost', panel(sl.rnzone, '🎯 RN존 · 실시간 구간 판정', '#f472b6', rnRow, 'rnzone'));
         lastAt = Date.now();
         return applied;
       })
@@ -222,5 +276,8 @@
     if (!document.hidden) tick();
   });
 
-  window.LiveStrategyPanels = { load: load, refresh: load };
+  window.LiveStrategyPanels = window.LiveStrategyPanels || {};
+  window.LiveStrategyPanels.load = load;
+  window.LiveStrategyPanels.refresh = load;
+  window.LiveStrategyPanels.boxToggle = toggle;
 })();

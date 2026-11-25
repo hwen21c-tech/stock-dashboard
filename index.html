@@ -3363,6 +3363,75 @@
       .idxf-sup{margin-left:36px;}
     }
   </style>
+<style id="stratUnifyCss">
+/* ===== 전략 탭 공통 카드 양식 (2026-11-26) — RN존 · 신정재를 비중법사·홍인기·깡토·만쥬와 같은 흐름으로 =====
+   흐름: ① 헤더(종목명·코드·상태 뱃지)  ② 가격/등락률  ③ 대금·지표 줄
+         ④ 카드 안 일봉 미니 차트(기준선) + 캡션  ⑤ 타점 요약 박스  ⑥ 근거 한 줄
+   · 각 탭의 기존 id/class(data-code, .stock-card, .active)는 그대로 두어 핀 고정·관심종목·모달이 계속 동작한다.
+   · 폭 400px 1열 / 560px 이상 2열. */
+.su-grid { display: grid; grid-template-columns: 1fr; gap: 8px; }
+@media (min-width: 560px) { .su-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.su-card { display: flex; flex-direction: column; gap: 5px; min-width: 0; position: relative; }
+.su-top { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; }
+.su-nm { font-size: 12.5px; font-weight: 800; color: #e2e8f0; min-width: 0; overflow-wrap: anywhere; }
+.su-cd { font-size: 9.5px; color: #64748b; font-weight: 700; margin-left: 4px; }
+.su-badge { font-size: 9.5px; font-weight: 800; padding: 1px 6px; border-radius: 5px; white-space: nowrap; border: 1px solid transparent; }
+.su-px { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.su-px .p { font-size: 15px; font-weight: 900; color: #fff; line-height: 1.15; }
+.su-px .c { font-size: 11.5px; font-weight: 800; }
+.su-px .l { margin-left: auto; font-size: 9.5px; color: #94a3b8; font-weight: 700; white-space: nowrap; }
+.su-rows { display: flex; flex-direction: column; gap: 1px; }
+.su-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 10px; line-height: 1.5; color: #94a3b8; }
+.su-row .k { color: #94a3b8; white-space: nowrap; }
+.su-row .v { color: #e2e8f0; font-weight: 800; text-align: right; }
+.su-mini { width: 100%; height: 96px; display: block; border-radius: 6px; background: #070c14; margin-top: 1px; }
+.su-cap { display: flex; justify-content: space-between; gap: 6px; font-size: 9px; color: #64748b; line-height: 1.4; }
+.su-cap .tap { color: #7dd3fc; font-weight: 800; }
+.su-plan { border: 1px solid rgba(56,189,248,0.28); background: rgba(56,189,248,0.06); border-radius: 7px; padding: 5px 7px; display: flex; flex-direction: column; gap: 2px; }
+.su-plan .hd { font-size: 9.5px; font-weight: 800; color: #7dd3fc; }
+.su-plan .r { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; line-height: 1.45; }
+.su-plan .r .k { color: #94a3b8; white-space: nowrap; }
+.su-plan .r .v { font-weight: 800; text-align: right; }
+.su-reason { font-size: 9.8px; color: #94a3b8; line-height: 1.45; overflow-wrap: anywhere; }
+.su-tagline { font-size: 9.5px; color: #64748b; line-height: 1.4; }
+/* 차트 패널 헤더·범례 — RN존/신정재가 같은 모양이 되도록 공통 규격 */
+.su-chart-legend { display: flex; flex-wrap: wrap; gap: 5px 10px; align-items: center; font-size: 9.5px; color: #94a3b8; font-weight: 700; margin: 2px 0 6px; }
+.su-chart-legend .it { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.su-chart-legend .dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
+.su-chart-legend .dash { width: 12px; height: 0; border-top: 2px dashed currentColor; display: inline-block; }
+.su-sec-h { display: flex; align-items: center; justify-content: space-between; gap: 6px; flex-wrap: wrap; margin: 2px 0 6px; }
+.su-sec-t { font-size: 12px; font-weight: 800; color: #e2e8f0; }
+.su-sec-s { font-size: 9.8px; color: #94a3b8; font-weight: 700; }
+</style>
+<style id="stratUnifyCss2">
+/* ===== 전략 탭 배열 통일 (2026-11-26) =====
+   RN존 · 신정재 모두 [실시간 판정 박스] → [종목 카드 그리드(카드 안 미니 차트)] → [선택 종목 큰 차트] → [원칙·도해].
+   · 400px 1열 / 560px 이상 2열. 카드 그리드가 먼저 오고 큰 차트가 아래로 내려간다.
+   · 기존 id·class·onclick 은 그대로 — 배열(order)만 바꾼다. */
+#tabRnzone .dashboard-grid { display: flex; flex-direction: column; gap: 12px; }
+#tabRnzone .dashboard-grid > .stocks-section { order: 1; }
+#tabRnzone .dashboard-grid > .chart-section { order: 2; }
+#tabRnzone .stock-list-grid { display: grid; grid-template-columns: 1fr; gap: 8px; max-height: none; overflow: visible; padding-right: 0; }
+@media (min-width: 560px) { #tabRnzone .stock-list-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+#tabRnzone .stock-card.su-card { padding: 9px 10px; }
+
+#tabJongbe .main-layout { display: flex; flex-direction: column; gap: 12px; }
+#tabJongbe .main-layout > .list-panel { order: 1; }
+#tabJongbe .main-layout > .chart-panel { order: 2; }
+#tabJongbe .stock-list { display: grid; grid-template-columns: 1fr; gap: 8px; max-height: none; overflow: visible; padding-right: 0; }
+@media (min-width: 560px) { #tabJongbe .stock-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+#tabJongbe .stock-card.su-card { padding: 9px 10px; gap: 5px; }
+#tabJongbe .stock-card:hover { transform: none; }
+
+/* 카드 안 미니 차트가 핀 버튼(.sp-tools)에 가리지 않도록 */
+.su-card .sp-tools { position: relative; z-index: 2; }
+.su-card canvas.su-mini { pointer-events: none; }
+</style>
+<style id="jbDiagramNoteCss">
+.jb-dg-mini-note { margin-top: 5px; font-size: 10px; line-height: 1.5; color: #cbd5e1; font-weight: 700;
+  background: rgba(148,163,184,0.07); border: 1px dashed rgba(148,163,184,0.28); border-radius: 6px; padding: 5px 7px; }
+.jb-dg-mini-note b { color: #e2e8f0; }
+</style>
 </head>
 <body>
 <style id="ucxStyle">
@@ -10528,56 +10597,8 @@
     </div>
   </div><!-- TAB: RN ZONE FACT CHART (21 RN LINES & 1+2 AVERAGE PRICE) -->
   <div id="tabRnzone" style="display: none; padding-top: 10px;">
-    
 
-    <!-- 1. 상단: RN존 5대 실전 원칙 -->
-    <div class="principles-box">
-        <div class="section-title">
-            <span>📋 RN존 실전 매매 5대 절대 원칙 (성경호 차트박사 공식)</span>
-            
-        </div>
-        <div class="principles-grid">
-            <div class="principle-item">
-                <div class="principle-tag"><span>1️⃣</span> 매수 대상 조건</div>
-                <div class="principle-desc">
-                    • <span class="highlight">시총 10조+ 우량주</span> or 3천억~10조 중 <span class="highlight">일 대금 1,500억+</span><br>
-                    • 주가가 <span class="highlight">상단 RN선(+4%)에 반드시 터치</span>해야 발동
-                </div>
-            </div>
-            <div class="principle-item">
-                <div class="principle-tag"><span>2️⃣</span> 매수 타점 계산</div>
-                <div class="principle-desc">
-                    • 상단선 터치 후 하단 RN선으로 하락 시 진입<br>
-                    • <span class="highlight">1차 매수가: 하단 RN선 기준 +4% 이내</span><br>
-                    • 2차 매수가: <span class="highlight">1차 매수가 대비 정확히 -20%</span>
-                </div>
-            </div>
-            <div class="principle-item">
-                <div class="principle-tag"><span>3️⃣</span> 1:2 분할 비중</div>
-                <div class="principle-desc">
-                    • <span class="highlight">1차 매수: 전체 비중의 5% ~ 10%</span><br>
-                    • <span class="highlight">2차 매수: 1차의 2배수인 10% ~ 20%</span><br>
-                    • 45일 내 -20% 도달 시 2차 투입, 평단 급락
-                </div>
-            </div>
-            <div class="principle-item">
-                <div class="principle-tag"><span>4️⃣</span> 보유 기간 & 손절</div>
-                <div class="principle-desc">
-                    • 목표 기간: <span class="highlight">보유 2개월 ~ 최장 3개월(90일)</span><br>
-                    • 3개월 내 미반등 시 <span class="highlight">기계적 기간 정리 (-5~7%)</span>
-                </div>
-            </div>
-            <div class="principle-item">
-                <div class="principle-tag"><span>5️⃣</span> 목표 수익 & 유의점</div>
-                <div class="principle-desc">
-                    • <span class="highlight">공식 익절: +7% ~ +20% 분할 매도</span><br>
-                    • 동일 테마 2종목 동시 매수 금지 / 악재 뉴스 필터
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 2. 중앙 & 하단 2단 그리드 (차트뷰 & 3단계 종목리스트) -->
+<!-- 2. 중앙 & 하단 2단 그리드 (차트뷰 & 3단계 종목리스트) -->
     <div class="dashboard-grid">
 
         <!-- 좌측: 선택 종목 인터랙티브 캔들 차트 (확대/축소/팬) -->
@@ -10601,6 +10622,20 @@
                 <div class="status-chip"><span>2차 분할(-20%):</span> <span id="barBuy2" style="color: #ef4444;">124,800원</span></div>
                 <div class="status-chip"><span>목표가(+7~20%):</span> <span id="barTarget" style="color: #a855f7;">166,900 ~ 187,200원</span></div>
                 <div class="status-chip" style="background: rgba(56, 189, 248, 0.12); padding: 2px 8px; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.35);"><span style="color: #38bdf8; font-weight: 700;">1+2차 평단:</span> <span id="barAvgBuy" style="color: #38bdf8; font-weight: 800;">135,200원</span></div>
+            </div>
+
+            <!-- 공통 양식: 섹션 헤더 + 범례 (비중법사·홍인기·깡토·만쥬 차트와 같은 규격) -->
+            <div class="su-sec-h">
+                <span class="su-sec-t">📈 선택 종목 RN존 차트</span>
+                <span class="su-sec-s">카드를 누르면 이 차트가 그 종목으로 바뀝니다</span>
+            </div>
+            <div class="su-chart-legend">
+                <span class="it" style="color:#f59e0b;"><span class="dash"></span>상단 RN</span>
+                <span class="it" style="color:#38bdf8;"><span class="dash"></span>하단 RN</span>
+                <span class="it" style="color:#94a3b8;"><span class="dash"></span>중간 보조(비공식)</span>
+                <span class="it" style="color:#22c55e;"><span class="dash"></span>1차 매수(+4%)</span>
+                <span class="it" style="color:#ef4444;"><span class="dash"></span>2차 분할(-20%)</span>
+                <span class="it" style="color:#a855f7;"><span class="dash"></span>목표(+7~20%)</span>
             </div>
 
             <!-- 차트 툴바 & 십자선 툴팁 -->
@@ -10689,7 +10724,53 @@
 
     </div>
 
-    
+<!-- 3. 하단: RN존 5대 실전 원칙 (카드·차트 아래) -->
+    <div class="principles-box">
+        <div class="section-title">
+            <span>📋 RN존 실전 매매 5대 절대 원칙 (성경호 차트박사 공식)</span>
+            
+        </div>
+        <div class="principles-grid">
+            <div class="principle-item">
+                <div class="principle-tag"><span>1️⃣</span> 매수 대상 조건</div>
+                <div class="principle-desc">
+                    • <span class="highlight">시총 10조+ 우량주</span> or 3천억~10조 중 <span class="highlight">일 대금 1,500억+</span><br>
+                    • 주가가 <span class="highlight">상단 RN선(+4%)에 반드시 터치</span>해야 발동
+                </div>
+            </div>
+            <div class="principle-item">
+                <div class="principle-tag"><span>2️⃣</span> 매수 타점 계산</div>
+                <div class="principle-desc">
+                    • 상단선 터치 후 하단 RN선으로 하락 시 진입<br>
+                    • <span class="highlight">1차 매수가: 하단 RN선 기준 +4% 이내</span><br>
+                    • 2차 매수가: <span class="highlight">1차 매수가 대비 정확히 -20%</span>
+                </div>
+            </div>
+            <div class="principle-item">
+                <div class="principle-tag"><span>3️⃣</span> 1:2 분할 비중</div>
+                <div class="principle-desc">
+                    • <span class="highlight">1차 매수: 전체 비중의 5% ~ 10%</span><br>
+                    • <span class="highlight">2차 매수: 1차의 2배수인 10% ~ 20%</span><br>
+                    • 45일 내 -20% 도달 시 2차 투입, 평단 급락
+                </div>
+            </div>
+            <div class="principle-item">
+                <div class="principle-tag"><span>4️⃣</span> 보유 기간 & 손절</div>
+                <div class="principle-desc">
+                    • 목표 기간: <span class="highlight">보유 2개월 ~ 최장 3개월(90일)</span><br>
+                    • 3개월 내 미반등 시 <span class="highlight">기계적 기간 정리 (-5~7%)</span>
+                </div>
+            </div>
+            <div class="principle-item">
+                <div class="principle-tag"><span>5️⃣</span> 목표 수익 & 유의점</div>
+                <div class="principle-desc">
+                    • <span class="highlight">공식 익절: +7% ~ +20% 분할 매도</span><br>
+                    • 동일 테마 2종목 동시 매수 금지 / 악재 뉴스 필터
+                </div>
+            </div>
+        </div>
+    </div>
+
   </div>
 
 
@@ -10718,197 +10799,7 @@
     <!-- DART 실시간 공시 목록 (/api/dart-live · DART_API_KEY 설정 시 채워짐) -->
     <div id="dartLiveList" style="margin: -4px 0 12px 0;"></div>
 
-    <!-- 신정재 4대 패턴 -->
-    <section class="strategy-grid" id="jbPatternGrid">
-      <div class="strategy-card" style="border-top:3px solid #f59e0b;">
-        <div class="strat-header">
-          <h3 style="color:#fbbf24;">① 위꼬리-위꼬리-깔끔양봉</h3>
-          <span class="pill" style="background:rgba(245,158,11,0.15); color:#fbbf24;">초단기 종베</span>
-        </div>
-        <ul class="strat-rules">
-          <li><span class="num">1.</span><span class="jb-li-txt"> 앞선 캔들이 <b>윗꼬리</b>로 악성 매물대를 두 번 이상 소화</span></li>
-          <li><span class="num">2.</span><span class="jb-li-txt"> 전고점 바로 아래에서 <b>윗꼬리 없는 깔끔한 양봉</b>으로 마감</span></li>
-          <li><span class="num">3.</span><span class="jb-li-txt"> 15:18~15:20 매수 → 익일 09:05 전 전량 청산</span></li>
-        </ul>
-        <div class="jb-scan-note">스캔: 윗꼬리 1.2% 이내 양봉 · 최근 5봉 중 윗꼬리 소화 2봉 이상 · 120일 고점 8% 이내 · 대금 300억↑</div>
-      </div>
-      <div class="strategy-card" style="border-top:3px solid #38bdf8;">
-        <div class="strat-header">
-          <h3 style="color:#38bdf8;">② 음봉 후 5일선 지지 턴</h3>
-          <span class="pill" style="background:rgba(56,189,248,0.15); color:#38bdf8;">초단기 종베</span>
-        </div>
-        <ul class="strat-rules">
-          <li><span class="num">1.</span><span class="jb-li-txt"> '끼' 있는 종목이 <b>대량 거래 음봉</b>을 맞고도</span></li>
-          <li><span class="num">2.</span><span class="jb-li-txt"> <b>5일선을 깨지 않고 버틴 뒤</b> 다시 윗꼬리 없는 양봉으로 턴</span></li>
-          <li><span class="num">3.</span><span class="jb-li-txt"> 5일선을 깨면 종베는 즉시 접는다</span></li>
-        </ul>
-        <div class="jb-scan-note">스캔: 10봉 내 20일 평균 거래량 1.5배↑ 음봉 · 이후 종가 5일선 위 유지 · 90거래일 '끼' 1회↑</div>
-      </div>
-      <div class="strategy-card" style="border-top:3px solid #a855f7;">
-        <div class="strat-header">
-          <h3 style="color:#c084fc;">③ 거래량 마른 깔끔 양봉</h3>
-          <span class="pill" style="background:rgba(168,85,247,0.15); color:#c084fc;">매물대 소화</span>
-        </div>
-        <ul class="strat-rules">
-          <li><span class="num">1.</span><span class="jb-li-txt"> 대량 거래 뒤 윗꼬리로 <b>탈출 기회를 2번 이상</b> 준 종목</span></li>
-          <li><span class="num">2.</span><span class="jb-li-txt"> 매물대를 소화한 뒤 <b>거래량이 마른 깔끔 양봉</b>이 뜰 때</span></li>
-          <li><span class="num">3.</span><span class="jb-li-txt"> 종가 매수 → 익일 09:05 전 청산</span></li>
-        </ul>
-        <div class="jb-scan-note">스캔: 25봉 내 20일 평균 2배↑ 거래 봉 · 이후 윗꼬리 봉 2회↑ · 오늘 거래량 평균의 80% 미만</div>
-      </div>
-      <div class="strategy-card" style="border-top:3px solid #10b981;">
-        <div class="strat-header">
-          <h3 style="color:#34d399;">④ 5일선 이탈 20일선 눌림</h3>
-          <span class="pill" style="background:rgba(16,185,129,0.15); color:#34d399;">스윙 (종베 아님)</span>
-        </div>
-        <ul class="strat-rules">
-          <li><span class="num">1.</span><span class="jb-li-txt"> 5일선을 깬 종가는 <b>종가베팅을 보수적으로 접는다</b></span></li>
-          <li><span class="num">2.</span><span class="jb-li-txt"> 엔벨로프 <b>중심선(20일선)</b>까지 눌린 뒤 아래꼬리를 말아 올리며 지지</span></li>
-          <li><span class="num">3.</span><span class="jb-li-txt"> 그때만 <b>스윙 타점</b>으로 분할 진입</span></li>
-        </ul>
-        <div class="jb-scan-note">스캔: 종가 &lt; 5일선 · 저가 20일선 부근 · 종가 20일선 -3% 이내 · 아래꼬리 0.8%↑</div>
-      </div>
-    </section>
-
-    <!-- 📐 도해 3종 (접이식) -->
-    <details class="jb-diagram" id="jbDiagram">
-      <summary>📐 신정재 4대 패턴 도해 · 6대 팁 구조 · 15:18 타임라인 (펼치기)</summary>
-      <div class="jb-dg-body">
-        <div class="jb-dg-card">
-          <div class="jb-dg-title">① 6대 팁 기본 구조 — 신고가 → 기간 조정(저점 상승) → 전고점 이격 좁은 깔끔 양봉</div>
-          <svg viewBox="0 0 720 300" class="jb-svg" role="img" aria-label="6대 팁 기본 구조 도해">
-            <rect x="0" y="0" width="720" height="300" fill="#0b1220"/>
-            <line x1="60" y1="40" x2="690" y2="40" stroke="#f43f5e" stroke-dasharray="6 4" stroke-width="1.5"/>
-            <text x="64" y="33" fill="#fda4af" font-size="12" font-weight="700">신고가 (1차 고점)</text>
-            <line x1="60" y1="70" x2="690" y2="70" stroke="#f59e0b" stroke-dasharray="4 4" stroke-width="1"/>
-            <text x="64" y="64" fill="#fcd34d" font-size="11">전고점 이격 좁음 (신고가 도전 직전)</text>
-            <polyline points="70,210 120,150 170,95 215,45 260,120 320,170 380,140 430,175 470,160 520,130 560,88"
-                      fill="none" stroke="#38bdf8" stroke-width="2.5"/>
-            <circle cx="215" cy="45" r="5" fill="#f43f5e"/>
-            <circle cx="380" cy="140" r="4" fill="#94a3b8"/>
-            <circle cx="470" cy="160" r="4" fill="#fbbf24"/>
-            <text x="300" y="196" fill="#94a3b8" font-size="11">← 기간 조정 (충분히) →</text>
-            <text x="392" y="128" fill="#e2e8f0" font-size="10">저점 ①</text>
-            <text x="478" y="182" fill="#fbbf24" font-size="10">저점 ② &gt; ① (저점 상승)</text>
-            <rect x="590" y="60" width="22" height="70" fill="#ef4444"/>
-            <line x1="601" y1="52" x2="601" y2="60" stroke="#ef4444" stroke-width="2"/>
-            <text x="628" y="96" fill="#fca5a5" font-size="11">매수 타점</text>
-            <text x="628" y="112" fill="#94a3b8" font-size="10">윗꼬리 없는 양봉</text>
-            <g>
-              <rect x="70" y="250" width="16" height="30" fill="#7f1d1d"/>
-              <rect x="120" y="240" width="16" height="40" fill="#7f1d1d"/>
-              <rect x="170" y="255" width="16" height="25" fill="#7f1d1d"/>
-              <rect x="215" y="222" width="16" height="58" fill="#ef4444"/>
-              <rect x="260" y="262" width="16" height="18" fill="#334155"/>
-              <rect x="320" y="266" width="16" height="14" fill="#334155"/>
-              <rect x="380" y="258" width="16" height="22" fill="#334155"/>
-              <rect x="430" y="264" width="16" height="16" fill="#334155"/>
-              <rect x="470" y="260" width="16" height="20" fill="#334155"/>
-              <rect x="520" y="250" width="16" height="30" fill="#7f1d1d"/>
-              <rect x="590" y="236" width="16" height="44" fill="#ef4444"/>
-            </g>
-            <text x="60" y="294" fill="#64748b" font-size="10">거래량: 대금이 커야 기법이 먹힌다 — 주가는 속여도 거래량은 못 속인다 (팁 ②)</text>
-          </svg>
-        </div>
-
-        <div class="jb-dg-card">
-          <div class="jb-dg-title">② 4대 차트 패턴 (정리노트 8~20p 정석)</div>
-          <div class="jb-dg-grid">
-            <div class="jb-dg-mini">
-              <div class="jb-dg-mini-title" style="color:#fbbf24;">① 위꼬리-위꼬리-깔끔양봉 (디와이)</div>
-              <svg viewBox="0 0 320 170" class="jb-svg" role="img" aria-label="위꼬리 소화 후 깔끔 양봉">
-                <rect width="320" height="170" fill="#0b1220"/>
-                <line x1="20" y1="35" x2="300" y2="35" stroke="#f43f5e" stroke-dasharray="5 4"/>
-                <text x="24" y="29" fill="#fda4af" font-size="10">전고점</text>
-                <g stroke="#ef4444" fill="#ef4444">
-                  <line x1="150" y1="45" x2="150" y2="55" stroke-width="2"/><rect x="142" y="55" width="16" height="26"/>
-                  <line x1="185" y1="42" x2="185" y2="52" stroke-width="2"/><rect x="177" y="52" width="16" height="22"/>
-                  <rect x="212" y="46" width="16" height="34"/>
-                </g>
-                <path d="M120,120 L150,112 L185,108 L212,70" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="3 3"/>
-                <text x="24" y="120" fill="#94a3b8" font-size="10">① 윗꼬리 매물 소화</text>
-                <text x="24" y="136" fill="#94a3b8" font-size="10">② 두 번째 윗꼬리</text>
-                <text x="24" y="152" fill="#fbbf24" font-size="10">③ 윗꼬리 0% 깔끔 양봉 = 매수</text>
-              </svg>
-            </div>
-            <div class="jb-dg-mini">
-              <div class="jb-dg-mini-title" style="color:#38bdf8;">② 음봉 후 5일선 지지 턴 (흥아해운)</div>
-              <svg viewBox="0 0 320 170" class="jb-svg" role="img" aria-label="음봉 후 5일선 지지 턴">
-                <rect width="320" height="170" fill="#0b1220"/>
-                <path d="M30,95 L80,70 L130,60 L175,58 L200,110 L230,88 L265,74" fill="none" stroke="#f59e0b" stroke-width="2"/>
-                <text x="196" y="128" fill="#fcd34d" font-size="10">5일선</text>
-                <g fill="#3b82f6" stroke="#3b82f6">
-                  <line x1="200" y1="60" x2="200" y2="120" stroke-width="2"/><rect x="192" y="66" width="16" height="46"/>
-                </g>
-                <rect x="230" y="82" width="16" height="12" fill="#ef4444"/>
-                <line x1="265" y1="66" x2="265" y2="74" stroke="#ef4444" stroke-width="2"/>
-                <rect x="257" y="74" width="16" height="18" fill="#ef4444"/>
-                <text x="24" y="28" fill="#7dd3fc" font-size="10">대량 거래 음봉</text>
-                <text x="24" y="44" fill="#94a3b8" font-size="10">→ 5일선 안 깨고 버팀</text>
-                <text x="24" y="60" fill="#fbbf24" font-size="10">→ 양봉 턴 = 매수</text>
-              </svg>
-            </div>
-            <div class="jb-dg-mini">
-              <div class="jb-dg-mini-title" style="color:#c084fc;">③ 거래량 마른 깔끔 양봉</div>
-              <svg viewBox="0 0 320 170" class="jb-svg" role="img" aria-label="거래량 마른 깔끔 양봉">
-                <rect width="320" height="170" fill="#0b1220"/>
-                <g stroke="#ef4444" fill="#ef4444">
-                  <rect x="70" y="80" width="16" height="34"/>
-                  <line x1="112" y1="70" x2="112" y2="78" stroke-width="2"/><rect x="104" y="78" width="16" height="26"/>
-                  <line x1="146" y1="68" x2="146" y2="76" stroke-width="2"/><rect x="138" y="76" width="16" height="24"/>
-                  <rect x="178" y="72" width="16" height="30"/>
-                </g>
-                <g fill="#334155">
-                  <rect x="70" y="140" width="16" height="24" fill="#ef4444"/>
-                  <rect x="104" y="150" width="16" height="14"/>
-                  <rect x="138" y="152" width="16" height="12"/>
-                  <rect x="178" y="158" width="16" height="6" fill="#ef4444"/>
-                </g>
-                <text x="204" y="86" fill="#fbbf24" font-size="10">거래량 ↓</text>
-                <text x="204" y="102" fill="#fbbf24" font-size="10">깔끔 양봉</text>
-                <text x="24" y="30" fill="#94a3b8" font-size="10">대량 거래 → 윗꼬리 2회 탈출 기회</text>
-              </svg>
-            </div>
-            <div class="jb-dg-mini">
-              <div class="jb-dg-mini-title" style="color:#34d399;">④ 5일선 이탈 → 20일선 엔벨로프 (아진엑스텍)</div>
-              <svg viewBox="0 0 320 170" class="jb-svg" role="img" aria-label="20일선 눌림 스윙">
-                <rect width="320" height="170" fill="#0b1220"/>
-                <path d="M30,60 L90,50 L140,64 L190,56 L240,74 L285,66" fill="none" stroke="#ef4444" stroke-width="2"/>
-                <path d="M30,92 L90,86 L140,92 L190,90 L240,98 L285,94" fill="none" stroke="#a855f7" stroke-width="2"/>
-                <path d="M30,124 L90,122 L140,120 L190,118 L240,116 L285,112" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="4 3"/>
-                <circle cx="240" cy="92" r="14" fill="none" stroke="#fbbf24" stroke-width="2"/>
-                <path d="M234,88 L240,100 L246,88" fill="none" stroke="#fbbf24" stroke-width="2"/>
-                <text x="24" y="24" fill="#fda4af" font-size="10">5일선 (종베 접기)</text>
-                <text x="24" y="108" fill="#c084fc" font-size="10">엔벨로프 중심선 20일선</text>
-                <text x="258" y="130" fill="#fbbf24" font-size="10">아래꼬리 지지</text>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        <div class="jb-dg-card">
-          <div class="jb-dg-title">③ 1분봉 한방/눌림 타점 &amp; 15:18~20 매수 → 익일 09:05 익절 타임라인</div>
-          <svg viewBox="0 0 720 250" class="jb-svg" role="img" aria-label="1분봉 타점과 매매 타임라인">
-            <rect width="720" height="250" fill="#0b1220"/>
-            <path d="M40,150 L90,96 L130,140 L170,120 L205,110 L240,150 L275,130 L310,118" fill="none" stroke="#38bdf8" stroke-width="2"/>
-            <path d="M40,120 L310,120" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 4"/>
-            <text x="316" y="118" fill="#fcd34d" font-size="10">1분봉 20선(눌림 자리)</text>
-            <circle cx="310" cy="118" r="7" fill="none" stroke="#fbbf24" stroke-width="2.5"/>
-            <text x="40" y="40" fill="#e2e8f0" font-size="11" font-weight="700">1분봉: 급등 추격 금지 → 시세 분출 → 조정 → 저점 불이탈 상승 전환(정배열 초입)</text>
-            <line x1="40" y1="200" x2="690" y2="200" stroke="#334155" stroke-width="2"/>
-            <g font-size="10" fill="#94a3b8">
-              <circle cx="60" cy="200" r="5" fill="#ef4444"/><text x="44" y="222">12:00~14:30</text><text x="44" y="236" fill="#fda4af">매수 금지</text>
-              <circle cx="210" cy="200" r="5" fill="#f59e0b"/><text x="178" y="222">15:00~15:18</text><text x="178" y="236" fill="#fcd34d">관찰·1분봉 검증</text>
-              <circle cx="370" cy="200" r="5" fill="#22c55e"/><text x="336" y="222">15:18~15:20</text><text x="330" y="236" fill="#6ee7b7">매수 집행 (2분)</text>
-              <circle cx="510" cy="200" r="5" fill="#38bdf8"/><text x="478" y="222">15:40~18:00</text><text x="470" y="236" fill="#7dd3fc">시간외 평단 이탈 컷</text>
-              <circle cx="650" cy="200" r="5" fill="#a855f7"/><text x="612" y="222">익일 09:00~09:05</text><text x="606" y="236" fill="#c084fc">1/3 즉시 · 09:05 전량</text>
-            </g>
-          </svg>
-          <div class="jb-dg-foot">원전 기준: 12:00~14:30 장중 매수 금지 · 15:18~15:20 매수 · 익일 시초 1/3 익절 후 09:05 전량 청산 · 시간외 또는 평단 이탈 시 즉시 손절.</div>
-        </div>
-      </div>
-    </details>
-
+    <!-- 1. 차트 + 실전 타점 + 종목 리스트 (위) -->
     <!-- Main 2-Col Layout -->
     <div class="main-layout">
 
@@ -11011,6 +10902,229 @@
         </div>
       </aside>
     </div>
+
+    <!-- 신정재 4대 패턴 -->
+    <section class="strategy-grid" id="jbPatternGrid">
+      <div class="strategy-card" style="border-top:3px solid #f59e0b;">
+        <div class="strat-header">
+          <h3 style="color:#fbbf24;">① 위꼬리-위꼬리-깔끔양봉</h3>
+          <span class="pill" style="background:rgba(245,158,11,0.15); color:#fbbf24;">초단기 종베</span>
+        </div>
+        <ul class="strat-rules">
+          <li><span class="num">1.</span><span class="jb-li-txt"> 앞선 캔들이 <b>윗꼬리</b>로 악성 매물대를 두 번 이상 소화</span></li>
+          <li><span class="num">2.</span><span class="jb-li-txt"> 전고점 바로 아래에서 <b>윗꼬리 없는 깔끔한 양봉</b>으로 마감</span></li>
+          <li><span class="num">3.</span><span class="jb-li-txt"> 15:18~15:20 매수 → 익일 09:05 전 전량 청산</span></li>
+        </ul>
+        <div class="jb-scan-note">스캔: 윗꼬리 1.2% 이내 양봉 · 최근 5봉 중 윗꼬리 소화 2봉 이상 · 120일 고점 8% 이내 · 대금 300억↑</div>
+      </div>
+      <div class="strategy-card" style="border-top:3px solid #38bdf8;">
+        <div class="strat-header">
+          <h3 style="color:#38bdf8;">② 음봉 후 5일선 지지 턴</h3>
+          <span class="pill" style="background:rgba(56,189,248,0.15); color:#38bdf8;">초단기 종베</span>
+        </div>
+        <ul class="strat-rules">
+          <li><span class="num">1.</span><span class="jb-li-txt"> '끼' 있는 종목이 <b>대량 거래 음봉</b>을 맞고도</span></li>
+          <li><span class="num">2.</span><span class="jb-li-txt"> <b>5일선을 깨지 않고 버틴 뒤</b> 다시 윗꼬리 없는 양봉으로 턴</span></li>
+          <li><span class="num">3.</span><span class="jb-li-txt"> 5일선을 깨면 종베는 즉시 접는다</span></li>
+        </ul>
+        <div class="jb-scan-note">스캔: 10봉 내 20일 평균 거래량 1.5배↑ 음봉 · 이후 종가 5일선 위 유지 · 90거래일 '끼' 1회↑</div>
+      </div>
+      <div class="strategy-card" style="border-top:3px solid #a855f7;">
+        <div class="strat-header">
+          <h3 style="color:#c084fc;">③ 거래량 마른 깔끔 양봉</h3>
+          <span class="pill" style="background:rgba(168,85,247,0.15); color:#c084fc;">매물대 소화</span>
+        </div>
+        <ul class="strat-rules">
+          <li><span class="num">1.</span><span class="jb-li-txt"> 대량 거래 뒤 윗꼬리로 <b>탈출 기회를 2번 이상</b> 준 종목</span></li>
+          <li><span class="num">2.</span><span class="jb-li-txt"> 매물대를 소화한 뒤 <b>거래량이 마른 깔끔 양봉</b>이 뜰 때</span></li>
+          <li><span class="num">3.</span><span class="jb-li-txt"> 종가 매수 → 익일 09:05 전 청산</span></li>
+        </ul>
+        <div class="jb-scan-note">스캔: 25봉 내 20일 평균 2배↑ 거래 봉 · 이후 윗꼬리 봉 2회↑ · 오늘 거래량 평균의 80% 미만</div>
+      </div>
+      <div class="strategy-card" style="border-top:3px solid #10b981;">
+        <div class="strat-header">
+          <h3 style="color:#34d399;">④ 5일선 이탈 20일선 눌림</h3>
+          <span class="pill" style="background:rgba(16,185,129,0.15); color:#34d399;">스윙 (종베 아님)</span>
+        </div>
+        <ul class="strat-rules">
+          <li><span class="num">1.</span><span class="jb-li-txt"> 5일선을 깬 종가는 <b>종가베팅을 보수적으로 접는다</b></span></li>
+          <li><span class="num">2.</span><span class="jb-li-txt"> 엔벨로프 <b>중심선(20일선)</b>까지 눌린 뒤 아래꼬리를 말아 올리며 지지</span></li>
+          <li><span class="num">3.</span><span class="jb-li-txt"> 그때만 <b>스윙 타점</b>으로 분할 진입</span></li>
+        </ul>
+        <div class="jb-scan-note">스캔: 종가 &lt; 5일선 · 저가 20일선 부근 · 종가 20일선 -3% 이내 · 아래꼬리 0.8%↑</div>
+      </div>
+    </section>
+
+    <!-- 📐 도해 3종 (접이식) -->
+    <details class="jb-diagram" id="jbDiagram">
+      <summary>📐 신정재 4대 패턴 도해 · 6대 팁 구조 · 15:18 타임라인 (펼치기)</summary>
+      <div class="jb-dg-body">
+        <!-- 한 줄 요약 + 3단계 + 색 구분 (초보자용) -->
+        <div class="jb-dg-card" style="border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.06);">
+          <div class="jb-dg-title" style="color:#fde68a;">🧭 한 줄 요약 — 이 기법은 '하루'만 들고 가는 매매입니다</div>
+          <div style="font-size:12px;line-height:1.6;color:#e2e8f0;font-weight:700;">
+            전고점 <b>바로 아래</b>에서 <b style="color:#fbbf24;">윗꼬리 없이 깔끔하게</b> 마감한 날, <b>15:18~15:20</b>에 사서
+            <b>다음 날 09:05 전에 무조건</b> 파는 매매입니다. 오래 들고 가는 투자가 아닙니다.
+          </div>
+          <div style="display:grid;grid-template-columns:1fr;gap:6px;margin-top:8px;">
+            <div style="border-left:4px solid #34d399;background:rgba(16,185,129,.08);border-radius:6px;padding:6px 8px;font-size:11px;line-height:1.55;">
+              <b style="color:#6ee7b7;">① 언제 사나 (초록=매수)</b><br>
+              · 12:00~14:30은 <b>사지 않습니다</b> (변동성·물량 함정)<br>
+              · 15:18~15:20에 <b>종가 부근 분할 매수</b> · 6대 팁 중 <b style="color:#fbbf24;">하나라도 어긋나면 제외</b>
+            </div>
+            <div style="border-left:4px solid #38bdf8;background:rgba(56,189,248,.08);border-radius:6px;padding:6px 8px;font-size:11px;line-height:1.55;">
+              <b style="color:#7dd3fc;">② 왜 여기서 사나 (파랑=근거)</b><br>
+              · 위쪽 <b>윗꼬리 매물이 이미 소화</b>되어 저항이 얇다 (①③ 패턴)<br>
+              · <b>저점을 높이며</b> 조정이 끝나 추세가 살아 있다 (6대 팁 ⑤)<br>
+              · 거래대금이 평소보다 <b>크게 터졌다</b> — 주가는 속여도 거래량은 못 속인다 (팁 ②)
+            </div>
+            <div style="border-left:4px solid #ef4444;background:rgba(239,68,68,.08);border-radius:6px;padding:6px 8px;font-size:11px;line-height:1.55;">
+              <b style="color:#fca5a5;">③ 언제 파나 (빨강=손절, 금색=익절)</b><br>
+              · <b style="color:#fca5a5;">손절</b>: 매수한 종가(기준가) <b>-0.8%</b> 이탈 → <b>즉시</b> (기다리지 않음)<br>
+              · <b style="color:#fbbf24;">익절</b>: 익일 시초 <b>+3% 1차 · +5% 2차</b>, 남은 물량은 <b>09:05 전 전량</b><br>
+              · 시간외·평단 이탈이면 <b>다음 날까지 들고 가지 않습니다</b>
+            </div>
+          </div>
+        </div>
+
+        <div class="jb-dg-card">
+          <div class="jb-dg-title">① 6대 팁 기본 구조 — 신고가 → 기간 조정(저점 상승) → 전고점 이격 좁은 깔끔 양봉</div>
+          <svg viewBox="0 0 720 300" class="jb-svg" role="img" aria-label="6대 팁 기본 구조 도해">
+            <rect x="0" y="0" width="720" height="300" fill="#0b1220"/>
+            <line x1="60" y1="40" x2="690" y2="40" stroke="#f43f5e" stroke-dasharray="6 4" stroke-width="1.5"/>
+            <text x="64" y="33" fill="#fda4af" font-size="12" font-weight="700">신고가 (1차 고점)</text>
+            <line x1="60" y1="70" x2="690" y2="70" stroke="#f59e0b" stroke-dasharray="4 4" stroke-width="1"/>
+            <text x="64" y="64" fill="#fcd34d" font-size="11">전고점 이격 좁음 (신고가 도전 직전)</text>
+            <polyline points="70,210 120,150 170,95 215,45 260,120 320,170 380,140 430,175 470,160 520,130 560,88"
+                      fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+            <circle cx="215" cy="45" r="5" fill="#f43f5e"/>
+            <circle cx="380" cy="140" r="4" fill="#94a3b8"/>
+            <circle cx="470" cy="160" r="4" fill="#fbbf24"/>
+            <text x="300" y="196" fill="#94a3b8" font-size="11">← 기간 조정 (충분히) →</text>
+            <text x="392" y="128" fill="#e2e8f0" font-size="10">저점 ①</text>
+            <text x="478" y="182" fill="#fbbf24" font-size="10">저점 ② &gt; ① (저점 상승)</text>
+            <rect x="590" y="60" width="22" height="70" fill="#ef4444"/>
+            <line x1="601" y1="52" x2="601" y2="60" stroke="#ef4444" stroke-width="2"/>
+            <text x="628" y="96" fill="#fca5a5" font-size="11">매수 타점</text>
+            <text x="628" y="112" fill="#94a3b8" font-size="10">윗꼬리 없는 양봉</text>
+            <g>
+              <rect x="70" y="250" width="16" height="30" fill="#7f1d1d"/>
+              <rect x="120" y="240" width="16" height="40" fill="#7f1d1d"/>
+              <rect x="170" y="255" width="16" height="25" fill="#7f1d1d"/>
+              <rect x="215" y="222" width="16" height="58" fill="#ef4444"/>
+              <rect x="260" y="262" width="16" height="18" fill="#334155"/>
+              <rect x="320" y="266" width="16" height="14" fill="#334155"/>
+              <rect x="380" y="258" width="16" height="22" fill="#334155"/>
+              <rect x="430" y="264" width="16" height="16" fill="#334155"/>
+              <rect x="470" y="260" width="16" height="20" fill="#334155"/>
+              <rect x="520" y="250" width="16" height="30" fill="#7f1d1d"/>
+              <rect x="590" y="236" width="16" height="44" fill="#ef4444"/>
+            </g>
+            <text x="60" y="294" fill="#64748b" font-size="10">거래량: 대금이 커야 기법이 먹힌다 — 주가는 속여도 거래량은 못 속인다 (팁 ②)</text>
+          </svg>
+        </div>
+
+        <div class="jb-dg-card">
+          <div class="jb-dg-title">② 4대 차트 패턴 (정리노트 8~20p 정석)</div>
+          <div class="jb-dg-grid">
+            <div class="jb-dg-mini">
+              <div class="jb-dg-mini-title" style="color:#fbbf24;">① 위꼬리-위꼬리-깔끔양봉 (디와이)</div>
+              <svg viewBox="0 0 320 170" class="jb-svg" role="img" aria-label="위꼬리 소화 후 깔끔 양봉">
+                <rect width="320" height="170" fill="#0b1220"/>
+                <line x1="20" y1="35" x2="300" y2="35" stroke="#f43f5e" stroke-dasharray="5 4"/>
+                <text x="24" y="29" fill="#fda4af" font-size="10">전고점</text>
+                <g stroke="#ef4444" fill="#ef4444">
+                  <line x1="150" y1="45" x2="150" y2="55" stroke-width="2"/><rect x="142" y="55" width="16" height="26"/>
+                  <line x1="185" y1="42" x2="185" y2="52" stroke-width="2"/><rect x="177" y="52" width="16" height="22"/>
+                  <rect x="212" y="46" width="16" height="34"/>
+                </g>
+                <path d="M120,120 L150,112 L185,108 L212,70" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="3 3"/>
+                <text x="24" y="120" fill="#94a3b8" font-size="10">① 윗꼬리 매물 소화</text>
+                <text x="24" y="136" fill="#94a3b8" font-size="10">② 두 번째 윗꼬리</text>
+                <text x="24" y="152" fill="#fbbf24" font-size="10">③ 윗꼬리 0% 깔끔 양봉 = 매수</text>
+              </svg>
+            <div class="jb-dg-mini-note"><span style="color:#6ee7b7;">🟢 왜 사나</span> — 윗꼬리 두 번이 위쪽 매물을 털어냈습니다. 저항이 가장 얇아진 자리에서 삽니다.<br><span style="color:#fca5a5;">🔴 손절</span> 매수 종가 −0.8% 이탈 즉시 ｜ <span style="color:#fbbf24;">🟡 익절</span> 익일 시초 +3% / +5%, 09:05 전 전량</div>
+            </div>
+            <div class="jb-dg-mini">
+              <div class="jb-dg-mini-title" style="color:#38bdf8;">② 음봉 후 5일선 지지 턴 (흥아해운)</div>
+              <svg viewBox="0 0 320 170" class="jb-svg" role="img" aria-label="음봉 후 5일선 지지 턴">
+                <rect width="320" height="170" fill="#0b1220"/>
+                <path d="M30,95 L80,70 L130,60 L175,58 L200,110 L230,88 L265,74" fill="none" stroke="#f59e0b" stroke-width="2"/>
+                <text x="196" y="128" fill="#fcd34d" font-size="10">5일선</text>
+                <g fill="#3b82f6" stroke="#3b82f6">
+                  <line x1="200" y1="60" x2="200" y2="120" stroke-width="2"/><rect x="192" y="66" width="16" height="46"/>
+                </g>
+                <rect x="230" y="82" width="16" height="12" fill="#ef4444"/>
+                <line x1="265" y1="66" x2="265" y2="74" stroke="#ef4444" stroke-width="2"/>
+                <rect x="257" y="74" width="16" height="18" fill="#ef4444"/>
+                <text x="24" y="28" fill="#7dd3fc" font-size="10">대량 거래 음봉</text>
+                <text x="24" y="44" fill="#94a3b8" font-size="10">→ 5일선 안 깨고 버팀</text>
+                <text x="24" y="60" fill="#fbbf24" font-size="10">→ 양봉 턴 = 매수</text>
+              </svg>
+            <div class="jb-dg-mini-note"><span style="color:#6ee7b7;">🟢 왜 사나</span> — 대량 음봉에도 5일선을 깨지 않았습니다. 매도 물량을 받아낸 자리입니다.<br><span style="color:#fca5a5;">🔴 손절</span> 종가가 5일선을 이탈하면 종베는 접습니다 ｜ <span style="color:#fbbf24;">🟡 익절</span> 다음 날 +3~5% 안에서 끝냅니다</div>
+            </div>
+            <div class="jb-dg-mini">
+              <div class="jb-dg-mini-title" style="color:#c084fc;">③ 거래량 마른 깔끔 양봉</div>
+              <svg viewBox="0 0 320 170" class="jb-svg" role="img" aria-label="거래량 마른 깔끔 양봉">
+                <rect width="320" height="170" fill="#0b1220"/>
+                <g stroke="#ef4444" fill="#ef4444">
+                  <rect x="70" y="80" width="16" height="34"/>
+                  <line x1="112" y1="70" x2="112" y2="78" stroke-width="2"/><rect x="104" y="78" width="16" height="26"/>
+                  <line x1="146" y1="68" x2="146" y2="76" stroke-width="2"/><rect x="138" y="76" width="16" height="24"/>
+                  <rect x="178" y="72" width="16" height="30"/>
+                </g>
+                <g fill="#334155">
+                  <rect x="70" y="140" width="16" height="24" fill="#ef4444"/>
+                  <rect x="104" y="150" width="16" height="14"/>
+                  <rect x="138" y="152" width="16" height="12"/>
+                  <rect x="178" y="158" width="16" height="6" fill="#ef4444"/>
+                </g>
+                <text x="204" y="86" fill="#fbbf24" font-size="10">거래량 ↓</text>
+                <text x="204" y="102" fill="#fbbf24" font-size="10">깔끔 양봉</text>
+                <text x="24" y="30" fill="#94a3b8" font-size="10">대량 거래 → 윗꼬리 2회 탈출 기회</text>
+              </svg>
+            <div class="jb-dg-mini-note"><span style="color:#6ee7b7;">🟢 왜 사나</span> — 거래량이 말랐다 = 팔 사람이 줄었다. 그 상태의 깔끔 양봉은 위로 가볍습니다.<br><span style="color:#fca5a5;">🔴 손절</span> 기준가 −0.8% 이탈 즉시 ｜ <span style="color:#fbbf24;">🟡 익절</span> 익일 09:05 전 청산(시간외 이탈이면 그 자리에서)</div>
+            </div>
+            <div class="jb-dg-mini">
+              <div class="jb-dg-mini-title" style="color:#34d399;">④ 5일선 이탈 → 20일선 엔벨로프 (아진엑스텍)</div>
+              <svg viewBox="0 0 320 170" class="jb-svg" role="img" aria-label="20일선 눌림 스윙">
+                <rect width="320" height="170" fill="#0b1220"/>
+                <path d="M30,60 L90,50 L140,64 L190,56 L240,74 L285,66" fill="none" stroke="#ef4444" stroke-width="2"/>
+                <path d="M30,92 L90,86 L140,92 L190,90 L240,98 L285,94" fill="none" stroke="#a855f7" stroke-width="2"/>
+                <path d="M30,124 L90,122 L140,120 L190,118 L240,116 L285,112" fill="none" stroke="#475569" stroke-width="1.5" stroke-dasharray="4 3"/>
+                <circle cx="240" cy="92" r="14" fill="none" stroke="#fbbf24" stroke-width="2"/>
+                <path d="M234,88 L240,100 L246,88" fill="none" stroke="#fbbf24" stroke-width="2"/>
+                <text x="24" y="24" fill="#fda4af" font-size="10">5일선 (종베 접기)</text>
+                <text x="24" y="108" fill="#c084fc" font-size="10">엔벨로프 중심선 20일선</text>
+                <text x="258" y="130" fill="#fbbf24" font-size="10">아래꼬리 지지</text>
+              </svg>
+            <div class="jb-dg-mini-note"><span style="color:#6ee7b7;">🟢 왜 사나</span> — 20일선(엔벨로프 중심)에서 아래꼬리로 지지. 종베가 아니라 <b>스윙</b> 자리입니다.<br><span style="color:#fca5a5;">🔴 손절</span> 20일선 종가 이탈 ｜ <span style="color:#fbbf24;">🟡 익절</span> 엔벨로프 +10%까지 분할 (하루 매매 아님)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="jb-dg-card">
+          <div class="jb-dg-title">③ 1분봉 한방/눌림 타점 &amp; 15:18~20 매수 → 익일 09:05 익절 타임라인</div>
+          <svg viewBox="0 0 720 250" class="jb-svg" role="img" aria-label="1분봉 타점과 매매 타임라인">
+            <rect width="720" height="250" fill="#0b1220"/>
+            <path d="M40,150 L90,96 L130,140 L170,120 L205,110 L240,150 L275,130 L310,118" fill="none" stroke="#38bdf8" stroke-width="2"/>
+            <path d="M40,120 L310,120" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 4"/>
+            <text x="316" y="118" fill="#fcd34d" font-size="10">1분봉 20선(눌림 자리)</text>
+            <circle cx="310" cy="118" r="7" fill="none" stroke="#fbbf24" stroke-width="2.5"/>
+            <text x="40" y="40" fill="#e2e8f0" font-size="11" font-weight="700">1분봉: 급등 추격 금지 → 시세 분출 → 조정 → 저점 불이탈 상승 전환(정배열 초입)</text>
+            <line x1="40" y1="200" x2="690" y2="200" stroke="#334155" stroke-width="2"/>
+            <g font-size="10" fill="#94a3b8">
+              <circle cx="60" cy="200" r="5" fill="#ef4444"/><text x="44" y="222">12:00~14:30</text><text x="44" y="236" fill="#fda4af">매수 금지</text>
+              <circle cx="210" cy="200" r="5" fill="#f59e0b"/><text x="178" y="222">15:00~15:18</text><text x="178" y="236" fill="#fcd34d">관찰·1분봉 검증</text>
+              <circle cx="370" cy="200" r="5" fill="#22c55e"/><text x="336" y="222">15:18~15:20</text><text x="330" y="236" fill="#6ee7b7">매수 집행 (2분)</text>
+              <circle cx="510" cy="200" r="5" fill="#38bdf8"/><text x="478" y="222">15:40~18:00</text><text x="470" y="236" fill="#7dd3fc">시간외 평단 이탈 컷</text>
+              <circle cx="650" cy="200" r="5" fill="#a855f7"/><text x="612" y="222">익일 09:00~09:05</text><text x="606" y="236" fill="#c084fc">1/3 즉시 · 09:05 전량</text>
+            </g>
+          </svg>
+          <div class="jb-dg-foot">원전 기준: 12:00~14:30 장중 매수 금지 · 15:18~15:20 매수 · 익일 시초 1/3 익절 후 09:05 전량 청산 · 시간외 또는 평단 이탈 시 즉시 손절.</div>
+        </div>
+      </div>
+    </details>
 
     <!-- Modal 1: 신정재 6대 팁 체크리스트 -->
     <div class="modal-overlay" id="checklistModal" onclick="Jongbe.closeChecklistModal(event)">
@@ -14518,6 +14632,8 @@ function openDetail(title, v1, v2, desc) {
         }
 
         function resizeCanvas() {
+            /* 카드 미니 차트도 폭이 바뀌면 다시 그린다(숨은 탭에서 280px로 그린 것 보정) */
+            try { if (typeof drawMiniCharts === 'function') drawMiniCharts(); } catch (e) {}
             const wrapper = document.getElementById('chartWrapper');
             const dpr = window.devicePixelRatio || 1;
             if (!wrapper.clientWidth || !wrapper.clientHeight) return;
@@ -14539,6 +14655,25 @@ function openDetail(title, v1, v2, desc) {
             }
             document.getElementById('listCountBadge').innerText = '총 ' + filteredStocks.length + '개';
             renderStockList();
+        }
+
+        /* 카드 안 일봉 미니 차트 — RN 기준선(상단·하단·1차)과 현재가를 같이 그린다 */
+        function suMiniRefs(s) {
+            const refs = [];
+            if (s.upperRN) refs.push({ v: s.upperRN, color: (s.upperColorHex || '#f59e0b'), label: '상단RN' });
+            if (s.lowerRN) refs.push({ v: s.lowerRN, color: (s.lowerColorHex || '#38bdf8'), label: '하단RN' });
+            if (s.buy1) refs.push({ v: s.buy1, color: '#22c55e' });
+            return refs;
+        }
+        function drawMiniCharts() {
+            if (!window.StratMini) return;
+            const grid = document.getElementById('stockListGrid');
+            if (!grid) return;
+            filteredStocks.forEach(function (s) {
+                const cv = grid.querySelector('canvas[data-su-mini="' + s.code + '"]');
+                if (!cv) return;
+                window.StratMini.draw(cv, s.candles || [], suMiniRefs(s), { count: 60, height: 96 });
+            });
         }
 
         function renderStockList() {
@@ -14574,31 +14709,51 @@ function openDetail(title, v1, v2, desc) {
                     badgeText = '🔥 상단 RN 근접';
                 }
 
+                card.className = 'stock-card su-card' + (isSelected ? ' active' : '');
+                card.onclick = () => selectStockByCode(s.code);
+                card.setAttribute('data-code', s.code);
+                card.setAttribute('data-name', s.name);
+                card.setAttribute('data-live-price', String(s.price || ''));
+                const chgCol = (s.changeRatio >= 0) ? '#ef4444' : '#38bdf8';
+                const badgeCol = (s.category === 'touch_lower') ? '#4ade80'
+                    : (s.category === 'near_lower') ? '#facc15'
+                        : (s.category === 'search') ? '#38bdf8' : '#f87171';
+                const badgeBg = (s.category === 'touch_lower') ? 'rgba(34,197,94,0.14)'
+                    : (s.category === 'near_lower') ? 'rgba(234,179,8,0.14)'
+                        : (s.category === 'search') ? 'rgba(56,189,248,0.14)' : 'rgba(239,68,68,0.14)';
+                const avgBuy = Math.round((s.buy1 + 2 * s.buy2) / 3);
                 card.innerHTML = `
-                    <div class="card-top">
-                        <div class="card-name">
-                            <span>${s.name}</span>
-                            <span style="font-size: 11px; color: var(--text-muted);">${s.code}</span>
+                    <div class="su-top card-top">
+                        <div class="su-nm card-name">
+                            <span>${s.name}</span><span class="su-cd">${s.code}</span>
                         </div>
-                        <span class="badge-rn ${badgeClass}">${badgeText}</span>
+                        <span class="badge-rn su-badge ${badgeClass}" style="background:${badgeBg};color:${badgeCol};border-color:${badgeCol}66;">${badgeText}</span>
                     </div>
-                    <div class="card-price-row">
-                        <span style="font-size: 15px; font-weight: 800; color: #fff;">${s.price.toLocaleString()}원</span>
-                        <span style="font-size: 12px; font-weight: 700; color: ${s.changeRatio >= 0 ? '#ef4444' : '#38bdf8'};">
-                            ${s.changeRatio >= 0 ? '+' : ''}${s.changeRatio}%
-                        </span>
+                    <div class="su-px card-price-row">
+                        <span class="p">${s.price.toLocaleString()}원</span>
+                        <span class="c" style="color:${chgCol};">${s.changeRatio >= 0 ? '+' : ''}${s.changeRatio}%</span>
+                        <span class="l">${s.valueText ? '대금 ' + s.valueText : ''}</span>
                     </div>
-                    <div class="card-metrics">
-                        <div class="metric-row"><span class="metric-lbl">상단 RN(${s.upperColorKo || '공식선'}):</span><span class="metric-val" style="color: ${s.upperColorHex || '#ef4444'};">${s.upperRN.toLocaleString()}원</span></div>
-                        <div class="metric-row"><span class="metric-lbl">하단 RN(${s.lowerColorKo || '공식선'}):</span><span class="metric-val" style="color: ${s.lowerColorHex || '#14b8a6'};">${s.lowerRN.toLocaleString()}원</span></div>
-                        ${s.auxRN ? `<div class="metric-row" title="공식 21선 사이가 너무 넓어 그 구간 중간값을 표기용으로 둔 비공식 눈금 — 매매 기준선 아님"><span class="metric-lbl" style="color:#94a3b8;">중간 보조(비공식):</span><span class="metric-val" style="color:#cbd5e1;">${s.auxRN.toLocaleString()}원</span></div>` : ''}
-                        <div class="metric-row"><span class="metric-lbl">1차 타점(+4%):</span><span class="metric-val" style="color: #22c55e;">${s.buy1.toLocaleString()}원</span></div>
-                        <div class="metric-row"><span class="metric-lbl">2차 타점(-20%):</span><span class="metric-val" style="color: #ef4444;">${s.buy2.toLocaleString()}원</span></div>
-                        <div class="metric-row" style="background: rgba(56, 189, 248, 0.08); padding: 2px 4px; border-radius: 4px; margin-top: 2px;"><span class="metric-lbl" style="color: #38bdf8; font-weight: 700;">1+2차 평단:</span><span class="metric-val" style="color: #38bdf8; font-weight: 800;">${Math.round((s.buy1 + 2 * s.buy2) / 3).toLocaleString()}원</span></div>
+                    <div class="su-rows">
+                        <div class="su-row"><span class="k">상단 RN(${s.upperColorKo || '공식선'})</span><span class="v" style="color:${s.upperColorHex || '#ef4444'};">${s.upperRN.toLocaleString()}원</span></div>
+                        <div class="su-row"><span class="k">하단 RN(${s.lowerColorKo || '공식선'})</span><span class="v" style="color:${s.lowerColorHex || '#14b8a6'};">${s.lowerRN.toLocaleString()}원</span></div>
+                        ${s.auxRN ? `<div class="su-row" title="공식 21선 사이가 너무 넓어 그 구간 중간값을 표기용으로 둔 비공식 눈금 — 매매 기준선 아님"><span class="k">중간 보조(비공식)</span><span class="v" style="color:#cbd5e1;">${s.auxRN.toLocaleString()}원</span></div>` : ''}
                     </div>
+                    <canvas class="su-mini" data-su-mini="${s.code}" data-h="96" aria-label="${s.name} 일봉 미니 차트"></canvas>
+                    <div class="su-cap"><span>일봉 ${(s.candles || []).length || 0}봉 · 핀치 확대 · 좌우 드래그</span><span class="tap">1탭 = 큰 차트</span></div>
+                    <div class="su-plan">
+                        <div class="hd">🎯 타점 요약</div>
+                        <div class="r"><span class="k">1차 매수(+4%)</span><span class="v" style="color:#22c55e;">${s.buy1.toLocaleString()}원</span></div>
+                        <div class="r"><span class="k">2차 분할(-20%)</span><span class="v" style="color:#ef4444;">${s.buy2.toLocaleString()}원</span></div>
+                        <div class="r"><span class="k">1+2차 평단</span><span class="v" style="color:#38bdf8;">${avgBuy.toLocaleString()}원</span></div>
+                        <div class="r"><span class="k">익절 목표(+7~20%)</span><span class="v" style="color:#a855f7;">${s.targetMin.toLocaleString()}~${s.targetMax.toLocaleString()}원</span></div>
+                    </div>
+                    ${s.pickReason ? `<div class="su-reason">선정: ${s.pickReason}${s.capText ? ' · 시총 ' + s.capText : ''}</div>` : ''}
                 `;
                 grid.appendChild(card);
             });
+            /* 📉 카드 미니 일봉 차트 — 비중법사·홍인기·깡토 카드와 같은 양식(공통 렌더러) */
+            try { drawMiniCharts(); } catch (e) {}
             /* 📌 고정핀 — 카드가 다시 그려질 때마다 핀 버튼·고정 배지·우선 배치를 즉시 되살린다 */
             try { if (window.StrategyPins) window.StrategyPins.annotate('rn'); } catch (e) {}
         }
@@ -15286,6 +15441,7 @@ function openDetail(title, v1, v2, desc) {
     }
 
     function resizeCanvas() {
+      try { if (typeof drawMiniCharts === 'function') drawMiniCharts(); } catch (e) {}
       ensureCanvas();
       if (!canvas || !container || !ctx) return;
       const dpr = window.devicePixelRatio || 1;
@@ -15685,6 +15841,27 @@ function openDetail(title, v1, v2, desc) {
       resetChart();
     }
 
+    /* 카드 안 일봉 미니 차트 — 신정재 기준선(기준가·5일선·20일선·손절)을 같이 그린다 */
+    function jbMiniRefs(s) {
+      const refs = [];
+      if (s.basePrice) refs.push({ v: s.basePrice, color: '#fbbf24', label: '기준가' });
+      if (s.ma5) refs.push({ v: s.ma5, color: '#f59e0b' });
+      if (s.ma20) refs.push({ v: s.ma20, color: '#a855f7' });
+      if (s.stopPrice) refs.push({ v: s.stopPrice, color: '#ef4444', label: '손절' });
+      return refs;
+    }
+    function drawMiniCharts() {
+      if (!window.StratMini) return;
+      const box = document.getElementById('stockListContainer');
+      if (!box) return;
+      STOCKS.forEach(function (s) {
+        if (currentFilter !== 'all' && s.track !== currentFilter) return;
+        const cv = box.querySelector('canvas[data-su-mini="' + s.code + '"]');
+        if (!cv) return;
+        window.StratMini.draw(cv, s.candles || [], jbMiniRefs(s), { count: 60, height: 96 });
+      });
+    }
+
     function filterStocks(filter, btn) {
       currentFilter = filter;
       const scope = document.getElementById('jbTrackTabs');
@@ -15709,15 +15886,37 @@ function openDetail(title, v1, v2, desc) {
         card.setAttribute('data-name', s.name);
         const chgClass = s.changeRatio >= 0 ? 'up' : 'down';
         const chgSign = s.changeRatio > 0 ? '+' : '';
+        const mColor = m.color || '#fbbf24';
+        const chgColor = (s.changeRatio >= 0) ? '#ef4444' : '#38bdf8';
+        const safe = function (v) { return String(v === null || v === undefined ? '' : v).replace(/[&<>"]/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]; }); };
+        const won = function (v) { return (typeof v === 'number' && isFinite(v)) ? Math.round(v).toLocaleString() + '원' : '—'; };
+        const pctTxt = function (v) { return (typeof v === 'number' && isFinite(v)) ? (v > 0 ? '+' : '') + v.toFixed(2) + '%' : '—'; };
+        const tips = Array.isArray(s.tips) ? s.tips : [];
+        const tipPass = '팁 ' + (s.tipScore || 0) + '/' + (s.tipTotal || 6);
+        card.className = 'stock-card su-card' + (idx === currentIdx ? ' active' : '');
+        card.setAttribute('data-live-price', String(s.price || ''));
         card.innerHTML =
-          '<div class="card-row1"><span class="card-name">' + s.name + '</span>' +
-          '<span class="card-price ' + chgClass + '">' + (s.price || 0).toLocaleString() + '원</span></div>' +
-          '<div class="card-row2" style="display:flex; flex-wrap:wrap; gap:4px; align-items:center;">' +
-          '<span class="card-badge" style="background:' + m.color + '22; color:' + m.color + '; font-size:9.5px;">' + m.label + '</span>' +
-          '<span class="' + chgClass + '" style="font-weight:700;">' + chgSign + s.changeRatio + '%</span>' +
-          '<span style="font-size:9.5px; color:#cbd5e1; background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:4px;">팁 ' + (s.tipScore || 0) + '/' + (s.tipTotal || 6) + '</span>' +
-          '<span style="font-size:9.5px; color:#94a3b8;">' + (s.valueText || '') + '</span>' +
-          '</div>';
+          '<div class="su-top"><div class="su-nm card-name">' + safe(s.name) + '<span class="su-cd">' + safe(s.market || '') + ' ' + safe(s.code) + '</span></div>' +
+          '<span class="su-badge card-badge" style="background:' + mColor + '22; color:' + mColor + '; border-color:' + mColor + '66;">' + safe(s.patternLabel || m.label) + '</span></div>' +
+          '<div class="su-px card-price-row"><span class="p">' + won(s.price) + '</span>' +
+          '<span class="c" style="color:' + chgColor + ';">' + pctTxt(s.changeRatio) + '</span>' +
+          '<span class="l">' + (s.valueText ? '대금 ' + safe(s.valueText) : '') + '</span></div>' +
+          '<div class="su-rows">' +
+            '<div class="su-row"><span class="k">기준가(전일 종가)</span><span class="v" style="color:#fbbf24;">' + won(s.basePrice || s.price) + '</span></div>' +
+            '<div class="su-row"><span class="k">5일선 / 20일선</span><span class="v">' + won(s.ma5) + ' / ' + won(s.ma20) + '</span></div>' +
+            '<div class="su-row"><span class="k">120일 전고점 이격</span><span class="v" style="color:' + (typeof s.gap120 === 'number' && Math.abs(s.gap120) <= 3 ? '#6ee7b7' : '#cbd5e1') + ';">' + (typeof s.gap120 === 'number' ? (s.gap120 > 0 ? '+' : '') + s.gap120.toFixed(2) + '%' : '—') + '</span></div>' +
+            '<div class="su-row"><span class="k">6대 팁</span><span class="v" style="color:' + ((s.tipScore || 0) >= 4 ? '#6ee7b7' : (s.tipScore || 0) >= 2 ? '#fbbf24' : '#fca5a5') + ';">' + tipPass + '</span></div>' +
+          '</div>' +
+          '<canvas class="su-mini" data-su-mini="' + safe(s.code) + '" data-h="96" aria-label="' + safe(s.name) + ' 일봉 미니 차트"></canvas>' +
+          '<div class="su-cap"><span>일봉 ' + ((s.candles || []).length || 0) + '봉 · 핀치 확대 · 좌우 드래그</span><span class="tap">1탭 = 큰 차트</span></div>' +
+          '<div class="su-plan">' +
+            '<div class="hd">🎯 타점 요약 · 신정재 원전</div>' +
+            '<div class="r"><span class="k">매수</span><span class="v" style="color:#6ee7b7;">' + (s.track === 'p4' ? '엔벨로프 20일선 지지' : '15:18~15:20 종가') + '</span></div>' +
+            '<div class="r"><span class="k">익절</span><span class="v" style="color:#a855f7;">' + (s.track === 'p4' ? '엔벨로프 +10% 분할' : '+3% / +5%') + '</span></div>' +
+            '<div class="r"><span class="k">손절</span><span class="v" style="color:#fca5a5;">' + won(s.stopPrice) + (s.track === 'p4' ? ' (20일선 이탈)' : ' (-0.8%)') + '</span></div>' +
+            '<div class="r"><span class="k">청산 시한</span><span class="v">' + (s.track === 'p4' ? '스윙 (20일선 이탈까지)' : '익일 09:05 전') + '</span></div>' +
+          '</div>' +
+          '<div class="su-reason">' + safe(s.patternNote || '') + (s.capText ? ' · 시총 ' + safe(s.capText) : '') + '</div>';
         box.appendChild(card);
       });
       if (!shown) {
@@ -15729,6 +15928,7 @@ function openDetail(title, v1, v2, desc) {
           '조건을 임의로 완화해 채우지 않습니다(원전 기준 유지).';
         box.appendChild(empty);
       }
+      try { drawMiniCharts(); } catch (e) {}
       try { if (window.StrategyPins) window.StrategyPins.annotate('jongbe'); } catch (e) {}
     }
 
@@ -20628,6 +20828,7 @@ window.BijoongTab = {
 </script>
 <!-- /📊 비중법사 탭 엔진 END -->
   <script defer src="strategy-pins.js"></script>
+  <script defer src="strat-card-mini.js"></script>
   <script defer src="live-kkangto.js"></script>
   <script defer src="live-strategy-panels.js"></script>
 <script defer src="live-kis-supply.js"></script>
