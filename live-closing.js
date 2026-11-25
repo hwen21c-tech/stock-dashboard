@@ -290,6 +290,8 @@
 
   function chimCard(p, i) {
     var chips = [];
+    /* 📰 재료/테마 뱃지 — 서버가 재료를 확인해 내려준 종목만 카드가 된다(화면은 판정하지 않는다) */
+    if (p.materialTag) chips.push(chip('warm', '📰 ' + p.materialTag));
     chips.push(chip(trendCls(p.programTrend),
       '프로그램 ' + (isNum(p.programEok) ? signedEok(p.programEok) : '미수신')));
     if (isNum(p.programQty)) chips.push(chip('mute', qtyText(p.programQty)));
@@ -316,6 +318,7 @@
       (p.themeName ? ' · ' + esc(p.themeName) : '') +
       (p.tag ? ' · ' + esc(p.tag) : '') + '</div>' +
       '<div class="op-chips">' + chips.join('') + '</div>' +
+      (p.materialLine ? '<div class="op-why" style="color:#fcd34d;">📰 재료: ' + esc(p.materialLine) + '</div>' : '') +
       '<div class="op-why">' + esc(p.chimchakhaeReason || '') + '</div>' +
       '</div>';
   }
@@ -471,7 +474,8 @@
     var note = $('cpNote');
     if (note) {
       var r = (CHIM && CHIM.rules) || {};
-      note.innerHTML = '📘 <b style="color:#c7d2fe;">침착해 종가베팅</b> — ' + esc(r.select || '프로그램 순매수 최우선') +
+      note.innerHTML = '📘 <b style="color:#c7d2fe;">침착해 종가베팅</b> — ' + esc(r.material || '재료가 확인된 종목만 후보') +
+        (r.select ? '<br><span style="color:#cbd5e1;">선별: ' + esc(r.select) + '</span>' : '') +
         (r.sort ? '<br><span style="color:#94a3b8;">정렬: ' + esc(r.sort) + '</span>' : '') +
         (gateLine() ? '<br>' + gateLine() : '') +
         (CHIM && CHIM.asOfLabel ? '<br><span style="color:#94a3b8;">기준: ' + esc(CHIM.asOfLabel) +
@@ -487,7 +491,7 @@
       var nts = ((CHIM && CHIM.notes) || []).filter(Boolean);
       body.innerHTML = chimBannerHtml() +
         '<div style="font-size:11.5px; color:#fca5a5; padding:8px; line-height:1.7;">' +
-        '프로그램 순매수·방어 조건을 통과한 종목이 없습니다' +
+        '재료(테마·뉴스·공시)와 프로그램 방어 조건을 함께 통과한 종목이 없습니다' +
         ' <span style="color:#94a3b8;">(기준을 임의로 완화해 채우지 않습니다)</span>' +
         (nts.length ? '<br><span style="color:#fcd34d;">' + esc(nts.join(' ')) + '</span>' : '') + '</div>';
     } else {
@@ -505,13 +509,17 @@
     var foot = $('cpFoot');
     if (foot) {
       var rl = (CHIM && CHIM.rules) || {};
+      var mg = (CHIM && CHIM.materialGate) || null;
       foot.innerHTML = '출처: ' + esc((CHIM && CHIM.programSource) || 'KIS 종목별 프로그램매매추이(0465)') +
         (CHIM && CHIM.generatedAtKst ? ' · ' + esc(CHIM.generatedAtKst) + ' 갱신' : '') +
+        (CHIM && CHIM.materialSource ? '<br><span style="color:#94a3b8;">' + esc(CHIM.materialSource) + '</span>' : '') +
+        (mg ? '<br><span style="color:#94a3b8;">재료 게이트: 테마 ' + (mg.theme || 0) + ' · 뉴스 ' + (mg.news || 0) +
+          ' · 재료 미확인 제외 ' + (mg.none || 0) + '종목</span>' : '') +
         (CHIM && CHIM.afterHoursGuide ? '<br>시간외·익일 08:50: ' + esc(CHIM.afterHoursGuide) : '') +
         (rl.split ? '<br>3단 분할: ' + esc(rl.split) : '') +
         (CHIM && CHIM.warnSource ? '<br><span style="color:#94a3b8;">경보 출처: ' + esc(CHIM.warnSource) + '</span>' : '') +
         (rl.caveat ? '<br><span style="color:#94a3b8;">' + esc(rl.caveat) + '</span>' : '') +
-        '<br>카드를 누르면 상세 차트와 함께 <b style="color:#c7d2fe;">📘 침착해 관점 종배 분석(선정 사유·매수타점·3단 분할·손절)</b>이 열립니다.';
+        '<br>카드를 누르면 상세 차트와 함께 <b style="color:#c7d2fe;">📘 침착해 관점 종배 분석(재료·선정 사유·매수타점·3단 분할·손절)</b>이 열립니다.';
     }
 
     Array.prototype.forEach.call(body.querySelectorAll('[data-ck-idx]'), function (el) {
@@ -536,6 +544,7 @@
         : '';
     };
     var head = '<div style="font-size:10.5px; color:#e2e8f0; line-height:1.6;">' +
+      (p.materialLine ? '· 📰 재료 <b style="color:#fcd34d;">' + esc(p.materialLine) + '</b><br>' : '') +
       '· 현재가 <b>' + won(p.price) + '</b> · 등락률 <b style="color:' + upColor(p.changePct) + ';">' + pctf(p.changePct) + '</b><br>' +
       '· 당일 거래대금 <b>' + eok(p.valueEok) + '</b><br>' +
       '· 프로그램 순매수 <b style="color:' + (isNum(p.programEok) ? upColor(p.programEok) : '#94a3b8') + ';">' +
@@ -562,10 +571,37 @@
         '</div></div>'
       : '';
 
+    /* ① 종배 선정 사유 — **재료(테마·뉴스·공시) 근거가 먼저**, 그다음 프로그램·외인/기관 수급 */
+    var matNews = p.materialNews || null;
+    var matDart = p.materialDart || null;
+    var materialBlock =
+      '<div style="margin:4px 0 2px; color:#fcd34d; font-weight:700;">재료 · 이슈</div>' +
+      (p.materialTag ? line('뱃지', p.materialTag) : '') +
+      line('재료', p.materialLine || '재료 미확인') +
+      (matNews && matNews.url
+        ? '<div style="margin:3px 0;"><span style="color:#a5b4fc; font-weight:700;">근거</span> ' +
+          '<a href="' + esc(matNews.url) + '" target="_blank" rel="noopener" style="color:#93c5fd;">' + esc(matNews.title) + '</a>' +
+          (matNews.press ? ' <span style="color:#94a3b8;">(' + esc(matNews.press) + (matNews.time ? ' ' + esc(matNews.time) : '') + ')</span>' : '') +
+          '</div>'
+        : (matNews
+          ? '<div style="margin:3px 0;"><span style="color:#a5b4fc; font-weight:700;">근거</span> ' + esc(matNews.title) +
+            (matNews.press ? ' <span style="color:#94a3b8;">(' + esc(matNews.press) + (matNews.time ? ' ' + esc(matNews.time) : '') + ')</span>' : '') +
+            '</div>'
+          : '')) +
+      (matDart
+        ? '<div style="margin:3px 0;"><span style="color:#a5b4fc; font-weight:700;">공시</span> ' + esc(matDart.label) +
+          ' — ' + esc(matDart.reportNm || '') +
+          (matDart.rceptDate ? ' <span style="color:#94a3b8;">(' + esc(matDart.rceptDate) + ' 접수)</span>' : '') +
+          (matDart.url ? ' <a href="' + esc(matDart.url) + '" target="_blank" rel="noopener" style="color:#93c5fd;">원문</a>' : '') +
+          '</div>'
+        : '') +
+      '<div style="margin:6px 0 2px; color:#6ee7b7; font-weight:700;">수급 · 프로그램 (참고)</div>';
+
     var box = '<details open style="margin-top:8px; padding:7px 9px; border:1px solid rgba(129,140,248,.5); border-radius:8px; background:rgba(49,46,129,.25);">' +
       '<summary style="cursor:pointer; font-size:11px; font-weight:700; color:#c7d2fe; outline:none;">📘 침착해 관점 종배 분석 <span style="font-weight:400; color:#94a3b8;">(접기/펼치기)</span></summary>' +
       '<div style="margin-top:6px; font-size:10.5px; color:#e2e8f0; line-height:1.65;">' +
       '<div style="margin:4px 0 2px; color:#fda4af; font-weight:700;">① 종배 선정 사유</div>' +
+      materialBlock +
       line('·', p.chimchakhaeReason || '') +
       '<div style="margin:7px 0 2px; color:#6ee7b7; font-weight:700;">② 매수타점 및 3단 분할</div>' +
       line('타점', s.entry) +
