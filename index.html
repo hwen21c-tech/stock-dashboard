@@ -5330,7 +5330,10 @@
           .then(function(r){ return r.json(); })
           .then(function(d){
             if (!d || d.ok !== true || !d.candles || !d.candles.length) return;
-            window.modalAllCandles = d.candles.map(function(c){ return { date: c.date, open: c.o, high: c.h, low: c.l, close: c.c, vol: c.v }; });
+            var scArr = d.candles.map(function(c){ return { date: c.date, open: c.o, high: c.h, low: c.l, close: c.c, vol: c.v }; });
+            /* 1분봉을 보는 중이면 일봉은 저장만 하고 화면을 덮지 않는다 (2026-11-26 F존·K존) */
+            if (window.MODAL_TF === 'min') { try { if (window.FKModal && window.FKModal.stashDay) window.FKModal.stashDay(scArr); } catch (eSk) {} return; }
+            window.modalAllCandles = scArr;
             window.modalViewCount = Math.min(60, window.modalAllCandles.length);
             window.modalViewOffset = 0;
             var notice = $('modalChartNotice'); if (notice) notice.style.display = 'none';
