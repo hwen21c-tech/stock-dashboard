@@ -131,8 +131,13 @@
         for (var i = 0; i < muts.length; i += 1) {
           var m = muts[i];
           if (m.type === 'characterData') {
-            var pe = m.target && m.target.parentElement;
-            if (pe && !SKIP_TAGS[pe.tagName]) schedule(pe);
+            /* 글자 하나만 바뀐 경우: 부모 서브트리를 다시 걷지 않고 그 텍스트 노드만 검사한다
+             *  (15초마다 갱신되는 관제탑에서 폰 CPU·배터리를 아끼기 위한 2026-11-27 조정) */
+            var tn = m.target;
+            var pe = tn && tn.parentElement;
+            if (tn && pe && !SKIP_TAGS[pe.tagName] && !(pe.closest && pe.closest('script,style,pre,code,textarea,template,noscript,[data-raw-text]'))) {
+              fixText(tn);
+            }
             continue;
           }
           var added = m.addedNodes || [];
