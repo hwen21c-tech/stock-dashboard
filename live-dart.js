@@ -278,8 +278,10 @@
         if (reqId !== state.reqId) return;
         var body = out.body;
         if (!body) { applyFallback({ reason: 'NO_RESPONSE' }); return; }
-        if (body.ok === true) applyLive(body);
-        else applyFallback(body);
+        if (body.ok === true) {
+          if (window.SD && window.SD.run) window.SD.run('live-dart.applyLive', function () { applyLive(body); }, 0);
+          else applyLive(body);
+        } else applyFallback(body);
       })
       .catch(function () {
         state.polling = false;
