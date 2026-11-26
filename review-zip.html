@@ -1849,6 +1849,11 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   function boot(data) {
     S.meta = data.meta || {};
     S.rows = prepare(data.campaigns || []);
+    /* 모집이 끝나 목록에서 뺀 캠페인의 찜 키는 같이 지운다 — 찜 건수와 실제 목록이 어꺰나지 않게 */
+    var live = {};
+    S.rows.forEach(function (r) { live[r.key] = 1; });
+    var wished = S.wish.filter(function (k) { return live[k]; });
+    if (wished.length !== S.wish.length) { S.wish = wished; saveWish(); }
     renderStats(); renderAll();
     renderHoney(); renderKeywords(); renderMeta();
     applyFilterOpen(filterOpen(), false);
