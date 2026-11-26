@@ -1,0 +1,3190 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>수익화 스튜디오 PRO · 콘텐츠 수익화 자동화</title>
+  <meta name="description" content="네이버 블로그 SEO 원고, 스레드 본문·링크 댓글 분리, 공정위 고지 문구, 미리캔버스 벡터 프롬프트를 한 화면에서 만드는 BYOK 정적 웹앱입니다." />
+  <!-- PWA: 홈 화면에 추가 / 앱 설치 -->
+  <meta name="theme-color" content="#4F46E5" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="수익화 스튜디오 PRO" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="수익화 스튜디오" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <link rel="manifest" href="./creator-studio-manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./creator-studio-icon-192.png" />
+  <link rel="apple-touch-icon" href="./creator-studio-icon-180.png" />
+  <!-- Pretendard & Inter / Noto Sans KR Typography -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Pretendard', '"Noto Sans KR"', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#EEF2FF',
+              100: '#E0E7FF',
+              200: '#C7D2FE',
+              500: '#6366F1',
+              600: '#4F46E5',
+              700: '#4338CA',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: Pretendard, 'Noto Sans KR', Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F8FAFC;
+      color: #0F172A;
+    }
+    /* Transparent checkerboard canvas for wireframe SVG preview */
+    .checkerboard-bg {
+      background-color: #FFFFFF;
+      background-image:
+        linear-gradient(45deg, #E2E8F0 25%, transparent 25%),
+        linear-gradient(-45deg, #E2E8F0 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #E2E8F0 75%),
+        linear-gradient(-45deg, transparent 75%, #E2E8F0 75%);
+      background-size: 18px 18px;
+      background-position: 0 0, 0 9px, 9px -9px, -9px 0px;
+    }
+    /* Subtle scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94A3B8;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col overflow-x-hidden antialiased selection:bg-indigo-600 selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-[80] flex flex-col gap-2 pointer-events-none max-w-sm w-[calc(100%-2rem)] sm:w-auto"></div>
+
+  <!-- ======================================================================= -->
+  <!-- TOP HEADER BAR                                                          -->
+  <!-- ======================================================================= -->
+  <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+    <div class="max-w-[1460px] mx-auto px-3 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand Identity -->
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 via-indigo-500 to-emerald-500 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 shrink-0">
+          <i data-lucide="sparkles" class="w-5 h-5"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <h1 class="text-sm sm:text-base lg:text-lg font-extrabold tracking-tight text-slate-900 truncate">
+              콘텐츠 수익화 자동화 스튜디오
+            </h1>
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-extrabold bg-indigo-600 text-white tracking-wider">PRO</span>
+            <span class="hidden md:inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">BYOK 정적 웹</span>
+          </div>
+          <p class="text-[11px] text-slate-500 truncate">
+            네이버 블로그 SEO · 스레드 링크 분리 · 쿠팡파트너스 · 미리캔버스 벡터 수익화 스튜디오
+          </p>
+        </div>
+      </div>
+
+      <!-- Header Right Controls -->
+      <div class="flex items-center flex-wrap gap-2">
+        <!-- Live API Status Badge -->
+        <button type="button" id="btn-header-status" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100">
+          <span id="api-status-text">⚪ 데모 모드</span>
+        </button>
+
+        <!-- Install App (PWA · beforeinstallprompt) -->
+        <button type="button" id="btn-install-app" class="hidden items-center gap-1.5 px-3 py-2 rounded-xl whitespace-nowrap text-xs font-bold bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200/80 transition">
+          <span>📲 앱 설치</span>
+        </button>
+
+        <!-- User Guide Button -->
+        <button type="button" id="btn-open-guide" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl whitespace-nowrap text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/80 transition">
+          <span>📖 사용 설명서</span>
+        </button>
+
+        <!-- API Settings Button -->
+        <button type="button" id="btn-open-api-modal" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/80 transition">
+          <span>⚙️ API 설정</span>
+        </button>
+
+        <!-- JSON Backup -->
+        <button type="button" id="btn-open-backup-modal" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition" title="카테고리·큐·체크리스트 JSON 백업">
+          <i data-lucide="download" class="w-3.5 h-3.5 text-slate-500"></i>
+          <span class="hidden sm:inline">JSON 백업</span>
+        </button>
+
+        <!-- JSON Restore -->
+        <label class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 transition cursor-pointer" title="JSON 백업 파일 복원">
+          <i data-lucide="upload" class="w-3.5 h-3.5 text-slate-500"></i>
+          <span class="hidden sm:inline">JSON 복원</span>
+          <input type="file" id="input-restore-json" accept=".json" class="hidden" />
+        </label>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================================= -->
+  <!-- MAIN WORKSPACE GRID                                                     -->
+  <!-- ======================================================================= -->
+  <main class="flex-1 max-w-[1460px] w-full mx-auto px-3 sm:px-6 py-5">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+      <!-- =================================================================== -->
+      <!-- LEFT SIDEBAR: CATEGORY OS & GENERATION CONTROLS (4 COLS)            -->
+      <!-- =================================================================== -->
+      <aside class="lg:col-span-4 space-y-4">
+
+        <!-- 1. Unlimited Category & Persona OS -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-4">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <i data-lucide="layers" class="w-4 h-4 text-indigo-600"></i>
+              무제한 카테고리 & 페르소나 OS
+            </h2>
+            <button type="button" id="btn-open-cat-modal" class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              카테고리 추가/관리
+            </button>
+          </div>
+
+          <!-- Category Pills -->
+          <div id="category-pills" class="flex flex-wrap gap-1.5 max-h-40 overflow-y-auto pr-1"></div>
+
+          <!-- Active Persona Card -->
+          <div class="rounded-xl bg-slate-50 border border-slate-200/80 p-3 space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <span id="active-cat-title" class="text-xs font-extrabold text-slate-900">⛺ 캠핑+육아</span>
+              <span id="active-cat-tone" class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80">친근한 육아/생활 구어체</span>
+            </div>
+            <p id="active-cat-persona" class="text-[11px] text-slate-600 leading-relaxed"></p>
+          </div>
+
+          <!-- Keyword Input & Quick Recommendation Chips -->
+          <div class="space-y-2">
+            <label for="topic-input" class="block text-xs font-bold text-slate-800">핵심 키워드 / 콘텐츠 주제</label>
+            <input
+              type="text"
+              id="topic-input"
+              value="동계 캠핑 바닥 냉기 차단"
+              placeholder="예: 아이와 동계 캠핑 바닥 보온 세팅"
+              class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+            />
+            <div>
+              <span class="block text-[11px] font-medium text-slate-400 mb-1.5">카테고리 맞춤 추천 키워드 (클릭 시 입력)</span>
+              <div id="recommended-chips" class="flex flex-wrap gap-1.5"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. Tone & Naver Blog Structure Controls -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3.5">
+          <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4 text-emerald-600"></i>
+            톤앤매너 & 네이버 저품질 회피 구조
+          </h2>
+
+          <!-- Tone Selector -->
+          <div class="space-y-1.5">
+            <label for="tone-select" class="block text-xs font-bold text-slate-700">글쓰기 톤 선택</label>
+            <select id="tone-select" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="친근한 육아/생활 구어체">친근한 육아/생활 구어체</option>
+              <option value="깔끔한 정보 요약형">깔끔한 정보 요약형</option>
+              <option value="감성 스토리텔링형">감성 스토리텔링형</option>
+              <option value="직설적 비교 분석형">직설적 비교 분석형</option>
+            </select>
+          </div>
+
+          <!-- Structure Selector + Random Rotation -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between gap-2">
+              <label for="structure-select" class="text-xs font-bold text-slate-700">블로그 구조 (5종 로테이션)</label>
+              <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                <input type="checkbox" id="toggle-random-structure" checked class="w-4 h-4 accent-indigo-600 rounded" />
+                <span class="text-[11px] font-bold text-indigo-700">자동 랜덤 로테이션</span>
+              </label>
+            </div>
+            <select id="structure-select" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="경험공감형">1. 경험공감형 (실제 상황 공감 · 체류시간 상승)</option>
+              <option value="체크리스트형">2. 체크리스트형 (출발/실행 전 핵심 점검표)</option>
+              <option value="비교분석형">3. 비교분석형 (장단점·기준 정리 · 전환 최적화)</option>
+              <option value="Q&A해결형">4. Q&A해결형 (자주 묻는 고민 해결 · 롱테일 SEO)</option>
+              <option value="실수방지형">5. 실수방지형 (초보 시행착오 예방 가이드)</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- 3. Coupang Partners Monetization Panel -->
+        <section class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <h2 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <i data-lucide="shopping-bag" class="w-4 h-4 text-rose-500"></i>
+              쿠팡파트너스 수익화 패널
+            </h2>
+          </div>
+
+          <!-- 3 Modes: OFF / 단일 상품 추천 / 3종 비교 추천 -->
+          <div class="grid grid-cols-3 gap-1.5 p-1 rounded-xl bg-slate-100" id="cp-mode-toggle">
+            <button type="button" data-cp="off" class="cp-mode-btn py-2 rounded-lg text-xs font-bold text-slate-600 transition">OFF</button>
+            <button type="button" data-cp="single" class="cp-mode-btn py-2 rounded-lg text-xs font-extrabold bg-white text-indigo-700 shadow-xs transition">단일 상품 추천</button>
+            <button type="button" data-cp="compare3" class="cp-mode-btn py-2 rounded-lg text-xs font-bold text-slate-600 transition">3종 비교 추천</button>
+          </div>
+
+          <div id="cp-fields-wrap" class="space-y-3">
+            <!-- FTC Position Selector -->
+            <div class="space-y-1.5 bg-slate-50 px-3 py-2.5 rounded-xl border border-slate-200/80">
+              <span class="block text-[11px] font-bold text-slate-700">공정위 대가성 고지 문구 위치</span>
+              <div class="grid grid-cols-3 gap-1.5 text-xs">
+                <label class="flex items-center justify-center gap-1 py-1.5 rounded-lg bg-white border border-slate-200 cursor-pointer hover:border-indigo-300">
+                  <input type="radio" name="ftc-pos" value="both" class="accent-indigo-600" />
+                  <span class="font-bold text-[11px]">상단+하단</span>
+                </label>
+                <label class="flex items-center justify-center gap-1 py-1.5 rounded-lg bg-white border border-slate-200 cursor-pointer hover:border-indigo-300">
+                  <input type="radio" name="ftc-pos" value="top" class="accent-indigo-600" />
+                  <span class="font-bold text-[11px]">상단</span>
+                </label>
+                <label class="flex items-center justify-center gap-1 py-1.5 rounded-lg bg-white border border-slate-200 cursor-pointer hover:border-indigo-300">
+                  <input type="radio" name="ftc-pos" value="bottom" checked class="accent-indigo-600" />
+                  <span class="font-bold text-[11px]">하단</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Product Inputs Container -->
+            <div id="cp-products-list" class="space-y-2.5"></div>
+
+            <div class="flex items-start gap-2 p-2.5 rounded-xl bg-amber-50 border border-amber-200/80 text-[11px] text-amber-800 leading-relaxed">
+              <i data-lucide="info" class="w-4 h-4 shrink-0 mt-0.5 text-amber-600"></i>
+              <span>URL을 비워두면 <code class="font-mono bg-white px-1 rounded">[쿠팡파트너스 링크 삽입]</code>으로 표시됩니다. 스레드는 링크가 자동으로 <strong>전용 첫 번째 댓글</strong>로 분리됩니다.</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Primary CTA + Error Fallback Banner -->
+        <div class="space-y-2.5">
+          <button
+            type="button"
+            id="btn-generate-all"
+            class="w-full py-4 px-5 rounded-2xl bg-gradient-to-r from-indigo-600 to-emerald-600 hover:from-indigo-700 hover:to-emerald-700 active:scale-[0.99] text-white font-extrabold text-sm shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2 transition cursor-pointer"
+          >
+            <span id="gen-icon-wrap" class="text-base">⚡</span>
+            <i data-lucide="loader-2" id="gen-spinner" class="w-5 h-5 animate-spin hidden"></i>
+            <span id="gen-btn-label">원클릭 통합 생성</span>
+          </button>
+
+          <!-- API Error Fallback Box -->
+          <div id="api-error-banner" class="hidden rounded-2xl bg-rose-50 border border-rose-200 p-4 space-y-2.5 text-xs">
+            <div class="flex items-start gap-2 text-rose-800">
+              <i data-lucide="alert-circle" class="w-4 h-4 shrink-0 mt-0.5 text-rose-600"></i>
+              <div class="space-y-1 min-w-0">
+                <div class="font-extrabold">Gemini API 호출 오류</div>
+                <p id="api-error-detail" class="text-[11px] text-rose-700 break-words leading-relaxed"></p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" id="btn-fallback-demo" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-[11px] transition">
+                데모 모드로 대신 생성
+              </button>
+              <button type="button" id="btn-error-open-settings" class="px-3 py-1.5 rounded-lg bg-white border border-rose-300 text-rose-700 font-bold text-[11px] hover:bg-rose-100 transition">
+                API 설정 열기
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- =================================================================== -->
+      <!-- RIGHT WORKSPACE: 4 MAIN STUDIO TABS (8 COLS)                        -->
+      <!-- =================================================================== -->
+      <section class="lg:col-span-8 space-y-4 min-w-0">
+
+        <!-- Navigation Tabs -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-1.5 shadow-xs grid grid-cols-2 sm:grid-cols-4 gap-1.5" role="tablist">
+          <button type="button" data-tab="blog" class="ws-tab py-2.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition bg-slate-900 text-white shadow-xs">
+            <i data-lucide="file-text" class="w-4 h-4 shrink-0"></i>
+            <span class="truncate">네이버 블로그 SEO</span>
+          </button>
+          <button type="button" data-tab="threads" class="ws-tab py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition text-slate-600 hover:bg-slate-100">
+            <i data-lucide="at-sign" class="w-4 h-4 shrink-0"></i>
+            <span class="truncate">스레드 알고리즘 대응</span>
+          </button>
+          <button type="button" data-tab="miricanvas" class="ws-tab py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition text-slate-600 hover:bg-slate-100">
+            <i data-lucide="palette" class="w-4 h-4 shrink-0"></i>
+            <span class="truncate">미리캔버스 스튜디오</span>
+            <span class="hidden sm:inline-flex px-1.5 py-0.2 rounded text-[9px] font-extrabold bg-emerald-100 text-emerald-700">UP</span>
+          </button>
+          <button type="button" data-tab="queue" class="ws-tab py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition text-slate-600 hover:bg-slate-100">
+            <i data-lucide="list-checks" class="w-4 h-4 shrink-0"></i>
+            <span class="truncate">배치 큐 & 트래커</span>
+            <span id="queue-badge" class="px-1.5 py-0.5 rounded-full text-[10px] font-extrabold bg-indigo-100 text-indigo-700">4</span>
+          </button>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- TAB 1: NAVER BLOG (ANTI-LOW-QUALITY SEO)                          -->
+        <!-- ================================================================= -->
+        <div id="panel-blog" class="tab-panel space-y-4">
+
+          <!-- Live Quality Meter Bar -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="rounded-xl bg-slate-50 border border-slate-200/80 p-3">
+              <div class="flex items-center justify-between gap-1 text-[11px] font-semibold text-slate-500">
+                <span>글자 수 (권장 1,500~2,500자)</span>
+                <span id="diag-char-badge" class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-700">최적</span>
+              </div>
+              <div id="diag-char-total" class="mt-1 text-base font-extrabold text-slate-900">0자</div>
+              <div id="diag-char-nospace" class="text-[11px] text-slate-500">공백 제외 0자</div>
+            </div>
+
+            <div class="rounded-xl bg-slate-50 border border-slate-200/80 p-3">
+              <div class="flex items-center justify-between gap-1 text-[11px] font-semibold text-slate-500">
+                <span>핵심 키워드 밀도(%)</span>
+                <span id="diag-kw-badge" class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-indigo-100 text-indigo-700">적정</span>
+              </div>
+              <div id="diag-kw-val" class="mt-1 text-base font-extrabold text-slate-900">0회 (0.0%)</div>
+              <div id="diag-kw-target" class="text-[11px] text-slate-500 truncate">키워드: -</div>
+            </div>
+
+            <div class="rounded-xl bg-slate-50 border border-slate-200/80 p-3">
+              <div class="flex items-center justify-between gap-1 text-[11px] font-semibold text-slate-500">
+                <span>AI 상투어 탐지 경고</span>
+                <span id="diag-cliche-badge" class="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-700">안전</span>
+              </div>
+              <div id="diag-cliche-count" class="mt-1 text-base font-extrabold text-slate-900">0건 감지</div>
+              <div id="diag-cliche-words" class="text-[11px] text-slate-500 truncate">기계적 표현 없음</div>
+            </div>
+          </div>
+
+          <!-- SEO Title Candidates (3) -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <i data-lucide="heading" class="w-4 h-4 text-indigo-600"></i>
+                SEO 제목 후보 3종
+              </h3>
+              <div class="flex items-center flex-wrap gap-1.5">
+                <span id="blog-mode-chip" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700">데모 모드</span>
+                <span id="blog-structure-chip" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700">구조: 경험공감형</span>
+                <button type="button" id="btn-open-master-prompt" class="text-[11px] font-bold px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-slate-800 text-white transition">
+                  📋 마스터 프롬프트 복사/보기
+                </button>
+              </div>
+            </div>
+            <div id="blog-titles-wrap" class="space-y-2"></div>
+          </div>
+
+          <!-- Blog Body Editor + Human-Touch Highlight Notice -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-3.5">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div class="flex items-center flex-wrap gap-2">
+                <h3 class="text-sm font-extrabold text-slate-900">네이버 블로그 본문 초안</h3>
+                <span id="human-slot-badge" class="inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300/70">
+                  ✍️ 인간미 슬롯 2개 대기 중
+                </span>
+              </div>
+              <div class="flex items-center flex-wrap gap-2">
+                <button type="button" id="btn-insert-human-slot" class="py-2 px-3 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 transition">
+                  + 경험/사진 슬롯 추가
+                </button>
+                <button type="button" id="btn-copy-blog-body" class="py-2 px-4 rounded-xl text-xs font-extrabold bg-slate-900 hover:bg-slate-800 text-white flex items-center gap-1.5 shadow-xs transition">
+                  <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                  본문 전체 복사
+                </button>
+              </div>
+            </div>
+
+            <!-- Highlighted Human-Touch Slot Reminder -->
+            <div id="human-slot-callout" class="rounded-xl bg-amber-50/90 border border-amber-200 px-3.5 py-2.5 text-xs text-amber-900 flex items-center justify-between gap-2 flex-wrap">
+              <span>발행 전 본문 속 <strong class="bg-amber-200/80 px-1.5 py-0.5 rounded text-amber-950">[여기에 실제 경험/사진 1줄 추가]</strong> 구간을 실제 촬영 사진이나 에피소드로 채워주세요.</span>
+            </div>
+
+            <textarea
+              id="blog-body-editor"
+              rows="18"
+              class="w-full p-4 rounded-xl bg-slate-50/70 border border-slate-200 text-sm leading-7 text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition resize-y"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- TAB 2: THREADS (ALGORITHM-SAFE LINK SPLIT)                        -->
+        <!-- ================================================================= -->
+        <div id="panel-threads" class="tab-panel hidden space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Type A -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between space-y-4">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200/70">
+                    A타입 · 공감·정보 저장 유도형
+                  </span>
+                  <span id="thread-a-count" class="text-xs font-semibold text-slate-400">0 / 500자</span>
+                </div>
+                <p class="text-[11px] text-slate-500">외부 링크를 본문에서 제거해 스레드 자연 도달률(알고리즘 노출)을 보호합니다.</p>
+                <textarea id="thread-a-editor" rows="9" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm leading-relaxed text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white"></textarea>
+              </div>
+              <button type="button" id="btn-copy-thread-a" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                A타입 본문 복사
+              </button>
+            </div>
+
+            <!-- Type B -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between space-y-4">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                    B타입 · 질문·댓글 소통형
+                  </span>
+                  <span id="thread-b-count" class="text-xs font-semibold text-slate-400">0 / 500자</span>
+                </div>
+                <p class="text-[11px] text-slate-500">가벼운 경험 질문으로 댓글 대화를 유도해 팔로워 반응도와 계정 점수를 높입니다.</p>
+                <textarea id="thread-b-editor" rows="9" class="w-full p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-sm leading-relaxed text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white"></textarea>
+              </div>
+              <button type="button" id="btn-copy-thread-b" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 transition">
+                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                B타입 소통 본문 복사
+              </button>
+            </div>
+          </div>
+
+          <!-- Dedicated First Comment Card -->
+          <div class="bg-white rounded-2xl border-2 border-rose-200 p-5 shadow-xs space-y-3.5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                  <i data-lucide="corner-down-right" class="w-4 h-4"></i>
+                </span>
+                <div>
+                  <h3 class="text-sm font-extrabold text-slate-900">전용 첫 번째 댓글 (외부 링크 분리 · 쿠팡 + 공정위 고지)</h3>
+                  <p class="text-[11px] text-slate-500">A타입 본문 발행 직후 첫 답글로 등록하여 링크 클릭 전환과 노출 보호를 동시에 챙기세요.</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                알고리즘 안전 분리
+              </span>
+            </div>
+
+            <textarea id="thread-comment-editor" rows="5" class="w-full p-3.5 rounded-xl bg-rose-50/40 border border-rose-200 text-sm leading-relaxed text-slate-800 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:bg-white"></textarea>
+
+            <div class="flex justify-end">
+              <button type="button" id="btn-copy-thread-comment" class="py-2.5 px-5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-xs transition">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                첫 번째 댓글 원클릭 복사
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- TAB 3: MIRICANVAS MONETIZATION STUDIO (HEAVILY UPGRADED)          -->
+        <!-- ================================================================= -->
+        <div id="panel-miricanvas" class="tab-panel hidden space-y-5">
+
+          <!-- SECTION A: 2-Stage Realistic Workflow Banner -->
+          <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-4 sm:p-5 shadow-md space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-extrabold tracking-wide">수익화 실전 파이프라인</span>
+                <h3 class="text-sm sm:text-base font-extrabold">미리캔버스 심사 통과를 위한 2단계 현실 워크플로우</h3>
+              </div>
+              <span class="text-[11px] text-slate-300">스튜디오 뼈대 기획 → 외부 벡터 툴 마감</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+              <div class="rounded-xl bg-white/10 border border-white/10 p-3 space-y-1">
+                <div class="text-[11px] font-extrabold text-indigo-300">STEP 1 · 스튜디오 기획</div>
+                <p class="text-xs text-slate-100 leading-snug">니치 테마 세트(4~12종) 구성 & 벡터 변환용 정밀 프롬프트 생성</p>
+              </div>
+              <div class="rounded-xl bg-white/10 border border-white/10 p-3 space-y-1">
+                <div class="text-[11px] font-extrabold text-emerald-300">STEP 2 · 이미지 AI 생성</div>
+                <p class="text-xs text-slate-100 leading-snug">Gemini(Nano Banana)·Midjourney 등에서 순수 흰 배경 플랫 시안 뽑기</p>
+              </div>
+              <div class="rounded-xl bg-white/10 border border-white/10 p-3 space-y-1">
+                <div class="text-[11px] font-extrabold text-amber-300">STEP 3 · 벡터 트레이싱·정리</div>
+                <p class="text-xs text-slate-100 leading-snug">Vectorizer.AI · 일러스트레이터 · 잉크스케이프에서 패스·배경 정리</p>
+              </div>
+              <div class="rounded-xl bg-white/10 border border-white/10 p-3 space-y-1">
+                <div class="text-[11px] font-extrabold text-rose-300">STEP 4 · 디자인허브 등록</div>
+                <p class="text-xs text-slate-100 leading-snug">10항목 체크리스트 검수 후 업로드 + CSV 검색 태그 원클릭 복붙</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- SECTION B: Vector-Tracing-Ready Image Generation Prompt Preset Builder -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                  <i data-lucide="wand-2" class="w-4 h-4 text-indigo-600"></i>
+                  벡터 변환용 이미지 생성 프롬프트 프리셋 빌더
+                </h3>
+                <p class="text-xs text-slate-500">자동 SVG 트레이싱 시 잡티·그라데이션 오류를 최소화하도록 설계된 4종 전용 스타일 프리셋입니다.</p>
+              </div>
+              <button type="button" id="btn-copy-all-prompts" class="py-2 px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-xs transition">
+                <span>📋 전체 프롬프트 일괄 복사</span>
+              </button>
+            </div>
+
+            <!-- 4 Style Presets -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="miri-preset-grid">
+              <button type="button" data-preset="flat_line" class="miri-preset-card text-left p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 transition space-y-1">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-xs font-extrabold text-slate-900">1. 클린 플랫 라인 아이콘</span>
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-600 text-white">추천</span>
+                </div>
+                <p class="text-[11px] text-slate-600 leading-snug">균일한 진한 외곽선, 플랫 단색 채움, 그라데이션 0%, 순수 흰 배경(#FFFFFF)</p>
+              </button>
+
+              <button type="button" data-preset="pastel_sticker" class="miri-preset-card text-left p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-indigo-300 transition space-y-1">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-xs font-extrabold text-slate-900">2. 파스텔 키즈/감성 스티커</span>
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">인기</span>
+                </div>
+                <p class="text-[11px] text-slate-600 leading-snug">도톰한 웜브라운 외곽선, 최대 4색 파스텔 단색, 한국 문구/다꾸 플랫 스타일, 그림자 없음</p>
+              </button>
+
+              <button type="button" data-preset="monoline" class="miri-preset-card text-left p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-indigo-300 transition space-y-1">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-xs font-extrabold text-slate-900">3. 모노라인 픽토그램</span>
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700">트레이싱 최상</span>
+                </div>
+                <p class="text-[11px] text-slate-600 leading-snug">단일 컬러 기하학 선, 균일한 선 굵기, 면 채움 없음(Zero Fill), 안내·표지판 최적</p>
+              </button>
+
+              <button type="button" data-preset="duotone" class="miri-preset-card text-left p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-indigo-300 transition space-y-1">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-xs font-extrabold text-slate-900">4. 2톤 미니멀 심볼</span>
+                  <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">색상변경 최적</span>
+                </div>
+                <p class="text-[11px] text-slate-600 leading-snug">2색 플랫 듀오톤 솔리드 도형, 날카롭고 깔끔한 외곽 실루엣, 그라데이션 완전 배제</p>
+              </button>
+            </div>
+
+            <!-- Fine-Tuning Controls Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+              <div>
+                <label for="miri-opt-stroke" class="block text-[11px] font-bold text-slate-600 mb-1">선 굵기</label>
+                <select id="miri-opt-stroke" class="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-800">
+                  <option value="thick">두꺼움 (Thick)</option>
+                  <option value="medium" selected>중간 (Medium)</option>
+                  <option value="thin">얇음 (Thin)</option>
+                  <option value="none">외곽선 없음</option>
+                </select>
+              </div>
+              <div>
+                <label for="miri-opt-colors" class="block text-[11px] font-bold text-slate-600 mb-1">최대 색상 수</label>
+                <select id="miri-opt-colors" class="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-800">
+                  <option value="2">2색 (최소)</option>
+                  <option value="3">3색 (권장)</option>
+                  <option value="4" selected>4색 (표준)</option>
+                  <option value="5">5색 (최대)</option>
+                </select>
+              </div>
+              <div>
+                <label for="miri-opt-margin" class="block text-[11px] font-bold text-slate-600 mb-1">여백 비율</label>
+                <select id="miri-opt-margin" class="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-800">
+                  <option value="15" selected>15% 넉넉함</option>
+                  <option value="10">10% 표준</option>
+                </select>
+              </div>
+              <div>
+                <label for="miri-opt-count" class="block text-[11px] font-bold text-slate-600 mb-1">세트 수량</label>
+                <select id="miri-opt-count" class="w-full px-2.5 py-2 rounded-lg border border-slate-200 bg-white text-xs font-bold text-slate-800">
+                  <option value="4">4종 (빠른 테스트)</option>
+                  <option value="8" selected>8종 (기본 세트)</option>
+                  <option value="12">12종 (대용량 묶음)</option>
+                </select>
+              </div>
+
+              <!-- Auto Negative Constraints Toggle -->
+              <div class="col-span-2 sm:col-span-4 pt-2 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2">
+                <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                  <input type="checkbox" id="miri-opt-negative" checked class="w-4 h-4 accent-indigo-600 rounded" />
+                  <span class="text-xs font-bold text-slate-800">자동 네거티브 제약 포함</span>
+                </label>
+                <code class="text-[10px] font-mono text-slate-500 bg-white px-2 py-1 rounded border border-slate-200 truncate max-w-full">
+                  no gradients, no shadows, no texture, no text, no watermark, isolated on pure white background
+                </code>
+              </div>
+            </div>
+
+            <!-- Live Master English Prompt Template Preview -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between gap-2">
+                <span class="text-xs font-extrabold text-slate-800">마스터 영문 프롬프트 템플릿 (실시간 반영)</span>
+                <button type="button" id="btn-copy-master-img-template" class="text-[11px] font-bold text-indigo-600 hover:underline">템플릿만 복사</button>
+              </div>
+              <textarea id="miri-master-template-preview" rows="3" readonly class="w-full p-3 rounded-xl bg-slate-900 text-emerald-300 font-mono text-xs leading-relaxed focus:outline-none"></textarea>
+            </div>
+
+            <!-- Ready-to-Paste Per-Icon Prompts Accordion / Scroll List -->
+            <div class="space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-extrabold text-slate-800">아이콘별 즉시 복사용 이미지 생성 프롬프트 (<span id="miri-prompt-list-count">8</span>종)</span>
+                <span class="text-[11px] text-slate-400">이미지 생성 AI에 그대로 붙여넣어 시안을 뽑으세요</span>
+              </div>
+              <div id="miri-ready-prompts-list" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
+            </div>
+          </div>
+
+          <!-- SECTION C: Set Plan, Wireframe SVG Preview & Metadata CSV -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                  <i data-lucide="pen-tool" class="w-4 h-4 text-emerald-600"></i>
+                  세트 기획 · 뼈대 SVG 미리보기 & 메타데이터 CSV
+                </h3>
+                <p class="text-xs text-slate-500">아래 카드를 클릭해 뼈대 SVG의 색상·선 굵기를 확인하고 등록용 CSV를 내보내세요.</p>
+              </div>
+              <button type="button" id="btn-export-miri-csv" class="py-2 px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold flex items-center gap-1.5 transition">
+                <span>📥 미리캔버스 등록용 메타데이터 CSV 다운로드 (UTF-8 BOM)</span>
+              </button>
+            </div>
+
+            <!-- Important Realistic Note on Wireframe SVG vs Monetization Quality -->
+            <div class="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900 flex items-start gap-2 leading-relaxed">
+              <i data-lucide="lightbulb" class="w-4 h-4 shrink-0 mt-0.5 text-amber-600"></i>
+              <span>
+                <strong>활용 가이드:</strong> 내장된 <strong>뼈대(Wireframe) SVG</strong>는 구도 참고 및 내 블로그·스레드용 가벼운 다이어그램 아이콘으로 바로 쓰기 좋습니다. <strong>미리캔버스 수익화 심사 통과용</strong>으로는 위 <strong>Section B의 벡터 변환 프롬프트</strong>로 고퀄리티 이미지를 뽑아 외부 벡터 툴에서 마감하는 방식을 권장합니다.
+              </span>
+            </div>
+
+            <!-- Interactive Wireframe Stage & Controls -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-center bg-slate-50/70 rounded-2xl border border-slate-200/80 p-4">
+              <div class="md:col-span-5">
+                <div class="aspect-square max-w-[220px] mx-auto rounded-2xl border border-slate-200 checkerboard-bg p-4 flex items-center justify-center shadow-inner">
+                  <div id="svg-live-stage" class="w-full h-full flex items-center justify-center"></div>
+                </div>
+                <div id="svg-active-title" class="text-center text-xs font-extrabold text-slate-800 mt-2 truncate">선택된 요소: -</div>
+              </div>
+
+              <div class="md:col-span-7 space-y-3">
+                <div class="grid grid-cols-2 gap-2.5">
+                  <div class="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">메인 색상</label>
+                    <div class="flex items-center gap-2">
+                      <input type="color" id="svg-primary-color" value="#4F46E5" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+                      <span id="svg-primary-hex" class="text-xs font-mono font-bold text-slate-700">#4F46E5</span>
+                    </div>
+                  </div>
+                  <div class="p-2.5 rounded-xl bg-white border border-slate-200">
+                    <label class="block text-[11px] font-bold text-slate-600 mb-1">포인트 색상</label>
+                    <div class="flex items-center gap-2">
+                      <input type="color" id="svg-accent-color" value="#10B981" class="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
+                      <span id="svg-accent-hex" class="text-xs font-mono font-bold text-slate-700">#10B981</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="p-2.5 rounded-xl bg-white border border-slate-200">
+                  <div class="flex items-center justify-between text-[11px] font-bold text-slate-600 mb-1">
+                    <span>뼈대 외곽선 굵기 (stroke-width)</span>
+                    <span id="svg-stroke-label" class="font-mono text-indigo-700">6px</span>
+                  </div>
+                  <input type="range" id="svg-stroke-slider" min="2" max="12" step="0.5" value="6" class="w-full accent-indigo-600 cursor-pointer" />
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button type="button" id="btn-download-svg" class="py-2.5 px-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    뼈대 .SVG 다운로드
+                  </button>
+                  <button type="button" id="btn-download-png" class="py-2.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 transition">
+                    <i data-lucide="image" class="w-4 h-4"></i>
+                    투명 .PNG (1024×1024)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Icon Concept Cards Grid -->
+            <div id="miri-icons-grid" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+          </div>
+
+          <!-- SECTION D: Interactive Pre-Vector & Pre-Submission Checklist (10 Items) -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                  <i data-lucide="clipboard-check" class="w-4 h-4 text-indigo-600"></i>
+                  벡터 툴 넘기기 전 & 심사 등록 전 인터랙티브 체크리스트
+                </h3>
+                <p class="text-xs text-slate-500">미리캔버스 심사 반려를 막기 위한 필수 10단계 검수표입니다. 체크 상태는 자동 저장됩니다.</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <span id="checklist-status-pill" class="px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                  0/10 완료
+                </span>
+                <button type="button" id="btn-reset-checklist" class="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                  초기화
+                </button>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
+              <div id="checklist-progress-bar" class="h-full bg-gradient-to-r from-indigo-600 to-emerald-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <!-- Two-Stage Checklist Columns -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Stage 1 (4 Items) -->
+              <div class="rounded-2xl bg-slate-50 border border-slate-200/80 p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-extrabold text-indigo-700">1단계 · 이미지 생성 & 벡터 변환(트레이싱) 전 체크</h4>
+                  <span id="stage1-count" class="text-[11px] font-bold text-slate-500">0/4</span>
+                </div>
+                <div id="checklist-stage1" class="space-y-2"></div>
+              </div>
+
+              <!-- Stage 2 (6 Items) -->
+              <div class="rounded-2xl bg-slate-50 border border-slate-200/80 p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                  <h4 class="text-xs font-extrabold text-emerald-700">2단계 · 벡터 툴 후처리 & 심사 등록 전 체크</h4>
+                  <span id="stage2-count" class="text-[11px] font-bold text-slate-500">0/6</span>
+                </div>
+                <div id="checklist-stage2" class="space-y-2"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- TAB 4: BATCH QUEUE & PUBLISHING TRACKER                           -->
+        <!-- ================================================================= -->
+        <div id="panel-queue" class="tab-panel hidden space-y-4">
+          <!-- Overall Progress -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-2.5">
+            <div class="flex items-center justify-between text-xs font-extrabold">
+              <span class="text-slate-700">전체 소재 발행 진척도</span>
+              <span id="queue-progress-summary" class="text-indigo-600">0 / 0 발행완료 (0%)</span>
+            </div>
+            <div class="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden">
+              <div id="queue-progress-bar" class="h-full bg-gradient-to-r from-indigo-600 to-emerald-500 transition-all duration-300" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Bulk Add & Sequential Runner -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <i data-lucide="rocket" class="w-4 h-4 text-indigo-600"></i>
+                배치(Batch) 소재 큐 & 발행 트래커
+              </h3>
+              <div class="flex items-center flex-wrap gap-2">
+                <button type="button" id="btn-start-batch" class="py-2 px-3.5 rounded-xl text-xs font-extrabold bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-1.5 transition">
+                  <span>▶ 대기 항목 순차 자동 생성</span>
+                </button>
+                <button type="button" id="btn-stop-batch" class="hidden py-2 px-3.5 rounded-xl text-xs font-extrabold bg-rose-600 hover:bg-rose-700 text-white flex items-center gap-1.5 transition">
+                  <span>⏹ 중지</span>
+                </button>
+                <button type="button" id="btn-export-queue-csv" class="py-2 px-3 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1.5 transition">
+                  <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                  CSV 내보내기
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Batch Runner Progress -->
+            <div id="batch-runner-box" class="hidden rounded-xl bg-indigo-50 border border-indigo-200 p-3.5 space-y-2">
+              <div class="flex items-center justify-between text-xs font-bold text-indigo-800">
+                <span id="batch-runner-status">배치 준비 중...</span>
+                <span id="batch-runner-pct">0%</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-indigo-200 overflow-hidden">
+                <div id="batch-runner-bar" class="h-full bg-indigo-600 transition-all duration-300" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Multi-line Bulk Input (Max 20) -->
+            <div class="space-y-2 bg-slate-50 p-3.5 rounded-xl border border-slate-200/80">
+              <label for="bulk-keywords-input" class="block text-xs font-bold text-slate-700">
+                대량 키워드 일괄 등록 (한 줄에 1개 · 최대 20개 · 현재 선택 카테고리로 배정)
+              </label>
+              <textarea
+                id="bulk-keywords-input"
+                rows="3"
+                placeholder="동계 캠핑 화로대 안전 사용법&#10;아이와 비 오는 날 캠핑장 실내 놀이&#10;초보 캠퍼 필수 주방용품 리스트"
+                class="w-full p-3 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              ></textarea>
+              <div class="flex justify-end">
+                <button type="button" id="btn-add-bulk" class="py-2 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold transition">
+                  + 큐에 일괄 추가
+                </button>
+              </div>
+            </div>
+
+            <!-- Status Filter Pills -->
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap gap-1.5" id="queue-filters">
+                <button type="button" data-qfilter="전체" class="qf-btn px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white">전체</button>
+                <button type="button" data-qfilter="대기" class="qf-btn px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">대기</button>
+                <button type="button" data-qfilter="초안완료" class="qf-btn px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">초안완료</button>
+                <button type="button" data-qfilter="검수완료" class="qf-btn px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">검수완료</button>
+                <button type="button" data-qfilter="발행완료" class="qf-btn px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200">발행완료</button>
+              </div>
+              <span id="queue-filter-count" class="text-xs font-semibold text-slate-500">총 4건</span>
+            </div>
+
+            <!-- Queue Table -->
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 text-[11px] font-extrabold text-slate-500 border-b border-slate-200">
+                    <th class="py-2.5 px-3">카테고리</th>
+                    <th class="py-2.5 px-3">핵심 키워드</th>
+                    <th class="py-2.5 px-3">상태</th>
+                    <th class="py-2.5 px-3 text-right">작업</th>
+                  </tr>
+                </thead>
+                <tbody id="queue-tbody" class="divide-y divide-slate-100 text-xs"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 1: BYOK GEMINI API SETTINGS                                       -->
+  <!-- ======================================================================= -->
+  <div id="modal-api" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+          <span>⚙️</span> Gemini API 설정 (BYOK)
+        </h3>
+        <button type="button" class="close-modal p-1.5 rounded-lg hover:bg-slate-100 text-slate-500" data-target="modal-api">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-[11px] text-emerald-900 leading-relaxed flex items-start gap-2">
+        <i data-lucide="lock" class="w-4 h-4 shrink-0 mt-0.5 text-emerald-600"></i>
+        <span>
+          <strong>로컬 보안 저장:</strong> API 키는 외부 서버에 전송되지 않으며, 오직 <strong>현재 브라우저의 localStorage</strong>에만 저장되어 Google 공식 REST API로 직접 통신합니다.
+        </span>
+      </div>
+
+      <div class="space-y-3.5">
+        <div>
+          <label for="input-api-key" class="block text-xs font-bold text-slate-700 mb-1.5">Google Gemini API Key</label>
+          <div class="relative">
+            <input
+              type="password"
+              id="input-api-key"
+              placeholder="AIzaSy... 또는 AQ.... 형태의 API 키 입력"
+              autocomplete="off"
+              class="w-full pl-3.5 pr-11 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white"
+            />
+            <button type="button" id="btn-toggle-key-vis" class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-700" title="키 표시 전환">
+              <i data-lucide="eye" id="icon-eye-open" class="w-4 h-4"></i>
+              <i data-lucide="eye-off" id="icon-eye-closed" class="w-4 h-4 hidden"></i>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label for="select-api-model" class="block text-xs font-bold text-slate-700 mb-1.5">모델 선택</label>
+          <select id="select-api-model" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 bg-slate-50 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite · 기본 (무료 키 OK · 가장 빠름)</option>
+            <option value="gemini-3.8-flash">gemini-3.8-flash · 고품질 (유료 키 권장)</option>
+            <option value="gemini-3.5-flash">gemini-3.5-flash · 균형 (유료 키 권장)</option>
+            <option value="custom">직접 입력...</option>
+          </select>
+          <input
+            type="text"
+            id="input-custom-model"
+            placeholder="모델명 직접 입력 (예: gemini-3.1-flash-lite)"
+            class="hidden mt-2 w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+          <p class="mt-1.5 text-[10.5px] leading-relaxed text-slate-500">
+            무료 키는 <strong class="text-slate-700">gemini-3.1-flash-lite</strong>가 가장 안정적입니다.
+            <strong class="text-slate-700">gemini-3.8-flash</strong>·<strong class="text-slate-700">gemini-3.5-flash</strong>에서 한도 초과(429)나 미지원(404)이 나오면
+            자동으로 3.1-flash-lite로 전환해 생성합니다.
+          </p>
+        </div>
+
+        <div id="api-test-result" class="hidden rounded-xl p-3 text-xs font-bold"></div>
+
+        <div class="flex flex-wrap gap-2 pt-1">
+          <button type="button" id="btn-test-api" class="flex-1 py-2.5 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-extrabold transition">
+            연결 테스트
+          </button>
+          <button type="button" id="btn-save-api" class="flex-1 py-2.5 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold transition">
+            저장 및 적용
+          </button>
+        </div>
+        <button type="button" id="btn-delete-api" class="w-full py-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-bold transition">
+          키 삭제 (데모 모드로 전환)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 2: UNLIMITED CATEGORY CRUD MANAGER                                -->
+  <!-- ======================================================================= -->
+  <div id="modal-category" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-lg w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-extrabold text-slate-900">무제한 카테고리 & 페르소나 관리</h3>
+        <button type="button" class="close-modal p-1.5 rounded-lg hover:bg-slate-100 text-slate-500" data-target="modal-category">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="form-category" class="space-y-3">
+        <input type="hidden" id="cat-edit-id" value="" />
+        <div class="grid grid-cols-4 gap-2">
+          <div class="col-span-1">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">이모지</label>
+            <input type="text" id="cat-emoji" value="✨" maxlength="4" required class="w-full px-2 py-2 rounded-xl border border-slate-300 bg-slate-50 text-center text-sm" />
+          </div>
+          <div class="col-span-3">
+            <label class="block text-[11px] font-bold text-slate-600 mb-1">카테고리명</label>
+            <input type="text" id="cat-name" placeholder="예: 국내여행/호캉스" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">타겟 독자 페르소나</label>
+          <input type="text" id="cat-persona" placeholder="예: 주말 가족 나들이·가성비 숙소를 찾는 3040 부모" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">기본 톤 가이드</label>
+          <input type="text" id="cat-tone" placeholder="예: 친근한 육아/생활 구어체" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">추천 키워드 칩 4개 (쉼표 구분)</label>
+          <input type="text" id="cat-keywords" placeholder="예: 키즈풀빌라 추천, 주말 당일치기 코스, 호캉스 짐싸기, 가성비 가족여행" required class="w-full px-3 py-2 rounded-xl border border-slate-300 bg-slate-50 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold transition">카테고리 저장</button>
+          <button type="button" id="btn-cat-form-reset" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition">초기화</button>
+        </div>
+      </form>
+
+      <div class="border-t border-slate-100 pt-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-extrabold text-slate-700">등록된 카테고리 (<span id="cat-total-count">8</span>개)</span>
+          <button type="button" id="btn-cat-restore-defaults" class="text-[11px] font-bold text-indigo-600 hover:underline">기본 8종 복원</button>
+        </div>
+        <div id="modal-category-list" class="space-y-1.5 max-h-52 overflow-y-auto pr-1"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 3: COPYABLE MASTER PROMPT VIEWER                                  -->
+  <!-- ======================================================================= -->
+  <div id="modal-prompt" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="text-base font-extrabold text-slate-900">수동 복사용 마스터 프롬프트</h3>
+          <p class="text-xs text-slate-500">API 키 없이도 현재 설정을 그대로 복사해 Gemini / ChatGPT 웹에 붙여넣어 활용할 수 있습니다.</p>
+        </div>
+        <button type="button" class="close-modal p-1.5 rounded-lg hover:bg-slate-100 text-slate-500" data-target="modal-prompt">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <textarea id="master-prompt-text" rows="14" readonly class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs leading-relaxed font-mono text-slate-800 focus:outline-none"></textarea>
+      <div class="flex justify-end gap-2">
+        <button type="button" class="close-modal py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold" data-target="modal-prompt">닫기</button>
+        <button type="button" id="btn-copy-master-prompt" class="py-2.5 px-5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold flex items-center gap-1.5">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          프롬프트 전체 복사
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 4: JSON BACKUP MODAL                                              -->
+  <!-- ======================================================================= -->
+  <div id="modal-backup" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-md w-full p-5 sm:p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="text-base font-extrabold text-slate-900">데이터 JSON 백업</h3>
+        <button type="button" class="close-modal p-1.5 rounded-lg hover:bg-slate-100 text-slate-500" data-target="modal-backup">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div id="backup-summary" class="rounded-xl bg-slate-50 border border-slate-200 p-3.5 text-xs text-slate-700 space-y-1"></div>
+      <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-900 leading-relaxed flex items-start gap-2">
+        <i data-lucide="shield-check" class="w-4 h-4 shrink-0 mt-0.5 text-emerald-600"></i>
+        <span><strong>보안 정책:</strong> API 키 유출을 방지하기 위해 백업 JSON 파일에는 <strong>Gemini API 키가 기본적으로 제외</strong>됩니다. 새 기기에서 복원 후 API 키만 다시 입력해 주세요.</span>
+      </div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" class="close-modal py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold" data-target="modal-backup">취소</button>
+        <button type="button" id="btn-confirm-backup" class="py-2.5 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold flex items-center gap-1.5">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          JSON 파일 다운로드
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================================= -->
+  <!-- MODAL 5: USER GUIDE (초보자용 사용 설명서)                              -->
+  <!-- ======================================================================= -->
+  <div id="modal-guide" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl border border-slate-200 max-w-2xl w-full shadow-2xl max-h-[92vh] flex flex-col">
+      <div class="flex items-start justify-between gap-3 border-b border-slate-100 px-5 py-4">
+        <div class="min-w-0">
+          <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-1.5">📖 사용 설명서</h3>
+          <p class="text-[11px] text-slate-500 mt-0.5">처음 써도 이 순서대로만 하면 됩니다 · 4단계</p>
+        </div>
+        <button type="button" class="close-modal p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 shrink-0" data-target="modal-guide">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="px-5 py-4 overflow-y-auto space-y-4 text-[12px] leading-relaxed text-slate-700">
+
+        <!-- STEP 1 -->
+        <section class="rounded-xl border border-indigo-200 bg-indigo-50/40 p-3.5 space-y-2">
+          <h4 class="text-[13px] font-extrabold text-indigo-900 flex items-center gap-1.5">
+            <span class="w-5 h-5 rounded-full bg-indigo-600 text-white text-[11px] font-extrabold flex items-center justify-center shrink-0">1</span>
+            API 설정 (BYOK · 내 키로 쓰기)
+          </h4>
+          <ol class="list-decimal ml-5 space-y-1.5">
+            <li><strong>Google AI Studio</strong>(aistudio.google.com/apikey)에서 Google 계정으로 로그인 후 <strong>Create API key</strong>를 눌러 무료 키를 만듭니다.</li>
+            <li>만든 키(<code class="px-1 rounded bg-white border border-slate-200 font-mono text-[11px]">AIzaSy…</code> 또는 <code class="px-1 rounded bg-white border border-slate-200 font-mono text-[11px]">AQ.…</code>)를 복사합니다.</li>
+            <li>헤더의 <strong>⚙️ API 설정</strong>을 열어 키를 붙여넣고, 모델을 고른 뒤 <strong>연결 테스트</strong> → <strong>저장 및 적용</strong>을 누릅니다.</li>
+            <li>상단 배지가 <strong>🟢 실시간 API</strong>로 바뀌면 준비 끝입니다. (키가 없어도 <strong>데모 모드</strong>로 화면과 양식을 익힐 수 있습니다.)</li>
+          </ol>
+          <div class="rounded-lg bg-white border border-emerald-200 p-2.5 text-[11px] text-emerald-900 flex items-start gap-1.5">
+            <span class="shrink-0">🔒</span>
+            <span>키는 <strong>이 브라우저의 localStorage에만</strong> 저장되고, 어떤 서버로도 보내지 않습니다. Google 공식 API와 브라우저가 직접 통신합니다. 공용 PC에서는 <strong>키 삭제</strong>를 눌러 주세요. 키를 남에게 보내거나 화면에 노출하지 마세요.</span>
+          </div>
+          <div class="rounded-lg bg-white border border-slate-200 p-2.5 text-[11px] text-slate-700">
+            <div class="font-extrabold text-slate-900 mb-1">모델 고르기</div>
+            <div class="space-y-0.5">
+              <div>· <strong>gemini-3.1-flash-lite</strong> — 기본. 무료 키에서도 빠르고 안정적(실측 확인)</div>
+              <div>· <strong>gemini-3.8-flash</strong> — 고품질 장문. 무료 키는 일일 한도(429)가 있어요</div>
+              <div>· <strong>gemini-3.5-flash</strong> — 균형형. 위와 동일하게 한도가 있습니다</div>
+            </div>
+            <div class="mt-1.5 text-slate-500">3.8/3.5가 <strong>429(한도 초과)</strong> 또는 <strong>404(종료된 모델)</strong>이면 <strong>자동으로 3.1-flash-lite</strong>로 바꿔 생성합니다. 실패해도 글은 나옵니다.</div>
+          </div>
+        </section>
+
+        <!-- STEP 2 -->
+        <section class="rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 space-y-2">
+          <h4 class="text-[13px] font-extrabold text-slate-900 flex items-center gap-1.5">
+            <span class="w-5 h-5 rounded-full bg-slate-800 text-white text-[11px] font-extrabold flex items-center justify-center shrink-0">2</span>
+            카테고리 &amp; 글 / 스레드 생성
+          </h4>
+          <ol class="list-decimal ml-5 space-y-1.5">
+            <li>왼쪽 <strong>무제한 카테고리 &amp; 페르소나 OS</strong>에서 카테고리(독자·톤·추천 키워드)를 고르거나 <strong>카테고리 추가/관리</strong>로 새로 만듭니다.</li>
+            <li><strong>핵심 키워드</strong>를 입력하고 톤·구조를 고른 뒤 <strong>⚡ 원클릭 통합 생성</strong>을 누릅니다.</li>
+            <li><strong>네이버 블로그 SEO</strong> 탭 — 제목 후보 5개, 본문, SEO 진단이 함께 나옵니다. 내용을 직접 다듬고 <strong>인간미 슬롯</strong>으로 내 경험을 넣으면 저품질 위험이 줄어듭니다.</li>
+            <li><strong>스레드</strong> 탭 — <strong>A타입(정보형 본문)</strong>과 <strong>B타입(소통형 본문)</strong>을 각각 복사하고, <strong>링크·공정위 고지문은 첫 번째 댓글</strong> 칸에 따로 붙여넣습니다. 본문에 링크를 넣지 않는 것이 도달에 유리합니다.</li>
+            <li><strong>공정위 문구 위치</strong>는 쿠팡 링크 글에서 <strong>상단 / 하단 / 둘 다</strong> 중에 고를 수 있습니다. 쿠팡 링크가 들어간 글은 고지 문구가 사실상 필수입니다.</li>
+            <li>소재가 많으면 <strong>배치 큐</strong> 탭에 키워드를 줄 단위로 붙여넣어 최대 20개까지 순차 생성할 수 있습니다.</li>
+          </ol>
+        </section>
+
+        <!-- STEP 3 -->
+        <section class="rounded-xl border border-amber-200 bg-amber-50/50 p-3.5 space-y-2">
+          <h4 class="text-[13px] font-extrabold text-amber-900 flex items-center gap-1.5">
+            <span class="w-5 h-5 rounded-full bg-amber-500 text-white text-[11px] font-extrabold flex items-center justify-center shrink-0">3</span>
+            쿠팡파트너스 &amp; 미리캔버스 주의점
+          </h4>
+          <ul class="list-disc ml-5 space-y-1.5">
+            <li><strong>쿠팡파트너스 링크는 자동 생성되지 않습니다.</strong> 파트너스에서 만든 내 링크를 복사해 <strong>상품 URL 칸에 직접</strong> 붙여넣으세요. (타인 링크·단축 링크 임의 사용은 정책 위반입니다.)</li>
+            <li>상품명·혜택 문구는 AI가 다듬어 주지만 <strong>가격·재고·배송 문구는 직접 확인</strong>해야 합니다. 실제로 본 내용만 쓰세요.</li>
+            <li><strong>미리캔버스 SVG는 단순 벡터 도형용</strong>입니다. 아이콘·선·면처럼 단순한 형태는 잘 변환되지만, 사진·복잡한 일러스트·그라데이션·그림자·질감은 변환 시 뭉개집니다.</li>
+            <li>그래서 이 스튜디오의 <strong>뼈대 SVG</strong>는 완성 그림이 아니라 <strong>구도·비율 가이드</strong>로 쓰세요. 뼈대를 미리캔버스에 올려 위치를 잡고, 세부 묘사는 미리캔버스 도형으로 얹는 방식이 가장 깔끔합니다.</li>
+            <li><strong>PNG 1024</strong> 내려받기는 투명 배경이라 그대로 얹기 좋습니다. 미리캔버스에 올릴 때 요소명·태그는 <strong>CSV 내보내기</strong>로 한 번에 관리하세요.</li>
+          </ul>
+        </section>
+
+        <!-- STEP 4 -->
+        <section class="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3.5 space-y-2">
+          <h4 class="text-[13px] font-extrabold text-emerald-900 flex items-center gap-1.5">
+            <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-[11px] font-extrabold flex items-center justify-center shrink-0">4</span>
+            폰(폴드8)에 앱으로 설치하기
+          </h4>
+          <div class="space-y-1.5">
+            <div><strong>크롬(Chrome)</strong> — 오른쪽 위 <strong>점 3개(⋮) 메뉴</strong> → <strong>앱 설치</strong>(또는 <strong>홈 화면에 추가</strong>) → 설치. 주소창 없는 앱 화면으로 열립니다.</div>
+            <div><strong>삼성 인터넷</strong> — 아래 <strong>≡</strong> 메뉴 → <strong>페이지 추가</strong> → <strong>홈 화면에 추가</strong>.</div>
+            <div>헤더에 <strong>📲 앱 설치</strong> 버튼이 보이면 그 버튼을 눌러도 됩니다(설치 가능할 때만 나타납니다).</div>
+            <div class="text-slate-600">폴드8은 <strong>외부 액정 세로·가로, 내부 액정 가로</strong> 모두 한 화면에 맞춰 보이도록 만들었습니다. 홈 화면 아이콘으로 열면 브라우저 탭 없이 독립 앱처럼 실행됩니다.</div>
+            <div class="text-slate-600">인터넷이 끊겨도 <strong>화면·저장된 데이터</strong>는 열립니다. 다만 AI 생성은 인터넷이 필요합니다.</div>
+          </div>
+        </section>
+
+        <p class="text-[11px] text-slate-400 leading-relaxed">
+          팁: 카테고리·큐·체크리스트는 <strong>JSON 백업</strong>으로 내보내 두면 기기를 바꿔도 그대로 복원됩니다(API 키는 안전을 위해 백업에서 제외됩니다).
+        </p>
+      </div>
+
+      <div class="border-t border-slate-100 px-5 py-3 flex flex-wrap justify-end gap-2">
+        <button type="button" class="close-modal py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold" data-target="modal-guide">닫기</button>
+        <button type="button" id="btn-guide-open-api" class="py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold">⚙️ API 설정 열기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- APPLICATION JAVASCRIPT                                                  -->
+  <!-- ======================================================================= -->
+  <script>
+    // =========================================================================
+    // 1. CONSTANTS, PRESETS & CHECKLIST DEFINITIONS
+    // =========================================================================
+    const STORAGE_KEYS = {
+      DATA: "studio_pro_v2_data",
+      API_KEY: "studio_pro_v2_api_key",
+      API_MODEL: "studio_pro_v2_api_model"
+    };
+
+    const FTC_NOTICE = "이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.";
+    const HUMAN_SLOT_TAG = "[여기에 실제 경험/사진 1줄 추가]";
+
+    const BLOG_STRUCTURES = ["경험공감형", "체크리스트형", "비교분석형", "Q&A해결형", "실수방지형"];
+
+    const AI_CLICHES = [
+      "결론적으로",
+      "혁신적인",
+      "다양한 측면에서",
+      "살펴보겠습니다",
+      "알아보겠습니다",
+      "필수 불가결한",
+      "마무리하겠습니다",
+      "총정리해보겠습니다",
+      "탁월한 선택"
+    ];
+
+    const NEGATIVE_CONSTRAINTS_EN = "no gradients, no shadows, no texture, no text, no watermark, isolated on pure white background";
+
+    // 4 Vector-Tracing-Ready Image Generation Style Presets
+    const MIRI_PRESETS = {
+      flat_line: {
+        name: "클린 플랫 라인 아이콘",
+        baseStyle: "clean flat vector line icon style, uniform dark charcoal outlines, crisp flat solid color fills, geometric balanced proportions, modern Korean UI icon aesthetic, pure #FFFFFF white background",
+        defaultStroke: "medium",
+        defaultColors: "4"
+      },
+      pastel_sticker: {
+        name: "파스텔 키즈/감성 스티커",
+        baseStyle: "cute Korean stationery flat sticker illustration style, thick warm dark brown outlines, soft pastel solid color fills, rounded friendly shapes, kawaii minimalist vector look, pure #FFFFFF white background",
+        defaultStroke: "thick",
+        defaultColors: "4"
+      },
+      monoline: {
+        name: "모노라인 픽토그램",
+        baseStyle: "minimalist monoline pictogram icon, single-color clean geometric strokes, strictly uniform stroke weight, zero interior fill, ultra-clean vector tracing paths, pure #FFFFFF white background",
+        defaultStroke: "medium",
+        defaultColors: "2"
+      },
+      duotone: {
+        name: "2톤 미니멀 심볼",
+        baseStyle: "modern 2-color flat duotone vector symbol, solid bold silhouette shapes, ultra-clean razor-sharp edges, high contrast minimal symbol design, pure #FFFFFF white background",
+        defaultStroke: "none",
+        defaultColors: "2"
+      }
+    };
+
+    // 10-Item Interactive Pre-Vector & Pre-Submission Checklist
+    const CHECKLIST_ITEMS = [
+      // Stage 1: Image Gen & Vector Tracing (4 items)
+      { id: "c1", stage: 1, text: "순수 흰 배경(#FFFFFF) 및 그림자·그라데이션 완전 제거 확인" },
+      { id: "c2", stage: 1, text: "색상 수 4~5개 이하 단색 면 구성 확인 (트레이싱 잡티 최소화)" },
+      { id: "c3", stage: 1, text: "외곽선 끊김, 뭉개짐, 불필요한 미세 점(노이즈) 여부 확인" },
+      { id: "c4", stage: 1, text: "세트 전체의 선 굵기·비율·여백(10~15%) 시각적 통일성 확인" },
+      // Stage 2: Vector Tool Cleanup & Submission (6 items)
+      { id: "c5", stage: 2, text: "흰색 배경 사각형(BG Box) 및 빈 패스 삭제 → 완전 투명 배경 확인" },
+      { id: "c6", stage: 2, text: "앵커 포인트 단순화(Simplify) 및 겹친 도형 정리(Pathfinder/병합)" },
+      { id: "c7", stage: 2, text: "미리캔버스 사용자 색상 변경 기능 대응을 위한 색상 그룹화 확인" },
+      { id: "c8", stage: 2, text: "선(Stroke) 요소의 윤곽선화(Outline Stroke / Expand) 처리 점검" },
+      { id: "c9", stage: 2, text: "정사각 아트보드 중앙 정렬 및 규격(500×500px 이상) 통일 확인" },
+      { id: "c10", stage: 2, text: "한글/영문 검색 태그 10개 이상 입력 및 브랜드명·금칙어 제거 확인" }
+    ];
+
+    const DEFAULT_CATEGORIES = [
+      {
+        id: "cat-camp-parent", emoji: "⛺", name: "캠핑+육아",
+        persona: "아이와 함께 안전하고 따뜻한 가족 캠핑을 즐기고 싶은 3040 부모",
+        tone: "친근한 육아/생활 구어체",
+        keywords: ["동계 캠핑 바닥 냉기 차단", "아이와 장거리 이동 간식·놀거리", "캠핑장 안전 수칙 및 상비약", "초보 엄빠 캠핑 짐 줄이기 꿀팁"]
+      },
+      {
+        id: "cat-camp", emoji: "🔥", name: "캠핑",
+        persona: "실속 있는 장비 세팅과 감성 아웃도어 라이프를 추구하는 캠퍼",
+        tone: "직설적 비교 분석형",
+        keywords: ["4인용 쉘터 텐트 선택 기준", "스테인리스 vs 티타늄 캠핑컵 비교", "동계 난로 환기·일산화탄소 안전 세팅", "우중 캠핑 철수 및 장비 건조 노하우"]
+      },
+      {
+        id: "cat-parent", emoji: "🧸", name: "육아",
+        persona: "주말 나들이와 효율적인 육아템 정보를 찾는 워킹맘·워킹대디",
+        tone: "친근한 육아/생활 구어체",
+        keywords: ["주말 아이와 가볼만한 실내 나들이", "초등학생 집중력 높이는 책상 정리", "아이 편식 줄이는 식판 루틴", "남매·형제 장난감 수납 정리법"]
+      },
+      {
+        id: "cat-living", emoji: "🧹", name: "살림/정리꿀팁",
+        persona: "집안일 시간을 줄이고 깔끔한 수납·청소 루틴을 원하는 주부·직장인",
+        tone: "깔끔한 정보 요약형",
+        keywords: ["냉장고 파먹기 수납 정리법", "욕실 물때 5분 컷 청소 루틴", "겨울 패딩 세탁·보관 노하우", "주방 기름때 베이킹소다 활용법"]
+      },
+      {
+        id: "cat-it", emoji: "💻", name: "IT/가전리뷰",
+        persona: "스펙 비교와 실사용 가성비를 꼼꼼히 따지는 스마트 컨슈머",
+        tone: "직설적 비교 분석형",
+        keywords: ["폴더블폰 멀티태스킹 생산성 세팅", "가성비 로봇청소기 비교 기준", "휴대용 블루투스 키보드 실사용 리뷰", "재택근무 데스크셋업 필수템"]
+      },
+      {
+        id: "cat-finance", emoji: "📈", name: "재테크/경제",
+        persona: "월급 관리, 절세 계좌, 꾸준한 자산 증식에 관심 있는 직장인",
+        tone: "깔끔한 정보 요약형",
+        keywords: ["ISA 계좌 절세 한도 활용법", "직장인 연말정산 환급 체크리스트", "고금리 파킹통장 금리 비교", "사회초년생 통장 쪼개기 루틴"]
+      },
+      {
+        id: "cat-recipe", emoji: "🍳", name: "레시피/간편요리",
+        persona: "퇴근 후 15분 안에 온 가족이 맛있게 먹을 간편 요리를 찾는 분",
+        tone: "감성 스토리텔링형",
+        keywords: ["에어프라이어 10분 캠핑 요리", "아이 잘 먹는 소고기 주먹밥", "원팬 파스타 초간단 레시피", "일주일 밑반찬 밀프렙 루틴"]
+      },
+      {
+        id: "cat-health", emoji: "🏃", name: "건강/운동",
+        persona: "바쁜 일상 속 지속 가능한 홈트와 식단 관리를 실천하는 직장인",
+        tone: "깔끔한 정보 요약형",
+        keywords: ["거북목 10분 스트레칭 루틴", "혈당 스파이크 막는 식사 순서", "직장인 편의점 고단백 식단 조합", "초보자 러닝화 선택 체크리스트"]
+      }
+    ];
+
+    const DEFAULT_QUEUE = [
+      { id: 1001, categoryId: "cat-camp-parent", categoryName: "캠핑+육아", topic: "동계 캠핑 바닥 냉기 차단", status: "초안완료", result: null },
+      { id: 1002, categoryId: "cat-camp-parent", categoryName: "캠핑+육아", topic: "아이와 장거리 이동 간식·놀거리", status: "대기", result: null },
+      { id: 1003, categoryId: "cat-it", categoryName: "IT/가전리뷰", topic: "휴대용 블루투스 키보드 실사용 리뷰", status: "검수완료", result: null },
+      { id: 1004, categoryId: "cat-living", categoryName: "살림/정리꿀팁", topic: "냉장고 파먹기 수납 정리법", status: "발행완료", result: null }
+    ];
+
+    // 12 Distinct Wireframe SVG Shapes for MiriCanvas 4/8/12-Item Set Previews
+    const WIREFRAME_SVGS = [
+      // 0: Family Dome Tent
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect x="22" y="22" width="156" height="156" rx="34" fill="#4F46E5" fill-opacity="0.1" data-role="primary-soft" stroke="#1E293B" stroke-width="6"/><path d="M44 142 L94 62 L144 142 Z" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6" stroke-linejoin="round"/><path d="M94 62 L114 142 L74 142 Z" fill="#FFFFFF" stroke="#1E293B" stroke-width="6" stroke-linejoin="round"/><circle cx="144" cy="62" r="15" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6"/><line x1="36" y1="142" x2="164" y2="142" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/></svg>`,
+      // 1: Camping Lantern
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path d="M74 52 C74 32 126 32 126 52" fill="none" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/><rect x="64" y="52" width="72" height="18" rx="8" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6"/><rect x="68" y="70" width="64" height="72" rx="10" fill="#FFFFFF" stroke="#1E293B" stroke-width="6"/><circle cx="100" cy="106" r="18" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6"/><rect x="58" y="142" width="84" height="20" rx="8" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6"/></svg>`,
+      // 2: Checklist Clipboard
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect x="44" y="34" width="112" height="138" rx="18" fill="#FFFFFF" stroke="#1E293B" stroke-width="6"/><rect x="74" y="22" width="52" height="24" rx="10" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6"/><path d="M64 82 L73 91 L88 74" fill="none" stroke="#10B981" data-role="accent-stroke" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><line x1="100" y1="84" x2="136" y2="84" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/><path d="M64 114 L73 123 L88 106" fill="none" stroke="#10B981" data-role="accent-stroke" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/><line x1="100" y1="116" x2="136" y2="116" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/><circle cx="74" cy="146" r="6" fill="#4F46E5" data-role="primary"/><line x1="100" y1="146" x2="128" y2="146" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/></svg>`,
+      // 3: Warm Mug & Steam
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path d="M74 56 Q80 42 74 32" fill="none" stroke="#10B981" data-role="accent-stroke" stroke-width="6" stroke-linecap="round"/><path d="M102 56 Q108 42 102 32" fill="none" stroke="#10B981" data-role="accent-stroke" stroke-width="6" stroke-linecap="round"/><rect x="46" y="72" width="88" height="86" rx="18" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6"/><path d="M134 88 H152 C164 88 164 132 152 132 H134" fill="none" stroke="#1E293B" stroke-width="6" stroke-linejoin="round"/><line x1="38" y1="168" x2="152" y2="168" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/></svg>`,
+      // 4: First Aid Safety Kit
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path d="M76 58 V42 C76 36 82 32 88 32 H112 C118 32 124 36 124 42 V58" fill="none" stroke="#1E293B" stroke-width="6"/><rect x="34" y="58" width="132" height="104" rx="20" fill="#FFFFFF" stroke="#1E293B" stroke-width="6"/><rect x="88" y="84" width="24" height="52" rx="6" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6"/><rect x="74" y="98" width="52" height="24" rx="6" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6"/></svg>`,
+      // 5: Campfire Flame
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path d="M100 32 C124 62 142 84 142 112 C142 136 123 152 100 152 C77 152 58 136 58 112 C58 84 76 62 100 32 Z" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6" stroke-linejoin="round"/><path d="M100 78 C112 94 120 106 120 120 C120 132 111 140 100 140 C89 140 80 132 80 120 C80 106 88 94 100 78 Z" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6"/><line x1="48" y1="168" x2="152" y2="150" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/><line x1="48" y1="150" x2="152" y2="168" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/></svg>`,
+      // 6: Travel Backpack
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path d="M82 48 V34 C82 28 118 28 118 34 V48" fill="none" stroke="#1E293B" stroke-width="6"/><rect x="46" y="48" width="108" height="122" rx="28" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6"/><rect x="64" y="102" width="72" height="50" rx="14" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6"/><line x1="76" y1="120" x2="124" y2="120" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/></svg>`,
+      // 7: Lightbulb Tip
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path d="M100 32 C66 32 42 56 42 88 C42 108 54 124 68 134 L68 148 L132 148 L132 134 C146 124 158 108 158 88 C158 56 134 32 100 32 Z" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6" stroke-linejoin="round"/><circle cx="100" cy="88" r="22" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6"/><rect x="74" y="148" width="52" height="16" rx="6" fill="#FFFFFF" stroke="#1E293B" stroke-width="6"/><line x1="84" y1="174" x2="116" y2="174" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/></svg>`,
+      // 8: Ribbon Best Badge
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path d="M72 126 L58 176 L92 162 L100 176 L108 162 L142 176 L128 126" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6" stroke-linejoin="round"/><circle cx="100" cy="84" r="50" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6"/><polygon points="100,50 110,72 134,74 115,90 121,114 100,101 79,114 85,90 66,74 90,72" fill="#FFFFFF" stroke="#1E293B" stroke-width="6" stroke-linejoin="round"/></svg>`,
+      // 9: Family SUV Car
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><path d="M36 108 L54 66 H146 L164 108 Z" fill="#FFFFFF" stroke="#1E293B" stroke-width="6" stroke-linejoin="round"/><rect x="26" y="106" width="148" height="40" rx="14" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6"/><circle cx="62" cy="146" r="18" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6"/><circle cx="138" cy="146" r="18" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6"/></svg>`,
+      // 10: Calendar Planner
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect x="34" y="44" width="132" height="122" rx="18" fill="#FFFFFF" stroke="#1E293B" stroke-width="6"/><path d="M34 78 H166" stroke="#1E293B" stroke-width="6"/><rect x="34" y="44" width="132" height="34" rx="14" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6"/><line x1="70" y1="30" x2="70" y2="54" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/><line x1="130" y1="30" x2="130" y2="54" stroke="#1E293B" stroke-width="6" stroke-linecap="round"/><rect x="60" y="98" width="24" height="24" rx="6" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="5"/><rect x="102" y="98" width="38" height="24" rx="6" fill="#FFFFFF" stroke="#1E293B" stroke-width="5"/></svg>`,
+      // 11: Compass / Direction
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="68" fill="#FFFFFF" stroke="#1E293B" stroke-width="6"/><polygon points="100,52 118,100 100,148 82,100" fill="#4F46E5" data-role="primary" stroke="#1E293B" stroke-width="6" stroke-linejoin="round"/><circle cx="100" cy="100" r="12" fill="#10B981" data-role="accent" stroke="#1E293B" stroke-width="6"/></svg>`
+    ];
+
+    // 12 Rich Icon Concept Pool per Major Theme (for Instant 4/8/12 Set Generation)
+    const ICON_POOLS = {
+      camping: [
+        { title: "패밀리 돔 텐트", enSubject: "a cozy family dome camping tent", tags: "캠핑, 텐트, 가족캠핑, 동계캠핑, 아웃도어, 야영, 캠핑장, camping, tent, outdoor, family, dome, nature" },
+        { title: "감성 캠핑 랜턴", enSubject: "a warm glowing camping lantern", tags: "랜턴, 캠핑조명, 밤캠핑, 감성캠핑, 캠핑용품, 조명, 빛, lantern, lamp, camp, light, night, glow" },
+        { title: "자충매트와 침낭", enSubject: "a rolled sleeping pad and cozy sleeping bag", tags: "자충매트, 침낭, 캠핑잠자리, 보온, 바닥냉기, 동계캠핑, 숙면, sleeping bag, mat, warm, camp, bed, cozy" },
+        { title: "보온병과 캠핑 머그컵", enSubject: "a stainless thermos bottle and warm camp mug", tags: "보온병, 캠핑컵, 머그컵, 따뜻한음료, 겨울캠핑, 피크닉, 티타임, thermos, mug, hot drink, cup, camp, winter" },
+        { title: "키즈 안전 구급상자", enSubject: "a cute kids safety first aid kit box", tags: "구급상자, 상비약, 캠핑안전, 육아안전, 구급함, 응급처치, 케어, first aid, safety, medical, kids, kit, care" },
+        { title: "모닥불과 마시멜로우", enSubject: "a cozy campfire with wooden logs", tags: "불멍, 모닥불, 화로대, 캠프파이어, 간식, 캠핑요리, 힐링, campfire, fire, bonfire, outdoor, warm, night" },
+        { title: "캠핑 짐 배낭", enSubject: "a compact outdoor travel backpack", tags: "캠핑가방, 배낭, 백팩, 캠핑짐, 수납, 아웃도어, 여행가방, backpack, bag, travel, hiking, gear, pack" },
+        { title: "일산화탄소 안전 경보기", enSubject: "a round safety sensor alarm icon", tags: "일산화탄소, 경보기, 안전수칙, 동계난방, 환기, 캠핑안전, 필수템, alarm, safety, sensor, detector, camp, warning" },
+        { title: "추천 베스트 배지", enSubject: "a best choice star ribbon emblem", tags: "추천, 베스트, 가성비, 별점, 리뷰, 배지, 인기템, best, badge, ribbon, star, review, top" },
+        { title: "패밀리 캠핑 SUV", enSubject: "a cute family SUV car with roof box", tags: "가족여행, 자동차, 차박, 로드트립, 드라이브, 이동, 주말나들이, car, suv, roadtrip, family, travel, drive" },
+        { title: "캠핑 일정 체크 달력", enSubject: "a weekend camping schedule calendar", tags: "일정, 달력, 주말캠핑, 계획표, 예약, 체크, 여행계획, calendar, schedule, weekend, plan, date, trip" },
+        { title: "캠핑 나침반 이정표", enSubject: "an outdoor adventure compass", tags: "나침반, 방향, 탐험, 캠핑장, 자연, 아웃도어, 가이드, compass, direction, adventure, guide, outdoor, map" }
+      ],
+      general: [
+        { title: "핵심 주제 메인 심볼", enSubject: "a clean central topic badge emblem", tags: "아이콘, 심볼, 대표, 블로그, 썸네일, 미니멀, 플랫, icon, symbol, badge, minimal, flat, clean" },
+        { title: "실전 체크리스트 보드", enSubject: "a neat clipboard checklist with checkmarks", tags: "체크리스트, 메모, 준비물, 점검표, 계획, 정리, 루틴, checklist, memo, plan, list, task, note" },
+        { title: "꿀팁 아이디어 전구", enSubject: "a bright lightbulb idea icon", tags: "꿀팁, 아이디어, 노하우, 전구, 정보, 해결책, 가이드, tip, idea, lightbulb, guide, smart, info" },
+        { title: "가성비 추천 리본 배지", enSubject: "a best pick ribbon star badge", tags: "추천, 베스트, 가성비, 리뷰, 별점, 쇼핑, 배지, best, review, badge, star, ribbon, pick" },
+        { title: "안전 케어 방패 키트", enSubject: "a clean care and safety kit icon", tags: "안전, 보호, 케어, 주의사항, 방패, 안심, 필수, safety, care, shield, protect, safe, check" },
+        { title: "시간 절약 타이머", enSubject: "a minimalist stopwatch timer icon", tags: "시간절약, 타이머, 효율, 빠른, 루틴, 5분컷, 생산성, timer, clock, fast, routine, time, efficient" },
+        { title: "깔끔 수납 오거나이저", enSubject: "a tidy storage organizer box icon", tags: "수납, 정리, 보관함, 파우치, 깔끔한, 미니멀, 살림, storage, box, organize, tidy, pouch, clean" },
+        { title: "인기 상승 트렌드 차트", enSubject: "a clean upward growth trend arrow icon", tags: "트렌드, 상승, 비교, 분석, 데이터, 성장, 인기, trend, growth, chart, arrow, compare, data" },
+        { title: "데일리 라이프 캘린더", enSubject: "a simple daily routine calendar icon", tags: "달력, 스케줄, 루틴, 주간계획, 일정관리, 데일리, 기록, calendar, schedule, daily, routine, plan, date" },
+        { title: "스마트 쇼핑 장바구니", enSubject: "a minimalist shopping basket icon", tags: "쇼핑, 장바구니, 구매, 특가, 아이템, 추천템, 소비, shopping, basket, cart, deal, item, store" },
+        { title: "따뜻한 일상 머그컵", enSubject: "a cozy everyday coffee mug icon", tags: "일상, 휴식, 커피, 티타임, 여유, 힐링, 라이프, coffee, mug, daily, relax, cozy, cup" },
+        { title: "핵심 방향 나침반", enSubject: "a minimalist guide compass icon", tags: "가이드, 방향, 기준, 선택법, 나침반, 로드맵, 핵심, guide, compass, direction, choice, roadmap, core" }
+      ]
+    };
+
+    // =========================================================================
+    // 1-B. GEMINI MODEL CATALOG (2026-11 기준 · 무료 키 실측 확인)
+    //   · gemini-3.1-flash-lite : 무료 키에서 200 OK 확인 (이 스튜디오 기본값)
+    //   · gemini-3.8-flash      : 고품질. 무료 키는 일일 한도(429) → 3.1-flash-lite 자동 폴백
+    //   · gemini-3.5-flash      : 균형. 위와 동일하게 폴백
+    //   · gemini-2.5-flash 계열 : 신규 사용자에게 404(종료) → 저장된 값은 자동 이관
+    // =========================================================================
+    const DEFAULT_MODEL = "gemini-3.1-flash-lite";
+    const MODEL_OPTIONS = ["gemini-3.1-flash-lite", "gemini-3.8-flash", "gemini-3.5-flash"];
+    const RETIRED_MODELS = [
+      "gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite",
+      "gemini-2.0-flash", "gemini-2.0-flash-lite", "gemini-2.0-flash-exp",
+      "gemini-1.5-flash", "gemini-1.5-pro"
+    ];
+
+    // =========================================================================
+    // 2. APPLICATION STATE
+    // =========================================================================
+    const state = {
+      apiKey: "",
+      apiModel: DEFAULT_MODEL,
+      categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+      activeCategoryId: "cat-camp-parent",
+      topic: "동계 캠핑 바닥 냉기 차단",
+      tone: "친근한 육아/생활 구어체",
+      structure: "경험공감형",
+      randomStructure: true,
+      coupangMode: "single", // "off" | "single" | "compare3"
+      ftcPosition: "bottom", // "both" | "top" | "bottom"
+      coupangItems: [
+        { tier: "단일 추천 상품", name: "두꺼운 10cm 패밀리 자충매트", benefit: "바닥 냉기 완벽 차단 & 3분 자동 충전", url: "" },
+        { tier: "베스트 상품", name: "캠핑용 저전력 탄소 전기요 (2인용)", benefit: "캠핑장 600W 제한 안심 & 물세탁 가능", url: "" },
+        { tier: "프리미엄 상품", name: "일산화탄소 경보기 디지털 2in1", benefit: "고감도 센서 & 85dB 경보음으로 밤새 안심", url: "" }
+      ],
+      activeTab: "blog",
+      queueFilter: "전체",
+      queue: JSON.parse(JSON.stringify(DEFAULT_QUEUE)),
+      // MiriCanvas Preset Builder State
+      miriConfig: {
+        presetId: "flat_line",
+        stroke: "medium",
+        maxColors: "4",
+        margin: "15",
+        setCount: 8,
+        autoNegative: true
+      },
+      // MiriCanvas Checklist State (persisted)
+      checklist: {},
+      // Wireframe Live Styling State
+      activeIconIndex: 0,
+      svgPrimary: "#4F46E5",
+      svgAccent: "#10B981",
+      svgStroke: 6,
+      // Current Generated Output
+      currentResult: null,
+      // Batch Runner Flags
+      batchRunning: false,
+      batchStopRequested: false
+    };
+
+    // =========================================================================
+    // 3. LOCALSTORAGE PERSISTENCE
+    // =========================================================================
+    function loadStorage() {
+      try {
+        state.apiKey = localStorage.getItem(STORAGE_KEYS.API_KEY) || "";
+        state.apiModel = localStorage.getItem(STORAGE_KEYS.API_MODEL) || DEFAULT_MODEL;
+        // 예전 버전이 저장해 둔 종료 모델은 최신 기본 모델로 조용히 이관 (저장값도 함께 고친다)
+        if (RETIRED_MODELS.includes(state.apiModel)) {
+          state.apiModel = DEFAULT_MODEL;
+          try { localStorage.setItem(STORAGE_KEYS.API_MODEL, state.apiModel); } catch (e) {}
+        }
+
+        const raw = localStorage.getItem(STORAGE_KEYS.DATA);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed.categories) && parsed.categories.length > 0) state.categories = parsed.categories;
+          if (Array.isArray(parsed.queue)) state.queue = parsed.queue;
+          if (parsed.activeCategoryId) state.activeCategoryId = parsed.activeCategoryId;
+          if (parsed.checklist && typeof parsed.checklist === "object") state.checklist = parsed.checklist;
+          if (parsed.miriConfig && typeof parsed.miriConfig === "object") {
+            state.miriConfig = { ...state.miriConfig, ...parsed.miriConfig };
+          }
+        }
+      } catch (e) {}
+    }
+
+    function saveStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEYS.DATA, JSON.stringify({
+          categories: state.categories,
+          activeCategoryId: state.activeCategoryId,
+          queue: state.queue,
+          checklist: state.checklist,
+          miriConfig: state.miriConfig
+        }));
+      } catch (e) {
+        showToast("브라우저 저장 공간이 부족합니다.", "warning");
+      }
+    }
+
+    function saveApiCredentials(key, model) {
+      state.apiKey = key.trim();
+      state.apiModel = model.trim() || DEFAULT_MODEL;
+      try {
+        if (state.apiKey) localStorage.setItem(STORAGE_KEYS.API_KEY, state.apiKey);
+        else localStorage.removeItem(STORAGE_KEYS.API_KEY);
+        localStorage.setItem(STORAGE_KEYS.API_MODEL, state.apiModel);
+      } catch (e) {}
+      updateApiStatusBadge();
+    }
+
+    function getActiveCategory() {
+      return state.categories.find(c => c.id === state.activeCategoryId) || state.categories[0];
+    }
+
+    // =========================================================================
+    // 4. MIRICANVAS VECTOR-TRACING PROMPT BUILDER
+    // =========================================================================
+    function buildVectorTracingTemplate() {
+      const cfg = state.miriConfig;
+      const preset = MIRI_PRESETS[cfg.presetId] || MIRI_PRESETS.flat_line;
+
+      const strokeMap = {
+        thick: "thick bold uniform outlines",
+        medium: "clean medium-weight uniform outlines",
+        thin: "fine crisp thin uniform outlines",
+        none: "no outlines, pure borderless solid flat shapes"
+      };
+
+      const marginPhrase = cfg.margin === "15"
+        ? "centered composition with generous 15% white padding margin around all edges"
+        : "centered composition with clean 10% standard white padding margin";
+
+      const colorPhrase = cfg.presetId === "monoline"
+        ? "single solid dark color line art only"
+        : `strictly limited to maximum ${cfg.maxColors} flat solid colors`;
+
+      const parts = [
+        `Flat vector icon of [SUBJECT]`,
+        preset.baseStyle,
+        strokeMap[cfg.stroke] || strokeMap.medium,
+        colorPhrase,
+        marginPhrase,
+        "designed for clean SVG vector tracing"
+      ];
+
+      if (cfg.autoNegative) {
+        parts.push(NEGATIVE_CONSTRAINTS_EN);
+      }
+
+      return parts.join(", ");
+    }
+
+    function buildPerIconImagePrompt(enSubject) {
+      const template = buildVectorTracingTemplate();
+      return template.replace("[SUBJECT]", enSubject || "a minimalist object");
+    }
+
+    function getCategoryIconPool(category, topic) {
+      const isCamp = category.name.includes("캠핑") || topic.includes("캠핑");
+      const basePool = isCamp ? ICON_POOLS.camping : ICON_POOLS.general;
+      return basePool.map((item, idx) => {
+        const title = idx === 0 && !isCamp ? `${topic} 메인 심볼` : item.title;
+        const enSubject = idx === 0 && !isCamp ? `a clean icon representing ${topic}` : item.enSubject;
+        const tags = item.tags.includes(topic) ? item.tags : `${topic}, ${item.tags}`;
+        return {
+          title,
+          enSubject,
+          tags,
+          imagePrompt: buildPerIconImagePrompt(enSubject),
+          svgCode: WIREFRAME_SVGS[idx % WIREFRAME_SVGS.length]
+        };
+      });
+    }
+
+    // =========================================================================
+    // 5. MASTER PROMPT & BYOK GEMINI API ENGINE
+    // =========================================================================
+    function getActiveCoupangProducts() {
+      if (state.coupangMode === "off") return [];
+      if (state.coupangMode === "single") return [state.coupangItems[0]];
+      return state.coupangItems.slice(0, 3);
+    }
+
+    function buildMasterPromptText(topic, category, tone, structure) {
+      const products = getActiveCoupangProducts();
+      const setCount = Number(state.miriConfig.setCount) || 8;
+      const preset = MIRI_PRESETS[state.miriConfig.presetId] || MIRI_PRESETS.flat_line;
+
+      const cpSection = products.length > 0
+        ? `[쿠팡파트너스 수익화: ${state.coupangMode === "single" ? "단일 상품 추천" : "3종 비교 추천"}]\n` +
+          products.map((p, i) => {
+            const url = p.url && p.url.trim() ? p.url.trim() : "[쿠팡파트너스 링크 삽입]";
+            return `- (${i + 1}) ${p.tier}: ${p.name || topic + " 추천템"} | 장점: ${p.benefit || "실사용 가성비 우수"} | URL: ${url}`;
+          }).join("\n") +
+          `\n- 공정위 고지 위치: ${state.ftcPosition === "both" ? "상단+하단" : state.ftcPosition === "top" ? "상단" : "하단"} ("${FTC_NOTICE}")`
+        : `[쿠팡파트너스 수익화: OFF (순수 정보성 콘텐츠)]`;
+
+      return `당신은 대한민국 최상위 네이버 블로그 SEO 전략가, 스레드(Threads) 바이럴 카피라이터, 쿠팡파트너스 마케터, 미리캔버스(MiriCanvas) 에셋 기획자입니다.
+
+[입력 조건]
+- 카테고리: ${category.name}
+- 타겟 페르소나: ${category.persona}
+- 톤앤매너: ${tone}
+- 핵심 키워드: ${topic}
+- 네이버 블로그 구조: ${structure}
+- 미리캔버스 아이콘 세트 수량: ${setCount}종 (스타일 프리셋: ${preset.name})
+${cpSection}
+
+[필수 작성 규칙]
+1. 네이버 저품질 회피: "결론적으로", "혁신적인", "다양한 측면에서", "살펴보겠습니다", "알아보겠습니다", "마무리하겠습니다" 같은 기계적 AI 상투어를 절대 쓰지 마세요.
+2. 네이버 블로그 본문은 공백 포함 1,500~2,200자 수준으로 생생하게 쓰고, 핵심 키워드("${topic}")를 5~7회 자연스럽게 포함하세요.
+3. 본문 중간 자연스러운 위치에 정확히 2번 단독 줄로 "${HUMAN_SLOT_TAG}" 문구를 넣으세요.
+4. 스레드 A타입(공감·정보 저장 유도형, 300자 내외) 본문에는 외부 링크를 넣지 말고, 별도 threadFirstComment에 쿠팡 링크와 대가성 고지 문구를 분리하세요.
+5. 스레드 B타입(질문·댓글 소통형, 200자 내외)은 댓글 참여를 부르는 친근한 질문으로 작성하세요.
+6. 미리캔버스 아이콘 세트는 정확히 ${setCount}종을 기획하세요. 각 항목은 한글 요소명(title), 이미지 생성용 구체적 영문 피사체 묘사(enSubject, 예: "a cozy family camping tent"), 그리고 미리캔버스 등록용 한/영 검색 태그 12개 이상(tags)을 포함해야 합니다.
+
+반드시 추가 설명 없이 순수 JSON만 반환하세요:
+{
+  "blogTitles": ["SEO 제목 1", "SEO 제목 2", "SEO 제목 3"],
+  "blogBody": "블로그 본문 전체...",
+  "threadA": "스레드 A타입 본문...",
+  "threadB": "스레드 B타입 본문...",
+  "threadFirstComment": "전용 첫 번째 댓글...",
+  "miricanvasIcons": [
+    {
+      "title": "한글 요소명",
+      "enSubject": "concise English visual subject description",
+      "tags": "한글태그6개이상, englishTags6개이상"
+    }
+  ]
+}`;
+    }
+
+    function safeParseJson(rawText) {
+      if (!rawText || typeof rawText !== "string") return null;
+      const cleaned = rawText.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+      try {
+        return JSON.parse(cleaned);
+      } catch (e) {
+        const s = cleaned.indexOf("{");
+        const end = cleaned.lastIndexOf("}");
+        if (s !== -1 && end > s) {
+          try { return JSON.parse(cleaned.slice(s, end + 1)); } catch (_) { return null; }
+        }
+        return null;
+      }
+    }
+
+    // 모델 404/429/400 등을 초보자용 한국어 안내로 바꾼다.
+    function describeGeminiError(status, rawMessage, model) {
+      const msg = String(rawMessage || "");
+      if (status === 400 && /api key not valid|API_KEY_INVALID|invalid api key/i.test(msg)) {
+        return "API 키가 올바르지 않습니다(400). Google AI Studio에서 키를 다시 복사해 붙여넣어 주세요.";
+      }
+      if (status === 400) {
+        return `요청이 거부되었습니다(400). 모델명 '${model}'과 API 키를 확인해 주세요.`;
+      }
+      if (status === 403) {
+        return `이 키로는 '${model}' 모델을 쓸 수 없습니다(403). 기본 모델 gemini-3.1-flash-lite로 전환합니다.`;
+      }
+      if (status === 404) {
+        return `'${model}' 모델을 이 키에서 찾을 수 없습니다(404·종료된 모델). 기본 모델 gemini-3.1-flash-lite로 전환합니다.`;
+      }
+      if (status === 429) {
+        const wait = (msg.match(/retry in ([0-9hms.]+)/i) || [])[1];
+        return `'${model}' 무료 사용 한도를 넘었습니다(429)${wait ? ` · 약 ${wait} 뒤 해제` : ""}. 기본 모델 gemini-3.1-flash-lite로 전환합니다.`;
+      }
+      if (status >= 500) {
+        return `Google 서버가 잠시 불안정합니다(${status}). 잠시 뒤 다시 시도해 주세요.`;
+      }
+      return `Gemini API 오류(${status}) — ${msg || "알 수 없는 오류"}`;
+    }
+
+    async function callGeminiApi(topic, category, tone, structure) {
+      const key = state.apiKey.trim();
+      const preferred = state.apiModel.trim() || DEFAULT_MODEL;
+
+      const payload = {
+        contents: [{ parts: [{ text: buildMasterPromptText(topic, category, tone, structure) }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.75
+        }
+      };
+
+      // 시도 순서: 사용자가 고른 모델 → (404·403·429면) 기본 모델 3.1-flash-lite
+      const plan = preferred === DEFAULT_MODEL ? [preferred] : [preferred, DEFAULT_MODEL];
+      const delays = [1200, 2500];
+      let lastErr = null;
+
+      for (let i = 0; i < plan.length; i++) {
+        const model = plan[i];
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`;
+        let switchModel = false;
+
+        for (let attempt = 0; attempt <= delays.length; attempt++) {
+          try {
+            const res = await fetch(url, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) {
+              let raw = "";
+              try {
+                const j = await res.json();
+                raw = j?.error?.message || "";
+              } catch (_) {}
+              const friendly = describeGeminiError(res.status, raw, model);
+
+              // 서버 일시 오류만 같은 모델에서 재시도 (한도 초과·미지원은 즉시 다음 모델로)
+              if (res.status >= 500 && attempt < delays.length) {
+                await new Promise(r => setTimeout(r, delays[attempt]));
+                continue;
+              }
+              if ((res.status === 404 || res.status === 403 || res.status === 429) && i < plan.length - 1) {
+                lastErr = new Error(friendly);
+                switchModel = true;
+                break;
+              }
+              throw new Error(friendly);
+            }
+
+            const data = await res.json();
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) throw new Error("API 응답 텍스트가 비어 있습니다. 잠시 뒤 다시 시도해 주세요.");
+
+            const parsed = safeParseJson(text);
+            if (!parsed || !parsed.blogBody || !Array.isArray(parsed.blogTitles)) {
+              throw new Error("응답 JSON 형식이 올바르지 않습니다. 다시 생성해 주세요.");
+            }
+
+            if (model !== preferred) {
+              showToast(`'${preferred}' 대신 기본 모델 ${model}로 생성했습니다.`, "info");
+            }
+            return finalizeResult(parsed, topic, category, tone, structure, `Gemini API (${model})`);
+          } catch (err) {
+            lastErr = err;
+            if (attempt < delays.length && String(err.message).includes("Failed to fetch")) {
+              await new Promise(r => setTimeout(r, delays[attempt]));
+              continue;
+            }
+            break;
+          }
+        }
+
+        if (switchModel && lastErr) {
+          showToast(lastErr.message, "warning");
+        }
+      }
+      throw lastErr || new Error("Gemini API 통신 오류");
+    }
+
+    function finalizeResult(raw, topic, category, tone, structure, sourceMode) {
+      let body = String(raw.blogBody || "").trim();
+
+      // Apply FTC disclosure placement cleanly
+      if (state.coupangMode !== "off") {
+        const cleanBody = body.replaceAll(FTC_NOTICE, "").replace(/\n{3,}/g, "\n\n").trim();
+        if (state.ftcPosition === "both") {
+          body = `${FTC_NOTICE}\n\n${cleanBody}\n\n---\n${FTC_NOTICE}`;
+        } else if (state.ftcPosition === "top") {
+          body = `${FTC_NOTICE}\n\n${cleanBody}`;
+        } else {
+          body = `${cleanBody}\n\n---\n${FTC_NOTICE}`;
+        }
+      }
+
+      // Build MiriCanvas Icons matching requested setCount (4/8/12)
+      const desiredCount = Number(state.miriConfig.setCount) || 8;
+      const pool = getCategoryIconPool(category, topic);
+      const rawIcons = Array.isArray(raw.miricanvasIcons) ? raw.miricanvasIcons : [];
+
+      const mergedIcons = [];
+      for (let i = 0; i < desiredCount; i++) {
+        const aiItem = rawIcons[i];
+        const fallbackItem = pool[i % pool.length];
+        const title = aiItem?.title || fallbackItem.title;
+        const enSubject = aiItem?.enSubject || fallbackItem.enSubject;
+        const tags = aiItem?.tags || fallbackItem.tags;
+        mergedIcons.push({
+          title,
+          enSubject,
+          tags,
+          imagePrompt: buildPerIconImagePrompt(enSubject),
+          svgCode: WIREFRAME_SVGS[i % WIREFRAME_SVGS.length]
+        });
+      }
+
+      return {
+        topic,
+        categoryId: category.id,
+        categoryName: category.name,
+        tone,
+        structure,
+        sourceMode,
+        blogTitles: (raw.blogTitles || []).slice(0, 3),
+        blogBody: body,
+        threadA: String(raw.threadA || ""),
+        threadB: String(raw.threadB || ""),
+        threadFirstComment: String(raw.threadFirstComment || ""),
+        miricanvasIcons: mergedIcons
+      };
+    }
+
+    function generateDemoResult(topic, category, tone, structure) {
+      const products = getActiveCoupangProducts();
+      const productBlock = products.length > 0
+        ? "\n\n[실사용 기준 추천 아이템 정리]\n" + products.map((p, i) => {
+            const safeUrl = p.url && p.url.trim() ? p.url.trim() : "[쿠팡파트너스 링크 삽입]";
+            return `${i + 1}) ${p.tier} — ${p.name || topic + " 추천템"}\n- 핵심 장점: ${p.benefit || "실사용 만족도가 높은 가성비 세팅"}\n- 상세 확인: ${safeUrl}`;
+          }).join("\n\n")
+        : "";
+
+      const intros = {
+        "경험공감형": `${category.persona}라면 한 번쯤 '${topic}' 때문에 한참 고민해 보셨을 겁니다. 저 역시 처음에는 남들이 좋다는 방식만 따라 했다가 시간과 비용을 꽤 허비했던 기억이 생생합니다. 몇 번의 시행착오 끝에 정착한 '${topic}' 현실 루틴을 솔직하게 정리해 드립니다.`,
+        "체크리스트형": `매번 준비할 때마다 '${topic}' 관련해서 하나씩 빠뜨려 당황하셨다면 오늘 점검표만 저장해 두세요. ${category.persona} 입장에서 꼭 챙겨야 할 핵심 우선순위만 딱 3단계로 압축했습니다.`,
+        "비교분석형": `'${topic}' 관련 정보는 넘쳐나지만 막상 내 상황에 맞는 기준을 고르기는 어렵습니다. 불필요한 지출을 줄이기 위해 실사용 기준으로 따져봐야 할 핵심 비교 포인트만 명확하게 정리했습니다.`,
+        "Q&A해결형": `"도대체 '${topic}'은 어디서부터 챙겨야 할까요?" 최근 주변에서도 가장 자주 듣는 질문입니다. 처음 시작할 때 가장 많이 막히는 고민 3가지를 Q&A 형식으로 명쾌하게 풀어드립니다.`,
+        "실수방지형": `'${topic}' 준비하면서 누구나 한 번쯤 겪는 대표적인 실수가 있습니다. 미리 알았더라면 돈과 체력을 아꼈을 핵심 주의사항 3가지만 콕 집어 공유합니다.`
+      };
+
+      const blogBody = `${intros[structure] || intros["경험공감형"]}
+
+${HUMAN_SLOT_TAG}
+
+1. '${topic}' 준비할 때 가장 먼저 세워야 할 핵심 기준
+많은 분들이 겉보기에 예쁘거나 유행하는 제품부터 장바구니에 담습니다. 하지만 막상 현장에서 '${topic}'을(를) 직접 적용해 보면 유지관리와 실제 사용 동선이 훨씬 크게 체감됩니다. 우리 집 생활 패턴과 실제 사용 빈도를 먼저 3줄만 적어두고 우선순위를 나누면 실패 확률이 절반 이하로 줄어듭니다.
+
+2. 시행착오를 확 줄여준 실전 세팅 노하우
+처음부터 모든 걸 완벽하게 갖추려 하면 짐과 비용 부담만 커집니다. '${topic}' 과정에서 가장 번거로웠던 구간 딱 한두 곳만 집중해서 단순화해 보세요. 자주 꺼내 쓰는 소모품과 보조 도구를 투명 파우치 하나에 묶어두는 것만으로도 준비 시간이 20분 이상 단축됩니다.
+
+${HUMAN_SLOT_TAG}
+
+3. 오래 만족하며 쓰기 위한 3가지 핵심 점검표
+- '${topic}' 실행 전 기본 안전·작동 상태를 1분만 미리 확인하기
+- 세척이나 보관이 번거로운 구성품은 과감히 빼고 동선 단순화하기
+- 사용 직후 5분 정리 루틴으로 다음 일정의 피로도 확 낮추기
+
+4. 초보자가 자주 놓치는 디테일 한 끗 차이
+작은 습관 하나가 전체 만족도를 좌우합니다. '${topic}'을(를) 마친 뒤 아쉬웠던 점을 휴대폰 메모장에 한 줄씩만 남겨두면 다음번에는 훨씬 여유롭고 완성도 높은 세팅이 가능해집니다.${productBlock}
+
+오늘 정리해 드린 '${topic}' 가이드가 준비 고민을 덜어드리는 데 작은 도움이 되었길 바랍니다. 혹시 직접 해보시면서 궁금한 점이나 더 좋은 나만의 꿀팁이 있다면 댓글로 편하게 나눠주세요!`;
+
+      const threadFirstComment = products.length > 0
+        ? `👇 본문에서 정리한 '${topic}' 관련 추천 아이템 링크입니다.\n` +
+          products.map(p => `• ${p.name || topic + " 추천템"}: ${p.url && p.url.trim() ? p.url.trim() : "[쿠팡파트너스 링크 삽입]"}`).join("\n") +
+          `\n\n* ${FTC_NOTICE}`
+        : `💡 '${topic}' 관련해서 체크리스트 원본이나 세부 세팅 팁이 더 필요하시면 편하게 댓글 남겨주세요!`;
+
+      return finalizeResult({
+        blogTitles: [
+          `${topic}, 시행착오 끝내고 정착한 현실 세팅 가이드 (${category.name})`,
+          `초보도 5분 만에 끝내는 ${topic} 핵심 체크리스트 3단계`,
+          `직접 겪어보고 정리한 ${topic} 실전 꿀팁, 이것만 챙기면 충분해요`
+        ],
+        blogBody,
+        threadA: `${category.emoji} '${topic}' 때문에 매번 진땀 뺀 적 있다면 딱 3가지만 기억하세요.\n\n1️⃣ 유행보다 우리 집 실제 사용 빈도부터 체크하기\n2️⃣ 제일 번거로운 동선 1~2곳만 집중해서 단순화하기\n3️⃣ 사용 직후 5분 정리 루틴으로 다음 일정 부담 컷\n\n직접 부딪히며 정착한 현실 루틴입니다. 저장해 두고 필요할 때 바로 꺼내 보세요! 👇\n(관련 아이템 정보는 첫 번째 댓글에 따로 남겨두었습니다)`,
+        threadB: `${category.emoji} ${category.name} 관심 있으신 분들! '${topic}' 준비하실 때 가장 먼저 챙기는 필수 포인트가 뭐였나요? 🤔\n\n저는 매번 다 챙겼다고 생각해도 막상 시작하면 꼭 하나씩 아쉬운 부분이 생기더라고요 😂 다들 어떤 꿀팁으로 해결하셨는지 댓글로 공유해 주세요!`,
+        threadFirstComment,
+        miricanvasIcons: getCategoryIconPool(category, topic)
+      }, topic, category, tone, structure, "데모 모드 (로컬 템플릿)");
+    }
+
+    // =========================================================================
+    // 6. UI RENDERERS
+    // =========================================================================
+    function updateApiStatusBadge() {
+      const btn = document.getElementById("btn-header-status");
+      const text = document.getElementById("api-status-text");
+      if (state.apiKey) {
+        btn.className = "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-extrabold border transition cursor-pointer bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100";
+        text.textContent = "🟢 Gemini API 연결됨";
+      } else {
+        btn.className = "inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition cursor-pointer bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100";
+        text.textContent = "⚪ 데모 모드";
+      }
+    }
+
+    function renderCategories() {
+      const wrap = document.getElementById("category-pills");
+      const active = getActiveCategory();
+      wrap.innerHTML = "";
+
+      state.categories.forEach(cat => {
+        const isActive = cat.id === active.id;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = isActive
+          ? "px-3 py-1.5 rounded-xl text-xs font-extrabold bg-indigo-600 text-white shadow-xs flex items-center gap-1 transition"
+          : "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1 transition";
+        btn.innerHTML = `<span>${escapeHtml(cat.emoji)}</span><span>${escapeHtml(cat.name)}</span>`;
+        btn.addEventListener("click", () => {
+          state.activeCategoryId = cat.id;
+          // Sync tone dropdown if matching preset
+          const toneSel = document.getElementById("tone-select");
+          if (Array.from(toneSel.options).some(o => o.value === cat.tone)) {
+            toneSel.value = cat.tone;
+            state.tone = cat.tone;
+          }
+          saveStorage();
+          renderCategories();
+        });
+        wrap.appendChild(btn);
+      });
+
+      document.getElementById("active-cat-title").textContent = `${active.emoji} ${active.name}`;
+      document.getElementById("active-cat-tone").textContent = active.tone;
+      document.getElementById("active-cat-persona").textContent = active.persona;
+
+      // Render 4 recommended chips
+      const chipsWrap = document.getElementById("recommended-chips");
+      chipsWrap.innerHTML = "";
+      (active.keywords || []).forEach(kw => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200/70 transition text-left";
+        chip.textContent = kw;
+        chip.addEventListener("click", () => {
+          document.getElementById("topic-input").value = kw;
+          state.topic = kw;
+          runSeoDiagnostics();
+        });
+        chipsWrap.appendChild(chip);
+      });
+    }
+
+    function renderCoupangInputs() {
+      const wrap = document.getElementById("cp-fields-wrap");
+      const list = document.getElementById("cp-products-list");
+
+      if (state.coupangMode === "off") {
+        wrap.classList.add("hidden");
+        return;
+      }
+      wrap.classList.remove("hidden");
+      list.innerHTML = "";
+
+      const count = state.coupangMode === "single" ? 1 : 3;
+      const tiers = state.coupangMode === "single"
+        ? ["단일 추천 상품"]
+        : ["1. 가성비 상품", "2. 베스트 상품", "3. 프리미엄 상품"];
+
+      for (let i = 0; i < count; i++) {
+        const item = state.coupangItems[i] || { tier: tiers[i], name: "", benefit: "", url: "" };
+        item.tier = tiers[i];
+        state.coupangItems[i] = item;
+
+        const card = document.createElement("div");
+        card.className = "p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2";
+        card.innerHTML = `
+          <div class="text-[11px] font-extrabold text-indigo-700">${tiers[i]}</div>
+          <input type="text" data-idx="${i}" data-key="name" value="${escapeHtml(item.name)}" placeholder="상품명 (예: 두꺼운 10cm 자충매트)" class="cp-input w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <input type="text" data-idx="${i}" data-key="benefit" value="${escapeHtml(item.benefit)}" placeholder="핵심 장점 1줄 (선택)" class="cp-input w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+          <input type="url" data-idx="${i}" data-key="url" value="${escapeHtml(item.url)}" placeholder="쿠팡파트너스 제휴 URL (https://link.coupang.com/...)" class="cp-input w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-[11px] font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        `;
+        list.appendChild(card);
+      }
+
+      list.querySelectorAll(".cp-input").forEach(input => {
+        input.addEventListener("input", (e) => {
+          const idx = Number(e.target.dataset.idx);
+          const key = e.target.dataset.key;
+          state.coupangItems[idx][key] = e.target.value;
+        });
+      });
+    }
+
+    function renderWorkspace(res) {
+      if (!res) return;
+      state.currentResult = res;
+
+      document.getElementById("blog-mode-chip").textContent = res.sourceMode;
+      document.getElementById("blog-structure-chip").textContent = `구조: ${res.structure}`;
+
+      // 1. SEO Titles
+      const titlesWrap = document.getElementById("blog-titles-wrap");
+      titlesWrap.innerHTML = "";
+      (res.blogTitles || []).forEach((title, i) => {
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-indigo-300 transition";
+        row.innerHTML = `
+          <div class="flex items-center gap-2.5 min-w-0">
+            <span class="w-5 h-5 rounded-md bg-indigo-600 text-white text-[11px] font-extrabold flex items-center justify-center shrink-0">${i + 1}</span>
+            <p class="text-xs sm:text-sm font-bold text-slate-900 truncate">${escapeHtml(title)}</p>
+          </div>
+          <button type="button" class="shrink-0 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-indigo-600 hover:text-white text-[11px] font-bold text-slate-700 transition">복사</button>
+        `;
+        row.querySelector("button").addEventListener("click", () => {
+          copyToClipboard(title, `SEO 제목 ${i + 1}번이 복사되었습니다!`);
+        });
+        titlesWrap.appendChild(row);
+      });
+
+      // 2. Blog Body
+      document.getElementById("blog-body-editor").value = res.blogBody || "";
+      runSeoDiagnostics();
+
+      // 3. Threads
+      document.getElementById("thread-a-editor").value = res.threadA || "";
+      document.getElementById("thread-b-editor").value = res.threadB || "";
+      document.getElementById("thread-comment-editor").value = res.threadFirstComment || "";
+      updateThreadCounts();
+
+      // 4. MiriCanvas Studio
+      state.activeIconIndex = 0;
+      renderMiriCanvasBuilderAndGrid();
+    }
+
+    function runSeoDiagnostics() {
+      const body = document.getElementById("blog-body-editor").value || "";
+      const kw = document.getElementById("topic-input").value.trim();
+
+      const total = body.length;
+      const noSpace = body.replace(/\s/g, "").length;
+      document.getElementById("diag-char-total").textContent = `${total.toLocaleString()}자`;
+      document.getElementById("diag-char-nospace").textContent = `공백 제외 ${noSpace.toLocaleString()}자`;
+
+      const charBadge = document.getElementById("diag-char-badge");
+      if (total >= 1500 && total <= 2500) {
+        charBadge.textContent = "최적";
+        charBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-700";
+      } else if (total < 1500) {
+        charBadge.textContent = "보강 권장";
+        charBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-700";
+      } else {
+        charBadge.textContent = "충분/김";
+        charBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-indigo-100 text-indigo-700";
+      }
+
+      // Keyword density (%)
+      let kwCount = 0;
+      let density = 0;
+      if (kw && noSpace > 0) {
+        const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const matches = body.match(new RegExp(escaped, "gi"));
+        kwCount = matches ? matches.length : 0;
+        density = ((kwCount * kw.replace(/\s/g, "").length) / noSpace) * 100;
+      }
+      document.getElementById("diag-kw-val").textContent = `${kwCount}회 (${density.toFixed(1)}%)`;
+      document.getElementById("diag-kw-target").textContent = `키워드: ${kw || "-"}`;
+
+      const kwBadge = document.getElementById("diag-kw-badge");
+      if (kwCount >= 5 && kwCount <= 8) {
+        kwBadge.textContent = "최적";
+        kwBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-700";
+      } else if (kwCount > 8) {
+        kwBadge.textContent = "과다 주의";
+        kwBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-100 text-rose-700";
+      } else {
+        kwBadge.textContent = "부족";
+        kwBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-amber-100 text-amber-700";
+      }
+
+      // AI Cliches
+      const found = AI_CLICHES.filter(w => body.includes(w));
+      document.getElementById("diag-cliche-count").textContent = `${found.length}건 감지`;
+      document.getElementById("diag-cliche-words").textContent = found.length > 0 ? found.join(", ") : "기계적 표현 없음";
+
+      const clicheBadge = document.getElementById("diag-cliche-badge");
+      if (found.length === 0) {
+        clicheBadge.textContent = "안전";
+        clicheBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-emerald-100 text-emerald-700";
+      } else {
+        clicheBadge.textContent = "경고";
+        clicheBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-rose-100 text-rose-700";
+      }
+
+      // Human slot count
+      const slots = body.match(/\[여기에 실제 경험\/사진 1줄 추가\]/g);
+      const slotCount = slots ? slots.length : 0;
+      const badge = document.getElementById("human-slot-badge");
+      badge.textContent = slotCount > 0 ? `✍️ 인간미 슬롯 ${slotCount}개 대기 중` : "✅ 인간미 슬롯 작성 완료";
+      badge.className = slotCount > 0
+        ? "inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300/70"
+        : "inline-flex items-center gap-1 text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300/70";
+    }
+
+    function updateThreadCounts() {
+      document.getElementById("thread-a-count").textContent = `${(document.getElementById("thread-a-editor").value || "").length} / 500자`;
+      document.getElementById("thread-b-count").textContent = `${(document.getElementById("thread-b-editor").value || "").length} / 500자`;
+    }
+
+    // =========================================================================
+    // 7. MIRICANVAS STUDIO RENDERERS (PRESETS + WIREFRAMES + CHECKLIST)
+    // =========================================================================
+    function syncMiriControlInputs() {
+      const cfg = state.miriConfig;
+      document.getElementById("miri-opt-stroke").value = cfg.stroke;
+      document.getElementById("miri-opt-colors").value = cfg.maxColors;
+      document.getElementById("miri-opt-margin").value = cfg.margin;
+      document.getElementById("miri-opt-count").value = String(cfg.setCount);
+      document.getElementById("miri-opt-negative").checked = cfg.autoNegative;
+
+      document.querySelectorAll(".miri-preset-card").forEach(card => {
+        if (card.dataset.preset === cfg.presetId) {
+          card.className = "miri-preset-card text-left p-3.5 rounded-xl border-2 border-indigo-600 bg-indigo-50/50 transition space-y-1 shadow-2xs";
+        } else {
+          card.className = "miri-preset-card text-left p-3.5 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-indigo-300 transition space-y-1";
+        }
+      });
+    }
+
+    function resizeCurrentIconsToSetCount() {
+      if (!state.currentResult) return;
+      const desired = Number(state.miriConfig.setCount) || 8;
+      const cat = getActiveCategory();
+      const pool = getCategoryIconPool(cat, state.currentResult.topic || state.topic);
+      const current = state.currentResult.miricanvasIcons || [];
+
+      const updated = [];
+      for (let i = 0; i < desired; i++) {
+        const src = current[i] || pool[i % pool.length];
+        updated.push({
+          ...src,
+          imagePrompt: buildPerIconImagePrompt(src.enSubject),
+          svgCode: src.svgCode || WIREFRAME_SVGS[i % WIREFRAME_SVGS.length]
+        });
+      }
+      state.currentResult.miricanvasIcons = updated;
+      if (state.activeIconIndex >= updated.length) state.activeIconIndex = 0;
+    }
+
+    function renderMiriCanvasBuilderAndGrid() {
+      syncMiriControlInputs();
+      resizeCurrentIconsToSetCount();
+
+      // Master template preview
+      const masterTpl = buildVectorTracingTemplate();
+      document.getElementById("miri-master-template-preview").value = masterTpl;
+
+      const icons = state.currentResult?.miricanvasIcons || [];
+      document.getElementById("miri-prompt-list-count").textContent = icons.length;
+
+      // Section B: Per-Icon Ready-to-Paste Prompts List
+      const promptsList = document.getElementById("miri-ready-prompts-list");
+      promptsList.innerHTML = "";
+      icons.forEach((ic, idx) => {
+        const row = document.createElement("div");
+        row.className = "flex items-start justify-between gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-indigo-300 transition";
+        row.innerHTML = `
+          <div class="min-w-0 flex-1 space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="px-1.5 py-0.5 rounded bg-slate-900 text-white text-[10px] font-extrabold">#${idx + 1}</span>
+              <span class="text-xs font-extrabold text-slate-900">${escapeHtml(ic.title)}</span>
+              <span class="text-[11px] text-slate-400 truncate">(${escapeHtml(ic.enSubject)})</span>
+            </div>
+            <p class="text-[11px] font-mono text-slate-600 leading-relaxed break-words">${escapeHtml(ic.imagePrompt)}</p>
+          </div>
+          <button type="button" class="btn-copy-single-prompt shrink-0 px-3 py-1.5 rounded-lg bg-white border border-slate-200 hover:bg-indigo-600 hover:text-white text-[11px] font-bold text-slate-700 transition">
+            복사
+          </button>
+        `;
+        row.querySelector(".btn-copy-single-prompt").addEventListener("click", () => {
+          copyToClipboard(ic.imagePrompt, `#${idx + 1} '${ic.title}' 벡터용 이미지 프롬프트가 복사되었습니다!`);
+        });
+        promptsList.appendChild(row);
+      });
+
+      // Section C: Wireframe Icon Concept Cards Grid
+      const grid = document.getElementById("miri-icons-grid");
+      grid.innerHTML = "";
+      icons.forEach((ic, idx) => {
+        const selected = idx === state.activeIconIndex;
+        const card = document.createElement("div");
+        card.className = `rounded-xl border p-3.5 transition space-y-2.5 flex flex-col justify-between cursor-pointer ${
+          selected
+            ? "border-indigo-600 bg-indigo-50/40 ring-2 ring-indigo-500/20"
+            : "border-slate-200 bg-slate-50/50 hover:border-indigo-300"
+        }`;
+        card.innerHTML = `
+          <div class="space-y-2">
+            <div class="flex items-center gap-3">
+              <div class="w-14 h-14 rounded-xl border border-slate-200 checkerboard-bg p-1.5 shrink-0 flex items-center justify-center thumb-svg-box">
+                ${ic.svgCode}
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-1">
+                  <h5 class="text-xs font-extrabold text-slate-900 truncate">${idx + 1}. ${escapeHtml(ic.title)}</h5>
+                  ${selected ? '<span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-600 text-white shrink-0">미리보기 중</span>' : ''}
+                </div>
+                <div class="text-[10px] font-mono text-slate-400 truncate">${escapeHtml(ic.enSubject)}</div>
+                <p class="mt-1 text-[11px] text-indigo-700 line-clamp-2 leading-snug">🏷️ ${escapeHtml(ic.tags)}</p>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-1.5 pt-1">
+            <button type="button" class="btn-card-tags flex-1 py-1.5 px-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-900 hover:text-white text-[11px] font-bold transition">태그 복사</button>
+            <button type="button" class="btn-card-prompt flex-1 py-1.5 px-2 rounded-lg bg-white border border-slate-200 hover:bg-indigo-600 hover:text-white text-[11px] font-bold transition">프롬프트 복사</button>
+          </div>
+        `;
+        const thumbSvg = card.querySelector(".thumb-svg-box svg");
+        if (thumbSvg) {
+          thumbSvg.style.width = "100%";
+          thumbSvg.style.height = "100%";
+        }
+
+        card.addEventListener("click", (e) => {
+          if (e.target.closest("button")) return;
+          state.activeIconIndex = idx;
+          renderMiriCanvasBuilderAndGrid();
+        });
+        card.querySelector(".btn-card-tags").addEventListener("click", (e) => {
+          e.stopPropagation();
+          copyToClipboard(ic.tags, `'${ic.title}' 검색 태그가 복사되었습니다!`);
+        });
+        card.querySelector(".btn-card-prompt").addEventListener("click", (e) => {
+          e.stopPropagation();
+          copyToClipboard(ic.imagePrompt, `'${ic.title}' 벡터 변환 프롬프트가 복사되었습니다!`);
+        });
+        grid.appendChild(card);
+      });
+
+      renderLiveWireframeStage();
+    }
+
+    function renderLiveWireframeStage() {
+      const stage = document.getElementById("svg-live-stage");
+      const titleEl = document.getElementById("svg-active-title");
+      const icons = state.currentResult?.miricanvasIcons || [];
+      const active = icons[state.activeIconIndex];
+
+      if (!active) {
+        stage.innerHTML = `<span class="text-xs text-slate-400">선택된 아이콘 없음</span>`;
+        titleEl.textContent = "선택된 요소: -";
+        return;
+      }
+
+      stage.innerHTML = active.svgCode;
+      titleEl.textContent = `뼈대 시안 #${state.activeIconIndex + 1}: ${active.title}`;
+      const svgEl = stage.querySelector("svg");
+      if (svgEl) {
+        svgEl.style.width = "100%";
+        svgEl.style.height = "100%";
+        applyLiveSvgStyle();
+      }
+    }
+
+    function applyLiveSvgStyle() {
+      const svgEl = document.getElementById("svg-live-stage").querySelector("svg");
+      if (!svgEl) return;
+      svgEl.querySelectorAll('[data-role="primary"]').forEach(el => el.setAttribute("fill", state.svgPrimary));
+      svgEl.querySelectorAll('[data-role="primary-soft"]').forEach(el => el.setAttribute("fill", state.svgPrimary));
+      svgEl.querySelectorAll('[data-role="accent"]').forEach(el => el.setAttribute("fill", state.svgAccent));
+      svgEl.querySelectorAll('[data-role="accent-stroke"]').forEach(el => el.setAttribute("stroke", state.svgAccent));
+      svgEl.querySelectorAll("[stroke-width]").forEach(el => el.setAttribute("stroke-width", String(state.svgStroke)));
+    }
+
+    function getSerializedWireframeSvg() {
+      const svgEl = document.getElementById("svg-live-stage").querySelector("svg");
+      if (!svgEl) return null;
+      const clone = svgEl.cloneNode(true);
+      clone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      clone.setAttribute("width", "200");
+      clone.setAttribute("height", "200");
+      clone.removeAttribute("style");
+      return new XMLSerializer().serializeToString(clone);
+    }
+
+    function renderChecklist() {
+      const stage1Wrap = document.getElementById("checklist-stage1");
+      const stage2Wrap = document.getElementById("checklist-stage2");
+      stage1Wrap.innerHTML = "";
+      stage2Wrap.innerHTML = "";
+
+      let doneAll = 0;
+      let doneS1 = 0;
+      let doneS2 = 0;
+
+      CHECKLIST_ITEMS.forEach((item, index) => {
+        const checked = Boolean(state.checklist[item.id]);
+        if (checked) {
+          doneAll++;
+          if (item.stage === 1) doneS1++;
+          else doneS2++;
+        }
+
+        const label = document.createElement("label");
+        label.className = `flex items-start gap-2.5 p-2.5 rounded-xl border cursor-pointer transition select-none ${
+          checked
+            ? "bg-emerald-50/70 border-emerald-200 text-emerald-950"
+            : "bg-white border-slate-200 text-slate-700 hover:border-indigo-300"
+        }`;
+        label.innerHTML = `
+          <input type="checkbox" data-cid="${item.id}" ${checked ? "checked" : ""} class="w-4 h-4 mt-0.5 accent-emerald-600 rounded shrink-0 cursor-pointer" />
+          <span class="text-xs leading-snug ${checked ? "line-through text-emerald-800/80 font-medium" : "font-semibold"}">
+            <strong class="mr-1 text-[11px] opacity-60">${index + 1}.</strong>${escapeHtml(item.text)}
+          </span>
+        `;
+        label.querySelector("input").addEventListener("change", (e) => {
+          state.checklist[item.id] = e.target.checked;
+          saveStorage();
+          renderChecklist();
+        });
+
+        if (item.stage === 1) stage1Wrap.appendChild(label);
+        else stage2Wrap.appendChild(label);
+      });
+
+      const pct = Math.round((doneAll / CHECKLIST_ITEMS.length) * 100);
+      document.getElementById("checklist-progress-bar").style.width = `${pct}%`;
+      document.getElementById("stage1-count").textContent = `${doneS1}/4`;
+      document.getElementById("stage2-count").textContent = `${doneS2}/6`;
+
+      const pill = document.getElementById("checklist-status-pill");
+      if (doneAll === CHECKLIST_ITEMS.length) {
+        pill.textContent = "10/10 등록 준비 완료! 🎉";
+        pill.className = "px-3 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-300";
+      } else {
+        pill.textContent = `${doneAll}/10 완료 (${pct}%)`;
+        pill.className = "px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-50 text-indigo-700 border border-indigo-200";
+      }
+    }
+
+    // =========================================================================
+    // 8. GENERATION FLOW & BATCH QUEUE RUNNER
+    // =========================================================================
+    function resolveStructure() {
+      if (state.randomStructure) {
+        const candidates = BLOG_STRUCTURES.filter(s => s !== state.structure);
+        state.structure = candidates[Math.floor(Math.random() * candidates.length)];
+        document.getElementById("structure-select").value = state.structure;
+      } else {
+        state.structure = document.getElementById("structure-select").value;
+      }
+      return state.structure;
+    }
+
+    async function runGeneration(forceDemo = false) {
+      const topic = document.getElementById("topic-input").value.trim();
+      if (!topic) {
+        showToast("핵심 키워드 또는 주제를 입력해 주세요!", "warning");
+        document.getElementById("topic-input").focus();
+        return;
+      }
+      state.topic = topic;
+      state.tone = document.getElementById("tone-select").value;
+      const cat = getActiveCategory();
+      const structure = resolveStructure();
+
+      hideApiError();
+      setGeneratingUi(true);
+
+      try {
+        let res;
+        if (!forceDemo && state.apiKey) {
+          res = await callGeminiApi(topic, cat, state.tone, structure);
+        } else {
+          await new Promise(r => setTimeout(r, 320));
+          res = generateDemoResult(topic, cat, state.tone, structure);
+        }
+
+        renderWorkspace(res);
+        upsertQueueResult(res);
+        showToast(
+          !forceDemo && state.apiKey
+            ? `Gemini API (${state.apiModel}) 통합 생성 완료!`
+            : "데모 모드로 통합 패키지 생성이 완료되었습니다!",
+          "success"
+        );
+      } catch (err) {
+        showApiError(err.message || "API 호출 중 오류가 발생했습니다.");
+        showToast("Gemini API 호출 실패. 오류 배너를 확인해 주세요.", "warning");
+      } finally {
+        setGeneratingUi(false);
+      }
+    }
+
+    function upsertQueueResult(res) {
+      const existing = state.queue.find(q => q.topic === res.topic && q.categoryId === res.categoryId);
+      if (existing) {
+        existing.result = res;
+        if (existing.status === "대기") existing.status = "초안완료";
+      } else {
+        state.queue.unshift({
+          id: Date.now(),
+          categoryId: res.categoryId,
+          categoryName: res.categoryName,
+          topic: res.topic,
+          status: "초안완료",
+          result: res
+        });
+      }
+      saveStorage();
+      renderQueue();
+    }
+
+    async function runBatchQueue() {
+      const pending = state.queue.filter(q => q.status === "대기");
+      if (pending.length === 0) {
+        showToast("대기 상태인 키워드가 없습니다.", "warning");
+        return;
+      }
+
+      state.batchRunning = true;
+      state.batchStopRequested = false;
+
+      const startBtn = document.getElementById("btn-start-batch");
+      const stopBtn = document.getElementById("btn-stop-batch");
+      const box = document.getElementById("batch-runner-box");
+      const statusEl = document.getElementById("batch-runner-status");
+      const pctEl = document.getElementById("batch-runner-pct");
+      const bar = document.getElementById("batch-runner-bar");
+
+      startBtn.classList.add("hidden");
+      stopBtn.classList.remove("hidden");
+      box.classList.remove("hidden");
+
+      let doneCount = 0;
+
+      for (let i = 0; i < pending.length; i++) {
+        if (state.batchStopRequested) {
+          statusEl.textContent = `사용자 요청으로 중지됨 (${doneCount}/${pending.length}건 완료)`;
+          showToast(`배치 생성이 중지되었습니다. (${doneCount}건 완료)`, "info");
+          break;
+        }
+
+        const item = pending[i];
+        const pct = Math.round((i / pending.length) * 100);
+        statusEl.textContent = `[${i + 1}/${pending.length}] '${item.topic}' 자동 생성 중...`;
+        pctEl.textContent = `${pct}%`;
+        bar.style.width = `${pct}%`;
+
+        const cat = state.categories.find(c => c.id === item.categoryId) || getActiveCategory();
+        const rotStruct = BLOG_STRUCTURES[i % BLOG_STRUCTURES.length];
+
+        try {
+          const res = state.apiKey
+            ? await callGeminiApi(item.topic, cat, cat.tone || state.tone, rotStruct)
+            : generateDemoResult(item.topic, cat, cat.tone || state.tone, rotStruct);
+          item.result = res;
+          item.status = "초안완료";
+          doneCount++;
+          saveStorage();
+          renderQueue();
+        } catch (err) {
+          showToast(`'${item.topic}' 생성 오류: ${err.message}`, "warning");
+        }
+
+        if (i < pending.length - 1 && !state.batchStopRequested) {
+          statusEl.textContent = `Rate Limit 보호 1.5초 대기 중... [${i + 1}/${pending.length}]`;
+          await new Promise(r => setTimeout(r, 1500));
+        }
+      }
+
+      if (!state.batchStopRequested) {
+        statusEl.textContent = `배치 자동 생성 완료! (${doneCount}/${pending.length}건 초안 저장됨)`;
+        pctEl.textContent = "100%";
+        bar.style.width = "100%";
+        showToast(`대기 항목 ${doneCount}건 순차 자동 생성이 완료되었습니다!`, "success");
+      }
+
+      state.batchRunning = false;
+      startBtn.classList.remove("hidden");
+      stopBtn.classList.add("hidden");
+    }
+
+    function renderQueue() {
+      const tbody = document.getElementById("queue-tbody");
+      const total = state.queue.length;
+      const published = state.queue.filter(q => q.status === "발행완료").length;
+      const pct = total === 0 ? 0 : Math.round((published / total) * 100);
+
+      document.getElementById("queue-badge").textContent = total;
+      document.getElementById("queue-progress-summary").textContent = `${published} / ${total} 발행완료 (${pct}%)`;
+      document.getElementById("queue-progress-bar").style.width = `${pct}%`;
+
+      const filtered = state.queue.filter(q => state.queueFilter === "전체" ? true : q.status === state.queueFilter);
+      document.getElementById("queue-filter-count").textContent = `표시 ${filtered.length}건 / 전체 ${total}건`;
+
+      tbody.innerHTML = "";
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="py-8 text-center text-slate-400">해당 상태의 소재가 없습니다.</td></tr>`;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const badgeStyle =
+          item.status === "발행완료" ? "bg-emerald-50 text-emerald-700 border-emerald-200" :
+          item.status === "검수완료" ? "bg-indigo-50 text-indigo-700 border-indigo-200" :
+          item.status === "초안완료" ? "bg-amber-50 text-amber-800 border-amber-200" :
+          "bg-slate-100 text-slate-600 border-slate-200";
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition";
+        tr.innerHTML = `
+          <td class="py-3 px-3 whitespace-nowrap">
+            <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-bold text-[11px]">${escapeHtml(item.categoryName)}</span>
+          </td>
+          <td class="py-3 px-3">
+            <button type="button" class="q-open text-left font-bold text-slate-900 hover:text-indigo-600 flex items-center flex-wrap gap-1.5 transition">
+              <span>${escapeHtml(item.topic)}</span>
+              ${item.result ? '<span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700">초안저장</span>' : ''}
+            </button>
+          </td>
+          <td class="py-3 px-3 whitespace-nowrap">
+            <select class="q-status px-2.5 py-1 rounded-lg border text-[11px] font-extrabold cursor-pointer focus:outline-none ${badgeStyle}">
+              <option value="대기" ${item.status === "대기" ? "selected" : ""}>대기</option>
+              <option value="초안완료" ${item.status === "초안완료" ? "selected" : ""}>초안완료</option>
+              <option value="검수완료" ${item.status === "검수완료" ? "selected" : ""}>검수완료</option>
+              <option value="발행완료" ${item.status === "발행완료" ? "selected" : ""}>발행완료</option>
+            </select>
+          </td>
+          <td class="py-3 px-3 text-right whitespace-nowrap space-x-1">
+            <button type="button" class="q-load px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-indigo-600 text-white text-[11px] font-bold transition">불러오기</button>
+            <button type="button" class="q-del px-2 py-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 text-xs transition" title="삭제">✕</button>
+          </td>
+        `;
+
+        const loadHandler = () => {
+          state.activeCategoryId = item.categoryId;
+          state.topic = item.topic;
+          document.getElementById("topic-input").value = item.topic;
+          renderCategories();
+          switchTab("blog");
+          if (item.result) {
+            renderWorkspace(item.result);
+            showToast(`저장된 '${item.topic}' 초안을 불러왔습니다!`, "success");
+          } else {
+            runGeneration(false);
+          }
+        };
+
+        tr.querySelector(".q-open").addEventListener("click", loadHandler);
+        tr.querySelector(".q-load").addEventListener("click", loadHandler);
+        tr.querySelector(".q-status").addEventListener("change", (e) => {
+          item.status = e.target.value;
+          saveStorage();
+          renderQueue();
+        });
+        tr.querySelector(".q-del").addEventListener("click", () => {
+          state.queue = state.queue.filter(q => q.id !== item.id);
+          saveStorage();
+          renderQueue();
+          showToast("소재 큐에서 삭제되었습니다.", "info");
+        });
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // =========================================================================
+    // 9. API CONNECTION TEST & MODALS
+    // =========================================================================
+    async function testApiConnection() {
+      const key = document.getElementById("input-api-key").value.trim();
+      const sel = document.getElementById("select-api-model");
+      const custom = document.getElementById("input-custom-model");
+      const model = sel.value === "custom" ? (custom.value.trim() || DEFAULT_MODEL) : sel.value;
+      const box = document.getElementById("api-test-result");
+
+      if (!key) {
+        box.className = "rounded-xl p-3 text-xs font-bold bg-amber-50 border border-amber-200 text-amber-800";
+        box.textContent = "⚠️ 먼저 Gemini API 키를 입력해 주세요.";
+        box.classList.remove("hidden");
+        return;
+      }
+
+      box.classList.remove("hidden");
+      box.className = "rounded-xl p-3 text-xs font-bold bg-indigo-50 border border-indigo-200 text-indigo-800";
+      box.textContent = `⏳ ${model} 연결 테스트 중...`;
+
+      async function ping(m) {
+        const t0 = performance.now();
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent?key=${encodeURIComponent(key)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "Reply OK only." }] }],
+            generationConfig: { maxOutputTokens: 10 }
+          })
+        });
+        const ms = Math.round(performance.now() - t0);
+        if (!res.ok) {
+          let raw = "";
+          try {
+            const j = await res.json();
+            raw = j?.error?.message || "";
+          } catch (_) {}
+          const e = new Error(describeGeminiError(res.status, raw, m));
+          e.status = res.status;
+          throw e;
+        }
+        return ms;
+      }
+
+      try {
+        const ms = await ping(model);
+        box.className = "rounded-xl p-3 text-xs font-bold bg-emerald-50 border border-emerald-200 text-emerald-800";
+        box.textContent = `✅ 연결 성공! (${model} · ${ms}ms) — '저장 및 적용'을 누르면 이 모델로 생성합니다.`;
+      } catch (err) {
+        const canFallback = model !== DEFAULT_MODEL && [403, 404, 429].includes(err.status);
+        if (canFallback) {
+          try {
+            const ms2 = await ping(DEFAULT_MODEL);
+            // 화면의 모델 선택도 실제로 동작하는 기본 모델로 맞춰 준다 (저장은 사용자가)
+            sel.value = DEFAULT_MODEL;
+            custom.classList.add("hidden");
+            box.className = "rounded-xl p-3 text-xs font-bold bg-amber-50 border border-amber-200 text-amber-900 break-words";
+            box.textContent = `⚠️ ${err.message}\n✅ 대신 기본 모델 ${DEFAULT_MODEL} 연결 성공(${ms2}ms). 모델을 3.1-flash-lite로 바꿔 두었습니다 — '저장 및 적용'을 눌러 주세요.`;
+            return;
+          } catch (err2) {
+            box.className = "rounded-xl p-3 text-xs font-bold bg-rose-50 border border-rose-200 text-rose-800 break-words";
+            box.textContent = `❌ 연결 실패: ${err2.message}`;
+            return;
+          }
+        }
+        box.className = "rounded-xl p-3 text-xs font-bold bg-rose-50 border border-rose-200 text-rose-800 break-words";
+        box.textContent = `❌ 연결 실패: ${err.message}`;
+      }
+    }
+
+    function openApiModal() {
+      document.getElementById("input-api-key").value = state.apiKey;
+      const sel = document.getElementById("select-api-model");
+      const custom = document.getElementById("input-custom-model");
+      const presets = MODEL_OPTIONS;
+      if (presets.includes(state.apiModel)) {
+        sel.value = state.apiModel;
+        custom.classList.add("hidden");
+      } else {
+        sel.value = "custom";
+        custom.value = state.apiModel;
+        custom.classList.remove("hidden");
+      }
+      document.getElementById("api-test-result").classList.add("hidden");
+      document.getElementById("modal-api").classList.remove("hidden");
+    }
+
+    function renderCategoryModalList() {
+      const list = document.getElementById("modal-category-list");
+      document.getElementById("cat-total-count").textContent = state.categories.length;
+      list.innerHTML = "";
+      state.categories.forEach(cat => {
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs";
+        row.innerHTML = `
+          <div class="truncate">
+            <span class="font-extrabold text-slate-900">${escapeHtml(cat.emoji)} ${escapeHtml(cat.name)}</span>
+            <span class="text-[11px] text-slate-400 ml-1">(${(cat.keywords || []).length}개 키워드)</span>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0">
+            <button type="button" class="btn-edit px-2.5 py-1 rounded-lg bg-white border border-slate-200 font-bold text-slate-700 hover:text-indigo-600">수정</button>
+            <button type="button" class="btn-del px-2.5 py-1 rounded-lg bg-white border border-slate-200 font-bold text-rose-600 hover:bg-rose-50">삭제</button>
+          </div>
+        `;
+        row.querySelector(".btn-edit").addEventListener("click", () => {
+          document.getElementById("cat-edit-id").value = cat.id;
+          document.getElementById("cat-emoji").value = cat.emoji;
+          document.getElementById("cat-name").value = cat.name;
+          document.getElementById("cat-persona").value = cat.persona;
+          document.getElementById("cat-tone").value = cat.tone;
+          document.getElementById("cat-keywords").value = (cat.keywords || []).join(", ");
+        });
+        row.querySelector(".btn-del").addEventListener("click", () => {
+          if (state.categories.length <= 1) {
+            showToast("최소 1개의 카테고리는 유지되어야 합니다.", "warning");
+            return;
+          }
+          state.categories = state.categories.filter(c => c.id !== cat.id);
+          if (state.activeCategoryId === cat.id) state.activeCategoryId = state.categories[0].id;
+          saveStorage();
+          renderCategories();
+          renderCategoryModalList();
+          showToast("카테고리가 삭제되었습니다.", "info");
+        });
+        list.appendChild(row);
+      });
+    }
+
+    // =========================================================================
+    // 10. SHARED UTILITIES
+    // =========================================================================
+    function switchTab(tabKey) {
+      state.activeTab = tabKey;
+      document.querySelectorAll(".ws-tab").forEach(btn => {
+        if (btn.dataset.tab === tabKey) {
+          btn.className = "ws-tab py-2.5 px-3 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition bg-slate-900 text-white shadow-xs";
+        } else {
+          btn.className = "ws-tab py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition text-slate-600 hover:bg-slate-100";
+        }
+      });
+      document.querySelectorAll(".tab-panel").forEach(p => {
+        p.classList.toggle("hidden", p.id !== `panel-${tabKey}`);
+      });
+    }
+
+    function setGeneratingUi(loading) {
+      const btn = document.getElementById("btn-generate-all");
+      btn.disabled = loading;
+      btn.classList.toggle("opacity-80", loading);
+      document.getElementById("gen-icon-wrap").classList.toggle("hidden", loading);
+      document.getElementById("gen-spinner").classList.toggle("hidden", !loading);
+      document.getElementById("gen-btn-label").textContent = loading
+        ? (state.apiKey ? "Gemini API로 통합 생성 중..." : "데모 패키지 생성 중...")
+        : "원클릭 통합 생성";
+    }
+
+    function showApiError(msg) {
+      document.getElementById("api-error-detail").textContent = msg;
+      document.getElementById("api-error-banner").classList.remove("hidden");
+    }
+
+    function hideApiError() {
+      document.getElementById("api-error-banner").classList.add("hidden");
+    }
+
+    function copyToClipboard(text, message = "클립보드에 복사되었습니다!") {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      ta.style.top = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {
+        document.execCommand("copy");
+        showToast(message, "success");
+      } catch (e) {
+        showToast("복사에 실패했습니다. 직접 선택해 복사해 주세요.", "warning");
+      }
+      document.body.removeChild(ta);
+    }
+
+    function triggerDownload(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function showToast(msg, type = "success") {
+      const wrap = document.getElementById("toast-container");
+      const el = document.createElement("div");
+      const bg =
+        type === "warning" ? "bg-amber-600 text-white" :
+        type === "info" ? "bg-slate-800 text-white" :
+        "bg-slate-900 text-white border border-emerald-400/40";
+      const icon = type === "warning" ? "⚠️" : type === "info" ? "ℹ️" : "✅";
+      el.className = `pointer-events-auto px-4 py-3 rounded-xl shadow-xl text-xs font-bold flex items-center gap-2 transition-all duration-300 translate-y-2 opacity-0 ${bg}`;
+      el.innerHTML = `<span>${icon}</span><span class="leading-snug">${escapeHtml(msg)}</span>`;
+      wrap.appendChild(el);
+      requestAnimationFrame(() => el.classList.remove("translate-y-2", "opacity-0"));
+      setTimeout(() => {
+        el.classList.add("translate-y-2", "opacity-0");
+        setTimeout(() => el.remove(), 300);
+      }, 2800);
+    }
+
+    function csvCell(val) {
+      return `"${String(val || "").replace(/"/g, '""')}"`;
+    }
+
+    function todayDate() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function escapeHtml(str) {
+      return String(str || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    // =========================================================================
+    // 11. EVENT BINDINGS & INITIAL BOOT
+    // =========================================================================
+    document.addEventListener("DOMContentLoaded", () => {
+      loadStorage();
+      updateApiStatusBadge();
+      lucide.createIcons();
+
+      // Modal Close Buttons
+      document.querySelectorAll(".close-modal").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.getElementById(btn.dataset.target).classList.add("hidden");
+        });
+      });
+
+      // Header Actions
+      document.getElementById("btn-header-status").addEventListener("click", openApiModal);
+      document.getElementById("btn-open-api-modal").addEventListener("click", openApiModal);
+
+      // 사용 설명서 모달
+      document.getElementById("btn-open-guide").addEventListener("click", () => {
+        document.getElementById("modal-guide").classList.remove("hidden");
+      });
+      document.getElementById("btn-guide-open-api").addEventListener("click", () => {
+        document.getElementById("modal-guide").classList.add("hidden");
+        openApiModal();
+      });
+
+      // PWA 바로가기(#blog · #threads · #miricanvas · #queue · #guide)로 열렸을 때 해당 화면
+      const bootHash = (location.hash || "").replace("#", "");
+      if (["blog", "threads", "miricanvas", "queue"].includes(bootHash)) switchTab(bootHash);
+      if (bootHash === "guide") document.getElementById("modal-guide").classList.remove("hidden");
+
+      // PWA 앱 설치 버튼 (설치 가능할 때만 노출)
+      if (deferredInstallPrompt) {
+        const ib = document.getElementById("btn-install-app");
+        ib.classList.remove("hidden");
+        ib.classList.add("inline-flex");
+      }
+
+      // JSON Backup & Restore (Excludes API key by default)
+      document.getElementById("btn-open-backup-modal").addEventListener("click", () => {
+        const checkedCnt = Object.values(state.checklist).filter(Boolean).length;
+        document.getElementById("backup-summary").innerHTML = `
+          <div>• 카테고리: <strong>${state.categories.length}개</strong></div>
+          <div>• 배치 소재 큐: <strong>${state.queue.length}건</strong></div>
+          <div>• 미리캔버스 체크리스트: <strong>${checkedCnt}/10 완료 상태</strong></div>
+          <div>• 미리캔버스 프리셋 설정: <strong>${MIRI_PRESETS[state.miriConfig.presetId]?.name}</strong></div>
+        `;
+        document.getElementById("modal-backup").classList.remove("hidden");
+      });
+
+      document.getElementById("btn-confirm-backup").addEventListener("click", () => {
+        const payload = {
+          exportedAt: new Date().toISOString(),
+          note: "Gemini API key excluded for security",
+          categories: state.categories,
+          activeCategoryId: state.activeCategoryId,
+          queue: state.queue,
+          checklist: state.checklist,
+          miriConfig: state.miriConfig
+        };
+        triggerDownload(
+          new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }),
+          `studio_pro_backup_${todayDate()}.json`
+        );
+        document.getElementById("modal-backup").classList.add("hidden");
+        showToast("API 키 제외 안전 JSON 백업 파일이 다운로드되었습니다!", "success");
+      });
+
+      document.getElementById("input-restore-json").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const parsed = JSON.parse(ev.target.result);
+            if (Array.isArray(parsed.categories) && parsed.categories.length > 0) state.categories = parsed.categories;
+            if (Array.isArray(parsed.queue)) state.queue = parsed.queue;
+            if (parsed.activeCategoryId) state.activeCategoryId = parsed.activeCategoryId;
+            if (parsed.checklist && typeof parsed.checklist === "object") state.checklist = parsed.checklist;
+            if (parsed.miriConfig && typeof parsed.miriConfig === "object") state.miriConfig = { ...state.miriConfig, ...parsed.miriConfig };
+            saveStorage();
+            renderCategories();
+            renderQueue();
+            renderChecklist();
+            renderMiriCanvasBuilderAndGrid();
+            showToast("백업 JSON 데이터가 성공적으로 복원되었습니다!", "success");
+          } catch (_) {
+            showToast("올바른 JSON 백업 파일이 아닙니다.", "warning");
+          }
+          e.target.value = "";
+        };
+        reader.readAsText(file);
+      });
+
+      // API Settings Modal Events
+      document.getElementById("btn-toggle-key-vis").addEventListener("click", () => {
+        const input = document.getElementById("input-api-key");
+        const isPass = input.type === "password";
+        input.type = isPass ? "text" : "password";
+        document.getElementById("icon-eye-open").classList.toggle("hidden", isPass);
+        document.getElementById("icon-eye-closed").classList.toggle("hidden", !isPass);
+      });
+      document.getElementById("select-api-model").addEventListener("change", (e) => {
+        document.getElementById("input-custom-model").classList.toggle("hidden", e.target.value !== "custom");
+      });
+      document.getElementById("btn-test-api").addEventListener("click", testApiConnection);
+      document.getElementById("btn-save-api").addEventListener("click", () => {
+        const key = document.getElementById("input-api-key").value.trim();
+        const sel = document.getElementById("select-api-model").value;
+        const model = sel === "custom" ? document.getElementById("input-custom-model").value.trim() || DEFAULT_MODEL : sel;
+        saveApiCredentials(key, model);
+        document.getElementById("modal-api").classList.add("hidden");
+        hideApiError();
+        showToast(key ? `Gemini API 연결 설정 완료! (${model})` : "API 키가 비어 있어 데모 모드로 전환됩니다.", "success");
+      });
+      document.getElementById("btn-delete-api").addEventListener("click", () => {
+        saveApiCredentials("", state.apiModel);
+        document.getElementById("input-api-key").value = "";
+        document.getElementById("modal-api").classList.add("hidden");
+        showToast("API 키가 삭제되고 데모 모드로 전환되었습니다.", "info");
+      });
+
+      // Category Modal Events
+      document.getElementById("btn-open-cat-modal").addEventListener("click", () => {
+        renderCategoryModalList();
+        document.getElementById("modal-category").classList.remove("hidden");
+      });
+      document.getElementById("btn-cat-form-reset").addEventListener("click", () => {
+        document.getElementById("form-category").reset();
+        document.getElementById("cat-edit-id").value = "";
+      });
+      document.getElementById("btn-cat-restore-defaults").addEventListener("click", () => {
+        state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
+        state.activeCategoryId = state.categories[0].id;
+        saveStorage();
+        renderCategories();
+        renderCategoryModalList();
+        showToast("기본 8종 카테고리가 복원되었습니다.", "info");
+      });
+      document.getElementById("form-category").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const editId = document.getElementById("cat-edit-id").value;
+        const kws = document.getElementById("cat-keywords").value.split(",").map(s => s.trim()).filter(Boolean);
+        const obj = {
+          id: editId || `cat-${Date.now()}`,
+          emoji: document.getElementById("cat-emoji").value.trim() || "✨",
+          name: document.getElementById("cat-name").value.trim(),
+          persona: document.getElementById("cat-persona").value.trim(),
+          tone: document.getElementById("cat-tone").value.trim(),
+          keywords: kws.length > 0 ? kws : ["추천 키워드 1", "추천 키워드 2", "추천 키워드 3", "추천 키워드 4"]
+        };
+        if (editId) {
+          const idx = state.categories.findIndex(c => c.id === editId);
+          if (idx !== -1) state.categories[idx] = obj;
+        } else {
+          state.categories.push(obj);
+          state.activeCategoryId = obj.id;
+        }
+        saveStorage();
+        renderCategories();
+        renderCategoryModalList();
+        document.getElementById("form-category").reset();
+        document.getElementById("cat-edit-id").value = "";
+        showToast(`'${obj.name}' 카테고리가 저장되었습니다!`, "success");
+      });
+
+      // Control Panel Listeners
+      document.getElementById("tone-select").addEventListener("change", (e) => { state.tone = e.target.value; });
+      document.getElementById("toggle-random-structure").addEventListener("change", (e) => { state.randomStructure = e.target.checked; });
+      document.getElementById("structure-select").addEventListener("change", (e) => { state.structure = e.target.value; });
+
+      document.querySelectorAll(".cp-mode-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.coupangMode = btn.dataset.cp;
+          document.querySelectorAll(".cp-mode-btn").forEach(b => {
+            b.className = b.dataset.cp === state.coupangMode
+              ? "cp-mode-btn py-2 rounded-lg text-xs font-extrabold bg-white text-indigo-700 shadow-xs transition"
+              : "cp-mode-btn py-2 rounded-lg text-xs font-bold text-slate-600 transition";
+          });
+          renderCoupangInputs();
+        });
+      });
+
+      document.querySelectorAll('input[name="ftc-pos"]').forEach(r => {
+        r.addEventListener("change", (e) => { state.ftcPosition = e.target.value; });
+      });
+
+      // Generate & Error Fallback
+      document.getElementById("btn-generate-all").addEventListener("click", () => runGeneration(false));
+      document.getElementById("btn-fallback-demo").addEventListener("click", () => runGeneration(true));
+      document.getElementById("btn-error-open-settings").addEventListener("click", openApiModal);
+
+      // Tabs
+      document.querySelectorAll(".ws-tab").forEach(tab => {
+        tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+      });
+
+      // Tab 1: Blog Events & Master Prompt Modal
+      document.getElementById("blog-body-editor").addEventListener("input", runSeoDiagnostics);
+      document.getElementById("topic-input").addEventListener("input", runSeoDiagnostics);
+      document.getElementById("btn-insert-human-slot").addEventListener("click", () => {
+        const ta = document.getElementById("blog-body-editor");
+        const pos = ta.selectionStart ?? ta.value.length;
+        ta.value = ta.value.slice(0, pos) + `\n${HUMAN_SLOT_TAG}\n` + ta.value.slice(pos);
+        ta.focus();
+        runSeoDiagnostics();
+        showToast("인간미 슬롯이 본문에 삽입되었습니다.", "info");
+      });
+      document.getElementById("btn-copy-blog-body").addEventListener("click", () => {
+        copyToClipboard(document.getElementById("blog-body-editor").value, "블로그 본문 전체가 복사되었습니다!");
+      });
+      document.getElementById("btn-open-master-prompt").addEventListener("click", () => {
+        const topic = document.getElementById("topic-input").value.trim() || "주제 미입력";
+        document.getElementById("master-prompt-text").value = buildMasterPromptText(topic, getActiveCategory(), state.tone, state.structure);
+        document.getElementById("modal-prompt").classList.remove("hidden");
+      });
+      document.getElementById("btn-copy-master-prompt").addEventListener("click", () => {
+        copyToClipboard(document.getElementById("master-prompt-text").value, "마스터 프롬프트가 복사되었습니다!");
+      });
+
+      // Tab 2: Threads Events
+      document.getElementById("thread-a-editor").addEventListener("input", updateThreadCounts);
+      document.getElementById("thread-b-editor").addEventListener("input", updateThreadCounts);
+      document.getElementById("btn-copy-thread-a").addEventListener("click", () => {
+        copyToClipboard(document.getElementById("thread-a-editor").value, "스레드 A타입 본문이 복사되었습니다!");
+      });
+      document.getElementById("btn-copy-thread-b").addEventListener("click", () => {
+        copyToClipboard(document.getElementById("thread-b-editor").value, "스레드 B타입 소통 본문이 복사되었습니다!");
+      });
+      document.getElementById("btn-copy-thread-comment").addEventListener("click", () => {
+        copyToClipboard(document.getElementById("thread-comment-editor").value, "전용 첫 번째 댓글(링크+고지문)이 복사되었습니다!");
+      });
+
+      // Tab 3: MiriCanvas Preset Builder, Wireframe & Checklist Events
+      document.querySelectorAll(".miri-preset-card").forEach(card => {
+        card.addEventListener("click", () => {
+          const pid = card.dataset.preset;
+          const p = MIRI_PRESETS[pid];
+          state.miriConfig.presetId = pid;
+          state.miriConfig.stroke = p.defaultStroke;
+          state.miriConfig.maxColors = p.defaultColors;
+          saveStorage();
+          renderMiriCanvasBuilderAndGrid();
+          showToast(`'${p.name}' 프리셋이 모든 아이콘 프롬프트에 적용되었습니다!`, "info");
+        });
+      });
+
+      document.getElementById("miri-opt-stroke").addEventListener("change", (e) => {
+        state.miriConfig.stroke = e.target.value;
+        saveStorage();
+        renderMiriCanvasBuilderAndGrid();
+      });
+      document.getElementById("miri-opt-colors").addEventListener("change", (e) => {
+        state.miriConfig.maxColors = e.target.value;
+        saveStorage();
+        renderMiriCanvasBuilderAndGrid();
+      });
+      document.getElementById("miri-opt-margin").addEventListener("change", (e) => {
+        state.miriConfig.margin = e.target.value;
+        saveStorage();
+        renderMiriCanvasBuilderAndGrid();
+      });
+      document.getElementById("miri-opt-count").addEventListener("change", (e) => {
+        state.miriConfig.setCount = Number(e.target.value);
+        saveStorage();
+        renderMiriCanvasBuilderAndGrid();
+        showToast(`미리캔버스 아이콘 세트가 ${state.miriConfig.setCount}종으로 재구성되었습니다.`, "info");
+      });
+      document.getElementById("miri-opt-negative").addEventListener("change", (e) => {
+        state.miriConfig.autoNegative = e.target.checked;
+        saveStorage();
+        renderMiriCanvasBuilderAndGrid();
+      });
+
+      document.getElementById("btn-copy-master-img-template").addEventListener("click", () => {
+        copyToClipboard(document.getElementById("miri-master-template-preview").value, "마스터 영문 프롬프트 템플릿이 복사되었습니다!");
+      });
+      document.getElementById("btn-copy-all-prompts").addEventListener("click", () => {
+        const icons = state.currentResult?.miricanvasIcons || [];
+        if (icons.length === 0) return;
+        const bundle = icons.map((ic, idx) => `[#${idx + 1} ${ic.title}]\n${ic.imagePrompt}`).join("\n\n");
+        copyToClipboard(bundle, `전체 ${icons.length}종 벡터 변환 프롬프트가 일괄 복사되었습니다!`);
+      });
+
+      // Wireframe Controls & Downloads
+      document.getElementById("svg-primary-color").addEventListener("input", (e) => {
+        state.svgPrimary = e.target.value;
+        document.getElementById("svg-primary-hex").textContent = state.svgPrimary.toUpperCase();
+        applyLiveSvgStyle();
+      });
+      document.getElementById("svg-accent-color").addEventListener("input", (e) => {
+        state.svgAccent = e.target.value;
+        document.getElementById("svg-accent-hex").textContent = state.svgAccent.toUpperCase();
+        applyLiveSvgStyle();
+      });
+      document.getElementById("svg-stroke-slider").addEventListener("input", (e) => {
+        state.svgStroke = Number(e.target.value);
+        document.getElementById("svg-stroke-label").textContent = `${state.svgStroke}px`;
+        applyLiveSvgStyle();
+      });
+
+      document.getElementById("btn-download-svg").addEventListener("click", () => {
+        const svgStr = getSerializedWireframeSvg();
+        if (!svgStr) return;
+        const active = state.currentResult?.miricanvasIcons?.[state.activeIconIndex];
+        const safe = (active?.title || "icon").replace(/[^\w가-힣-]+/g, "_");
+        triggerDownload(new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" }), `wireframe_${safe}.svg`);
+        showToast("뼈대 .SVG 파일이 다운로드되었습니다!", "success");
+      });
+
+      document.getElementById("btn-download-png").addEventListener("click", () => {
+        const svgStr = getSerializedWireframeSvg();
+        if (!svgStr) return;
+        const active = state.currentResult?.miricanvasIcons?.[state.activeIconIndex];
+        const safe = (active?.title || "icon").replace(/[^\w가-힣-]+/g, "_");
+        const url = URL.createObjectURL(new Blob([svgStr], { type: "image/svg+xml;charset=utf-8" }));
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = 1024;
+          canvas.height = 1024;
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, 1024, 1024);
+          ctx.drawImage(img, 0, 0, 1024, 1024);
+          URL.revokeObjectURL(url);
+          canvas.toBlob(blob => {
+            if (blob) {
+              triggerDownload(blob, `wireframe_${safe}_1024px.png`);
+              showToast("투명 배경 1024×1024 .PNG 다운로드 완료!", "success");
+            }
+          }, "image/png");
+        };
+        img.src = url;
+      });
+
+      document.getElementById("btn-export-miri-csv").addEventListener("click", () => {
+        const icons = state.currentResult?.miricanvasIcons || [];
+        if (icons.length === 0) return;
+        const headers = ["번호", "한글요소명", "영문주제", "미리캔버스검색태그", "벡터변환용이미지프롬프트"];
+        const rows = icons.map((ic, i) => [
+          i + 1,
+          csvCell(ic.title),
+          csvCell(ic.enSubject),
+          csvCell(ic.tags),
+          csvCell(ic.imagePrompt)
+        ]);
+        const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+        triggerDownload(new Blob([csv], { type: "text/csv;charset=utf-8;" }), `miricanvas_set_${todayDate()}.csv`);
+        showToast("미리캔버스 등록용 메타데이터 CSV가 다운로드되었습니다!", "success");
+      });
+
+      // Checklist Reset
+      document.getElementById("btn-reset-checklist").addEventListener("click", () => {
+        state.checklist = {};
+        saveStorage();
+        renderChecklist();
+        showToast("10단계 체크리스트가 초기화되었습니다.", "info");
+      });
+
+      // Tab 4: Batch Queue Events
+      document.getElementById("btn-add-bulk").addEventListener("click", () => {
+        const lines = document.getElementById("bulk-keywords-input").value
+          .split("\n").map(l => l.trim()).filter(Boolean).slice(0, 20);
+        if (lines.length === 0) {
+          showToast("추가할 키워드를 한 줄 이상 입력해 주세요.", "warning");
+          return;
+        }
+        const cat = getActiveCategory();
+        lines.forEach((kw, idx) => {
+          state.queue.unshift({
+            id: Date.now() + idx,
+            categoryId: cat.id,
+            categoryName: cat.name,
+            topic: kw,
+            status: "대기",
+            result: null
+          });
+        });
+        document.getElementById("bulk-keywords-input").value = "";
+        saveStorage();
+        renderQueue();
+        showToast(`${lines.length}개 키워드가 대기 큐에 일괄 등록되었습니다!`, "success");
+      });
+
+      document.querySelectorAll(".qf-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          state.queueFilter = btn.dataset.qfilter;
+          document.querySelectorAll(".qf-btn").forEach(b => {
+            b.className = b.dataset.qfilter === state.queueFilter
+              ? "qf-btn px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white"
+              : "qf-btn px-3 py-1 rounded-full text-xs font-bold bg-slate-100 text-slate-600 hover:bg-slate-200";
+          });
+          renderQueue();
+        });
+      });
+
+      document.getElementById("btn-start-batch").addEventListener("click", runBatchQueue);
+      document.getElementById("btn-stop-batch").addEventListener("click", () => {
+        state.batchStopRequested = true;
+      });
+
+      document.getElementById("btn-export-queue-csv").addEventListener("click", () => {
+        const headers = ["카테고리", "핵심키워드", "진행상태", "초안생성여부"];
+        const rows = state.queue.map(q => [
+          csvCell(q.categoryName),
+          csvCell(q.topic),
+          csvCell(q.status),
+          q.result ? "생성됨" : "미생성"
+        ]);
+        const csv = "\uFEFF" + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+        triggerDownload(new Blob([csv], { type: "text/csv;charset=utf-8;" }), `content_queue_${todayDate()}.csv`);
+        showToast("배치 소재 큐 CSV가 다운로드되었습니다!", "success");
+      });
+
+      // Initial Boot Render
+      renderCategories();
+      renderCoupangInputs();
+      renderQueue();
+      renderChecklist();
+
+      const bootDemo = generateDemoResult(state.topic, getActiveCategory(), state.tone, state.structure);
+      renderWorkspace(bootDemo);
+    });
+
+    // =========================================================================
+    // 12. PWA (홈 화면에 추가 · 앱 설치 · 오프라인 셸)
+    // =========================================================================
+    let deferredInstallPrompt = null;
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const btn = document.getElementById("btn-install-app");
+      if (btn) { btn.classList.remove("hidden"); btn.classList.add("inline-flex"); }
+    });
+    window.addEventListener("appinstalled", () => {
+      deferredInstallPrompt = null;
+      const btn = document.getElementById("btn-install-app");
+      if (btn) { btn.classList.add("hidden"); btn.classList.remove("inline-flex"); }
+      showToast("홈 화면에 설치되었습니다. 이제 앱처럼 열 수 있어요!", "success");
+    });
+    document.addEventListener("DOMContentLoaded", () => {
+      const btn = document.getElementById("btn-install-app");
+      if (!btn) return;
+      btn.addEventListener("click", async () => {
+        if (!deferredInstallPrompt) {
+          showToast("브라우저 메뉴 ⋮ → '앱 설치'(또는 '홈 화면에 추가')를 눌러 주세요.", "info");
+          return;
+        }
+        deferredInstallPrompt.prompt();
+        try { await deferredInstallPrompt.userChoice; } catch (_) {}
+        deferredInstallPrompt = null;
+        btn.classList.add("hidden");
+        btn.classList.remove("inline-flex");
+      });
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw-creator-studio.js", { scope: "./creator-studio.html" })
+          .catch(() => { /* file:// 이거나 SW 미지원이면 조용히 넘어간다 */ });
+      });
+    }
+  </script>
+</body>
+</html>
