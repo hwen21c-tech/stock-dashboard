@@ -100,8 +100,20 @@
       /* 옮겨 온 차트 패널 — 모달 폭에 맞춰 여백만 정리한다(차트 코드는 손대지 않음) */
       '#stratDetailModal .chart-section{padding:8px;background:#0b1220;border:0;border-radius:0}',
       '#stratDetailModal main.chart-panel{padding:8px;background:transparent;border:0;border-radius:0;backdrop-filter:none}',
-      '#stratDetailModal .chart-wrapper{height:300px}',
-      '#stratDetailModal .canvas-container{height:300px;border-radius:10px}',
+      /* ── 차트 박스 ────────────────────────────────────────────────────────────
+         탭 안에서만 유효하던 #tabRnzone .chart-wrapper / #tabJongbe .canvas-container 의
+         position·overflow·배경까지 모달로 가져온다(옮겨 오면 그 서식이 사라진다). */
+      '#stratDetailModal .chart-wrapper{position:relative;width:100%;height:300px;background:#05070a;',
+      '  border-radius:8px;border:1px solid #1a2336;overflow:hidden}',
+      '#stratDetailModal .canvas-container{position:relative;width:100%;height:300px;border-radius:10px;',
+      '  background:#060910;overflow:hidden;cursor:crosshair}',
+      /* 🔧 2026-11-26 수리 — 캔버스는 반드시 박스를 꽉 채운다.
+         탭 스코프 서식(#tabRnzone canvas / #tabJongbe canvas)이 모달 안에서는 사라져,
+         캔버스가 내부 해상도(px×dpr) 그대로 깔려 2~3배 확대되고 왼쪽 라벨이 거대해지고
+         캔들이 아래로 잘렸다. 여기서 100%를 못 박아 어떤 경로로 옮겨 와도 같게 만든다. */
+      '#stratDetailModal .chart-wrapper>canvas,#stratDetailModal .canvas-container>canvas,',
+      '#stratDetailModal canvas#candlestickCanvas,#stratDetailModal canvas#candleChart{',
+      '  width:100%!important;height:100%!important;display:block}',
       /* 탭 안에서만 유효하던 #tabJongbe 스코프 서식 — 패널이 모달로 옮겨져도 같은 모양이 되게 이식 */
       '#stratDetailModal .chart-toolbar{display:flex;justify-content:space-between;align-items:center;gap:8px;',
       '  flex-wrap:wrap;background:rgba(0,0,0,0.25);padding:6px 10px;border-radius:10px;',
@@ -236,16 +248,35 @@
   }
 
   /* ------------------------------------------------------------- 그리기 */
-  function redraw() {
+  /* 한 번 그리기 — 두 엔진 모두 '지금 컨테이너의 CSS 박스'를 실측해 캔버스 해상도를 다시 맞춘다 */
+  function drawNow() {
     var kind = cur.kind;
-    var run = function () {
-      try {
-        if (kind === 'rn' && window.RnZone) { window.RnZone.resize(); window.RnZone.draw(); }
-        if (kind === 'jb' && window.Jongbe) { window.Jongbe.resize(); window.Jongbe.render(); }
-      } catch (e) { /* 차트 엔진 미준비 — 다음 틱에 다시 */ }
-    };
+    try {
+      if (kind === 'rn' && window.RnZone) { if (window.RnZone.resize) window.RnZone.resize(); if (window.RnZone.draw) window.RnZone.draw(); }
+      if (kind === 'jb' && window.Jongbe) { if (window.Jongbe.resize) window.Jongbe.resize(); if (window.Jongbe.render) window.Jongbe.render(); }
+    } catch (e) { /* 차트 엔진 미준비 — 다음 틱에 다시 */ }
+  }
+  /* 패널을 막 옮겨 온 직후에는 레이아웃이 아직 확정되지 않아 clientWidth/Height 가 0이거나
+     이전 크기로 남는다. rAF(레이아웃 확정 직후) + 몇 차례 재시도로 그린다(2026-11-26 수리). */
+  function redraw() {
+    var run = function () { if (isOpen()) drawNow(); };
+    if (window.requestAnimationFrame) requestAnimationFrame(function () { run(); setTimeout(run, 60); });
     setTimeout(run, 40);
     setTimeout(run, 260);
+    observeHost();
+  }
+  /* 모달 폭·높이가 바뀌면(회전·분할 화면·뉴스 로딩으로 높이 변동) 같은 비율로 다시 그린다 */
+  var ro = null;
+  function observeHost() {
+    if (ro || !window.ResizeObserver || !els.host) return;
+    try {
+      ro = new ResizeObserver(function () {
+        if (!isOpen()) return;
+        if (window.requestAnimationFrame) requestAnimationFrame(function () { if (isOpen()) drawNow(); });
+        else drawNow();
+      });
+      ro.observe(els.host);
+    } catch (e) { ro = null; }
   }
 
   function stockOf(kind, code) {
