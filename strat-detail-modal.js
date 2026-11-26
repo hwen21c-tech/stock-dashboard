@@ -25,6 +25,7 @@
 
   var box = null, els = {}, cur = { kind: null, code: null }, seq = 0, suppress = false;
   var nodes = {}, holds = {};
+  var ucx = null, ucxSeq = 0;      /* ③ 확대 차트 — 만쥬·비중법사·홍인기와 같은 UCX 공용 차트 */
 
   /* ---------------------------------------------------------------- 유틸 */
   function esc(v) {
@@ -192,7 +193,8 @@
           '<div id="sdmFacts"></div>' +
           '<section class="sdm-sec sdm-chart">' +
             '<div class="sdm-h"><span>③. 확대 실전 차트</span>' +
-            '<span class="s" id="sdmChartNote">± 줌·◀▶ 이동 버튼으로 조절</span></div>' +
+            '<span class="s" id="sdmChartNote">기간·줌·피보나치 · 전략선</span></div>' +
+            '<div id="sdmUcx"></div>' +
             '<div id="sdmHost"></div>' +
           '</section>' +
           '<div id="sdmRule"></div>' +
@@ -210,6 +212,7 @@
     els.extra = box.querySelector('#sdmExtra');
     els.chartNote = box.querySelector('#sdmChartNote');
     els.foot = box.querySelector('#sdmFoot');
+    els.ucx = box.querySelector('#sdmUcx');
     box.querySelector('#sdmClose').addEventListener('click', close);
     box.addEventListener('click', function (e) { if (e.target === box) close(); });
     document.addEventListener('keydown', function (e) {
@@ -251,6 +254,8 @@
   /* 한 번 그리기 — 두 엔진 모두 '지금 컨테이너의 CSS 박스'를 실측해 캔버스 해상도를 다시 맞춘다 */
   function drawNow() {
     var kind = cur.kind;
+    /* 🆕 통합 차트(UCX)로 그리는 중이면 그 차트만 다시 그린다 */
+    if (ucx) { try { ucx.redraw(); return; } catch (eU) { /* 아래 레거시 경로 */ } }
     try {
       if (kind === 'rn' && window.RnZone) { if (window.RnZone.resize) window.RnZone.resize(); if (window.RnZone.draw) window.RnZone.draw(); }
       if (kind === 'jb' && window.Jongbe) { if (window.Jongbe.resize) window.Jongbe.resize(); if (window.Jongbe.render) window.Jongbe.render(); }
@@ -503,6 +508,119 @@
     });
   }
 
+  /* ==========================================================================
+   * ③ 확대 차트 — 만쥬·비중법사·홍인기와 같은 UCX 공용 차트 (2026-11-26 통일)
+   *   · 기간 [15일~2년] · 줌/이동/초기화 · 피보나치(수치 입력·드래그)·추세채널·20선
+   *   · 그 위에 각 전략의 기준선을 그대로 덧그린다(오른쪽 가격 여백에 라벨, 겹침 없음)
+   *   · 일봉은 /api/stock-chart?count=500(약 2년) 실측을 먼저 쓰고, 실패하면 카드 내장 봉으로 폴백
+   * ========================================================================== */
+  function normCandles(list) {
+    var out = [];
+    (list || []).forEach(function (c) {
+      if (!c) return;
+      var o = num(c.open) !== null ? c.open : c.o;
+      var h = num(c.high) !== null ? c.high : c.h;
+      var l = num(c.low) !== null ? c.low : c.l;
+      var cl = num(c.close) !== null ? c.close : c.c;
+      if (num(cl) === null || num(h) === null || num(l) === null) return;
+      out.push({ d: String(c.date || c.d || ''), o: (num(o) === null ? cl : o), h: h, l: l, c: cl, v: (c.vol != null ? c.vol : (c.v || 0)) });
+    });
+    return out;
+  }
+  function lv(v, label, short, color, opt) {
+    var n = num(v);
+    if (n === null) return null;
+    var o = { v: n, label: label, short: short || label, color: color };
+    if (opt) { if (opt.dash) o.dash = opt.dash; if (opt.line === false) o.line = false; if (opt.alpha != null) o.alpha = opt.alpha; }
+    return o;
+  }
+  function compact(arr) { return arr.filter(function (x) { return !!x; }); }
+
+  /* RN존 — 상단 RN · 하단 RN · 중간 보조 · 1차(+4%) · 2차(-20%) · 목표 */
+  function rnLevels(s) {
+    if (!s) return [];
+    return compact([
+      lv(s.upperRN, '상단 RN', '상단RN', s.upperColorHex || '#f59e0b'),
+      lv(s.lowerRN, '하단 RN', '하단RN', s.lowerColorHex || '#38bdf8'),
+      lv(s.auxRN, '중간 보조(비공식)', '중간보조', '#94a3b8', { dash: [2, 4], alpha: 0.55 }),
+      lv(s.buy1, '1차 매수(하단 RN +4%)', '1차+4%', '#22c55e'),
+      lv(s.buy2, '2차 분할(1차 -20%)', '2차-20%', '#ef4444'),
+      lv(s.targetMin, '목표(+7%)', '목표', '#a855f7'),
+      lv(s.targetMax, '목표 상단(+20%)', '목표상단', '#c084fc', { dash: [2, 4], alpha: 0.6 })
+    ]);
+  }
+  /* 신정재 — 5·20·60일선(라벨 전용) · 120일 전고점 · 손절 · 1차/2차 목표
+     일봉 500봉을 받아오면 그 실측 종가로 이동평균을 다시 계산해 선과 라벨을 맞춘다. */
+  function maOf(candles, per) {
+    if (!candles || candles.length < per) return null;
+    var sum = 0;
+    for (var i = candles.length - per; i < candles.length; i += 1) sum += candles[i].c;
+    return sum / per;
+  }
+  function jbLevels(s, candles) {
+    if (!s) return [];
+    var hi120 = num(s.hi120);
+    if (candles && candles.length) {
+      var win = candles.slice(Math.max(0, candles.length - 120));
+      var hi = 0;
+      win.forEach(function (c) { if (c.h > hi) hi = c.h; });
+      if (hi > 0) hi120 = hi;
+    }
+    return compact([
+      lv(num(maOf(candles, 5)) !== null ? maOf(candles, 5) : s.ma5, '5일선', '5일선', '#f59e0b', { line: false }),
+      lv(num(maOf(candles, 20)) !== null ? maOf(candles, 20) : s.ma20, '20일선', '20일선', '#ef4444', { line: false }),
+      lv(num(maOf(candles, 60)) !== null ? maOf(candles, 60) : s.ma60, '60일선', '60일선', '#22c55e', { line: false }),
+      lv(hi120, '120일 전고점', '120고점', '#a855f7', { dash: [5, 3] }),
+      lv(s.stopPrice, '손절선', '손절', '#ef4444', { dash: [3, 3] }),
+      lv(s.target1, '1차 목표', '1차목표', '#34d399'),
+      lv(s.target2, '2차 목표', '2차목표', '#6ee7b7', { dash: [2, 3], alpha: 0.65 })
+    ]);
+  }
+
+  function paintUcx(kind, s, code) {
+    ucx = null;
+    if (!els.ucx) return;
+    els.ucx.innerHTML = '';
+    if (!window.UCX || typeof window.UCX.mount !== 'function') { els.ucx.style.display = 'none'; return; }
+    els.ucx.style.display = '';
+    var embedded = normCandles(s && s.candles);
+    var levels = kind === 'rn' ? rnLevels(s) : jbLevels(s, embedded);
+    var cfg = {
+      id: kind === 'rn' ? 'sdmrn' : 'sdmjb',
+      title: '📊 실시간 캔들 & 추세선 차트',
+      sub: kind === 'rn' ? '(RN존 타점선 · 21선 기준)' : '(5/20/60선 · 엔벨로프 ±10%)',
+      height: 300,
+      def: 120,
+      mas: kind === 'rn' ? [20] : [5, 20, 60],   /* RN존은 20선만(토글과 연동), 신정재는 5·20·60 */
+      fibSide: 'left',      /* 피보 라벨은 왼쪽, 전략선 라벨은 오른쪽 여백 — 서로 겹치지 않는다 */
+      hideHandles: true,
+      levels: function () { return levels; },
+      key: function () { return code; },
+      getCandles: function () { return embedded; }
+    };
+    if (kind === 'jb') cfg.band = { period: 20, pct: 0.1 };
+    if (kind === 'rn') {
+      cfg.shade = function () {
+        var lo = num(s && s.lowerRN), hi = num(s && s.upperRN);
+        return (lo !== null && hi !== null && hi > lo) ? { lo: lo, hi: hi, color: 'rgba(251,191,36,0.055)' } : null;
+      };
+    }
+    ucx = window.UCX.mount(els.ucx, cfg);
+    ucxSeq += 1;
+    var my = ucxSeq;
+    /* 실측 일봉 500봉(약 2년) — 실패하면 카드 내장 봉 그대로 */
+    if (code) {
+      window.UCX.fetchDaily(code, 500).then(function (arr) {
+        if (my !== ucxSeq || !ucx || cur.code !== code) return;
+        if (!arr || !arr.length) return;
+        try {
+          ucx.setData(arr);
+          if (kind === 'jb') ucx.setLevels(function () { return jbLevels(s, arr); });
+        } catch (eSd) { /* 폴백 유지 */ }
+      });
+    }
+  }
+
   /* --------------------------------------------------------------- 열기 */
   /* ④ 추가 상세 — 탭 패널 안의 계산기(RN)·전술 카드(신정재)를 모달 ④로 옮겨 쓴다.
      모달을 닫으면 원래 자리로 되돌려 탭 화면 동작은 그대로 둔다. */
@@ -531,9 +649,12 @@
     cur.kind = kind;
     cur.code = code;
 
-    /* 차트 패널을 모달로 옮긴다 — 탭 본문에서는 사라진다(레이아웃은 목록만 남김) */
+    /* 차트 패널을 모달로 옮긴다 — 탭 본문에서는 사라진다(레이아웃은 목록만 남김)
+       🆕 UCX 통합 차트를 쓰면 레거시 캔버스 패널은 옮기지 않고 숨은 보관함에 둔다 */
     var panel = panelOf(kind);
-    if (panel && panel.parentNode !== els.host) els.host.appendChild(panel);
+    var ucxOn = !!(window.UCX && typeof window.UCX.mount === 'function');
+    if (els.host) els.host.style.display = ucxOn ? 'none' : '';
+    if (!ucxOn && panel && panel.parentNode !== els.host) els.host.appendChild(panel);
     var lay = document.querySelector(LAYOUT_SEL[kind]);
     if (lay) lay.classList.add('sdm-solo');
     /* 다른 탭의 가 상세는 원래 자리로 되돌리고, 이번 종목의 ④를 준비한다 */
@@ -578,10 +699,11 @@
       renderNews(kind, code, s);
     }
     if (s) moveExtra(kind, panel);
+    paintUcx(kind, s, code);
     if (els.chartNote) {
       els.chartNote.textContent = kind === 'rn'
-        ? '상단·하단 RN / 1차·2차·목표선 · ± 줌, ◀▶ 이동'
-        : '5·20·60일선 + 엔벨로프(±10%) · 🔍±, ◀▶ 이동';
+        ? '상단·하단 RN / 중간 보조 / 1차+4% / 2차-20% / 목표선'
+        : '5·20·60일선 + 엔벨로프(±10%) + 120일 전고점 · 손절·목표선';
     }
     var fc = els.foot.querySelector('#sdmFootClose');
     if (fc) fc.addEventListener('click', close);
@@ -606,6 +728,9 @@
     if (!box) return;
     box.style.display = 'none';
     document.body.style.overflow = '';
+    ucx = null;
+    ucxSeq += 1;
+    if (els.ucx) els.ucx.innerHTML = '';
     /* ④로 옮겼던 계산기·전술 카드는 원래 패널로 돌려 놓는다 */
     Object.keys(extras).forEach(function (k) { restoreExtra(k); });
     if (els.extra) els.extra.innerHTML = '';

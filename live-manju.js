@@ -229,11 +229,11 @@
     series = (s.candles || []).slice();
     mountChart();
 
-    /* 실시간 60일봉이 있으면(동적 Vercel) 차트·현재가를 한 번 더 보강.
-       정적 GitHub Pages(live-api.js 없음)에서는 /api 가 없으므로 호출하지 않는다(404 콘솔 오류 방지). */
+    /* 일봉 500봉(약 2년) — 동적 Vercel 은 물론 정적 Pages 도 live-static-api.js 가
+       /api/stock-chart 를 동적 오리진으로 넘겨 주므로 같은 경로로 시도한다.
+       응답이 없으면 내장 일봉(series)을 그대로 쓴다(추정·생성 없음). */
     try {
-      if (!window.LiveAPI) throw new Error('static');
-      fetch('/api/stock-chart?code=' + encodeURIComponent(s.code) + '&count=200', { cache: 'no-store' })
+      fetch('/api/stock-chart?code=' + encodeURIComponent(s.code) + '&count=500', { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           var arr = j && (j.candles || j.bars || null);
@@ -244,7 +244,7 @@
           });
           if (mapped.length >= 20) { series = mapped; if (ucxApi) { try { ucxApi.setData(); } catch (e) { } } else { mountChart(); } }
         })
-        .catch(function () { /* 정적 배포본은 API 없음 — 내장 일봉 유지 */ });
+        .catch(function () { /* API 없음·오프라인 — 내장 일봉 유지 */ });
     } catch (e) { /* noop */ }
   }
 

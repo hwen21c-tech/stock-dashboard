@@ -164,6 +164,8 @@ function injectCss() {
     '#kkChartModal .kk-lv2 .k{font-size:9px;color:#94a3b8;font-weight:800}',
     '#kkChartModal .kk-lv2 .v{font-size:12.5px;font-weight:900}',
     '#kkChartModal .kk-foot{font-size:9.5px;color:#64748b;margin-top:6px;line-height:1.55}',
+    '#kkChartModal #kkUcxHost{margin:2px 0 6px}',
+    '#kkChartModal #kkUcxHost .ucx-wrap{background:#070c14}',
     '.kk-news{margin-top:5px;background:rgba(99,102,241,0.10);border:1px dashed rgba(129,140,248,0.45);border-radius:6px;padding:5px 7px;font-size:10px;line-height:1.5;color:#c7d2fe}',
     '.kk-news.empty{background:rgba(148,163,184,0.08);border-color:rgba(148,163,184,0.3);color:#94a3b8}',
     '.kk-news-top{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:10px;color:#a5b4fc}',
@@ -335,7 +337,7 @@ function cardHtml(c) {
     levelsHtml(c) +
     '<div class="kk-meta">' +
       (c.capEok ? '<span>시총 ' + (c.capEok >= 10000 ? (Math.round(c.capEok / 1000) / 10) + '조' : nf(c.capEok) + '억') + '</span>' : '') +
-      '<span>대금 ' + nf(c.valueEok) + '억</span>' +
+      '<span title="기준일 정규장(KRX) 확정 거래대금 — 실시간 값이 아닙니다">대금 ' + nf(c.valueEok) + '억</span>' +
       (c.pct != null ? '<span>당일 ' + signPct(c.pct, 2) + '</span>' : '') +
       (c.chg5 != null ? '<span>5일 ' + signPct(c.chg5, 1) + '</span>' : '') +
       (c.upper != null && c.upper >= 3 ? '<span style="color:#fda4af">윗꼬리 ' + signPct(c.upper, 1) + '</span>' : '') +
@@ -621,7 +623,7 @@ function applyLive() {
       S.liveAt = new Date().toLocaleTimeString('ko-KR', { hour12: false });
       (d.stocks || []).forEach(function (s) {
         if (!s || !s.code) return;
-        if (preopenHeld(d, s)) return;   /* 장전 미체결 → 카드의 전일 확정값 유지 */
+        if (preopenHeld(d, s)) return;   // 장전 미체결 → 카드의 전일 확정값 유지
         S.live[s.code] = { price: Number(s.price), changePct: Number(s.changePct) };
       });
       paintLive();
@@ -677,83 +679,81 @@ function ensureModal() {
         '<div class="kk-mt" id="kkModalTitle">깡토 기준선 차트</div>' +
         '<div class="kk-ms" id="kkModalSub"></div>' +
       '</div><button class="kk-x" type="button" aria-label="닫기" onclick="KkangtoTab.closeChart()">×</button></div>' +
-      '<div class="kk-pds" id="kkModalPeriods">' +
-        '<button data-p="60">60일</button><button data-p="120" class="on">120일</button><button data-p="200">200일</button>' +
-      '</div>' +
-      '<canvas id="kkModalCanvas"></canvas>' +
+      /* 🆕 만쥬·비중법사·홍인기와 같은 UCX 공용 차트(기간 15일~2년·줌·피보나치·추세채널·20선) —
+         깡토 기준선(전고점·-8%·+24%·60일선)은 같은 차트 위에 덧그린다(2026-11-26 통일). */
+      '<div id="kkUcxHost"></div>' +
       '<div class="kk-lg" id="kkModalLegend"></div>' +
       '<div class="kk-lv2" id="kkModalLevels"></div>' +
       '<div class="kk-foot" id="kkModalFoot"></div>' +
     '</div>';
   m.addEventListener('click', function (e) { if (e.target === m) closeChart(); });
   document.body.appendChild(m);
-  var pds = m.querySelector('#kkModalPeriods');
-  pds.addEventListener('click', function (e) {
-    var b = e.target.closest ? e.target.closest('button[data-p]') : null;
-    if (!b) return;
-    var pn = Number(b.getAttribute('data-p')) || 120;
-    var st = S.modal;
-    st.count = pn;
-    st.start = 0;
-    Array.prototype.forEach.call(pds.querySelectorAll('button'), function (x) { x.classList.toggle('on', x === b); });
-    drawModal();
-  });
-  var cv = m.querySelector('#kkModalCanvas');
-  if (typeof window.bindTouchGestures === 'function') {
-    window.bindTouchGestures(cv, {
-      allowScroll: false,
-      zoom: function (sp) { modalZoom(sp); },
-      pan: function (dx) { modalPan(dx); },
-      hover: function () {},
-      redraw: drawModal
-    });
-  }
-  cv.addEventListener('click', function () { /* 탭 = 크로스헤어 유지 */ });
   return m;
 }
-function modalZoom(f) {
-  var st = S.modal;
-  var len = st.candles.length;
-  if (!len) return;
-  var cur = Math.max(10, Math.min(st.count, len));
-  var center = (st.start || 0) + cur / 2;
-  var next = Math.max(10, Math.min(Math.round(cur / Math.min(2, Math.max(0.5, f))), len));
-  if (next === cur) return;
-  st.count = next;
-  st.start = Math.max(0, Math.min(len - next, Math.round(center - next / 2)));
+
+/* UCX 모달 차트 — 기간·줌·이동·피보나치/추세채널/20선은 공용 엔진이 맡고,
+   깡토 기준선만 levels 로 넘긴다. 레거시 캔버스 함수는 호환용으로 남겨 둔다. */
+var kkUcx = null, kkUcxSeq = 0;
+function kkLevels(plan) {
+  if (!plan) return [];
+  var out = [];
+  function add(v, label, short, color, opt) {
+    var n = Number(v);
+    if (!isFinite(n) || n <= 0) return;
+    var o = { v: n, label: label, short: short, color: color };
+    if (opt) { if (opt.dash) o.dash = opt.dash; if (opt.line === false) o.line = false; if (opt.alpha != null) o.alpha = opt.alpha; }
+    out.push(o);
+  }
+  add(plan.base, '전고점(매수 타점)', '전고점', COL.base);
+  add(plan.stop, '-8% 손절', '-8%', COL.stop, { dash: [3, 3] });
+  add(plan.tp, '+24% 1/3 익절', '+24%', COL.tp);
+  add(plan.ma60, '60일선', 'MA60', COL.ma, { line: false });
+  return out;
 }
-function modalPan(dx) {
+function paintModalUcx() {
+  var host = $('kkUcxHost');
   var st = S.modal;
-  var len = st.candles.length;
-  if (!len) return;
-  var cv = $('kkModalCanvas');
-  var iw = st.iw || (cv ? cv.clientWidth - 56 : 300);
-  var per = st.count / Math.max(30, iw);
-  st.start = Math.max(0, Math.min(len - st.count, (st.start || 0) - dx * per));
-}
-function drawModal() {
-  var st = S.modal;
-  var cv = $('kkModalCanvas');
-  if (!cv || !st.candles.length) return;
-  var all = st.candles;
-  var count = Math.max(10, Math.min(st.count || 120, all.length));
-  var end = Math.max(count, all.length - Math.max(0, Math.round(st.start || 0)));
-  var sta = Math.max(0, end - count);
-  var view = all.slice(sta, end);
-  var dpr = Math.min(Math.max(window.devicePixelRatio || 1, 1), 2.5);
-  var W = Math.max(200, Math.round(cv.clientWidth || 600));
-  var H = Math.max(180, Math.round(cv.clientHeight || 360));
-  cv.width = Math.round(W * dpr);
-  cv.height = Math.round(H * dpr);
-  var ctx = cv.getContext('2d');
-  if (!ctx) return;
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, W, H);
-  var r = drawCandles(ctx, W, H, view, st.plan, { pl: 6, pr: 62, pt: 10, pb: 16, volH: 40, font: 10, lineW: 1.4 });
-  if (r) st.iw = r.iw;
+  if (!host || !st) return;
+  kkUcx = null;
+  host.innerHTML = '';
+  if (!window.UCX || typeof window.UCX.mount !== 'function') {
+    host.innerHTML = '<div style="font-size:11px;color:#fbbf24;padding:8px 2px;">차트 엔진(UCX)을 불러오지 못했습니다 — 페이지를 새로고침해 주세요.</div>';
+    return;
+  }
+  var embedded = (st.candles || []).map(function (c) {
+    return { d: c.d || c.date, o: c.o, h: c.h, l: c.l, c: c.c, v: c.v };
+  }).filter(function (c) { return isFinite(Number(c.c)); });
+  kkUcx = window.UCX.mount(host, {
+    id: 'kkmodal',
+    title: '📊 실시간 캔들 & 추세선 차트',
+    sub: '(깡토 기준선 · 전고점 / -8% / +24% / 60일선)',
+    height: Math.max(260, Math.min(360, Math.round((window.innerHeight || 700) * 0.42))),
+    def: 120,
+    mas: [20, 60],
+    fibSide: 'left',
+    hideHandles: true,
+    levels: function () { return kkLevels(st.plan); },
+    key: function () { return st.code || '_'; },
+    getCandles: function () { return embedded; }
+  });
+  kkUcxSeq += 1;
+  var my = kkUcxSeq;
   window.__KKANGTO.modalDrawn = true;
-  window.__KKANGTO.modalBars = view.length;
+  window.__KKANGTO.modalBars = embedded.length;
+  window.__KKANGTO.modalEngine = 'ucx';
+  var code = st.code;
+  if (code && window.UCX.fetchDaily) {
+    window.UCX.fetchDaily(code, 500).then(function (arr) {
+      if (my !== kkUcxSeq || !kkUcx || !S.modal || S.modal.code !== code) return;
+      if (!arr || !arr.length) return;
+      try { kkUcx.setData(arr); } catch (e) { /* 내장 봉 유지 */ }
+    });
+  }
 }
+/* 레거시 호환 — 바깥에서 부르던 이름은 UCX 다시 그리기로 연결한다 */
+function modalZoom() { try { if (kkUcx) kkUcx.redraw(); } catch (e) { } }
+function modalPan() { try { if (kkUcx) kkUcx.redraw(); } catch (e) { } }
+function drawModal() { try { if (kkUcx) kkUcx.redraw(); } catch (e) { } }
 function openChart(code) {
   var c = cardByCode(code);
   if (!c) return;
@@ -792,7 +792,7 @@ function openChart(code) {
       '차트는 일봉이며 마지막 봉은 조회 시점 값입니다. 업종 동반상승·장대양봉은 카드 배지로 확인하세요.';
   }
   m.classList.add('on');
-  drawModal();
+  paintModalUcx();
   window.__KKANGTO.modalCode = code;
 }
 function closeChart() {
@@ -808,7 +808,7 @@ function searchStock() {
   if (!q) return;
   var out = $('kkSearchOut');
   if (out) out.innerHTML = '<span style="color:#94a3b8">🔎 ' + esc(q) + ' 조회 중…</span>';
-  fetch('/api/stock-chart?q=' + encodeURIComponent(q) + '&count=200', { cache: 'no-store' })
+  fetch('/api/stock-chart?q=' + encodeURIComponent(q) + '&count=500', { cache: 'no-store' })
     .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
     .then(function (res) {
       var d = res.j || {};
@@ -840,7 +840,7 @@ function searchStock() {
       var card = {
         code: d.code, name: d.name || d.code, market: d.market || '', close: close,
         pct: d.current && d.current.changePct != null ? d.current.changePct : null,
-        candles: candles.slice(-200), section: 'search',
+        candles: candles.slice(-500), section: 'search',
         basis: ref.hi, stop: Math.round(ref.hi * 0.92), tp: Math.round(ref.hi * 1.24), ma60: Math.round(ma60 || 0),
         hi60: h60.hi, hi120: h120.hi, dist: dist, gapPct: dist == null ? null : round2(-dist), note: ''
       };
@@ -885,7 +885,7 @@ function getStocks() {
     var p = planOf(c);
     return {
       code: c.code, name: c.name, price: c.close, changeRatio: c.pct,
-      valueText: c.valueEok ? nf(c.valueEok) + '억' : '', basis: p.base, stop: p.stop, tp: p.tp, ma60: p.ma60,
+      valueText: c.valueEok ? nf(c.valueEok) + '억' : '',   /* 기준일 정규장(KRX) 확정 — 실시간 아님 */ basis: p.base, stop: p.stop, tp: p.tp, ma60: p.ma60,
       candles: (c.candles || []).slice(-60)
     };
   });

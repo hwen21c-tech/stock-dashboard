@@ -589,7 +589,7 @@
     if (S.chartBusy[code]) return Promise.resolve(null);
     if (S.api === false) return Promise.resolve(null);
     S.chartBusy[code] = true;
-    return fetch('/api/stock-chart?code=' + encodeURIComponent(code) + '&count=60', { cache: 'no-store' })
+    return fetch('/api/stock-chart?code=' + encodeURIComponent(code) + '&count=500', { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         S.chartBusy[code] = false;
@@ -700,7 +700,7 @@
   }
   function applyJongbeChart(code) {
     if (S.api === false) return Promise.resolve(false);
-    return fetch('/api/stock-chart?code=' + encodeURIComponent(code) + '&count=45', { cache: 'no-store' })
+    return fetch('/api/stock-chart?code=' + encodeURIComponent(code) + '&count=500', { cache: 'no-store' })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) {
         if (!d || !d.ok || !d.candles) { if (S.api === null) S.api = false; return false; }
