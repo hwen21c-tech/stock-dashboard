@@ -19409,6 +19409,14 @@ var CSVoice = (function () {
       var n = String(a).replace(/,/g, '');
       return (u === '만' && n === '1') ? '만' : numToKo(a) + u;
     });
+    /* ⑤' 억·조 단위 뒤 쉼 — '7,700억 넘게'가 '7,700년'처럼 뭉개져 읽히던 자리.
+       단위와 다음 낱말(서술어) 사이에 쉼표 경계를 넣어 TTS가 금액과 서술어를 붙여 읽지 않게 한다.
+       조사·단위가 붙는 말(이·가·은·는·을·를·의·도·원·대 …)은 붙여 읽는 게 맞으므로 건드리지 않는다. */
+    s = s.replace(/(조|억)(\s+)(?=[가-힣])/g, function (m, u, sp, off, all) {
+      var next = String(all).slice(off + m.length, off + m.length + 3);
+      if (/^(이|가|은|는|을|를|의|도|만|과|와|로|으로|원|대|어치|짜리|씩|가량|여|이나|나|부터|까지|에서|에는|보다|쯤|정도)(?![가-힣])/.test(next)) return m;
+      return u + ', ';
+    });
     /* ⑥ 선 — 740선 → 칠백사십선 */
     s = s.replace(/(\d[\d,]*(?:\.\d+)?)\s*선(?![물])/g, function (m, a) { return numToKo(a) + '선'; });
     /* ⑦ 원 — 소수는 '전'으로 읽는다 */
@@ -21189,7 +21197,9 @@ var CSVoice = (function () {
     /* 📊 모델 컷 — 인포그래픽과 같은 2KPI */
     var ick = imCut(idx);
     if (ick && ick.kpi && ick.kpi.length) {
-      return drawFlatKpis(ctx, ick.kpi.slice(0, 2), FXG.kpi, {
+      /* 머니무브 컷은 왼쪽=약세 · 오른쪽=강세로 고정(모델 값 순서와 무관) */
+      var imk = (ick.role === 'rotation' ? imRotSortKpi(ick.kpi) : ick.kpi).slice(0, 2);
+      return drawFlatKpis(ctx, imk, FXG.kpi, {
         num: fxPal().num, ink: fxPal().ink, sub: fxPal().sub, vSize: 78, ruleDy: 88, labelDy: 114,
         rule1: IM.orange, rule2: 'rgba(15,23,42,.24)',
         valueCol: function (kk) { return (kk && kk.v != null) ? imCol(kk.v) : fxPal().ink; }
@@ -21325,11 +21335,37 @@ var CSVoice = (function () {
      ══════════════════════════════════════════════════════════════════════ */
   var IM = { card: '#FFFFFF', edge: '#E2E8F0', ink: '#0F172A', sub: '#64748B', soft: '#F4F6F9',
     orange: '#F97316', up: '#E11D48', down: '#2563EB', green: '#059669', red: '#DC2626', line: '#E2E8F0' };
+  /* 11/26 — 머니무브(rotation) 4층 한 방향 강제: 제목(빠지는 쪽 → 받는 쪽) · 배너 화살표(빠짐 → 유입) ·
+     2열 카드(왼쪽=빠지는 쪽 · 오른쪽=받는 쪽) · 상단 KPI(왼쪽 음수 · 오른쪽 양수).
+     인포그래픽 모델 데이터가 뒤집혀 들어와도(11/26 16:05 close 사례) 그리는 순간 바로잡는다. */
+  var IM_ROT_TITLE = '빠지는 쪽 → 받는 쪽';
+  function imRotRank(k) {
+    var n = Number(k && k.v);
+    if (isFinite(n) && n !== 0) return n < 0 ? -1 : 1;
+    var d = String((k && k.disp) || '').replace(/\s/g, '');
+    if (/^[-−]/.test(d)) return -1;
+    if (/^[+]/.test(d)) return 1;
+    return 0;
+  }
+  function imRotSortKpi(kpi) {
+    return (kpi || []).slice().sort(function (a, b) { return imRotRank(a) - imRotRank(b); });
+  }
+  function imRotFix(c) {
+    if (!c || c.role !== 'rotation') return c;
+    var t = String(c.title || '');
+    /* 제목이 없거나 '받는 쪽'이 앞에 오는(반대 방향) 제목이면 표준 제목으로 되돌린다 */
+    if (t.indexOf('빠지는 쪽') < 0 || (t.indexOf('받는 쪽') >= 0 && t.indexOf('빠지는 쪽') > t.indexOf('받는 쪽'))) {
+      c.title = IM_ROT_TITLE;
+    }
+    /* 상단 KPI 2개는 무조건 왼쪽=약세(음수) · 오른쪽=강세(양수) */
+    if (c.kpi && c.kpi.length > 1 && imRotRank(c.kpi[0]) > imRotRank(c.kpi[1])) c.kpi = imRotSortKpi(c.kpi);
+    return c;
+  }
   function imCut(idx) {
     var m = S.model;
     if (!m || !m.cuts || !m.cuts.length) return null;
     var c = m.cuts[idx];
-    return (c && c.role) ? c : null;
+    return (c && c.role) ? imRotFix(c) : null;
   }
   function imPct(v) {
     if (v == null || !isFinite(Number(v))) return '';
