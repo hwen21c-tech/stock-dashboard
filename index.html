@@ -4160,9 +4160,18 @@
         var t20 = 'MA20 ' + fmtAuto(c.ma20);
         var w20 = ctx.measureText(t20).width;
         var z20 = geo.labelZone || null;
-        var ly20 = z20 ? stackPush(geo.labelStack, y20, 11, top + 4, bot - 4) : y20;
+        var zL = (!z20 && geo.labelLeft && geo.labelLeft.x1 > geo.labelLeft.x0) ? geo.labelLeft : null;
+        var ly20 = z20 ? stackPush(geo.labelStack, y20, 11, top + 4, bot - 4)
+          : (zL ? stackPush(geo.labelStackL, y20, 11, top + 4, bot - 4) : y20);
         ctx.fillStyle = 'rgba(7,12,20,0.82)';
-        if (z20) {
+        if (zL) {
+          var lx20 = zL.x1 - 1;
+          var lbx20 = Math.max(zL.x0, lx20 - w20 - 1);
+          ctx.fillRect(lbx20, ly20 - 8, w20 + 4, 11);
+          ctx.fillStyle = '#f87171';
+          ctx.textAlign = 'right';
+          ctx.fillText(t20, lx20, ly20 + 1);
+        } else if (z20) {
           var bx20 = z20.x1 - 4 - w20 - 1;
           if (bx20 < z20.x0) bx20 = z20.x0;
           ctx.fillRect(bx20, ly20 - 8, w20 + 4, 11);
@@ -20355,6 +20364,7 @@ function drawCandles(cv, candles, opts) {
     }
   }
   /* 전고점·기준선 라벨 — 4분할 라벨과 자리가 겹치지 않게, 4분할이 있으면 왼쪽 / 없으면 오른쪽에 둔다 */
+  const leftZoneYs = [];
   if (extraLbls.length && (big || !sp)) {
     setFont(big ? '9.5px' : '8px');
     ctx.textBaseline = 'middle';
@@ -20365,7 +20375,11 @@ function drawCandles(cv, candles, opts) {
       l.ly = Math.max(Math.min(Math.max(l.y, pt + 7), pt + ph - 6), prev + gapE);
       prev = l.ly;
     });
-    sortedEx.forEach((l) => chip(sp ? pl + 3 : pl + iw + 4, l.ly, l.text, l.color, 'left'));
+    /* 피보 라벨 여백(fibW>0)이 있으면 왼쪽 여백에 오른쪽 정렬로 — 캔들 위에 글자를 얹지 않는다 */
+    sortedEx.forEach((l) => {
+      if (fibW > 0) { chip(pl - 4, l.ly, l.text, l.color, 'right'); leftZoneYs.push(l.ly); }
+      else chip(sp ? pl + 3 : pl + iw + 4, l.ly, l.text, l.color, 'left');
+    });
   }
   /* 가격 눈금 라벨 — 4분할 라벨과 엄킈면 생략 */
   if (big && gridLbls.length) {
@@ -20448,7 +20462,7 @@ function drawCandles(cv, candles, opts) {
         cs: cs, all: all, vs: vs, labelRight: pl + iw, fibSide: 'left',
         candleRight: pl + iw, barW: iw / Math.max(1, cs.length),
         labelLeft: (fibW > 0) ? { x0: 2, x1: pl - 3 } : null,
-        labelZone: null, labelStackL: [], labelStack: [], hideHandles: true
+        labelZone: null, labelStackL: leftZoneYs, labelStack: [], hideHandles: true
       });
       UCX.paint((o.ov || 'bij'), { period: cs.length });
     } catch (eUcx) { }
