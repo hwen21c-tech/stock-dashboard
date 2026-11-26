@@ -1598,6 +1598,19 @@ ${cpSection}
       }
     }
 
+    // "retry in 7h12m57.2s" → "약 7시간 12분 뒤 해제"
+    function humanizeRetryWait(raw) {
+      if (!raw) return "";
+      const h = /([0-9]+)h/.exec(raw);
+      const m = /([0-9]+)m/.exec(raw);
+      const s = /([0-9]+(?:\.[0-9]+)?)s/.exec(raw);
+      const parts = [];
+      if (h) parts.push(`${h[1]}시간`);
+      if (m) parts.push(`${m[1]}분`);
+      if (!h && s && Number(s[1]) >= 10) parts.push(`${Math.round(Number(s[1]))}초`);
+      return parts.length ? `약 ${parts.join(" ")} 뒤 해제` : "";
+    }
+
     // 모델 404/429/400 등을 초보자용 한국어 안내로 바꾼다.
     function describeGeminiError(status, rawMessage, model) {
       const msg = String(rawMessage || "");
@@ -1614,8 +1627,9 @@ ${cpSection}
         return `'${model}' 모델을 이 키에서 찾을 수 없습니다(404·종료된 모델). 기본 모델 gemini-3.1-flash-lite로 전환합니다.`;
       }
       if (status === 429) {
-        const wait = (msg.match(/retry in ([0-9hms.]+)/i) || [])[1];
-        return `'${model}' 무료 사용 한도를 넘었습니다(429)${wait ? ` · 약 ${wait} 뒤 해제` : ""}. 기본 모델 gemini-3.1-flash-lite로 전환합니다.`;
+        const raw = (msg.match(/retry in ([0-9hms.]+)/i) || [])[1];
+        const waitKo = humanizeRetryWait(raw);
+        return `'${model}' 무료 사용 한도를 넘었습니다(429)${waitKo ? ` · ${waitKo}` : ""}. 기본 모델 gemini-3.1-flash-lite로 전환합니다.`;
       }
       if (status >= 500) {
         return `Google 서버가 잠시 불안정합니다(${status}). 잠시 뒤 다시 시도해 주세요.`;
