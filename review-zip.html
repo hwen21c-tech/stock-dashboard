@@ -1252,6 +1252,9 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       r.capacity = num(c.capacity);
       r.rate = (r.capacity > 0 && r.applicants !== null) ? r.applicants / r.capacity : null;
       r.d = dday(c.deadline);
+      /* 모집이 끝난 캠페인(r.d < 0)은 공개 포털에 싣지 않는다 — 목록·빈집털이·통계·필터 건수 전부에서 빠진다.
+         (11/26 사용자 제보: 마감 지난 카드가 '마감' 으로 계속 노출) */
+      if (r.d !== null && r.d < 0) continue;
       r.seq = i;
       out.push(r);
     }

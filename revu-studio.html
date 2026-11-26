@@ -1433,13 +1433,14 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
   function renderCatChips() {
     var box = $('catChips');
     if (!box) return;
-    var counts = {}, order = [];
-    S.rows.forEach(function (r) {
+    var counts = {}, order = [], total = 0;
+    browseRows().forEach(function (r) {
       var c = r.category || '기타';
+      total++;
       if (!counts[c]) { counts[c] = 0; order.push(c); }
       counts[c]++;
     });
-    var html = '<button class="chip' + (S.ui.cat === 'all' ? ' on' : '') + '" data-cat="all" type="button">전체 <span class="c">' + S.rows.length + '</span></button>';
+    var html = '<button class="chip' + (S.ui.cat === 'all' ? ' on' : '') + '" data-cat="all" type="button">전체 <span class="c">' + total + '</span></button>';
     order.sort(function (a, b) { return counts[b] - counts[a]; });
     order.forEach(function (c) {
       html += '<button class="chip' + (S.ui.cat === c ? ' on' : '') + '" data-cat="' + esc(c) + '" type="button">' +
@@ -1451,9 +1452,9 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
   function renderPlatChips() {
     var box = $('platChips');
     if (!box) return;
-    var counts = {};
-    S.rows.forEach(function (r) { counts[r.platform] = (counts[r.platform] || 0) + 1; });
-    var html = '<button class="chip' + (S.ui.plat === 'all' ? ' on' : '') + '" data-plat="all" type="button">🏷️ 전체 플랫폼 <span class="c">' + S.rows.length + '</span></button>';
+    var counts = {}, total = 0;
+    browseRows().forEach(function (r) { counts[r.platform] = (counts[r.platform] || 0) + 1; total++; });
+    var html = '<button class="chip' + (S.ui.plat === 'all' ? ' on' : '') + '" data-plat="all" type="button">🏷️ 전체 플랫폼 <span class="c">' + total + '</span></button>';
     PLAT_ORDER.forEach(function (k) {
       var n = counts[k] || 0;
       var p = PLAT[k];
@@ -1521,10 +1522,20 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
   function visibleRows() {
     return S.rows.filter(function (r) { return passRow(r, null); });
   }
+  /* 모집이 끝난 캠페인(r.d < 0)은 '탐색' 목록에서 뺀다(11/26 사용자 제보: 마감 지난 카드가 계속 노출).
+     데이터(S.rows)에서는 지우지 않는다 — 사용자가 관리 중인 건은 ✍️ 지원·📝 리뷰 탭에서 발표·리뷰 마감을
+     계속 봐야 하므로 탐색 목록에서만 숨긴다. */
+  function browseable(r) {
+    return r.d === null || r.d === undefined || r.d >= 0;
+  }
+  function browseRows() {
+    return S.rows.filter(browseable);
+  }
   /* skip: 자기 조건은 빼고 나머지 조건만 보기(칩 건수 계산용) · 'flag:k' 형태로 제외 토글 하나만 빼기도 한다 */
   function passRow(r, skip) {
     var u = S.ui;
     var q = String(u.q || '').trim().toLowerCase();
+    if (!browseable(r)) return false;
     if (skip !== 'plat' && u.plat !== 'all' && r.platform !== u.plat) return false;
     if (skip !== 'type' && u.type !== 'all' && r.type !== u.type) return false;
     if (skip !== 'region' && u.region !== 'all' && r.region !== u.region) return false;
@@ -1757,7 +1768,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
       $('dueNote').textContent = pool.length ? '담음·신청 ' + pool.length + '건 중 급한 마감' : '담은 캠페인이 아직 없습니다';
     }
     /* counters */
-    $('nMain').textContent = String(S.rows.length);
+    $('nMain').textContent = String(browseRows().length);
     $('nApply').textContent = String(applyRows().length);
     $('nReview').textContent = String(reviewRows().length);
     /* source line */

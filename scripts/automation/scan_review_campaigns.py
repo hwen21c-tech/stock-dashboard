@@ -1450,8 +1450,8 @@ def main():
         for rep in report:
             if rep['key'] == 'revu':
                 rep['count'] = len(prev_revu) + kept_n
-                rep['note'] += (' 오늘 아침 상세 페이지에서 직접 확인한 기존 실측 %d건을 합쳐 %d건으로 유지합니다.'
-                                % (kept_n, rep['count']))
+                rep['note'] += (' 오늘 아침 상세 페이지에서 직접 확인한 기존 실측 %d건을 합쳐 유지합니다.'
+                                % kept_n)
 
     today = datetime.now(KST).date()
     for r in all_rows:
@@ -1491,6 +1491,30 @@ def main():
         news['shown'], news['raw'], NEW_CAP_PER_PLATFORM,
         ' / '.join('%s %d' % (k, v['shown']) for k, v in sorted(news['byPlatform'].items()))))
 
+    # 모집 마감이 지난 캠페인은 싣지 않는다(11/26 사용자 제보) — 카드에 '마감' 으로 계속 노출되던 결함.
+    #   단 사용자가 이미 신청·선정으로 관리 중인 건(applied: true)은 발표·리뷰 일정을 봐야 하므로 남긴다.
+    def _closed(c):
+        n = c.get('ddayNum')
+        if isinstance(n, (int, float)) and n < 0:
+            return True
+        dl = c.get('deadline')
+        if not dl:
+            return False
+        try:
+            y, m, d = [int(v) for v in str(dl).split('-')[:3]]
+            return datetime(y, m, d).date() < today
+        except Exception:                            # noqa: BLE001
+            return False
+
+    before_n = len(uniq)
+    uniq = [r for r in uniq if not _closed(r) or r.get('applied') is True]
+    closed_n = before_n - len(uniq)
+    if closed_n:
+        log('· 모집 마감 지난 캠페인 %d건 제외 (applied 관리 건은 유지)' % closed_n)
+        for rep in report:
+            if rep['status'] == 'ok':
+                rep['count'] = sum(1 for r in uniq if r['platform'] == rep['key'])
+
     notice_bits = []
     friendly = []
     for rep in report:
@@ -1502,6 +1526,8 @@ def main():
     notice_bits.append('미블은 목록·상세가 로그인 필수여서 홈페이지 공개 섹션만 담았습니다. 마감일은 D-day 역산입니다.')
     notice_bits.append('포포몬은 홈 공개 API(플래티넘·신규·인기·오픈예정)만 수집합니다 — 전체 목록은 로그인 후에만 열립니다.')
     notice_bits.append('오마이블로그는 상세 페이지가 앱 전용이라 제목 검색 링크로 연결합니다.')
+    if closed_n:
+        notice_bits.append('모집이 마감된 캠페인 %d건은 목록에서 뺐습니다(신청·관리 중인 건은 유지).' % closed_n)
 
     out = {
         'meta': {
