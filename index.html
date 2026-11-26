@@ -6270,14 +6270,28 @@
       ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(left, y1); ctx.lineTo(xEnd, y1); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(left, y2); ctx.lineTo(xEnd, y2); ctx.stroke();
+      var bandMid = (Math.min(y1, y2) + Math.max(y1, y2)) / 2;
+      placeLabel(left + 3, bandMid + 3, label, color);
+    }
+    /* 라벨이 서로 겹치지 않게 — 같은 x 열에서 10px 안에 이미 라벨이 있으면 아래로 밀어 그린다 */
+    var usedLabels = [];
+    function placeLabel(x, y, text, color) {
       ctx.font = 'bold 8.5px sans-serif';
       ctx.textAlign = 'left';
-      var bandMid = (Math.min(y1, y2) + Math.max(y1, y2)) / 2;
-      var twb = ctx.measureText(label).width;
-      ctx.fillStyle = 'rgba(7,12,20,0.72)';
-      ctx.fillRect(left + 2, bandMid - 6, twb + 6, 12);
+      var yy = Math.max(10, Math.min(g.chartH, y));
+      for (var guard = 0; guard < 8; guard++) {
+        var clash = false;
+        for (var k = 0; k < usedLabels.length; k++) {
+          if (Math.abs(usedLabels[k] - yy) < 10) { yy = usedLabels[k] + 11; clash = true; }
+        }
+        if (!clash) break;
+      }
+      usedLabels.push(yy);
+      var tw = ctx.measureText(text).width;
+      ctx.fillStyle = 'rgba(7,12,20,0.82)';
+      ctx.fillRect(x - 1, yy - 9, tw + 6, 12);
       ctx.fillStyle = color;
-      ctx.fillText(label, left + 5, bandMid + 3);
+      ctx.fillText(text, x + 2, yy);
     }
     function hline(p, color, label, dash) {
       var y = yOf(p);
@@ -6287,13 +6301,7 @@
       ctx.setLineDash(dash || []);
       ctx.beginPath(); ctx.moveTo(10, y); ctx.lineTo(xEnd, y); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.font = 'bold 8.5px sans-serif';
-      ctx.textAlign = 'left';
-      var tw = ctx.measureText(label).width;
-      ctx.fillStyle = 'rgba(7,12,20,0.78)';
-      ctx.fillRect(11, y - 9, tw + 6, 11);
-      ctx.fillStyle = color;
-      ctx.fillText(label, 14, y - 1);
+      placeLabel(12, y - 1, label, color);
     }
     var xEnter = xOfTime(fk.enterAt);
     if (xEnter === null) xEnter = 10;
