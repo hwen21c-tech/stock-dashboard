@@ -5557,7 +5557,9 @@
         if (x.break120) return chip('120일 전고점 돌파 ✅ · ' + comma(x.hi120) + '원', 'hot');
         var g = x.gap120;
         if (isNum(g) && g <= 5) return chip('전고점 5% 이내 🟡 · ' + comma(x.hi120) + '원', 'warm');
-        return chip('전고점 이격 -' + (isNum(g) ? g.toFixed(1) : '—') + '% (반등형) · ' + comma(x.hi120) + '원', 'mute');
+        /* 이격은 전고점(고가) 대비 몇 % 아래인지로 표기 — 145% 같은 왜곡된 수를 막는다 */
+        var below = isNum(g) && isNum(x.price) && x.hi120 > 0 ? Math.max(0, ((x.hi120 - x.price) / x.hi120) * 100) : null;
+        return chip('전고점 이격 -' + (isNum(below) ? below.toFixed(1) : '—') + '% (반등형) · ' + comma(x.hi120) + '원', 'mute');
       }
 
       function leaderCard(x, i) {
