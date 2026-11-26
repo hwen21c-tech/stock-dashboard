@@ -199,19 +199,66 @@
     } catch (e) { return false; }
   }
 
+  /* 📅 종가베팅(신정재) '기준일 경과' 판정 — 하루 경과 가드(strategy-day-guard.js)와 같은 규칙.
+     평일이면 기준일이 오늘이 아니면 경과, 토·일이면 직전 거래일(금요일) 후보까지는 유지한다
+     (2026-11-27 사용자 결정 "주말은 두기"). 동적 live-api.js 와 같은 규칙을 쓴다. */
+  function closeBasisISO(sec) {
+    var raw = sec ? String(sec.basisDate || '') : '';
+    var m = raw.match(/^(20\d{2})(\d{2})(\d{2})$/);
+    if (m) return m[1] + '-' + m[2] + '-' + m[3];
+    if (/^20\d{2}-\d{2}-\d{2}$/.test(raw)) return raw;
+    return '';
+  }
+  function closeBasisStale(sec) {
+    if (!sec) return false;
+    var iso = closeBasisISO(sec);
+    var dg = window.StrategyDayGuard;
+    if (iso && dg && typeof dg.isStale === 'function') return !!dg.isStale(iso);
+    return typeof sec.dayNo === 'number' && sec.dayNo > 0;
+  }
+  function closeBasisMd(sec) {
+    var iso = closeBasisISO(sec);
+    var dg = window.StrategyDayGuard;
+    if (iso && dg && typeof dg.mdLabel === 'function') return dg.mdLabel(iso);
+    return iso || String((sec && (sec.basisLabel || sec.basisDate)) || '—');
+  }
+  function isWeekendToday() {
+    var dg = window.StrategyDayGuard;
+    if (dg && typeof dg.isWeekend === 'function') return !!dg.isWeekend();
+    var wd = new Date(Date.now() + 9 * 3600 * 1000).getUTCDay();
+    return wd === 0 || wd === 6;
+  }
+  function closeBasisAnchor() {
+    var dg = window.StrategyDayGuard;
+    if (dg && typeof dg.anchor === 'function') return dg.anchor();
+    var today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    var t0 = Date.parse(today + 'T00:00:00Z');
+    var wd = new Date(t0).getUTCDay();
+    if (wd === 6) return new Date(t0 - 86400000).toISOString().slice(0, 10);
+    if (wd === 0) return new Date(t0 - 2 * 86400000).toISOString().slice(0, 10);
+    return today;
+  }
+
   function panel(sec, title, accent, rowFn, foldKey) {
     if (!sec || !sec.cards || !sec.cards.length) return null;
-    /* 📅 종가베팅(신정재)은 그날 종가까지만 유효 — 기준일이 오늘이 아니면(dayNo > 0)
-       📌 핀 고정한 종목만 남긴다(2026-11-27 · 동적 live-api.js 와 같은 규칙). */
-    var staleClose = (foldKey === 'jongbe') && typeof sec.dayNo === 'number' && sec.dayNo > 0;
+    /* 📅 종가베팅(신정재)은 그날 종가까지만 유효 — 기준일이 지났으면 📌 핀 고정한 종목만 남긴다.
+       토·일에는 직전 거래일(금요일) 기준 후보를 그대로 판정한다
+       (2026-11-27 · 동적 live-api.js 와 같은 규칙). */
+    var staleClose = (foldKey === 'jongbe') && closeBasisStale(sec);
+    var weekendKept = (foldKey === 'jongbe') && !staleClose && isWeekendToday() &&
+      !!closeBasisISO(sec) && closeBasisISO(sec) === closeBasisAnchor();
     var cards = staleClose ? sec.cards.filter(function (c) { return c && pinned('jongbe', c.code); }) : sec.cards;
     var head =
       '<div style="font-size:10px;color:#94a3b8;margin:3px 0 6px;line-height:1.5;">' +
-      '기준 ' + esc(sec.basisLabel || sec.basisDate || '—') + ' · 오늘 <b style="color:#e2e8f0;">' + esc(sec.dayLabel || '—') + '</b>' +
+      '기준 ' + esc(sec.basisLabel || sec.basisDate || '—') + ' · 오늘 <b style="color:#e2e8f0;">' +
+        esc(weekendKept ? '주말 · 금요일 기준 유지' : (sec.dayLabel || '—')) + '</b>' +
       (sec.basisStale ? ' <span style="color:#fbbf24;font-weight:800;">⚠️ 재스캔 필요</span>' : '') +
       (staleClose
         ? '<br><span style="color:#fbbf24;font-weight:800;">📅 기준일 경과 — 장마감 스캔 전까지는 📌 핀 고정 종목만 판정합니다(종가베팅은 그날 종가까지만 유효)</span>'
-        : '') +
+        : weekendKept
+          ? '<br><span style="color:#7dd3fc;font-weight:800;">🗓 주말 — 직전 거래일 ' + esc(closeBasisMd(sec)) +
+            ' 종가 기준 후보를 그대로 판정합니다 · 월요일 00:00부터 📌 핀 고정 종목만 남깁니다</span>'
+          : '') +
       '</div>';
     var body = cards.length
       ? cards.map(rowFn).join('')

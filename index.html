@@ -16027,9 +16027,51 @@ function openDetail(title, v1, v2, desc) {
     function jongbePinCount() {
       try { return (window.StrategyPins && window.StrategyPins.list) ? window.StrategyPins.list('jongbe').length : 0; } catch (e) { return 0; }
     }
+    /* 🗓 주말 유지 — 토·일에는 직전 거래일(금요일) 종가 후보를 그대로 둔다(2026-11-27 사용자 결정).
+       판정 규칙은 strategy-day-guard.js 한 곳에 있다(평일 = 오늘 / 주말 = 금요일 기준). */
+    function weekendAnchorISO() {
+      const today = kstTodayISO();
+      const t0 = Date.parse(today + 'T00:00:00Z');
+      const wd = new Date(t0).getUTCDay();
+      const shift = function (n) { return new Date(t0 + n * 86400000).toISOString().slice(0, 10); };
+      if (wd === 6) return shift(-1);   /* 토 → 금요일 */
+      if (wd === 0) return shift(-2);   /* 일 → 금요일 */
+      return today;
+    }
+    function isWeekendDay() {
+      const wd = new Date(Date.parse(kstTodayISO() + 'T00:00:00Z')).getUTCDay();
+      return wd === 0 || wd === 6;
+    }
     function isStaleStock(s) {
       const b = basisISOOf(s);
-      return !!b && b < kstTodayISO();
+      if (!b) return false;
+      const dg = window.StrategyDayGuard;
+      if (dg && typeof dg.isStale === 'function') return !!dg.isStale(b);
+      return b < weekendAnchorISO();
+    }
+    /* 🗓 주말 유지 안내 — 금요일 후보를 그대로 보여 주는 중임을 목록 위에 한 줄로 적는다.
+       (평일이거나 금요일보다 오래된 기준일이면 아무것도 그리지 않는다) */
+    function paintWeekendNote() {
+      const host = document.getElementById('jbTrackTabs');
+      if (!host || !host.parentNode) return;
+      const anchor = weekendAnchorISO();
+      const shown = STOCKS.filter(isShownStock).length;
+      const kept = STOCKS.some(function (s) { return !isStaleStock(s) && basisISOOf(s) === anchor; });
+      let el = document.getElementById('jbWeekendNote');
+      if (!isWeekendDay() || !kept || !shown) {
+        if (el && el.parentNode) el.parentNode.removeChild(el);
+        return;
+      }
+      if (!el) {
+        el = document.createElement('div');
+        el.id = 'jbWeekendNote';
+        el.style.cssText = 'font-size:10.5px;line-height:1.6;color:#7dd3fc;background:rgba(56,189,248,0.08);' +
+          'border:1px solid rgba(56,189,248,0.35);border-radius:8px;padding:7px 10px;margin-bottom:8px;';
+        host.parentNode.insertBefore(el, host);
+      }
+      const txt = '🗓 주말 — 직전 거래일 ' + mdLabelOf(anchor) + ' 종가 기준 후보를 그대로 유지합니다 · ' +
+        '월요일 00:00부터 📌 핀 고정한 종목만 남고, 조건을 채운 종목은 다시 나타납니다.';
+      if (el.textContent !== txt) el.textContent = txt;
     }
     function isShownStock(s) { return !!s && (!isStaleStock(s) || isJongbePinned(s.code)); }
     function firstShownIdx() {
@@ -16645,6 +16687,7 @@ function openDetail(title, v1, v2, desc) {
       }
       try { drawMiniCharts(); } catch (e) {}
       try { paintTrackCounts(); } catch (e) {}
+      try { paintWeekendNote(); } catch (e) {}
       try { if (window.StrategyPins) window.StrategyPins.annotate('jongbe'); } catch (e) {}
     }
 
@@ -16785,6 +16828,8 @@ function openDetail(title, v1, v2, desc) {
       dayState: function () {
         return {
           today: kstTodayISO(),
+          weekend: isWeekendDay(),
+          anchor: weekendAnchorISO(),
           basis: (STOCKS[0] && (STOCKS[0].basisLabel || STOCKS[0].basisDate)) || '',
           staleBasis: staleBasisLabel(),
           total: STOCKS.length,
