@@ -3500,6 +3500,7 @@
   var REG = {};                        // id -> {redraw, key, getPeriod, setPeriod, digits}
   var LAST = {};                       // id -> 마지막 계산 결과(오버레이·지표)
   var VIEW = {};                       // mount 전용 봉 보기 상태 {id:{count,offset}}
+  var VIEWGEO = {};                    // id -> 마지막 그린 캔들 영역 좌표(팬 감도·검증용)
 
   /* ---------------- 저장/불러오기 ---------------- */
   function load() {
@@ -3941,6 +3942,132 @@
   /* ---------------- 오버레이 그리기 ----------------
    * geo = { X(i), Y(v), x0, x1, top, bot, cs, all, vs, labelRight }
    */
+
+  /* ==========================================================================
+   * 🧱 라벨 전용 여백(labelZone) — 2026-11-26
+   *  오른쪽 전략선(2차목표·1차목표·20일선·손절·전고점)·피보 라벨이 확대 시
+   *  마지막 봉을 덮던 문제를 없애기 위해, 캔들·거래량·MA·엔벨로프가 끝나는 선
+   *  (candleRight)과 오른쪽 가격축 사이에 라벨만 놓는 빈 여백을 둔다.
+   *  여백 폭은 실제로 그릴 라벨 문자열의 실측 폭에서 계산하고(없으면 0),
+   *  400px 세로 화면에서 캔들이 과도하게 좁아지지 않게 상한을 둔다.
+   * ========================================================================== */
+  var LV_FONT = 'bold 8px ui-monospace, SFMono-Regular, Menlo, monospace';
+  var FIB_FONT = 'bold 9px sans-serif';
+
+  function textW(ctx, text, font) {
+    if (!ctx) return 0;
+    try {
+      ctx.save();
+      if (font) ctx.font = font;
+      var w = ctx.measureText(String(text == null ? '' : text)).width;
+      ctx.restore();
+      return w;
+    } catch (e) { return 0; }
+  }
+
+  /* 전략 기준선 라벨 문자열 (drawLevels 와 같은 규칙) */
+  function lvText(L) {
+    if (!L) return '';
+    var short = L.short || L.label || '';
+    return (short ? (short + ' ') : '') + fmtAuto(L.v);
+  }
+
+  /* 피보 라벨 문자열 (drawOverlays 와 같은 규칙) */
+  function fibLabelText(c, lv) {
+    var nm = (lv.r === 0) ? (c.dirUp ? '\uACE0\uC810 ' : '\uC800\uC810 ')
+      : (lv.r === 1) ? (c.dirUp ? '\uC800\uC810 ' : '\uACE0\uC810 ')
+        : (lv.r.toFixed(3) + ' ');
+    return nm + fmtAuto(lv.p);
+  }
+  function fibLabelTexts(c) {
+    var out = [];
+    if (!c || !c.fib) return out;
+    for (var i = 0; i < c.fib.length; i += 1) out.push(fibLabelText(c, c.fib[i]));
+    return out;
+  }
+
+  /* 라벨 폭 → 여백 폭 (texts: 문자열 배열 또는 [{t,f}]) */
+  function labelZoneWidth(ctx, texts, W, font, capFrac, capMax) {
+    var maxW = 0, i, t, f;
+    for (i = 0; i < (texts || []).length; i += 1) {
+      t = texts[i];
+      f = font;
+      if (t && typeof t === 'object') { f = t.f || font; t = t.t; }
+      if (!t) continue;
+      maxW = Math.max(maxW, textW(ctx, t, f));
+    }
+    if (maxW <= 0) return 0;
+    return Math.min(Math.min(capMax || 108, Math.round(W * (capFrac || 0.28))), Math.round(maxW) + 10);
+  }
+
+  /* 세로 스태킹 — 이미 놓인 라벨(y목록)과 11px 안에 겹치면 아래로(모자라면 위로) 민다 */
+  function stackPush(stack, y, gap, lo, hi) {
+    if (!stack) return y;
+    var g = gap || 11;
+    var y0 = Math.min((hi == null ? y : hi), Math.max((lo == null ? y : lo), y));
+    var yy = y0, guard, i, clash;
+    var top = (lo == null ? -1e9 : lo), bot = (hi == null ? 1e9 : hi);
+    for (guard = 0; guard < 32; guard += 1) {
+      clash = false;
+      for (i = 0; i < stack.length; i += 1) {
+        if (Math.abs(stack[i] - yy) < g) { yy = stack[i] + g; clash = true; }
+      }
+      if (!clash || yy > bot) break;
+    }
+    if (yy > bot) {
+      yy = y0;
+      for (guard = 0; guard < 32; guard += 1) {
+        clash = false;
+        for (i = 0; i < stack.length; i += 1) {
+          if (Math.abs(stack[i] - yy) < g) { yy = stack[i] - g; clash = true; }
+        }
+        if (!clash || yy < top) break;
+      }
+    }
+    stack.push(yy);
+    return yy;
+  }
+
+  /* 📐 고점·저점 드래그 핸들 칩 폭 — 켜져 있으면 캔들 영역 밖에 자리를 잡아 준다 */
+  function handleZoneW(ctx, id, r, cs, all, W) {
+    if (!r || r.hideHandles) return 0;
+    var st = state(id);
+    if (!st.fib) return 0;
+    var c = null;
+    try { c = compute(id, cs, all); } catch (e) { c = null; }
+    if (!c || !num(c.H) || !num(c.L)) return 0;
+    var w1 = textW(ctx, '\u21C5 \uACE0\uC810 ' + fmtAuto(c.H), 'bold 9.5px sans-serif');
+    var w2 = textW(ctx, '\u21C5 \uC800\uC810 ' + fmtAuto(c.L), 'bold 9.5px sans-serif');
+    return Math.min(Math.min(96, Math.round((W || 400) * 0.26)), Math.round(Math.max(w1, w2)) + 16);
+  }
+
+  /* 이 차트에서 오른쪽(또는 왼쪽) 라벨 여백이 몇 px 필요한지 */
+  function labelZoneFor(ctx, id, r, lvAll, cs, all, W, side) {
+    var st = state(id), maxW = 0, i;
+    var c = null;
+    try { c = compute(id, cs, all); } catch (e) { c = null; }
+    if (side === 'left') {
+      if (st.fib && c && c.fib) {
+        for (i = 0; i < c.fib.length; i += 1) maxW = Math.max(maxW, textW(ctx, fibLabelText(c, c.fib[i]), FIB_FONT));
+      }
+      if (maxW <= 0) return 0;
+      return Math.min(Math.min(96, Math.round(W * 0.26)), Math.round(maxW) + 10);
+    }
+    for (i = 0; i < lvAll.length; i += 1) {
+      var L = lvAll[i];
+      if (!L || !num(L.v)) continue;
+      maxW = Math.max(maxW, textW(ctx, lvText(L), LV_FONT));
+    }
+    if (st.fib && c && c.fib && r.fibSide !== 'left') {
+      for (i = 0; i < c.fib.length; i += 1) maxW = Math.max(maxW, textW(ctx, fibLabelText(c, c.fib[i]), FIB_FONT));
+    }
+    if (st.ma20 && c && num(c.ma20) && !(r.noMaLabel || lvAll.length > 0)) {
+      maxW = Math.max(maxW, textW(ctx, 'MA20 ' + fmtAuto(c.ma20), FIB_FONT));
+    }
+    if (maxW <= 0) return 0;
+    return Math.min(Math.min(108, Math.round(W * 0.28)), Math.round(maxW) + 10);
+  }
+
   function drawOverlays(ctx, id, geo) {
     if (!ctx || !geo || !geo.cs || !geo.cs.length) return null;
     var st = state(id);
@@ -3972,10 +4099,14 @@
     /* 2) 피보나치 되돌림(0·0.236·0.382·0.5·0.618·0.786·1) */
     if (st.fib) {
       ctx.save();
-      ctx.font = 'bold 9px sans-serif';
+      ctx.font = FIB_FONT;
+      /* 📐 라벨은 캔들 영역 밖(라벨 전용 여백)에만 — 확대해도 마지막 봉을 덮지 않는다 */
       var fibLeft = geo.fibSide === 'left';
-      ctx.textAlign = fibLeft ? 'left' : 'right';
-      var lx = fibLeft ? (x0 + 3) : ((geo.labelRight || x1) - 2);
+      var zone = fibLeft ? (geo.labelLeft || null) : (geo.labelZone || null);
+      var freeRight = (!zone && !fibLeft);
+      ctx.textAlign = (zone || freeRight) ? 'right' : 'left';
+      var lx = zone ? (zone.x1 - 1) : (freeRight ? ((geo.labelRight || x1) - 2) : (x0 + 3));
+      var lstack = zone ? (fibLeft ? geo.labelStackL : geo.labelStack) : null;
       var placed = [];
       for (var f = 0; f < c.fib.length; f += 1) {
         var lv = c.fib[f];
@@ -3987,38 +4118,63 @@
         ctx.lineWidth = isKey ? 1.1 : 1;
         ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
         ctx.setLineDash([]);
-        /* 라벨은 11px 안에 겹치면 생략 — 선은 그대로 둔다(라벨 뭉침 방지) */
-        var near = false;
-        for (var pz = 0; pz < placed.length; pz += 1) { if (Math.abs(placed[pz] - y) < 11) { near = true; break; } }
-        if (near) continue;
-        placed.push(y);
-        var lname = (lv.r === 0) ? (c.dirUp ? '\uACE0\uC810 ' : '\uC800\uC810 ') : ((lv.r === 1) ? (c.dirUp ? '\uC800\uC810 ' : '\uACE0\uC810 ') : (lv.r.toFixed(3) + ' '));
-        var label = lname + fmtAuto(lv.p);
+        var ly = y;
+        if (lstack) {
+          ly = stackPush(lstack, y, 11, top + 4, bot - 4);
+        } else {
+          var near = false;
+          for (var pz = 0; pz < placed.length; pz += 1) { if (Math.abs(placed[pz] - y) < 11) { near = true; break; } }
+          if (near) continue;
+          placed.push(y);
+        }
+        var label = fibLabelText(c, lv);
         var tw = ctx.measureText(label).width;
-        var bx = fibLeft ? lx : (lx - tw - 4);
+        var bx = (ctx.textAlign === 'right') ? (lx - tw) : (lx - 3);
+        if (zone && bx < zone.x0) bx = zone.x0;
         ctx.fillStyle = 'rgba(7,12,20,0.82)';
-        ctx.fillRect(bx - (fibLeft ? 3 : 0), y - 8, tw + 4, 11);
+        ctx.fillRect(bx - 1, ly - 8, tw + 4, 11);
+        /* 선과 라벨이 떨어졌으면 가는 지시선 */
+        if (Math.abs(ly - y) > 2) {
+          ctx.strokeStyle = isKey ? 'rgba(148,163,184,0.55)' : 'rgba(148,163,184,0.35)';
+          ctx.setLineDash([2, 2]);
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          if (ctx.textAlign === 'right') { ctx.moveTo(zone ? zone.x0 - 2 : lx, y); ctx.lineTo(zone ? zone.x0 - 2 : lx, ly); }
+          else { ctx.moveTo(x0 + 1, y); ctx.lineTo(x0 + 1, ly); }
+          ctx.stroke();
+          ctx.setLineDash([]);
+        }
         ctx.fillStyle = isKey ? '#cbd5e1' : (lv.r === 0.5 ? '#facc15' : '#94a3b8');
-        ctx.fillText(label, lx, y + 1);
+        ctx.fillText(label, lx, ly + 1);
       }
       ctx.restore();
     }
 
-    /* 3) 20일선 값 라벨 (선 자체는 각 렌더러가 그린다) — 전략선이 있으면 칩이 값을 대신한다 */
+    /* 3) 20일선 값 라벨 (선 자체는 각 렌더러가 그린다) — 전략선이 있으면 칩이 값을 대신한다
+          라벨은 라벨 전용 여백이 있으면 그 안에, 없으면 왼쪽 가장자리에 놓는다(캔들 위 금지) */
     if (st.ma20 && num(c.ma20) && !geo.noMaLabel) {
       var y20 = Y(c.ma20);
       if (y20 > top - 2 && y20 < bot + 2) {
         ctx.save();
-        ctx.font = 'bold 9px sans-serif';
-        var maLeft = geo.fibSide !== 'left';
-        ctx.textAlign = maLeft ? 'left' : 'right';
-        var x20 = maLeft ? (x0 + 3) : (x0 + (x1 - x0) * 0.5 + 30);
+        ctx.font = FIB_FONT;
         var t20 = 'MA20 ' + fmtAuto(c.ma20);
         var w20 = ctx.measureText(t20).width;
+        var z20 = geo.labelZone || null;
+        var ly20 = z20 ? stackPush(geo.labelStack, y20, 11, top + 4, bot - 4) : y20;
         ctx.fillStyle = 'rgba(7,12,20,0.82)';
-        ctx.fillRect(maLeft ? x20 - 3 : x20 - 2, y20 - 8, w20 + 4, 11);
-        ctx.fillStyle = '#f87171';
-        ctx.fillText(t20, maLeft ? x20 : x20 - w20, y20 + 1);
+        if (z20) {
+          var bx20 = z20.x1 - 4 - w20 - 1;
+          if (bx20 < z20.x0) bx20 = z20.x0;
+          ctx.fillRect(bx20, ly20 - 8, w20 + 4, 11);
+          ctx.fillStyle = '#f87171';
+          ctx.textAlign = 'right';
+          ctx.fillText(t20, z20.x1 - 4, ly20 + 1);
+        } else {
+          ctx.fillRect(x0 + 1, ly20 - 8, w20 + 4, 11);
+          ctx.fillStyle = '#f87171';
+          ctx.textAlign = 'left';
+          ctx.fillText(t20, x0 + 4, ly20 + 1);
+        }
         ctx.restore();
       }
     }
@@ -4098,7 +4254,11 @@
       var tw = ctx.measureText(txt).width;
       var pw = Math.max(42, tw + 11), ph = HD;
       var yy = r.y - ph / 2;
-      var xx = (side === 'left') ? (geo.x0 + 2) : (geo.x1 - pw - 2);
+      /* 라벨 전용 여백이 있으면 그 안에, 없으면 옛처럼 가장자리에 */
+      var hzone = (side === 'left') ? (geo.labelLeft || null) : (geo.labelZone || null);
+      var xx = hzone
+        ? (side === 'left' ? (hzone.x0 + 1) : Math.max(hzone.x0, hzone.x1 - pw - 1))
+        : ((side === 'left') ? (geo.x0 + 2) : (geo.x1 - pw - 2));
       rrPath(ctx, xx, yy, pw, ph, 4);
       ctx.fillStyle = locked ? 'rgba(15,23,42,.94)' : r.bg;
       ctx.fill();
@@ -4341,28 +4501,38 @@
       ctx.setLineDash([]);
       ctx.globalAlpha = 1;
     }
-    /* 라벨 칩은 플롯 안쪽 오른편에 — 오른쪽 가격 눈금·현재가 태그와 자리를 다투지 않는다 */
-    ctx.font = 'bold 8px ui-monospace, SFMono-Regular, Menlo, monospace';
+    /* 라벨 칩은 '라벨 전용 여백'(candleRight~플롯 끝) 안에만 — 확대해도 마지막 봉을 덮지 않고,
+       오른쪽 가격 눈금·현재가 태그와도 자리를 다투지 않는다. (2026-11-26) */
+    ctx.font = LV_FONT;
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
-    var maxW = Math.max(40, (x1 - x0) * 0.52);
+    var zone = (geo.labelZone && geo.labelZone.x1 > geo.labelZone.x0) ? geo.labelZone : null;
+    var labelRightX = zone ? zone.x1 : (x1 - 4);
+    var maxW = zone ? Math.max(24, zone.x1 - zone.x0) : Math.max(40, (x1 - x0) * 0.52);
+    /* 피보 라벨(먼저 그려짐)과 세로로 겹치지 않게 스택에 합류 */
+    if (zone && geo.labelStack) {
+      for (i = 0; i < items.length; i += 1) items[i].ly = stackPush(geo.labelStack, items[i].ly, lh, top + 5, bot - 4);
+    }
     for (i = 0; i < items.length; i += 1) {
       var it2 = items[i];
       var arrow = (it2.y < top - 0.5) ? '\u2191' : (it2.y > bot + 0.5 ? '\u2193' : '');
       var txt = arrow + (it2.short ? (it2.short + ' ') : '') + fmtAuto(it2.v);
       var tw = ctx.measureText(txt).width;
       if (tw > maxW) { txt = arrow + fmtAuto(it2.v); tw = ctx.measureText(txt).width; }
-      var bh = 11, bw = Math.min(maxW + 6, tw + 8);
+      var bh = 11, bw = Math.min(maxW + 2, tw + 8);
+      var bx = labelRightX - bw + 2;
+      if (zone && bx < zone.x0) bx = zone.x0;
       ctx.fillStyle = 'rgba(7,12,20,0.88)';
-      ctx.fillRect(x1 - bw - 1, it2.ly - bh / 2, bw, bh);
+      ctx.fillRect(bx, it2.ly - bh / 2, bw, bh);
       ctx.fillStyle = it2.color;
-      ctx.fillText(txt, x1 - 4, it2.ly + 0.5);
-      /* 선과 칩이 떨어져 있으면 가는 지시선 */
+      ctx.fillText(txt, labelRightX, it2.ly + 0.5);
+      /* 선과 칩이 떨어져 있으면 가는 지시선 (라벨 여백 안에서만) */
       if (Math.abs(it2.ly - it2.y) > 7 && it2.showLine) {
+        var cx = zone ? (zone.x0 - 2) : (x1 - 2);
         ctx.strokeStyle = it2.color;
         ctx.globalAlpha = 0.5;
         ctx.setLineDash([2, 2]);
-        ctx.beginPath(); ctx.moveTo(x1 - 2, it2.y); ctx.lineTo(x1 - 2, it2.ly); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(cx, it2.y); ctx.lineTo(cx, it2.ly); ctx.stroke();
         ctx.setLineDash([]);
         ctx.globalAlpha = 1;
       }
@@ -4427,6 +4597,20 @@
     var padL = 8, top = 10, axisH = 13, volH = Math.round(H * 0.18), vGap = 6;
     var chartW = W - padL - padR;
     var chartH = H - top - axisH - volH - vGap;
+    /* 🧱 라벨 전용 여백 — 캔들·거래량·MA·엔벨로프가 끝나는 선(candleRight)을 라벨 폭만큼
+       안쪽으로 당기고, 오른쪽 여백에는 라벨만 세로로 쌓는다(확대 시 라벨이 봉을 덮지 않게). */
+    var plotRight = padL + chartW;
+    var hzW = handleZoneW(ctx, id, r, cs, all, W);
+    var lzLeft = (r.fibSide === 'left') ? labelZoneFor(ctx, id, r, lvAll, cs, all, W, 'left') : hzW;
+    var lzRight = labelZoneFor(ctx, id, r, lvAll, cs, all, W, 'right');
+    if (r.fibSide === 'left' && hzW > lzRight) lzRight = hzW;   /* 왼쪽 라벨 차트는 핸들이 오른쪽 */
+    if (lzLeft + lzRight > chartW - 24) {          /* 400px 화면에서 캔들 영역이 사라지지 않게 */
+      var overW = (lzLeft + lzRight) - (chartW - 24);
+      if (lzLeft) lzLeft = Math.max(0, lzLeft - overW); else lzRight = Math.max(0, lzRight - overW);
+    }
+    var candleLeft = padL + lzLeft;
+    var candleRight = plotRight - lzRight;
+    var candleW = Math.max(20, candleRight - candleLeft);
     var hi = -Infinity, lo = Infinity, maxV = 0, i;
     for (i = 0; i < cs.length; i += 1) {
       if (cs[i].h > hi) hi = cs[i].h;
@@ -4451,9 +4635,10 @@
     hi += range * 0.06; lo -= range * 0.06;
     var pRange = hi - lo;
     var Y = function (val) { return top + chartH * (1 - (val - lo) / pRange); };
-    var barW = chartW / cs.length;
-    var X = function (i2) { return padL + i2 * barW + barW / 2; };
+    var barW = candleW / cs.length;
+    var X = function (i2) { return candleLeft + i2 * barW + barW / 2; };
     var bodyW = Math.max(1, barW * 0.66);
+    VIEWGEO[id] = { candleLeft: candleLeft, candleRight: candleRight, barW: barW, plotRight: plotRight, count: cs.length, top: top, bot: top + chartH, labelLeft: lzLeft > 0 };
 
     /* 전략 구간 음영 (RN존 밴드 등) — 캔들 뒤에 깔린다 */
     for (i = 0; i < shadeArr.length; i += 1) {
@@ -4464,12 +4649,12 @@
       if (yBot <= yTop) continue;
       ctx.save();
       ctx.fillStyle = sd.color || 'rgba(251,191,36,0.07)';
-      ctx.fillRect(padL, yTop, chartW, yBot - yTop);
+      ctx.fillRect(candleLeft, yTop, candleW, yBot - yTop);
       if (sd.line) {
         ctx.strokeStyle = sd.line;
         ctx.setLineDash([2, 3]);
         ctx.lineWidth = 1;
-        ctx.strokeRect(padL + 0.5, yTop + 0.5, chartW - 1, yBot - yTop - 1);
+        ctx.strokeRect(candleLeft + 0.5, yTop + 0.5, candleW - 1, yBot - yTop - 1);
         ctx.setLineDash([]);
       }
       ctx.restore();
@@ -4515,7 +4700,7 @@
     ctx.textAlign = 'right';
     for (i = 0; i <= 4; i += 1) {
       var yg = top + chartH * (1 - i / 4);
-      ctx.beginPath(); ctx.moveTo(padL, yg); ctx.lineTo(padL + chartW, yg); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(padL, yg); ctx.lineTo(plotRight, yg); ctx.stroke();
       var pv = lo + pRange * i / 4;
       ctx.fillText(fmtAuto(pv), W - 4, yg + 3);
     }
@@ -4561,8 +4746,12 @@
     }
     /* 오버레이(피보나치·채널·20선 라벨) */
     var geo = {
-      X: X, Y: Y, x0: padL, x1: padL + chartW, top: top, bot: top + chartH, right: W - 2,
-      cs: cs, all: all, vs: start, labelRight: padL + chartW,
+      X: X, Y: Y, x0: padL, x1: plotRight, top: top, bot: top + chartH, right: W - 2,
+      cs: cs, all: all, vs: start, labelRight: plotRight - 3,
+      candleLeft: candleLeft, candleRight: candleRight, barW: barW,
+      labelZone: (lzRight > 0) ? { x0: candleRight + 3, x1: plotRight - 3 } : null,
+      labelLeft: (lzLeft > 0) ? { x0: padL + 2, x1: candleLeft - 3 } : null,
+      labelStack: [], labelStackL: [], labelStackR: [],
       fibSide: r.fibSide, hideHandles: !!r.hideHandles, noMaLabel: !!r.noMaLabel || lvAll.length > 0
     };
     drawOverlays(ctx, id, geo);
@@ -4577,11 +4766,11 @@
     var ly = Y(lastC.c);
     var lup = lastC.c >= lastC.o;
     ctx.fillStyle = lup ? '#f43f5e' : '#38bdf8';
-    ctx.fillRect(padL + chartW + 2, ly - 8, padR - 6, 16);
+    ctx.fillRect(plotRight + 2, ly - 8, padR - 6, 16);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 9px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText(fmtAuto(lastC.c), padL + chartW + 4, ly + 3);
+    ctx.fillText(fmtAuto(lastC.c), plotRight + 4, ly + 3);
 
     /* 봉수 표시 */
     var cnt = document.getElementById('ucxCnt_' + id);
@@ -4794,7 +4983,15 @@
     fillBar: fillBar,
     fillBars: fillBars,
     fmt: fmt,
-    fmtAuto: fmtAuto
+    fmtAuto: fmtAuto,
+    /* 🧱 라벨 여백 공용 도구 — 다른 자체 렌더러(메인 모달·홍인기·비중법사)도 같은 규칙을 쓴다 */
+    labelZoneWidth: labelZoneWidth,
+    labelZoneFor: labelZoneFor,
+    stackLabel: stackPush,
+    fibLabelTexts: fibLabelTexts,
+    fibLabelText: fibLabelText,
+    textW: textW,
+    geo: function (id) { return VIEWGEO[id] || null; }
   };
 })();
 
@@ -17104,7 +17301,30 @@ window.DAILY_500_CANDLES = {"451760":[["20251105",8460.0,8500.0,8200.0,8280.0,72
       var chartH = h * 0.72;
       var volH = h * 0.22;
       var padR = 48;
-      var chartW = w - padR;
+      var plotR = w - padR;                 /* 오른쪽 가격축이 시작되는 x (플롯 끝) */
+      /* 🧱 라벨 전용 여백 — 피보나치·MA20 라벨이 확대해도 마지막 봉을 덮지 않게
+         캔들 영역 끝(candleRight)을 라벨 폭만큼 안쪽으로 당긴다. (2026-11-26) */
+      var labelR = 0;
+      try {
+        if (window.MODAL_TF !== 'min' && window.UCX && typeof UCX.labelZoneWidth === 'function') {
+          var ovS = window.IDX_OV || { fib: true, ma20: true };
+          var lt = [];
+          var lc = (typeof window.IDXCompute === 'function')
+            ? window.IDXCompute(modalAllCandles, window.modalViewCount || modalAllCandles.length) : null;
+          if (ovS.fib && lc && lc.fib) {
+            for (var lfi = 0; lfi < lc.fib.length; lfi += 1) {
+              var lfv = lc.fib[lfi];
+              var lfnm = (lfv.r === 0) ? (lc.isUp ? '\uACE0\uC810 ' : '\uC800\uC810 ')
+                : (lfv.r === 1) ? (lc.isUp ? '\uC800\uC810 ' : '\uACE0\uC810 ')
+                  : (lfv.r.toFixed(3) + ' ');
+              lt.push(lfnm + lfv.p.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+            }
+          }
+          labelR = UCX.labelZoneWidth(ctx, lt, w, 'bold 9px sans-serif');
+        }
+      } catch (eLz) { labelR = 0; }
+      var candleRight = Math.max(60, plotR - labelR);
+      var chartW = Math.max(40, candleRight - 10);   /* 캔들·거래량 영역 폭 */
 
       // Grid Lines
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
@@ -17118,7 +17338,7 @@ window.DAILY_500_CANDLES = {"451760":[["20251105",8460.0,8500.0,8200.0,8280.0,72
         var yPos = chartH - (chartH * g) / 4 + 10;
         ctx.beginPath();
         ctx.moveTo(10, yPos);
-        ctx.lineTo(chartW, yPos);
+        ctx.lineTo(plotR, yPos);
         ctx.stroke();
 
         var pStr = pVal >= 1000 ? Math.round(pVal).toLocaleString() : pVal.toFixed(1);
@@ -17148,6 +17368,11 @@ window.DAILY_500_CANDLES = {"451760":[["20251105",8460.0,8500.0,8200.0,8280.0,72
       var numBars = candles.length;
       var barW = chartW / numBars;
       var bodyW = Math.max(1, barW * 0.68);
+      /* 크로스헤어 오버레이(modalChartX)가 같은 좌표를 쓰도록 기하 정보를 남긴다 */
+      window.__MODALGEO = {
+        base: 10, barW: barW, count: numBars, candleRight: 10 + chartW,
+        plotR: plotR, labelR: labelR, chartH: chartH, top: 10, bot: 10 + chartH
+      };
 
       // Draw Candlesticks & Volume
       for (var b = 0; b < numBars; b++) {
@@ -17249,23 +17474,31 @@ window.DAILY_500_CANDLES = {"451760":[["20251105",8460.0,8500.0,8200.0,8280.0,72
 
       // 📐 피보나치·추세채널·20선 오버레이 (IDX_OV 토글)
       if (window.MODAL_TF !== 'min' && window.IDXDrawOverlays) {
-        try { window.IDXDrawOverlays(ctx, {startIdx: startIdx, endIdx: endIdx, barW: barW, chartW: chartW, chartH: chartH, minP: minP, pRange: pRange, padR: padR, w: w, h: h}); } catch (eOv) {}
+        try {
+          window.IDXDrawOverlays(ctx, {
+            startIdx: startIdx, endIdx: endIdx, barW: barW, chartW: plotR, chartH: chartH,
+            minP: minP, pRange: pRange, padR: padR, w: w, h: h,
+            plotR: plotR, candleRight: 10 + chartW, labelR: labelR,
+            labelZone: (labelR > 0) ? { x0: 10 + chartW + 3, x1: plotR - 3 } : null,
+            labelStack: []
+          });
+        } catch (eOv) {}
       }
 
       // Current Price Highlight Tag
       var lastC = candles[numBars - 1].close;
       var lastY = 10 + chartH * (1 - (lastC - minP) / pRange);
       ctx.fillStyle = '#f43f5e';
-      ctx.fillRect(chartW + 2, lastY - 8, padR - 4, 16);
+      ctx.fillRect(plotR + 2, lastY - 8, padR - 4, 16);
       ctx.fillStyle = '#ffffff';
       ctx.font = 'bold 9px sans-serif';
       ctx.textAlign = 'left';
       var tagStr = lastC >= 1000 ? Math.round(lastC).toLocaleString() : lastC.toFixed(1);
-      ctx.fillText(tagStr, chartW + 4, lastY + 3);
+      ctx.fillText(tagStr, plotR + 4, lastY + 3);
       if (window.MODAL_TF === 'min' && typeof window.FKDrawOverlay === 'function') {
         try {
-          window.FKDrawOverlay(ctx, {startIdx: startIdx, endIdx: endIdx, barW: barW, chartW: chartW, chartH: chartH,
-            minP: minP, pRange: pRange, padR: padR, w: w, h: h, candles: candles});
+          window.FKDrawOverlay(ctx, {startIdx: startIdx, endIdx: endIdx, barW: barW, chartW: plotR, chartH: chartH,
+            minP: minP, pRange: pRange, padR: padR, w: w, h: h, candles: candles, labelR: labelR});
         } catch (eFkDr) {}
       } else if (window.IDXOnDrawn) { try { window.IDXOnDrawn(); } catch (eDr) {} }
       if (window.MODAL_TF !== 'min' && window.UCX) { try { UCX.paint('main', { period: modalViewCount }); } catch (eUx) { } }
@@ -18969,9 +19202,26 @@ function drawChart() {
   const pRange = maxP - minP;
   const padR = 46, padL = 6, top = 8;
   const chartH = h * 0.70, volH = h * 0.20;
-  const chartW = w - padR - padL;
-  const barW = chartW / view.length;
+  const chartW = w - padR - padL;        /* 플롯 전체 폭(라벨 여백 포함) */
+  const plotR = padL + chartW;
+  /* 🧱 라벨 전용 여백 — 피보·전일 종가·전고점 라벨이 확대해도 마지막 봉을 덮지 않게
+     캔들 영역 끝(candleR)을 라벨 폭만큼 안쪽으로 당긴다. (2026-11-26) */
+  let labelR = 0;
+  try {
+    const ltx = [];
+    const lc = (window.UCX && UCX.compute) ? UCX.compute('hi', view, full) : null;
+    if (lc && lc.fib && window.UCX.fibLabelTexts) Array.prototype.push.apply(ltx, UCX.fibLabelTexts(lc));
+    if (typeof chartState.prevClose === 'number') ltx.push({ t: '전일 종가 ' + Math.round(chartState.prevClose).toLocaleString(), f: 'bold 8.5px sans-serif' });
+    if (typeof chartState.hi120 === 'number') ltx.push({ t: '전고점 ' + Math.round(chartState.hi120).toLocaleString(), f: 'bold 8.5px sans-serif' });
+    labelR = (window.UCX && UCX.labelZoneWidth) ? UCX.labelZoneWidth(ctx, ltx, w, 'bold 9px sans-serif') : 0;
+  } catch (eLz) { labelR = 0; }
+  const candleR = Math.max(padL + 60, plotR - labelR);
+  const barW = (candleR - padL) / view.length;
+  const xOfX = function (i2) { return padL + i2 * barW + barW / 2; };
   const yOf = function (p) { return top + chartH * (1 - (p - minP) / pRange); };
+  const hiLabelStack = [];
+  chartState.geom = { padL: padL, plotR: plotR, candleR: candleR, barW: barW, count: view.length, labelR: labelR, top: top, bot: top + chartH };
+  try { canvas.__geom = chartState.geom; } catch (eGm) { }
 
   ctx.strokeStyle = 'rgba(255,255,255,0.06)';
   ctx.fillStyle = '#64748b';
@@ -18979,30 +19229,41 @@ function drawChart() {
   ctx.textAlign = 'right';
   for (let g = 0; g <= 4; g++) {
     const y = top + chartH * (1 - g / 4);
-    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + chartW, y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(plotR, y); ctx.stroke();
     const pv = minP + pRange * g / 4;
     ctx.fillText(pv >= 1000 ? Math.round(pv).toLocaleString() : pv.toFixed(0), w - 3, y + 3);
   }
+  /* 기준선 라벨도 라벨 전용 여백 안에 세로로 쌓는다 — 캔들 위에 글자를 얹지 않는다 */
   const drawLine = function (val, color, label, side, dy) {
     if (typeof val !== 'number' || val > maxP || val < minP) return null;
     const y = yOf(val);
     ctx.save(); ctx.strokeStyle = color; ctx.setLineDash([4, 3]); ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(padL + chartW, y); ctx.stroke(); ctx.restore();
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(plotR, y); ctx.stroke(); ctx.restore();
     ctx.fillStyle = color; ctx.font = 'bold 8.5px sans-serif';
     const txt = label + ' ' + Math.round(val).toLocaleString();
-    ctx.textAlign = side === 'right' ? 'right' : 'left';
-    const tx = side === 'right' ? padL + chartW - 2 : padL + 3;
-    ctx.fillText(txt, tx, y + (dy || -3));
+    const tw = ctx.measureText(txt).width;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    let ly = y;
+    if (labelR > 0) {
+      ly = (window.UCX && UCX.stackLabel)
+        ? UCX.stackLabel(hiLabelStack, y, 11, top + 4, top + chartH - 4) : y;
+    }
+    const lx = labelR > 0 ? (plotR - 4) : (padL + chartW - 2);
+    const bx = Math.max(labelR > 0 ? (candleR + 3) : (lx - tw - 2), lx - tw - 2);
+    ctx.fillStyle = 'rgba(7,12,20,0.82)';
+    ctx.fillRect(bx - 1, ly - 6, tw + 4, 12);
+    ctx.fillStyle = color;
+    ctx.fillText(txt, lx, ly + 0.5);
+    ctx.textBaseline = 'alphabetic';
     return y;
   };
-  const yPrevLine = drawLine(chartState.prevClose, '#fbbf24', '전일 종가', 'left', -3);
-  const yHi = yOf(chartState.hi120);
-  const closeLines = (typeof yPrevLine === 'number') && Math.abs(yHi - yPrevLine) < 13;
-  drawLine(chartState.hi120, '#c084fc', '전고점', 'right', closeLines ? 11 : -3);
+  drawLine(chartState.prevClose, '#fbbf24', '전일 종가');
+  drawLine(chartState.hi120, '#c084fc', '전고점');
 
   for (let i = 0; i < view.length; i++) {
     const c = view[i];
-    const x = padL + i * barW + barW / 2;
+    const x = xOfX(i);
     const isUp = c.c >= c.o;
     const color = isUp ? '#f43f5e' : '#38bdf8';
     const bodyW = Math.max(1, barW * 0.66);
@@ -19023,7 +19284,7 @@ function drawChart() {
     for (let i = 0; i < view.length; i++) {
       const v = arr[startIdx + i];
       if (v === null || v === undefined) { started = false; continue; }
-      const x = padL + i * barW + barW / 2;
+      const x = xOfX(i);
       const y = yOf(v);
       if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
     }
@@ -19031,13 +19292,13 @@ function drawChart() {
   });
   if (chartState.hover >= 0 && chartState.hover < view.length) {
     const i = chartState.hover, c = view[i];
-    const x = padL + i * barW + barW / 2;
+    const x = xOfX(i);
     ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.setLineDash([2, 2]);
     ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, top + chartH); ctx.stroke(); ctx.restore();
     ctx.strokeStyle = 'rgba(255,255,255,0.20)';
     ctx.beginPath();
     const hy = yOf(c.c);
-    ctx.moveTo(padL, hy); ctx.lineTo(padL + chartW, hy); ctx.stroke();
+    ctx.moveTo(padL, hy); ctx.lineTo(plotR, hy); ctx.stroke();
     $('hiChInfo').textContent = c.date.slice(0, 4) + '-' + c.date.slice(4, 6) + '-' + c.date.slice(6, 8) +
       ' · 시 ' + nf(c.o) + ' 고 ' + nf(c.h) + ' 저 ' + nf(c.l) + ' 종 ' + nf(c.c) +
       ' (' + sign(((c.c / view[i > 0 ? i - 1 : 0].c - 1) * 100).toFixed(2)) + '%) · 거래량 ' + nf(c.v);
@@ -19047,9 +19308,13 @@ function drawChart() {
   if (window.UCX) {
     try {
       UCX.drawOverlays(ctx, 'hi', {
-        X: function (i2) { return padL + i2 * barW + barW / 2; },
-        Y: yOf, x0: padL, x1: padL + chartW, top: top, bot: top + chartH,
-        cs: view, all: full, vs: startIdx, labelRight: padL + chartW
+        X: xOfX,
+        Y: yOf, x0: padL, x1: plotR, top: top, bot: top + chartH,
+        cs: view, all: full, vs: startIdx, labelRight: plotR - 3,
+        candleRight: candleR, barW: barW,
+        labelZone: (labelR > 0) ? { x0: candleR + 3, x1: plotR - 3 } : null,
+        labelLeft: null, hideHandles: true,
+        labelStack: hiLabelStack, labelStackL: []
       });
       UCX.paint('hi', { period: view.length });
     } catch (eUcx) { }
@@ -19061,10 +19326,10 @@ function chartHover(ev) {
   if (!canvas || !full.length) return;
   const rect = canvas.getBoundingClientRect();
   const x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - rect.left;
-  const padR = 46, padL = 6;
-  const chartW = rect.width - padR - padL;
+  const gm = chartState.geom;                 /* 실제 그린 캔들 영역(라벨 여백 제외) */
   const n = chartState.viewCount || Math.min(chartState.count || 120, full.length);
-  const idx = Math.round((x - padL) / (chartW / Math.max(1, n)) - 0.5);
+  const step = (gm && gm.count === n) ? gm.barW : Math.max(1, (rect.width - 52) / Math.max(1, n));
+  const idx = Math.floor((x - (gm ? gm.padL : 6)) / step);
   chartState.hover = Math.max(0, Math.min(n - 1, idx));
   drawChart();
 }
@@ -19112,7 +19377,8 @@ function hiPanPx(dxPx) {
   if (len <= cur) return;
   const cv = $('hiChartCanvas');
   const w = cv ? Math.max(120, cv.clientWidth || 300) : 300;
-  const per = cur / Math.max(1, w - 52);
+  const gm = chartState.geom;
+  const per = cur / Math.max(1, gm ? (gm.candleR - gm.padL) : (w - 52));
   chartState.start = Math.max(0, Math.min(len - cur, (chartState.start || 0) - dxPx * per));
   chartState.hover = -1;
   drawChart();
@@ -19823,7 +20089,7 @@ function drawCandles(cv, candles, opts) {
   ctx.clearRect(0, 0, W, H);
 
   const big = !!o.big;
-  const pl = big ? 10 : 5;
+  let pl = big ? 10 : 5;          /* 피보 라벨 여백(아래 fibW)만큼 커질 수 있다 */
   let pr = big ? 58 : 42;
   const pt = big ? 14 : 9;
   const axisH = big ? 16 : 12;
@@ -19850,6 +20116,18 @@ function drawCandles(cv, candles, opts) {
       pr = Math.max(pr, Math.ceil(lw) + 12);
     }
   }
+  /* 🧱 피보 라벨 전용 왼쪽 여백 — 라벨이 확대 시 첫 봉을 덮지 않게 왼쪽 여백을 라벨 폭만큼 넓히고,
+     라벨은 그 여백 안에만 오른쪽 정렬로 그린다(큰 차트 전용). (2026-11-26) */
+  let fibW = 0;
+  if (window.UCX && (big || o.ov) && UCX.compute && UCX.labelZoneWidth) {
+    try {
+      const lcF = UCX.compute(o.ov || 'bij', cs, all);
+      if (lcF && lcF.fib) {
+        fibW = UCX.labelZoneWidth(ctx, UCX.fibLabelTexts(lcF), W, 'bold 9px sans-serif', 0.26, 96);
+      }
+    } catch (eFib) { fibW = 0; }
+  }
+  if (fibW > 0) pl += fibW;
   const iw = Math.max(40, W - pl - pr);
   /* Y축 범위 = 지금 보이는 봉. 4분할선·파파선·전고점선은 범위 안이면 포함하고,
      범위 밖이면 가장자리에 붙여(↑/↓) 표기해 확대/이동 시 자동 재스케일된다. */
@@ -20167,12 +20445,15 @@ function drawCandles(cv, candles, opts) {
     try {
       UCX.drawOverlays(ctx, (o.ov || 'bij'), {
         X: X, Y: Y, x0: pl, x1: pl + iw, top: pt, bot: pt + ph,
-        cs: cs, all: all, vs: vs, labelRight: pl + iw, fibSide: 'left'
+        cs: cs, all: all, vs: vs, labelRight: pl + iw, fibSide: 'left',
+        candleRight: pl + iw, barW: iw / Math.max(1, cs.length),
+        labelLeft: (fibW > 0) ? { x0: 2, x1: pl - 3 } : null,
+        labelZone: null, labelStackL: [], labelStack: [], hideHandles: true
       });
       UCX.paint((o.ov || 'bij'), { period: cs.length });
     } catch (eUcx) { }
   }
-  cv._geo = { pl: pl, iw: iw, pt: pt, ph: ph, volTop: volTop, volBot: volBot, count: cs.length, start: vs, W: W, H: H, bw: bw };
+  cv._geo = { pl: pl, iw: iw, pt: pt, ph: ph, volTop: volTop, volBot: volBot, count: cs.length, start: vs, W: W, H: H, bw: bw, leftZone: fibW > 0 };
 }
 
 /* ============================================================
@@ -21996,10 +22277,17 @@ window.BijoongTab = {
             : (lv.r.toFixed(3) + ' ');
         var label = nm + fmt(lv.p, 2);
         var tw = ctx.measureText(label).width;
+        /* 라벨은 라벨 전용 여백 안에만 — 마지막 봉을 덮지 않는다 */
+        var fzone = (g.labelZone && g.labelZone.x1 > g.labelZone.x0) ? g.labelZone : null;
+        var flx = fzone ? fzone.x1 : (g.chartW - 2);
+        var fly = (fzone && window.UCX && UCX.stackLabel)
+          ? UCX.stackLabel(g.labelStack, y, 11, 8, 10 + g.chartH - 4) : y;
         ctx.fillStyle = 'rgba(7,12,20,0.82)';
-        ctx.fillRect(g.chartW - tw - 4, y - 8, tw + 4, 11);
+        var fbx = flx - tw - 2;
+        if (fzone && fbx < fzone.x0) fbx = fzone.x0;
+        ctx.fillRect(fbx, fly - 8, tw + 4, 11);
         ctx.fillStyle = isKeyLv ? '#cbd5e1' : (lv.r === 0.5 ? '#facc15' : '#94a3b8');
-        ctx.fillText(label, g.chartW - 2, y + 1);
+        ctx.fillText(label, flx, fly + 1);
       }
       ctx.restore();
     }
@@ -22014,7 +22302,7 @@ window.BijoongTab = {
       } catch (eHd) { }
     }
 
-    // 3) 20일선 값 라벨 (선 자체는 기본 렌더러가 그린다)
+    // 3) 20일선 값 라벨 (선 자체는 기본 렌더러가 그린다) — 라벨 여백이 있으면 그 안에
     if (OV.ma20 && num(c.ma20)) {
       var y20 = yOf(c.ma20);
       if (y20 > 8 && y20 < 10 + g.chartH) {
@@ -22023,10 +22311,21 @@ window.BijoongTab = {
         ctx.textAlign = 'right';
         var t20 = 'MA20 ' + fmt(c.ma20, 2);
         var w20 = ctx.measureText(t20).width;
+        var mzone = (g.labelZone && g.labelZone.x1 > g.labelZone.x0) ? g.labelZone : null;
+        var m20y = (mzone && window.UCX && UCX.stackLabel)
+          ? UCX.stackLabel(g.labelStack, y20, 11, 8, 10 + g.chartH - 4) : y20;
         ctx.fillStyle = 'rgba(7,12,20,0.82)';
-        ctx.fillRect(base + 2, y20 - 8, w20 + 4, 11);
-        ctx.fillStyle = '#f87171';
-        ctx.fillText(t20, base + 4 + w20, y20 + 1);
+        if (mzone) {
+          var mbx = mzone.x1 - w20 - 3;
+          if (mbx < mzone.x0) mbx = mzone.x0;
+          ctx.fillRect(mbx, m20y - 8, w20 + 4, 11);
+          ctx.fillStyle = '#f87171';
+          ctx.fillText(t20, mzone.x1 - 4, m20y + 1);
+        } else {
+          ctx.fillRect(base + 2, m20y - 8, w20 + 4, 11);
+          ctx.fillStyle = '#f87171';
+          ctx.fillText(t20, base + 4 + w20, m20y + 1);
+        }
         ctx.restore();
       }
     }
