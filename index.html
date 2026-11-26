@@ -2158,6 +2158,11 @@
 .op-card.lead:hover{border-color:rgba(244,63,94,0.8); background:rgba(41,20,26,0.85);}
 .op-card.lead .op-rank{background:#fda4af;}
 .op-box.collapsed .op-tabs,.op-box.collapsed .op-principle{display:none;}
+/* 2026-11-26: 🎯 120일 전고점만 보기 ON/OFF 토글 */
+.op-filter{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:6px;}
+.op-toggle.on{background:rgba(244,63,94,0.24); color:#fecdd3; border-color:#f43f5e;}
+.op-filter-note{font-size:9.5px; color:#94a3b8; line-height:1.4;}
+.op-box.collapsed .op-filter{display:none;}
 @media (max-width:430px){
   .op-tab{font-size:10px; padding:5px 6px;}
   .op-chip{font-size:8.5px;}
@@ -5464,6 +5469,7 @@
     <!-- ⚡ 오늘 장중매매 후보 — 홍인기 D+0 · 하락장 역발상 (2026-11-25 신설)
          원전: 홍인기 데이트레이딩 D+0/D+1 — 09:30 이전 매매 자제 · 거래대금 상위 15위 · +5%↑ · 같은 테마 3종목 동반
          · 120일 전고점 돌파/근접 · 당일 고점 상승폭 절반 이탈 = 주도주 탈락.
+         120일 전고점은 탈락 조건이 아니라 뱃지·정렬 조건 — 🎯 토글(기본 OFF)로 걸러 본다. (2026-11-26)
          값은 /api/tabs-live 의 intradayHong 만 쓴다 — 화면은 계산·추정하지 않는다. -->
     <div class="op-box" id="intradayHongBox" style="border-color:rgba(244,63,94,0.35);">
       <div class="op-head">
@@ -5480,6 +5486,10 @@
         <button type="button" class="op-tab active" id="ihTabLeader" role="tab" aria-selected="true">⚡ 홍인기 D+0 주도주 <span class="op-tab-n" id="ihTabLeaderN">0</span></button>
         <button type="button" class="op-tab" id="ihTabDown" role="tab" aria-selected="false">🔻 하락장 역발상 <span class="op-tab-n" id="ihTabDownN">0</span></button>
       </div>
+      <div class="op-filter" id="ihNearRow">
+        <button type="button" class="op-toggle" id="ihNearBtn" aria-pressed="false">🎯 120일 전고점만 보기 <b id="ihNearState">OFF</b></button>
+        <span class="op-filter-note" id="ihNearNote"></span>
+      </div>
       <div class="op-grid" id="ihBody"></div>
       <div class="op-principle" id="ihPrinciple"></div>
       <div class="op-foot" id="ihFoot"></div>
@@ -5493,6 +5503,7 @@
       var FAIL = null;
       var busy = false;
       var track = 'leader';
+      var nearOnly = false;
       var timer = null;
 
       function $(id) { return document.getElementById(id); }
@@ -5541,15 +5552,21 @@
           " · +20%↑ " + (isNum(kk.up20) ? kk.up20 : 0) + " · 연속 양봉 " + (isNum(kk.chain) ? kk.chain : 0) + ")";
       }
 
+      function highChip(x) {
+        if (!isNum(x.hi120)) return chip('120일 전고점 미확인', 'wait');
+        if (x.break120) return chip('120일 전고점 돌파 ✅ · ' + comma(x.hi120) + '원', 'hot');
+        var g = x.gap120;
+        if (isNum(g) && g <= 5) return chip('전고점 5% 이내 🟡 · ' + comma(x.hi120) + '원', 'warm');
+        return chip('전고점 이격 -' + (isNum(g) ? g.toFixed(1) : '—') + '% (반등형) · ' + comma(x.hi120) + '원', 'mute');
+      }
+
       function leaderCard(x, i) {
         var chips = [];
         chips.push(chip('거래대금 ' + (x.valueRank ? x.valueRank + '위' : '순위 미확인'), x.valueRank && x.valueRank <= 5 ? 'hot' : 'warm'));
         chips.push(chip('대금 ' + (x.valueText || eok(x.valueEok)), 'mute'));
         if (x.theme) chips.push(chip((x.themeOk ? '🔥 ' : '🧩 ') + x.theme + ' (' + (x.themeUp5 || 0) + '/' + (x.themeMembers || 0) + ' +5%↑)', x.themeOk ? 'ok' : 'weak'));
         else chips.push(chip('테마 미확인', 'weak'));
-        if (isNum(x.hi120)) {
-          chips.push(chip((x.break120 ? '📈 120일 전고점 돌파' : '전고점 ' + pctf(x.gap120) + ' 근접') + ' · ' + comma(x.hi120) + '원', x.break120 ? 'hot' : 'warm'));
-        }
+        chips.push(highChip(x));
         chips.push(chip(kkText(x.kk), (x.kk && isNum(x.kk.count) && x.kk.count > 0) ? 'ok' : 'weak'));
         chips.push(chip('윗꼬리 ' + (isNum(x.upper) ? x.upper.toFixed(2) + '%' : '—'), isNum(x.upper) && x.upper <= 1.2 ? 'ok' : 'weak'));
         chips.push(supplyChip(x.supply));
@@ -5606,18 +5623,29 @@
         $('ihTimeBadge').textContent = '⏱ ' + (d.generatedAtKst || '') + ' 기준';
 
         if (track === 'leader') {
-          list = d.leader || [];
+          var all = d.leader || [];
+          var nearList = all.filter(function (x) { return x.near120 === true; });
+          list = nearOnly ? nearList : all;
+          if ($('ihTabLeaderN')) $('ihTabLeaderN').textContent = nearOnly ? (nearList.length + '/' + all.length) : String(all.length);
+          if ($('ihNearRow')) $('ihNearRow').style.display = '';
+          if ($('ihNearNote')) $('ihNearNote').textContent = all.length
+            ? (nearOnly ? ('전고점 돌파·근접 ' + nearList.length + '종목만 표시 중') : ('전체 ' + all.length + '종목 · 전고점 통과 ' + nearList.length + '종목'))
+            : '후보 없음';
           bodyEl.innerHTML = list.length ? list.map(leaderCard).join('')
-            : '<div class="op-card" style="opacity:.85;"><div style="font-size:11.5px; color:#94a3b8; line-height:1.6;">조건(거래대금 <b>15위 이내</b> · <b>500억↑</b> · <b>+5%↑</b> · <b>120일 전고점 돌파/근접</b>)을 모두 채운 종목이 없습니다.<br>기준을 임의로 완화하지 않습니다.</div></div>';
-          noteEl.textContent = '원전: 오전 9시 30분 이후 거래대금 상위에서 확인 · 9시 30분 이전 매매 자제 · 같은 테마 3종목 이상 동반 상승 · 전고점 돌파 첫 장대양봉(D+0).';
+            : (nearOnly && all.length
+              ? '<div class="op-card" style="opacity:.85;"><div style="font-size:11.5px; color:#94a3b8; line-height:1.6;">오늘은 <b>120일 전고점 돌파/근접</b> 종목이 없습니다 — 🎯 토글을 끄면 전고점 이격 반등형 <b>' + all.length + '종목</b>이 보입니다.</div></div>'
+              : '<div class="op-card" style="opacity:.85;"><div style="font-size:11.5px; color:#94a3b8; line-height:1.6;">조건(거래대금 <b>15위 이내</b> · <b>500억↑</b> · <b>+5%↑</b>)을 모두 채운 종목이 없습니다.<br>기준을 임의로 완화하지 않습니다.</div></div>');
+          noteEl.textContent = '원전: 오전 9시 30분 이후 거래대금 상위에서 확인 · 9시 30분 이전 매매 자제 · 같은 테마 3종목 이상 동반 상승 · 전고점 돌파 첫 장대양봉(D+0). 전고점 미달은 탈락이 아니라 「반등형」으로 남기고 뱃지로 구분합니다.';
           $('ihPrinciple').innerHTML = '<b>⚡ D+0 판정</b> ' +
             '판정 후보 ' + ((d.leaderStats && d.leaderStats.judged) || 0) + '종목 → 순위 15위 이내 ' +
             ((d.leaderStats && d.leaderStats.rank) || 0) + ' · 대금 500억↑ ' +
             ((d.leaderStats && d.leaderStats.value) || 0) + ' · 테마 3종목 동반 ' +
-            ((d.leaderStats && d.leaderStats.theme) || 0) + ' → 최종 ' + list.length + '종목. ' +
+            ((d.leaderStats && d.leaderStats.theme) || 0) + ' → 후보 ' + all.length + '종목(전고점 돌파/근접 ' + nearList.length + ' · 반등형 ' + (all.length - nearList.length) + '). ' +
+            '정렬은 <b>전고점 돌파·근접 → 테마 동반 → 고점 절반선 → 등락률·거래대금</b> 순입니다. ' +
             '<b>고점 절반 이탈</b>은 원전 손절 기준(1분봉 당일 고점 대비 절반 이상 밀림)입니다.';
           $('ihFoot').textContent = '※ 수급은 KIS 장중 가집계(외국인·기관계)만 표기합니다 — 가집계에 없는 종목은 「수급 미집계」로 남기고 가짜 수치를 만들지 않습니다. 「끼」는 최근 90거래일 상한가·+20%↑·연속 양봉 이력입니다.';
         } else {
+          if ($('ihNearRow')) $('ihNearRow').style.display = 'none';
           list = dn.items || [];
           bodyEl.innerHTML = list.length ? list.map(downCard).join('')
             : '<div class="op-card" style="opacity:.85;"><div style="font-size:11.5px; color:#94a3b8; line-height:1.6;">오늘은 이 조건(강세 테마 소속 · 대금 100억↑ · 지수 대비 +0.5%p 이상)을 채운 종목이 없습니다.</div></div>';
@@ -5656,6 +5684,23 @@
         render();
       }
 
+      function bindNearToggle() {
+        var btn = $('ihNearBtn');
+        try { nearOnly = window.localStorage.getItem('intradayHongNearOnly') === '1'; } catch (e) { nearOnly = false; }
+        paintNearToggle();
+        if (btn) btn.addEventListener('click', function () {
+          nearOnly = !nearOnly;
+          try { window.localStorage.setItem('intradayHongNearOnly', nearOnly ? '1' : '0'); } catch (e) {}
+          paintNearToggle();
+          render();
+        });
+      }
+      function paintNearToggle() {
+        var btn = $('ihNearBtn'), st = $('ihNearState');
+        if (btn) { btn.className = 'op-toggle' + (nearOnly ? ' on' : ''); btn.setAttribute('aria-pressed', nearOnly ? 'true' : 'false'); }
+        if (st) st.textContent = nearOnly ? 'ON' : 'OFF';
+      }
+
       function bindToggle() {
         var btn = $('ihToggleBtn'), box = $('intradayHongBox');
         if (!btn || !box) return;
@@ -5687,7 +5732,7 @@
       }
 
       function init() {
-        bindToggle(); bindClicks();
+        bindToggle(); bindClicks(); bindNearToggle();
         var a = $('ihTabLeader'), b = $('ihTabDown');
         if (a) a.addEventListener('click', function () { setTrack('leader'); });
         if (b) b.addEventListener('click', function () { setTrack('down'); });
