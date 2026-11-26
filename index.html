@@ -4632,7 +4632,9 @@
       redraw: function () { drawMount(id); },
       setData: function (list) {
         store = Array.isArray(list) && list.length ? list : null;
-        VIEW[id] = { count: Math.min(cfg.def || 60, normalize(getCandles()).length), offset: 0 };
+        /* 보고 있던 기간(봉 수)은 유지한다 — 새 일봉이 와도 120일/2년 선택이 튀지 않게 */
+        var keep = VIEW[id] ? VIEW[id].count : (cfg.def || 60);
+        VIEW[id] = { count: Math.max(10, Math.min(keep, normalize(getCandles()).length || keep)), offset: 0 };
         drawMount(id);
       },
       setLevels: function (fn) { REG[id].levels = fn; drawMount(id); },
