@@ -183,13 +183,42 @@
     return row(c, L, 'rnzone', right);
   }
 
+  /* 📌 핀 고정 여부 — strategy-pins · 하루 경과 가드(StrategyDayGuard)와 같은 저장소를 본다 */
+  function pinned(tab, code) {
+    try {
+      if (window.StrategyDayGuard && typeof window.StrategyDayGuard.isPinned === 'function') {
+        return !!window.StrategyDayGuard.isPinned(tab, code);
+      }
+      if (window.StrategyPins && typeof window.StrategyPins.has === 'function') {
+        return !!window.StrategyPins.has(tab, String(code));
+      }
+      var raw = window.localStorage ? window.localStorage.getItem('stock.pins.v1') : null;
+      var d = raw ? JSON.parse(raw) : null;
+      var it = d && d.tabs && d.tabs[tab] ? d.tabs[tab][String(code)] : null;
+      return !!(it && !it.del);
+    } catch (e) { return false; }
+  }
+
   function panel(sec, title, accent, rowFn, foldKey) {
     if (!sec || !sec.cards || !sec.cards.length) return null;
+    /* 📅 종가베팅(신정재)은 그날 종가까지만 유효 — 기준일이 오늘이 아니면(dayNo > 0)
+       📌 핀 고정한 종목만 남긴다(2026-11-27 · 동적 live-api.js 와 같은 규칙). */
+    var staleClose = (foldKey === 'jongbe') && typeof sec.dayNo === 'number' && sec.dayNo > 0;
+    var cards = staleClose ? sec.cards.filter(function (c) { return c && pinned('jongbe', c.code); }) : sec.cards;
     var head =
       '<div style="font-size:10px;color:#94a3b8;margin:3px 0 6px;line-height:1.5;">' +
       '기준 ' + esc(sec.basisLabel || sec.basisDate || '—') + ' · 오늘 <b style="color:#e2e8f0;">' + esc(sec.dayLabel || '—') + '</b>' +
-      (sec.basisStale ? ' <span style="color:#fbbf24;font-weight:800;">⚠️ 재스캔 필요</span>' : '') + '</div>';
-    return box(title, '실시간 ' + (sec.live || 0) + '/' + (sec.total || 0) + '종목', accent, head + sec.cards.map(rowFn).join(''), foldKey);
+      (sec.basisStale ? ' <span style="color:#fbbf24;font-weight:800;">⚠️ 재스캔 필요</span>' : '') +
+      (staleClose
+        ? '<br><span style="color:#fbbf24;font-weight:800;">📅 기준일 경과 — 장마감 스캔 전까지는 📌 핀 고정 종목만 판정합니다(종가베팅은 그날 종가까지만 유효)</span>'
+        : '') +
+      '</div>';
+    var body = cards.length
+      ? cards.map(rowFn).join('')
+      : '<div style="font-size:11px;color:#94a3b8;padding:5px 8px;line-height:1.55;">📌 핀 고정한 종목이 없습니다 — 오늘 장마감 스캔이 들어오면 조건 충족 종목을 다시 판정합니다.</div>';
+    return box(title,
+      staleClose ? ('📌 핀 고정 ' + cards.length + '종목만 · 기준일 경과') : ('실시간 ' + (sec.live || 0) + '/' + (sec.total || 0) + '종목'),
+      accent, head + body, foldKey);
   }
 
   function host(tabId, hostId) {

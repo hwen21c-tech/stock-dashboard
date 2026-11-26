@@ -16000,6 +16000,68 @@ function openDetail(title, v1, v2, desc) {
     let currentIdx = 0;
     let currentFilter = 'all';
 
+    /* ===== 📅 종가베팅 하루 경과 가드 (2026-11-27) =====
+       신정재 종가베팅은 '그날 종가'로만 유효하다. 기준일(basisLabel)이 오늘(KST)보다
+       과거면 📌 핀 고정한 종목만 목록에 남기고, 오늘 기준일 스캔이 들어오면 다시 그대로
+       보인다. 날짜를 못 읽으면 아무것도 숨기지 않는다(fail-open). */
+    function kstTodayISO() {
+      return new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+    }
+    function basisISOOf(s) {
+      if (!s) return '';
+      const raw = String(s.basisLabel || s.basisDate || '');
+      const dg = window.StrategyDayGuard;
+      if (dg && typeof dg.isoFromText === 'function') return dg.isoFromText(raw);
+      const m = raw.match(/(20\d{2})-(\d{1,2})-(\d{1,2})/);
+      return m ? (m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2)) : '';
+    }
+    function mdLabelOf(iso) {
+      const p = String(iso || '').split('-');
+      if (p.length !== 3) return String(iso || '');
+      const wd = ['일', '월', '화', '수', '목', '금', '토'][new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])).getUTCDay()];
+      return (+p[1]) + '/' + (+p[2]) + '(' + wd + ')';
+    }
+    function isJongbePinned(code) {
+      try { return !!(window.StrategyPins && window.StrategyPins.has && window.StrategyPins.has('jongbe', code)); } catch (e) { return false; }
+    }
+    function jongbePinCount() {
+      try { return (window.StrategyPins && window.StrategyPins.list) ? window.StrategyPins.list('jongbe').length : 0; } catch (e) { return 0; }
+    }
+    function isStaleStock(s) {
+      const b = basisISOOf(s);
+      return !!b && b < kstTodayISO();
+    }
+    function isShownStock(s) { return !!s && (!isStaleStock(s) || isJongbePinned(s.code)); }
+    function firstShownIdx() {
+      for (let i = 0; i < STOCKS.length; i += 1) if (isShownStock(STOCKS[i])) return i;
+      return -1;
+    }
+    function staleBasisLabel() {
+      for (let i = 0; i < STOCKS.length; i += 1) if (isStaleStock(STOCKS[i])) return STOCKS[i].basisLabel || '';
+      return '';
+    }
+    function emptyChartText() {
+      if (!STOCKS.length) return '오늘은 4패턴 조건을 채운 종목이 없습니다 — 조건을 임의로 완화하지 않습니다.';
+      const shown = STOCKS.filter(isShownStock).length;
+      const stale = STOCKS.filter(isStaleStock).length;
+      if (!shown && stale) {
+        return '오늘 ' + mdLabelOf(kstTodayISO()) + ' 기준일 종가 스캔 대기 — ' +
+          (staleBasisLabel() || '이전') + ' 후보는 📌 핀 고정한 종목만 유지합니다.';
+      }
+      return '오늘은 4패턴 조건을 채운 종목이 없습니다 — 조건을 임의로 완화하지 않습니다.';
+    }
+    function showEmptySelection() {
+      currentIdx = -1;
+      const set = function (id, txt) { const el = document.getElementById(id); if (el) el.textContent = txt; };
+      set('dispName', '—'); set('dispCode', '—'); set('dispPrice', '—'); set('dispChange', '—');
+      set('dispBadge', '오늘 기준일 스캔 대기');
+      set('tacticalTrackName', '—'); set('tacReason', '—'); set('tacEntry', '—');
+      set('tacTarget', '—'); set('tacStop', '—'); set('tacTipScore', '0/6');
+      const tips = document.getElementById('tacTips'); if (tips) tips.innerHTML = '';
+      renderStockList();
+      renderChart();
+    }
+
     let viewOffset = 0;
     let viewCount = 45;
     let isDragging = false;
@@ -16103,8 +16165,8 @@ function openDetail(title, v1, v2, desc) {
       ensureCanvas();
       if (!ctx || !container) return;
       const stock = curStock();
-      if (!stock || !stock.candles || !stock.candles.length) {
-        drawEmptyChart('오늘은 4패턴 조건을 채운 종목이 없습니다 — 조건을 임의로 완화하지 않습니다.');
+      if (!stock || !isShownStock(stock) || !stock.candles || !stock.candles.length) {
+        drawEmptyChart(emptyChartText());
         return;
       }
       /* 캔버스가 그려지는 CSS 박스와 정확히 같은 값(테두리 제외)을 쓴다 — resizeCanvas 와 동일 기준 */
@@ -16411,6 +16473,11 @@ function openDetail(title, v1, v2, desc) {
         renderChart();
         return;
       }
+      if (!isShownStock(STOCKS[idx])) {
+        const f = firstShownIdx();
+        if (f < 0) { showEmptySelection(); return; }
+        idx = f;
+      }
       currentIdx = Math.max(0, Math.min(STOCKS.length - 1, idx));
       const s = STOCKS[currentIdx];
       const m = meta(s.track);
@@ -16475,6 +16542,27 @@ function openDetail(title, v1, v2, desc) {
       });
     }
 
+    /* 트랙 탭의 (n) 은 '지금 목록에 보이는' 종목 수다 — 기준일이 지나면 0 으로 내려간다.
+       (재스캔 스크립트가 HTML 에 박아 둔 숫자와 어긋나지 않게 화면에서 다시 센다) */
+    function paintTrackCounts() {
+      const scope = document.getElementById('jbTrackTabs');
+      if (!scope) return;
+      const labelOf = { all: '전체', p1: '① 위꼬리', p2: '② 5일선 지지', p3: '③ 마른 양봉', p4: '④ 20일선 눌림' };
+      const counts = { all: 0, p1: 0, p2: 0, p3: 0, p4: 0 };
+      STOCKS.forEach(function (s) {
+        if (!isShownStock(s)) return;
+        counts.all += 1;
+        if (counts[s.track] !== undefined) counts[s.track] += 1;
+      });
+      scope.querySelectorAll('.tab-btn').forEach(function (b) {
+        const m = String(b.getAttribute('onclick') || '').match(/filterStocks\('(\w+)'/);
+        if (!m) return;
+        const k = m[1];
+        const txt = (labelOf[k] || b.textContent.replace(/\s*\(\d+\)\s*$/, '')) + ' (' + (counts[k] || 0) + ')';
+        if (b.textContent !== txt) b.textContent = txt;
+      });
+    }
+
     function filterStocks(filter, btn) {
       currentFilter = filter;
       const scope = document.getElementById('jbTrackTabs');
@@ -16490,6 +16578,7 @@ function openDetail(title, v1, v2, desc) {
       let shown = 0;
       STOCKS.forEach((s, idx) => {
         if (currentFilter !== 'all' && s.track !== currentFilter) return;
+        if (!isShownStock(s)) return;          /* 기준일이 지난 종목 — 핀 고정만 유지 */
         shown++;
         const m = meta(s.track);
         const card = document.createElement('div');
@@ -16536,12 +16625,26 @@ function openDetail(title, v1, v2, desc) {
         const empty = document.createElement('div');
         empty.style.cssText = 'font-size:11.5px; color:#94a3b8; line-height:1.7; border:1px dashed #334155; border-radius:8px; padding:12px;';
         const labelOf = { p1: '① 위꼬리-위꼬리-깔끔양봉', p2: '② 음봉 후 5일선 지지 턴', p3: '③ 거래량 마른 깔끔 양봉', p4: '④ 5일선 이탈 20일선 눌림' };
-        empty.innerHTML = '<b style="color:#fbbf24;">' + (labelOf[currentFilter] || '종가베팅') + ' 0종목</b> — 오늘(' +
-          (STOCKS[0] && STOCKS[0].basisLabel ? STOCKS[0].basisLabel : '기준일') + ') 이 조건을 모두 채운 종목이 없습니다.<br>' +
-          '조건을 임의로 완화해 채우지 않습니다(원전 기준 유지).';
+        const shownAll = STOCKS.filter(isShownStock).length;
+        const staleAll = STOCKS.filter(isStaleStock).length;
+        const pins = jongbePinCount();
+        if (!shownAll && staleAll) {
+          /* 기준일이 지나 오늘 후보가 아직 없는 상태 — 지난 후보는 내렸다는 사실을 그대로 적는다 */
+          empty.innerHTML = '<b style="color:#fbbf24;">오늘 ' + mdLabelOf(kstTodayISO()) +
+            ' — 새 기준일 종가 스캔 대기 (0종목)</b><br>' +
+            '직전 기준일 <b style="color:#cbd5e1;">' + (staleBasisLabel() || '이전') + '</b> 은(는) 지났습니다. ' +
+            '종가베팅은 그날 종가까지만 유효해서 <b>📌 핀 고정하지 않은 종목은 목록에서 내렸습니다</b>.<br>' +
+            '오늘 장마감 확정 일봉으로 다시 채점되면 조건을 채운 종목이 여기에 나타납니다 — 조건을 임의로 완화해 채우지 않습니다.' +
+            (pins ? '<br>📌 핀 고정 ' + pins + '종목은 위 카드로 유지합니다.' : '');
+        } else {
+          empty.innerHTML = '<b style="color:#fbbf24;">' + (labelOf[currentFilter] || '종가베팅') + ' 0종목</b> — 기준일 ' +
+            (STOCKS[0] && STOCKS[0].basisLabel ? STOCKS[0].basisLabel : '기준일') + ' 이 조건을 모두 채운 종목이 없습니다.<br>' +
+            '조건을 임의로 완화해 채우지 않습니다(원전 기준 유지).';
+        }
         box.appendChild(empty);
       }
       try { drawMiniCharts(); } catch (e) {}
+      try { paintTrackCounts(); } catch (e) {}
       try { if (window.StrategyPins) window.StrategyPins.annotate('jongbe'); } catch (e) {}
     }
 
@@ -16651,18 +16754,44 @@ function openDetail(title, v1, v2, desc) {
       return true;
     }
 
+    /* 자정이 지나 새 거래일이 되면(탭을 켜 둔 채여도) 목록을 다시 판정한다 */
+    (function watchJongbeDayRollover() {
+      let stamp = kstTodayISO();
+      setInterval(function () {
+        const nowDay = kstTodayISO();
+        if (nowDay === stamp) return;
+        stamp = nowDay;
+        const f = firstShownIdx();
+        if (f >= 0) selectStock(f); else showEmptySelection();
+        try { if (window.StrategyPins && window.StrategyPins.annotateAll) window.StrategyPins.annotateAll(); } catch (e) {}
+      }, 30000);
+    })();
+
     window.addEventListener('DOMContentLoaded', function () {
       renderStockList();
-      if (STOCKS.length) selectStock(0);
+      const f0 = firstShownIdx();
+      if (f0 >= 0) selectStock(f0); else showEmptySelection();
     });
 
     return {
       init: function () {
         renderStockList();
-        if (STOCKS.length) selectStock(0);
+        const f0 = firstShownIdx();
+        if (f0 >= 0) selectStock(f0); else showEmptySelection();
         resizeCanvas();
       },
       getStocks: function () { return STOCKS; },
+      getShownStocks: function () { return STOCKS.filter(isShownStock); },
+      dayState: function () {
+        return {
+          today: kstTodayISO(),
+          basis: (STOCKS[0] && (STOCKS[0].basisLabel || STOCKS[0].basisDate)) || '',
+          staleBasis: staleBasisLabel(),
+          total: STOCKS.length,
+          shown: STOCKS.filter(isShownStock).length,
+          pinned: jongbePinCount()
+        };
+      },
       getSelectedCode: function () {
         const s = curStock();
         return s ? s.code : null;
@@ -21558,6 +21687,8 @@ window.BijoongTab = {
 
 </script>
 <!-- /📊 비중법사 탭 엔진 END -->
+  <!-- 📅 종가베팅 하루 경과 가드 — 만쥬·신정재는 기준일이 지나면 핀 고정만 남긴다 (11/27) -->
+  <script defer src="strategy-day-guard.js"></script>
   <script defer src="strategy-pins.js"></script>
   <script defer src="strat-card-mini.js"></script>
   <script defer src="overheat-badge.js"></script>

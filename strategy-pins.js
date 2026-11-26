@@ -273,6 +273,9 @@
     return m ? m[1] : '';
   }
   function nameOf(el, code) {
+    /* 만쥬 '익일 대응' 카드는 제목(.mi-title)이 종목명이다 — '1순위' 같은 배지를 붙이지 않는다 */
+    var mttl = el && el.querySelector ? el.querySelector('.mi-title') : null;
+    if (mttl) return String(mttl.textContent || '').replace(/\(\d{6}\)/, '').replace(/\s+/g, ' ').trim().slice(0, 24);
     var n = el.getAttribute('data-sp-name') || el.getAttribute('data-name') || '';
     if (n) return n;
     var t = (el.textContent || '').replace(/\s+/g, ' ').trim();
@@ -283,21 +286,37 @@
     var first = t.split(/\s{2,}|\n| · /)[0];
     return (first || code || '').slice(0, 24);
   }
+  /* 하루 경과 가드(StrategyDayGuard)가 내린 영역 안의 카드는 '오늘 목록'으로 세지 않는다.
+     → 핀 고정한 종목만 📌 고정됨 카드로 다시 그려진다(2026-11-27). */
+  function hiddenByDay(el) {
+    try {
+      var n = el;
+      while (n && n !== document) {
+        if (n.classList && n.classList.contains('sd-dayhide')) return true;
+        n = n.parentNode;
+      }
+    } catch (e) { /* */ }
+    return false;
+  }
   function manjuCards(root) {
     var out = [];
-    var all = root.querySelectorAll('div[style]');
+    var all = root.querySelectorAll('div[style], .manju-item');
     for (var i = 0; i < all.length; i += 1) {
       var el = all[i];
       var st = el.getAttribute('style') || '';
-      if (!/border-left\s*:\s*4px/.test(st)) continue;
-      if (!el.querySelector('strong')) continue;
+      var isScreener = /border-left\s*:\s*4px/.test(st);
+      var isItem = !!(el.classList && el.classList.contains('manju-item'));
+      if (!isScreener && !isItem) continue;
+      if (!el.querySelector('strong, .mi-title')) continue;
+      if (hiddenByDay(el)) continue;
       if (!codeOf(el)) continue;
+      if (out.indexOf(el) !== -1) continue;
       out.push(el);
     }
     return out;
   }
   function findCards(tab, root) {
-    if (!root) return [];
+    if (!root || hiddenByDay(root)) return [];
     if (tab === 'bij') return Array.prototype.slice.call(root.querySelectorAll('article.card'));
     if (tab === 'hong') return Array.prototype.slice.call(root.querySelectorAll('.hi-stock-card'));
     if (tab === 'rn') return Array.prototype.slice.call(root.querySelectorAll('#stockListGrid .stock-card'));
@@ -324,6 +343,18 @@
           snap.price = j.price; snap.pct = j.changeRatio; snap.track = j.track; snap.badge = j.badge;
           if (j.candles && j.candles.length) snap.candles = j.candles.slice(-60);
         }
+      }
+      else if (tab === 'manju') {
+        /* 만쥬 카드는 엔진 객체가 아니라 DOM 카드다 — 핀 시점 값은 카드 글자에서 읽는다 */
+        var mcard = document.querySelector('#tabManju [data-sp-code="' + code + '"]') ||
+                    document.querySelector('#tabManju [data-manju-code="' + code + '"]');
+        var mtxt = mcard ? String(mcard.textContent || '').replace(/\s+/g, ' ') : '';
+        var mpx = mtxt.match(/([\d,]{3,})\s*원/);
+        var mpc = mtxt.match(/([+-]?\d+\.\d+)\s*%/);
+        var mvl = mtxt.match(/([\d,]+(?:\.\d+)?)\s*억/);
+        if (mpx) snap.price = Number(String(mpx[1]).replace(/,/g, ''));
+        if (mpc) snap.pct = Number(mpc[1]);
+        if (mvl) snap.value = String(mvl[1]) + '억';
       }
       else if (tab === 'kk' && window.KkangtoTab && window.KkangtoTab.getStocks) {
         var k = (window.KkangtoTab.getStocks() || []).filter(function (s) { return s && s.code === code; })[0];
@@ -400,7 +431,8 @@
     card.setAttribute('data-sp-code', code);
 
     /* 만쥬 카드는 원래 차트가 없다 — 실시간 일봉 미니 차트를 붙인다(동적 /api 가능할 때) */
-    if (tab === 'manju' && S.api !== false && !card.querySelector('canvas.sp-mini')) {
+    if (tab === 'manju' && S.api !== false && !card.querySelector('canvas.sp-mini')
+        && card.classList && card.classList.contains('mj-screener-card')) {
       var cv = document.createElement('canvas');
       cv.className = 'sp-mini';
       cv.setAttribute('data-sp-mini', code);
@@ -477,7 +509,7 @@
 
   function renderExtras(tab, root, cards) {
     if (!root) return;
-    var grid = cards.length ? cards[0].parentNode : root.querySelector(tab === 'kk' ? '#kkNearGrid' : '#stockListGrid, #stockListContainer, #hiStockGrid, #cards');
+    var grid = cards.length ? cards[0].parentNode : root.querySelector(tab === 'kk' ? '#kkNearGrid' : (tab === 'manju' ? '#mjPinnedWrap' : '#stockListGrid, #stockListContainer, #hiStockGrid, #cards'));
     if (!grid) return;
     var present = {};
     cards.forEach(function (el) {
