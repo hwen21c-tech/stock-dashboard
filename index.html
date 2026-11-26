@@ -20730,6 +20730,22 @@ window.BijoongTab = {
     } catch (eM) { /* 모달이 닫혀 있으면 아무 일도 하지 않는다 */ }
   };
 
+  /* 지수 모달을 열 때 흐름 행을 한 번 더 채운다.
+     · 동적 본체는 IDXOnDrawn(자동 계산)이 그리고, 정적 본체는 자동 계산 값이 없어
+       모달을 열어도 흐름 행이 비어 있었다(2026-11-26 확인) → 여기서 직접 채운다. */
+  (function () {
+    var orig = window.openIndexChart;
+    if (typeof orig !== 'function' || orig.__idxFlowWrapped) return;
+    var wrapped = function () {
+      var r = orig.apply(this, arguments);
+      setTimeout(function () { try { window.__refreshIndexHourlyFlow(); } catch (e) {} }, 500);
+      setTimeout(function () { try { window.__refreshIndexHourlyFlow(); } catch (e) {} }, 1800);
+      return r;
+    };
+    wrapped.__idxFlowWrapped = true;
+    window.openIndexChart = wrapped;
+  })();
+
   /* ---------------- 부트 ---------------- */
   function boot() {
     window.idxPaintToggles();
