@@ -990,10 +990,13 @@
     setInterval(function () {
       if (document.visibilityState !== 'visible') return;
       pinnedCodes().slice(0, 8).forEach(function (code) {
+        /* 화면에 그 카드 캔버스가 없으면 차트 API 를 부르지 않는다(호출 낭비 = Vercel CPU) */
+        var el = document.querySelector('.sp-xcard[data-sp-code="' + code + '"] canvas');
+        if (!el) return;
         fetchChart(code).then(function (arr) {
           if (!arr) return;
-          var el = document.querySelector('.sp-xcard[data-sp-code="' + code + '"] canvas');
-          if (el) drawChart(el, arr);
+          var el2 = document.querySelector('.sp-xcard[data-sp-code="' + code + '"] canvas');
+          if (el2) drawChart(el2, arr);
         });
       });
     }, 60000);

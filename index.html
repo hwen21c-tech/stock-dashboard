@@ -5573,8 +5573,8 @@
         chips.push(chip('윗꼬리 ' + (isNum(x.upper) ? x.upper.toFixed(2) + '%' : '—'), isNum(x.upper) && x.upper <= 1.2 ? 'ok' : 'weak'));
         chips.push(supplyChip(x.supply));
         chips.push(halfChip(x.half));
-        var dim = (DATA && DATA.gate && DATA.gate.beforeD0) ? 'opacity:.72;' : '';
-        return '<div class="op-card lead" data-ih-code="' + esc(x.code) + '" role="button" tabindex="0" style="' + dim + '">' +
+        /* 09:00~09:29 미리보기 구간에도 카드는 그대로 보인다(흐리게 덮지 않는다) — 2026-11-26 사용자 확정 */
+        return '<div class="op-card lead" data-ih-code="' + esc(x.code) + '" role="button" tabindex="0">' +
           '<div class="op-card-top"><span class="op-rank">' + (i + 1) + '</span>' +
           '<b style="color:#fff; font-size:12.5px;">' + esc(x.name) + '</b>' +
           '<span style="font-size:9.5px; color:#94a3b8;">' + esc(x.code || '') + '</span>' +
@@ -5615,13 +5615,13 @@
         var gate = d.gate || {};
         if (gateEl) {
           gateEl.textContent = gate.text || '';
-          gateEl.style.color = gate.ready ? '#6ee7b7' : '#fda4af';
+          gateEl.style.color = gate.ready ? '#6ee7b7' : (gate.previewD0 ? '#fcd34d' : '#fda4af');
         }
         $('ihTabLeaderN').textContent = (d.leader || []).length;
         var dn = (d.downside || {});
         $('ihTabDownN').textContent = (dn.items || []).length;
-        $('ihGateBadge').textContent = gate.ready ? '🟢 D+0 탐색' : (gate.beforeD0 ? '⏸ 09:30 대기' : (gate.afterClose ? '🌙 마감' : '⏸ 휴장'));
-        $('ihGateBadge').className = 'op-badge ' + (gate.ready ? 'lead' : 'closed');
+        $('ihGateBadge').textContent = gate.ready ? '🟢 D+0 탐색' : (gate.previewD0 ? '⏳ 09:30 이전 관망' : (gate.beforeD0 ? '⏸ 09:30 대기' : (gate.afterClose ? '🌙 마감' : '⏸ 휴장')));
+        $('ihGateBadge').className = 'op-badge ' + (gate.ready ? 'lead' : (gate.previewD0 ? '' : 'closed'));
         $('ihTimeBadge').textContent = '⏱ ' + (d.generatedAtKst || '') + ' 기준';
 
         if (track === 'leader') {
@@ -5637,7 +5637,8 @@
             : (nearOnly && all.length
               ? '<div class="op-card" style="opacity:.85;"><div style="font-size:11.5px; color:#94a3b8; line-height:1.6;">오늘은 <b>120일 전고점 돌파/근접</b> 종목이 없습니다 — 🎯 토글을 끄면 전고점 이격 반등형 <b>' + all.length + '종목</b>이 보입니다.</div></div>'
               : '<div class="op-card" style="opacity:.85;"><div style="font-size:11.5px; color:#94a3b8; line-height:1.6;">조건(거래대금 <b>15위 이내</b> · <b>500억↑</b> · <b>+5%↑</b>)을 모두 채운 종목이 없습니다.<br>기준을 임의로 완화하지 않습니다.</div></div>');
-          noteEl.textContent = '원전: 오전 9시 30분 이후 거래대금 상위에서 확인 · 9시 30분 이전 매매 자제 · 같은 테마 3종목 이상 동반 상승 · 전고점 돌파 첫 장대양봉(D+0). 전고점 미달은 탈락이 아니라 「반등형」으로 남기고 뱃지로 구분합니다.';
+          noteEl.textContent = (gate.previewD0 ? '⏳ 09:30 이전 관망 구간 — 아래 후보는 미리 확인용입니다(실전 매매는 09:30 이후 권장). ' : '') +
+            '원전: 오전 9시 30분 이후 거래대금 상위에서 확인 · 9시 30분 이전 매매 자제 · 같은 테마 3종목 이상 동반 상승 · 전고점 돌파 첫 장대양봉(D+0). 전고점 미달은 탈락이 아니라 「반등형」으로 남기고 뱃지로 구분합니다.';
           $('ihPrinciple').innerHTML = '<b>⚡ D+0 판정</b> ' +
             '판정 후보 ' + ((d.leaderStats && d.leaderStats.judged) || 0) + '종목 → 순위 15위 이내 ' +
             ((d.leaderStats && d.leaderStats.rank) || 0) + ' · 대금 500억↑ ' +
