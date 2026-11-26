@@ -5817,6 +5817,7 @@
   function stateChip(z) {
     if (!z) return chip('1분봉 미수신', 'wait');
     if (z.phase === 'k') return chip('🟠 K존 진입', 'hot');
+    if (z.phase === 'kstop') return chip('⛔ K존 이탈', 'dn');
     if (z.phase === 'rebound') return chip('🟢 +4% 반등', 'ok');
     if (z.phase === 'f') return chip('🟡 F존 진입', 'warm');
     if (z.phase === 'stop') return chip('⛔ 손절 이탈', 'dn');
@@ -5838,7 +5839,7 @@
     } else {
       zc.push(chip('F존 ' + comma(z.b1) + ' / ' + comma(z.b2) + ' / ' + comma(z.b3), 'mute'));
       if (isNum(z.low)) zc.push(chip('저점 ' + comma(z.low) + ' → +4% ' + comma(z.reboundPrice), 'warm'));
-      if (z.k && z.k.entered) zc.push(chip('K존 ' + comma(z.k.b1) + ' / ' + comma(z.k.b2) + ' / ' + comma(z.k.b3), 'hot'));
+      if (z.k && (z.k.entered || z.k.broken)) zc.push(chip('K존 ' + comma(z.k.b1) + ' / ' + comma(z.k.b2) + ' / ' + comma(z.k.b3), z.k.broken ? 'dn' : 'hot'));
       else if (z.rebound) zc.push(chip('K존 대기 · H1 ' + comma(z.k && z.k.h1), 'mute'));
       if (isNum(z.stopLine)) zc.push(chip('손절 ' + comma(z.stopLine), 'hot'));
     }
@@ -6084,7 +6085,7 @@
       rows.push(line('K존', '반등(+4%) 인정 뒤 새 고점 기준으로 생성됩니다 — 아직 없음', '#94a3b8'));
     }
     rows.push(line('손절 ①', 'F존 진입 후 저점 이탈 — B3 ' + comma(fk.b3) + '원 아래로 밀리면 존이 깨집니다', '#fda4af'));
-    rows.push(line('손절 ②', '반등 뒤 쌍바닥 지지 실패(저점 이탈)' + (fk.stopLabel ? ' — 현재 기준 <b>' + esc(fk.stopLabel) + '</b>' : '') , '#fda4af'));
+    rows.push(line('손절 ②', '반등 뒤 지지 실패 — 반등 저점(L) 이탈, K존에서는 B3 이탈' + (fk.stopLabel ? ' (현재 기준 <b>' + esc(fk.stopLabel) + '</b>)' : ''), '#fda4af'));
     el.innerHTML = '<div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:4px;">' +
         '<span style="font-size:11px;font-weight:900;color:#fcd34d;">📐 F존 · K존 (1분봉 · 당일 고가 기준)</span>' + stateChip(fk) + '</div>' +
         rows.join('');
