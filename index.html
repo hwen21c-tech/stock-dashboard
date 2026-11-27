@@ -6321,7 +6321,8 @@
     var t = it.today || {};
     var v = it.verdict || {};
     if (!b.ok) {
-      return '<div class="hb-cmp hb-off">기준 미계산 — ' + esc(b.message || '일봉·과거 분봉 조회 전') + '</div>';
+      var lbl = b.reason === 'no_big_yang' ? '기준 없음' : '기준 미계산';
+      return '<div class="hb-cmp hb-off">' + lbl + ' — ' + esc(b.message || '일봉·과거 분봉 조회 전') + '</div>';
     }
     var left = '기준 ' + esc(b.dateLabel || '') + ' <b>' + eok(b.open3mEok) + '</b>';
     var right = t.ok
@@ -6371,6 +6372,15 @@
       return;
     }
     var items = (d.items || []).filter(function (x) { return x && x.code; });
+    /* 🍔 성립 종목을 먼저 — 그 안에서 배수 큰 순서. 판정은 서버 값을 그대로 쓰고 순서만 바꾼다. */
+    items.sort(function (a, b) {
+      var pa = a.verdict && a.verdict.pass ? 1 : 0;
+      var pb = b.verdict && b.verdict.pass ? 1 : 0;
+      if (pa !== pb) return pb - pa;
+      var ma = a.verdict && isNum(a.verdict.passMultiple) ? a.verdict.passMultiple : -1;
+      var mb = b.verdict && isNum(b.verdict.passMultiple) ? b.verdict.passMultiple : -1;
+      return mb - ma;
+    });
     $('hbTimeBadge').textContent = '⏱ ' + (d.generatedAtKst || '') + ' 기준';
     $('hbCountBadge').textContent = '🍔 성립 ' + ((d.counts || {}).pass || 0) + ' / 후보 ' + (items.length) + '종목';
     $('hbCountBadge').className = 'op-badge' + ((d.counts || {}).pass ? '' : ' closed');
@@ -6512,8 +6522,9 @@
       '<span style="font-size:11px;font-weight:900;color:#fdba74;">🍔 햄버거 기준 대금 (이전 장대양봉 vs 오늘 장초반)</span>' +
       '<span class="op-chip ' + (v.tagKind === 'hot' ? 'hot' : v.tagKind === 'ok' ? 'ok' : v.tagKind === 'dn' ? 'dn' : 'wait') + '">' + esc(v.tag || '판정 대기') + '</span></div>';
     if (!b.ok) {
-      el.innerHTML = head + '<div style="font-size:10.5px;color:#fda4af;line-height:1.6;">기준 대금을 아직 계산하지 못했습니다 — ' +
-        esc(b.message || '일봉·과거 분봉 조회 전') + '<br>기준은 최근 120거래일 장대양봉(+10%↑ · 대금 300억↑) 날의 09:00~09:02 3분봉 대금입니다.</div>';
+      el.innerHTML = head + '<div style="font-size:10.5px;color:#fda4af;line-height:1.6;">' +
+        (b.reason === 'no_big_yang' ? '기준으로 삼을 <b>최근 120거래일 장대양봉(+10%↑ · 대금 300억↑) 날이 없습니다</b>.' : '기준 대금을 아직 계산하지 못했습니다.') +
+        ' — ' + esc(b.message || '') + '<br>기준은 최근 120거래일 장대양봉 날의 09:00~09:02 3분봉 거래대금입니다.</div>';
       return;
     }
     var rows = [];
