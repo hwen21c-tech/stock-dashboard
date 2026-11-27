@@ -894,14 +894,58 @@
     return state.liveP;
   }
 
-  function checkStock(q){
+  /* ============================================================
+     ⚡ 시세 메모리 캐시(60초) — 같은 종목을 다시 누르면 서버를 기다리지 않고 바로 그린다.
+     · 기본 호출에는 ?fresh=1 을 붙이지 않는다 → 서버 메모리(5초)·Vercel CDN 캐시(15초)가 산다.
+       (fresh=1 은 그 URL 만의 캐시를 따로 만들어 다른 사용자와 캐시를 나눠 쓰지 못했다)
+     · ?light=1 → 서버가 체커에 필요 없는 '시간별 지수 흐름'(최대 2.4초)을 계산하지 않는다.
+     · 새로고침 버튼(🔄 실시간 갱신)을 눌렀을 때만 fresh=1 로 서버 캐시를 건너뛴다.
+     · 캐시에 담는 것은 서버가 준 실측 응답 그대로다(값을 만들지 않는다).
+     ============================================================ */
+  var QUOTE_TTL_MS = 60000;
+  var quoteMem = Object.create(null);
+  var quotePend = Object.create(null);
+
+  function quoteKey(q){ return String(q || '').replace(/\s+/g, ' ').trim().toLowerCase(); }
+
+  function quotePrune(){
+    var keys = Object.keys(quoteMem);
+    if (keys.length <= 48) return;
+    keys.sort(function(a, b){ return quoteMem[a].at - quoteMem[b].at; });
+    for (var i = 0; i < keys.length - 48; i++) delete quoteMem[keys[i]];
+  }
+
+  function fetchQuote(q, force){
+    var k = quoteKey(q), now = Date.now();
+    if (!force && quoteMem[k] && now - quoteMem[k].at < QUOTE_TTL_MS){
+      return Promise.resolve({ body: quoteMem[k].body, cached: true, ageMs: now - quoteMem[k].at });
+    }
+    if (!force && quotePend[k]) return quotePend[k];
+    var url = apiQuery() + '?codes=' + encodeURIComponent(q) + '&light=1' + (force ? '&fresh=1' : '');
+    var p = fetchJson(url, 13000).then(function(j){
+      quotePend[k] = null;
+      if (j && (j.stocks || []).length){ quoteMem[k] = { at: Date.now(), body: j }; quotePrune(); }
+      return { body: j, cached: false, ageMs: 0 };
+    }, function(e){
+      quotePend[k] = null;
+      throw e;
+    });
+    quotePend[k] = p;
+    return p;
+  }
+
+  function checkStock(q, opts){
     q = String(q || '').trim();
     if (!q){ msg('종목명이나 6자리 코드를 넣어 주세요.', 'bad'); $('q').focus(); return; }
     if (state.busy) return;
+    var force = !!(opts && opts.fresh);
     state.busy = true;
     msg('실측 시세를 읽는 중…', 'kind');
-    renderLoading(q);
-    fetchJson(apiQuery() + '?codes=' + encodeURIComponent(q) + '&fresh=1', 13000).then(function(j){
+    /* 캐시에 있고 60초 안이면 스켈레톤을 칠 필요 없다(0초에 카드가 그려진다) */
+    var ck = quoteKey(q), cHit = (!force && quoteMem[ck] && Date.now() - quoteMem[ck].at < QUOTE_TTL_MS) ? quoteMem[ck] : null;
+    if (!cHit) renderLoading(q);
+    fetchQuote(q, force).then(function(res){
+      var j = res.body;
       var rows = (j && j.stocks) || [];
       var isCode = /^\d{6}$/.test(q);
       var hit = rows.filter(function(s){
@@ -922,7 +966,9 @@
       var basisTxt = '실측 · ' + (j.generatedAtKst || '');
       show(hit, { live: true, basis: basisTxt, tradeDate: (hit.tradedAt || '').slice(0, 10), marketStatus: j.marketStatus },
         { indices: j.indices || [], futures: j.futures || [], fx: j.fx || null, macro: j.macro || null, marketStatus: j.marketStatus || null });
-      msg('', '');
+      /* 60초 안에 다시 본 종목 — 저장해 둔 실측을 즉시 그렸다는 사실을 숨기지 않는다 */
+      msg(res.cached ? ('방금 확인해 둔 실측 값을 바로 보여 줍니다(60초 캐시 · ' + (j.generatedAtKst || '') + ' 기준).' +
+        ' 최신 값이 필요하면 카드의 🔄 실시간 갱신을 눌러 주세요.') : '', res.cached ? 'kind' : '');
     }).catch(function(){
       /* 실시간이 막히면 마지막 거래일 스냅샷으로 */
       return loadSnapshot().then(function(snap){
@@ -1068,7 +1114,8 @@
       '</div>';
     h += '<div class="acts">' +
       '<button id="starBtn" type="button">☆ 관심종목</button>' +
-      '<button id="copyBtn" type="button">📋 요약 복사</button></div>';
+      '<button id="copyBtn" type="button">📋 요약 복사</button>' +
+      '<button id="reloadBtn" type="button" title="캐시(60초)를 건너뛰고 지금 값을 다시 읽습니다">🔄 실시간 갱신</button></div>';
     h += '<div class="verdict">' + diagnosis(d) + '</div>';
     h += '<div class="w52" id="w52" hidden></div>';
     h += '<div style="margin-top:9px;font-size:10.8px;color:var(--mute);font-weight:750">기준일 ' + esc(meta.tradeDate || (d.tradedAt || '').slice(0,10) || '—') +
@@ -1102,6 +1149,10 @@
     state.last = d;
     var stBtn = $('starBtn'); if (stBtn) stBtn.addEventListener('click', function(){ watchToggle(d); });
     var cpBtn = $('copyBtn'); if (cpBtn) cpBtn.addEventListener('click', copySummary);
+    var rlBtn = $('reloadBtn'); if (rlBtn) rlBtn.addEventListener('click', function(){
+      var code = (state.last && (state.last.code || state.last.name)) || '';
+      if (code) checkStock(code, { fresh: true });
+    });
     syncStar();
     state.w52Seq = (state.w52Seq || 0) + 1;
     var my = state.seq;
@@ -1469,20 +1520,20 @@
     });
   }
   function startWhy(my){
-    /* 사실(테마·DART·경보·52주)이 늦게 오므로 최대 2.6초만 기다렸다가 AI에 묻는다 */
+    /* 🧠 실측 요약은 바로, AI 해석은 사실이 도착하는 대로 — 서로 기다리지 않는다.
+       · 예전에는 DART 4.5초까지 기다린 뒤에야 요약·AI를 시작해 해석 칸이 1.5~4.5초 비어 있었다.
+       · 지금은 ① 실측 값만으로 요약을 즉시 그리고 ② DART·테마·차트에 짧은 상한(1.2초)을 두고
+         먼저 온 것부터 factsForAi() 에 넣어 AI에 물는다(없는 값은 넣지 않는다). */
+    if (my === state.seq) renderWhy(whyRuleLines(), { source: 'rule', pending: true });
     Promise.all([
-      settle(state.risk.themeP, 3000),
-      settle(state.risk.dartP, 4500),
-      settle(state.risk.krxP, 3000),
+      settle(state.risk.themeP, 1200),
+      settle(state.risk.dartP, 1200),
+      settle(state.risk.krxP, 1200),
       settle(state.risk.p52, 900),
-      settle(state.risk.pHist, 6000)
+      settle(state.risk.pHist, 1200)
     ]).then(function(){
       if (my !== state.seq) return;
       whyAiRequest(my);
-      setTimeout(function(){
-        if (my !== state.seq || state.whyShown !== 'skeleton') return;
-        renderWhy(whyRuleLines(), { source: 'rule', pending: true });
-      }, 1400);
     });
   }
 
@@ -1890,6 +1941,7 @@
        종목을 누르면 그 종목의 1초 체크로 넘어간다.
      ============================================================ */
   var mapLoaded = false, mapTiles = [], mapOpen = true;
+  var mapDetailP = null, mapDetailDone = false;
 
   function tileClass(p){
     var x = n(p);
@@ -1907,25 +1959,46 @@
     var w = Math.round(Math.max(76, Math.min(150, 64 + Math.sqrt(x) * 0.6)));
     return 'flex:1 1 ' + w + 'px';
   }
+  /* ⚡ 첫 화면 — 이미 0.05초에 받아 둔 tabs-live 의 지금 테마로 타일을 먼저 깔고,
+     상세 25개(theme_map)는 뒤에서 받아 갈아 끼운다. 상세가 늦거나 막혀도 화면은 이미 차 있다. */
   function loadThemeMap(){
     var host = $('themeMap'), head = $('tmapHead'), basis = $('tmapBasis');
     if (!host || mapLoaded) return;
     mapLoaded = true;
     if (head) head.hidden = false;
-    if (basis) basis.textContent = '불러오는 중…';
     /* 접어 둔 사용자에게는 '읽는 중' 자리도 잠깐 보이지 않게 — 상태를 그대로 지킨다 */
     host.hidden = !mapOpen;
-    host.innerHTML = '<div class="tmapnote" style="padding:6px 0">테마맵을 읽는 중…</div>';
-    fetchJson(apiQuery() + '?mode=theme_map', 18000).then(function(j){
+    if (!mapTiles.length){
+      if (basis) basis.textContent = '불러오는 중…';
+      host.innerHTML = '<div class="tmapnote" style="padding:6px 0">테마맵을 읽는 중…</div>';
+      /* 실시간 테마가 오면 그 8개로 먼저 그리고(0.1초대), 상세는 그 뒤에 */
+      var pr = state.liveP || loadLiveThemes().catch(function(){ return null; });
+      pr.then(function(){
+        if (!mapTiles.length) renderMapFromLive();
+        loadThemeMapDetail();
+      });
+      return;
+    }
+    loadThemeMapDetail();
+  }
+
+  function loadThemeMapDetail(){
+    if (mapDetailDone || mapDetailP) return;
+    mapDetailP = fetchJson(apiQuery() + '?mode=theme_map', 10000).then(function(j){
+      mapDetailP = null;
       if (!j || !j.ok || !(j.tiles || []).length) throw new Error('theme_map_empty');
+      mapDetailDone = true;
       mapTiles = j.tiles || [];
       renderThemeMap(j);
     }).catch(function(){
-      /* theme_map 실측이 막히면 — tabs-live 로 받아 둔 지금 테마가 있으면 그것으로 그린다 */
+      mapDetailP = null;
+      /* 상세가 막혔지만 실시간 8테마 타일이 이미 있으면 그대로 둔다 */
+      if (mapTiles.length){ mapLoaded = true; return; }
       if (renderMapFromLive()){ mapLoaded = true; return; }
       /* 그것도 없으면 조용히 숨긴다 */
       mapLoaded = false;
-      host.hidden = true;
+      var host = $('themeMap'), head = $('tmapHead');
+      if (host) host.hidden = true;
       if (head) head.hidden = true;
     });
   }
@@ -2444,7 +2517,7 @@
     var it = e.ipo || {}, box = body.querySelector('#ipoLive');
     if (!box) return;
     box.innerHTML = '<div class="livebox">실시간 시세를 읽는 중…</div>';
-    fetchJson(apiQuery() + '?codes=' + encodeURIComponent(it.code) + '&fresh=1', 12000).then(function(j){
+    fetchJson(apiQuery() + '?codes=' + encodeURIComponent(it.code) + '&light=1', 12000).then(function(j){
       var s = (j && j.stocks || []).filter(function(x){ return x && String(x.code) === String(it.code); })[0] || (j && j.stocks || [])[0] || null;
       if (!s){ box.innerHTML = '<div class="livebox">실시간 시세 미확인 — 상장 당일 호가 전에는 값이 없을 수 있습니다.</div>'; return; }
       var cur = n(s.price), op = n(s.open), hi = n(s.high), lo = n(s.low), cp = n(s.changePct);
@@ -2575,12 +2648,27 @@
     sheetEl = bg;
     return bg;
   }
+  /* 테마 타일의 번호가 실시간 폴백('se-3')일 때 — 이름으로 네이버 테마 번호를 찾아 펼친다.
+     (예전에는 그대로 mode=theme_members&no=se-3 을 보내 400 이 났다) */
+  function resolveThemeNo(name){
+    if (!name) return Promise.resolve(null);
+    return fetchJson(apiQuery() + '?mode=theme_search&q=' + encodeURIComponent(name), 12000).then(function(j){
+      var list = (j && j.themes) || [];
+      if (!list.length) return null;
+      var exact = list.filter(function(t){ return String(t.name || '') === String(name); })[0];
+      return String((exact || list[0]).no || '') || null;
+    }).catch(function(){ return null; });
+  }
   function openTheme(no, name){
-    if (!no){ toast('테마 번호를 확인하지 못했어요'); return; }
+    if (!no && !name){ toast('테마 번호를 확인하지 못했어요'); return; }
     var bg = openSheet(name || '테마 구성종목', '구성종목을 읽는 중…');
     var body = bg.querySelector('#sheetBody');
     body.innerHTML = '<div class="iload">구성종목을 읽는 중…</div>';
-    fetchJson(apiQuery() + '?mode=theme_members&no=' + encodeURIComponent(no), 16000).then(function(j){
+    var p = /^\d+$/.test(String(no || '')) ? Promise.resolve(String(no)) : resolveThemeNo(name);
+    p.then(function(no2){
+      if (!no2) throw new Error('theme_no_unknown');
+      return fetchJson(apiQuery() + '?mode=theme_members&no=' + encodeURIComponent(no2), 16000);
+    }).then(function(j){
       if (!j || !j.ok) throw new Error((j && (j.message || j.reason)) || 'theme_members_fail');
       sheetData = j;
       var t = j.theme || {};
@@ -2590,7 +2678,10 @@
         (t.riseCount != null ? ' · 상승 ' + t.riseCount + ' / 하락 ' + t.fallCount : '');
       renderThemeRows(bg);
     }).catch(function(e){
-      body.innerHTML = '<div class="iload">구성종목을 받지 못했습니다' + (e && e.message ? '(' + esc(e.message) + ')' : '') + '.</div>';
+      var why = (e && e.message) || '';
+      body.innerHTML = '<div class="iload">' + (why === 'theme_no_unknown'
+        ? '이 타일의 테마 번호를 확인하지 못해 구성종목을 열지 못했습니다 — 잠시 뒤 테마맵이 상세 타일로 바뀌면 다시 눌러 주세요.'
+        : '구성종목을 받지 못했습니다' + (why ? '(' + esc(why) + ')' : '') + '.') + '</div>';
     });
   }
   function renderThemeRows(bg){
@@ -2765,10 +2856,21 @@
        먼저 깜빡이는 일이 없다. 실패했을 때만 정적 성적표(signal_scorecard.json)로 내려간다. */
   chipsLoading();
   loadSupply().catch(function(){});   /* 외인·기관 수급 줄 — 실패해도 기존 화면을 막지 않는다 */
-  var liveFirst = loadLiveThemes().catch(function(){ return null; });
-  Promise.all([liveFirst, loadScore(), loadSnapshot()]).then(function(){
-    state.liveTried = true; chips();
-  }).catch(function(){ state.liveTried = true; chips(); });
+  /* 실시간 주도주(tabs-live)가 먼저다 — 오면 바로 칩을 그리고, 정적 성적표·스냅샷(폴백용)은 그 뒤에 읽는다.
+     · 실시간이 실패했을 때만 정적 폴백을 기다렸다 그린다(옛 저장본이 먼저 깜빡이지 않게). */
+  loadLiveThemes().then(function(live){
+    state.liveTried = true;
+    if (live && (live.themes || []).length){
+      chips();
+      loadScore().catch(function(){});
+      loadSnapshot().catch(function(){});
+    } else {
+      Promise.all([loadScore().catch(function(){}), loadSnapshot().catch(function(){})]).then(function(){ chips(); });
+    }
+  }).catch(function(){
+    state.liveTried = true;
+    Promise.all([loadScore().catch(function(){}), loadSnapshot().catch(function(){})]).then(function(){ chips(); });
+  });
   /* 폰 화면을 다시 켰을 때 — 1분 넘게 묵은 값이면 새로 읽는다 */
   document.addEventListener('visibilitychange', function(){
     if (document.visibilityState !== 'visible') return;
