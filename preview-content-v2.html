@@ -5971,7 +5971,13 @@ function normBrief(d, meta) {
       return arr(cells, 6).map((c) => s(typeof c === 'string' ? c : c && c.text, 160));
     })
     .filter((cells) => cells.length && cells.some(Boolean));
-  const table = headers.length && rows.length ? { title: s(tblIn.title, 80) || '비교표', headers, rows } : null;
+  /* 열 수와 칸 수가 어긋나면 표가 무너진다 — headers 길이에 맞춘다(빈 칸은 빈 문자열) */
+  const fitted = rows.map((cells) => {
+    const out2 = cells.slice(0, headers.length);
+    while (out2.length < headers.length) out2.push('');
+    return out2;
+  });
+  const table = headers.length && fitted.length ? { title: s(tblIn.title, 80) || '비교표', headers, rows: fitted } : null;
 
   const chars = num(m.chars, 0);
   const savedMin = chars > 0 ? Math.max(3, Math.round(chars / 600) - 2) : null;
