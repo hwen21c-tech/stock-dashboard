@@ -22712,6 +22712,11 @@ window.BijoongTab = {
       for (var c = 0; c < carryKeys.length; c += 1) {
         row[carryKeys[c]] = idxPick(s[carryKeys[c]], o ? o[carryKeys[c]] : null);
       }
+      /* ⏱️ 시간별 흐름 통합 박스 — 슬롯에 함께 내려온 1줄 코멘트·수급 3종도 버리지 않는다
+         (서버·python 이 만든 문장을 화면이 다시 만들면 테마가 빠질 수 있다) */
+      row.comment = (typeof s.comment === 'string' && s.comment) ? s.comment
+        : ((o && typeof o.comment === 'string') ? o.comment : '');
+      row.supply = s.supply || (o ? o.supply : null) || null;
       slots.push(row);
     }
     var next = {
