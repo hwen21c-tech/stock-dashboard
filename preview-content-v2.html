@@ -8469,6 +8469,9 @@ var CSVoice = (function () {
         tbox.hidden = false;
         var tt = $('#sumBriefTableTitle');
         if (tt) tt.textContent = '📋 ' + (d.table.title || '비교표');
+        /* 412px 에서 4열 표가 뭉개지지 않게 — 표만 가로로 넘기고 페이지는 넘치지 않는다 */
+        var cols = (d.table.headers || []).length;
+        tbl.style.minWidth = cols >= 4 ? '540px' : cols === 3 ? '400px' : '';
         tbl.innerHTML = '<thead><tr>' + d.table.headers.map(function(h){ return '<th>' + esc(h) + '</th>'; }).join('') + '</tr></thead>' +
           '<tbody>' + d.table.rows.map(function(r){
             return '<tr>' + r.map(function(c){ return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>';
