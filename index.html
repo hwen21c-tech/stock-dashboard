@@ -5932,6 +5932,7 @@
     <!-- ⚡ 오늘 장중매매 후보 — 홍인기 D+0 · 하락장 역발상 (2026-11-25 신설)
          원전: 홍인기 데이트레이딩 D+0/D+1 — 09:30 이전 매매 자제 · 거래대금 상위 15위 · +5%↑ · 같은 테마 3종목 동반
          · 120일 전고점 돌파/근접 · 당일 고점 상승폭 절반 이탈 = 주도주 탈락.
+         2026-11-27 사용자 승인(#69095): 급등장 대응 위해 이 화면의 거래대금 순위 상한 15위 → 30위 확장(원전 15위는 주석으로 보존).
          120일 전고점은 탈락 조건이 아니라 뱃지·정렬 조건 — 🎯 토글(기본 OFF)로 걸러 본다. (2026-11-26)
          값은 /api/tabs-live 의 intradayHong 만 쓴다 — 화면은 계산·추정하지 않는다. -->
     <div class="op-box" id="intradayHongBox" style="border-color:rgba(244,63,94,0.35);">
@@ -6099,11 +6100,11 @@
           bodyEl.innerHTML = list.length ? list.map(leaderCard).join('')
             : (nearOnly && all.length
               ? '<div class="op-card" style="opacity:.85;"><div style="font-size:11.5px; color:#94a3b8; line-height:1.6;">오늘은 <b>120일 전고점 돌파/근접</b> 종목이 없습니다 — 🎯 토글을 끄면 전고점 이격 반등형 <b>' + all.length + '종목</b>이 보입니다.</div></div>'
-              : '<div class="op-card" style="opacity:.85;"><div style="font-size:11.5px; color:#94a3b8; line-height:1.6;">조건(거래대금 <b>15위 이내</b> · <b>500억↑</b> · <b>+5%↑</b>)을 모두 채운 종목이 없습니다.<br>기준을 임의로 완화하지 않습니다.</div></div>');
+              : '<div class="op-card" style="opacity:.85;"><div style="font-size:11.5px; color:#94a3b8; line-height:1.6;">조건(거래대금 <b>30위 이내</b> · <b>500억↑</b> · <b>+5%↑</b>)을 모두 채운 종목이 없습니다.<br>기준을 임의로 완화하지 않습니다.</div></div>');
           noteEl.textContent = (gate.previewD0 ? '⏳ 09:30 이전 관망 구간 — 아래 후보는 미리 확인용입니다(실전 매매는 09:30 이후 권장). ' : '') +
             '원전: 오전 9시 30분 이후 거래대금 상위에서 확인 · 9시 30분 이전 매매 자제 · 같은 테마 3종목 이상 동반 상승 · 전고점 돌파 첫 장대양봉(D+0). 전고점 미달은 탈락이 아니라 「반등형」으로 남기고 뱃지로 구분합니다.';
           $('ihPrinciple').innerHTML = '<b>⚡ D+0 판정</b> ' +
-            '판정 후보 ' + ((d.leaderStats && d.leaderStats.judged) || 0) + '종목 → 순위 15위 이내 ' +
+            '판정 후보 ' + ((d.leaderStats && d.leaderStats.judged) || 0) + '종목 → 순위 30위 이내 ' +
             ((d.leaderStats && d.leaderStats.rank) || 0) + ' · 대금 500억↑ ' +
             ((d.leaderStats && d.leaderStats.value) || 0) + ' · 테마 3종목 동반 ' +
             ((d.leaderStats && d.leaderStats.theme) || 0) + ' → 후보 ' + all.length + '종목(전고점 돌파/근접 ' + nearList.length + ' · 반등형 ' + (all.length - nearList.length) + '). ' +
