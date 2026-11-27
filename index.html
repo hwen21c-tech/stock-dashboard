@@ -5397,7 +5397,7 @@
   <!-- 🌅 오늘 시초가 공략 후보 — 11/19 신설 · 08:50 브리핑 실측 근거 · 손절선 없음(사용자 요청) -->
   <div class="op-box" id="openingPicksBox">
     <div class="op-head">
-      <div class="op-title">🌅 오늘 시초가 공략 후보 <span class="op-sub">(2트랙 · 기준가는 직전 정규장 종가)</span></div>
+      <div class="op-title">🌅 시초가 공략 후보 <span class="op-sub">(2트랙 · 기준가는 직전 정규장 종가)</span></div>
       <div class="op-badges">
         <span class="op-badge op-time" id="opTimeBadge">⏱ 장전 대기</span>
         <span class="op-badge" id="opBadge">⏱ 로딩 중</span>
@@ -5937,7 +5937,7 @@
          값은 /api/tabs-live 의 intradayHong 만 쓴다 — 화면은 계산·추정하지 않는다. -->
     <div class="op-box" id="intradayHongBox" style="border-color:rgba(244,63,94,0.35);">
       <div class="op-head">
-        <div class="op-title">⚡ 오늘 장중매매 후보 <span class="op-sub">(홍인기 D+0 · 하락장 역발상)</span></div>
+        <div class="op-title">⚡ 장중매매 후보 <span class="op-sub">(홍인기 D+0 · 하락장 역발상)</span></div>
         <div class="op-badges">
           <span class="op-badge op-time" id="ihTimeBadge">⏱ 대기</span>
           <span class="op-badge" id="ihGateBadge">⏱ 로딩 중</span>
@@ -6211,6 +6211,363 @@
     })();
     </script>
 
+<!-- 🍔 장중매매 후보 (불개미 · 햄버거) — 2026-11-27 신설 · 1번 메인 탭 · 홍인기 D+0 박스 바로 아래
+     원전: 부자회사원 채널 「불개미님 햄버거 기법」 2편(AHSUB-eAxxA · 9EVBKc25TTI)
+       · 과거 그 종목이 장대양봉을 냈던 날의 '시동 3분봉 거래대금'을 기준으로 기억한다
+       · 오늘 그 종목이 속한 테마가 주도 섹터로 살아 있을 때, 장초반 3분봉 대금이 기준을 압도하면 후보
+       · 긴 위꼬리 · 도지 · 음봉 · 역배열은 대금이 넘어도 뺀다
+     값은 /api/tabs-live 의 hamburger 만 쓴다 — 화면은 계산·추정하지 않는다. -->
+<style id="hamburgerBoxCss">
+  #hamburgerBox{border-color:rgba(249,115,22,0.55);
+    background:linear-gradient(135deg,rgba(67,20,7,0.5) 0%,rgba(15,23,42,0.92) 70%);}
+  #hamburgerBox .op-title{color:#ffedd5;}
+  #hamburgerBox .op-title .op-sub{color:#fdba74;}
+  #hamburgerBox .op-badge{background:rgba(249,115,22,0.16); color:#fdba74; border-color:rgba(249,115,22,0.6);}
+  #hamburgerBox .op-toggle{background:rgba(249,115,22,0.16); color:#fed7aa; border-color:rgba(249,115,22,0.6);}
+  #hamburgerBox .op-card{border-color:rgba(249,115,22,0.32);}
+  #hamburgerBox .op-card:hover{border-color:rgba(249,115,22,0.85); background:rgba(41,26,16,0.9);}
+  #hamburgerBox .op-rank{background:#fdba74;}
+  #hamburgerBox .op-principle{background:rgba(249,115,22,0.08); border-color:rgba(249,115,22,0.45); color:#fed7aa;}
+  #hamburgerBox .op-principle b{color:#fdba74;}
+  .hb-cmp{display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:5px;
+    background:rgba(249,115,22,0.09); border:1px solid rgba(249,115,22,0.35); border-radius:6px; padding:3px 6px;
+    font-size:9.5px; font-weight:800; color:#e2e8f0; font-feature-settings:'tnum';}
+  .hb-cmp .hb-k{color:#cbd5e1;}
+  .hb-cmp .hb-k b{color:#fdba74;}
+  .hb-cmp .hb-arrow{color:#64748b;}
+  .hb-cmp .hb-v{color:#fecdd3;}
+  .hb-cmp .hb-v b{color:#fff;}
+  .hb-cmp .hb-mult{color:#0f172a; background:#fdba74; border-radius:3px; padding:0 4px; font-weight:900;}
+  .hb-cmp .hb-mult.dim{background:#475569; color:#e2e8f0;}
+  .hb-cmp.hb-off{border-color:rgba(148,163,184,0.35); background:rgba(148,163,184,0.07); color:#cbd5e1;}
+  .hb-fold-h{width:100%; text-align:left; font-family:inherit; font-size:9.5px; font-weight:900; color:#fdba74;
+    background:none; border:0; padding:0; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:6px;}
+  .hb-fold-h span{font-size:9px; color:#94a3b8; font-weight:800;}
+  .hb-fold-b{margin-top:5px; line-height:1.65; color:#fed7aa; font-size:9.5px;}
+  .hb-fold-b b{color:#fdba74;}
+  .hb-modal-row{display:flex; gap:6px; align-items:baseline; font-size:10.5px; line-height:1.65;}
+  .hb-modal-row > span:first-child{color:#94a3b8; font-weight:800; min-width:74px;}
+</style>
+<div class="op-box" id="hamburgerBox">
+  <div class="op-head">
+    <div class="op-title">🍔 장중매매 후보 <span class="op-sub">(불개미 · 햄버거)</span></div>
+    <div class="op-badges">
+      <span class="op-badge op-time" id="hbTimeBadge">⏱ 대기</span>
+      <span class="op-badge" id="hbCountBadge">⏱ 로딩 중</span>
+      <button type="button" class="op-toggle" id="hbToggleBtn" aria-expanded="true">접기</button>
+    </div>
+  </div>
+  <div class="op-note" id="hbNote"></div>
+  <div id="hbBody"></div>
+  <div class="op-principle" id="hbPrincipleWrap">
+    <button type="button" class="hb-fold-h" id="hbPrincipleBtn" aria-expanded="false">
+      <span style="font-size:9.5px;color:#fdba74;font-weight:900;">📖 매매원칙 보기 (불개미 · 햄버거 4조건)</span><span id="hbPrincipleHint">펼치기 ▾</span>
+    </button>
+    <div class="hb-fold-b" id="hbPrincipleBody" hidden>
+      <b>① 기준</b> 그 종목이 최근 120거래일 안에 장대양봉(+10%↑ · 거래대금 300억↑)을 냈던 날의
+      <b>09:00~09:02 시동 3분봉 거래대금</b>을 '햄버거 기준 대금'으로 기억합니다.<br>
+      <b>② 조건</b> 오늘 그 종목이 속한 섹터가 주도 섹터로 살아 있고(테마 평균 +1%↑ · 종목 +5%↑),
+      <b>장초반 3분봉 대금이 그 기준을 넘을 때</b>만 후보로 봅니다. 장전에는 NXT 첫 3분봉(08:00~08:02)으로 봅니다.<br>
+      <b>③ 자리</b> +10% 미만 낮은 자리는 <b>⚡ 돌파</b>, +10% 이상 높은 자리는 <b>🎯 3분봉 20선 눌림</b>으로 봅니다.<br>
+      <b>④ 제외</b> 대금이 터져도 <b>긴 위꼬리 · 도지 · 음봉 · 일봉 역배열</b> 자리는 상승 확률이 낮아 뺍니다.
+    </div>
+  </div>
+  <div class="op-foot" id="hbFoot"></div>
+</div>
+<script>
+/* HAMBURGER_ENGINE_START — 🍔 장중매매 후보 (불개미 · 햄버거) · 2026-11-27 */
+(function () {
+  'use strict';
+  var LIVE_MS = 60 * 1000;
+  var FAIL_IDLE_MS = 10 * 60 * 1000;
+  var DATA = null;
+  var FAIL = null;
+  var busy = false;
+  var timer = null;
+  var BY_CODE = {};
+
+  function $(id) { return document.getElementById(id); }
+  function esc(v) {
+    return String(v === null || v === undefined ? '' : v).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function isNum(v) { return typeof v === 'number' && isFinite(v); }
+  function comma(v) { return isNum(v) ? Math.round(v).toLocaleString('ko-KR') : '—'; }
+  function won(v) { return isNum(v) ? Math.round(v).toLocaleString('ko-KR') + '원' : '—'; }
+  function pctf(v) { return isNum(v) ? (v > 0 ? '+' : '') + v.toFixed(2) + '%' : '—'; }
+  function eok(v) { return isNum(v) ? comma(v) + '억' : '—'; }
+  function upColor(v) { return !isNum(v) ? '#cbd5e1' : (v > 0 ? '#f43f5e' : v < 0 ? '#38bdf8' : '#cbd5e1'); }
+  function apiBase() { try { return window.__API_BASE || ''; } catch (e) { return ''; } }
+  function apiOn() { try { return !!(window.__API_BASE) || !/\.github\.io$/i.test(location.hostname); } catch (e) { return true; } }
+  function nowKst() {
+    var d = new Date();
+    try {
+      var f = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', hour: '2-digit', minute: '2-digit', hour12: false, weekday: 'short' }).formatToParts(d);
+      var o = {};
+      f.forEach(function (p) { o[p.type] = p.value; });
+      var hh = parseInt(o.hour, 10) % 24;
+      return { min: hh * 60 + parseInt(o.minute, 10), wd: o.weekday || '' };
+    } catch (e) {
+      return { min: d.getHours() * 60 + d.getMinutes(), wd: '' };
+    }
+  }
+  function inSession() { var n = nowKst(); return n.wd !== 'Sat' && n.wd !== 'Sun' && n.min >= 480 && n.min <= 930; }
+  function chip(text, cls) { return '<span class="op-chip ' + (cls || 'mute') + '">' + esc(text) + '</span>'; }
+
+  /* 기준 → 오늘 비교 줄 — 이 박스의 핵심(팝업에서도 같은 값을 크게 보여준다) */
+  function cmpLine(it) {
+    var b = it.base || {};
+    var t = it.today || {};
+    var v = it.verdict || {};
+    if (!b.ok) {
+      return '<div class="hb-cmp hb-off">기준 미계산 — ' + esc(b.message || '일봉·과거 분봉 조회 전') + '</div>';
+    }
+    var left = '기준 ' + esc(b.dateLabel || '') + ' <b>' + eok(b.open3mEok) + '</b>';
+    var right = t.ok
+      ? '오늘 ' + esc(t.market === 'NX' ? 'NXT ' : '') + '<b>' + eok(t.open3mEok) + '</b>'
+      : '오늘 <b>대기</b>';
+    var mult = '';
+    if (t.ok && isNum(v.passMultiple)) {
+      mult = '<span class="hb-mult' + (v.passMultiple >= 1 ? '' : ' dim') + '">' + v.passMultiple + '배</span>';
+    }
+    var delta = (t.ok && isNum(v.deltaEok)) ? ' <span style="color:' + (v.deltaEok >= 0 ? '#6ee7b7' : '#93c5fd') + ';">(' + (v.deltaEok > 0 ? '+' : '') + comma(v.deltaEok) + '억)</span>' : '';
+    return '<div class="hb-cmp"><span class="hb-k">' + left + '</span><span class="hb-arrow">→</span>' +
+      '<span class="hb-v">' + right + '</span>' + mult + delta + '</div>';
+  }
+
+  function card(it, i) {
+    var chips = [];
+    chips.push(chip('🔥 ' + (it.themeName || '테마 미확인') + (it.themeRank ? ' ' + it.themeRank + '위' : '') + (isNum(it.themePct) ? ' · ' + pctf(it.themePct) : ''), 'ok'));
+    chips.push(chip(it.role === '부대장' ? '💰 부대장(대금)' : '👑 대장(상승률)', it.role === '부대장' ? 'warm' : 'hot'));
+    if (isNum(it.valueEok)) chips.push(chip('대금 ' + eok(it.valueEok), 'mute'));
+    var v = it.verdict || {};
+    var tagCls = v.tagKind === 'hot' ? 'hot' : v.tagKind === 'ok' ? 'ok' : v.tagKind === 'dn' ? 'dn' : 'wait';
+    chips.push(chip(v.tag || '판정 대기', tagCls));
+    return '<div class="op-card" data-hb-code="' + esc(it.code) + '" role="button" tabindex="0">' +
+      '<div class="op-card-top"><span class="op-rank">' + (i + 1) + '</span>' +
+      '<b class="op-name">' + esc(it.name) + '</b>' +
+      '<span style="font-size:9.5px;color:#94a3b8;">' + esc(it.code) + '</span>' +
+      '<span class="op-price">' + won(it.price) + '</span>' +
+      '<span class="op-chg" style="color:' + upColor(it.pctNow) + ';">' + pctf(it.pctNow) + '</span></div>' +
+      '<div class="op-chips">' + chips.join('') + '</div>' +
+      cmpLine(it) +
+      (v.warn ? '<div class="op-chips" style="margin-top:4px;">' + chip('⚠ ' + v.warn, 'warm') + '</div>' : '') +
+      (v.blocks && v.blocks.length
+        ? '<div class="op-chips" style="margin-top:4px;">' + v.blocks.map(function (b) { return chip('⛔ ' + b, 'dn'); }).join('') + '</div>'
+        : '') +
+      '</div>';
+  }
+
+  function render() {
+    var body = $('hbBody');
+    if (!body) return;
+    var noteEl = $('hbNote');
+    var d = DATA;
+    if (!d) {
+      body.innerHTML = '';
+      if (noteEl) noteEl.textContent = FAIL ? ('햄버거 후보를 불러오지 못했습니다 — ' + FAIL) : '햄버거 후보를 불러오는 중입니다…';
+      if ($('hbFoot')) $('hbFoot').textContent = '';
+      return;
+    }
+    var items = (d.items || []).filter(function (x) { return x && x.code; });
+    $('hbTimeBadge').textContent = '⏱ ' + (d.generatedAtKst || '') + ' 기준';
+    $('hbCountBadge').textContent = '🍔 성립 ' + ((d.counts || {}).pass || 0) + ' / 후보 ' + (items.length) + '종목';
+    $('hbCountBadge').className = 'op-badge' + ((d.counts || {}).pass ? '' : ' closed');
+
+    if (!items.length) {
+      body.innerHTML = '<div class="op-card" style="opacity:.9;"><div style="font-size:11px;color:#94a3b8;line-height:1.6;">' +
+        esc((d.errors || []).join(' / ') || d.note || '오늘 테마에서 조건을 채운 대장·부대장이 없습니다.') +
+        '<br>기준을 임의로 완화하지 않습니다.</div></div>';
+      if (noteEl) noteEl.innerHTML = '';
+      if ($('hbFoot')) $('hbFoot').textContent = '';
+      return;
+    }
+    body.innerHTML = '<div class="op-grid">' + items.map(card).join('') + '</div>';
+    if (noteEl) noteEl.innerHTML = d.note || '';
+    if ($('hbFoot')) {
+      $('hbFoot').textContent = '※ 카드를 누르면 종목 팝업이 열리고, 1분봉 차트와 함께 「이전 장대양봉 날 3분봉 대금 vs 오늘 장초반 3분봉 대금」이 나란히 표시됩니다. 기준 대금은 KIS 공식 API(일봉 FHKST03010100 · 과거 분봉 FHKST03010230) 실측입니다.';
+    }
+  }
+
+  function schedule() {
+    if (timer) clearTimeout(timer);
+    var wait = document.hidden ? FAIL_IDLE_MS * 3 : (inSession() ? LIVE_MS : FAIL_IDLE_MS);
+    timer = setTimeout(function () { if (!document.hidden) load(); else schedule(); }, wait);
+  }
+
+  function load() {
+    if (busy) return;
+    if (!apiOn()) {
+      FAIL = '정적 미러 — 햄버거 기준 계산은 동적 서버(/api/tabs-live)에서만 됩니다';
+      render();
+      return;
+    }
+    busy = true;
+    fetch(apiBase() + '/api/tabs-live?_=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (j) {
+        var d = j && j.hamburger;
+        if (!d) throw new Error('hamburger 없음(서버 구버전)');
+        DATA = d;
+        FAIL = null;
+        BY_CODE = {};
+        (d.items || []).forEach(function (x) { if (x && x.code) BY_CODE[x.code] = x; });
+        window.HAMBURGER_BY_CODE = BY_CODE;
+        render();
+      })
+      .catch(function (e) { FAIL = String((e && e.message) || e); render(); })
+      .finally(function () { busy = false; schedule(); });
+  }
+
+  function bindToggle() {
+    var btn = $('hbToggleBtn');
+    var box = $('hamburgerBox');
+    if (!btn || !box) return;
+    /* 2026-11-27 사용자 지시 — 메인 탭 후보 박스는 기본 접힘 */
+    if (box.className.indexOf('collapsed') < 0) box.className += ' collapsed';
+    btn.textContent = '펼치기'; btn.setAttribute('aria-expanded', 'false');
+    btn.addEventListener('click', function () {
+      var col = box.className.indexOf('collapsed') >= 0;
+      box.className = col ? box.className.replace(/\s*collapsed/g, '') : box.className + ' collapsed';
+      btn.textContent = col ? '접기' : '펼치기';
+      btn.setAttribute('aria-expanded', col ? 'true' : 'false');
+      try { window.localStorage.setItem('hamburgerCollapsed', col ? '0' : '1'); } catch (e) {}
+    });
+  }
+
+  /* 매매원칙 접이식 — 기본 접힘 */
+  function bindPrinciple() {
+    var btn = $('hbPrincipleBtn');
+    var body = $('hbPrincipleBody');
+    var hint = $('hbPrincipleHint');
+    if (!btn || !body) return;
+    btn.addEventListener('click', function () {
+      var open = body.hidden;
+      body.hidden = !open;
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (hint) hint.textContent = open ? '접기 ▴' : '펼치기 ▾';
+    });
+  }
+
+  function bindClicks() {
+    var box = $('hbBody');
+    if (!box) return;
+    box.addEventListener('click', function (e) {
+      var cardEl = e.target && e.target.closest ? e.target.closest('[data-hb-code]') : null;
+      if (!cardEl) return;
+      var code = cardEl.getAttribute('data-hb-code');
+      var nameEl = cardEl.querySelector('.op-name');
+      var name = nameEl ? nameEl.textContent : code;
+      if (window.HamModal) window.HamModal.want(code);
+      if (typeof window.openDetail === 'function') {
+        window.openDetail(name + ' (' + code + ')', '', '🍔 장중매매 후보 · 불개미 햄버거', '');
+      }
+      /* 카드에서 열면 곧바로 1분봉 + 햄버거 기준 대조 */
+      setTimeout(function () {
+        if (window.FKModal && window.FKModal.showMin) window.FKModal.showMin(code, { ham: true });
+      }, 120);
+    });
+  }
+
+  /* ============================================================
+     팝업 — 1분봉 차트 아래 '햄버거 기준 대금' 패널
+     차트·봉 전환은 F존 엔진(FKModal)을 그대로 쓴다(같은 관제탑 모달).
+     ============================================================ */
+  var LAST = null;
+  function infoBox() {
+    var el = $('modalHamInfo');
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = 'modalHamInfo';
+    el.style.cssText = 'display:none;margin-top:8px;background:rgba(249,115,22,0.07);border:1px solid rgba(249,115,22,0.42);border-radius:8px;padding:8px 10px;max-width:100%;box-sizing:border-box;';
+    var fk = $('modalFkInfo');
+    if (fk && fk.parentNode) fk.parentNode.insertBefore(el, fk.nextSibling);
+    else {
+      var meta = $('modalChartMeta');
+      if (meta && meta.parentNode) meta.parentNode.insertBefore(el, meta.nextSibling);
+      else { var cb = $('modalChartBox'); if (cb) cb.appendChild(el); }
+    }
+    return el;
+  }
+
+  function row(label, value, color) {
+    return '<div class="hb-modal-row"><span>' + esc(label) + '</span><span style="color:' + (color || '#e2e8f0') + ';font-weight:700;">' + value + '</span></div>';
+  }
+
+  function shapeText(o) {
+    if (!o) return '—';
+    var kind = o.kind === 'yang' ? '양봉' : o.kind === 'eum' ? '음봉' : o.kind === 'doji' ? '도지' : '보합';
+    return kind + ' · 몸통 ' + (isNum(o.bodyPct) ? o.bodyPct + '%' : '—') + ' · 위꼬리 ' + (isNum(o.upperPct) ? o.upperPct + '%' : '—') + ' · ' + pctf(o.pct);
+  }
+
+  function render_modal(info, code) {
+    var el = infoBox();
+    if (!el) return;
+    var b = (info && info.base) || {};
+    var t = (info && info.today) || {};
+    var v = (info && info.verdict) || {};
+    el.style.display = 'block';
+    var head = '<div style="display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:5px;">' +
+      '<span style="font-size:11px;font-weight:900;color:#fdba74;">🍔 햄버거 기준 대금 (이전 장대양봉 vs 오늘 장초반)</span>' +
+      '<span class="op-chip ' + (v.tagKind === 'hot' ? 'hot' : v.tagKind === 'ok' ? 'ok' : v.tagKind === 'dn' ? 'dn' : 'wait') + '">' + esc(v.tag || '판정 대기') + '</span></div>';
+    if (!b.ok) {
+      el.innerHTML = head + '<div style="font-size:10.5px;color:#fda4af;line-height:1.6;">기준 대금을 아직 계산하지 못했습니다 — ' +
+        esc(b.message || '일봉·과거 분봉 조회 전') + '<br>기준은 최근 120거래일 장대양봉(+10%↑ · 대금 300억↑) 날의 09:00~09:02 3분봉 대금입니다.</div>';
+      return;
+    }
+    var rows = [];
+    rows.push(row('기준일', esc(b.dateLabel || '') + ' 장대양봉 <b style="color:#f43f5e;">' + pctf(b.pct) + '</b> · 그날 대금 <b>' + eok(b.dayValueEok) + '</b>', '#fed7aa'));
+    rows.push(row('기준 3분봉', '<b style="color:#fdba74;">' + eok(b.open3mEok) + '</b> · 09:00~09:02' + (b.open3m ? ' (' + shapeText(b.open3m) + ')' : ''), '#e2e8f0'));
+    if (t.ok) {
+      var multTxt = isNum(v.passMultiple)
+        ? '<span class="hb-mult' + (v.passMultiple >= 1 ? '' : ' dim') + '" style="display:inline-block;margin-left:4px;">' + v.passMultiple + '배</span>'
+        : '';
+      rows.push(row('오늘 ' + (t.market === 'NX' ? 'NXT ' : '') + '3분봉', '<b style="color:#fff;">' + eok(t.open3mEok) + '</b>' + multTxt +
+        (isNum(v.deltaEok) ? ' <span style="color:' + (v.deltaEok >= 0 ? '#6ee7b7' : '#93c5fd') + ';">' + (v.deltaEok > 0 ? '+' : '') + comma(v.deltaEok) + '억</span>' : '') +
+        ' · ' + (t.marketLabel || '') + ' (' + shapeText(t.open3m) + ')', '#e2e8f0'));
+    } else {
+      rows.push(row('오늘 3분봉', esc(t.message || '아직 없습니다'), '#94a3b8'));
+    }
+    if (info.ma20 && info.ma20.ok) rows.push(row('3분봉 20선', comma(info.ma20.ma20) + '원 <span style="color:#94a3b8;">(현재가 ' + comma(info.last || 0) + '원)</span>', '#cbd5e1'));
+    else rows.push(row('3분봉 20선', '아직 20개(60분)가 쌓이지 않았습니다', '#94a3b8'));
+    if (v.blocks && v.blocks.length) rows.push(row('제외 사유', v.blocks.map(function (x) { return '⛔ ' + esc(x); }).join(' · '), '#fda4af'));
+    if (v.warn) rows.push(row('주의', '⚠ ' + esc(v.warn), '#fdba74'));
+    if (v.reasons && v.reasons.length) rows.push(row('근거', v.reasons.map(esc).join(' · '), '#94a3b8'));
+    if (b.others && b.others.length) {
+      rows.push(row('다른 장대양봉', b.others.map(function (o) { return esc(o.dateLabel) + ' ' + pctf(o.pct) + ' · ' + eok(o.valueEok); }).join(' / '), '#94a3b8'));
+    }
+    if (b.reversal && b.reversal.ma5) {
+      rows.push(row('일봉 배열', esc(b.reversal.label) + (b.reversal.reverse ? ' <b style="color:#fda4af;">역배열</b>' : ''), '#cbd5e1'));
+    }
+    rows.push(row('판정 기준', '오늘 3분봉 대금 ≥ 기준 · 긴 위꼬리·도지·음봉·역배열 제외', '#94a3b8'));
+    el.innerHTML = head + rows.join('');
+    LAST = { code: String(code), info: info };
+  }
+
+  window.HamModal = {
+    code: null,
+    last: null,
+    want: function (code) { this.code = code ? String(code) : null; },
+    wants: function (code) { return !!code && this.code === String(code); },
+    render: function (info, code) {
+      this.code = code ? String(code) : this.code;
+      try { render_modal(info, code); } catch (e) {}
+    },
+    hide: function () {
+      var el = $('modalHamInfo');
+      if (el) el.style.display = 'none';
+    }
+  };
+
+  function init() {
+    bindToggle(); bindPrinciple(); bindClicks(); render(); load();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+/* HAMBURGER_ENGINE_END */
+</script>
 <!-- ⚡ 장중매매 후보 (F존·K존) — 2026-11-26 신설 · 1번 메인 탭 · 홍인기 D+0 박스 바로 아래
      원전: 보유 자료 「3강 F존, 38스윙」
        · F존 = 당일 고가(H0) 대비 B1 -8% / B2 -10% / B3 -12% 밴드에서 눌림을 받는 자리
@@ -6574,7 +6931,8 @@
     if (typeof window.drawModalCandles === 'function') { try { window.drawModalCandles(); } catch (e) {} }
   }
 
-  function showMin(code) {
+  function showMin(code, opts) {
+    var o = opts || {};
     M.reqId += 1;
     var rid = M.reqId;
     /* 제목을 '불러오는 중'으로 바꾸기 전에 일봉 상태를 먼저 저장한다(돌아올 때 그대로 복원) */
@@ -6586,7 +6944,7 @@
     var tt = $('modalChartTitleTxt');
     setBar('min');
     if (tt) tt.textContent = '⏳ 1분봉 불러오는 중…';
-    fetch(apiBase() + '/api/stock-live?mode=minute&code=' + encodeURIComponent(code), { cache: 'no-store' })
+    fetch(apiBase() + '/api/stock-live?mode=minute&code=' + encodeURIComponent(code) + (o.ham ? '&ham=1' : ''), { cache: 'no-store' })
       .then(function (r) { return r.json(); })
       .then(function (j) {
         if (rid !== M.reqId) return;
@@ -6610,6 +6968,11 @@
         try { window.setModalValueUnit('원', 0); } catch (eU) {}
         setBar('min');
         infoRender(M.fk, isCand);
+        /* 🍔 불개미 햄버거 — ?ham=1 응답에 실려 오는 기준 대금 패널(없으면 숨김) */
+        if (window.HamModal) {
+          if (j.hamburger) window.HamModal.render(j.hamburger, code);
+          else window.HamModal.hide();
+        }
         if (typeof window.drawModalCandles === 'function') { try { window.drawModalCandles(); } catch (e) {} }
       })
       .catch(function (e) { if (rid === M.reqId) tfFail(String((e && e.message) || e)); });
@@ -6621,7 +6984,8 @@
     if (tf === 'min') {
       var code = codeOf();
       if (!code) { tfFail('종목 코드를 찾지 못했습니다(지수는 1분봉 대상이 아닙니다)'); return; }
-      showMin(code);
+      var hamOn = !!(window.HamModal && window.HamModal.wants && window.HamModal.wants(code));
+      showMin(code, { ham: hamOn });
       return;
     }
     M.tf = 'day';
@@ -6648,6 +7012,7 @@
   }
 
   function onOpen() {
+    if (window.HamModal) { window.HamModal.code = null; window.HamModal.hide(); }
     M.reqId += 1;
     var ttl = $('modalTitle');
     M.title = ttl ? ttl.textContent : '';
@@ -6666,6 +7031,7 @@
   }
 
   function onIndex() {
+    if (window.HamModal) window.HamModal.hide();
     M.reqId += 1;
     M.tf = 'day';
     window.MODAL_TF = 'day';
@@ -6693,11 +7059,11 @@
     onOpen: onOpen,
     onIndex: onIndex,
     setTf: setTf,
-    showMin: function (code) {
+    showMin: function (code, opts) {
       /* 후보 카드에서 열면 전장(09:00~15:30) 전체로 띄운다 — 하루 파동과 존의 위치를 함께 보려는 것 */
       M.force = true;
       M.count = 390;
-      showMin(code);
+      showMin(code, opts);
     },
     stashDay: function (arr) {
       if (!arr || !arr.length) return;
@@ -6825,7 +7191,7 @@
      탭 3개는 400px 외부액정 세로에서도 3등분으로 유지되게 인라인 그리드로 고정한다(넘치면 글자만 줄바꿈). -->
 <div class="op-box" id="closingPicksBox">
   <div class="op-head">
-    <div class="op-title">🌙 오늘 종가베팅 공략 후보 <span class="op-sub">(3트랙: 🔥 테마 · 💰 수급 · 📘 침착해)</span></div>
+    <div class="op-title">🌙 종가베팅 공략 후보 <span class="op-sub">(3트랙: 🔥 테마 · 💰 수급 · 📘 침착해)</span></div>
     <div class="op-badges">
       <span class="op-badge op-time" id="cpTimeBadge">⏱ 장전 대기</span>
       <span class="op-badge" id="cpBadge">⏱ 로딩 중</span>
