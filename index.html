@@ -6326,7 +6326,8 @@
     }
     var left = '기준 ' + esc(b.dateLabel || '') + ' <b>' + eok(b.open3mEok) + '</b>';
     var right = t.ok
-      ? '오늘 ' + esc(t.market === 'NX' ? 'NXT ' : '') + '<b>' + eok(t.open3mEok) + '</b>'
+      ? (t.fallback ? '직전 ' + esc(t.dateLabel || '') + ' <b>' + eok(t.open3mEok) + '</b>'
+        : '오늘 ' + esc(t.market === 'NX' ? 'NXT ' : '') + '<b>' + eok(t.open3mEok) + '</b>')
       : '오늘 <b>대기</b>';
     var mult = '';
     if (t.ok && isNum(v.passMultiple)) {
@@ -6540,7 +6541,9 @@
       var multTxt = isNum(v.passMultiple)
         ? '<span class="hb-mult' + (v.passMultiple >= 1 ? '' : ' dim') + '" style="display:inline-block;margin-left:4px;">' + v.passMultiple + '배</span>'
         : '';
-      rows.push(row('오늘 ' + (t.market === 'NX' ? 'NXT ' : '') + '3분봉', '<b style="color:#fff;">' + eok(todayVal) + '</b> ' + multTxt +
+      var tLabel = t.fallback ? '직전 ' + (t.dateLabel || '') + ' 3분봉'
+        : '오늘 ' + (t.market === 'NX' ? 'NXT ' : '') + '3분봉';
+      rows.push(row(tLabel, '<b style="color:#fff;">' + eok(todayVal) + '</b> ' + multTxt +
         (isNum(v.deltaEok) ? ' <span style="color:' + (v.deltaEok >= 0 ? '#6ee7b7' : '#93c5fd') + ';">' + (v.deltaEok > 0 ? '+' : '') + comma(v.deltaEok) + '억</span>' : '') +
         ' · ' + (t.marketLabel || '') + ' (' + shapeText(t.open3m) + ')', '#e2e8f0'));
     } else {
