@@ -14897,7 +14897,13 @@ function openDetail(title, v1, v2, desc) {
         if (window.StratDetail && typeof window.StratDetail.open === 'function') {
           var ok = false;
           try { ok = window.StratDetail.open('rn', st.code); } catch (e) { ok = false; }
-          if (ok) return;
+          if (ok) {
+            /* 버튼 이름 그대로 '500봉(2년)'으로 연다 — 모달 기본 표시는 120봉이라서 */
+            var setLong = function () { try { if (window.UCX && typeof window.UCX.period === 'function') window.UCX.period('sdmrn', 500); } catch (e) { /* */ } };
+            setTimeout(setLong, 80);
+            setTimeout(setLong, 600);
+            return;
+          }
         }
         try { if (window.RnZone && window.RnZone.selectStockByCode) window.RnZone.selectStockByCode(st.code); } catch (e) { /* */ }
         var wrap = document.getElementById('chartWrapper');
