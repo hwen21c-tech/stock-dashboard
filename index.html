@@ -6413,12 +6413,15 @@
       if (!excluded) return head + '.';
       return head + ' (나머지 ' + excluded + '종목 제외' + (parts.length ? ': ' + parts.join(' · ') : '') + ') — 기준 미달·실패 패턴은 카드로 올리지 않습니다.';
     }
+    /* 성립 0종목 카드 — 요약 줄(excludedLine)과 같은 문장이 서버 note 앞머리에 또 있어 떼어 낸다 */
+    function noteRest(n) {
+      return String(n || '').replace(/^후보\s*\d+종목 중\s*\d+종목 성립[^.]*\.\s*/, '');
+    }
 
     if (!items.length) {
       body.innerHTML = '<div class="op-card" style="opacity:.95;"><div style="font-size:11px;color:#94a3b8;line-height:1.6;">' +
-        '<b style="color:#fdba74;">성립 종목 0</b> — ' + esc(excludedLine()) +
-        (d.errors && d.errors.length ? '<br>' + esc(d.errors.join(' / ')) : '') +
-        '<br>' + (d.note || '기준을 임의로 완화하지 않습니다.') + '</div></div>';
+        '<b style="color:#fdba74;">성립 종목 0</b> — ' + (noteRest(d.note) || '기준을 임의로 완화하지 않습니다.') +
+        (d.errors && d.errors.length ? '<br>' + esc(d.errors.join(' / ')) : '') + '</div></div>';
       if (noteEl) noteEl.innerHTML = '';
       if ($('hbFoot')) $('hbFoot').innerHTML = '<b style="color:#fdba74;">' + esc(excludedLine()) + '</b>';
       return;
