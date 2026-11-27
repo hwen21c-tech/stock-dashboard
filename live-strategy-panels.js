@@ -62,29 +62,20 @@
     return '#94a3b8';
   }
 
-  /* ---------- 상자 접기/펼치기 (11/26 · 동적 live-api.js 와 같은 규격/같은 저장 키) ----------
-   *  · 헤더 오른쪽 [접기 ▾] / [펼치기 ▸] 하나. 기본 펼침.
-   *  · 접힘은 localStorage(sd_strat_box_fold_v1)에 남겨 30초 새로고침·페이지 재방문 뒤에도 유지.
+  /* ---------- 상자 접기/펼치기 (11/26 · 동적 live-api.js 와 같은 규격) ----------
+   *  · 헤더 오른쪽 [접기 ▾] / [펼치기 ▸] 하나. **2026-11-27 사용자 지시 — 기본 접힘.**
+   *  · 펼친 상자만 이 화면(세션)에서 기억한다 — 새로고침하면 다시 접힌 채로 뜬다.
    *  · 접어도 카드·차트는 그대로 — 상자 본문만 숨긴다. 400px에서 제목은 한 줄 말줌임. */
-  var BOX_FOLD_STORE = 'sd_strat_box_fold_v1';
-
-  function folds() {
-    try {
-      var raw = window.localStorage ? window.localStorage.getItem(BOX_FOLD_STORE) : null;
-      var o = raw ? JSON.parse(raw) : {};
-      return (o && typeof o === 'object' && !Array.isArray(o)) ? o : {};
-    } catch (e) { return {}; }
-  }
+  var BOX_FOLD_MEM = {};   /* key → 펼침 여부 */
 
   function collapsed(key) {
-    return key ? Boolean(folds()[key]) : false;
+    if (!key) return false;
+    return !BOX_FOLD_MEM[key];
   }
 
   function setCollapsed(key, on) {
     if (!key) return;
-    var all = folds();
-    if (on) all[key] = 1; else delete all[key];
-    try { if (window.localStorage) window.localStorage.setItem(BOX_FOLD_STORE, JSON.stringify(all)); } catch (e) { /* 저장 실패 — 이번 화면에서만 */ }
+    BOX_FOLD_MEM[key] = !on;
   }
 
   function toggle(key) {
