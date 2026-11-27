@@ -1424,7 +1424,7 @@
         a.onerror = () => { /* 조용히 무시 */ };
         a.onstalled = a.onerror;
         a.volume = 0.92 * voiceLevel();
-        a.src = 'https://stock-dashboard-live-6frm.vercel.app/api/tts?lang=ko&text=' + encodeURIComponent(w);
+        a.src = 'https://stock-dashboard-live-bice.vercel.app/api/tts?lang=ko&text=' + encodeURIComponent(w);
         const pr = a.play();
         if (pr && pr.catch) pr.catch(() => { /* 자동재생 차단은 무시 */ });
         return true;

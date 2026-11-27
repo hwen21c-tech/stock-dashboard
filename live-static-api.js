@@ -20,7 +20,7 @@
    ============================================================ */
 (function () {
   'use strict';
-  var API_BASE = 'https://stock-dashboard-live-6frm.vercel.app';
+  var API_BASE = 'https://stock-dashboard-live-bice.vercel.app';
   window.__API_BASE = API_BASE;      /* 이 값이 있으면 각 엔진·핀 모듈이 '/api 사용 가능'으로 본다 */
   window.__STATIC_PAGE = true;
 
