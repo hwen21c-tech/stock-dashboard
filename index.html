@@ -6476,7 +6476,7 @@
       }
       /* 카드에서 열면 곧바로 1분봉 + 햄버거 기준 대조 */
       setTimeout(function () {
-        if (window.FKModal && window.FKModal.showMin) window.FKModal.showMin(code, { ham: true });
+        if (window.FKModal && window.FKModal.showMin) window.FKModal.showMin(code, { ham: true, pct: hbIt ? hbIt.pctNow : null });
       }, 120);
     });
   }
@@ -6536,10 +6536,11 @@
     rows.push(row('기준일', esc(by.dateLabel || '') + ' 장대양봉 <b style="color:#f43f5e;">' + pctf(by.pct) + '</b> · 그날 대금 <b>' + eok(dayVal) + '</b>', '#fed7aa'));
     rows.push(row('기준 3분봉', '<b style="color:#fdba74;">' + eok(baseVal) + '</b> · 09:00~09:02' + (by.open3m ? ' (' + shapeText(by.open3m) + ')' : ''), '#e2e8f0'));
     if (t.ok) {
+      var todayVal = isNum(t.open3mEok) ? t.open3mEok : (t.open3m ? t.open3m.valueEok : null);
       var multTxt = isNum(v.passMultiple)
         ? '<span class="hb-mult' + (v.passMultiple >= 1 ? '' : ' dim') + '" style="display:inline-block;margin-left:4px;">' + v.passMultiple + '배</span>'
         : '';
-      rows.push(row('오늘 ' + (t.market === 'NX' ? 'NXT ' : '') + '3분봉', '<b style="color:#fff;">' + eok(t.open3mEok) + '</b>' + multTxt +
+      rows.push(row('오늘 ' + (t.market === 'NX' ? 'NXT ' : '') + '3분봉', '<b style="color:#fff;">' + eok(todayVal) + '</b>' + multTxt +
         (isNum(v.deltaEok) ? ' <span style="color:' + (v.deltaEok >= 0 ? '#6ee7b7' : '#93c5fd') + ';">' + (v.deltaEok > 0 ? '+' : '') + comma(v.deltaEok) + '억</span>' : '') +
         ' · ' + (t.marketLabel || '') + ' (' + shapeText(t.open3m) + ')', '#e2e8f0'));
     } else {
