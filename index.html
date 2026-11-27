@@ -9999,6 +9999,27 @@
   </div><!-- TAB: RN ZONE FACT CHART (21 RN LINES & 1+2 AVERAGE PRICE) -->
   <div id="tabRnzone" style="display: none; padding-top: 10px;">
 
+    <!-- 🎯 RN 위치 조회 (2026-11-27) — 종목명/6자리 코드 검색 → 지금 상·하단 RN 사이 위치·1·2차 타점 즉시 확인 -->
+    <div id="liveSearchBar" style="background:#0b1120; border:1px solid rgba(56,189,248,0.4); border-radius:10px; padding:9px 10px; margin-bottom:10px;">
+      <div style="display:flex; align-items:baseline; gap:6px; flex-wrap:wrap; margin-bottom:7px;">
+        <span style="font-size:12.5px; font-weight:900; color:#38bdf8; white-space:nowrap;">🎯 RN 위치 조회</span>
+        <span style="font-size:10.5px; color:#94a3b8; line-height:1.4;">어떤 종목이든 검색하면 지금 <b style="color:#e2e8f0;">상·하단 RN 사이 위치</b>와 1·2차 타점을 바로 보여줍니다</span>
+      </div>
+      <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <input type="text" id="liveStockQuery" list="rnSearchNames" autocomplete="off" enterkeyhint="search"
+               placeholder="종목명 또는 6자리 코드 (예: 삼성전자 / 005930)"
+               onkeydown="if(event.key==='Enter'){ event.preventDefault(); if(window.RnSearch) RnSearch.go(); }"
+               style="flex:1; min-width:158px; width:100%; background:#0f172a; color:#e2e8f0; border:1px solid rgba(148,163,184,0.4); border-radius:7px; padding:8px 9px; font-size:12.5px;">
+        <datalist id="rnSearchNames"></datalist>
+        <button type="button" onclick="if(window.RnSearch) RnSearch.go(); else if(window.LiveAPI) LiveAPI.searchStock();" style="background:#0284c7; color:#ffffff; border:1px solid #38bdf8; border-radius:7px; padding:8px 13px; font-size:12px; font-weight:800; cursor:pointer; white-space:nowrap;">🔍 RN 조회</button>
+      </div>
+      <div id="rnSearchSug" style="display:none; gap:5px; flex-wrap:wrap; margin-top:6px;"></div>
+      <div id="rnRecentRow" style="display:none; align-items:center; gap:5px; flex-wrap:wrap; margin-top:6px;"></div>
+      <div id="liveSearchStatus" style="font-size:10.5px; color:#94a3b8; margin-top:6px; line-height:1.45;">종목명·6자리 코드 모두 됩니다. 조회하면 실시간 현재가로 공식 21개 RN선을 다시 계산해 위치 카드에 표시합니다.</div>
+      <span id="rnLiveStatus" style="display:block; font-size:10.5px; color:#94a3b8; margin-top:4px; line-height:1.45;">⚡ RN존은 매일 장마감 후 거래대금 상위 주도주에서 자동 선정되고, 캔들·RN선·타점은 페이지를 열 때와 RN 탭 진입 시 /api/stock-chart 로 계속 갱신됩니다(1번 탭 신호등 칩도 같은 목록·실측값을 씁니다).</span>
+      <div id="rnSearchResult" style="display:none; margin-top:8px;"></div>
+    </div>
+
 <!-- 2. 중앙 & 하단 2단 그리드 (차트뷰 & 3단계 종목리스트) -->
     <div class="dashboard-grid">
 
@@ -14417,6 +14438,51 @@ function openDetail(title, v1, v2, desc) {
             document.getElementById('calcProfitAmt').innerText = '+' + profitAmt.toLocaleString() + '원';
         }
 
+        /* 🎯 RN 위치 조회(2026-11-27) — 검색 결과를 목록에 넣고 그 종목을 연다.
+           StratDetail 이 감싼 공개 selectStockByCode(모달 자동 열기)는 부르지 않고 모듈 내부 함수만 쓴다. */
+        function upsertSearchStock(stock) {
+            if (!stock || !stock.code) return false;
+            let idx = RAW_STOCKS.findIndex(function (x) { return x && x.code === stock.code; });
+            if (idx === -1) {
+                RAW_STOCKS.unshift(stock);
+                idx = 0;
+            } else {
+                const merged = Object.assign({}, RAW_STOCKS[idx], stock, {
+                    name: stock.name || RAW_STOCKS[idx].name
+                });
+                merged.candles = mergeCandles(RAW_STOCKS[idx].candles, stock.candles);
+                try { Object.assign(merged, rnFor(merged.price)); } catch (e) { /* */ }
+                RAW_STOCKS[idx] = merged;
+            }
+            currentCategory = 'all';
+            filteredStocks = [...RAW_STOCKS];
+            currentStockIndex = idx;
+            try {
+                const badge = document.getElementById('listCountBadge');
+                if (badge) badge.innerText = '총 ' + filteredStocks.length + '개';
+                document.querySelectorAll('#tabRnzone .cat-tab-bar .cat-tab-btn, #tabRnzone .cat-tabs .cat-tab-btn')
+                    .forEach(function (b, i) { b.classList.toggle('active', i === 0); });
+                renderStockList();
+                updateStockHeaderAndData();
+                resetChartView();
+                updateCalc();
+            } catch (e) { /* 탭 초기화 전이어도 다음 진입에서 그려진다 */ }
+            return true;
+        }
+
+        /* 검색 결과 카드의 당일 대금만 조용히 채운다(가격·RN은 그대로 — 두 수치가 서로 어긋나지 않게) */
+        function patchStock(code, patch) {
+            if (!code || !patch) return false;
+            const idx = RAW_STOCKS.findIndex(function (x) { return x && x.code === code; });
+            if (idx === -1) return false;
+            Object.assign(RAW_STOCKS[idx], patch);
+            for (let f = 0; f < filteredStocks.length; f += 1) {
+                if (filteredStocks[f] && filteredStocks[f].code === code) filteredStocks[f] = RAW_STOCKS[idx];
+            }
+            try { renderStockList(); } catch (e) { /* */ }
+            return true;
+        }
+
         window.onload = init;
     
       return {
@@ -14467,6 +14533,9 @@ function openDetail(title, v1, v2, desc) {
             drawChart();
           }
         },
+        rnFor: rnFor,
+        upsertSearchStock: upsertSearchStock,
+        patchStock: patchStock,
         resize: resizeCanvas,
         draw: drawChart,
         selectStockByCode: selectStockByCode,
@@ -14478,6 +14547,415 @@ function openDetail(title, v1, v2, desc) {
         updateCalc: updateCalc
       };
     })();
+
+    // ==========================================
+    // 🎯 RN 위치 조회 — 검색 → 상·하단 RN 사이 위치 카드 (2026-11-27)
+    //   · 동적(Vercel)·정적(Pages) 공통. 정적은 live-static-api.js 가 '/api/...' 를 동적 오리진으로 넘긴다.
+    //   · RN 계산은 RN존 모듈의 rnFor(공식 21선) 하나만 쓴다 → 탭 카드·헤더와 수치가 어긋나지 않는다.
+    //   · 실패(없는 종목·네트워크·5xx)에는 NaN/undefined 없이 안내 문구만 남긴다.
+    // ==========================================
+    window.RnSearch = (function () {
+      var NAME_URL = 'data/stock_name_codes.json';
+      var RECENT_KEY = 'rnSearchRecent.v1';
+      var namePairs = [];
+      var namesLoading = false;
+      var lastStock = null, lastRn = null, lastMeta = null;
+      var busy = false, sugTimer = null, inited = false;
+
+      function $(id) { return document.getElementById(id); }
+      function num(v) { var n = Number(v); return (v === null || v === undefined || v === '' || !isFinite(n)) ? null : n; }
+      function won(v) { var n = num(v); return n === null ? '—' : Math.round(n).toLocaleString('ko-KR') + '원'; }
+      function pctText(v) { var n = num(v); return n === null ? '—' : (n > 0 ? '+' : '') + n.toFixed(2) + '%'; }
+      function esc(s) {
+        return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+      function status(text, kind) {
+        var el = $('liveSearchStatus');
+        if (!el) return;
+        el.textContent = text || '';
+        el.style.color = kind === 'err' ? '#fca5a5' : kind === 'ok' ? '#34d399' : kind === 'warn' ? '#fbbf24' : '#94a3b8';
+      }
+      function catInfo(cat) {
+        if (cat === 'touch_lower') return ['🟢 하단 RN 터치', '#4ade80'];
+        if (cat === 'near_lower') return ['🟡 하단 RN 근접', '#facc15'];
+        if (cat === 'touch_upper') return ['🚀 상단 RN 터치', '#f87171'];
+        if (cat === 'upper') return ['🔥 상단 RN 근접', '#f87171'];
+        return ['🔎 실시간 조회', '#38bdf8'];
+      }
+
+      /* ---------------- 자동완성 이름 목록 (없어도 서버가 이름으로 찾으므로 검색은 그대로 동작) ---------------- */
+      function loadNames() {
+        if (namesLoading || namePairs.length) return;
+        namesLoading = true;
+        fetch(NAME_URL, { cache: 'force-cache' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+          var arr = (j && j.items) || [];
+          if (Array.isArray(arr)) {
+            namePairs = arr.filter(function (p) { return p && p[0] && p[1]; }).map(function (p) { return [String(p[0]), String(p[1])]; });
+          }
+          var dl = $('rnSearchNames');
+          if (dl && namePairs.length) {
+            dl.innerHTML = namePairs.slice(0, 900).map(function (p) {
+              return '<option value="' + esc(p[1]) + '" label="' + esc(p[0]) + '"></option>';
+            }).join('');
+          }
+        }).catch(function () { /* 이름 목록은 없어도 검색 가능 */ }).then(function () { namesLoading = false; });
+      }
+
+      /* ---------------- 최근 검색 (localStorage) ---------------- */
+      function recentGet() {
+        try { var a = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+      }
+      function recentAdd(code, name) {
+        var list = recentGet().filter(function (x) { return x && x.code !== code; });
+        list.unshift({ code: code, name: name });
+        try { localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 6))); } catch (e) { /* */ }
+        renderRecent();
+      }
+      function clearRecent() {
+        try { localStorage.removeItem(RECENT_KEY); } catch (e) { /* */ }
+        renderRecent();
+      }
+      function renderRecent() {
+        var row = $('rnRecentRow'), list = recentGet();
+        if (!row) return;
+        if (!list.length) { row.style.display = 'none'; row.innerHTML = ''; return; }
+        row.style.display = 'flex';
+        row.innerHTML = '<span style="font-size:10px; color:#64748b; white-space:nowrap;">최근</span>'
+          + list.map(function (x) {
+            return '<button type="button" data-code="' + esc(x.code) + '" style="background:#0f172a; color:#cbd5e1; border:1px solid rgba(148,163,184,0.32); border-radius:999px; padding:3px 8px; font-size:10.5px; cursor:pointer;">'
+              + esc(x.name || x.code) + ' <span style="color:#64748b; font-size:9px;">' + esc(x.code) + '</span></button>';
+          }).join('')
+          + '<button type="button" id="rnRecentClear" style="background:none; border:none; color:#64748b; font-size:10px; cursor:pointer; padding:0 2px;">초기화</button>';
+        Array.prototype.forEach.call(row.querySelectorAll('button[data-code]'), function (b) {
+          b.addEventListener('click', function () { runQuery(b.getAttribute('data-code'), b.getAttribute('data-name')); });
+        });
+        var cl = $('rnRecentClear');
+        if (cl) cl.addEventListener('click', clearRecent);
+      }
+
+      /* ---------------- 부분일치 후보 칩 ---------------- */
+      function hideSug() { var s = $('rnSearchSug'); if (s) { s.style.display = 'none'; s.innerHTML = ''; } }
+      function suggest() {
+        var box = $('rnSearchSug'); if (!box) return;
+        var input = $('liveStockQuery');
+        var q = String((input && input.value) || '').trim();
+        if (!q) { hideSug(); return; }
+        var qq = q.replace(/\s+/g, '').toLowerCase();
+        var hits = [], seen = {};
+        for (var i = 0; i < namePairs.length && hits.length < 8; i += 1) {
+          var code = namePairs[i][0], nm = namePairs[i][1];
+          var key = nm.replace(/\s+/g, '').toLowerCase();
+          var hit = key.indexOf(qq) === 0 || code.indexOf(q) === 0;
+          if (!hit) continue;
+          if (seen[code]) continue;
+          seen[code] = true;
+          hits.push([code, nm]);
+        }
+        if (!hits.length) { hideSug(); return; }
+        box.innerHTML = hits.slice(0, 6).map(function (p) {
+          return '<button type="button" data-code="' + esc(p[0]) + '" data-name="' + esc(p[1]) + '" style="background:#0f172a; color:#cbd5e1; border:1px solid rgba(148,163,184,0.32); border-radius:999px; padding:3px 8px; font-size:10.5px; cursor:pointer;">'
+            + esc(p[1]) + ' <span style="color:#64748b; font-size:9px;">' + esc(p[0]) + '</span></button>';
+        }).join('');
+        box.style.display = 'flex';
+        Array.prototype.forEach.call(box.querySelectorAll('button[data-code]'), function (b) {
+          b.addEventListener('click', function () { hideSug(); runQuery(b.getAttribute('data-code'), b.getAttribute('data-name')); });
+        });
+      }
+
+      /* ---------------- 캔들 변환 (RN존 모듈과 같은 형식) ---------------- */
+      function mapCandles(raw) {
+        var out = [];
+        (raw || []).forEach(function (c, i) {
+          if (!c) return;
+          var o = num(c.o), h = num(c.h), l = num(c.l), cl = num(c.c);
+          if (o === null || h === null || l === null || cl === null) return;
+          var prev = i > 0 ? num(raw[i - 1].c) : o;
+          var ratio = prev ? ((cl - prev) / prev) * 100 : 0;
+          out.push({
+            date: String(c.date || '').replace(/^(\d{4})(\d{2})(\d{2})$/, '$1-$2-$3'),
+            open: o, high: h, low: l, close: cl,
+            vol: num(c.v) === null ? 0 : c.v,
+            ratio: Number(ratio.toFixed(2))
+          });
+        });
+        return out;
+      }
+
+      /* ---------------- 조회 ---------------- */
+      function runQuery(q, presetName) {
+        var input = $('liveStockQuery');
+        var raw = (q === undefined || q === null) ? (input ? input.value : '') : q;
+        raw = String(raw || '').trim();
+        if (!raw) { status('종목명 또는 6자리 코드를 입력해 주세요.', 'warn'); if (input) input.focus(); return; }
+        if (busy) return;
+        if (!window.RnZone || typeof window.RnZone.upsertSearchStock !== 'function' || typeof window.RnZone.rnFor !== 'function') {
+          status('차트 엔진을 아직 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.', 'err');
+          return;
+        }
+        if (input) input.value = presetName || raw;
+        busy = true;
+        hideSug();
+        status('⏳ ' + raw + ' 조회 중… (실시간 현재가 · 500일봉 · 21개 RN선)', null);
+
+        var ctl = null, timer = null;
+        try {
+          ctl = new AbortController();
+          timer = setTimeout(function () { try { ctl.abort(); } catch (e) { /* */ } }, 15000);
+        } catch (e) { ctl = null; }
+
+        fetch('/api/stock-chart?q=' + encodeURIComponent(raw) + '&count=500', ctl ? { signal: ctl.signal, cache: 'no-store' } : { cache: 'no-store' })
+          .then(function (res) {
+            return res.text().then(function (t) {
+              var j = null;
+              try { j = JSON.parse(t); } catch (e) { j = null; }
+              return { status: res.status, body: j };
+            });
+          })
+          .then(function (out) {
+            if (timer) clearTimeout(timer);
+            busy = false;
+            var b = out.body;
+            if (!b || b.ok !== true) {
+              if (out.status === 404) status('⚠️ ‘' + raw + '’ 종목을 찾지 못했습니다. 종목명을 정확히 입력하거나 6자리 코드로 다시 시도해 주세요.', 'err');
+              else if (out.status >= 500) status('⚠️ 서버 응답 오류(HTTP ' + out.status + ') — 잠시 후 다시 시도해 주세요.', 'err');
+              else status('⚠️ ' + ((b && b.message) ? b.message : '조회 실패 (HTTP ' + out.status + ')'), 'err');
+              return;
+            }
+            applyPayload(b, raw);
+          })
+          .catch(function (err) {
+            if (timer) clearTimeout(timer);
+            busy = false;
+            var msg = (err && err.name === 'AbortError') ? '응답 시간 초과(15초)' : (err && err.message ? err.message : String(err));
+            status('⚠️ 조회 실패: ' + msg + ' — 잠시 후 다시 시도해 주세요.', 'err');
+          });
+      }
+
+      function applyPayload(b, raw) {
+        if (!b || !b.code) { status('⚠️ 종목코드를 확인하지 못했습니다. 다시 시도해 주세요.', 'err'); return; }
+        var candles = mapCandles(b.candles);
+        if (!candles.length) { status('⚠️ ' + (b.name || raw) + ' 일봉 데이터가 비어 있습니다. 잠시 후 다시 시도해 주세요.', 'err'); return; }
+        var cur = b.current || {};
+        var last = candles[candles.length - 1];
+        var price = num(cur.price);
+        var chg = num(cur.changePct);
+        var preopen = String(cur.marketStatus || '').toUpperCase() === 'PREOPEN';
+        if (price === null || price <= 0 || (preopen && (chg === null || chg === 0))) price = last.close;
+        if (chg === null || (preopen && chg === 0)) chg = last.ratio;
+        price = Math.round(price);
+
+        var rn = window.RnZone.rnFor(price);
+        var stock = Object.assign({}, rn, {
+          name: b.name || b.code,
+          code: b.code,
+          category: 'search',
+          price: price,
+          changeRatio: Number((num(chg) || 0).toFixed(2)),
+          candles: candles,
+          valueText: '',
+          valueEok: null
+        });
+        lastStock = stock;
+        lastRn = rn;
+        lastMeta = { rn: b.rn || {}, candleCount: candles.length, tradedAt: cur.tradedAtKst || '' };
+        try { window.RnZone.upsertSearchStock(stock); } catch (e) { /* 목록 반영 실패해도 카드는 보여준다 */ }
+        renderCard();
+        status('🟢 ' + stock.name + ' (' + stock.code + ') · ' + candles.length + '거래일봉 · 하단 RN ' + won(rn.lowerRN) + ' ~ 상단 RN ' + won(rn.upperRN) + ' — 아래 카드에서 위치를 확인하세요.', 'ok');
+        recentAdd(stock.code, stock.name);
+        loadValue(stock.code);
+      }
+
+      /* 당일 통합 거래대금은 /api/stock-live 가 준다 — 없어도 위치 카드는 그대로 */
+      function loadValue(code) {
+        fetch('/api/stock-live?codes=' + encodeURIComponent(code) + '&fresh=1', { cache: 'no-store' })
+          .then(function (r) { return r.json(); })
+          .then(function (j) {
+            if (!j || j.ok !== true) return;
+            var s = (j.stocks || []).filter(function (x) { return x && x.code === code; })[0];
+            if (!s) return;
+            var vt = s.valueDispText || s.valueText || '';
+            var el = $('rnResValue');
+            if (el) el.textContent = vt ? ('대금 ' + vt) : '대금 미확인';
+            if (window.RnZone && typeof window.RnZone.patchStock === 'function') {
+              window.RnZone.patchStock(code, { valueText: vt, valueEok: num(s.valueEok) });
+            }
+          }).catch(function () { /* 대금은 없어도 위치 카드는 그대로 */ });
+      }
+
+      function chip(label, value, color, sub) {
+        return '<div style="border:1px solid rgba(148,163,184,0.22); background:rgba(15,23,42,0.65); border-radius:7px; padding:5px 7px; min-width:0;">'
+          + '<div style="font-size:9.5px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + label + '</div>'
+          + '<div style="font-size:11.5px; font-weight:900; color:' + color + '; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + value + '</div>'
+          + (sub ? '<div style="font-size:9px; color:#64748b; white-space:nowrap;">' + sub + '</div>' : '')
+          + '</div>';
+      }
+
+      function renderCard() {
+        var st = lastStock, rn = lastRn;
+        var box = $('rnSearchResult');
+        if (!st || !rn || !box) return;
+
+        var price = num(st.price) || 0;
+        var lo = num(rn.lowerRN) || 0;
+        var hi = num(rn.upperRN) || 0;
+        var belowFloor = lo > 0 && price < lo;
+        var span = hi - lo;
+        var hasBand = span > 0;
+        var pos = hasBand ? Math.max(0, Math.min(100, ((price - lo) / span) * 100)) : 0;
+        var aux = num(rn.auxRN);
+        var auxPos = (aux !== null && hasBand) ? Math.max(0, Math.min(100, ((aux - lo) / span) * 100)) : null;
+        var dLow = lo ? (price / lo - 1) * 100 : null;
+        var dUp = (hi && hi > lo && price > 0) ? ((hi / price) - 1) * 100 : null;
+        var cat = catInfo(rn.category);
+        var chgCol = (num(st.changeRatio) > 0) ? '#f87171' : (num(st.changeRatio) < 0 ? '#60a5fa' : '#94a3b8');
+        var posText = hasBand ? ('구간 내 ' + pos.toFixed(1) + '%') : (belowFloor ? '하단 RN 없음' : '상단 RN 없음');
+
+        var gauge = '';
+        if (hasBand) {
+          gauge = '<div style="position:relative; height:12px; border-radius:6px; border:1px solid rgba(148,163,184,0.3); background:linear-gradient(90deg, rgba(20,184,166,0.28), rgba(148,163,184,0.16) 50%, rgba(59,130,246,0.30));">'
+            + (auxPos !== null ? '<div title="중간 보조(비공식)" style="position:absolute; left:' + auxPos.toFixed(1) + '%; top:-2px; bottom:-2px; width:1px; background:rgba(203,213,225,0.55);"></div>' : '')
+            + '<div style="position:absolute; left:' + pos.toFixed(1) + '%; top:-4px; width:4px; height:18px; margin-left:-2px; border-radius:2px; background:#fbbf24; box-shadow:0 0 6px rgba(251,191,36,0.85);"></div>'
+            + '</div>';
+        } else {
+          gauge = '<div style="font-size:10px; color:#fbbf24; background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.3); border-radius:6px; padding:5px 7px; line-height:1.45;">'
+            + (belowFloor ? '공식 최저선(500원) 아래 — 아래쪽 RN선이 없어 구간 게이지를 표시하지 않습니다.'
+                          : '공식 최상단 RN(1,500,000원) 위 — 위쪽 RN선이 없어 구간 게이지를 표시하지 않습니다.')
+            + '</div>';
+        }
+
+        var chips = '<div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px; margin-top:8px;">'
+          + chip('상단 RN (' + (rn.upperColorKo || '공식선') + ')', won(hi), rn.upperColorHex || '#3b82f6', dUp !== null ? ('현재가 대비 ' + pctText(dUp)) : '')
+          + chip('하단 RN (' + (rn.lowerColorKo || '공식선') + ')', won(lo), rn.lowerColorHex || '#14b8a6', dLow !== null ? ('현재가 대비 ' + pctText(dLow)) : '')
+          + (aux !== null ? chip('중간 보조 (비공식)', won(aux), '#cbd5e1', '매매 기준선 아님') : '')
+          + chip('1차 매수 (하단 RN+4%)', won(rn.buy1), '#22c55e', (num(rn.buy1) !== null && num(rn.buy1) >= price) ? '현재가보다 위' : '현재가보다 아래')
+          + chip('2차 매수 (1차 −20%)', won(rn.buy2), '#ef4444', '')
+          + chip('목표 (+7~20%)', won(rn.targetMin) + ' ~ ' + won(rn.targetMax), '#a855f7', '')
+          + '</div>';
+
+        var extra = '';
+        var metaRn = (lastMeta && lastMeta.rn) || {};
+        var rs = metaRn.resistances || [], sp = metaRn.supports || [];
+        var nextUp = rs.length > 1 ? rs[1] : null;
+        var nextDn = sp.length > 1 ? sp[1] : null;
+        if (nextUp || nextDn) {
+          extra = '<div style="margin-top:7px; font-size:9.5px; color:#94a3b8; line-height:1.5;">그 다음 선 — 위 <b style="color:#cbd5e1;">'
+            + (nextUp ? (won(nextUp.level) + (nextUp.colorKo ? '(' + nextUp.colorKo + (num(nextUp.touches) ? '·터치 ' + nextUp.touches + '회' : '') + ')' : '')) : '없음')
+            + '</b> · 아래 <b style="color:#cbd5e1;">'
+            + (nextDn ? (won(nextDn.level) + (nextDn.colorKo ? '(' + nextDn.colorKo + (num(nextDn.touches) ? '·터치 ' + nextDn.touches + '회' : '') + ')' : '')) : '없음')
+            + '</b></div>';
+        }
+
+        box.innerHTML = '<div style="border:1px solid rgba(148,163,184,0.28); background:#0f172a; border-radius:9px; padding:9px 10px;">'
+          + '<div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px; flex-wrap:wrap;">'
+          +   '<div style="min-width:0; flex:1;">'
+          +     '<div style="font-size:13.5px; font-weight:900; color:#e2e8f0; line-height:1.3; word-break:keep-all;">' + esc(st.name) + ' <span style="font-size:10.5px; color:#64748b; font-weight:700;">' + esc(st.code) + '</span></div>'
+          +     '<div style="margin-top:3px; display:flex; gap:5px; align-items:center; flex-wrap:wrap;">'
+          +       '<span style="font-size:9.5px; font-weight:900; color:' + cat[1] + '; background:' + cat[1] + '1f; border:1px solid ' + cat[1] + '66; border-radius:5px; padding:1px 6px; white-space:nowrap;">' + cat[0] + '</span>'
+          +       '<span id="rnResValue" style="font-size:10px; color:#94a3b8;">' + (st.valueText ? '대금 ' + esc(st.valueText) : '대금 조회 중…') + '</span>'
+          +     '</div>'
+          +   '</div>'
+          +   '<div style="text-align:right; white-space:nowrap;">'
+          +     '<div style="font-size:15px; font-weight:900; color:#e2e8f0;">' + won(price) + '</div>'
+          +     '<div style="font-size:11px; font-weight:800; color:' + chgCol + ';">' + pctText(st.changeRatio) + '</div>'
+          +   '</div>'
+          + '</div>'
+          + '<div style="margin-top:9px;">'
+          +   '<div style="display:flex; justify-content:space-between; gap:6px; font-size:10px; color:#94a3b8; margin-bottom:4px;">'
+          +     '<span style="white-space:nowrap;">하단 RN <b style="color:' + (rn.lowerColorHex || '#14b8a6') + ';">' + (lo ? lo.toLocaleString() : '—') + '</b></span>'
+          +     '<span style="color:#fbbf24; font-weight:900; white-space:nowrap;">' + posText + '</span>'
+          +     '<span style="white-space:nowrap;">상단 RN <b style="color:' + (rn.upperColorHex || '#3b82f6') + ';">' + (hi ? hi.toLocaleString() : '—') + '</b></span>'
+          +   '</div>'
+          +   gauge
+          +   '<div style="display:flex; justify-content:space-between; gap:6px; font-size:9.5px; color:#64748b; margin-top:3px;">'
+          +     '<span style="white-space:nowrap;">하단 ' + (dLow === null ? '—' : pctText(dLow)) + '</span>'
+          +     '<span style="white-space:nowrap;">현재가 ' + won(price) + '</span>'
+          +     '<span style="white-space:nowrap;">상단까지 ' + (dUp === null ? '—' : pctText(dUp)) + '</span>'
+          +   '</div>'
+          + '</div>'
+          + chips
+          + extra
+          + '<button type="button" id="rnOpenChart" style="margin-top:9px; width:100%; background:#0b3a53; color:#7dd3fc; border:1px solid #38bdf8; border-radius:8px; padding:9px 10px; font-size:12px; font-weight:900; cursor:pointer;">'
+          +   '📊 UCX 500봉 RN 차트 보기 <span style="font-weight:700; font-size:10px; color:#94a3b8;">21선 + 현재가·타점선</span>'
+          + '</button>'
+          + '<div style="margin-top:4px; text-align:right;"><button type="button" id="rnRefreshCard" style="background:none; border:none; color:#64748b; font-size:9.5px; cursor:pointer; padding:0;">↻ 이 종목 현재가로 다시 계산</button></div>'
+          + '</div>';
+        box.style.display = 'block';
+
+        var ob = $('rnOpenChart');
+        if (ob) ob.addEventListener('click', openChart);
+        var rb = $('rnRefreshCard');
+        if (rb) rb.addEventListener('click', function () { runQuery(st.code, st.name); });
+      }
+
+      /* RN존 모달(StratDetail)의 UCX 차트 — 실측 500봉 + 21개 RN선 + 현재가/타점선 */
+      function openChart() {
+        var st = lastStock;
+        if (!st) return;
+        try { if (window.RnZone && window.RnZone.upsertSearchStock) window.RnZone.upsertSearchStock(st); } catch (e) { /* */ }
+        if (window.StratDetail && typeof window.StratDetail.open === 'function') {
+          var ok = false;
+          try { ok = window.StratDetail.open('rn', st.code); } catch (e) { ok = false; }
+          if (ok) return;
+        }
+        try { if (window.RnZone && window.RnZone.selectStockByCode) window.RnZone.selectStockByCode(st.code); } catch (e) { /* */ }
+        var wrap = document.getElementById('chartWrapper');
+        if (wrap && wrap.scrollIntoView) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      function hookLiveApi() {
+        if (window.LiveAPI && typeof window.LiveAPI.searchStock === 'function' && !window.LiveAPI.__rnSearchWrapped) {
+          window.LiveAPI.__legacySearchStock = window.LiveAPI.searchStock;
+          window.LiveAPI.searchStock = function () { runQuery(); };
+          window.LiveAPI.__rnSearchWrapped = true;
+        }
+      }
+
+      /* 검색바는 RN 탭의 첫 요소로 둔다 — live-api.js 의 '실시간 구간 판정' 패널이
+         탭 첫 자식으로 들어오므로(ensureStratHost), 그때마다 검색바를 다시 맨 위로 올린다. */
+      function keepOnTop() {
+        var tab = $('tabRnzone'), panel = $('liveSearchBar');
+        if (!tab || !panel || panel.parentNode !== tab) return;
+        if (tab.firstElementChild !== panel) tab.insertBefore(panel, tab.firstElementChild);
+      }
+
+      function init() {
+        if (inited) { hookLiveApi(); keepOnTop(); return; }
+        inited = true;
+        loadNames();
+        renderRecent();
+        keepOnTop();
+        try {
+          var tab = $('tabRnzone');
+          if (tab && window.MutationObserver) new MutationObserver(keepOnTop).observe(tab, { childList: true });
+        } catch (e) { /* */ }
+        var input = $('liveStockQuery');
+        if (input) {
+          input.addEventListener('focus', loadNames);
+          input.addEventListener('input', function () {
+            if (sugTimer) clearTimeout(sugTimer);
+            sugTimer = setTimeout(suggest, 140);
+          });
+          input.addEventListener('blur', function () { setTimeout(hideSug, 180); });
+        }
+        hookLiveApi();
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+      else init();
+      window.addEventListener('load', function () { init(); hookLiveApi(); });
+
+      return {
+        go: runQuery,
+        search: runQuery,
+        clearRecent: clearRecent,
+        state: function () {
+          return { code: lastStock ? lastStock.code : null, rn: lastRn, busy: busy, names: namePairs.length };
+        }
+      };
+    })();
+
 
     // ==========================================
     // JONGBE MASTERS TAB NAMESPACED MODULE
