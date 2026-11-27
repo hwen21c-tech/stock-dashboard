@@ -21387,11 +21387,14 @@ window.BijoongTab = {
           '<span class="tl-theme mut">'+esc(s.leadSub||'')+'</span>'+
           tlSupplyHtml(s)+tlMoneyHtml(s)+'</button>';
       }else{
+        /* ⬜ '미집계(miss)' = 시각은 지났는데 그 시각 기록이 없는 슬롯(2026-11-27)
+           — '대기'와 섞이면 지나간 슬롯이 아직 올 시각처럼 읽힌다. */
+        var isMiss=(s.state==='miss');
         html+='<div class="'+cls+'" title="'+esc(s.waitLabel||'')+' — 브리핑 전까지 추측값을 넣지 않습니다">'+
           '<span class="tl-time">'+esc(s.t)+' <em>'+esc(s.tag||'')+'</em></span>'+
-          '<span class="tl-badge b-wait">⏳ 대기</span>'+
+          '<span class="tl-badge b-wait">'+(isMiss?'⬜ 미집계':'⏳ 대기')+'</span>'+
           '<span class="tl-theme">'+esc(s.waitLabel||'')+'</span>'+
-          '<span class="tl-theme mut">추측값 없음</span></div>';
+          '<span class="tl-theme mut">'+(isMiss?'그 시각 기록 없음':'추측값 없음')+'</span></div>';
       }
     });
     wrap.innerHTML=html;
