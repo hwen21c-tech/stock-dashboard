@@ -6949,7 +6949,7 @@
       else sup = '외인·기관 중립';
     } else if (F !== null) sup = '외인 ' + (F > 0 ? '매수' : F < 0 ? '매도' : '중립');
     else if (O !== null) sup = '기관 ' + (O > 0 ? '매수' : O < 0 ? '매도' : '중립');
-    if (FF !== null) sup += ' · 선물 ' + (FF > 0 ? '+' : '') + Math.round(FF) + '계약';
+    if (FF !== null) sup += ' · 선물 ' + (FF > 0 ? '+' : FF < 0 ? '-' : '') + Math.abs(Math.round(FF)).toLocaleString('ko-KR') + '계약';
 
     var th = '';
     if (theme && theme.name) {
@@ -7170,6 +7170,7 @@
 })();
 </script>
 <!-- HOURLY_FLOW_BOX_END -->
+
 
 
 
