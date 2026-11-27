@@ -29,7 +29,7 @@
   var CHIM = null;      /* 같은 응답의 closingPicks.chimchakhae (📘 3번째 탭) */
   var FAIL = null;      /* 마지막 실패 사유(문자열) */
   var track = 'theme';
-  var collapsed = false;
+  var collapsed = true;   /* 2026-11-27 사용자 지시 — 접는 박스는 기본 접힘 */
 
   function $(id) { return document.getElementById(id); }
 
@@ -707,6 +707,9 @@
   function boot() {
     if (!$('closingPicksBox')) return;          /* 이 페이지에 박스가 없으면 아무것도 하지 않는다 */
     var t1 = $('cpTabTheme'), t2 = $('cpTabSupply'), tg = $('cpToggleBtn'), box = $('closingPicksBox');
+    /* 기본 접힘을 첫 화면에 반영 — 라벨·aria 도 접힌 상태와 맞춘다 */
+    if (box) box.classList.toggle('collapsed', collapsed);
+    if (tg) { tg.textContent = collapsed ? '펼치기' : '접기'; tg.setAttribute('aria-expanded', collapsed ? 'false' : 'true'); }
     if (t1) t1.addEventListener('click', function () { setTrack('theme'); });
     if (t2) t2.addEventListener('click', function () { setTrack('supply'); });
     var t3 = $('cpTabChim');
