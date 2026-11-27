@@ -1,8 +1,8 @@
 {
- "v": 2,
- "updatedAt": "2026-11-27T23:12:00+09:00",
- "basisDate": "2026-11-27",
- "note": "🍔 불개미 햄버거 기준 캐시 v2 — 2026-11-27 사용자 확정 기준. ① 일봉 시/고/저/종은 네이버 정규장 일봉(fchart 130봉)으로 잡고(KIS 일봉 종가에 섞이는 NXT 시간외 체결 착시 제거), ② 최근 100거래일에서 윗꼬리 짧은 장대양봉(+10%↑·대금 300억↑·양봉·몸통 55%↑·윗꼬리 25%↓) 날을 찾고(대금은 KIS FHKST03010100), ③ 그날 09:00~09:02 3분봉 대금이 20억↑일 때만 기준봉으로 인정한다(FHKST03010230). 20억 미만인 날은 건너뛰고 그보다 앞선 유효 장대양봉을 본다. 런타임은 이 파일 → Supabase family_sync[hamburger_base_v2] → 즉석 계산 순으로 읽고, 행의 rulesV·asOfDate 가 다르면 다시 계산한다.",
+ "v": 3,
+ "updatedAt": "2026-11-27T23:24:21+09:00",
+ "basisDate": "20261127",
+ "note": "🍔 불개미 햄버거 기준 캐시 v3 — 2026-11-27 사용자 확정. ① 일봉 시/고/저/종은 네이버 정규장 일봉(fchart 130봉)으로 잡고(KIS 일봉 종가에 섞이는 NXT 시간외 체결 착시 제거), ② 최근 100거래일에서 윗꼬리 짧은 장대양봉(+10%↑·대금 300억↑·양봉·몸통 55%↑·윗꼬리 25%↓) 중 **가장 최근 1일만** 보고, ③ 그날 09:00~09:02 3분봉 대금이 20억↑일 때만 기준봉으로 인정한다(FHKST03010230). 20억 미만이면 과거 날로 거슬러 올라가지 않고 '기준 미달'로 제외한다(maxBaseTries 1). 런타임은 이 파일 → Supabase family_sync[hamburger_base_v2] → 즉석 계산 순으로 읽고, 행의 rulesV·asOfDate 가 다르면 다시 계산한다.",
  "rules": {
   "yangPct": 10,
   "yangValueEok": 300,
@@ -11,6 +11,7 @@
   "baseUpperWickPct": 25,
   "baseBodyPct": 55,
   "minBase3mEok": 20,
+  "baseDaysChecked": 1,
   "ohlcSource": "naver-fchart-day(정규장) + KIS acml_tr_pbmn"
  },
  "rows": {
@@ -18,20 +19,14 @@
    "ok": false,
    "code": "439960",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:22.904Z",
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:23:52.667Z",
    "reason": "base_below_min",
-   "message": "장대양봉 후보 2일 중 09:00~09:02 3분봉 대금 20억↑인 날이 없습니다",
+   "message": "가장 최근 윗꼬리 짧은 장대양봉 11/23의 09:00~09:02 3분봉 대금이 1억으로 20억에 못 미칩니다 — 과거 날로 거슬러 올라가지 않고 기준 미달로 제외합니다",
    "skippedBases": [
     {
      "date": "20261123",
      "dateLabel": "11/23",
-     "why": "기준 3분봉 1억 < 20억",
-     "open3mEok": 1
-    },
-    {
-     "date": "20260721",
-     "dateLabel": "7/21",
      "why": "기준 3분봉 1억 < 20억",
      "open3mEok": 1
     }
@@ -56,6 +51,7 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금) + FHKST03010230(과거 분봉)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
    "reversal": {
     "reverse": false,
     "shortRev": false,
@@ -91,8 +87,8 @@
    "ok": false,
    "code": "079370",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:21.180Z",
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:23:52.668Z",
    "reason": "no_big_yang",
    "message": "최근 100거래일 안에 윗꼬리 짧은 장대양봉(+10%↑ · 대금 300억↑ · 윗꼬리 25%↓)이 없습니다",
    "daily": [
@@ -115,6 +111,7 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
    "reversal": {
     "reverse": true,
     "shortRev": true,
@@ -129,8 +126,8 @@
    "ok": true,
    "code": "000660",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:22.135Z",
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:23:52.668Z",
    "bigYang": {
     "date": "20260703",
     "dateLabel": "7/3",
@@ -222,6 +219,7 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금) + FHKST03010230(과거 분봉)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
    "rejectedDays": [
     {
      "dateLabel": "8/20",
@@ -246,97 +244,13 @@
    ]
   },
   "108490": {
-   "ok": true,
+   "ok": false,
    "code": "108490",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:25.473Z",
-   "bigYang": {
-    "date": "20261111",
-    "dateLabel": "11/11",
-    "pct": 11.95,
-    "open": 225500,
-    "high": 244500,
-    "low": 223000,
-    "close": 243500,
-    "valueEok": 676,
-    "bodyPct": 83.72,
-    "upperWickPct": 4.65,
-    "ohlcSrc": "naver",
-    "open3m": {
-     "from": "0900",
-     "to": "0902",
-     "label": "09:00~09:02",
-     "minutes": 3,
-     "open": 225500,
-     "close": 230000,
-     "high": 230500,
-     "low": 223000,
-     "vol": 16845,
-     "value": 3817345750,
-     "valueEok": 38,
-     "basis": "cum",
-     "kind": "yang",
-     "bodyPct": 60,
-     "upperPct": 6.67,
-     "lowerPct": 33.33,
-     "pct": 2,
-     "bars": [
-      {
-       "t": "0900",
-       "o": 225500,
-       "h": 226000,
-       "l": 223000,
-       "c": 226000,
-       "v": 9034
-      },
-      {
-       "t": "0901",
-       "o": 226000,
-       "h": 230500,
-       "l": 226000,
-       "c": 230500,
-       "v": 5206
-      },
-      {
-       "t": "0902",
-       "o": 230000,
-       "h": 230000,
-       "l": 229000,
-       "c": 230000,
-       "v": 2605
-      }
-     ]
-    }
-   },
-   "others": [
-    {
-     "date": "20261118",
-     "dateLabel": "11/18",
-     "pct": 14.96,
-     "open": 214500,
-     "high": 243500,
-     "low": 212000,
-     "close": 242000,
-     "valueEok": 965,
-     "bodyPct": 87.3,
-     "upperWickPct": 4.76,
-     "ohlcSrc": "naver"
-    },
-    {
-     "date": "20261026",
-     "dateLabel": "10/26",
-     "pct": 11.04,
-     "open": 237000,
-     "high": 256000,
-     "low": 232500,
-     "close": 251500,
-     "valueEok": 1291,
-     "bodyPct": 61.7,
-     "upperWickPct": 19.15,
-     "ohlcSrc": "naver"
-    }
-   ],
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:23:54.814Z",
+   "reason": "base_below_min",
+   "message": "가장 최근 윗꼬리 짧은 장대양봉 11/18의 09:00~09:02 3분봉 대금이 9억으로 20억에 못 미칩니다 — 과거 날로 거슬러 올라가지 않고 기준 미달로 제외합니다",
    "skippedBases": [
     {
      "date": "20261118",
@@ -345,17 +259,6 @@
      "open3mEok": 9
     }
    ],
-   "reversal": {
-    "reverse": false,
-    "shortRev": false,
-    "label": "MA5 280600 · MA20 244750 · MA60 267450",
-    "ma5": 280600,
-    "ma20": 244750,
-    "ma60": 267450
-   },
-   "minuteBars": 4,
-   "reason": null,
-   "message": null,
    "daily": [
     {
      "d": "20261125",
@@ -376,6 +279,15 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금) + FHKST03010230(과거 분봉)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
+   "reversal": {
+    "reverse": false,
+    "shortRev": false,
+    "label": "MA5 280600 · MA20 244750 · MA60 267450",
+    "ma5": 280600,
+    "ma20": 244750,
+    "ma60": 267450
+   },
    "rejectedDays": [
     {
      "dateLabel": "11/24",
@@ -413,122 +325,21 @@
    ]
   },
   "277810": {
-   "ok": true,
+   "ok": false,
    "code": "277810",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:24.149Z",
-   "bigYang": {
-    "date": "20260731",
-    "dateLabel": "7/31",
-    "pct": 16.09,
-    "open": 401000,
-    "high": 445000,
-    "low": 394500,
-    "close": 433000,
-    "valueEok": 1125,
-    "bodyPct": 63.37,
-    "upperWickPct": 23.76,
-    "ohlcSrc": "naver",
-    "open3m": {
-     "from": "0900",
-     "to": "0902",
-     "label": "09:00~09:02",
-     "minutes": 3,
-     "open": 401000,
-     "close": 396000,
-     "high": 402000,
-     "low": 395000,
-     "vol": 8441,
-     "value": 3368288750,
-     "valueEok": 34,
-     "basis": "cum",
-     "kind": "eum",
-     "bodyPct": 71.43,
-     "upperPct": 14.29,
-     "lowerPct": 14.29,
-     "pct": -1.25,
-     "bars": [
-      {
-       "t": "0900",
-       "o": 401000,
-       "h": 402000,
-       "l": 396500,
-       "c": 399500,
-       "v": 5149
-      },
-      {
-       "t": "0901",
-       "o": 399000,
-       "h": 400500,
-       "l": 395500,
-       "c": 395500,
-       "v": 2016
-      },
-      {
-       "t": "0902",
-       "o": 396000,
-       "h": 397000,
-       "l": 395000,
-       "c": 396000,
-       "v": 1276
-      }
-     ]
-    }
-   },
-   "others": [
-    {
-     "date": "20261118",
-     "dateLabel": "11/18",
-     "pct": 19.82,
-     "open": 350500,
-     "high": 414000,
-     "low": 348000,
-     "close": 408000,
-     "valueEok": 1148,
-     "bodyPct": 87.12,
-     "upperWickPct": 9.09,
-     "ohlcSrc": "naver"
-    },
-    {
-     "date": "20261028",
-     "dateLabel": "10/28",
-     "pct": 14.15,
-     "open": 361500,
-     "high": 409000,
-     "low": 359500,
-     "close": 407500,
-     "valueEok": 627,
-     "bodyPct": 92.93,
-     "upperWickPct": 3.03,
-     "ohlcSrc": "naver"
-    }
-   ],
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:23:54.814Z",
+   "reason": "base_below_min",
+   "message": "가장 최근 윗꼬리 짧은 장대양봉 11/18의 09:00~09:02 3분봉 대금이 10억으로 20억에 못 미칩니다 — 과거 날로 거슬러 올라가지 않고 기준 미달로 제외합니다",
    "skippedBases": [
     {
      "date": "20261118",
      "dateLabel": "11/18",
      "why": "기준 3분봉 10억 < 20억",
      "open3mEok": 10
-    },
-    {
-     "date": "20261028",
-     "dateLabel": "10/28",
-     "why": "기준 3분봉 8억 < 20억",
-     "open3mEok": 8
     }
    ],
-   "reversal": {
-    "reverse": false,
-    "shortRev": false,
-    "label": "MA5 466300 · MA20 384050 · MA60 402558",
-    "ma5": 466300,
-    "ma20": 384050,
-    "ma60": 402558
-   },
-   "minuteBars": 4,
-   "reason": null,
-   "message": null,
    "daily": [
     {
      "d": "20261125",
@@ -549,6 +360,15 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금) + FHKST03010230(과거 분봉)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
+   "reversal": {
+    "reverse": false,
+    "shortRev": false,
+    "label": "MA5 466300 · MA20 384050 · MA60 402558",
+    "ma5": 466300,
+    "ma20": 384050,
+    "ma60": 402558
+   },
    "rejectedDays": [
     {
      "dateLabel": "11/13",
@@ -579,8 +399,8 @@
    "ok": false,
    "code": "355390",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:24.706Z",
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:23:54.814Z",
    "reason": "no_big_yang",
    "message": "최근 100거래일 안에 윗꼬리 짧은 장대양봉(+10%↑ · 대금 300억↑ · 윗꼬리 25%↓)이 없습니다",
    "daily": [
@@ -603,6 +423,7 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
    "reversal": {
     "reverse": true,
     "shortRev": true,
@@ -617,8 +438,8 @@
    "ok": false,
    "code": "129920",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:28.208Z",
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:23:57.910Z",
    "reason": "no_big_yang",
    "message": "최근 100거래일 안에 윗꼬리 짧은 장대양봉(+10%↑ · 대금 300억↑ · 윗꼬리 25%↓)이 없습니다",
    "daily": [
@@ -641,6 +462,7 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
    "reversal": {
     "reverse": false,
     "shortRev": false,
@@ -655,8 +477,8 @@
    "ok": false,
    "code": "381620",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:27.261Z",
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:23:57.910Z",
    "reason": "no_big_yang",
    "message": "최근 100거래일 안에 윗꼬리 짧은 장대양봉(+10%↑ · 대금 300억↑ · 윗꼬리 25%↓)이 없습니다",
    "daily": [
@@ -679,6 +501,7 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
    "reversal": {
     "reverse": false,
     "shortRev": false,
@@ -693,8 +516,8 @@
    "ok": true,
    "code": "090710",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:27.830Z",
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:23:57.910Z",
    "bigYang": {
     "date": "20261124",
     "dateLabel": "11/24",
@@ -784,16 +607,17 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금) + FHKST03010230(과거 분봉)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
    "rejectedDays": []
   },
   "298380": {
    "ok": false,
    "code": "298380",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:30.186Z",
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:24:01.187Z",
    "reason": "base_below_min",
-   "message": "장대양봉 후보 1일 중 09:00~09:02 3분봉 대금 20억↑인 날이 없습니다",
+   "message": "가장 최근 윗꼬리 짧은 장대양봉 8/4의 09:00~09:02 3분봉 대금이 11억으로 20억에 못 미칩니다 — 과거 날로 거슬러 올라가지 않고 기준 미달로 제외합니다",
    "skippedBases": [
     {
      "date": "20260804",
@@ -822,6 +646,7 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금) + FHKST03010230(과거 분봉)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
    "reversal": {
     "reverse": true,
     "shortRev": true,
@@ -836,8 +661,8 @@
    "ok": false,
    "code": "304840",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:30.559Z",
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:24:01.756Z",
    "reason": "no_big_yang",
    "message": "최근 100거래일 안에 윗꼬리 짧은 장대양봉(+10%↑ · 대금 300억↑ · 윗꼬리 25%↓)이 없습니다",
    "daily": [
@@ -860,6 +685,7 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
    "reversal": {
     "reverse": false,
     "shortRev": false,
@@ -871,84 +697,13 @@
    "rejectedDays": []
   },
   "086520": {
-   "ok": true,
+   "ok": false,
    "code": "086520",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:32.637Z",
-   "bigYang": {
-    "date": "20261019",
-    "dateLabel": "10/19",
-    "pct": 10.55,
-    "open": 78300,
-    "high": 90400,
-    "low": 78100,
-    "close": 90100,
-    "valueEok": 961,
-    "bodyPct": 95.93,
-    "upperWickPct": 2.44,
-    "ohlcSrc": "naver",
-    "open3m": {
-     "from": "0900",
-     "to": "0902",
-     "label": "09:00~09:02",
-     "minutes": 3,
-     "open": 78300,
-     "close": 79300,
-     "high": 79500,
-     "low": 78100,
-     "vol": 26820,
-     "value": 2108507800,
-     "valueEok": 21,
-     "basis": "cum",
-     "kind": "yang",
-     "bodyPct": 71.43,
-     "upperPct": 14.29,
-     "lowerPct": 14.29,
-     "pct": 1.28,
-     "bars": [
-      {
-       "t": "0900",
-       "o": 78300,
-       "h": 79200,
-       "l": 78100,
-       "c": 78800,
-       "v": 18317
-      },
-      {
-       "t": "0901",
-       "o": 78800,
-       "h": 79400,
-       "l": 78800,
-       "c": 79200,
-       "v": 5444
-      },
-      {
-       "t": "0902",
-       "o": 79200,
-       "h": 79500,
-       "l": 79000,
-       "c": 79300,
-       "v": 3059
-      }
-     ]
-    }
-   },
-   "others": [
-    {
-     "date": "20261111",
-     "dateLabel": "11/11",
-     "pct": 12.06,
-     "open": 65600,
-     "high": 73500,
-     "low": 65600,
-     "close": 73400,
-     "valueEok": 884,
-     "bodyPct": 98.73,
-     "upperWickPct": 1.27,
-     "ohlcSrc": "naver"
-    }
-   ],
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:24:03.606Z",
+   "reason": "base_below_min",
+   "message": "가장 최근 윗꼬리 짧은 장대양봉 11/11의 09:00~09:02 3분봉 대금이 16억으로 20억에 못 미칩니다 — 과거 날로 거슬러 올라가지 않고 기준 미달로 제외합니다",
    "skippedBases": [
     {
      "date": "20261111",
@@ -957,17 +712,6 @@
      "open3mEok": 16
     }
    ],
-   "reversal": {
-    "reverse": true,
-    "shortRev": true,
-    "label": "MA5<MA20<MA60",
-    "ma5": 66960,
-    "ma20": 69025,
-    "ma60": 77847
-   },
-   "minuteBars": 4,
-   "reason": null,
-   "message": null,
    "daily": [
     {
      "d": "20261125",
@@ -988,6 +732,15 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금) + FHKST03010230(과거 분봉)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
+   "reversal": {
+    "reverse": true,
+    "shortRev": true,
+    "label": "MA5<MA20<MA60",
+    "ma5": 66960,
+    "ma20": 69025,
+    "ma60": 77847
+   },
    "rejectedDays": [
     {
      "dateLabel": "7/31",
@@ -1005,8 +758,8 @@
    "ok": true,
    "code": "006400",
    "asOfDate": "20261127",
-   "rulesV": 2,
-   "computedAt": "2026-11-27T13:58:33.207Z",
+   "rulesV": 3,
+   "computedAt": "2026-11-27T14:24:06.521Z",
    "bigYang": {
     "date": "20261104",
     "dateLabel": "11/4",
@@ -1125,6 +878,7 @@
    "source": "네이버 일봉(정규장) + KIS FHKST03010100(대금) + FHKST03010230(과거 분봉)",
    "scanned": 130,
    "ohlcSrc": "naver-fchart(정규장)+KIS대금",
+   "naverFailed": false,
    "rejectedDays": [
     {
      "dateLabel": "7/31",
