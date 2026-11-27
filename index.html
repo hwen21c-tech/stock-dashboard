@@ -5147,7 +5147,7 @@
     <div class="srb-right">
       <div id="autoSyncBadge" style="padding: 3px 8px; font-size: 10.5px; font-weight: 800; background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); border-radius: 4px;">⚡ 스마트 24시: 주간 5분 초밀착 (다음: 19:50:35)</div>
       <button onclick="forceLiveRefresh()" class="srb-btn-refresh">🔄 즉시 새로고침</button>
-      <span id="lastSyncTxt" style="color: #38bdf8; font-size: 10.5px; font-weight: 800;">최근 갱신: 19:45:25 (통합 거래대금 100% 동기화 🟢)</span>
+      <span id="lastSyncTxt" style="color: #38bdf8; font-size: 10.5px; font-weight: 800;">최근 갱신: --:--:-- (실시간 동기화 준비)</span>
     </div>
   </div>
 
@@ -6213,9 +6213,11 @@
 
 <!-- 🍔 장중매매 후보 (불개미 · 햄버거) — 2026-11-27 신설 · 1번 메인 탭 · 홍인기 D+0 박스 바로 아래
      원전: 부자회사원 채널 「불개미님 햄버거 기법」 2편(AHSUB-eAxxA · 9EVBKc25TTI)
-       · 과거 그 종목이 장대양봉을 냈던 날의 '시동 3분봉 거래대금'을 기준으로 기억한다
+       · 과거 그 종목이 '윗꼬리 짧은 장대양봉'을 냈던 날의 '시동 3분봉 거래대금'을 기준으로 기억한다
        · 오늘 그 종목이 속한 테마가 주도 섹터로 살아 있을 때, 장초반 3분봉 대금이 기준을 압도하면 후보
        · 긴 위꼬리 · 도지 · 음봉 · 역배열은 대금이 넘어도 뺀다
+     2026-11-27 2차 확정(v2): 기준봉은 +10%↑·300억↑ + 양봉·몸통 55%↑·윗꼬리 25%↓, 그날 3분봉(09:00~09:02)
+       대금 20억↑인 날만 인정. 성립하지 않은 종목은 카드로 올리지 않고 숫자만 남긴다.
      값은 /api/tabs-live 의 hamburger 만 쓴다 — 화면은 계산·추정하지 않는다. -->
 <style id="hamburgerBoxCss">
   #hamburgerBox{border-color:rgba(249,115,22,0.55);
@@ -6264,12 +6266,16 @@
       <span style="font-size:9.5px;color:#fdba74;font-weight:900;">📖 매매원칙 보기 (불개미 · 햄버거 4조건)</span><span id="hbPrincipleHint">펼치기 ▾</span>
     </button>
     <div class="hb-fold-b" id="hbPrincipleBody" hidden>
-      <b>① 기준</b> 그 종목이 최근 120거래일 안에 장대양봉(+10%↑ · 거래대금 300억↑)을 냈던 날의
-      <b>09:00~09:02 시동 3분봉 거래대금</b>을 '햄버거 기준 대금'으로 기억합니다.<br>
+      <b>① 기준봉</b> 최근 100거래일 안에서 <b>윗꼬리가 짧은 꽉 찬 장대양봉</b>(+10%↑ · 거래대금 300억↑ ·
+      양봉이면서 몸통이 봉 전체의 55%↑ · 윗꼬리가 봉 전체의 25%↓)을 고르고, 그날
+      <b>09:00~09:02 시동 3분봉 거래대금이 20억↑</b>일 때만 '햄버거 기준 대금'으로 인정합니다.
+      윗꼬리가 긴 날(레인보우 11/24 → 정규장 윗꼬리 43.5%)과 20억에 못 미치는 날(코스모로보틱스 11/23 1억)은
+      건너뛰고 그보다 앞선 유효 장대양봉을 봅니다. 봉의 시/고/저/종은 네이버 정규장 일봉으로 교차 검증합니다(KIS 종가에 NXT 시간외가 섞이는 착시 방지).<br>
       <b>② 조건</b> 오늘 그 종목이 속한 섹터가 주도 섹터로 살아 있고(테마 평균 +1%↑ · 종목 +5%↑),
       <b>장초반 3분봉 대금이 그 기준을 넘을 때</b>만 후보로 봅니다. 장전에는 NXT 첫 3분봉(08:00~08:02)으로 봅니다.<br>
       <b>③ 자리</b> +10% 미만 낮은 자리는 <b>⚡ 돌파</b>, +10% 이상 높은 자리는 <b>🎯 3분봉 20선 눌림</b>으로 봅니다.<br>
-      <b>④ 제외</b> 대금이 터져도 <b>긴 위꼬리 · 도지 · 음봉 · 일봉 역배열</b> 자리는 상승 확률이 낮아 뺍니다.
+      <b>④ 표시</b> <b>성립한 종목만 카드로 올립니다</b>. 기준 없음·기준 미달·오늘 대금 미달·긴 위꼬리·도지·음봉·일봉 역배열은
+      목록에서 빼고 <b>제외 종목 수만</b> 요약에 적습니다(임의 완화 없음).
     </div>
   </div>
   <div class="op-foot" id="hbFoot"></div>
@@ -6343,6 +6349,10 @@
     chips.push(chip('🔥 ' + (it.themeName || '테마 미확인') + (it.themeRank ? ' ' + it.themeRank + '위' : '') + (isNum(it.themePct) ? ' · ' + pctf(it.themePct) : ''), 'ok'));
     chips.push(chip(it.role === '부대장' ? '💰 부대장(대금)' : '👑 대장(상승률)', it.role === '부대장' ? 'warm' : 'hot'));
     if (isNum(it.valueEok)) chips.push(chip('대금 ' + eok(it.valueEok), 'mute'));
+    /* 기준봉 모양 — 윗꼬리가 짧은 봉을 기준으로 잡았다는 사실을 카드에서 바로 보이게 */
+    if (it.base && it.base.ok && isNum(it.base.upperWickPct)) {
+      chips.push(chip('기준봉 윗꼬리 ' + it.base.upperWickPct + '%', 'mute'));
+    }
     var v = it.verdict || {};
     var tagCls = v.tagKind === 'hot' ? 'hot' : v.tagKind === 'ok' ? 'ok' : v.tagKind === 'dn' ? 'dn' : 'wait';
     chips.push(chip(v.tag || '판정 대기', tagCls));
@@ -6372,32 +6382,50 @@
       if ($('hbFoot')) $('hbFoot').textContent = '';
       return;
     }
-    var items = (d.items || []).filter(function (x) { return x && x.code; });
-    /* 🍔 성립 종목을 먼저 — 그 안에서 배수 큰 순서. 판정은 서버 값을 그대로 쓰고 순서만 바꾼다. */
+    var all = (d.items || []).filter(function (x) { return x && x.code; });
+    var counts = d.counts || {};
+    /* 🍔 2026-11-27 사용자 확정 — 기준에 맞지 않는 종목(기준 없음·기준 미달·대금 미달·실패 패턴)은
+       카드로 만들지 않는다. 성립한 종목만 올리고, 나머지는 숫자로만 남긴다. */
+    var items = all.filter(function (x) { return x.verdict && x.verdict.pass; });
     items.sort(function (a, b) {
-      var pa = a.verdict && a.verdict.pass ? 1 : 0;
-      var pb = b.verdict && b.verdict.pass ? 1 : 0;
-      if (pa !== pb) return pb - pa;
       var ma = a.verdict && isNum(a.verdict.passMultiple) ? a.verdict.passMultiple : -1;
       var mb = b.verdict && isNum(b.verdict.passMultiple) ? b.verdict.passMultiple : -1;
-      return mb - ma;
+      if (ma !== mb) return mb - ma;
+      var pa = isNum(a.pctNow) ? a.pctNow : -1;
+      var pb = isNum(b.pctNow) ? b.pctNow : -1;
+      return pb - pa;
     });
+    var cand = isNum(counts.candidates) && counts.candidates ? counts.candidates : all.length;
+    var excluded = Math.max(0, cand - items.length);
     $('hbTimeBadge').textContent = '⏱ ' + (d.generatedAtKst || '') + ' 기준';
-    $('hbCountBadge').textContent = '🍔 성립 ' + ((d.counts || {}).pass || 0) + ' / 후보 ' + (items.length) + '종목';
-    $('hbCountBadge').className = 'op-badge' + ((d.counts || {}).pass ? '' : ' closed');
+    $('hbCountBadge').textContent = '🍔 성립 ' + items.length + ' / 후보 ' + cand + '종목';
+    $('hbCountBadge').className = 'op-badge' + (items.length ? '' : ' closed');
+
+    function excludedLine() {
+      var parts = [];
+      if (isNum(counts.valueShort) && counts.valueShort) parts.push('오늘 대금 미달 ' + counts.valueShort);
+      if (isNum(counts.blocked) && counts.blocked) parts.push('실패 패턴 ' + counts.blocked);
+      if (isNum(counts.noBase) && counts.noBase) parts.push('기준 없음/미달 ' + counts.noBase);
+      if (isNum(counts.wait) && counts.wait) parts.push('분봉 대기 ' + counts.wait);
+      var head = '후보 ' + cand + '종목 중 ' + items.length + '종목 성립';
+      if (!excluded) return head + '.';
+      return head + ' (나머지 ' + excluded + '종목 제외' + (parts.length ? ': ' + parts.join(' · ') : '') + ') — 기준 미달·실패 패턴은 카드로 올리지 않습니다.';
+    }
 
     if (!items.length) {
-      body.innerHTML = '<div class="op-card" style="opacity:.9;"><div style="font-size:11px;color:#94a3b8;line-height:1.6;">' +
-        esc((d.errors || []).join(' / ') || d.note || '오늘 테마에서 조건을 채운 대장·부대장이 없습니다.') +
-        '<br>기준을 임의로 완화하지 않습니다.</div></div>';
+      body.innerHTML = '<div class="op-card" style="opacity:.95;"><div style="font-size:11px;color:#94a3b8;line-height:1.6;">' +
+        '<b style="color:#fdba74;">성립 종목 0</b> — ' + esc(excludedLine()) +
+        (d.errors && d.errors.length ? '<br>' + esc(d.errors.join(' / ')) : '') +
+        '<br>' + (d.note || '기준을 임의로 완화하지 않습니다.') + '</div></div>';
       if (noteEl) noteEl.innerHTML = '';
-      if ($('hbFoot')) $('hbFoot').textContent = '';
+      if ($('hbFoot')) $('hbFoot').innerHTML = '<b style="color:#fdba74;">' + esc(excludedLine()) + '</b>';
       return;
     }
     body.innerHTML = '<div class="op-grid">' + items.map(card).join('') + '</div>';
     if (noteEl) noteEl.innerHTML = d.note || '';
     if ($('hbFoot')) {
-      $('hbFoot').textContent = '※ 카드를 누르면 종목 팝업이 열리고, 1분봉 차트와 함께 「이전 장대양봉 날 3분봉 대금 vs 오늘 장초반 3분봉 대금」이 나란히 표시됩니다. 기준 대금은 KIS 공식 API(일봉 FHKST03010100 · 과거 분봉 FHKST03010230) 실측입니다.';
+      $('hbFoot').innerHTML = '<div style="margin-bottom:4px;color:#fdba74;font-weight:800;">' + esc(excludedLine()) + '</div>' +
+        '※ 카드를 누르면 종목 팝업이 열리고, 1분봉 차트와 함께 「이전 장대양봉 날 3분봉 대금 vs 오늘 장초반 3분봉 대금」이 나란히 표시됩니다. 기준 대금은 KIS 공식 API(일봉 FHKST03010100 · 과거 분봉 FHKST03010230) + 네이버 정규장 일봉 실측입니다.';
     }
   }
 
@@ -6524,9 +6552,17 @@
       '<span style="font-size:11px;font-weight:900;color:#fdba74;">🍔 햄버거 기준 대금 (이전 장대양봉 vs 오늘 장초반)</span>' +
       '<span class="op-chip ' + (v.tagKind === 'hot' ? 'hot' : v.tagKind === 'ok' ? 'ok' : v.tagKind === 'dn' ? 'dn' : 'wait') + '">' + esc(v.tag || '판정 대기') + '</span></div>';
     if (!b.ok) {
+      var noBaseMsg = b.reason === 'no_big_yang'
+        ? '기준으로 삼을 <b>최근 100거래일 윗꼬리 짧은 장대양봉(+10%↑ · 대금 300억↑ · 윗꼬리 25%↓)</b> 날이 없습니다.'
+        : b.reason === 'base_below_min'
+          ? '장대양봉은 있었지만 <b>그날 09:00~09:02 3분봉 대금이 20억에 못 미칩니다</b> — 기준봉으로 인정하지 않습니다.'
+          : '기준 대금을 아직 계산하지 못했습니다.';
+      var skipTxt = (b.skippedBases && b.skippedBases.length)
+        ? '<br>제외한 기준 후보: ' + b.skippedBases.map(function (s) { return esc(s.dateLabel) + ' ' + esc(s.why); }).join(' / ')
+        : '';
       el.innerHTML = head + '<div style="font-size:10.5px;color:#fda4af;line-height:1.6;">' +
-        (b.reason === 'no_big_yang' ? '기준으로 삼을 <b>최근 120거래일 장대양봉(+10%↑ · 대금 300억↑) 날이 없습니다</b>.' : '기준 대금을 아직 계산하지 못했습니다.') +
-        ' — ' + esc(b.message || '') + '<br>기준은 최근 120거래일 장대양봉 날의 09:00~09:02 3분봉 거래대금입니다.</div>';
+        noBaseMsg + ' — ' + esc(b.message || '') + skipTxt +
+        '<br>기준은 윗꼬리가 짧은 장대양봉 날의 09:00~09:02 3분봉 거래대금(20억↑)입니다.</div>';
       return;
     }
     var rows = [];
@@ -6534,7 +6570,9 @@
     var by = b.bigYang || b;
     var baseVal = isNum(by.open3mEok) ? by.open3mEok : (by.open3m ? by.open3m.valueEok : null);
     var dayVal = isNum(by.dayValueEok) ? by.dayValueEok : by.valueEok;
-    rows.push(row('기준일', esc(by.dateLabel || '') + ' 장대양봉 <b style="color:#f43f5e;">' + pctf(by.pct) + '</b> · 그날 대금 <b>' + eok(dayVal) + '</b>', '#fed7aa'));
+    rows.push(row('기준일', esc(by.dateLabel || '') + ' 장대양봉 <b style="color:#f43f5e;">' + pctf(by.pct) + '</b> · 그날 대금 <b>' + eok(dayVal) + '</b>' +
+      (isNum(by.upperWickPct) ? ' · 윗꼬리 ' + by.upperWickPct + '%' : '') +
+      (isNum(by.bodyPct) ? ' · 몸통 ' + by.bodyPct + '%' : ''), '#fed7aa'));
     rows.push(row('기준 3분봉', '<b style="color:#fdba74;">' + eok(baseVal) + '</b> · 09:00~09:02' + (by.open3m ? ' (' + shapeText(by.open3m) + ')' : ''), '#e2e8f0'));
     if (t.ok) {
       var todayVal = isNum(t.open3mEok) ? t.open3mEok : (t.open3m ? t.open3m.valueEok : null);
@@ -6552,6 +6590,9 @@
     if (info.ma20 && info.ma20.ok) rows.push(row('3분봉 20선', comma(info.ma20.ma20) + '원' + (isNum(info.last) ? ' <span style="color:#94a3b8;">(현재가 ' + comma(info.last) + '원)</span>' : ''), '#cbd5e1'));
     else rows.push(row('3분봉 20선', '아직 20개(60분)가 쌓이지 않았습니다', '#94a3b8'));
     if (v.blocks && v.blocks.length) rows.push(row('제외 사유', v.blocks.map(function (x) { return '⛔ ' + esc(x); }).join(' · '), '#fda4af'));
+    if (b.skippedBases && b.skippedBases.length) {
+      rows.push(row('기준 후보 제외', b.skippedBases.map(function (s) { return esc(s.dateLabel) + ' ' + esc(s.why); }).join(' / '), '#94a3b8'));
+    }
     if (v.warn) rows.push(row('주의', '⚠ ' + esc(v.warn), '#fdba74'));
     if (v.reasons && v.reasons.length) rows.push(row('근거', v.reasons.map(esc).join(' · '), '#94a3b8'));
     if (b.others && b.others.length) {
@@ -6560,7 +6601,7 @@
     if (b.reversal && b.reversal.ma5) {
       rows.push(row('일봉 배열', esc(b.reversal.label) + (b.reversal.reverse ? ' <b style="color:#fda4af;">역배열</b>' : ''), '#cbd5e1'));
     }
-    rows.push(row('판정 기준', '오늘 3분봉 대금 ≥ 기준 · 긴 위꼬리·도지·음봉·역배열 제외', '#94a3b8'));
+    rows.push(row('판정 기준', '오늘 3분봉 대금 ≥ 기준(기준봉 09:00~09:02 20억↑) · 긴 위꼬리·도지·음봉·역배열 제외', '#94a3b8'));
     el.innerHTML = head + rows.join('');
     LAST = { code: String(code), info: info };
   }
