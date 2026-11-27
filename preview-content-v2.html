@@ -555,6 +555,16 @@
   .wvevichip{grid-column:3;grid-row:1;align-self:center;font:900 13px/1 inherit;padding:5px 7px;border-radius:8px;border:1px solid rgba(148,163,184,.34);background:#0b1626;color:#94a3b8;cursor:pointer;filter:grayscale(1);opacity:.72}
   .wvevichip.on{border-color:rgba(201,162,94,.95);background:rgba(201,162,94,.20);color:#fcd34d;filter:none;opacity:1}
   .wvevichip:hover{opacity:1}
+  /* ✨ 컷별 AI 다시쓰기 — 컷 카드 4칸(번호 · 본문 · ✨ · 🧾) */
+  .wvcutnote{grid-template-columns:auto minmax(0,1fr) auto auto}
+  html[data-theme="light"] .wvcutnote{grid-template-columns:auto minmax(0,1fr) auto auto}
+  .wvcutnote .wvaiw{grid-column:3;grid-row:1;align-self:center;font:900 10.6px/1 inherit;padding:5px 7px;border-radius:8px;
+    border:1px solid rgba(168,85,247,.46);background:rgba(168,85,247,.14);color:#d8b4fe;cursor:pointer;white-space:nowrap}
+  .wvcutnote .wvaiw:hover{border-color:rgba(192,132,252,.95);background:rgba(168,85,247,.26);color:#f5e8ff}
+  .wvcutnote .wvaiw[disabled]{opacity:.55;cursor:default}
+  html[data-theme="light"] .wvcutnote .wvaiw{color:#6d28d9;border-color:rgba(109,40,217,.34);background:rgba(109,40,217,.08)}
+  .wvcutnote .wvevichip{grid-column:4}
+  html[data-theme="light"] .wvevichip{grid-column:4}
   .aftoggle.wvevi{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
   /* ✍️ 쇼츠 대본 접기(4번 주제 + 결과 카드) */
   .shfold{margin-bottom:12px}
@@ -3146,6 +3156,14 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
             <option value="none">없음</option>
           </select>
           <label class="aftoggle" for="wvSfx"><input type="checkbox" id="wvSfx"> 전환·훅 효과음</label>
+          <select id="wvSfxKind" aria-label="전환 효과음 종류" title="컷이 바뀔 때 나는 효과음 — 후~ (whoosh) 또는 팝 (pop)" style="flex:0 1 148px">
+            <option value="whoosh">후~ (whoosh)</option>
+            <option value="pop">팝 (pop)</option>
+          </select>
+        </div>
+        <div class="wvrow">
+          <label class="aftoggle" for="wvDuck" title="성우 목소리가 나오는 동안 BGM 볼륨을 부드럽게 낮췄다가, 목소리가 없는 구간에서 원래 볼륨으로 되돌립니다."><input type="checkbox" id="wvDuck" checked> 🔉 BGM 자동 덕킹</label>
+          <label class="aftoggle" for="wvWordHL" title="성우가 지금 말하는 단어를 자막에서 실시간으로 칠합니다 — ElevenLabs 단어 타이밍(실측), 없으면 글자 비율로 추정합니다."><input type="checkbox" id="wvWordHL" checked> ✨ 단어별 하이라이트 자막</label>
         </div>
         <div class="wvrow">
           <label class="flabel" for="wvAccent" style="flex:0 0 auto">테마색</label>
@@ -5364,6 +5382,7 @@ const GEN_ACTIONS = [
   'proofread_draft',
   'analyze_shorts_style',
   'shorts_script',
+  'cut_rewrite',
 ];
 
   /* ================================================================
@@ -5578,6 +5597,61 @@ const GEN_ACTIONS = [
      run(action, body) → 서버 /api/content-ai 와 같은 모양의 JSON
      { ok, action, model, notes[], tries[], elapsedMs, data } / 실패 시 { ok:false, reason, message, tries[] }
      ================================================================ */
+/* ✨ 컷 1개 다시 쓰기 — 전체 대본을 다시 뽑지 않고, 그 컷의 자막·나레이션만 다듬는다. */
+const SCHEMA_CUT_REWRITE = {
+  type: 'object',
+  properties: {
+    subtitle: { type: 'string', description: '화면 자막 — 공백 포함 14~22자. 숫자는 원문 그대로 둔다' },
+    narration: { type: 'string', description: '성우가 3~5초에 읽는 한국어 구어체 1~2문장 (45~80자)' },
+    why: { type: 'string', description: '무엇을 왜 바꿨는지 한 줄 (20자 내외, 없으면 빈 문자열)' },
+  },
+  required: ['subtitle', 'narration'],
+};
+
+function promptCutRewrite(b) {
+  const nar = s(b.narration, 600);
+  const sub = s(b.subtitle, 300);
+  const prev = s(b.prevText, 300);
+  const next = s(b.nextText, 300);
+  const title = s(b.title, 120);
+  const tone = s(b.tone, 40) || '정보 전달 · 담백한 구어체';
+  const facts = (String(nar + ' ' + sub).match(/\d[\d,.]*\s*(?:%|퍼센트|억|조|계약|pt|원|배|개)?/g) || []).slice(0, 12);
+  const user = [
+    title ? `영상 제목: ${title}` : '',
+    `지금 컷: ${Number(b.index || 0) + 1} / ${Number(b.total || 1) || 1}`,
+    `현재 자막: "${sub}"`,
+    `현재 나레이션: "${nar}"`,
+    prev ? `앞 컷 자막(참고): "${prev}"` : '',
+    next ? `뒤 컷 자막(참고): "${next}"` : '',
+    facts.length
+      ? `이 컷에 이미 있는 수치(그대로 둔다): ${facts.join(' · ')}`
+      : '이 컷에는 수치가 없다 — 수치를 새로 만들지 않는다.',
+    `
+[해야 할 일 — 이 한 컷만 다시 쓰기]
+1) subtitle: 화면에서 1초에 읽히는 임팩트 자막. 공백 포함 14~22자, 앞 컷과 같은 말을 반복하지 않는다.
+2) narration: 성우가 3~5초에 읽는 자연스러운 한국어 구어체 1~2문장(45~80자). "~했죠 / ~인데요"처럼 말을 거는 톤.
+3) 톤: ${tone}
+4) 위 수치·고유명사 밖의 새 숫자·가격·날짜·이름을 만들지 않는다. 확인한 내용만 쓴다.
+5) why: 무엇을 왜 바꿨는지 한 줄. 없으면 빈 문자열.
+[출력] subtitle · narration · why JSON.`,
+  ].filter(Boolean).join('\n');
+  return {
+    system: `너는 한국어 유튜브 쇼츠 대본 작가다. 한 컷의 자막과 나레이션만 다시 쓴다. 확인한 내용만 쓴다. ${HONESTY}`,
+    user,
+    schema: SCHEMA_CUT_REWRITE,
+    maxTokens: 500,
+    temperature: 0.85,
+  };
+}
+
+function normCutRewrite(data) {
+  return {
+    subtitle: s(data && data.subtitle, 60),
+    narration: s(data && data.narration, 220),
+    why: s(data && data.why, 60),
+  };
+}
+
   async function run(action, body) {
     body = body || {};
     if (GEN_ACTIONS.indexOf(action) < 0) {
@@ -5669,6 +5743,11 @@ const GEN_ACTIONS = [
     } else if (action === 'shorts_script') {
       if (!s(body.topic, 200)) return { ok: false, reason: 'missing_topic', message: '쇼츠 주제(topic)가 필요합니다.' };
       prompt = promptShortsScript(Object.assign({}, body, { banPhrases: banPhrases }));
+    } else if (action === 'cut_rewrite') {
+      if (!s(body.narration, 2) && !s(body.subtitle, 2)) {
+        return { ok: false, reason: 'missing_cut', message: '다시 쓸 컷의 자막이나 나레이션이 필요합니다.' };
+      }
+      prompt = promptCutRewrite(Object.assign({}, body, { banPhrases: banPhrases }));
     } else if (action === 'summarize') {
       const kind = ['youtube', 'doc', 'media'].indexOf(s(body.kind, 12)) >= 0 ? s(body.kind, 12) : 'doc';
       const mode = SUMMARY_MODES.indexOf(s(body.mode, 12)) >= 0 ? s(body.mode, 12) : 'three';
@@ -5787,6 +5866,7 @@ const GEN_ACTIONS = [
     else if (action === 'analyze_blogger_style') result = normStyle(data0);
     else if (action === 'analyze_shorts_style') result = normShortsStyle(data0);
     else if (action === 'shorts_script') result = normShortsScript(data0);
+    else if (action === 'cut_rewrite') result = normCutRewrite(data0);
     else if (action === 'summarize') result = normSummary(data0, srcMeta || {});
     else result = normShorts(data0);
 
@@ -5807,6 +5887,7 @@ const GEN_ACTIONS = [
       (action === 'proofread_draft' && !s(result.body, 10)) ||
       (action === 'analyze_shorts_style' && !s(result.hook, 3)) ||
       (action === 'shorts_script' && !(result.beats || []).length) ||
+      (action === 'cut_rewrite' && !s(result.narration, 3)) ||
       (action === 'analyze_blogger_style' && !(result.structure || []).length) ||
       (action === 'summarize' && !((result.three || []).length || s(result.headline, 3)));
     if (truncated || emptyMain) {
@@ -6335,6 +6416,12 @@ var CSVoice = (function () {
       spinner(btn, false);
     }
   }
+
+  /* 🎬 웹 영상 생성기 — 컷 1개만 다시 쓰기(같은 엔진 · 같은 오류 처리로 넘긴다) */
+  window.CS2_CUT_REWRITE = async function (payload) {
+    var j = await callAI('cut_rewrite', payload || {});
+    return (j && j.data) || {};
+  };
 
   function aiErrBox(err, opts){
     opts = opts || {};
@@ -19225,6 +19312,7 @@ var CSVoice = (function () {
             voiceKo: 'ko:ko-KR-SunHiNeural:bright', speed: 1.12 }
   };
   var DEF = { preset: '', design: 'dark', formula: null, tpl: 'card', chartData: '', accent: '#38bdf8', cap: '#fde047', bgm: 'news', sfx: true,
+    sfxKind: 'whoosh', duck: true, wordHL: true,
     voice: 'ko:ko-KR-SunHiNeural', speed: 1, wm: '연오랑의 3분 시황', numNorm: true };
   function clampSpeed(v) { var n = Number(v); if (!isFinite(n)) n = 1; return Math.min(1.25, Math.max(0.90, Math.round(n * 100) / 100)); }
   function voiceOf() { return window.CSVoice ? CSVoice.resolve(S.cfg.voice) : null; }
@@ -21684,7 +21772,7 @@ var CSVoice = (function () {
     if (hero) drawFox(ctx, pose, SAFE.r - 340, g.y + Math.round((g.h - 340) / 2), 340);
   }
   /* ---------- ⑥ 카라오케 자막 — 나레이션 문장 + 본문 컷 우하단 스탬프 ---------- */
-  function drawFoxCaption(ctx, cut, p, spec, idx, n) {
+  function drawFoxCaption(ctx, cut, p, spec, idx, n, tIn) {
     var C = fxPal(), g = FXG.cap;
     var hero = fxHero(idx, n);
     var textW = hero ? g.w : g.w - FX_STAMP - 28;
@@ -21696,19 +21784,21 @@ var CSVoice = (function () {
       panel(ctx, g.x, g.y + 4, 56, 7, 3.5, warn ? '#DC2626' : C.accent, null, 0, 'fx-cap-rule');
       var y0 = g.y + 18 + Math.max(0, (g.h - 24 - fit.height) / 2);
       var words = (spec && spec.words) || [];
-      var total = String(line).replace(/\s/g, '').length || 1, seen = 0;
+      var total = String(line).replace(/\s/g, '').length || 1, seen = 0, tokBase = 0;
+      var sy = capSyncOf(cut, tIn, p);
       for (var i = 0; i < fit.lines.length; i++) {
         var toks = fit.lines[i].split(' '), cols = [], marks = [];
-        toks.forEach(function (tok) {
+        toks.forEach(function (tok, k) {
           var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
-          var on = (seen / total) <= p + 0.0001;
+          var on = (seen / total) <= sy.p + 0.0001;
           seen += String(tok).length;
           if (!on) { cols.push(C.sub); marks.push(''); return; }
           var c = fxCapCol(capColorOf(tok, line));
           if (!c && words.indexOf(clean) >= 0) c = C.accent;
-          cols.push(c || C.ink);
-          marks.push(capMarkOf(tok));
+          cols.push((tokBase + k) === sy.act ? C.ink : (c || C.ink));
+          marks.push(capMarkOf(tok) || ((tokBase + k) === sy.act ? hexA(C.accent, .30) : ''));
         });
+        tokBase += toks.length;
         txWords(ctx, fit.lines[i], g.x + 4, y0 + i * fit.lineH + fit.lineH / 2, fit.font,
           function (tok, k) { return cols[k]; }, 'fx-cap', null, null, null,
           function (tok, k) { return marks[k]; });
@@ -21833,7 +21923,7 @@ var CSVoice = (function () {
       drawFoxKpiRow(ctx, cut, idx);
       drawFoxVisual(ctx, spec, cut, idx, pose, hero);
     }
-    drawFoxCaption(ctx, cut, p, spec, idx, cuts.length);
+    drawFoxCaption(ctx, cut, p, spec, idx, cuts.length, tIn);
     ctx.restore();
     ctx.restore();
     drawFoxFoot(ctx, spec, cut);
@@ -22076,7 +22166,7 @@ var CSVoice = (function () {
     drawFlatKpis(ctx, roleKpis(d, cut), G.kpi, roleKpiPal(d));
     drawRoleVisual(ctx, d, spec, cut, idx, G.vis.x, G.vis.y, G.vis.w, G.vis.h);
   }
-  function drawRoleCaption(ctx, d, cut, p, spec, idx, n) {
+  function drawRoleCaption(ctx, d, cut, p, spec, idx, n, tIn) {
     var R = ROLE[d], g = RLG.cap;
     var fit = fitText(ctx, cut.text, { w: g.w - 104, h: g.h - 96, base: 54, min: 26, weight: 800, lh: 1.24 });
     var cardH = Math.min(g.h, fit.height + 74);
@@ -22087,17 +22177,21 @@ var CSVoice = (function () {
     ctx.restore();
     panel(ctx, g.x + 30, cy + 24, 56, 7, 3.5, R.accent, null, 0, 'role-cap-rule');
     var words = (spec && spec.words) || [];
-    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
+    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0, tokBase = 0;
+    var sy = capSyncOf(cut, tIn, p);
     var y0 = cy + cardH - 30 - fit.height;
     for (var i = 0; i < fit.lines.length; i++) {
-      txWords(ctx, fit.lines[i], g.x + 52, y0 + i * fit.lineH + fit.lineH / 2, fit.font, function (tok) {
+      txWords(ctx, fit.lines[i], g.x + 52, y0 + i * fit.lineH + fit.lineH / 2, fit.font, function (tok, k) {
         var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
-        var on = (seen / total) <= p + 0.0001;
+        var on = (seen / total) <= sy.p + 0.0001;
         seen += String(tok).length;
         if (!on) return inkA(R, .42);
+        if ((tokBase + k) === sy.act) return R.mark || R.accent;
         if (words.indexOf(clean) >= 0 || /\d/.test(tok)) return R.mark || R.accent;
         return R.ink;
-      }, 'role-cap');
+      }, 'role-cap', null, null, null,
+        function (tok, k) { return (tokBase + k) === sy.act ? inkA(R.accent, .20) : ''; });
+      tokBase += capTokens(fit.lines[i]).length;
     }
   }
   function drawRoleFrame(t) {
@@ -22125,7 +22219,7 @@ var CSVoice = (function () {
     ctx.save();
     ctx.translate(0, Math.round((1 - ein) * 12));
     drawRoleMain(ctx, d, spec, cut, idx, pose);
-    drawRoleCaption(ctx, d, cut, p, spec, idx, cuts.length);
+    drawRoleCaption(ctx, d, cut, p, spec, idx, cuts.length, tIn);
     ctx.restore();
     ctx.restore();
   }
@@ -23453,6 +23547,9 @@ var CSVoice = (function () {
     pinNote();
     var b = $('#wvBgm'); if (b) b.value = c.bgm;
     var s = $('#wvSfx'); if (s) s.checked = !!c.sfx;
+    var sk = $('#wvSfxKind'); if (sk) sk.value = (c.sfxKind === 'pop' ? 'pop' : 'whoosh');
+    var dk = $('#wvDuck'); if (dk) dk.checked = c.duck !== false;
+    var wh = $('#wvWordHL'); if (wh) wh.checked = c.wordHL !== false;
     var a = $('#wvAccent'); if (a) a.value = /^#[0-9a-f]{6}$/i.test(c.accent) ? c.accent : '#38bdf8';
     var cp = $('#wvCap'); if (cp) cp.value = /^#[0-9a-f]{6}$/i.test(c.cap) ? c.cap : '#fde047';
     var wm = $('#wvWm'); if (wm) wm.value = c.wm || '';
@@ -23623,6 +23720,132 @@ var CSVoice = (function () {
     });
   }
 
+  /* ══════════════════════════════════════════════════════════════════════
+     ✨ 단어별 하이라이트 자막 — "지금 성우가 말하는 단어"를 자막에서 실시간으로 칠한다.
+
+       ① ElevenLabs with-timestamps 한 번으로 [음성 + 글자별 타이밍]을 함께 받는다(요청 1회).
+          → parseWordTimingsFromAlignment() 가 글자 타이밍을 '단어' 단위로 묶는다.
+       ② 🇰🇷 한국어 무료 성우(/api/tts)이거나 타임스탬프가 막힌 경우는 음성만 받고,
+          propWordTimings() 가 글자 수 비율로 단어 시간을 나눈다(폴백 — 자막이 멈추지 않는다).
+       ③ 두 경우 모두 '컷 안쪽 초' 기준으로, 재생 배속(pbr)만큼 나눠 실제 화면 시간에 맞춘다.
+     ══════════════════════════════════════════════════════════════════════ */
+  function b64ToArrayBuffer(b64) {
+    var bin = atob(String(b64 || ''));
+    var len = bin.length, bytes = new Uint8Array(len), i;
+    for (i = 0; i < len; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes.buffer;
+  }
+  /* alignment { characters[], character_start_times_seconds[], character_end_times_seconds[] }
+     → [{ word, start, end }] — 공백 기준 단어 묶음(초) */
+  function parseWordTimingsFromAlignment(al) {
+    if (!al || !Array.isArray(al.characters)) return null;
+    var chars = al.characters, starts = al.character_start_times_seconds || [], ends = al.character_end_times_seconds || [];
+    var words = [], cur = '', curStart = null, curEnd = 0, i;
+    for (i = 0; i < chars.length; i++) {
+      var ch = String(chars[i] == null ? '' : chars[i]);
+      if (/\s/.test(ch)) {
+        if (cur) { words.push({ word: cur, start: curStart == null ? 0 : curStart, end: curEnd }); cur = ''; curStart = null; }
+      } else {
+        if (curStart === null) curStart = (starts[i] == null ? curEnd : +starts[i]);
+        cur += ch;
+        curEnd = (ends[i] == null ? curStart + 0.1 : +ends[i]);
+      }
+    }
+    if (cur) words.push({ word: cur, start: curStart == null ? 0 : curStart, end: curEnd });
+    words = words.filter(function (w) { return w && isFinite(w.start) && isFinite(w.end) && w.end >= w.start; });
+    return words.length ? words : null;
+  }
+  /* 폴백 — 타임스탬프가 없을 때: 자막 글자 수 비율로 단어 시간을 나눈다 */
+  function propWordTimings(text, dur) {
+    var toks = capTokens(text), n = toks.length, d = Math.max(0.4, Number(dur) || 1), i;
+    if (!n) return null;
+    var tot = 0, lens = [];
+    for (i = 0; i < n; i++) { lens.push(Math.max(1, toks[i].length)); tot += lens[i]; }
+    var out = [], t = 0;
+    for (i = 0; i < n; i++) {
+      var span = d * (lens[i] / tot);
+      out.push({ word: toks[i], start: +t.toFixed(3), end: +(t + span).toFixed(3) });
+      t += span;
+    }
+    return out;
+  }
+  /* 성우 1컷 합성 — 음성(AudioBuffer)과 단어 타이밍을 함께 돌려준다 */
+  function ttsTimed(actx, text) {
+    if (!text || !window.CSVoice) return Promise.resolve({ buf: null, wt: null });
+    if (!CSVoice.ready(S.cfg.voice)) return Promise.resolve({ buf: null, wt: null });
+    var body = String(text).slice(0, 900);
+    var v = CSVoice.resolve(S.cfg.voice);
+    /* 🎙 ElevenLabs — with-timestamps(음성+타이밍 1회 요청). 실패하면 예전 방식(음성만)으로 폴백 */
+    if (v && v.engine !== 'ko' && CSVoice.elKey()) {
+      return fetch('https://api.elevenlabs.io/v1/text-to-speech/' + encodeURIComponent(v.id) + '/with-timestamps?output_format=mp3_44100_128', {
+        method: 'POST',
+        headers: { 'xi-api-key': CSVoice.elKey(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text: body,
+          model_id: 'eleven_multilingual_v2',
+          voice_settings: { stability: 0.42, similarity_boost: 0.75, style: 0.3, use_speaker_boost: true }
+        })
+      }).then(function (r) {
+        if (!r.ok) throw new Error('with-timestamps HTTP ' + r.status);
+        return r.json();
+      }).then(function (j) {
+        if (!j || !j.audio_base64) throw new Error('with-timestamps: 오디오 없음');
+        var ab = b64ToArrayBuffer(j.audio_base64);
+        return new Promise(function (res, rej) {
+          actx.decodeAudioData(ab.slice(0), function (buf) {
+            res({ buf: buf, wt: parseWordTimingsFromAlignment(j.alignment) });
+          }, rej);
+        });
+      }).catch(function () {
+        return CSVoice.request(body, S.cfg.voice, S.cfg.speed, 'arraybuffer').then(function (ab2) {
+          return new Promise(function (res, rej) {
+            actx.decodeAudioData(ab2, function (buf) { res({ buf: buf, wt: null }); }, rej);
+          });
+        });
+      });
+    }
+    return CSVoice.request(body, S.cfg.voice, S.cfg.speed, 'arraybuffer').then(function (ab) {
+      return new Promise(function (res, rej) {
+        actx.decodeAudioData(ab, function (buf) { res({ buf: buf, wt: null }); }, rej);
+      });
+    });
+  }
+  /* 자막 한 줄 = 단어 목록 (그리기와 타이밍 매핑이 같은 단위를 쓰도록 한 곳에서 자른다) */
+  function capTokens(text) {
+    return String(text == null ? '' : text).replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  }
+  /* 지금 발화 중인 단어 → { p: 글자 진행률(0~1), act: 지금 단어의 자막 토큰 번호, n: 토큰 수 }
+     · p 는 기존 자막 렌더러의 (seen/total <= p) 규칙에 그대로 들어간다(카라오케 유지).
+     · tIn 이 없으면(대기 화면) 넘겨받은 p 를 그대로 쓴다. */
+  function capSyncOf(cut, tIn, pFallback) {
+    var toks = capTokens(cut && cut.text), n = toks.length;
+    var pf = (pFallback == null ? 0 : Math.min(1, Math.max(0, +pFallback)));
+    if (!n) return { p: pf, act: -1, n: 0 };
+    if (tIn == null || !isFinite(+tIn)) return { p: pf, act: -1, n: n };
+    if (S.cfg && S.cfg.wordHL === false) return { p: pf, act: -1, n: n };
+    var dur = Math.max(0.2, Number(cut && cut.dur) || 1);
+    var t = Math.min(dur, Math.max(0, +tIn));
+    var wt = cut && cut.wt, p = Math.min(1, t / dur), act = -1, i;
+    if (Array.isArray(wt) && wt.length) {
+      var k = -1;
+      for (i = 0; i < wt.length; i++) { if (t >= wt[i].start) k = i; else break; }
+      if (k < 0) { p = 0; act = 0; }
+      else {
+        var chars = 0, tot = 0;
+        for (i = 0; i < wt.length; i++) {
+          var L = Math.max(1, String(wt[i].word || '').length);
+          tot += L;
+          if (i <= k) chars += L;
+        }
+        p = tot ? Math.min(1, chars / tot) : Math.min(1, t / dur);
+        act = Math.max(0, Math.min(n - 1, Math.ceil(((k + 1) / wt.length) * n) - 1));
+      }
+    } else {
+      act = Math.max(0, Math.min(n - 1, Math.floor(p * n)));
+    }
+    return { p: p, act: act, n: n };
+  }
+
   /* ---------- BGM / SFX ---------- */
   function bgm(ctx, out, mood, base, total) {
     var g = ctx.createGain();
@@ -23666,10 +23889,21 @@ var CSVoice = (function () {
     src.connect(bp); bp.connect(g); g.connect(out);
     src.start(at); src.stop(at + len + 0.03);
   }
+  /* ③ 장면 전환 효과음 — 컷이 바뀔 때 부드러운 후~(whoosh) 또는 팝(pop). 외부 오디오 파일 없이 Web Audio 합성 */
+  function playTransitionSfx(ctx, out, at) {
+    var kind = (S.cfg && S.cfg.sfxKind === 'pop') ? 'pop' : 'whoosh';
+    if (kind === 'pop') return popSfx(ctx, out, at, .11);
+    return whooshSfx(ctx, out, at, .085);
+  }
   /* ═══ ⑤ BGM 자동 덕킹 — 나레이션이 나오는 동안 0.12, 컷 사이 여백(0.30초)에서는 0.28 ═══
      · 성우 버스 시작/끝에 맞춰 선형 램프만 예약한다(Web Audio 스케줄러가 오차 없이 처리).
      · 컷 사이 여백이 0.30초라 목소리 사이에서 BGM 이 살짝 올라왔다 다시 내려간다. */
   function duckUnderVoice(ctx, gain, base, buses) {
+    /* 🎚 토글 OFF — 목소리 구간에도 BGM 을 낮추지 않고 한 볼륨으로 둔다 */
+    if (S.cfg && S.cfg.duck === false) {
+      try { gain.gain.cancelScheduledValues(base); gain.gain.setValueAtTime(BGM_GAP, base); } catch (e0) {}
+      return;
+    }
     try {
       gain.gain.cancelScheduledValues(base);
       gain.gain.setValueAtTime(BGM_GAP, base);
@@ -24281,11 +24515,12 @@ var CSVoice = (function () {
         idx === 0 ? '#f8fafc' : 'rgba(226,232,240,.9)', 'center', 'phook');
     }
   }
-  function drawCaption(ctx, cut, p, spec, soft) {
+  function drawCaption(ctx, cut, p, spec, soft, tIn) {
     var slot = SLOTS.cap, pad = 18;
     var fit = fitText(ctx, cut.text, { w: slot.w - 30, h: slot.h - pad * 2 - 8, base: 70, min: 36, weight: 900, lh: 1.24 });
     var capC = spec.capColor || '#fde047', words = spec.words || [], ac = spec.accent || '#38bdf8';
-    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0;
+    var total = String(cut.text).replace(/\s/g, '').length || 1, seen = 0, tokBase = 0;
+    var sy = capSyncOf(cut, tIn, p);
     var fs = fontPx(fit.font), outW = Math.max(6, fs * 0.18);
     /* 줄마다 실제 글자 폭을 재서 딱 맞는 라운드 배지를 깐다(겹침 없음) */
     var y0 = slot.y + slot.h - pad - fit.height;
@@ -24298,13 +24533,16 @@ var CSVoice = (function () {
       var bx = SAFE.x + (SAFE.w - bw) / 2;
       panel(ctx, bx, yMid - bh / 2, bw, bh, bh / 2.2,
         soft ? 'rgba(4,8,16,.72)' : 'rgba(4,8,16,.86)', hexA(ac, .42), 2, 'cap-badge');
-      txWords(ctx, fit.lines[i], SAFE.x + SAFE.w / 2, yMid, fit.font, function (tok) {
+      txWords(ctx, fit.lines[i], SAFE.x + SAFE.w / 2, yMid, fit.font, function (tok, k) {
         var clean = String(tok).replace(/[^0-9A-Za-z가-힣]/g, '');
-        var on = (seen / total) <= p + 0.0001;
+        var on = (seen / total) <= sy.p + 0.0001;
         seen += String(tok).length;
+        if (on && (tokBase + k) === sy.act) return '#FFFFFF';
         if (on && words.indexOf(clean) >= 0) return ac;
         return on ? capC : 'rgba(241,245,249,.55)';
-      }, 'cap', null, 'center', { color: 'rgba(2,5,10,.95)', width: outW });
+      }, 'cap', null, 'center', { color: 'rgba(2,5,10,.95)', width: outW },
+        function (tok, k) { return (tokBase + k) === sy.act ? hexA(ac, .40) : ''; });
+      tokBase += capTokens(fit.lines[i]).length;
     }
   }
   function drawProgress(ctx, t, ac) {
@@ -24377,7 +24615,7 @@ var CSVoice = (function () {
       else if (tpl === 'line') drawSmartMain(ctx, cut, p, spec, ac, idx, cuts.length);   /* 🎨 내용 맞춤 — 컷마다 시각물 자동 전환 */
       else drawCardMain(ctx, cut, p, spec, ac);
     }
-    drawCaption(ctx, cut, p, spec, tpl === 'photo');
+    drawCaption(ctx, cut, p, spec, tpl === 'photo', tIn);
     ctx.restore();
     if (idx === 0) drawFirstHookBadge(ctx, spec, cut, tIn, ac);
     drawProgress(ctx, t, ac);
@@ -24561,14 +24799,19 @@ var CSVoice = (function () {
         say('🎙 ' + (i + 1) + ' / ' + spec.cuts.length + '컷 음성 준비 중…');
         /* 성우에게 넘기는 글자만 발음으로 — 화면 자막(c.text·c.tts)은 숫자 그대로 그린다 */
         var ttsText = S.cfg.numNorm ? koSpeechText(c.tts) : c.tts;
-        var p = hasVoice ? ttsBuf(actx, ttsText).catch(function () { failed.push(i + 1); return null; }) : Promise.resolve(null);
-        return p.then(function (buf) {
+        var p = hasVoice ? ttsTimed(actx, ttsText).catch(function () { failed.push(i + 1); return { buf: null, wt: null }; }) : Promise.resolve({ buf: null, wt: null });
+        return p.then(function (got) {
+          var buf = (got && got.buf) || null, wt = (got && got.wt) || null;
           /* 한국어 성우는 /api/tts 의 rate 로 이미 빨라진 음성이 온다 → 재생 배속 1 · 길이도 그대로 쓴다
              (1.20x 에서 컷이 음성보다 짧아져 다음 컷과 겹치던 문제 방지) */
           var pbr = isKo ? 1 : spd;
           var d = buf ? Math.max(1.5, buf.duration / pbr + .34) : c.d;
           var img = S.photos.length ? S.photos[i % S.photos.length] : null;
-          out.push({ text: c.text, tts: c.tts, speech: ttsText, hook: c.hook, dur: d, start: t, end: t + d, buf: buf, img: img, idx: i, pbr: pbr });
+          /* 단어 타이밍 — 화면 시간(컷 안쪽 초)으로 환산: 배속만큼 나누고, 없으면 글자 비율로 나눈다 */
+          var spoken = buf ? (buf.duration / pbr) : Math.max(1, d - .34);
+          var wts = wt ? wt.map(function (w) { return { word: w.word, start: w.start / pbr, end: w.end / pbr }; })
+                       : propWordTimings(c.text, spoken);
+          out.push({ text: c.text, tts: c.tts, speech: ttsText, hook: c.hook, dur: d, start: t, end: t + d, buf: buf, wt: wts, img: img, idx: i, pbr: pbr });
           t += d + GAP;
         });
       });
@@ -24599,7 +24842,7 @@ var CSVoice = (function () {
     /* 효과음 — 첫 컷은 훅 Pop, 컷 전환은 Whoosh, ③ 빅넘버 도착(0.58초)엔 펀치 */
     if (S.cfg.sfx) {
       popSfx(actx, dest, base, .14);
-      plan.cuts.forEach(function (c, i) { if (i > 0) whooshSfx(actx, dest, base + c.start - 0.21, .085); });
+      plan.cuts.forEach(function (c, i) { if (i > 0) playTransitionSfx(actx, dest, base + c.start - 0.21); });
       try {
         punchCuts(plan).forEach(function (c) { punchSfx(actx, dest, base + c.start + 0.58, .20); });
       } catch (e) {}
@@ -24755,6 +24998,53 @@ var CSVoice = (function () {
     if (keys.length > 120) keys.slice(0, keys.length - 120).forEach(function (kk) { delete S.cfg.cutNotes[kk]; });
     saveCfg();
   }
+  /* ═══ ✨ 세그먼트(컷) 1개만 AI 다시쓰기 — 전체 대본은 그대로, 그 컷의 자막·나레이션만 다듬는다 ═══
+     · 동적(content-v2)은 /api/content-ai, 정적(preview)은 저장된 Gemini 키로 CSAI 가 같은 일을 한다.
+     · 키가 없거나 실패하면 사유를 그대로 보여 준다(지어내지 않는다). */
+  function applyCutRewrite(i, narration, subtitle) {
+    var spec = S.spec;
+    if (!spec || !spec.cuts || !spec.cuts[i]) return false;
+    var c = spec.cuts[i];
+    if (subtitle) c.text = String(subtitle).replace(/\s+/g, ' ').trim();
+    if (narration) c.tts = String(narration).replace(/\s+/g, ' ').trim();
+    c.d = Math.max(1.6, estDur(c.tts || c.text));
+    var pv = previewCuts(spec);
+    S.cuts = pv.cuts; S.total = pv.total;
+    applyPhotos();
+    try { redraw(); } catch (e) {}
+    try { renderCutNotes(); } catch (e2) {}
+    return true;
+  }
+  function rewriteCut(i, btn) {
+    var cut = S.cuts && S.cuts[i];
+    if (!cut) return;
+    if (S.running) { flash('녹화 중에는 컷을 고칠 수 없습니다 — [■ 중지]를 누른 뒤 다시 시도해 주세요.'); return; }
+    var fn = W.CS2_CUT_REWRITE;
+    if (typeof fn !== 'function') { say('이 화면에서는 컷 다시쓰기를 쓸 수 없습니다 — 페이지를 새로 고쳐 주세요.', 'bad'); return; }
+    var nxt = S.cuts[i + 1] || null;
+    var prm = {
+      index: i, total: S.cuts.length,
+      title: (S.spec && (S.spec.title || S.spec.hookTitle)) || '',
+      subtitle: String(cut.text || ''), narration: String(cut.tts || cut.text || ''),
+      prevText: i > 0 ? String(S.cuts[i - 1].text || '') : '',
+      nextText: nxt ? String(nxt.text || '') : ''
+    };
+    var orig = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = '⏳'; }
+    say('✨ ' + (i + 1) + '컷 자막·나레이션만 Gemini가 다시 다듬는 중…');
+    Promise.resolve().then(function () { return fn(prm); }).then(function (d) {
+      if (!d || (!d.subtitle && !d.narration)) throw new Error('다시 쓴 문장이 비어 왔습니다. 한 번 더 눌러 주세요.');
+      applyCutRewrite(i, d.narration, d.subtitle);
+      say('✨ <b>' + (i + 1) + '컷</b>을 다시 썼습니다' + (d.why ? ' — ' + esc(d.why) : '') + ' · 나머지 컷 대본은 그대로입니다.', 'good');
+    }).catch(function (e) {
+      var p = (e && e.payload) || {};
+      var hint = (p.reason === 'missing_gemini_key' || p.reason === 'missing_key')
+        ? ' — Gemini 키를 넣으면 바로 됩니다.' : '';
+      say('⚠️ ' + (i + 1) + '컷 다시쓰기 실패 — ' + esc((e && e.message) || '알 수 없는 오류') + hint, 'bad');
+    }).then(function () {
+      if (btn) { btn.disabled = false; btn.innerHTML = orig; }
+    });
+  }
   function renderCutNotes() {
     var box = $('#wvCutNotes');
     if (!box) return;
@@ -24773,6 +25063,7 @@ var CSVoice = (function () {
       var evHere = !!(EVI.img && eviOn() && designOf() === 'fox' && i === eviCutIdx());
       h += '<label class="wvcutnote"><span class="n">' + ('0' + (i + 1)).slice(-2) + '</span>'
         + '<span class="t"><i>' + (Number(c.start) || 0).toFixed(1) + '~' + (Number(c.end) || 0).toFixed(1) + '초</i> · ' + esc(clip(txt, 44)) + '</span>'
+        + '<button type="button" class="wvaiw" data-wvaiw="' + i + '" title="✨ AI 다시쓰기 — 이 컷의 자막·나레이션만 Gemini가 다시 다듬습니다(전체 대본은 그대로)">✨ 다시쓰기</button>'
         + '<button type="button" class="wvevichip' + (evHere ? ' on' : '') + '" data-wvevi="' + i + '" aria-pressed="' + (evHere ? 'true' : 'false') + '" title="'
         + (evHere ? '이 컷에 실측 증거 카드가 들어갑니다 — 다시 누르면 자동 선택으로 돌아갑니다' : (designOf() === 'fox' ? '이 컷에 실측 증거 카드를 넣습니다' : '🦊 폭스시그널 디자인에서만 들어갑니다'))
         + '">🧾</button>'
@@ -25461,6 +25752,30 @@ var CSVoice = (function () {
     $$('#wvPanel [data-wvdesign]').forEach(function (el) { el.addEventListener('click', function () { smpNote(''); }); });
     var b2 = $('#wvBgm'); if (b2) b2.addEventListener('change', function () { S.cfg.bgm = b2.value; saveCfg(); syncUi(); });
     var s2 = $('#wvSfx'); if (s2) s2.addEventListener('change', function () { S.cfg.sfx = !!s2.checked; saveCfg(); });
+    var sk2 = $('#wvSfxKind'); if (sk2) sk2.addEventListener('change', function () {
+      S.cfg.sfxKind = (sk2.value === 'pop') ? 'pop' : 'whoosh';
+      saveCfg();
+      say('🔊 장면 전환 효과음을 <b>' + (S.cfg.sfxKind === 'pop' ? '팝' : '후~ (whoosh)') + '</b>로 바꿨습니다' + (S.cfg.sfx ? '' : ' — [전환·훅 효과음]이 꺼져 있어 다음 생성부터 들립니다.'));
+    });
+    var dk2 = $('#wvDuck'); if (dk2) dk2.addEventListener('change', function () {
+      S.cfg.duck = !!dk2.checked; saveCfg();
+      say(S.cfg.duck
+        ? '🔉 BGM 자동 덕킹 ON — 성우가 말하는 동안 BGM이 부드럽게 낮아지고 무음 구간에서 되돌아옵니다.'
+        : '🔉 BGM 자동 덕킹 OFF — BGM을 한 볼륨으로 깔고 성우 목소리를 그대로 겹칩니다.');
+    });
+    var wh2 = $('#wvWordHL'); if (wh2) wh2.addEventListener('change', function () {
+      S.cfg.wordHL = !!wh2.checked; saveCfg(); redraw();
+      say(S.cfg.wordHL
+        ? '✨ 단어별 하이라이트 자막 ON — 성우가 말하는 단어를 자막에서 실시간으로 칠합니다.'
+        : '✨ 단어별 하이라이트 자막 OFF — 자막을 글자 진행률로만 칠합니다.');
+    });
+    /* ✨ 컷별 AI 다시쓰기 단추 — label 안에 있어도 다른 동작으로 새지 않게 캡처 단계에서 잡는다 */
+    D.addEventListener('click', function (ev) {
+      var b = ev.target && ev.target.closest ? ev.target.closest('[data-wvaiw]') : null;
+      if (!b) return;
+      ev.preventDefault(); ev.stopPropagation();
+      rewriteCut(Number(b.getAttribute('data-wvaiw')), b);
+    }, true);
     var a2 = $('#wvAccent'); if (a2) a2.addEventListener('input', function () { S.cfg.accent = a2.value; saveCfg(); if (S.spec) S.spec.accent = a2.value; redraw(); });
     var c2 = $('#wvCap'); if (c2) c2.addEventListener('input', function () { S.cfg.cap = c2.value; saveCfg(); if (S.spec) S.spec.capColor = c2.value; redraw(); });
     var w2 = $('#wvWm'); if (w2) w2.addEventListener('input', function () { S.cfg.wm = w2.value; saveCfg(); if (S.spec) S.spec.watermark = w2.value; redraw(); });
@@ -25632,6 +25947,12 @@ var CSVoice = (function () {
     say: say,
     uploadSetSpec: function (spec) { return spec ? uploadSetText(spec) : ''; },
     start: start,
+    rewriteCut: rewriteCut,
+    applyCutRewrite: applyCutRewrite,
+    capSyncOf: function (i, t) { return capSyncOf(S.cuts[i], t); },
+    wordTimingsOf: function (i) { return (S.cuts[i] && S.cuts[i].wt) || null; },
+    propTimings: propWordTimings,
+    parseAlign: parseWordTimingsFromAlignment,
     stop: function () { S.abort = true; if (S.rec && S.rec.state !== 'inactive') S.rec.stop(); else reset(); },
     spec: function () { return S.spec; },
     model: function () { return S.model; },
