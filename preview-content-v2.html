@@ -2123,6 +2123,17 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
     background:linear-gradient(180deg,rgba(11,17,32,.90),rgba(7,12,20,.99));
     border-top:1px solid var(--border);backdrop-filter:blur(10px)}
   html[data-cs-tab="blog"] #studioBar{display:grid}
+  /* ---- 🧹 탭별 공통 패널 노출 정리(11/27) — 영상·요약 탭에서는 발행용 블록을 숨긴다 ---- */
+  html[data-cs-tab="video"] #feedBanner,
+  html[data-cs-tab="sum"] #feedBanner,
+  html[data-cs-tab="video"] #routinePanel,
+  html[data-cs-tab="sum"] #routinePanel,
+  html[data-cs-tab="video"] #affilPanel,
+  html[data-cs-tab="sum"] #affilPanel,
+  html[data-cs-tab="video"] #v22Panel,
+  html[data-cs-tab="sum"] #v22Panel{display:none !important}
+  /* 하단 고정 바는 2단계 카드가 화면에 보이는 동안 숨긴다(같은 두 버튼이 한 화면에 두 번) */
+  html[data-cs-tab="blog"][data-bar="hide"] #studioBar{display:none}
   .studiobar .btn{width:100%;min-height:46px;padding:12px 6px;border-radius:12px;font-size:13px;font-weight:900}
   html[data-cs-tab="blog"] body{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
   html[data-cs-tab="blog"] #toast{bottom:calc(96px + env(safe-area-inset-bottom))}
@@ -2400,7 +2411,7 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
           <span class="mv" id="mixBgmV">15%</span>
         </div>
       </div>
-      <p class="hint" style="margin-top:9px">지금 보이는 후킹 3종은 <b>템플릿</b>입니다. [편집 실행]을 누르면 Gemini가 클립에 맞춰 새로 씁니다. 덕킹 값(목소리:BGM)은 설계도 요청에 함께 들어갑니다 — 합성 단계는 아직 없습니다. <b>쇼츠 대본은 아래 [🎬 웹 영상 생성기]에서 이 브라우저로 바로 영상이 됩니다(크레딧 0).</b></p>
+      <p class="hint" style="margin-top:9px">지금 보이는 후킹 3종은 <b>템플릿</b>입니다. [편집 실행]을 누르면 Gemini가 클립에 맞춰 새로 씁니다. 덕킹 값(목소리:BGM)은 설계도 요청에 함께 들어갑니다. <b>완성 영상은 [📱 쇼츠] 탭의 [🎬 웹 영상 생성기]에서 이 브라우저로 바로 만듭니다(크레딧 0).</b></p>
     </div>
 
     <div class="card" id="pipeline" hidden>
@@ -3224,14 +3235,13 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
       <button class="btn small ghost" id="wvSetBtn" type="button">⚙ 옵션</button>
     </div>
     <div class="wvslotrow" role="group" aria-label="폭스시그널 시간대 1클릭 — 실측 데이터·공식·레이아웃 자동 전환">
-      <span class="flabel">🦊 시간대 1클릭</span>
+      <span class="flabel">🦊 시간대 1클릭 — 이 생성기에 적용</span>
       <button class="btn small" type="button" data-cs-slot="pre" data-cs-slot-mode="wvid">🌅 장전</button>
       <button class="btn small" type="button" data-cs-slot="noon" data-cs-slot-mode="wvid">☀️ 점심</button>
       <button class="btn small" type="button" data-cs-slot="close" data-cs-slot-mode="wvid">🌆 정규마감</button>
       <button class="btn small" type="button" data-cs-slot="after" data-cs-slot-mode="wvid">🌙 애프터장</button>
       <button class="btn small" type="button" data-cs-slot="dict" data-cs-slot-mode="wvid" title="토요일 에버그린 — 용어 정의 → 실제 사례 → 체크 3가지, 5컷">📘 30초 사전</button>
       <button class="btn small" type="button" data-cs-slot="review" data-cs-slot-mode="wvid" title="일요일 복기 — 성적표 → 맞춘 판단 → 빗나간 점 → 다음 주 if→then, 5컷">📊 주간 오답노트</button>
-      <button class="btn small primary" type="button" data-feed-draft="shorts" title="피클이 만들어 둔 최신 쇼츠 대본을 컷으로 나눠 이 생성기에 올립니다">📥 피클 최신 초안 다시 불러오기</button>
       <span class="hint" style="margin:0;flex:1 1 200px;min-width:0">누르면 그 시간대 <b>피클 초안</b>이 있으면 먼저 불러오고, 없으면 실측을 읽어 <b>폭스시그널 공식·카드 레이아웃·5컷 미리보기</b>까지 세팅합니다(성우 고정값 유지). <b>📘 30초 사전 · 📊 주간 오답노트</b>는 주말용 — 새 시세 없이 공식·샘플만 올립니다.</span>
     </div>
     <div class="wvpaste" id="wvPaste" hidden>
@@ -3595,6 +3605,7 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
       <button class="gd-tab" type="button" role="tab" aria-selected="false" data-gdtab="dark">🌙 다크 시네마</button>
       <button class="gd-tab" type="button" role="tab" aria-selected="false" data-gdtab="picks">🛍️ 추천샵·릴스</button>
       <button class="gd-tab" type="button" role="tab" aria-selected="false" data-gdtab="wvid">🎬 웹 영상</button>
+      <button class="gd-tab" type="button" role="tab" aria-selected="false" data-gdtab="brief">📋 요약 · BRIEF</button>
     </div>
     <div class="gd-body">
       <section class="gd-sec on" data-gdpane="fox" role="tabpanel">
@@ -3707,6 +3718,27 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
           <div class="gd-step"><span class="n">4</span><span class="t"><b>생성·저장</b> — <span class="k">▶ 생성</span>(진행률 %) → <span class="k">⬇ 영상 저장</span> · <span class="k">📋 업로드 세트 복사</span> · <span class="k">📝 자막 SRT 복사</span>.</span></div>
         </div>
         <div class="gd-note">모든 양식은 쇼츠 <b>세이프 존</b>(상단 180 · 하단 380 · 좌 60 · 우 120) 안에서만 그립니다 — 저장 전 미리보기로 가려지는 곳이 없는지 확인하세요.</div>
+      </section>
+
+      <section class="gd-sec" data-gdpane="brief" role="tabpanel">
+        <div class="gd-card">
+          <div class="gd-ch"><b>📋 요약</b><span>유튜브 자막 · 문서 · 4MB 영상/음성</span></div>
+          <div class="gd-step"><span class="n">1</span><span class="t"><b>자료 고르기</b> — <span class="k">📋 요약</span> 탭 ① <b>무엇을 요약할까요</b>에서 <span class="k">🎬 유튜브</span>(링크 → 자막) · <span class="k">📄 문서</span>(PDF·TXT·MD·CSV · 끌어다 놓기) · <span class="k">🎥 영상·음성</span>(MP4·MP3 · <b>4MB 이하</b>, 3MB 권장) 중 하나를 누릅니다. 유튜브 자막이 안 받아지면 영상의 <b>스크립트 표시</b>에서 자막을 복사해 붙여넣습니다.</span></div>
+          <div class="gd-step"><span class="n">2</span><span class="t"><b>양식 고르기</b> — ③ <b>어떤 양식으로 볼까요</b>에서 <span class="k">⚡ 3줄 핵심 결론</span> · <span class="k">⏱️ 타임라인·섹션 정리</span> · <span class="k">📊 표·수치·액션 아이템</span> · <span class="k">✍️ 블로그·쇼츠 글감으로</span> · <span class="k">🧭 BRIEF 리포트</span> 중 하나를 고릅니다. 한 번 받은 요약은 칩으로 <b>다시 호출 없이</b> 바꿔 봅니다.</span></div>
+          <div class="gd-step"><span class="n">3</span><span class="t"><b>생성</b> — <span class="k">📋 요약하기</span>. Gemini는 자료에 실제로 있는 내용만 쓰고, 없는 숫자·이름은 만들지 않고 <b>[확인 필요]</b>로 남깁니다.</span></div>
+          <div class="gd-step"><span class="n">4</span><span class="t"><b>쓰기</b> — 결과 카드에서 <span class="k">📋 요약 복사</span> · <span class="k">💾 보관함 저장</span> · <span class="k">✍️ 블로그로</span> · <span class="k">🎬 쇼츠로</span>.</span></div>
+        </div>
+        <div class="gd-card">
+          <div class="gd-ch"><b>🧭 BRIEF 리포트</b><span>여러 자료를 한 번에 · 3관점 · 차트</span></div>
+          <div class="gd-step"><span class="n">1</span><span class="t"><b>소스 큐에 담기</b> — ② <b>여러 자료를 한 번에</b>에서 <span class="k">＋ 지금 고른 자료</span>(①에서 고른 유튜브·문서·영상) · <span class="k">📄 파일·이미지</span>(PDF·이미지) · <span class="k">📝 붙여넣기</span>(회의록·기사) · <b>웹 URL</b>(본문 자동 추출)로 <b>최대 8개</b>까지 담습니다. 2개 이상이면 차트·구조도·3관점이 붙은 <b>종합 리포트</b>, 1개면 그 자료 하나로 리포트가 나옵니다.</span></div>
+          <div class="gd-step"><span class="n">2</span><span class="t"><b>⚖️ A vs B 비교</b> — 담은 자료가 <b>2개 이상</b>일 때 토글이 나타납니다. 켜면 첫 두 자료의 차이점·공통점을 <b>비교표</b>로 나란히 세웁니다.</span></div>
+          <div class="gd-step"><span class="n">3</span><span class="t"><b>생성</b> — ③에서 <span class="k">🧭 BRIEF 리포트</span>를 고르고 <span class="k">📋 요약하기</span>. 특별히 뽑고 싶은 것은 <span class="k">특히 뽑고 싶은 것</span>에 한 줄로 적습니다(예: 전지 배터리 수치만).</span></div>
+          <div class="gd-step"><span class="n">4</span><span class="t"><b>3관점 전환</b> — 결과의 <span class="k">💼 의사결정자</span> · <span class="k">🛠️ 실무자</span> · <span class="k">💡 초보자</span>를 누르면 같은 자료를 그 사람 눈높이로 다시 씁니다(보고서를 다시 부르지 않습니다).</span></div>
+          <div class="gd-step"><span class="n">5</span><span class="t"><b>읽는 순서</b> — 정보 밀도 점수 → <b>KPI 카드</b> → <b>📈 핵심 수치 차트</b> → <b>🧩 구조 다이어그램</b> → 본문 섹션 → <b>📋 비교표</b> → <b>🔗 자료 안의 링크</b> → <b>팩트체크</b>.</span></div>
+          <div class="gd-step"><span class="n">6</span><span class="t"><b>💬 이어서 묻기</b> — <span class="k">이어서 묻기</span>에 「리스크만 더 자세히」·「2번 근거가 뭐야?」처럼 물으면 <b>보고서와 담은 자료 안에서만</b> 답합니다. 자료에 없으면 없다고 말합니다.</span></div>
+          <div class="gd-step"><span class="n">7</span><span class="t"><b>내보내기·넘기기</b> — <span class="k">⬇️ Markdown</span> · <span class="k">⬇️ CSV</span> · <span class="k">🖨️ 인쇄·PDF</span>(리포트만 인쇄) · <span class="k">📋 5줄 복사</span> · <span class="k">📋 전체 복사</span> · <span class="k">💾 보관함</span> · <span class="k">✍️ 블로그로</span> · <span class="k">🎬 쇼츠로</span>.</span></div>
+        </div>
+        <div class="gd-note">💡 <b>동적(content-v2)</b>은 서버가 유튜브 자막까지 받아 옵니다. <b>정적(preview-content-v2)</b>은 서버가 없어 유튜브 링크 자막은 못 받으니 영상의 <b>스크립트 표시</b>에서 복사해 <span class="k">📝 붙여넣기</span>로 담아 주세요 — 문서·영상·이미지 요약과 BRIEF 리포트는 정적에서도 그대로 동작합니다.</div>
       </section>
     </div>
   </div>
@@ -28245,7 +28277,11 @@ var CSVoice = (function () {
     if (openBtn) openBtn.setAttribute('aria-expanded', 'false');
   }
   if (openBtn) openBtn.addEventListener('click', function(){
-    if (modal && !modal.hidden) closeHow(); else openHow('fox');
+    if (modal && !modal.hidden) { closeHow(); return; }
+    /* 📋 요약 탭에서 열면 📋 요약 · BRIEF 사용법으로 바로 연다(11/27) */
+    var ct = '';
+    try { ct = document.documentElement.getAttribute('data-cs-tab') || ''; } catch (e) { ct = ''; }
+    openHow(ct === 'sum' ? 'brief' : 'fox');
   });
   if (modal) modal.addEventListener('click', function(e){
     if (e.target.closest('[data-gdclose]')){ closeHow(); return; }
@@ -29153,6 +29189,34 @@ var CSVoice = (function () {
     var wp = document.getElementById('wvPanel');
     if (wp && !wp.open) { try { wp.open = true; } catch (e) {} }
   });
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════
+   🧹 중복 노출 정리(11/27) — ✍️ 블로그 하단 고정 바
+   ─ 2단계 카드의 [⚡ 원클릭 세팅]·[🤖 AI 본문 생성]이 화면에 보이는 동안에는
+     같은 두 버튼을 고정 바로 한 번 더 띄우지 않는다.
+     카드가 화면을 벗어나면(아래로 스크롤) 다시 나타난다 — 기능은 그대로다.
+   ══════════════════════════════════════════════════════ */
+(function(){
+  'use strict';
+  var card = document.getElementById('step2Card');
+  if (!card) return;
+  var root = document.documentElement;
+  function setBar(hide){
+    if (hide) root.setAttribute('data-bar', 'hide');
+    else root.removeAttribute('data-bar');
+  }
+  function sync(){
+    var r = card.getBoundingClientRect();
+    var vh = window.innerHeight || 0;
+    setBar(r.bottom > vh * 0.08 && r.top < vh * 0.92);
+  }
+  window.addEventListener('scroll', sync, { passive: true });
+  window.addEventListener('resize', sync);
+  document.addEventListener('click', function(){ setTimeout(sync, 90); }, true);
+  setTimeout(sync, 250);
+  setTimeout(sync, 1500);
 })();
 </script>
 </body>
