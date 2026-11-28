@@ -325,6 +325,11 @@
     position:absolute;right:3px;bottom:3px;font-size:8.5px;font-weight:900;color:#fff;
     background:rgba(0,0,0,.7);border-radius:3px;padding:0 3px;letter-spacing:0;
   }
+  .vthumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .demo-banner.real{border-color:rgba(56,189,248,.32);background:rgba(56,189,248,.07);color:#7dd3fc}
+  .vthumb .vph{font-size:17px;color:#64748b}
+  .popen{display:inline-block;margin-top:3px;font-size:10.5px;font-weight:800;color:#7dd3fc;text-decoration:none}
+  .popen:hover{text-decoration:underline}
   .vinfo{min-width:0;flex:1;display:flex;flex-direction:column;justify-content:center;gap:2px}
   .vt{font-size:11.8px;font-weight:800;color:#e2e8f0;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .vc{font-size:10.3px;color:var(--faint);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -2613,7 +2618,7 @@ html[data-theme="light"] .tb-more[open]>.tb-panel{background:#ffffff;border-colo
       <span>① 내 영상 합치기</span><span class="st">2~3개 업로드</span>
     </button>
     <button class="submode" id="smYt" aria-pressed="false">
-      <span>② 유튜브 검색</span><span class="st">7개 중 3개 선택</span>
+      <span>② 유튜브 검색</span><span class="st">실제 검색 · 3개 선택</span>
     </button>
   </div>
 
@@ -2733,19 +2738,21 @@ html[data-theme="light"] .tb-more[open]>.tb-panel{background:#ffffff;border-colo
     <div class="card">
       <div class="card-head">
         <span class="num">1</span><h2>유튜브 검색</h2>
-        <span class="bdg wait">유튜브 실시간 검색 미연동</span>
+        <span class="bdg real" id="ytLiveBadge">✓ 실제 유튜브 검색</span>
       </div>
       <div class="search-row">
         <input type="text" id="ytQuery" placeholder="검색어 (예: 동탄 아이랑 키즈카페)" maxlength="60">
         <button class="btn ghost" id="ytSearchBtn">검색</button>
-        <button class="btn primary" id="ytDemoBtn">데모 예시 보기</button>
+        <button class="btn small primary" id="ytTypeAll" type="button" title="일반 영상과 쇼츠를 함께 봅니다">전체</button>
+        <button class="btn small ghost" id="ytTypeShorts" type="button" title="쇼츠만 봅니다">Shorts</button>
       </div>
       <div class="warnline" id="ytNotice" hidden></div>
+      <div class="hint" id="ytStatus" style="margin-top:8px">유튜브 실제 검색입니다. 검색어를 넣고 [검색]을 누르면 서버가 지금 유튜브에서 찾은 영상을 바로 가져옵니다(최대 12개 · 5분 캐시).</div>
 
       <div id="ytResults" hidden>
-        <div class="demo-banner">
-          <span class="bdg wait">UI 예시 데이터</span>
-          <span>아래 7개는 <b>UI 확인용 예시 데이터</b>입니다. 실제 유튜브 검색 결과가 아니며, 영상 링크도 없습니다.</span>
+        <div class="demo-banner real" id="ytRealBanner">
+          <span class="bdg real">실제 검색 결과</span>
+          <span id="ytRealBannerText">유튜브에서 방금 검색한 결과입니다. 최대 3개까지 골라 아래 [AI 분석 + 50초 대본]의 제목·태그·스토리 참고로 넘깁니다.</span>
         </div>
         <div class="yt-bar">
           <span class="counter" id="ytCounter">0 / 3 선택</span>
@@ -10288,35 +10295,95 @@ var CSVoice = (function () {
     host.innerHTML = h;
   }
 
-  /* ================= youtube demo ================= */
-  var YT = [
-    { emoji:'🌊', title:'동탄 근교 가을 드라이브 브이로그', ch:'데모 채널 · 여행', dur:'8:42', grad:'linear-gradient(135deg,#0ea5e9,#1e3a8a)' },
-    { emoji:'🍜', title:'아이랑 먹기 좋은 순한맛 국물 요리 3가지', ch:'데모 채널 · 요리', dur:'6:15', grad:'linear-gradient(135deg,#f97316,#7c2d12)' },
-    { emoji:'📈', title:'이번 주 코스피, 수급으로 읽는 3가지 신호', ch:'데모 채널 · 경제', dur:'11:03', grad:'linear-gradient(135deg,#22c55e,#065f46)' },
-    { emoji:'🎤', title:'릴레이댄스 비하인드 — 카메라 3대 직캠', ch:'데모 채널 · 음악', dur:'9:28', grad:'linear-gradient(135deg,#a855f7,#4c1d95)' },
-    { emoji:'🏕', title:'차박 초보가 처음 밤을 보내는 법', ch:'데모 채널 · 아웃도어', dur:'14:20', grad:'linear-gradient(135deg,#64748b,#1e293b)' },
-    { emoji:'📚', title:'한 달에 책 4권, 현실적인 루틴 만들기', ch:'데모 채널 · 자기계발', dur:'7:51', grad:'linear-gradient(135deg,#f59e0b,#78350f)' },
-    { emoji:'🏃', title:'무릎 아픈 사람의 러닝 자세 교정', ch:'데모 채널 · 운동', dur:'10:07', grad:'linear-gradient(135deg,#ef4444,#7f1d1d)' }
-  ];
+  /* ================= youtube 실제 검색 (Vercel /api/youtube-search) ================= */
+  var YT = [];               // 지금 화면에 올라와 있는 실제 검색 결과
+  var YT_TYPE = 'all';       // all | shorts
+  var YT_SEQ = 0;            // 늦게 도착한 이전 응답 무시용
+  var YT_MAX = 12;
   var ytResults = $('#ytResults'), ytGrid = $('#ytGrid'), ytCounter = $('#ytCounter'), ytProgress = $('#ytProgress');
-  var ytPlan = $('#ytPlan'), ytNotice = $('#ytNotice');
+  var ytPlan = $('#ytPlan'), ytNotice = $('#ytNotice'), ytStatus = $('#ytStatus');
 
-  $('#ytDemoBtn').addEventListener('click', function(){
-    ytResults.hidden = false;
+  function ytApiBase(){
+    var h = String((window.location && window.location.hostname) || '');
+    if (!h || h === 'localhost' || h === '127.0.0.1' || /(^|\.)vercel\.app$/i.test(h)) return '';
+    return 'https://stock-dashboard-live-bice.vercel.app';
+  }
+
+  function ytSetType(t){
+    YT_TYPE = (t === 'shorts') ? 'shorts' : 'all';
+    var a = $('#ytTypeAll'), s = $('#ytTypeShorts');
+    if (a) a.className = 'btn small ' + (YT_TYPE === 'all' ? 'primary' : 'ghost');
+    if (s) s.className = 'btn small ' + (YT_TYPE === 'shorts' ? 'primary' : 'ghost');
+  }
+
+  function ytStatusText(msg){ if (ytStatus) ytStatus.textContent = msg; }
+
+  async function ytSearch(){
+    var q = (($('#ytQuery') && $('#ytQuery').value) || '').trim();
+    if (!q){ toast('검색어를 먼저 입력해 주세요.'); if ($('#ytQuery')) $('#ytQuery').focus(); return; }
+    var btn = $('#ytSearchBtn');
+    var seq = ++YT_SEQ;
+    if (btn){ btn.disabled = true; btn.textContent = '검색 중…'; }
     ytNotice.hidden = true;
-    renderYt();
-    ytResults.scrollIntoView({ behavior:'smooth', block:'start' });
-    toast('데모 예시 7개를 열었습니다. (실제 검색 결과 아님)');
+    ytStatusText('유튜브에서 "' + q + '" 를 검색하는 중…');
+    var url = ytApiBase() + '/api/youtube-search?q=' + encodeURIComponent(q) + '&limit=' + YT_MAX + '&type=' + YT_TYPE;
+    try {
+      var res = await fetch(url, { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+      var j = null;
+      try { j = await res.json(); } catch(_e){ j = null; }
+      if (seq !== YT_SEQ) return;
+      if (!j || !j.ok){
+        YT = []; state.ytSelected = []; ytResults.hidden = true;
+        ytNotice.hidden = false;
+        ytNotice.textContent = '유튜브 검색에 실패했습니다 — ' + ((j && (j.error || j.note)) || ('HTTP ' + res.status)) + '. 결과를 지어내지 않고 비워 둡니다. 잠시 뒤 다시 시도해 주세요.';
+        ytStatusText('');
+        renderYtPlan();
+        return;
+      }
+      YT = (j.items || []).map(function(it){
+        return {
+          title: it.title || '',
+          ch: it.channel || '',
+          dur: it.durationText || '',
+          views: it.viewCountText || '',
+          thumb: it.thumbnail || '',
+          url: it.url || '',
+          shorts: !!it.isShorts
+        };
+      });
+      state.ytSelected = [];
+      ytResults.hidden = false;
+      ytStatusText('실제 유튜브 검색 · "' + (j.query || q) + '" · ' + YT.length + '개' +
+        (YT_TYPE === 'shorts' ? ' · 쇼츠만' : '') + (j.cached ? ' · 5분 캐시' : '') +
+        (j.fetchedAt ? ' · ' + new Date(j.fetchedAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' }) + ' KST' : ''));
+      renderYt();
+      ytResults.scrollIntoView({ behavior:'smooth', block:'start' });
+      if (!YT.length) toast(j.note || '검색 결과가 비어 있습니다.');
+    } catch(err){
+      if (seq !== YT_SEQ) return;
+      YT = []; state.ytSelected = []; ytResults.hidden = true;
+      ytNotice.hidden = false;
+      ytNotice.textContent = '유튜브 검색 서버에 닿지 못했습니다(' + ((err && err.message) || err) + '). 네트워크를 확인하고 다시 시도해 주세요.';
+      ytStatusText('');
+      renderYtPlan();
+    } finally {
+      if (seq === YT_SEQ && btn){ btn.disabled = false; btn.textContent = '검색'; }
+    }
+  }
+
+  if ($('#ytSearchBtn')) $('#ytSearchBtn').addEventListener('click', ytSearch);
+  if ($('#ytTypeAll')) $('#ytTypeAll').addEventListener('click', function(){
+    ytSetType('all');
+    if ((($('#ytQuery') && $('#ytQuery').value) || '').trim() && !$('#ytResults').hidden) ytSearch();
   });
-  $('#ytSearchBtn').addEventListener('click', function(){
-    ytNotice.hidden = false;
-    ytNotice.textContent = '유튜브 실시간 검색·조회수·댓글 수집은 이 사이트에 연동되어 있지 않습니다(YouTube Data API 키 없음). [데모 예시 보기]로 선택 동선을 확인하고, 아래 [AI 분석 + 50초 대본]은 Gemini가 주제·제목 기준으로 실제 분석합니다.';
-    if (ytResults.hidden) $('#ytDemoBtn').scrollIntoView({ behavior:'smooth', block:'center' });
+  if ($('#ytTypeShorts')) $('#ytTypeShorts').addEventListener('click', function(){
+    ytSetType('shorts');
+    if ((($('#ytQuery') && $('#ytQuery').value) || '').trim() && !$('#ytResults').hidden) ytSearch();
   });
-  $('#ytQuery').addEventListener('keydown', function(e){
-    if (e.key === 'Enter') $('#ytSearchBtn').click();
+  if ($('#ytQuery')) $('#ytQuery').addEventListener('keydown', function(e){
+    if (e.key === 'Enter'){ e.preventDefault(); ytSearch(); }
   });
-  $('#ytClear').addEventListener('click', function(){
+  if ($('#ytClear')) $('#ytClear').addEventListener('click', function(){
     state.ytSelected = [];
     renderYt();
     toast('선택을 초기화했습니다.');
@@ -10327,12 +10394,21 @@ var CSVoice = (function () {
     YT.forEach(function(v, i){
       var on = state.ytSelected.indexOf(i) > -1;
       var b = document.createElement('button');
+      b.type = 'button';
       b.className = 'vcard' + (on ? ' on' : '');
       b.setAttribute('data-i', i);
       b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      var thumb = v.thumb
+        ? '<img src="' + esc(v.thumb) + '" alt="" loading="lazy" referrerpolicy="no-referrer">'
+        : '<span class="vph">▶</span>';
+      var badge = v.shorts ? 'Shorts' : (v.dur || '');
+      var sub = [];
+      if (v.ch) sub.push(v.ch);
+      if (v.views) sub.push(v.views);
       b.innerHTML =
-        '<span class="vthumb" style="background:' + v.grad + '">' + v.emoji + '<span class="d">' + v.dur + '</span></span>' +
-        '<span class="vinfo"><span class="vt">' + esc(v.title) + '</span><span class="vc">' + esc(v.ch) + '</span></span>' +
+        '<span class="vthumb">' + thumb + (badge ? '<span class="d">' + esc(badge) + '</span>' : '') + '</span>' +
+        '<span class="vinfo"><span class="vt">' + esc(v.title) + '</span><span class="vc">' +
+          esc(sub.join(' · ') || (v.shorts ? 'Shorts' : '유튜브')) + '</span></span>' +
         '<span class="vck">✓</span>';
       ytGrid.appendChild(b);
     });
@@ -10359,21 +10435,22 @@ var CSVoice = (function () {
   });
 
   function renderYtPlan(){
-    var picks = state.ytSelected.map(function(i){ return YT[i]; });
+    var picks = state.ytSelected.map(function(i){ return YT[i]; }).filter(Boolean);
     if (!picks.length){
-      ytPlan.innerHTML = '<div class="empty">영상을 <b>3개</b> 고르면 오프닝 → 본편 → 엔딩 구성안이 여기에 만들어집니다.</div>';
+      ytPlan.innerHTML = '<div class="empty">검색해서 나온 실제 영상을 <b>3개</b> 고르면 오프닝 → 본편 → 엔딩 구성안이 여기에 만들어집니다.</div>';
       return;
     }
     var roles = ['오프닝 훅', '본편', '엔딩 CTA'];
-    var notes = [
-      '가장 임팩트 있는 장면을 3초 안에. 첫 자막으로 주제를 바로 던집니다.',
-      '선택한 영상의 핵심 장면을 순서대로 이어 붙이고, 장면마다 한 줄 자막.',
-      '여운 한 줄 + 다음 행동 유도(저장·구독). 마지막 2초는 로고/엔딩카드.'
-    ];
     var html = '<div class="planlist">';
     picks.forEach(function(p, k){
+      var meta = [];
+      if (p.ch) meta.push(p.ch);
+      if (p.shorts) meta.push('Shorts'); else if (p.dur) meta.push(p.dur);
+      meta.push('발췌 구간은 AI 분석 후 결정');
       html += '<div class="pitem"><span class="role">' + roles[k] + '</span><span class="pt">' +
-        esc(p.title) + '<small>' + esc(p.ch) + ' · ' + p.dur + ' · 발췌 구간은 AI 분석 후 결정</small></span></div>';
+        esc(p.title) + '<small>' + esc(meta.join(' · ')) + '</small>' +
+        (p.url ? '<a class="popen" href="' + esc(p.url) + '" target="_blank" rel="noopener">↗ 실제 영상 확인</a>' : '') +
+        '</span></div>';
     });
     html += '</div>';
 
@@ -10424,7 +10501,7 @@ var CSVoice = (function () {
       var j = await callAI('youtube_analyze', {
         query: q,
         videos: picks,
-        source: $('#ytResults').hidden ? 'user' : 'demo',
+        source: 'search',
         notes: activeGapTexts('yt'),
         banPhrases: banAll()
       }, $('#aiYtBtn'), '빈틈 분석 중…');
@@ -10453,7 +10530,7 @@ var CSVoice = (function () {
       }
       var notes = (j.notes || []).concat(d.warnings || []);
       if (notes.length) h += '<div class="ainote"><b>확인 필요</b><ul>' + notes.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>';
-      h += '<div class="ainote">유튜브 실제 검색·조회수·댓글은 이 사이트에 연동되어 있지 않습니다. 위 분석은 <b>주제와 고른 영상 제목</b> 기준입니다.</div>';
+      h += '<div class="ainote">위 분석은 <b>실제 유튜브 검색 결과의 제목·채널</b> 기준입니다. 영상 픽셀·댓글 내용은 Gemini에 보내지 않습니다.</div>';
       host.innerHTML = h;
       var yw = $('#ytToWv');
       if (yw) yw.addEventListener('click', ytToWv);
@@ -10462,7 +10539,7 @@ var CSVoice = (function () {
       host.scrollIntoView({ behavior: 'smooth', block: 'start' });
       toast('빈틈 ' + (d.gaps || []).length + '개와 50초 대본을 만들었습니다.');
     } catch(err){
-      host.innerHTML = aiErrBox(err, { hint: '유튜브 실제 검색 결과는 가져오지 않습니다 — 제목·주제 기준 분석입니다.' });
+      host.innerHTML = aiErrBox(err, { hint: '유튜브 검색 결과를 다시 불러온 뒤 시도해 주세요. 분석은 제목·주제 기준입니다.' });
     }
   }
 
