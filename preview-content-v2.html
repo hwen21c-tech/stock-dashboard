@@ -2263,10 +2263,11 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
   .m7pill.warn{background:rgba(245,158,11,.2);color:#f59e0b}
   .m7pill.bad{background:rgba(244,63,94,.18);color:#f43f5e}
   .m7kwrows{display:grid;gap:3px;margin-top:6px}
-  .m7kwrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:5px 8px;background:rgba(148,163,184,.04);font-size:11px;font-weight:800;color:var(--sub)}
-  .m7kwrow .ic{font-weight:900;color:#22c55e}
+  .m7kwrow{display:grid;grid-template-columns:14px minmax(0,1fr);gap:1px 6px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:6px 8px;background:rgba(148,163,184,.04)}
+  .m7kwrow .ic{grid-row:1;font-size:11px;font-weight:900;color:#22c55e}
   .m7kwrow.bad .ic{color:#f43f5e}
-  .m7kwrow .v{margin-left:auto;font-size:10.5px;color:var(--faint);font-weight:800}
+  .m7kwrow .t{grid-column:2;font-size:11px;font-weight:800;color:var(--sub);word-break:keep-all}
+  .m7kwrow .v{grid-column:2;font-size:10px;color:var(--faint);font-weight:800;line-height:1.45;word-break:keep-all}
   .m7ctas{display:grid;gap:5px;margin-top:8px}
   .m7cta{border:1px solid var(--line);border-radius:10px;padding:7px 8px;background:rgba(148,163,184,.05);display:grid;gap:5px}
   .m7cta .txt{font-size:11.5px;font-weight:700;line-height:1.55;color:var(--text);word-break:keep-all}
@@ -22749,7 +22750,7 @@ var CSVoice = (function () {
     var lbl = { none: '0회 · 키워드 없음', low: n + '회 · 조금 부족', ok: n + '회 · 적정(3~5회)', warn: n + '회 · 과다 주의', bad: n + '회 · 어뷰징 위험' }[cls];
     if (badge){ badge.textContent = kw ? lbl : '키워드 대기'; badge.className = 'm7pill ' + (cls === 'none' ? 'bad' : cls); }
     if (!txt.trim()){
-      host.innerHTML = '<div class="m7kwrow"><span class="ic">·</span>본문이 없습니다 — 본문을 만들면 여기서 실시간으로 셉니다.</div>';
+      host.innerHTML = '<div class="m7kwrow"><span class="ic">·</span><span class="t">본문이 없습니다 — 본문을 만들면 여기서 실시간으로 셉니다.</span></div>';
       return;
     }
     var titleTxt = '';
@@ -22765,8 +22766,8 @@ var CSVoice = (function () {
       { ok: m7countOf(headTxt, kw) > 0, t: '소제목에 키워드', h: headN ? ('소제목 ' + headN + '개 중 ' + m7countOf(headTxt, kw) + '회') : '소제목(##)이 없습니다 — 3개 이상 권장.' }
     ];
     host.innerHTML = rows.map(function(r){
-      return '<div class="m7kwrow' + (r.ok ? '' : ' bad') + '"><span class="ic">' + (r.ok ? '✔' : '✖') + '</span>' + esc(r.t) +
-        '<span class="v">' + esc(r.h) + '</span></div>';
+      return '<div class="m7kwrow' + (r.ok ? '' : ' bad') + '"><span class="ic">' + (r.ok ? '✔' : '✖') + '</span>' +
+        '<span class="t">' + esc(r.t) + '</span><span class="v">' + esc(r.h) + '</span></div>';
     }).join('');
   }
 
@@ -23342,7 +23343,7 @@ var CSVoice = (function () {
     if (hot || (d0 > 0 && d0 <= 21)) cls = ' now';
     return '<div class="m7season' + cls + '">' +
       '<div class="top"><b>' + esc(it.name) + '</b>' + (it.big ? '<span class="m7pill ok">고단가</span>' : '') +
-      '<span class="dt">' + m7md(w.s) + ' ~ ' + m7md(w.e) + '</span><span class="dd">' + esc(dd) + '</span></div>' +
+      '<span class="dt">' + (w.s.getFullYear() !== now.getFullYear() ? (w.s.getFullYear() + ' ') : '') + m7md(w.s) + ' ~ ' + m7md(w.e) + '</span><span class="dd">' + esc(dd) + '</span></div>' +
       '<div class="kwc">' + it.kw.map(function(k){ return '<button type="button" data-season-kw="' + esc(k) + '">' + esc(k) + '</button>'; }).join('') + '</div>' +
       (it.note ? '<div class="note">' + esc(it.note) + '</div>' : '') +
       '</div>';
