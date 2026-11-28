@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-cs-view="fox">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -470,7 +470,6 @@
     transition:opacity .2s,transform .2s;z-index:80;
   }
   #toast.on{opacity:1;transform:translate(-50%,0)}
-
 
   /* ---------- 🦊 시간대 1클릭 상태줄 (쇼츠 스튜디오 · 웹 영상 생성기) ---------- */
   .slotstate{margin-top:8px;font-size:12.5px;line-height:1.62;color:#86efac;background:rgba(16,185,129,.10);border:1px solid rgba(16,185,129,.32);border-radius:10px;padding:8px 10px}
@@ -1536,7 +1535,6 @@
   /* ---------- 보관함: 웹 영상(쇼츠) 기록 ---------- */
   .stype.wvid{color:#a7f3d0;background:rgba(16,185,129,.14);border:1px solid rgba(16,185,129,.36)}
 
-
   /* ---------- 📖 사용법 모달 (채널별 블로그/쇼츠 단계) ---------- */
   .gd-wrap{position:fixed;inset:0;z-index:9985;display:flex;align-items:center;justify-content:center;padding:14px}
   .gd-wrap[hidden]{display:none}
@@ -1593,7 +1591,6 @@
   .pk-scriptbox{margin-top:9px}
   .pk-scriptbox[hidden]{display:none}
   .pk-scriptbox textarea{width:100%;min-height:128px;background:#0e131a;border:1px solid #2a3444;border-radius:9px;color:#cfd8e6;padding:9px 10px;font-size:11px;line-height:1.55;font-family:inherit;resize:vertical}
-
 
 /* ===== ☀️ 라이트 모드 오버라이드 (자동 생성 · 다크 규칙 159개 대응) ===== */
 html[data-theme="light"] .brand h1 .v2{font-size:11px;font-weight:900;color:#ffffff;background:linear-gradient(135deg,#0284c7,#7c3aed);border-radius:6px;padding:1px 5px;vertical-align:2px;margin-left:3px;letter-spacing:0}
@@ -2154,10 +2151,24 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
     .tab{font-size:12px;white-space:nowrap;line-height:1.1;padding:9px 2px;gap:4px}
     .tab .tl{overflow:hidden;text-overflow:ellipsis}
   }
+
+  /* ===== 🦊✍️ 4탭 뷰 분리 + 3단계 다이어트 (2026-11-28) ===== */
+  html[data-cs-view="fox"] .life-only,
+  html[data-cs-view="life"] .fox-only{display:none !important}
+  .fxrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .fxrow .flabel{flex:1 1 100%;margin:0 0 1px}
+  .fxlinks{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .fxlinks .btn{flex:0 1 auto}
+  .life2col{display:grid;grid-template-columns:1fr;gap:9px}
+  @media (min-width:700px){ .life2col{grid-template-columns:1fr 1fr} }
+  #lifeStep1Cat .pcat{margin:2px 0 4px}
+  #step1Card .blogauto-themes{margin-top:2px}
+  #genCard{padding:12px}
+  #genCard #aiNoteBlog:empty{display:none}
+  .stepcard .hint{font-size:11.4px}
   /* ☀️/🌙 토글 */
   #studioThemeBtn{gap:5px}
   #studioThemeBtn .tico{font-size:12.5px;line-height:1}
-
 
   /* ---------- 💰 수익화 도구 (2026-11-27) ---------- */
   #monCard .shelf{margin:0 0 9px;border:1px solid var(--line);border-radius:12px;background:var(--panel2)}
@@ -2540,7 +2551,6 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
   <a class="ss-item ss-alt" href="https://stock-dashboard-live-bice.vercel.app/content-v2.html" target="_blank" rel="noopener" title="동적 버전 — Vercel 서버가 Gemini를 대신 호출">⚡</a>
 </nav>
 
-
 <header>
   <div class="brand">
     <div class="brand-icon" aria-hidden="true">💰</div>
@@ -2562,55 +2572,6 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
     </details>
   </div>
 </header>
-
-<!-- ===== 💰 3대 수익화 실전 트랙 — 원클릭 루틴 (2026-11-28) ===== -->
-<section class="trkbar" id="trkBar" aria-label="3대 수익화 실전 트랙 원클릭 루틴">
-  <div class="trkbar-h"><b>💰 3대 수익화 트랙</b><span class="s">오늘 할 것 하나만 누르면 동선이 끝까지 세팅됩니다</span></div>
-  <div class="trkrow" role="group" aria-label="트랙 A·B·C 원클릭">
-    <button class="trk" type="button" data-trk="a" aria-pressed="false" title="트랙 A · 폭스시그널 시황 — 블로그 시황 양식·관제탑 실측·크림 그래프·증거 카드를 세팅하고 쇼츠 대본 동선까지 안내합니다">
-      <span class="ic">📈</span>
-      <span class="tx"><b>트랙 A · 폭스시그널 시황</b><span>시황 글 → 크림 그래프 → 쇼츠 대본</span></span>
-    </button>
-    <button class="trk" type="button" data-trk="b" aria-pressed="false" title="트랙 B · 체험단·쿠팡 리뷰 — 리얼리뷰 양식 + 내 말투 DNA + 단골 쿠팡 금고를 펼치고 내 사진 올리는 자리로 이동합니다">
-      <span class="ic">🛍️</span>
-      <span class="tx"><b>트랙 B · 체험단·쿠팡 리뷰</b><span>사진 리뷰 + 말투 DNA + 쿠팡 금고</span></span>
-    </button>
-    <button class="trk" type="button" data-trk="c" aria-pressed="false" title="트랙 C · 마스코트·이모티콘 짤 — 이모티콘 스튜디오 6컷을 썸네일·블로그 중간 짤로 쓰는 동선을 안내합니다">
-      <span class="ic">🎨</span>
-      <span class="tx"><b>트랙 C · 마스코트 짤</b><span>6컷 뽑아 썸네일·블로그 짤로</span></span>
-    </button>
-  </div>
-  <div class="trkguide" id="trkGuide" hidden></div>
-</section>
-
-<!-- ===== 🧩 카테고리 · 페르소나 OS + 추천 키워드 (creator-studio 이식 · 2026-11-28) ===== -->
-<details class="pcat" id="pCat" open>
-  <summary>
-    <span>🧩 카테고리 · 페르소나 OS</span><span class="cnt" id="pCatCount">12개</span>
-    <span class="pcatchip mng" id="pCatManage" role="button" tabindex="0" aria-label="카테고리 추가·관리">＋ 카테고리 추가·관리</span>
-    <span class="arw">▾</span>
-  </summary>
-  <div class="pcat-b">
-    <div class="pcatchips" id="pCatChips" role="group" aria-label="카테고리 선택"></div>
-    <div class="lifedraft">
-      <button class="btn small primary" id="lifeDraftBtn" type="button" title="피클이 만들어 둔 생활·부업 초안(data/life_draft_latest.json)을 읽어 제목·본문·스레드 본문·첫 댓글·태그·추천 키워드까지 한 번에 채웁니다">📥 생활·부업 피클 초안 불러오기</button>
-      <span class="lds" id="lifeDraftState">아직 안 불러옴 — 순수 비교·정보글 초안</span>
-    </div>
-    <div class="ldkw" id="lifeKw" hidden></div>
-    <div class="pcatcard" id="pCatCard" hidden>
-      <div class="h"><span id="pCatName">—</span><span class="tone" id="pCatTone">—</span></div>
-      <p id="pCatPersona"></p>
-      <div class="pkwlbl" id="pCatThemeWrap">✍️ 블로그 양식 — <b id="pCatTheme">—</b></div>
-      <div class="pkwlbl">카테고리 맞춤 추천 키워드 — 누르면 [주제·키워드]에 바로 들어갑니다</div>
-      <div class="pkws" id="pCatKws"></div>
-      <div class="quick" style="margin-top:8px">
-        <button class="btn small primary" id="pCatGo" type="button" title="주제와 타겟·톤을 세팅하고 [🤖 AI 본문 생성] 자리로 이동합니다">⚡ 이 카테고리로 글 쓰기</button>
-        <button class="btn small ghost" id="pCatClear" type="button">카테고리 해제</button>
-      </div>
-      <p class="hint" style="margin-top:6px">고른 카테고리의 <b>타겟·톤</b>은 ✍️ 블로그의 <b>빈틈 메모</b>에 <b>🎯</b> 항목으로 들어가 생성 프롬프트에 그대로 적용됩니다(지우거나 끌 수 있습니다).</p>
-    </div>
-  </div>
-</details>
 
 <div class="gd-wrap" id="pCatModal" hidden>
   <div class="gd-back" data-pcmclose="1"></div>
@@ -2647,7 +2608,6 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
     </div>
   </div>
 </div>
-
 
 <div class="keybar" id="keyBanner" hidden>
   <div class="keybar-txt">
@@ -2709,8 +2669,9 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 <nav class="tabs" role="tablist" aria-label="모드 전환">
   <!-- 🎬 AI 영상 스튜디오 탭은 숨김 — 내 영상 클립 편집은 상단 [🎬 쇼츠 편집기]에서 합니다 -->
   <button class="tab" id="tabVideo" role="tab" aria-selected="false" aria-controls="panelVideo" style="display:none" aria-hidden="true" tabindex="-1" title="(숨김) 내 영상 클립 편집은 🎬 쇼츠 편집기에서 합니다"><span class="tl">🎬 영상</span></button>
-  <button class="tab on" id="tabShorts" role="tab" aria-selected="true" aria-controls="panelShorts" title="쇼츠 스튜디오 — 대본 → 1080×1920 영상"><span class="tl">📱 쇼츠</span></button>
-  <button class="tab" id="tabBlog" role="tab" aria-selected="false" aria-controls="panelBlog" title="블로그 자동 작성기 — 테마 → 본문 → 변환·복사"><span class="tl">✍️ 블로그</span></button>
+  <button class="tab on" id="tabFox" role="tab" aria-selected="true" aria-controls="panelBlog" title="🦊 폭스시그널 — 시간대 1클릭 · 관제탑 실측 · 시황 블로그 · 크림 그래프 · 쇼츠 대본"><span class="tl">🦊 폭스시그널</span></button>
+  <button class="tab" id="tabBlog" role="tab" aria-selected="false" aria-controls="panelBlog" title="✍️ 생활·수익 블로그 — 카테고리 → 톤·5종 구조 → 생성·발행"><span class="tl">✍️ 생활·수익</span></button>
+  <button class="tab" id="tabShorts" role="tab" aria-selected="false" aria-controls="panelShorts" title="📱 쇼츠 스튜디오 — 대본 → 1080×1920 영상"><span class="tl">📱 쇼츠</span></button>
   <button class="tab" id="tabSum" role="tab" aria-selected="false" aria-controls="panelSum" title="요약 — 유튜브·문서·영상 → 3줄/타임라인/표 · 🧭 BRIEF 멀티소스 리포트(차트·3관점)"><span class="tl">📋 요약</span></button>
 </nav>
 
@@ -2720,78 +2681,83 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
   <button class="linkbtn" id="feedBannerClose" type="button">닫기</button>
 </div>
 
-<details class="shelf" id="routinePanel">
-  <summary><span>📅 주간 발행 루틴표 (월~일)</span><span class="n" id="routineToday">오늘</span><span class="arw">▾</span></summary>
+<details class="shelf" id="toolShelf">
+  <summary><span>🧰 보관함 · 설정</span><span class="n">루틴표 · 보관함 · 제휴 · 워터마크</span><span class="arw">▾</span></summary>
   <div class="shelfbody">
-    <div class="rtable" id="routineRows"></div>
-    <div class="srow" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px">
-      <button class="btn small primary" id="loadTodayBtn">오늘 테마 불러오기</button>
-      <button class="btn small" id="routineReset">기본값으로</button>
-      <button class="btn small ghost" id="pubReset">이번 주 발행 기록 지우기</button>
-    </div>
-    <div class="rnote" id="pubWeek">이번 주 기록 · 발행 0일 · 브라우저에 저장</div>
-    <div class="rnote">🗓 요일별 테마는 이 브라우저에 저장됩니다. <b>15:45 자동 생성</b>에 이 루틴표를 연결하는 것은 <b>스케줄 연동 후</b> — 지금은 저장·불러오기까지만 실제 동작합니다.</div>
-  </div>
-</details>
-
-<details class="shelf" id="shelf">
-  <summary><span>🗂 내 작업 보관함</span><span class="n" id="shelfPerf"></span><span class="n" id="shelfCount">0개</span><span class="arw">▾</span></summary>
-  <div class="shelfbody" id="shelfBody"></div>
-  <div class="store-note" style="padding:0 12px 11px">
-    <span>이 브라우저 저장값(양식·보관함·설정) 백업 · API 키는 빠집니다</span>
-    <button class="linkbtn" id="bkExport" type="button">💾 백업</button>
-    <button class="linkbtn" id="bkImport" type="button">♻️ 복원</button>
-  </div>
-  <input type="file" id="bkFile" accept=".json,application/json" hidden>
-</details>
-
-<details class="shelf" id="affilPanel">
-  <summary><span>💰 제휴 링크 · 필수 고지 프로필</span><span class="n" id="affilState">미설정</span><span class="arw">▾</span></summary>
-  <div class="shelfbody">
-    <div class="affilbox">
-      <p class="hint" style="margin:0">쿠팡 파트너스 같은 <b>제휴 링크</b>와 <b>필수 고지 문구</b>를 한 번 저장해 두면, 블로그·쇼츠 결과 카드의 <b>[💰 제휴 링크·고지 넣기]</b> 한 번으로 본문 끝(쇼츠는 고정 댓글)에 그대로 들어갑니다. 링크는 <b>이 브라우저에만</b> 저장되고 서버로 보내지 않습니다.</p>
-      <label class="aftoggle" for="affilOn"><input type="checkbox" id="affilOn"> 본문 생성 시 자동으로 넣기</label>
-      <div class="affilbox" id="affilRows"></div>
-      <div><button class="btn small ghost" id="affilAddLink" type="button">+ 링크 한 줄 더</button></div>
-      <div>
-        <label class="flabel" for="affilNotice">고정 안내 문구 (선택)</label>
-        <textarea class="afarea" id="affilNotice" rows="2" maxlength="400" placeholder="예) 이 글의 정보는 2026년 11월 기준입니다. 가격·운영시간은 바뀔 수 있습니다."></textarea>
+    <details class="shelf" id="routinePanel">
+      <summary><span>📅 주간 발행 루틴표 (월~일)</span><span class="n" id="routineToday">오늘</span><span class="arw">▾</span></summary>
+      <div class="shelfbody">
+        <div class="rtable" id="routineRows"></div>
+        <div class="srow" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:9px">
+          <button class="btn small primary" id="loadTodayBtn">오늘 테마 불러오기</button>
+          <button class="btn small" id="routineReset">기본값으로</button>
+          <button class="btn small ghost" id="pubReset">이번 주 발행 기록 지우기</button>
+        </div>
+        <div class="rnote" id="pubWeek">이번 주 기록 · 발행 0일 · 브라우저에 저장</div>
+        <div class="rnote">🗓 요일별 테마는 이 브라우저에 저장됩니다. <b>15:45 자동 생성</b>에 이 루틴표를 연결하는 것은 <b>스케줄 연동 후</b> — 지금은 저장·불러오기까지만 실제 동작합니다.</div>
       </div>
-      <div>
-        <label class="flabel" for="affilDisc">필수 고지 문구 <span class="bdg info">제휴 활동 고지</span></label>
-        <textarea class="afarea" id="affilDisc" rows="2" maxlength="400" placeholder="예) 이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."></textarea>
-        <div class="quick" style="margin-top:5px">
-          <button class="btn small ghost" id="affilDiscCoupang" type="button">쿠팡 파트너스 문구</button>
-          <button class="btn small ghost" id="affilDiscGeneric" type="button">일반 제휴 문구</button>
+    </details>
+
+    <details class="shelf" id="shelf">
+      <summary><span>🗂 내 작업 보관함</span><span class="n" id="shelfPerf"></span><span class="n" id="shelfCount">0개</span><span class="arw">▾</span></summary>
+      <div class="shelfbody" id="shelfBody"></div>
+      <div class="store-note" style="padding:0 12px 11px">
+        <span>이 브라우저 저장값(양식·보관함·설정) 백업 · API 키는 빠집니다</span>
+        <button class="linkbtn" id="bkExport" type="button">💾 백업</button>
+        <button class="linkbtn" id="bkImport" type="button">♻️ 복원</button>
+      </div>
+      <input type="file" id="bkFile" accept=".json,application/json" hidden>
+    </details>
+
+    <details class="shelf" id="affilPanel">
+      <summary><span>💰 제휴 링크 · 필수 고지 프로필</span><span class="n" id="affilState">미설정</span><span class="arw">▾</span></summary>
+      <div class="shelfbody">
+        <div class="affilbox">
+          <p class="hint" style="margin:0">쿠팡 파트너스 같은 <b>제휴 링크</b>와 <b>필수 고지 문구</b>를 한 번 저장해 두면, 블로그·쇼츠 결과 카드의 <b>[💰 제휴 링크·고지 넣기]</b> 한 번으로 본문 끝(쇼츠는 고정 댓글)에 그대로 들어갑니다. 링크는 <b>이 브라우저에만</b> 저장되고 서버로 보내지 않습니다.</p>
+          <label class="aftoggle" for="affilOn"><input type="checkbox" id="affilOn"> 본문 생성 시 자동으로 넣기</label>
+          <div class="affilbox" id="affilRows"></div>
+          <div><button class="btn small ghost" id="affilAddLink" type="button">+ 링크 한 줄 더</button></div>
+          <div>
+            <label class="flabel" for="affilNotice">고정 안내 문구 (선택)</label>
+            <textarea class="afarea" id="affilNotice" rows="2" maxlength="400" placeholder="예) 이 글의 정보는 2026년 11월 기준입니다. 가격·운영시간은 바뀔 수 있습니다."></textarea>
+          </div>
+          <div>
+            <label class="flabel" for="affilDisc">필수 고지 문구 <span class="bdg info">제휴 활동 고지</span></label>
+            <textarea class="afarea" id="affilDisc" rows="2" maxlength="400" placeholder="예) 이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다."></textarea>
+            <div class="quick" style="margin-top:5px">
+              <button class="btn small ghost" id="affilDiscCoupang" type="button">쿠팡 파트너스 문구</button>
+              <button class="btn small ghost" id="affilDiscGeneric" type="button">일반 제휴 문구</button>
+            </div>
+          </div>
+          <div>
+            <div class="flabel">본문에 들어갈 모양 (미리보기)</div>
+            <div class="afprev" id="affilPrev"></div>
+          </div>
+          <div class="store-note">
+            <span id="affilSaved">이 브라우저에만 저장 · localStorage</span>
+            <button class="linkbtn" id="affilClear" type="button">프로필 비우기</button>
+          </div>
         </div>
       </div>
-      <div>
-        <div class="flabel">본문에 들어갈 모양 (미리보기)</div>
-        <div class="afprev" id="affilPrev"></div>
-      </div>
-      <div class="store-note">
-        <span id="affilSaved">이 브라우저에만 저장 · localStorage</span>
-        <button class="linkbtn" id="affilClear" type="button">프로필 비우기</button>
-      </div>
-    </div>
-  </div>
-</details>
+    </details>
 
-<details class="shelf" id="v22Panel">
-  <summary><span>📊 차트 PNG 워터마크 · v3 쇼츠 옵션</span><span class="n" id="cvWmNow">연오랑의 3분 시황</span><span class="arw">▾</span></summary>
-  <div class="shelfbody">
-    <p class="hint" style="margin:0 0 9px">블로그용 차트 PNG 우측 하단에 들어갈 문구와, 쇼츠 v3 대본 연출 옵션입니다. 이 브라우저에만 저장됩니다.</p>
-    <div class="field" style="margin-top:0">
-      <label class="flabel" for="cvWmInput">워터마크 문구</label>
-      <input type="text" id="cvWmInput" maxlength="30" placeholder="예) 연오랑의 3분 시황" autocomplete="off">
-      <p class="hint">비우면 기본값 <b>연오랑의 3분 시황</b>이 들어갑니다. 차트를 저장할 때마다 우측 하단에 자동으로 그려집니다.</p>
-    </div>
-    <div class="elrow" style="gap:14px">
-      <label class="aftoggle" for="v3Casual"><input type="checkbox" id="v3Casual" checked> 유튜버 구어체 대본</label>
-      <label class="aftoggle" for="v3Numbers"><input type="checkbox" id="v3Numbers" checked> 숫자 한글 발음 변환(엔진)</label>
-      <label class="aftoggle" for="v3Karaoke"><input type="checkbox" id="v3Karaoke" checked> 카라오케 강조 자막</label>
-    </div>
-    <div class="rnote">v3 옵션은 다음 쇼츠 대본 생성부터 적용되고, MP4 JSON에도 <b>tts_provider · hook_title · highlight_words · karaoke</b> 로 함께 나갑니다. 구어체를 끄면 예전 문어체 대본으로 돌아갑니다.</div>
+    <details class="shelf" id="v22Panel">
+      <summary><span>📊 차트 PNG 워터마크 · v3 쇼츠 옵션</span><span class="n" id="cvWmNow">연오랑의 3분 시황</span><span class="arw">▾</span></summary>
+      <div class="shelfbody">
+        <p class="hint" style="margin:0 0 9px">블로그용 차트 PNG 우측 하단에 들어갈 문구와, 쇼츠 v3 대본 연출 옵션입니다. 이 브라우저에만 저장됩니다.</p>
+        <div class="field" style="margin-top:0">
+          <label class="flabel" for="cvWmInput">워터마크 문구</label>
+          <input type="text" id="cvWmInput" maxlength="30" placeholder="예) 연오랑의 3분 시황" autocomplete="off">
+          <p class="hint">비우면 기본값 <b>연오랑의 3분 시황</b>이 들어갑니다. 차트를 저장할 때마다 우측 하단에 자동으로 그려집니다.</p>
+        </div>
+        <div class="elrow" style="gap:14px">
+          <label class="aftoggle" for="v3Casual"><input type="checkbox" id="v3Casual" checked> 유튜버 구어체 대본</label>
+          <label class="aftoggle" for="v3Numbers"><input type="checkbox" id="v3Numbers" checked> 숫자 한글 발음 변환(엔진)</label>
+          <label class="aftoggle" for="v3Karaoke"><input type="checkbox" id="v3Karaoke" checked> 카라오케 강조 자막</label>
+        </div>
+        <div class="rnote">v3 옵션은 다음 쇼츠 대본 생성부터 적용되고, MP4 JSON에도 <b>tts_provider · hook_title · highlight_words · karaoke</b> 로 함께 나갑니다. 구어체를 끄면 예전 문어체 대본으로 돌아갑니다.</div>
+      </div>
+    </details>
   </div>
 </details>
 
@@ -2982,44 +2948,147 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 </section>
 
 <!-- ================= BLOG ================= -->
-<section id="panelBlog" role="tabpanel" aria-labelledby="tabBlog" hidden>
+<section id="panelBlog" role="tabpanel" aria-labelledby="tabBlog">
   <div id="blogMain">
-  <!-- ① 테마 고르고 원클릭 -->
+  <!-- ───── 1단계 · 재료 & 주제 (🦊 폭스시그널 / ✍️ 생활·수익 공통) ───── -->
   <div class="card stepcard" id="step1Card" data-step="1">
     <div class="stephead">
-      <span class="stepn">1</span><h2>테마 고르고 원클릭</h2>
+      <span class="stepn">1</span><h2 id="step1Title">재료 · 카테고리 · 주제</h2>
       <span class="bdg info" id="step1ThemeName">—</span>
     </div>
-    <div class="blogauto-themes" id="blogAutoThemes" role="group" aria-label="블로그 테마 빠른 선택 9개"></div>
-    <div class="slotrow blogslot" id="blogSlotRow" role="group" aria-label="폭스시그널 시간대 1클릭" hidden>
-      <span class="flabel">🦊 폭스시그널 시간대</span>
-      <button class="btn small primary" id="stepSlotPre" type="button" title="장전 재료(밤사이 미 증시·야간선물·원달러)를 채우고 5번 양식으로 바꿉니다">🌅 장전</button>
-      <button class="btn small primary" id="stepSlotClose" type="button" title="정규장 결산 + NXT 애프터장 + 야간선물 재료를 채우고 6번 양식으로 바꿉니다">🌙 통합 마감</button>
-      <button class="btn small primary" id="stepSlotWeekend" type="button" title="피클이 주말에 만들어 둔 주말 뉴스 초안을 불러와 주제·참고 자료·본문을 채웁니다">🗞️ 주말 뉴스</button>
+
+    <!-- 🦊 폭스시그널 전용 -->
+    <div class="fox-only" id="fxStep1">
+      <div class="fxrow">
+        <span class="flabel">🦊 시간대 1클릭 — 관제탑 실측으로 주제·참고자료·시황 양식·크림 그래프까지</span>
+        <button class="btn small primary" type="button" data-cs-slot="pre" data-cs-slot-mode="blog" title="밤사이 미 증시·야간선물·원달러로 장전 시황을 세팅합니다">🌅 장전</button>
+        <button class="btn small primary" type="button" data-cs-slot="noon" data-cs-slot-mode="blog" title="오전장 지수·수급·주도 테마로 점심 시황을 세팅합니다">☀️ 점심</button>
+        <button class="btn small primary" type="button" data-cs-slot="close" data-cs-slot-mode="blog" title="정규장 마감 결산으로 시황을 세팅합니다">🌆 정규마감</button>
+        <button class="btn small primary" type="button" data-cs-slot="after" data-cs-slot-mode="blog" title="정규장 + NXT 애프터장 + 야간선물까지 통합 마감으로 세팅합니다">🌙 애프터장</button>
+        <button class="btn small" type="button" data-cs-slot="weekend" data-cs-slot-mode="blog" title="피클이 주말에 써 둔 주말 뉴스 초안을 불러옵니다">🗞️ 주말 뉴스</button>
+        <button class="btn small" type="button" data-cs-slot="dict" data-cs-slot-mode="blog" title="토요일 에버그린 — 사이드카·VIX·거래대금 300억 같은 용어를 5컷으로">📘 30초 사전</button>
+        <button class="btn small" type="button" data-cs-slot="review" data-cs-slot-mode="blog" title="일요일 복기 — 이번 주 성적표·맞춘 판단·다음 주 if→then">📊 주간 오답노트</button>
+      </div>
+      <div class="fxlinks">
+        <a class="btn small" href="https://hwen21c-tech.github.io/stock-dashboard/checker.html" target="_blank" rel="noopener" title="1초 체커 — 종목 진단">⚡ 1초 체커</a>
+        <a class="btn small ghost" href="https://stock-dashboard-live-bice.vercel.app/" target="_blank" rel="noopener" title="관제탑 — 실시간 시황">📈 관제탑</a>
+        <a class="btn small ghost" href="https://hwen21c-tech.github.io/stock-dashboard/deals.html" target="_blank" rel="noopener" title="패밀리 특가 레이더">🏷️ 특가 레이더</a>
+        <button class="btn small ghost" id="fxBriefBtn" type="button" title="관제탑 최신 브리핑을 [참고 자료]에 넣습니다">📰 최신 브리핑</button>
+        <button class="btn small primary" id="fxToShorts" type="button" title="지금 시간대로 📱 쇼츠 스튜디오 대본 자리를 세팅합니다">🎬 쇼츠 대본으로 →</button>
+      </div>
+      <div class="slotstate" id="fxSlotState" hidden></div>
     </div>
+
+    <!-- ✍️ 생활·수익 전용 — 카테고리 · 페르소나 OS (creator-studio 이식) -->
+    <div class="life-only" id="lifeStep1Cat">
+  <!-- ===== 🧩 카테고리 · 페르소나 OS + 추천 키워드 (creator-studio 이식 · 2026-11-28) ===== -->
+  <details class="pcat" id="pCat" open>
+    <summary>
+      <span>🧩 카테고리 · 페르소나 OS</span><span class="cnt" id="pCatCount">12개</span>
+      <span class="pcatchip mng" id="pCatManage" role="button" tabindex="0" aria-label="카테고리 추가·관리">＋ 카테고리 추가·관리</span>
+      <span class="arw">▾</span>
+    </summary>
+    <div class="pcat-b">
+      <div class="pcatchips" id="pCatChips" role="group" aria-label="카테고리 선택"></div>
+      <div class="lifedraft">
+        <button class="btn small primary" id="lifeDraftBtn" type="button" title="피클이 만들어 둔 생활·부업 초안(data/life_draft_latest.json)을 읽어 제목·본문·스레드 본문·첫 댓글·태그·추천 키워드까지 한 번에 채웁니다">📥 생활·부업 피클 초안 불러오기</button>
+        <span class="lds" id="lifeDraftState">아직 안 불러옴 — 순수 비교·정보글 초안</span>
+      </div>
+      <div class="ldkw" id="lifeKw" hidden></div>
+      <div class="pcatcard" id="pCatCard" hidden>
+        <div class="h"><span id="pCatName">—</span><span class="tone" id="pCatTone">—</span></div>
+        <p id="pCatPersona"></p>
+        <div class="pkwlbl" id="pCatThemeWrap">✍️ 블로그 양식 — <b id="pCatTheme">—</b></div>
+        <div class="pkwlbl">카테고리 맞춤 추천 키워드 — 누르면 [주제·키워드]에 바로 들어갑니다</div>
+        <div class="pkws" id="pCatKws"></div>
+        <div class="quick" style="margin-top:8px">
+          <button class="btn small primary" id="pCatGo" type="button" title="주제와 타겟·톤을 세팅하고 [🤖 AI 본문 생성] 자리로 이동합니다">⚡ 이 카테고리로 글 쓰기</button>
+          <button class="btn small ghost" id="pCatClear" type="button">카테고리 해제</button>
+        </div>
+        <p class="hint" style="margin-top:6px">고른 카테고리의 <b>타겟·톤</b>은 ✍️ 블로그의 <b>빈틈 메모</b>에 <b>🎯</b> 항목으로 들어가 생성 프롬프트에 그대로 적용됩니다(지우거나 끌 수 있습니다).</p>
+      </div>
+    </div>
+  </details>
+    </div>
+
+    <div class="field" style="margin-top:9px">
+      <span class="flabel">블로그 양식 · 테마</span>
+      <div class="blogauto-themes" id="blogAutoThemes" role="group" aria-label="블로그 테마 빠른 선택 9개"></div>
+    </div>
+    <div class="field" style="margin-top:8px">
+      <label class="flabel" for="topic">주제 · 키워드</label>
+      <input type="text" id="topic" placeholder="예) 동탄 아이랑 갈 만한 실내 키즈카페 3곳" maxlength="80">
+      <div class="quick" id="topicQuick">
+        <button class="qchip" data-topic="동탄 아이랑 갈 만한 실내 키즈카페 3곳">동탄 키즈카페</button>
+        <button class="qchip" data-topic="이번 주 코스피 마감 정리와 다음 주 체크포인트">코스피 주간 정리</button>
+        <button class="qchip" data-topic="읽은 책: 하루 10분 몰입의 힘">자기계발서 리뷰</button>
+        <button class="qchip" data-topic="겨울 제주 가족여행 항공+숙소 최저가 정리">제주 특가</button>
+      </div>
+    </div>
+    <button class="btn primary big" id="blogAutoBtn" type="button" title="지금 고른 테마(9개)에 맞춰 주제·참고 자료·블로거 양식·크림 그래프·증거 카드까지 자동으로 세팅합니다">⚡ 원클릭 세팅</button>
     <div class="csauto-s" id="blogAutoState">지금 고른 테마에 맞춰 [주제]·[참고 자료]·양식·크림 그래프까지 한 번에 세팅합니다.</div>
-    <button class="btn primary big" id="blogAutoBtn" type="button" title="지금 고른 블로그 테마(9개)에 맞춰 주제·참고 자료·블로거 양식·크림 그래프·증거 카드까지 자동으로 세팅하고 [🤖 AI 본문 생성] 자리로 이동합니다">⚡ 블로그 원클릭 세팅</button>
   </div>
 
-  <!-- ② 본문 만들기 -->
-  <div class="card stepcard" id="step2Card" data-step="2">
+  <!-- ───── 2단계 · 톤·구조·내 경험 (✍️ 생활·수익) ───── -->
+  <div class="card stepcard life-only" id="step2Card" data-step="2">
     <div class="stephead">
-      <span class="stepn">2</span><h2>본문 만들기</h2>
+      <span class="stepn">2</span><h2>톤 · 5종 구조 · 내 경험</h2>
       <span class="bdg info" id="step2Badge">—</span>
     </div>
-    <div class="step-actions">
-      <button class="btn primary big" id="blogDraftMain" type="button" title="피클이 시간대별로 만들어 둔 최신 초안을 읽어 제목·본문·태그를 결과 카드에 채우고 그 자리로 이동합니다">📥 피클 초안</button>
-      <button class="btn ghost big" id="stepGenBtn" type="button" title="Gemini가 선택한 테마·양식·내 문체로 본문을 새로 씁니다 (보통 10~25초)">🤖 AI 본문 생성</button>
+    <div class="life2col">
+      <div class="field">
+        <label class="flabel" for="lifeTone">글쓰기 톤</label>
+        <select id="lifeTone" aria-label="글쓰기 톤">
+          <option value="친근한 육아/생활 구어체">친근한 육아·생활 구어체</option>
+          <option value="정보 전달 전문가 톤">정보 전달 전문가 톤</option>
+          <option value="솔직한 내돈내산 리뷰 톤">솔직한 내돈내산 리뷰 톤</option>
+          <option value="감성 스토리텔링 톤">감성 스토리텔링 톤</option>
+          <option value="직설적 비교 분석 톤">직설적 비교 분석 톤</option>
+          <option value="깔끔한 정보 요약형">깔끔한 정보 요약형</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="flabel" for="lifeStruct">블로그 구조 (5종)</label>
+        <select id="lifeStruct" aria-label="블로그 구조 5종">
+          <option value="경험공감형">① 경험공감형 — 상황 공감 · 체류시간</option>
+          <option value="비교분석형">② 비교분석형 — 기준·장단점 · 전환</option>
+          <option value="체크리스트형">③ 체크리스트형 — 실행 전 점검표</option>
+          <option value="Q&amp;A해결형">④ Q&amp;A 해결형 — 롱테일 검색</option>
+          <option value="실패→해결 반전형">⑤ 실패→해결 반전형 — 시행착오 예방</option>
+        </select>
+        <label class="aftoggle" for="lifeStructRand" style="margin-top:7px"><input type="checkbox" id="lifeStructRand" checked> 자동 랜덤 로테이션</label>
+        <div class="rnote" id="lifeStructNow">이번 글 구조: —</div>
+      </div>
     </div>
-    <p class="hint" id="step2Hint">주식 = <b>📥 피클 초안</b>(크레딧 0) · 나머지 8테마 = <b>🤖 AI 본문 생성</b>(Gemini 10~25초)</p>
-    <div id="aiNoteBlog"></div>
+    <div class="field" style="margin-top:11px">
+      <label class="flabel" for="expNote">내 경험 2줄 메모 <span class="bdg info">AI 티 빼기 · 1인칭 경험은 이 칸만</span></label>
+      <textarea id="expNote" rows="2" maxlength="2000" placeholder="직접 가본 곳·직접 써본 물건만. (예) 11/15 토 11시 방문, 주차 2시간 무료, 대기 20분"></textarea>
+      <div class="store-note">
+        <span id="expInfo">0자 · 이 브라우저에 저장 · AI가 지어낸 경험담은 쓰지 않습니다</span>
+        <button class="linkbtn" id="expClear">지우기</button>
+      </div>
+    </div>
+    <div class="quick" style="margin-top:6px">
+      <button class="btn small primary" id="visionBtn" type="button" title="실사진 카드에 올린 내 사진을 Gemini가 실제로 보고, 사진에 보이는 것만 관찰 메모 3줄로 만들어 이 칸에 넣습니다">📸 올린 사진에서 경험 메모 3줄</button>
+    </div>
+    <div id="visionNote"></div>
   </div>
 
-  <!-- ③ 변환 & 복사 -->
+  
+
+  <!-- ③ 생성 & 발행 -->
   <div class="stepwrap" id="step3" data-step="3">
     <div class="stephead">
-      <span class="stepn">3</span><h2>변환 &amp; 복사</h2>
+      <span class="stepn">3</span><h2>생성 &amp; 발행</h2>
       <span class="bdg real" id="step3Stat">대기</span>
+    </div>
+    <div class="card" id="genCard">
+      <div class="step-actions">
+        <button class="btn primary big" id="blogDraftMain" type="button" title="피클이 시간대별로 만들어 둔 최신 초안을 읽어 제목·본문·태그를 결과 카드에 채웁니다">📥 피클 초안</button>
+        <button class="btn ghost big" id="stepGenBtn" type="button" title="Gemini가 선택한 테마·양식·톤·구조·내 문체로 본문을 새로 씁니다 (10~25초)">🤖 AI 본문 생성</button>
+      </div>
+      <p class="hint" id="step2Hint">주식 = <b>📥 피클 초안</b>(크레딧 0) · 생활·수익 = <b>🤖 AI 본문 생성</b>(10~25초)</p>
+      <div id="aiNoteBlog"></div>
     </div>
       <div class="card" id="titleCard" hidden>
         <div class="card-head"><span class="num">7</span><h2>제목 3종 세트</h2><span class="bdg real">✓ 이 화면에서 생성</span></div>
@@ -3158,9 +3227,113 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
       </div>
   </div><!-- /#step3 -->
 
+  <div class="fox-only" id="fxChartHost">
+  <div class="card" id="chartCard">
+    <div class="card-head">
+      <span class="num">8</span><h2>📊 블로그용 차트 PNG</h2>
+      <span class="bdg real" id="cvStat">관제탑 실데이터</span>
+      <button class="btn small ghost" id="cvRefresh" type="button" style="margin-left:auto">🔄 실데이터 새로고침</button>
+    </div>
+    <p class="hint">관제탑 실측(<b>지수·테마 실시간</b>, <b>확정 수급</b>)을 그대로 읽어 Canvas로 그립니다. 수작업 캡처 없이 <b>📥 PNG 저장</b>, 우측 하단엔 워터마크가 들어갑니다. 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다.</p>
+    <div class="cvopts">
+      <label class="flabel" for="cvSize">크기</label>
+      <select id="cvSize" aria-label="차트 PNG 크기">
+        <option value="1200x675">가로 1200×675 (블로그 대표)</option>
+        <option value="1080x1080">정사각 1080×1080 (인스타·카드)</option>
+      </select>
+      <span class="cvsrc" id="cvSrc">실데이터 대기</span>
+    </div>
+    <div class="cvgrid">
+      <div class="cvitem">
+        <div class="cvh">① 지수·수급 요약 <button class="btn small primary" type="button" data-cvdl="mk">📥 PNG 저장</button></div>
+        <canvas id="cvMk" role="img" aria-label="지수·수급 요약 카드 미리보기"></canvas>
+      </div>
+      <div class="cvitem">
+        <div class="cvh">② 주도 테마 Top 5 <button class="btn small primary" type="button" data-cvdl="th">📥 PNG 저장</button></div>
+        <canvas id="cvTh" role="img" aria-label="주도 테마 막대그래프 미리보기"></canvas>
+      </div>
+      <div class="cvitem wide">
+        <div class="cvh">③ 종목 차트 — 일봉 + 20일선 + 피보나치 <button class="btn small primary" type="button" data-cvdl="st">📥 PNG 저장</button></div>
+        <div class="cvrow">
+          <input type="text" id="cvCode" placeholder="종목코드 또는 종목명 (예: 005930 · 삼성전자)" maxlength="30" autocomplete="off" spellcheck="false">
+          <select id="cvDays" aria-label="조회 기간"><option value="60">60일</option><option value="120">120일</option></select>
+          <button class="btn small" id="cvStockLoad" type="button">불러오기</button>
+        </div>
+        <canvas id="cvSt" role="img" aria-label="종목 차트 미리보기"></canvas>
+      </div>
+    </div>
+    <details class="cv-fold"><summary class="cv-fold-h"><span>🧾 크림 아이보리 3종 · 증거 카드</span><span class="bdg real">원클릭 저장</span><span class="cv-arw">▾</span></summary><div class="cvcream">
+      <div class="cvh" style="margin:16px 0 6px">🖼️ 블로그 그래프 3종 + 🧾 증거 카드 — 크림 아이보리(#F7F3E9) 에디토리얼 <button class="btn small primary" id="creamAllSave" type="button">🖼️ 3장 한 번에 저장</button></div>
+      <p class="hint">위 다크 차트와 별개로, <b>흰·밝은 블로그 본문</b>에 어울리는 <b>크림 아이보리(#F7F3E9)</b> 바탕 차트입니다. 값은 관제탑 실측(<b>/api/breadth</b> · 수급 타임라인 · 확정 브리핑)에서 읽고, 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다. <b>본문의 [📸 그래프 자리]와 아래 ②③은 같은 PNG입니다.</b></p>
+      <div class="imgset">
+        <div class="imgitem"><b>① 대표 썸네일</b><span>thumbnail.png · 1200×630</span><button class="btn small" type="button" data-imgsave="thumb">📥 저장</button></div>
+        <div class="imgitem"><b>② 수급 그래프</b><span>flow.png · 크림</span><button class="btn small" type="button" data-imgsave="sup">📥 저장</button></div>
+        <div class="imgitem"><b>③ 종목 대비 그래프</b><span>sectors.png · 크림</span><button class="btn small" type="button" data-imgsave="breadth">📥 저장</button></div>
+        <div class="imgitem"><b>🧾 증거 카드</b><span>evidence.png · 크림</span><button class="btn small" type="button" data-fox-evi="1">📥 저장</button></div>
+      </div>
+      <div class="cvgrid">
+        <div class="cvitem">
+          <div class="cvh">② 수급 그래프 — 투자자별 순매수(개인 · 외국인 · 기관 × 코스피/코스닥) <button class="btn small primary" type="button" data-cvdl="sup">📥 flow.png 저장</button></div>
+          <canvas id="cvCreamSup" class="cream" role="img" aria-label="크림 아이보리 투자자별 수급 막대 차트 미리보기"></canvas>
+        </div>
+        <div class="cvitem">
+          <div class="cvh">③ 종목 대비 그래프 — 상승 vs 하락 종목(오늘 시장 폭) <button class="btn small primary" type="button" data-cvdl="breadth">📥 sectors.png 저장</button></div>
+          <canvas id="cvCreamBreadth" class="cream" role="img" aria-label="크림 아이보리 상승·하락 종목 대비 막대 차트 미리보기"></canvas>
+        </div>
+      </div>
+      <div class="cvgrid">
+        <div class="cvitem wide">
+          <div class="cvh">🧾 증거 카드 — 300억↑ 대장주 Top 3 · 외인/기관 순매수 · 피보나치·기준선 요약 <button class="btn small primary" type="button" data-fox-evi="1">📥 evidence.png 저장</button></div>
+          <p class="hint" style="margin:2px 0 8px">포스팅·쇼츠 고정댓글에 붙이는 <b>실측 증거 1장</b>입니다. 크림 아이보리(<b>#F7F3E9</b>) 톤이고, 값은 <b>data/signal_scorecard.json</b>(브리핑·초안에서 짚은 종목·기준선의 실제 시세 채점) + 확정 수급 + 마지막 거래일 스냅샷에서만 가져옵니다. 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다.</p>
+          <canvas id="foxEviCanvas" class="cream" role="img" aria-label="증거 카드 미리보기 — 크림 아이보리 실측 요약"></canvas>
+        </div>
+      </div>
+      <div class="cvnote" id="cvCreamNote">관제탑 실데이터로 그립니다.</div>
+    </div></details>
+    <details class="cv-fold"><summary class="cv-fold-h"><span>🖼️ 블로그 1:1 대표 썸네일 (1080×1080)</span><span class="bdg real">브라우저</span><span class="cv-arw">▾</span></summary><div class="t11wrap">
+      <div class="card-head" style="margin-bottom:6px">
+        <span class="num">🖼️</span><h2>블로그 1:1 대표 썸네일(표지)</h2>
+        <span class="bdg real" id="t11Stat">1080×1080 · 브라우저</span>
+      </div>
+      <p class="hint">블로그 글 맨 위·인스타 카드에 쓰는 <b>정사각 1080×1080 표지</b>입니다. <b>제목 · 상단 강조 배지 · 하단 워터마크</b>만 넣어 깔끔한 카드형으로 그립니다(API·키 없이 100% 동작). 제목을 비우면 <b>[제목 3종]</b>에서 고른 제목을 그대로 씁니다.</p>
+      <div class="t11opts">
+        <input type="text" id="t11Title" maxlength="90" placeholder="표지 제목 (비우면 [제목 3종] 제목)" aria-label="1:1 표지 제목">
+        <input type="text" id="t11Badge" maxlength="24" placeholder="상단 배지 (예: 📌 시황 요약)" aria-label="상단 강조 배지">
+        <input type="text" id="t11Wm" maxlength="30" placeholder="하단 워터마크 (예: 연오랑의 3분 시황)" aria-label="하단 워터마크">
+      </div>
+      <div class="t11chips" id="t11Chips"></div>
+      <canvas id="t11Canvas" width="1080" height="1080" role="img" aria-label="1:1 대표 썸네일 1080×1080 미리보기"></canvas>
+      <div class="t11row">
+        <button class="btn small primary" id="t11Dl" type="button">📥 대표 썸네일 PNG 저장</button>
+        <button class="btn small ghost" id="t11Style" type="button">🎲 다른 스타일</button>
+        <button class="btn small" id="t11Auto" type="button">↺ 제목·배지 자동 채우기</button>
+        <button class="btn small ghost" id="t11ToThumb" type="button">🖼 1200×630 썸네일도 만들기</button>
+      </div>
+      <p class="hint" style="margin-top:7px">저장 파일명은 <b>제목-1080x1080.png</b>. 배지·워터마크·스타일은 이 브라우저에 저장돼 다음 글에도 그대로 씁니다.</p>
+    </div></details>
+    <details class="cv-fold"><summary class="cv-fold-h"><span>🦊 3초 요약 대표 카드 (1080×1080)</span><span class="bdg real">지수 실측</span><span class="cv-arw">▾</span></summary><div class="sum3wrap" id="sum3Wrap">
+      <div class="card-head" style="margin-bottom:6px">
+        <span class="num">🦊</span><h2>3초 요약 대표 카드</h2>
+        <span class="bdg real" id="sum3Stat">1080×1080 · 지수 실측</span>
+      </div>
+      <p class="hint">티스토리·네이버 글 <b>맨 위 대표 이미지</b>로 쓰는 카드입니다. <b>오늘 핵심 결론 1줄 + 코스피·코스닥 + 신호등 뱃지 + 🦊 폭스시그널</b>만 담아 3초 안에 읽히게 만듭니다. 지수는 <b>관제탑 실측</b>(/api/stock-live)을 그대로 쓰고, 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다.</p>
+      <input type="text" id="sum3Line" maxlength="70" placeholder="핵심 결론 1줄 (비우면 1:1 표지 제목 → 본문 [==오늘의 결론==] → 주제 순서로 자동)" aria-label="3초 요약 카드 핵심 결론 1줄">
+      <div class="sum3row">
+        <button class="btn small" id="sum3Refresh" type="button">↻ 지수·신호 새로고침</button>
+        <button class="btn small primary" id="sum3Dl1" type="button">📥 1080×1080 저장</button>
+        <button class="btn small" id="sum3Dl2" type="button">📥 1200×675 저장</button>
+        <button class="btn small ghost" id="sum3Auto" type="button">↺ 결론 자동 채우기</button>
+      </div>
+      <canvas id="sum3Canvas" width="1080" height="1080" role="img" aria-label="3초 요약 대표 카드 1080×1080 미리보기"></canvas>
+      <p class="hint" style="margin-top:6px">저장 파일명은 <b>제목-3초요약-1080x1080.png</b>. 결론 문구는 이 브라우저에 저장됩니다.</p>
+    </div></details>
+    <div class="cvnote" id="cvNote">값은 관제탑이 준 실측치 그대로입니다.</div>
+  </div>
+  </div>
+
   <!-- ⚙️ 나머지 세부 옵션 — 기본 접힘. 펼치면 기존 기능 그대로 -->
   <details class="shelf" id="detailPanel">
-    <summary><span id="detailPanelLbl">⚙️ 세부 옵션 펼치기 — 양식 · 참고 글 · 실사진 · 차트 PNG · 자가진단</span><span class="n" id="detailPanelTag">접힘</span><span class="arw">▾</span></summary>
+    <summary><span id="detailPanelLbl">⚙️ 세부 옵션 펼치기 — 양식 · 참고 글 · 실사진 · 자가진단</span><span class="n" id="detailPanelTag">접힘</span><span class="arw">▾</span></summary>
     <div class="shelfbody">
   <details class="shelf" id="blogAutoGuide">
     <summary><span>📋 이 테마 참고 틀</span><span class="n" id="blogAutoGuideNo">—</span><span class="arw">▾</span></summary>
@@ -3294,13 +3467,8 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
       <div class="card">
         <div class="card-head"><span class="num">4</span><h2>주제 · 키워드</h2></div>
         <div class="field">
-          <input type="text" id="topic" placeholder="예) 동탄 아이랑 갈 만한 실내 키즈카페 3곳" maxlength="80">
-          <div class="quick" id="topicQuick">
-            <button class="qchip" data-topic="동탄 아이랑 갈 만한 실내 키즈카페 3곳">동탄 키즈카페</button>
-            <button class="qchip" data-topic="이번 주 코스피 마감 정리와 다음 주 체크포인트">코스피 주간 정리</button>
-            <button class="qchip" data-topic="읽은 책: 하루 10분 몰입의 힘">자기계발서 리뷰</button>
-            <button class="qchip" data-topic="겨울 제주 가족여행 항공+숙소 최저가 정리">제주 특가</button>
-          </div>
+          <span class="flabel">주제 · 키워드</span>
+          <p class="hint" style="margin:2px 0 0">1단계에서 입력합니다 — <b>카테고리 칩</b>을 누르면 자동으로 채워집니다.</p>
         </div>
         <div class="field">
           <label class="flabel" for="monAngle">전개 앵글 <span class="bdg info">AI 티 빼기 · 6종</span></label>
@@ -3316,17 +3484,8 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
           <p class="hint">고른 앵글로 <b>전개 순서</b>가 정해집니다. 비우면 테마·양식 기본값을 씁니다.</p>
         </div>
         <div class="field" style="margin-top:12px">
-          <label class="flabel" for="expNote">내 경험 메모 (선택) <span class="bdg info">1인칭 경험은 이 칸만</span></label>
-          <textarea id="expNote" rows="2" placeholder="직접 가본 곳·직접 써본 물건만 적으세요. 비우면 경험담 없이 조건·핵심 포인트만 담백하게 정리합니다. (예) 11/15 토 11시 방문, 주차 2시간 무료, 대기 20분" maxlength="2000"></textarea>
-          <div class="store-note">
-            <span id="expInfo">0자 · 이 브라우저에 저장 · AI가 지어낸 경험담은 쓰지 않습니다</span>
-            <button class="linkbtn" id="expClear">지우기</button>
-          </div>
+          <p class="hint" style="margin:2px 0 0">내 경험 2줄 메모는 <b>2단계</b>(✍️ 생활·수익)에서 적습니다.</p>
         </div>
-        <div class="quick" style="margin-top:7px">
-          <button class="btn small primary" id="visionBtn" type="button" title="위 실사진 카드에 올린 내 사진을 Gemini가 실제로 보고, 사진에 보이는 것만 관찰 메모 3줄로 만들어 이 칸에 넣습니다">📸 올린 사진에서 경험 메모 3줄</button>
-        </div>
-        <div id="visionNote"></div>
         <div style="display:flex;flex-wrap:wrap;gap:7px;margin-top:11px">
           <button class="btn primary big" id="genBtn" style="flex:1 1 150px">🤖 AI 본문 생성</button>
           <button class="btn small ghost" id="genLocalBtn">오프라인 뼈대만</button>
@@ -3396,107 +3555,6 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
     </div>
 
     <div>
-      <div class="card" id="chartCard">
-        <div class="card-head">
-          <span class="num">8</span><h2>📊 블로그용 차트 PNG</h2>
-          <span class="bdg real" id="cvStat">관제탑 실데이터</span>
-          <button class="btn small ghost" id="cvRefresh" type="button" style="margin-left:auto">🔄 실데이터 새로고침</button>
-        </div>
-        <p class="hint">관제탑 실측(<b>지수·테마 실시간</b>, <b>확정 수급</b>)을 그대로 읽어 Canvas로 그립니다. 수작업 캡처 없이 <b>📥 PNG 저장</b>, 우측 하단엔 워터마크가 들어갑니다. 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다.</p>
-        <div class="cvopts">
-          <label class="flabel" for="cvSize">크기</label>
-          <select id="cvSize" aria-label="차트 PNG 크기">
-            <option value="1200x675">가로 1200×675 (블로그 대표)</option>
-            <option value="1080x1080">정사각 1080×1080 (인스타·카드)</option>
-          </select>
-          <span class="cvsrc" id="cvSrc">실데이터 대기</span>
-        </div>
-        <div class="cvgrid">
-          <div class="cvitem">
-            <div class="cvh">① 지수·수급 요약 <button class="btn small primary" type="button" data-cvdl="mk">📥 PNG 저장</button></div>
-            <canvas id="cvMk" role="img" aria-label="지수·수급 요약 카드 미리보기"></canvas>
-          </div>
-          <div class="cvitem">
-            <div class="cvh">② 주도 테마 Top 5 <button class="btn small primary" type="button" data-cvdl="th">📥 PNG 저장</button></div>
-            <canvas id="cvTh" role="img" aria-label="주도 테마 막대그래프 미리보기"></canvas>
-          </div>
-          <div class="cvitem wide">
-            <div class="cvh">③ 종목 차트 — 일봉 + 20일선 + 피보나치 <button class="btn small primary" type="button" data-cvdl="st">📥 PNG 저장</button></div>
-            <div class="cvrow">
-              <input type="text" id="cvCode" placeholder="종목코드 또는 종목명 (예: 005930 · 삼성전자)" maxlength="30" autocomplete="off" spellcheck="false">
-              <select id="cvDays" aria-label="조회 기간"><option value="60">60일</option><option value="120">120일</option></select>
-              <button class="btn small" id="cvStockLoad" type="button">불러오기</button>
-            </div>
-            <canvas id="cvSt" role="img" aria-label="종목 차트 미리보기"></canvas>
-          </div>
-        </div>
-        <details class="cv-fold"><summary class="cv-fold-h"><span>🧾 크림 아이보리 3종 · 증거 카드</span><span class="bdg real">원클릭 저장</span><span class="cv-arw">▾</span></summary><div class="cvcream">
-          <div class="cvh" style="margin:16px 0 6px">🖼️ 블로그 그래프 3종 + 🧾 증거 카드 — 크림 아이보리(#F7F3E9) 에디토리얼 <button class="btn small primary" id="creamAllSave" type="button">🖼️ 3장 한 번에 저장</button></div>
-          <p class="hint">위 다크 차트와 별개로, <b>흰·밝은 블로그 본문</b>에 어울리는 <b>크림 아이보리(#F7F3E9)</b> 바탕 차트입니다. 값은 관제탑 실측(<b>/api/breadth</b> · 수급 타임라인 · 확정 브리핑)에서 읽고, 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다. <b>본문의 [📸 그래프 자리]와 아래 ②③은 같은 PNG입니다.</b></p>
-          <div class="imgset">
-            <div class="imgitem"><b>① 대표 썸네일</b><span>thumbnail.png · 1200×630</span><button class="btn small" type="button" data-imgsave="thumb">📥 저장</button></div>
-            <div class="imgitem"><b>② 수급 그래프</b><span>flow.png · 크림</span><button class="btn small" type="button" data-imgsave="sup">📥 저장</button></div>
-            <div class="imgitem"><b>③ 종목 대비 그래프</b><span>sectors.png · 크림</span><button class="btn small" type="button" data-imgsave="breadth">📥 저장</button></div>
-            <div class="imgitem"><b>🧾 증거 카드</b><span>evidence.png · 크림</span><button class="btn small" type="button" data-fox-evi="1">📥 저장</button></div>
-          </div>
-          <div class="cvgrid">
-            <div class="cvitem">
-              <div class="cvh">② 수급 그래프 — 투자자별 순매수(개인 · 외국인 · 기관 × 코스피/코스닥) <button class="btn small primary" type="button" data-cvdl="sup">📥 flow.png 저장</button></div>
-              <canvas id="cvCreamSup" class="cream" role="img" aria-label="크림 아이보리 투자자별 수급 막대 차트 미리보기"></canvas>
-            </div>
-            <div class="cvitem">
-              <div class="cvh">③ 종목 대비 그래프 — 상승 vs 하락 종목(오늘 시장 폭) <button class="btn small primary" type="button" data-cvdl="breadth">📥 sectors.png 저장</button></div>
-              <canvas id="cvCreamBreadth" class="cream" role="img" aria-label="크림 아이보리 상승·하락 종목 대비 막대 차트 미리보기"></canvas>
-            </div>
-          </div>
-          <div class="cvgrid">
-            <div class="cvitem wide">
-              <div class="cvh">🧾 증거 카드 — 300억↑ 대장주 Top 3 · 외인/기관 순매수 · 피보나치·기준선 요약 <button class="btn small primary" type="button" data-fox-evi="1">📥 evidence.png 저장</button></div>
-              <p class="hint" style="margin:2px 0 8px">포스팅·쇼츠 고정댓글에 붙이는 <b>실측 증거 1장</b>입니다. 크림 아이보리(<b>#F7F3E9</b>) 톤이고, 값은 <b>data/signal_scorecard.json</b>(브리핑·초안에서 짚은 종목·기준선의 실제 시세 채점) + 확정 수급 + 마지막 거래일 스냅샷에서만 가져옵니다. 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다.</p>
-              <canvas id="foxEviCanvas" class="cream" role="img" aria-label="증거 카드 미리보기 — 크림 아이보리 실측 요약"></canvas>
-            </div>
-          </div>
-          <div class="cvnote" id="cvCreamNote">관제탑 실데이터로 그립니다.</div>
-        </div></details>
-        <details class="cv-fold"><summary class="cv-fold-h"><span>🖼️ 블로그 1:1 대표 썸네일 (1080×1080)</span><span class="bdg real">브라우저</span><span class="cv-arw">▾</span></summary><div class="t11wrap">
-          <div class="card-head" style="margin-bottom:6px">
-            <span class="num">🖼️</span><h2>블로그 1:1 대표 썸네일(표지)</h2>
-            <span class="bdg real" id="t11Stat">1080×1080 · 브라우저</span>
-          </div>
-          <p class="hint">블로그 글 맨 위·인스타 카드에 쓰는 <b>정사각 1080×1080 표지</b>입니다. <b>제목 · 상단 강조 배지 · 하단 워터마크</b>만 넣어 깔끔한 카드형으로 그립니다(API·키 없이 100% 동작). 제목을 비우면 <b>[제목 3종]</b>에서 고른 제목을 그대로 씁니다.</p>
-          <div class="t11opts">
-            <input type="text" id="t11Title" maxlength="90" placeholder="표지 제목 (비우면 [제목 3종] 제목)" aria-label="1:1 표지 제목">
-            <input type="text" id="t11Badge" maxlength="24" placeholder="상단 배지 (예: 📌 시황 요약)" aria-label="상단 강조 배지">
-            <input type="text" id="t11Wm" maxlength="30" placeholder="하단 워터마크 (예: 연오랑의 3분 시황)" aria-label="하단 워터마크">
-          </div>
-          <div class="t11chips" id="t11Chips"></div>
-          <canvas id="t11Canvas" width="1080" height="1080" role="img" aria-label="1:1 대표 썸네일 1080×1080 미리보기"></canvas>
-          <div class="t11row">
-            <button class="btn small primary" id="t11Dl" type="button">📥 대표 썸네일 PNG 저장</button>
-            <button class="btn small ghost" id="t11Style" type="button">🎲 다른 스타일</button>
-            <button class="btn small" id="t11Auto" type="button">↺ 제목·배지 자동 채우기</button>
-            <button class="btn small ghost" id="t11ToThumb" type="button">🖼 1200×630 썸네일도 만들기</button>
-          </div>
-          <p class="hint" style="margin-top:7px">저장 파일명은 <b>제목-1080x1080.png</b>. 배지·워터마크·스타일은 이 브라우저에 저장돼 다음 글에도 그대로 씁니다.</p>
-        </div></details>
-        <details class="cv-fold"><summary class="cv-fold-h"><span>🦊 3초 요약 대표 카드 (1080×1080)</span><span class="bdg real">지수 실측</span><span class="cv-arw">▾</span></summary><div class="sum3wrap" id="sum3Wrap">
-          <div class="card-head" style="margin-bottom:6px">
-            <span class="num">🦊</span><h2>3초 요약 대표 카드</h2>
-            <span class="bdg real" id="sum3Stat">1080×1080 · 지수 실측</span>
-          </div>
-          <p class="hint">티스토리·네이버 글 <b>맨 위 대표 이미지</b>로 쓰는 카드입니다. <b>오늘 핵심 결론 1줄 + 코스피·코스닥 + 신호등 뱃지 + 🦊 폭스시그널</b>만 담아 3초 안에 읽히게 만듭니다. 지수는 <b>관제탑 실측</b>(/api/stock-live)을 그대로 쓰고, 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다.</p>
-          <input type="text" id="sum3Line" maxlength="70" placeholder="핵심 결론 1줄 (비우면 1:1 표지 제목 → 본문 [==오늘의 결론==] → 주제 순서로 자동)" aria-label="3초 요약 카드 핵심 결론 1줄">
-          <div class="sum3row">
-            <button class="btn small" id="sum3Refresh" type="button">↻ 지수·신호 새로고침</button>
-            <button class="btn small primary" id="sum3Dl1" type="button">📥 1080×1080 저장</button>
-            <button class="btn small" id="sum3Dl2" type="button">📥 1200×675 저장</button>
-            <button class="btn small ghost" id="sum3Auto" type="button">↺ 결론 자동 채우기</button>
-          </div>
-          <canvas id="sum3Canvas" width="1080" height="1080" role="img" aria-label="3초 요약 대표 카드 1080×1080 미리보기"></canvas>
-          <p class="hint" style="margin-top:6px">저장 파일명은 <b>제목-3초요약-1080x1080.png</b>. 결론 문구는 이 브라우저에 저장됩니다.</p>
-        </div></details>
-        <div class="cvnote" id="cvNote">값은 관제탑이 준 실측치 그대로입니다.</div>
-      </div>
 
       <div class="card" id="scoreCard" hidden>
         <div class="card-head">
@@ -3576,12 +3634,10 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
   </div><!-- /#detailPanel body -->
   </details><!-- /#detailPanel -->
 
-  <!-- ============ 💰 수익화 도구 (2026-11-27) ============ -->
-  <div class="card" id="monCard">
-    <div class="card-head">
-      <span class="num">💰</span><h2>수익화 도구</h2>
-      <span class="bdg info" id="monBadge">소재 발굴 · 쿠팡 금고 · 스레드 · 발행 진단</span>
-    </div>
+  <!-- ============ 💰 수익화 도구 (2026-11-27) — 기본 접힌 서랍 ============ -->
+  <details class="shelf life-only" id="monCard">
+    <summary><span>💰 수익화 도구</span><span class="n" id="monBadge">소재·쿠팡 금고·스레드·진단</span><span class="arw">▾</span></summary>
+    <div class="shelfbody">
     <p class="hint" style="margin:0 0 10px">아래 도구는 <b>이 브라우저에만</b> 저장되고, AI가 필요한 것만 <code>/api/content-ai</code> 로 보냅니다(쿠팡 링크·발행 주소·봇 토큰은 AI에 보내지 않음).</p>
 
     <details class="shelf" id="ideaPanel">
@@ -3944,8 +4000,33 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
         <div class="m7rows" id="m7seasonRows"></div>
       </div>
     </details>
+    </div>
+  </details>
 
+<details class="shelf life-only" id="trkShelf">
+  <summary><span>💰 3대 수익화 트랙 원클릭 루틴</span><span class="n">A 시황 · B 리뷰 · C 짤</span><span class="arw">▾</span></summary>
+  <div class="shelfbody">
+    <!-- ===== 💰 3대 수익화 실전 트랙 — 원클릭 루틴 (2026-11-28) ===== -->
+    <section class="trkbar" id="trkBar" aria-label="3대 수익화 실전 트랙 원클릭 루틴">
+      <div class="trkbar-h"><b>💰 3대 수익화 트랙</b><span class="s">오늘 할 것 하나만 누르면 동선이 끝까지 세팅됩니다</span></div>
+      <div class="trkrow" role="group" aria-label="트랙 A·B·C 원클릭">
+        <button class="trk" type="button" data-trk="a" aria-pressed="false" title="트랙 A · 폭스시그널 시황 — 블로그 시황 양식·관제탑 실측·크림 그래프·증거 카드를 세팅하고 쇼츠 대본 동선까지 안내합니다">
+          <span class="ic">📈</span>
+          <span class="tx"><b>트랙 A · 폭스시그널 시황</b><span>시황 글 → 크림 그래프 → 쇼츠 대본</span></span>
+        </button>
+        <button class="trk" type="button" data-trk="b" aria-pressed="false" title="트랙 B · 체험단·쿠팡 리뷰 — 리얼리뷰 양식 + 내 말투 DNA + 단골 쿠팡 금고를 펼치고 내 사진 올리는 자리로 이동합니다">
+          <span class="ic">🛍️</span>
+          <span class="tx"><b>트랙 B · 체험단·쿠팡 리뷰</b><span>사진 리뷰 + 말투 DNA + 쿠팡 금고</span></span>
+        </button>
+        <button class="trk" type="button" data-trk="c" aria-pressed="false" title="트랙 C · 마스코트·이모티콘 짤 — 이모티콘 스튜디오 6컷을 썸네일·블로그 중간 짤로 쓰는 동선을 안내합니다">
+          <span class="ic">🎨</span>
+          <span class="tx"><b>트랙 C · 마스코트 짤</b><span>6컷 뽑아 썸네일·블로그 짤로</span></span>
+        </button>
+      </div>
+      <div class="trkguide" id="trkGuide" hidden></div>
+    </section>
   </div>
+</details>
 
   <div class="studiobar" id="studioBar">
     <button class="btn" id="barAutoBtn" type="button" title="지금 고른 테마로 원클릭 세팅">⚡ 원클릭 세팅</button>
@@ -3955,7 +4036,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 </section>
 
 <!-- ================= 📱 쇼츠 스튜디오 (대본 → 🦊 폭스시그널 → 1080×1920 영상) ================= -->
-<section id="panelShorts" role="tabpanel" aria-labelledby="tabShorts">
+<section id="panelShorts" role="tabpanel" aria-labelledby="tabShorts" hidden>
   <!-- ⚡ 생성 직전까지 원클릭 세팅 — 시간대 초안(없으면 관제탑 실측) + 🎨 내용 맞춤(스마트) + 현수 1.20x + [▶ 생성] 스크롤까지 한 번에 -->
   <div class="csauto" id="csAutoBar">
     <div class="csauto-t">
@@ -3969,7 +4050,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
       <div>
         <div class="card">
           <div class="card-head">
-            <span class="num">1</span><h2>쇼츠 테마 (14)</h2>
+            <span class="num">①</span><h2>쇼츠 테마 · 재료</h2>
             <span class="bdg real" id="shThemeBadge">🎬 쇼츠 전용</span>
           </div>
           <p class="hint">테마를 고르면 <b>아래 카드 2의 1·2·3번 쇼츠 양식</b>과 <b>카드 3의 참고 채널</b>이 그 테마로 바뀝니다. 블로그 9개 테마와는 저장이 따로입니다.</p>
@@ -3995,7 +4076,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
         </div>
 
         <div class="card">
-          <div class="card-head"><span class="num">2</span><h2>선택한 쇼츠 양식</h2><span class="bdg info" id="shKind">쇼츠 양식</span></div>
+          <div class="card-head"><span class="num">②</span><h2>쇼츠 양식 · 성우</h2><span class="bdg info" id="shKind">쇼츠 양식</span></div>
           <div class="stylebox" id="shStyleBox">
             <div class="sthead">
               <span class="stbadge">🏆 쇼츠 양식</span>
@@ -4023,19 +4104,21 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-head"><span class="num">3</span><h2>참고할 만한 인기 쇼츠 채널</h2><span class="bdg info" id="shRefTheme">🎤 아이돌/K-POP</span></div>
-          <p class="hint">선택한 테마의 <b>실제 공개 유튜브 채널 3곳</b>입니다. 왼쪽 번호(<b>1번·2번·3번</b>)는 카드 2의 <b>쇼츠 양식</b>과 1:1로 대응합니다 — 같은 번호를 고르면 그 채널의 훅·리듬·자막 습관이 대본 프롬프트에 들어갑니다. 링크는 새 탭에서 열립니다.</p>
-          <div id="shRefList"></div>
-          <button class="btn small ghost" id="shRefAll" style="margin-top:9px" aria-expanded="false">전체 테마 모아보기 (14개 · 42곳)</button>
-        </div>
+        <details class="shelf" id="shRefShelf">
+          <summary><span>🔎 참고할 만한 인기 쇼츠 채널</span><span class="n" id="shRefTheme">🎤 아이돌/K-POP</span><span class="arw">▾</span></summary>
+          <div class="shelfbody">
+            <p class="hint" style="margin:0 0 8px">선택한 테마의 실제 공개 채널 3곳 — 번호가 <b>쇼츠 양식 1·2·3번</b>과 1:1 대응합니다.</p>
+            <div id="shRefList"></div>
+            <button class="btn small ghost" id="shRefAll" style="margin-top:9px" aria-expanded="false">전체 테마 모아보기 (14개 · 42곳)</button>
+          </div>
+        </details>
 
       </div>
 
       <div>
         <div id="shAiNote"></div>
-        <details class="shelf shfold" id="shScriptFold">
-          <summary><span>✍️ AI 쇼츠 대본 직접 만들기</span><span class="n" id="shFoldTag">접힘</span><span class="arw">▾</span></summary>
+        <details class="shelf shfold" id="shScriptFold" open>
+          <summary><span>③ AI 쇼츠 대본 → 영상</span><span class="n" id="shFoldTag">접힘</span><span class="arw">▾</span></summary>
           <div class="shelfbody">
             <div class="card">
               <div class="card-head"><span class="num">4</span><h2>쇼츠 주제 · 키워드</h2></div>
@@ -4460,7 +4543,6 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 </section>
 
 
-
 <footer>
 
 <!-- 📖 사용법 (채널별 블로그/쇼츠 단계) -->
@@ -4635,6 +4717,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 <details class="shelf" id="footRef">
   <summary><span>ℹ️ 스튜디오 안내 — 되는 것 · 안 되는 것 · v2.3 추가 기능</span><span class="n">자세히</span><span class="arw">▾</span></summary>
   <div class="shelfbody footbody">
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.6 — 🦊✍️ <b>4탭 분리 · 3단계 다이어트</b>: <b>🦊 폭스시그널</b>(시간대 1클릭·관제탑 실측·시황 블로그·크림 그래프·쇼츠 대본) / <b>✍️ 생활·수익</b>(12개 카테고리 → 글쓰기 톤·블로그 구조 5종 자동 로테이션·내 경험 2줄 → 생성·발행) / <b>📱 쇼츠</b> / <b>📋 요약</b> — 기능은 하나도 지우지 않고, 부가 도구(수익화 7종·쿠팡 금고·체험단 검수·보관함·설정)는 <b>기본 접힌 서랍</b>으로 내렸습니다. 주식·생활 테마는 탭에 맞춰 자동으로 바뀝니다.</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.5 — 🧭 <b>요약 탭 BRIEF 리포트</b>: <b>소스 큐</b>에 유튜브 자막 · 웹 URL(리더 경유) · PDF · 이미지 · 텍스트를 여러 개 담아 <b>한 번에 종합</b>합니다. 2개면 <b>⚖️ A vs B 비교표</b>, 결과는 <b>정보 밀도 점수 · 먼저 볼 곳 가이드 · 💼의사결정자/🛠️실무자/💡초보자 3관점 · KPI · Chart.js 차트 · Mermaid 구조도 · 비교표 · 팩트체크</b>로 나옵니다. <b>💬 이어서 묻기</b>(보고서에 근거해서만 답변) · <b>Markdown/CSV 내보내기</b> · <b>🖨️ 인쇄·PDF</b>(리포트만 인쇄) · <b>📋 5줄 복사</b> · <b>💾 보관함</b> · <b>✍️ 블로그/🎬 쇼츠 글감 넘기기</b>까지 붙였습니다. 기존 유튜브 자막·문서·영상 요약과 [확인 필요] 가드는 그대로입니다.</div>
 <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.4 — ⚡ <b>블로그 전 테마 원클릭 세팅</b> + <b>?go=blog</b>: 블로그 탭 상단 <b>⚡ 블로그 원클릭 세팅</b>이 지금 고른 9테마에 맞춰 주제·참고 자료·블로거 양식·크림 그래프·증거 카드를 자동으로 채우고 <b>[🤖 AI 본문 생성]</b> 자리로 이동합니다(📈 주식=시간대 실측 · 🏷️ SNS핫템=시바딜 실측 · ✈️ 여행=30%↑ 특가 · 나머지 6테마=참고 틀) · <b>?go=blog&amp;theme=stock|hottem|travel|…</b> 로 열면 바로 세팅 · <b>📖 사용법</b>을 채널별(🦊🐶🐧🍑🌙) 블로그/쇼츠 3~4단계로 개편</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.3 — 🦊 <b>6종 무기</b>: 첫 3초 <b>성적표·함정 훅</b> · 수급 <b>주체별 깊이</b>(외인·기관이 어디서 넘겼나) · 블로그 <b>📌 내일 09:00 시초가 대응</b> 블록 · <b>🎯 어제 시그널 성적표</b> 자동 복기(브리핑·초안의 300억 종목·기준선을 실제 일봉으로 채점) · <b>🧾 증거 카드 PNG</b>(크림 #F7F3E9 · 300억 Top3 + 확정 수급 + 피보나치) · <b>🔍 내 종목 수급·테마 1초 체커</b>(checker.html → 독립 foxsignal-checker, 블로그 하단 링크 자동 포함) · 🧭 <b>폰 원스텝 자동 이동</b>(프리셋 → 불러오기 → 생성)</div>
@@ -4714,7 +4797,6 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 </div>
 
 <div id="toast" role="status" aria-live="polite"></div>
-
 
 <script id="cs-ai-engine">
 /* ============================================================
@@ -5484,7 +5566,6 @@ const FOX_BLOG_PUNCH = [
   '14) 자료에 없는 수치·종목·공시·테마를 만들지 않는다. 모르면 [확인 필요].',
 ].join('\n');
 
-
 function banLine(banPhrases) {
   const list = (banPhrases && banPhrases.length ? banPhrases : BAN_DEFAULT).slice(0, 30);
   if (!list.length) return '';
@@ -5611,6 +5692,46 @@ function blogExtraBlocks(b) {
   return out.join('');
 }
 
+/* 🎨 글쓰기 톤 · 블로그 구조 5종 — creator-studio 이식 (2026-11-28) */
+const BLOG_TONE_MAP = {
+  '친근한 육아/생활 구어체':
+    '해요체 위주로 짧게 끊는다. 생활 장면(아이·집·주말)을 예로 들고, 딱딱한 정의부터 시작하지 않는다.',
+  '정보 전달 전문가 톤':
+    '담백한 ~입니다체. 근거·수치·조건을 먼저 쓰고 감탄·감정 표현은 쓰지 않는다. 문장 길이를 일정하게 유지한다.',
+  '솔직한 내돈내산 리뷰 톤':
+    '조건과 아쉬운 점을 먼저 말한다. 1인칭 경험은 [내 경험 메모]에 있는 것만 쓰고, 과장·최상급 표현은 금지한다.',
+  '감성 스토리텔링 톤':
+    '장면·감각 묘사로 시작해 문장 길이를 변주한다. 결론은 차분하게, 감정을 강요하지 않는다.',
+  '직설적 비교 분석 톤':
+    '단정적인 어미로 기준을 명시한다. "좋을 수도 있어요" 같은 우유부단한 표현을 쓰지 않고 상황별 결론을 끊어 준다.',
+  '깔끔한 정보 요약형':
+    '목록·표·짧은 문단 중심. 군더더기 수식어를 빼고 확인된 정보만 남긴다.',
+};
+const BLOG_STRUCTURE_MAP = {
+  '경험공감형':
+    '도입에서 독자가 겪었을 상황을 공감으로 열고 → 흔한 시행착오 → 정착한 기준 → 독자가 바로 쓸 정리 순서로 전개한다.',
+  '비교분석형':
+    '비교 기준 3~4개를 먼저 제시하고 → 후보를 같은 기준으로 나란히 놓고 → 상황별 결론으로 닫는다. 표를 반드시 쓴다.',
+  '체크리스트형':
+    '인사·서론 없이 점검 항목으로 바로 시작한다. 항목마다 "왜 이걸 확인해야 하는지" 한 줄을 붙이고 마지막에 요약 체크를 둔다.',
+  'Q&A해결형':
+    '독자가 실제로 검색할 질문 4~5개를 소제목으로 세우고, 각 질문에 짧은 답 → 근거 → 예외 순서로 답한다.',
+  '실패→해결 반전형':
+    '흔한 실수·실패 장면 → 왜 그렇게 되는지 원인 → 반전(해결) → 재발 방지 3가지 순서로 전개한다.',
+};
+function blogToneBlock(b){
+  const t = s(b && b.toneChoice, 40);
+  if (!t) return '';
+  const g = BLOG_TONE_MAP[t] || '이 톤을 문장마다 유지한다.';
+  return `\n[글쓰기 톤 — 이 말투로] ${t}\n- ${g}\n- 위 톤이 [내 문체 샘플]과 충돌하면 톤을 우선하고, 어미·호흡만 샘플을 따른다.`;
+}
+function blogStructBlock(b){
+  const st = s(b && b.blogStructure, 40);
+  if (!st) return '';
+  const g = BLOG_STRUCTURE_MAP[st] || '이 구조에 맞는 순서로 전개한다.';
+  return `\n[블로그 구조 — 이 뼈대로 쓴다] ${st}\n- ${g}\n- 위 섹션 순서와 충돌하면 이 구조를 우선한다(구조가 글의 뼈대다).`;
+}
+
 function promptBlog(b) {
   const form = b.form || {};
   const sections = arr(form.sections, 8).map((x, i) => `${i + 1}) ${s(x, 80)}`).join('\n');
@@ -5636,6 +5757,8 @@ function promptBlog(b) {
     form.name ? `양식: ${s(form.name, 40)} / 말투: ${s(form.tone, 40)}` : `말투: ${s(form.tone, 40) || '친근한 리뷰형'}`,
     sections ? `\n[반드시 이 순서로 섹션을 구성 — 소제목에 1) 같은 번호를 붙이지 않는다]\n${sections}` : '',
     form.highlight ? `\n[강조 포인트 — 이걸 지켜야 통과]\n${s(form.highlight, 400)}` : '',
+    blogToneBlock(b),
+    blogStructBlock(b),
     style,
     b.foxPunch ? FOX_BLOG_PUNCH : '',
     sample ? `\n[내 문체 샘플 — 문장 길이·어미·말버릇을 이 사람처럼]\n"""${sample}"""` : '',
@@ -8422,22 +8545,45 @@ var CSVoice = (function () {
   try { window.csToast = toast; } catch (e) {}   /* 앞쪽 CSVoice(성우 엔진)도 같은 토스트를 쓴다 */
 
   /* ================= tabs + guide ================= */
-  var tabVideo = $('#tabVideo'), tabBlog = $('#tabBlog'), tabSum = $('#tabSum'), tabShorts = $('#tabShorts');
+  var tabVideo = $('#tabVideo'), tabBlog = $('#tabBlog'), tabSum = $('#tabSum'), tabShorts = $('#tabShorts'), tabFox = $('#tabFox');
   var panelVideo = $('#panelVideo'), panelBlog = $('#panelBlog'), panelSum = $('#panelSum'), panelShorts = $('#panelShorts');
-  /* 탭 = 역할 — 📱 쇼츠 스튜디오(대본→영상) · ✍️ 블로그 작성 · 📋 요약
-     (🎬 AI 영상 스튜디오 탭은 숨김 — 내 영상 클립 편집은 🎬 쇼츠 편집기(shorts-studio-pro)에서 한다) */
+  /* 탭 = 역할 — 🦊 폭스시그널(주식) · ✍️ 생활·수익 블로그 · 📱 쇼츠 스튜디오 · 📋 요약
+     (🎬 AI 영상 스튜디오 탭은 숨김 — 내 영상 클립 편집은 🎬 쇼츠 편집기(shorts-studio-pro)에서 한다)
+     · 🦊·✍️ 는 같은 #panelBlog 를 쓰고 html[data-cs-view] 로 보이는 블록만 바꾼다(기능·아이디 그대로, 삭제 0) */
+  var CS_VIEW = '';
+  function csView(v, force){
+    var nv = (v === 'life') ? 'life' : 'fox';
+    var changed = (nv !== CS_VIEW) || !!force;
+    CS_VIEW = nv;
+    try { document.documentElement.setAttribute('data-cs-view', nv); } catch (e) {}
+    if (!changed) return;
+    var t1 = $('#step1Title');
+    if (t1) t1.textContent = (nv === 'fox') ? '시황 재료 · 주제' : '카테고리 · 주제';
+    /* 뷰에 맞는 블로그 테마로 자동 맞춤 — 🦊=주식 시황, ✍️=생활 테마 (테마는 작업 상태값) */
+    try {
+      var A = window.CS2_BLOG_AUTO;
+      if (A && A.theme && A.setTheme) {
+        var ct = A.theme();
+        if (nv === 'fox' && ct !== 'stock') A.setTheme('stock');
+        else if (nv === 'life' && ct === 'stock') A.setTheme('living');
+      }
+    } catch (e2) {}
+  }
   function setTab(which){
-    /* 🎬 AI 영상 스튜디오 탭은 숨김(2탭 체제) — 'video' 요청은 쇼츠 탭으로 보낸다 */
-    var v = false, b = which === 'blog', sm = which === 'sum', sh = (which === 'shorts' || which === 'video');
+    /* 🎬 AI 영상 스튜디오 탭은 숨김 — 'video' 요청은 쇼츠 탭으로 보낸다 */
+    var fx = (which === 'fox'), li = (which === 'life' || which === 'blog');
+    var v = false, b = (li || fx), sm = which === 'sum', sh = (which === 'shorts' || which === 'video');
     if (!v && !b && !sm && !sh) b = true;
     if (tabVideo){ tabVideo.classList.toggle('on', v); tabVideo.setAttribute('aria-selected', v ? 'true' : 'false'); }
+    if (tabFox){ tabFox.classList.toggle('on', fx); tabFox.setAttribute('aria-selected', fx ? 'true' : 'false'); }
     if (tabShorts){ tabShorts.classList.toggle('on', sh); tabShorts.setAttribute('aria-selected', sh ? 'true' : 'false'); }
-    if (tabBlog){ tabBlog.classList.toggle('on', b); tabBlog.setAttribute('aria-selected', b ? 'true' : 'false'); }
+    if (tabBlog){ tabBlog.classList.toggle('on', li); tabBlog.setAttribute('aria-selected', li ? 'true' : 'false'); }
     if (tabSum){ tabSum.classList.toggle('on', sm); tabSum.setAttribute('aria-selected', sm ? 'true' : 'false'); }
     if (panelVideo) panelVideo.hidden = !v;
     if (panelShorts) panelShorts.hidden = !sh;
     if (panelBlog) panelBlog.hidden = !b;
     if (panelSum) panelSum.hidden = !sm;
+    if (b) csView(fx ? 'fox' : 'life');
     /* 쇼츠·블로그는 같은 스튜디오의 두 탭 — 모드 상태(SH.mode)도 같이 맞춘다 (noTab=true 로 재진입 방지) */
     if (typeof shSetMode === 'function' && (b || sh)) shSetMode(sh ? 'shorts' : 'blog', true, true);
     /* 하단 고정 바·본문 여백용 탭 상태 (CSS html[data-cs-tab="blog"]) */
@@ -8445,6 +8591,7 @@ var CSVoice = (function () {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   tabVideo.addEventListener('click', function(){ setTab('video'); });
+  if (tabFox) tabFox.addEventListener('click', function(){ setTab('fox'); });
   if (tabShorts) tabShorts.addEventListener('click', function(){ setTab('shorts'); });
   tabBlog.addEventListener('click', function(){ setTab('blog'); });
   /* 🎬 WVID(다른 스크립트)에서 탭을 바꿀 수 있게 열어 둔다 */
@@ -11160,6 +11307,31 @@ var CSVoice = (function () {
   /* 모든 블로그 생성 프롬프트에 붙는 표기 규칙 — 형광펜 + 수치 부호 강조 */
   var BLOG_FMT_RULE = '표기 규칙(반드시 지킨다): ① 중요 결론·핵심 문장 3~5곳을 ==문장== 으로 감싼다(형광펜으로 칠해진다). ② 수치는 부호를 붙여 쓴다 — 상승·유입은 +(예: +12.31%, +1,240억, +1조2,950억), 하락·유출은 -(예: -5.21%, -980억). ③ 부호 없이 숫자만 쓰거나 단위를 바꾸지 않는다.';
 
+  /* 🎨 creator-studio 이식 — 글쓰기 톤 · 블로그 구조 5종 로테이션 (2026-11-28) */
+  var LIFE_STRUCTS = ['경험공감형', '비교분석형', '체크리스트형', 'Q&A해결형', '실패→해결 반전형'];
+  function lifeTonePick(theme){
+    if (theme === 'stock') return '';                 /* 주식 시황은 기존 폭스시그널 톤 그대로 */
+    var el = document.getElementById('lifeTone');
+    return el ? String(el.value || '') : '';
+  }
+  function lifeStructPick(theme){
+    if (theme === 'stock') return '';
+    var sel = document.getElementById('lifeStruct'), rnd = document.getElementById('lifeStructRand');
+    var cur = sel ? String(sel.value || '') : LIFE_STRUCTS[0];
+    if (rnd && rnd.checked){
+      var last = '';
+      try { last = localStorage.getItem('cs2_life_struct_last_v1') || ''; } catch (e) {}
+      var pool = LIFE_STRUCTS.filter(function(x){ return x !== last; });
+      cur = pool[Math.floor(Math.random() * pool.length)] || cur;
+      if (sel) sel.value = cur;
+      try { localStorage.setItem('cs2_life_struct_last_v1', cur); } catch (e2) {}
+    }
+    var now = document.getElementById('lifeStructNow');
+    if (now) now.innerHTML = '이번 글 구조: <b>' + cur + '</b>';
+    return cur;
+  }
+  try { window.CS2_LIFE = { tone: lifeTonePick, struct: lifeStructPick, structs: LIFE_STRUCTS }; } catch (eLife) {}
+
   function blogPayload(topic, f){
     var th = guessTheme(f);
     var pk = pickOf(themeOfForm(f));
@@ -11185,6 +11357,8 @@ var CSVoice = (function () {
       angle: monAngle(),
       affiliate: { items: cpvPicked().map(function(p){ return { name: p.name, pro: p.pro, con: p.con, notfor: p.notfor }; }), cons: !!MON.vault.cons },
       foxPunch: (window.FOXPUNCH ? '1' : ''),
+      toneChoice: lifeTonePick(th),
+      blogStructure: lifeStructPick(th),
       photos: MINE.list.map(function(p){ return { name: p.name, mime: p.mime, data: p.b64, memo: p.memo || '' }; })
     };
   }
@@ -11447,7 +11621,6 @@ var CSVoice = (function () {
     if (!String(currentDraftText() || '').trim()){ toast('먼저 본문을 생성해 주세요.'); return; }
     copyText(buildPickleText(), '피클 채팅에 붙여넣기만 하세요!');
   });
-
 
   /* ================================================================
      📸 본문 추천 사진 · 썸네일
@@ -16407,7 +16580,6 @@ var CSVoice = (function () {
     });
   }
 
-
   function runSlot(slot, mode, btn){
     var def = SLOT_DEF[slot];
     if (!def) return Promise.resolve(false);
@@ -18212,7 +18384,6 @@ var CSVoice = (function () {
 
     renderCats();
   })();
-
 
   (function(){
     var b = document.getElementById('feedDraftBtn');
@@ -21231,7 +21402,6 @@ var CSVoice = (function () {
     renderPerfBar();
   })();
 
-
   /* ================================================================
      v2.2 — 🎙 ElevenLabs 성우 · 📊 블로그용 차트 PNG(수급·테마·종목)
             · 워터마크 · 블로그→쇼츠 v3 원클릭
@@ -23353,7 +23523,6 @@ var CSVoice = (function () {
     var title = monTitleText();
     return (title ? '📝 ' + title + '\n\n' : '') + String(body).slice(0, 3800);
   }
-
 
   /* ================================================================
      💰 수익화 7종 고도화 (2026-11-28)
@@ -33245,10 +33414,10 @@ var CSVoice = (function () {
   }
   var dp = document.getElementById('detailPanel'), dpTag = document.getElementById('detailPanelTag'), dpLbl = document.getElementById('detailPanelLbl');
   if (dp && dpTag){
-    var dpText = '⚙️ 세부 옵션 펼치기 — 양식 · 참고 글 · 실사진 · 차트 PNG · 자가진단';
+    var dpText = '⚙️ 세부 옵션 펼치기 — 양식 · 참고 글 · 실사진 · 자가진단';
     function tag(){
       dpTag.textContent = dp.open ? '펼침' : '접힘';
-      if (dpLbl) dpLbl.textContent = dp.open ? '⚙️ 세부 옵션 접기 — 양식 · 참고 글 · 실사진 · 차트 PNG · 자가진단' : dpText;
+      if (dpLbl) dpLbl.textContent = dp.open ? '⚙️ 세부 옵션 접기 — 양식 · 참고 글 · 실사진 · 자가진단' : dpText;
     }
     dp.addEventListener('toggle', tag); tag();
   }
@@ -33311,6 +33480,60 @@ var CSVoice = (function () {
 })();
 </script>
 
+<script>
+/* 🦊✍️ 4탭 뷰 · 글쓰기 톤 · 5종 구조 로테이션 (2026-11-28) */
+(function(){
+  'use strict';
+  var LS_TONE = 'cs2_life_tone_v1', LS_STRUCT = 'cs2_life_struct_v1', LS_RAND = 'cs2_life_struct_rand_v1';
+  var tone = document.getElementById('lifeTone'), st = document.getElementById('lifeStruct'), rd = document.getElementById('lifeStructRand');
+  function save(){
+    try {
+      if (tone) localStorage.setItem(LS_TONE, tone.value);
+      if (st) localStorage.setItem(LS_STRUCT, st.value);
+      if (rd) localStorage.setItem(LS_RAND, rd.checked ? '1' : '0');
+    } catch (e) {}
+  }
+  function load(){
+    try {
+      var t = localStorage.getItem(LS_TONE); if (t && tone && tone.querySelector('option[value="' + t + '"]')) tone.value = t;
+      var s = localStorage.getItem(LS_STRUCT); if (s && st && st.querySelector('option[value="' + s + '"]')) st.value = s;
+      var r = localStorage.getItem(LS_RAND); if (r !== null && rd) rd.checked = (r === '1');
+    } catch (e) {}
+  }
+  function update(){
+    var now = document.getElementById('lifeStructNow');
+    if (!now) return;
+    now.innerHTML = (rd && rd.checked)
+      ? '이번 글 구조: <b>자동 로테이션</b> — 생성할 때마다 5종이 돌아갑니다'
+      : '이번 글 구조: <b>' + (st ? st.value : '—') + '</b>';
+  }
+  load(); update();
+  [tone, st].forEach(function(el){ if (el) el.addEventListener('change', function(){ save(); update(); }); });
+  if (rd) rd.addEventListener('change', function(){ save(); update(); });
+
+  /* 🦊 폭스시그널 탭 보조 버튼 */
+  var bf = document.getElementById('fxBriefBtn');
+  if (bf) bf.addEventListener('click', function(){
+    var t = document.getElementById('briefFeedBtn');
+    if (t) t.click();
+    else { var dp = document.getElementById('detailPanel'); if (dp) dp.open = true; }
+  });
+  var ts = document.getElementById('fxToShorts');
+  if (ts) ts.addEventListener('click', function(){
+    try { if (window.CS2_TAB) window.CS2_TAB('shorts'); } catch (e) {}
+    var slot = (new Date().getHours() < 15) ? 'pre' : 'close';
+    setTimeout(function(){
+      var b = document.querySelector('#panelShorts [data-cs-slot="' + slot + '"]');
+      if (b) { try { b.click(); } catch (e2) {} }
+    }, 200);
+  });
+
+  /* 첫 화면 = 🦊 폭스시그널 */
+  function boot(){ try { if (window.CS2_TAB) window.CS2_TAB('fox'); } catch (e) {} }
+  if (document.readyState === 'complete') setTimeout(boot, 60);
+  else window.addEventListener('load', function(){ setTimeout(boot, 60); });
+})();
+</script>
 </body>
 <!-- deploy-stamp: studio-3step-light-2026-11-22 -->
 </html>
