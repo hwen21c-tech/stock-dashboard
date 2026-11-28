@@ -53,7 +53,7 @@
       radial-gradient(900px 500px at 98% -6%, rgba(168,85,247,.10), transparent 58%),
       var(--bg);
     color:var(--text);
-    font-family:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,Roboto,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    font-family:var(--kr-sans);
     line-height:1.55; letter-spacing:-.025em; word-break:keep-all; overflow-wrap:anywhere;
     padding:14px 14px 40px; max-width:1200px; margin:0 auto;
     -webkit-font-smoothing:antialiased;
@@ -1498,7 +1498,7 @@
   .cutlist .cap{color:#94a3b8}
 
   /* ---------- 🖼️ 1:1 대표 썸네일(표지) 1080×1080 ---------- */
-  .t11wrap{margin-top:15px;border-top:1px solid var(--line);padding-top:13px;min-width:0}
+  .t11wrap{margin-top:0;border-top:0;padding-top:0;min-width:0}
   .t11opts{display:grid;grid-template-columns:1fr;gap:7px;margin:9px 0 3px}
   @media(min-width:720px){.t11opts{grid-template-columns:1.5fr .85fr .85fr}}
   .t11opts input{width:100%;min-width:0;background:#08111d;border:1px solid rgba(148,163,184,.28);border-radius:9px;padding:8px 10px;font-size:12.5px;color:#e2e8f0;letter-spacing:0}
@@ -1509,7 +1509,7 @@
   #t11Canvas{width:100%;max-width:520px;height:auto;display:block;border-radius:13px;border:1px solid var(--line);background:#070c14;margin:6px auto 0}
   .t11row{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
   /* 🦊 3초 요약 대표 카드 */
-  .sum3wrap{margin-top:15px;border-top:1px solid var(--line);padding-top:13px;min-width:0}
+  .sum3wrap{margin-top:0;border-top:0;padding-top:0;min-width:0}
   .sum3wrap input{width:100%;background:#08111d;border:1px solid rgba(148,163,184,.28);border-radius:9px;padding:8px 10px;font-size:12.5px;color:#e2e8f0;letter-spacing:0;margin:9px 0 3px}
   .sum3wrap input:focus{outline:2px solid rgba(56,189,248,.4);outline-offset:1px}
   .sum3row{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
@@ -2326,7 +2326,112 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
   html[data-theme="light"] .m7chip.on{color:#0c4a6e}
   .m7cmpnote{margin-top:6px}
 </style>
+
+<!-- ===== 🎨 프리미엄 한글 웹폰트 통일 (전부 무료 상업용 — Pretendard · 지마켓산스 · 주아체 · 나눔손글씨펜) ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap">
+<style id="krFontKit">
+  @font-face{font-family:'Gmarket Sans';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff') format('woff');font-weight:300;font-style:normal;font-display:swap}
+  @font-face{font-family:'Gmarket Sans';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');font-weight:500;font-style:normal;font-display:swap}
+  @font-face{font-family:'Gmarket Sans';src:url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');font-weight:700 900;font-style:normal;font-display:swap}
+  @font-face{font-family:'BMJUA';src:url('https://cdn.jsdelivr.net/npm/@noonnu/bmjua@0.1.0/fonts/bmjua-normal.woff') format('woff');font-weight:400;font-style:normal;font-display:swap}
+  :root{
+    --kr-sans:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Malgun Gothic','Noto Sans KR',sans-serif;
+    --kr-display:'Gmarket Sans','Pretendard Variable',Pretendard,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    --kr-jua:'BMJUA','Gmarket Sans','Pretendard Variable',sans-serif;
+    --kr-pen:'Nanum Pen Script','BMJUA','Pretendard Variable',cursive;
+  }
+</style>
+<script>
+/* 🎨 Canvas도 첫 획부터 한글 프리미엄 폰트로 그리도록 미리 받아 둔다 */
+(function () {
+  if (!document.fonts || !document.fonts.load) return;
+  var sample = '다람쥐 헌 챗바퀴에 타고파 가나다라마바사 0123';
+  var fams = ['"Pretendard Variable"', '"Gmarket Sans"', '"BMJUA"', '"Nanum Pen Script"'];
+  try {
+    window.__krFontsReady = Promise.all(fams.map(function (f) {
+      return document.fonts.load('900 40px ' + f, sample).catch(function () {});
+    }));
+  } catch (e) { window.__krFontsReady = Promise.resolve(); }
+  window.krFontFamily = function (family, weight) {
+    var f = String(family || '');
+    var map = { 'sans': 'var(--kr-sans)', 'gmarket': '"Gmarket Sans"', 'jua': '"BMJUA"', 'pen': '"Nanum Pen Script"' };
+    if (map[f]) return map[f];
+    if (f === 'Gmarket Sans' || f === 'BMJUA' || f === 'Nanum Pen Script' || f === 'Pretendard Variable') return '"' + f + '"';
+    return '"' + f + '", var(--kr-sans)';
+  };
+})();
+</script>
+<style id="studioSwitchCSS">
+/* ===== 🧭 스튜디오 통합 이동 바 (4대 스튜디오 공통 디자인) ===== */
+.ss-nav{
+  display:flex;align-items:center;gap:5px;flex-wrap:nowrap;
+  padding:5px 8px;margin:0;
+  background:linear-gradient(90deg,#070c14 0%,#0a1424 45%,#0d1126 100%);
+  border-bottom:1px solid rgba(148,163,184,.20);
+  font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  font-size:11.5px;line-height:1;letter-spacing:-.01em;
+  overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  position:relative;z-index:45;box-sizing:border-box;
+}
+.ss-nav::-webkit-scrollbar{display:none}
+.ss-nav .ss-lead{flex:0 0 auto;font-size:9.5px;font-weight:800;letter-spacing:.06em;color:#64748b;margin:0 1px 0 0;padding-right:6px;border-right:1px solid rgba(148,163,184,.22);text-transform:uppercase}
+.ss-nav .ss-item{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:3px;
+  padding:5px 8px;border-radius:999px;
+  border:1px solid rgba(148,163,184,.22);
+  background:rgba(30,41,59,.70);color:#cbd5e1;
+  font-weight:800;font-size:11.5px;text-decoration:none;white-space:nowrap;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.ss-nav a.ss-item:hover{background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.5);color:#e0f2fe}
+.ss-nav a.ss-item:active{transform:translateY(1px)}
+.ss-nav .ss-item.is-on{background:linear-gradient(135deg,rgba(56,189,248,.24),rgba(168,85,247,.24));border-color:rgba(56,189,248,.60);color:#f0f9ff}
+.ss-nav .ss-item.ss-money{border-color:rgba(245,158,11,.38);color:#fcd34d}
+.ss-nav .ss-item.ss-money.is-on{background:linear-gradient(135deg,rgba(245,158,11,.30),rgba(244,63,94,.20));border-color:rgba(245,158,11,.66);color:#fde68a}
+.ss-nav .ss-live{font-size:8.5px;font-weight:900;letter-spacing:.04em;padding:1px 4px;border-radius:4px;background:#22c55e;color:#04140a}
+.ss-nav .ss-alt{border-style:dashed;opacity:.9}
+body>.ss-nav{margin:-14px -14px 10px;padding:5px 10px;gap:4px}
+
+</style>
+<style id="cv2DietCSS">
+/* ===== 📱 폴드8(412px) UI 다이어트 — 상단 ⋯ 툴 + 수익화 카드 아코디언 ===== */
+.tb-more{display:flex;align-items:center;gap:7px}
+.tb-more>summary{display:none}
+.tb-more>.tb-panel{display:flex;align-items:center;gap:7px}
+.cv-fold{border-top:1px dashed var(--line);margin-top:12px;padding-top:8px}
+.cv-fold>.cv-fold-h{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:900;color:var(--text)}
+.cv-fold>.cv-fold-h::-webkit-details-marker{display:none}
+.cv-fold .cv-arw{font-size:10px;color:var(--faint);transition:transform .18s}
+.cv-fold[open] .cv-arw{transform:rotate(180deg)}
+.cv-fold[open]>.cv-fold-h{margin-bottom:6px}
+@media (max-width: 639px){
+  .top-actions{position:relative}
+  .tb-more{display:block;position:relative;margin-left:auto}
+  .tb-more>summary{display:inline-flex;align-items:center;justify-content:center;min-width:38px;height:32px;padding:0 8px;border-radius:9px;background:var(--panel2,#0e1729);border:1px solid var(--border);color:var(--text);font-size:15px;font-weight:900;cursor:pointer;list-style:none}
+  .tb-more>summary::-webkit-details-marker{display:none}
+  .tb-more[open]>summary{background:rgba(56,189,248,.25);border-color:rgba(56,189,248,.55)}
+  .tb-more>.tb-panel{display:none}
+  .tb-more[open]>.tb-panel{display:flex;flex-direction:column;align-items:stretch;gap:7px;position:absolute;right:0;top:calc(100% + 7px);z-index:80;min-width:180px;padding:8px;border-radius:12px;background:var(--panel,#0b1120);border:1px solid var(--border);box-shadow:0 20px 40px -18px #000}
+  .tb-panel>*{width:100%;justify-content:flex-start}
+}
+html[data-theme="light"] .tb-more[open]>.tb-panel{background:#ffffff;border-color:#d9e2ee}
+</style>
+</head>
 <body>
+
+<!-- ===== 🧭 스튜디오 통합 이동 바 — 쇼츠 · 이모티콘 · 작곡 · 수익화 ===== -->
+<nav class="ss-nav" id="studioSwitch" aria-label="스튜디오 이동">
+  <span class="ss-lead">Studio</span>
+  <a class="ss-item" href="https://hwen21c-tech.github.io/shorts-studio-pro/" target="_blank" rel="noopener" title="쇼츠">🎬 쇼츠</a>
+  <a class="ss-item" href="https://hwen21c-tech.github.io/emoticon-studio-pro/" target="_blank" rel="noopener" title="이모티콘">🎨 이모티콘</a>
+  <a class="ss-item" href="https://hwen21c-tech.github.io/aura-studio-pro/" target="_blank" rel="noopener" title="작곡">🎵 작곡</a>
+  <span class="ss-item ss-money is-on" aria-current="page" title="수익화">💰 수익화</span>
+  <a class="ss-item ss-alt" href="https://stock-dashboard-live-bice.vercel.app/content-v2.html" target="_blank" rel="noopener" title="동적 버전 — Vercel 서버가 Gemini를 대신 호출">⚡</a>
+</nav>
+
 
 <header>
   <div class="brand">
@@ -2338,10 +2443,15 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
   </div>
   <div class="top-actions">
     <span class="status-badge" id="statusBadge"><span class="dot"></span>정적 스튜디오 · 내 Gemini 키 직접 호출</span>
+    <details class="tb-more" open>
+      <summary title="도구 더보기" aria-label="도구 더보기">⋯</summary>
+      <div class="tb-panel">
     <button class="btn-guide" id="apiGuideBtn" aria-expanded="false" aria-controls="apiGuide">🔑 Gemini 연결 <span class="cv">▼</span></button>
     <button class="btn-guide" id="howBtn" aria-expanded="false" aria-controls="howModal">📖 사용법</button>
     <button class="btn-install" id="pwaInstallBtn" type="button" title="AI 스튜디오를 홈 화면에 앱으로 설치" hidden>📲 앱 설치</button>
     <button class="btn-guide" id="studioThemeBtn" type="button" aria-pressed="false" title="🌒 라이트 모드로 (이 브라우저에 저장)"><span class="tico" id="studioThemeIco">☀️</span><span id="studioThemeTxt">라이트</span></button>
+      </div>
+    </details>
   </div>
 </header>
 
@@ -3122,7 +3232,7 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
             <canvas id="cvSt" role="img" aria-label="종목 차트 미리보기"></canvas>
           </div>
         </div>
-        <div class="cvcream">
+        <details class="cv-fold"><summary class="cv-fold-h"><span>🧾 크림 아이보리 3종 · 증거 카드</span><span class="bdg real">원클릭 저장</span><span class="cv-arw">▾</span></summary><div class="cvcream">
           <div class="cvh" style="margin:16px 0 6px">🖼️ 블로그 그래프 3종 + 🧾 증거 카드 — 크림 아이보리(#F7F3E9) 에디토리얼 <button class="btn small primary" id="creamAllSave" type="button">🖼️ 3장 한 번에 저장</button></div>
           <p class="hint">위 다크 차트와 별개로, <b>흰·밝은 블로그 본문</b>에 어울리는 <b>크림 아이보리(#F7F3E9)</b> 바탕 차트입니다. 값은 관제탑 실측(<b>/api/breadth</b> · 수급 타임라인 · 확정 브리핑)에서 읽고, 받지 못한 값은 지어내지 않고 <b>—</b> 로 남깁니다. <b>본문의 [📸 그래프 자리]와 아래 ②③은 같은 PNG입니다.</b></p>
           <div class="imgset">
@@ -3149,8 +3259,8 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
             </div>
           </div>
           <div class="cvnote" id="cvCreamNote">관제탑 실데이터로 그립니다.</div>
-        </div>
-        <div class="t11wrap">
+        </div></details>
+        <details class="cv-fold"><summary class="cv-fold-h"><span>🖼️ 블로그 1:1 대표 썸네일 (1080×1080)</span><span class="bdg real">브라우저</span><span class="cv-arw">▾</span></summary><div class="t11wrap">
           <div class="card-head" style="margin-bottom:6px">
             <span class="num">🖼️</span><h2>블로그 1:1 대표 썸네일(표지)</h2>
             <span class="bdg real" id="t11Stat">1080×1080 · 브라우저</span>
@@ -3170,8 +3280,8 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
             <button class="btn small ghost" id="t11ToThumb" type="button">🖼 1200×630 썸네일도 만들기</button>
           </div>
           <p class="hint" style="margin-top:7px">저장 파일명은 <b>제목-1080x1080.png</b>. 배지·워터마크·스타일은 이 브라우저에 저장돼 다음 글에도 그대로 씁니다.</p>
-        </div>
-        <div class="sum3wrap" id="sum3Wrap">
+        </div></details>
+        <details class="cv-fold"><summary class="cv-fold-h"><span>🦊 3초 요약 대표 카드 (1080×1080)</span><span class="bdg real">지수 실측</span><span class="cv-arw">▾</span></summary><div class="sum3wrap" id="sum3Wrap">
           <div class="card-head" style="margin-bottom:6px">
             <span class="num">🦊</span><h2>3초 요약 대표 카드</h2>
             <span class="bdg real" id="sum3Stat">1080×1080 · 지수 실측</span>
@@ -3186,7 +3296,7 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
           </div>
           <canvas id="sum3Canvas" width="1080" height="1080" role="img" aria-label="3초 요약 대표 카드 1080×1080 미리보기"></canvas>
           <p class="hint" style="margin-top:6px">저장 파일명은 <b>제목-3초요약-1080x1080.png</b>. 결론 문구는 이 브라우저에 저장됩니다.</p>
-        </div>
+        </div></details>
         <div class="cvnote" id="cvNote">값은 관제탑이 준 실측치 그대로입니다.</div>
       </div>
 
@@ -3606,6 +3716,12 @@ html[data-theme="light"] .hq-tip b{color:#b45309}
           <select id="m7muSize" aria-label="카드뉴스 비율">
             <option value="1080">1080×1080</option>
             <option value="1350">1080×1350 (4:5)</option>
+          </select>
+          <select id="m7muFont" aria-label="카드뉴스 한글 폰트" title="카드뉴스에 쓸 한글 폰트">
+            <option value="pretendard">프리텐다드</option>
+            <option value="gmarket">지마켓 산스</option>
+            <option value="jua">배민 주아체</option>
+            <option value="pen">나눔 손글씨 펜</option>
           </select>
         </div>
         <div id="m7muNote"></div>
@@ -11046,7 +11162,7 @@ var CSVoice = (function () {
     { bg: ['#0b1512', '#123024'], accent: '#22c55e', glow: 'rgba(34,197,94,.20)', chip: 'rgba(34,197,94,.16)', chipText: '#bbf7d0' },
     { bg: ['#150e22', '#241234'], accent: '#c084fc', glow: 'rgba(192,132,252,.22)', chip: 'rgba(192,132,252,.16)', chipText: '#e9d5ff' }
   ];
-  var THUMB_FONT = '"Pretendard","Malgun Gothic","Apple SD Gothic Neo",-apple-system,"Noto Sans KR",sans-serif';
+  var THUMB_FONT = '"Pretendard Variable","Pretendard","Malgun Gothic","Apple SD Gothic Neo",-apple-system,"Noto Sans KR",sans-serif';
 
   function parsePhotoTag(raw){
     var inner = String(raw == null ? '' : raw)
@@ -22318,7 +22434,7 @@ var CSVoice = (function () {
      전부 브라우저에서 계산한다(크레딧 0). 저장은 localStorage.
      ================================================================ */
   var M7K = { cmp: 'cs2_cmp3_v1', perf: 'cs2_perf_v1', revu: 'cs2_revu_guide_v1', th: 'cs2_thread3_v1' };
-  var M7FONT = '"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif';
+  var M7FONT = '"Pretendard Variable","Pretendard","Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif';
   var M7MON = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
   var M7 = {
     cmp: lsGet(M7K.cmp, null),
@@ -23163,8 +23279,18 @@ var CSVoice = (function () {
     list.push({ idx: '05', kicker: '마무리', title: '전체 기준은 본문에', body: m7clamp(cta || '필요한 분은 저장해 두세요. 비교표와 기준을 본문에 정리했습니다.', 200) + '\n' + p.link, footer: '폭스시그널', page: '5 / 5' });
     return list;
   }
+  /* 🎨 카드뉴스 한글 폰트 — 선택값을 Canvas 에 그대로 쓴다 */
+  function m7cardFontKey(){ var el = m7el('m7muFont'); return (el && el.value) || 'pretendard'; }
+  function m7cardFontStack(k){
+    if (k === 'gmarket') return '"Gmarket Sans","Pretendard Variable",sans-serif';
+    if (k === 'jua') return '"BMJUA","Gmarket Sans",sans-serif';
+    if (k === 'pen') return '"Nanum Pen Script","BMJUA",cursive';
+    return '"Pretendard Variable","Pretendard","Noto Sans KR",sans-serif';
+  }
   function m7cardCanvas(m, H){
     var W = 1080, PAD = 84;
+    var FKEY = m7cardFontKey(), F = m7cardFontStack(FKEY), SOFT = (FKEY === 'jua' || FKEY === 'pen');
+    var W900 = SOFT ? 400 : 900, W800 = SOFT ? 400 : 800, W700 = SOFT ? 400 : 700, W600 = SOFT ? 400 : 600;
     var cv = document.createElement('canvas');
     cv.width = W; cv.height = H;
     var c = cv.getContext('2d');
@@ -23178,24 +23304,24 @@ var CSVoice = (function () {
     var tg = c.createLinearGradient(PAD, 0, W - PAD, 0);
     tg.addColorStop(0, '#38bdf8'); tg.addColorStop(1, '#22c55e');
     c.fillStyle = tg; c.fillRect(PAD, PAD, 140, 7);
-    c.fillStyle = '#7dd3fc'; c.font = '800 32px ' + M7FONT;
+    c.fillStyle = '#7dd3fc'; c.font = W800 + ' 32px ' + F;
     c.fillText(m7clamp(m.kicker || '', 24), PAD, PAD + 66);
-    c.fillStyle = '#f8fafc'; c.font = '800 72px ' + M7FONT;
+    c.fillStyle = '#f8fafc'; c.font = W800 + ' 72px ' + F;
     var tLines = m7wrapLines(c, m.title || '', W - PAD * 2, 3);
     var ty = PAD + 160;
     tLines.forEach(function(l){ c.fillText(l, PAD, ty); ty += 88; });
     c.fillStyle = 'rgba(148,163,184,.4)'; c.fillRect(PAD, ty - 34, 110, 5);
     var by = ty + 30;
-    c.fillStyle = '#c9d7e9'; c.font = '600 38px ' + M7FONT;
+    c.fillStyle = '#c9d7e9'; c.font = W600 + ' 38px ' + F;
     var maxBodyH = H - by - 170;
     m7linesFit(c, m.body || '', W - PAD * 2, maxBodyH, 58).forEach(function(l){
       c.fillText(l, PAD, by); by += 58;
     });
-    c.globalAlpha = 0.07; c.fillStyle = '#e2ebf7'; c.font = '800 250px ' + M7FONT;
+    c.globalAlpha = 0.07; c.fillStyle = '#e2ebf7'; c.font = W800 + ' 250px ' + F;
     c.textAlign = 'right'; c.fillText(m7clamp(m.idx || '', 2), W - PAD, H - 132); c.textAlign = 'left';
     c.globalAlpha = 1;
     c.fillStyle = 'rgba(148,163,184,.22)'; c.fillRect(PAD, H - 112, W - PAD * 2, 2);
-    c.fillStyle = 'rgba(148,163,184,.85)'; c.font = '700 26px ' + M7FONT;
+    c.fillStyle = 'rgba(148,163,184,.85)'; c.font = W700 + ' 26px ' + F;
     c.fillText(m7clamp(m.footer || '', 30), PAD, H - 58);
     c.textAlign = 'right'; c.fillStyle = '#f5b942'; c.font = '800 26px ' + M7FONT;
     c.fillText(m7clamp(m.page || '', 10), W - PAD, H - 58); c.textAlign = 'left';
@@ -23938,7 +24064,7 @@ var CSVoice = (function () {
   var CFG_KEY = 'cs_wvid_cfg_v1', PRE_KEY = 'cs_wvid_presets_v1', EL_KEY = 'cs_elevenlabs_api_key';
   var CW = 1080, CH = 1920, GAP = 0.30;      /* ⑤ 컷 사이 호흡 여백 0.30초 */
   var BGM_GAP = 0.28, BGM_DUCK = 0.12;       /* ⑤ BGM 덕킹 — 나레이션 0.12 · 컷 사이 여백 0.28 */
-  var FF = "'Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif";
+  var FF = "'Pretendard Variable','Pretendard','Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif";
 
   /* ---------- 쇼츠 세이프 존 · 3단 고정 그리드 ---------- */
   var SAFE = { x: 60, y: 180, w: 900, h: 1360 };  /* x 60~960 · y 180~1540 */
@@ -31723,7 +31849,7 @@ var CSVoice = (function () {
        같은 내용을 쇼츠 슬롯 비율로 다시 그려 1:1 로 넣는다(찌그러짐·추가 축소 없음).
      · 지금 지수·투자자별 수급 줄은 스튜디오가 그 시간대에 실제로 읽은 값만 받아 적는다(없으면 비운다). */
   var SHORT_W = 900, SHORT_H = 664;
-  var SFF = '-apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
+  var SFF = '"Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif';
   var SHORT_SLOT = { pre: '🌅 장전 시황', noon: '☀️ 점심 시황', close: '🌆 정규마감 시황',
     after: '🌙 애프터장 결산', dict: '📘 30초 사전', review: '📊 주간 오답노트' };
   function pad2(n) { return ('0' + n).slice(-2); }
@@ -32236,6 +32362,24 @@ var CSVoice = (function () {
   setTimeout(sync, 1500);
 })();
 </script>
+
+<script>
+/* 📱 폴드8 다이어트 — 상단 ⋯ 툴 패널 + 접힌 카드 아이콘 */
+(function () {
+  var els = [].slice.call(document.querySelectorAll('.tb-more'));
+  if (!els.length) return;
+  var mq = window.matchMedia('(max-width: 639px)');
+  function sync() { els.forEach(function (d) { if (mq.matches) d.removeAttribute('open'); else d.setAttribute('open', ''); }); }
+  sync();
+  if (mq.addEventListener) mq.addEventListener('change', sync);
+  document.addEventListener('click', function (e) {
+    if (!mq.matches) return;
+    els.forEach(function (d) { if (d.open && !d.contains(e.target)) d.removeAttribute('open'); });
+  }, true);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') els.forEach(function (d) { d.removeAttribute('open'); }); });
+})();
+</script>
+
 </body>
 <!-- deploy-stamp: studio-3step-light-2026-11-22 -->
 </html>
