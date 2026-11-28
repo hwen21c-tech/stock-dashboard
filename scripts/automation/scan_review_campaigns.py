@@ -38,7 +38,7 @@ import requests
 from urllib.parse import quote
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from review_normalize import (NORMALIZE_RULE, build_missions, find_region,  # noqa: E402
+from review_normalize import (NORMALIZE_RULE, PRICE_RULE, build_missions, find_region,  # noqa: E402
                               mission_summary, normalize_rows, section_text)
 
 KST = timezone(timedelta(hours=9))
@@ -1652,6 +1652,9 @@ def main():
         '%s %d' % (rg, sum(1 for r in uniq if r.get('region') == rg))
         for rg in ('서울', '경기', '인천', '강원', '충청', '전라', '경상', '제주', '전국·배송', '지역 미표기')))
     log('· 정규화 — 자부담 %d건' % sum(1 for r in uniq if (r.get('flags') or {}).get('extraCost') is True))
+    price_n = sum(1 for r in uniq if (r.get('price') or 0) > 0)
+    price_txt = sum(1 for r in uniq if r.get('priceSource') in ('offer', 'title'))
+    log('· 정규화 — 혜택가 %d/%d건 (원문 표기에서 %d건)' % (price_n, len(uniq), price_txt))
 
     blocked = [rep['name'] for rep in report if rep['status'] != 'ok']
     ok = [rep for rep in report if rep['status'] == 'ok']
@@ -1713,6 +1716,9 @@ def main():
             'platformMaxId': news['maxIds'],
             'newRule': NEW_RULE,
             'normalizeRule': NORMALIZE_RULE,
+            'priceRule': PRICE_RULE,
+            'priceStats': {'total': len(uniq), 'withPrice': price_n, 'fromText': price_txt,
+                           'fromPlatform': price_n - price_txt, 'noPrice': len(uniq) - price_n},
             'platforms': report,
             'blocked': friendly,
             'notice': ' | '.join(notice_bits),

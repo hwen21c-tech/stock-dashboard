@@ -175,6 +175,7 @@ p{margin:0}
 .sel{padding:10px 12px;border-radius:11px;border:1px solid var(--line2);background:rgba(8,13,24,.86);
   color:#dbe6f6;font-size:12px;font-weight:800;font-family:inherit;outline:none}
 .chips{display:flex;gap:6px;overflow-x:auto;padding:2px 1px 3px;scrollbar-width:none;-ms-overflow-style:none}
+.chips.wrap{flex-wrap:wrap;overflow-x:visible}
 .chips::-webkit-scrollbar{display:none}
 .chip{display:inline-flex;align-items:center;gap:5px;padding:6px 11px;border-radius:9px;white-space:nowrap;
   background:rgba(148,163,184,.07);border:1px solid var(--line);color:#c6d2e4;font-size:11.5px;font-weight:800;
@@ -310,6 +311,7 @@ section.block{margin-top:36px;padding-top:22px;border-top:1px solid var(--rule)}
 .flag.reg{background:rgba(125,211,252,.10);color:#bae6fd;border-color:rgba(125,211,252,.24)}
 .flag.pay{background:rgba(251,191,36,.13);color:#fde68a;border-color:rgba(251,191,36,.3)}
 .flag.rep{background:rgba(148,163,184,.14);color:#e2e8f0;border-color:rgba(148,163,184,.3)}
+.flag.price{background:linear-gradient(135deg,rgba(251,191,36,.24),rgba(251,146,60,.16));color:#fde68a;border-color:rgba(251,191,36,.46)}
 .chip.excl.on{background:linear-gradient(135deg,rgba(251,191,36,.22),rgba(251,113,133,.18))}
 
 /* ============ keywords ============ */
@@ -556,6 +558,7 @@ html[data-theme="light"] .flag.under{background:#dcf7e9;color:#0b6b48;border-col
 html[data-theme="light"] .flag.reg{background:#e8f4fd;color:#075985;border-color:#bae6fd}
 html[data-theme="light"] .flag.pay{background:#fef3c7;color:#854d0e;border-color:#fcd34d}
 html[data-theme="light"] .flag.rep{background:#eef2f7;color:#334155;border-color:#cbd5e1}
+html[data-theme="light"] .flag.price{background:#fef3c7;color:#92400e;border-color:#fcd34d}
 html[data-theme="light"] .pb.revu{background:#e5f1fb;color:#0b5c8f;border-color:#c6e0f5}
 html[data-theme="light"] .pb.reviewnote{background:#f1ecff;color:#5b21b6;border-color:#e0d5fb}
 html[data-theme="light"] .pb.dinnerqueen{background:#ffe3e7;color:#a1173a;border-color:#f6c2ca}
@@ -688,6 +691,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
         <option value="deadline">⏰ 마감 임박 순</option>
         <option value="rate">🎯 경쟁률 낮은 순</option>
         <option value="popular">🔥 신청자 많은 순</option>
+        <option value="benefit">💰 혜택가 높은 순</option>
         <option value="new">🆕 최근 등록 순</option>
       </select>
       <button class="btn" id="shareBtn" type="button">📤 꿀캠페인 TOP3 복사</button>
@@ -722,6 +726,9 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     </div>
     <div class="filterlabel"><span>분류</span>
       <div class="chips" id="catChips" style="flex:1"></div>
+    </div>
+    <div class="filterlabel"><span>가격</span>
+      <div class="chips wrap" id="priceChips" style="flex:1"></div>
     </div>
     <div class="typehint">유형·지역은 플랫폼이 밝힌 표기 기준이고, 집으로 오는 캠페인은 <b>전국·배송</b>입니다. · 건수는 다른 조건을 반영한 실제 남는 수량입니다.</div>
     </div>
@@ -1040,7 +1047,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   var EXCL_KEY = 'review_zip_excl';
   var EXCL_SCHEMA = 3;   /* 3: 얼굴노출 제외 추가 — 2에서 저장한 사용자 선택은 그대로 살린다 */
 
-  var S = { rows: [], meta: null, ui: { type: 'all', plat: 'all', cat: 'all', region: 'all', q: '', sort: 'deadline', wish: false },
+  var S = { rows: [], meta: null, ui: { type: 'all', plat: 'all', cat: 'all', region: 'all', price: 'all', q: '', sort: 'deadline', wish: false },
             excl: { ai: false, cost: true, visit: false, payback: true, jigan: true, face: true }, wish: [], limit: 24 };
   var WISH_KEY = 'review_zip_wish';
   var PORTAL_URL = 'https://hwen21c-tech.github.io/stock-dashboard/review-zip.html';
@@ -1096,12 +1103,14 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
           (o.cat === 'all' || CAT_ORDER.indexOf(o.cat) >= 0)) S.ui.cat = o.cat;
       if (typeof o.region === 'string' &&
           (o.region === 'all' || REGION_ORDER.indexOf(o.region) >= 0)) S.ui.region = o.region;
+      if (typeof o.price === 'string' &&
+          (o.price === 'all' || o.price === 'any' || /^\d+$/.test(o.price))) S.ui.price = o.price;
     } catch (e) {}
   }
   function saveUi() {
     try {
       localStorage.setItem(UI_KEY, JSON.stringify({
-        schema: UI_SCHEMA, type: S.ui.type, plat: S.ui.plat, cat: S.ui.cat, region: S.ui.region
+        schema: UI_SCHEMA, type: S.ui.type, plat: S.ui.plat, cat: S.ui.cat, region: S.ui.region, price: S.ui.price
       }));
     } catch (e) {}
   }
@@ -1121,7 +1130,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 
   /* 필터 초기화 — 첫 진입과 같은 상태(지역·유형 전체, 기본 제외 4종 ON)로 돌린다 */
   function resetFilters(sort) {
-    S.ui = { type: 'all', plat: 'all', cat: 'all', region: 'all', q: '', sort: sort || S.ui.sort || 'deadline', wish: false };
+    S.ui = { type: 'all', plat: 'all', cat: 'all', region: 'all', price: 'all', q: '', sort: sort || S.ui.sort || 'deadline', wish: false };
     S.excl = defaultExcl();
     S.limit = 24;
     var qq = $('q'); if (qq) qq.value = '';
@@ -1137,6 +1146,55 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
   function num(v) { var n = Number(v); return isFinite(n) ? n : 0; }
+  /* 금액 짧게 — 60,000 → 6만원 · 71,800 → 71,800원 · 25,000 → 2만 5천원 */
+  function wonLabel(n) {
+    var v = Math.round(num(n));
+    if (v >= 10000 && v % 10000 === 0) return (v / 10000) + '만원';
+    if (v >= 10000 && v % 1000 === 0) return Math.floor(v / 10000) + '만 ' + ((v % 10000) / 1000) + '천원';
+    return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
+  }
+  /* 혜택가 보조 파싱 — 데이터에 price 가 없을 때만 제공내역·제목의 금액 표기에서 뽑는다.
+     scripts/review_normalize.py 의 price_of 와 같은 규칙: '원'이 붙은 표기만 보고, 배송비·주차비(내는 돈)와
+     'N원 이상 구매' 같은 조건 문구·인원(명·인)·글자수(자)·수량(개·입)은 보지 않는다. 없으면 null. */
+  var PRICE_PATTERNS = [
+    { re: /(\d+(?:\.\d+)?)\s*만\s*(\d+(?:\.\d+)?)\s*천\s*원/g,
+      f: function (m) { return num(m[1]) * 10000 + num(m[2]) * 1000; } },
+    { re: /(\d+(?:\.\d+)?)\s*만\s*원/g, f: function (m) { return num(m[1]) * 10000; } },
+    { re: /(\d+(?:\.\d+)?)\s*천\s*원/g, f: function (m) { return num(m[1]) * 1000; } },
+    { re: /(\d{1,3}(?:,\d{3})+|\d+)\s*원/g, f: function (m) { return num(String(m[1]).replace(/,/g, '')); } }
+  ];
+  var PRICE_COST_PRE = ['배송비', '배송료', '택배비', '주차비', '주차', '왕복', '교통비',
+                        '추가결제', '추가 결제', '차액', '배송'];
+  var PRICE_COND_POST = ['이상', '이하', '미만', '부터', '초과'];
+  function parsePriceText(text) {
+    var s = String(text == null ? '' : text);
+    if (s.indexOf('원') < 0) return null;
+    var taken = [], hits = [], i, j, m, re;
+    for (i = 0; i < PRICE_PATTERNS.length; i++) {
+      re = new RegExp(PRICE_PATTERNS[i].re.source, 'g');
+      while ((m = re.exec(s))) {
+        var a = m.index, b = a + m[0].length, over = false;
+        for (j = 0; j < taken.length; j++) { if (a >= taken[j][0] && b <= taken[j][1]) { over = true; break; } }
+        if (over) continue;
+        taken.push([a, b]);
+        hits.push({ a: a, b: b, v: PRICE_PATTERNS[i].f(m), raw: m[0].trim() });
+      }
+    }
+    var best = null;
+    for (i = 0; i < hits.length; i++) {
+      var h = hits[i], skip = false;
+      var pre = s.slice(Math.max(0, h.a - 5), h.a), post = s.slice(h.b, h.b + 8);
+      for (j = 0; j < PRICE_COST_PRE.length; j++) { if (pre.indexOf(PRICE_COST_PRE[j]) >= 0) { skip = true; break; } }
+      if (skip) continue;
+      for (j = 0; j < PRICE_COND_POST.length; j++) { if (post.indexOf(PRICE_COND_POST[j]) >= 0) { skip = true; break; } }
+      if (skip) continue;
+      if (h.v < 1000 || h.v > 50000000) continue;
+      if (!best || h.v > best.v) best = h;
+    }
+    return best ? { v: Math.round(best.v), raw: best.raw } : null;
+  }
+  function parsePriceRow(r) { return parsePriceText(r.offer) || parsePriceText(r.title); }
+  function priceOf(r) { return (r && r.price > 0) ? num(r.price) : 0; }
   function slice(v, n) { var s = String(v == null ? '' : v); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
 
   function todayKST() {
@@ -1231,13 +1289,15 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       ? '<span class="flag under">미달</span>' : '';
     var faceFlag = faceHit(r)
       ? '<span class="flag face" title="원문에 얼굴 노출·공개·셀카·착용샷 요건이 있는 캠페인">🙂 얼굴노출</span>' : '';
+    var priceFlag = priceOf(r) > 0
+      ? '<span class="flag price" title="제공내역 표기 기준 혜택가">💰 ' + esc(wonLabel(priceOf(r))) + '</span>' : '';
     var badge = cardBadge(r);
     var ddChip = (badge && !r.isNew)
       ? ''   /* 마감임박 뱃지가 마감을 말하므로 오른쪽 D-day 칩은 생략 */
       : '<span class="dd ' + ddayCls(r.d) + '">' + ddayText(r.d) + '</span>';
     return '<a class="card" href="' + esc(r.url || '#') + '" target="_blank" rel="noopener nofollow">' +
       '<div class="ctop">' + platBadge(r) +
-        '<span class="cat">' + esc(r.category || '기타') + '</span>' + typeFlag + regFlag + faceFlag + under + badge +
+        '<span class="cat">' + esc(r.category || '기타') + '</span>' + typeFlag + regFlag + faceFlag + priceFlag + under + badge +
         ddChip +
         '<button class="wish' + (isWished(r) ? ' on' : '') + '" type="button" data-wish="' + esc(r.key) + '" ' +
           'aria-label="찜하기" title="' + (isWished(r) ? '찜 해제' : '찜하기') + '">♥</button>' +
@@ -1275,6 +1335,11 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       r.capacity = num(c.capacity);
       r.rate = (r.capacity > 0 && r.applicants !== null) ? r.applicants / r.capacity : null;
       r.d = dday(c.deadline);
+      /* 혜택가 — 데이터에 없을 때만 원문 표기에서 보조 파싱(수집기와 같은 규칙) */
+      if (!(r.price > 0)) {
+        var pp = parsePriceRow(r);
+        if (pp) { r.price = pp.v; r.priceSource = r.priceSource || 'text'; if (!r.priceNote) r.priceNote = "'" + pp.raw + "' 표기"; }
+      }
       /* 모집이 끝난 캠페인(r.d < 0)은 공개 포털에 싣지 않는다 — 목록·빈집털이·통계·필터 건수 전부에서 빠진다.
          (11/26 사용자 제보: 마감 지난 카드가 '마감' 으로 계속 노출) */
       if (r.d !== null && r.d < 0) continue;
@@ -1340,6 +1405,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     if (skip !== 'region' && u.region !== 'all' && regionOf(r) !== u.region) return false;
     if (skip !== 'plat' && u.plat !== 'all' && r.platform !== u.plat) return false;
     if (skip !== 'cat' && u.cat !== 'all' && (r.category || '기타') !== u.cat) return false;
+    if (skip !== 'price' && u.price && u.price !== 'all' && !priceHit(r, u.price)) return false;
     if (skip !== 'excl' && excludedBy(r, offFlag)) return false;
     if (skip !== 'q' && q) {
       var hay = [r.title, r.brand, r.category, r.offer, r.platformName, r.city,
@@ -1356,6 +1422,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     if (facet === 'cat') return (r.category || '기타') === val;
     if (facet === 'type') return typeOf(r) === val;
     if (facet === 'region') return regionOf(r) === val;
+    if (facet === 'price') return priceHit(r, val);
     return false;
   }
   /* n: 다른 조건을 반영한 실제 남는 건수 · base: 필터와 무관한 전체 보유량 */
@@ -1383,6 +1450,31 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   function countExcept(facet) {
     return S.rows.filter(function (r) { return pass(r, facet); }).length;
   }
+  /* 혜택가 필터 — 'all' 전체 · 'any' 금액이 확인된 캠페인만 · 숫자는 그 금액 이상 */
+  function priceHit(r, v) {
+    if (v === 'all') return true;
+    var p = priceOf(r);
+    if (v === 'any') return p > 0;
+    return p > 0 && p >= num(v);
+  }
+  var PRICE_DEF = [
+    { k: '10000', t: '1만원↑' },
+    { k: '30000', t: '3만원↑' },
+    { k: '50000', t: '5만원↑' },
+    { k: '100000', t: '10만원↑' },
+    { k: 'any', t: '💵 금액 표기만' }
+  ];
+  function renderPriceChips() {
+    var el = $('priceChips');
+    if (!el) return;
+    var html = chipHtml('price', 'all', '💰 가격 전체', countExcept('price'), S.ui.price === 'all');
+    PRICE_DEF.forEach(function (d) {
+      var s = facetStats('price', d.k);
+      if (!s.base && S.ui.price !== d.k) return;
+      html += chipHtml('price', d.k, d.t, s.n, S.ui.price === d.k);
+    });
+    el.innerHTML = html;
+  }
   function chipHtml(facet, val, label, n, on) {
     return '<button class="chip' + (on ? ' on' : (n ? '' : ' z')) + '" data-' + facet + '="' + esc(val) +
       '" type="button">' + label + ' <span class="c">' + n + '</span></button>';
@@ -1396,6 +1488,14 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       });
     } else if (S.ui.sort === 'popular') {
       a.sort(function (x, y) { return (num(y.applicants) - num(x.applicants)); });
+    } else if (S.ui.sort === 'benefit') {
+      /* 💰 혜택가 높은 순 — 금액이 확인된 캠페인을 먼저, 큰 금액 순, 같으면 마감 임박 순 */
+      a.sort(function (x, y) {
+        var xp = priceOf(x), yp = priceOf(y);
+        if (!!xp !== !!yp) return xp ? -1 : 1;
+        if (yp !== xp) return yp - xp;
+        return (x.d === null ? 999 : x.d) - (y.d === null ? 999 : y.d);
+      });
     } else if (S.ui.sort === 'new') {
       /* 최근 등록 순 — NEW 로 뽑힌 것(플랫폼별 최신 등록) 먼저, 그다음 플랫폼 id 큰 순 */
       a.sort(function (x, y) {
@@ -1557,6 +1657,10 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     if (S.ui.region !== 'all') parts.push('지역 ‘' + S.ui.region + '’');
     if (S.ui.plat !== 'all') parts.push('플랫폼 ‘' + ((PLAT[S.ui.plat] || {}).name || S.ui.plat) + '’');
     if (S.ui.cat !== 'all') parts.push('분류 ‘' + S.ui.cat + '’');
+    if (S.ui.price && S.ui.price !== 'all') {
+      if (S.ui.price === 'any') parts.push('가격 ‘금액 표기’');
+      else parts.push('가격 ‘' + wonLabel(num(S.ui.price)) + ' 이상’');
+    }
     var ex = EXCL_DEF.filter(function (d) { return S.excl[d.k]; })
       .map(function (d) { return d.label.replace(' 제외', ''); });
     if (ex.length) parts.push('제외 ' + ex.join('·'));
@@ -1578,7 +1682,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     var list = sortRows(filtered());
     var show = list.slice(0, S.limit);
     var sortName = S.ui.sort === 'rate' ? '경쟁률 낮은 순' : S.ui.sort === 'popular' ? '신청자 많은 순'
-      : S.ui.sort === 'new' ? '최근 등록 순' : '마감 임박 순';
+      : S.ui.sort === 'benefit' ? '혜택가 높은 순' : S.ui.sort === 'new' ? '최근 등록 순' : '마감 임박 순';
     var parts = filterSummary().filter(function (p) { return p.indexOf('검색') !== 0; });
     var catName = parts.length ? (parts.join(' · ') + ' · ') : '';
     $('listCount').textContent = (S.ui.wish ? '♥ 찜 ' : '') + catName + list.length + '건 · ' + sortName;
@@ -1590,6 +1694,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       var on = filterSummary();
       var acts = '';
       if (S.ui.cat !== 'all') acts += '<button class="btn" data-reset="cat" type="button">전체 분류로 보기</button>';
+      if (S.ui.price && S.ui.price !== 'all') acts += '<button class="btn" data-reset="price" type="button">가격 전체</button>';
       if (S.ui.type !== 'all') acts += '<button class="btn" data-reset="type" type="button">전체 유형으로 보기</button>';
       if (S.ui.region !== 'all') acts += '<button class="btn" data-reset="region" type="button">지역 전체</button>';
       if (S.ui.plat !== 'all') acts += '<button class="btn" data-reset="plat" type="button">플랫폼 전체</button>';
@@ -1608,7 +1713,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   }
 
   function renderAll() {
-    renderTypeChips(); renderRegionChips(); renderExclChips(); renderPlatChips(); renderCatChips(); renderList(); renderHoney();
+    renderTypeChips(); renderRegionChips(); renderPriceChips(); renderExclChips(); renderPlatChips(); renderCatChips(); renderList(); renderHoney();
   }
 
   function renderMeta() {
@@ -1789,7 +1894,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       renderPlatChips(); renderHoney(); renderList();
       return;
     }
-    var c = el.closest ? el.closest('[data-type],[data-plat],[data-cat],[data-region],[data-excl],[data-kw],[data-wishonly]') : null;
+    var c = el.closest ? el.closest('[data-type],[data-plat],[data-cat],[data-region],[data-price],[data-excl],[data-kw],[data-wishonly]') : null;
     if (c && c.hasAttribute('data-wishonly')) {
       S.ui.wish = !S.ui.wish; S.limit = 24;
       renderAll();
@@ -1798,6 +1903,10 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     }
     if (c && c.hasAttribute('data-type')) {
       S.ui.type = c.getAttribute('data-type'); S.limit = 24;
+      saveUi(); renderAll(); return;
+    }
+    if (c && c.hasAttribute('data-price')) {
+      S.ui.price = c.getAttribute('data-price'); S.limit = 24;
       saveUi(); renderAll(); return;
     }
     if (c && c.hasAttribute('data-region')) {
@@ -1858,6 +1967,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       } else if (what === 'cat') { S.ui.cat = 'all'; }
       else if (what === 'type') { S.ui.type = 'all'; }
       else if (what === 'region') { S.ui.region = 'all'; }
+      else if (what === 'price') { S.ui.price = 'all'; }
       else if (what === 'excl') { S.excl = { ai: false, cost: false, visit: false, payback: false, jigan: false, face: false }; saveExcl(); }
       else if (what === 'plat') { S.ui.plat = 'all'; }
       else if (what === 'wish') { S.ui.wish = false; }

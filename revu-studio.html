@@ -156,6 +156,7 @@ main{padding:6px 0 40px;min-height:60vh}
 .phead h2{font-size:14.5px;font-weight:900;display:flex;align-items:center;gap:6px}
 .phead .sub{font-size:11.5px;color:var(--mut2);font-weight:700}
 .chips{display:flex;gap:7px;overflow-x:auto;padding:2px 1px 4px;scrollbar-width:none;-ms-overflow-style:none}
+.chips.wrap{flex-wrap:wrap;overflow-x:visible}
 .chips::-webkit-scrollbar{display:none}
 .chip{
   flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;padding:8px 12px;border-radius:999px;
@@ -245,6 +246,8 @@ main{padding:6px 0 40px;min-height:60vh}
 .flag.visit{background:rgba(167,139,250,.14);color:#ddd6fe;border-color:rgba(167,139,250,.3)}
 .flag.face{background:rgba(125,211,252,.13);color:#bae6fd;border-color:rgba(125,211,252,.3)}
 .flag.plain{background:rgba(148,163,184,.10);color:#cbd5e1;border-color:var(--line)}
+/* 💰 혜택가 — 제공내역·제목의 금액 표기에서 확인된 금액 */
+.flag.price{background:linear-gradient(135deg,rgba(251,191,36,.24),rgba(251,146,60,.16));color:#fde68a;border-color:rgba(251,191,36,.46);letter-spacing:-.02em}
 /* 🆕 NEW — 직전 수집 이후 새로 등록된 캠페인(플랫폼별 최신 3건)만 */
 .flag.new{background:linear-gradient(135deg,rgba(52,211,153,.22),rgba(56,189,248,.18));color:#a7f3d0;border-color:rgba(52,211,153,.42)}
 .cfoot{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px}
@@ -582,6 +585,7 @@ html[data-theme="light"] .flag.cost{background:#fef3c7;color:#854d0e;border-colo
 html[data-theme="light"] .flag.visit{background:#ede9fe;color:#5b21b6;border-color:#ddd6fe}
 html[data-theme="light"] .flag.face{background:#e0f2fe;color:#075985;border-color:#bae6fd}
 html[data-theme="light"] .flag.plain{background:#eef2f7;color:#3f556b;border-color:var(--line)}
+html[data-theme="light"] .flag.price{background:#fef3c7;color:#92400e;border-color:#fcd34d}
 html[data-theme="light"] .flag.new{background:linear-gradient(135deg,#dcfce7,#e0f2fe);color:#0f7a53;border-color:#a7e8c6}
 html[data-theme="light"] .done{background:#d1fae5;color:#065f46;border-color:#a7f3d0}
 html[data-theme="light"] .done.off{background:#eef2f7;color:#44586e;border-color:var(--line2)}
@@ -781,8 +785,9 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
           <button class="chip on" data-sort="popular" type="button">🔥 인기순</button>
           <button class="chip on" data-sort="rate" type="button">🎯 경쟁률 낮은 순</button>
           <button class="chip on" data-sort="value" type="button">🏠 실속 리스트</button>
+          <button class="chip on" data-sort="benefit" type="button">💰 혜택가 높은 순</button>
         </div>
-        <div class="metaline"><span id="sortHint">3개 정렬을 함께 보는 중 — 같은 캠페인이 여러 묶음에 나올 수 있어요.</span></div>
+        <div class="metaline"><span id="sortHint">4개 정렬을 함께 보는 중 — 같은 캠페인이 여러 묶음에 나올 수 있어요.</span></div>
         <div class="chips" id="platChips" style="margin-top:7px"></div>
         <div class="chips" id="catChips" style="margin-top:9px">
           <button class="chip on" data-cat="all" type="button">전체</button>
@@ -798,6 +803,14 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
           <button class="chip" data-type="방문형" type="button">🚗 방문형만</button>
           <button class="chip" data-type="페이백" type="button">💰 페이백만</button>
           <button class="chip" data-type="기자단" type="button">📰 기자단만</button>
+        </div>
+        <div class="chips wrap" id="priceChips" style="margin-top:7px">
+          <button class="chip on" data-pr="all" type="button">💰 가격 전체</button>
+          <button class="chip" data-pr="10000" type="button">1만원↑</button>
+          <button class="chip" data-pr="30000" type="button">3만원↑</button>
+          <button class="chip" data-pr="50000" type="button">5만원↑</button>
+          <button class="chip" data-pr="100000" type="button">10만원↑</button>
+          <button class="chip" data-pr="any" type="button">💵 금액 표기만</button>
         </div>
         <div class="filterrow" style="margin-top:7px">
           <span class="flabel">지역</span>
@@ -1168,8 +1181,8 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     rows: [], meta: null, loaded: false, fallback: false,
     cart: [], status: {}, checks: {}, picked: {}, msgs: {}, reviews: {},
     photos: {}, photoBusy: {}, capBusy: {},
-    ui: { tab: 'main', sorts: { popular: true, rate: true, value: true }, cat: 'all', plat: 'all', type: 'all', region: 'all',
-          flags: { cost: true, payback: true, jigan: true, face: true }, q: '' },
+    ui: { tab: 'main', sorts: { popular: true, rate: true, value: true, benefit: true }, cat: 'all', plat: 'all', type: 'all', region: 'all',
+          price: 'all', flags: { cost: true, payback: true, jigan: true, face: true }, q: '' },
     savings: { manual: 0 }, prices: {},
     blogSpec: { posts: null, visitors: null, last: null },
     due: {}, kwCache: {}, kwBusy: {},
@@ -1236,6 +1249,54 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     if (!n || n <= 0) return '0원';
     return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
   }
+  /* 금액을 짧게 — 60,000 → 6만원 · 25,000 → 2만 5천원 · 71,800 → 71,800원 */
+  function wonLabel(n) {
+    var v = Math.round(num(n));
+    if (v >= 10000 && v % 10000 === 0) return (v / 10000) + '만원';
+    if (v >= 10000 && v % 1000 === 0) return Math.floor(v / 10000) + '만 ' + ((v % 10000) / 1000) + '천원';
+    return money(v);
+  }
+  /* 혜택가 보조 파싱 — 데이터(JSON)에 price 가 없을 때 제공내역·제목의 금액 표기에서 뽑는다.
+     scripts/review_normalize.py 의 price_of 와 같은 규칙: '원'이 붙은 표기만 보고, 배송비·주차비(내는 돈)와
+     'N원 이상 구매' 같은 조건 문구·인원(명·인)·글자수(자)·수량(개·입)은 보지 않는다. 없으면 null. */
+  var PRICE_PATTERNS = [
+    { re: /(\d+(?:\.\d+)?)\s*만\s*(\d+(?:\.\d+)?)\s*천\s*원/g,
+      f: function (m) { return num(m[1]) * 10000 + num(m[2]) * 1000; } },
+    { re: /(\d+(?:\.\d+)?)\s*만\s*원/g, f: function (m) { return num(m[1]) * 10000; } },
+    { re: /(\d+(?:\.\d+)?)\s*천\s*원/g, f: function (m) { return num(m[1]) * 1000; } },
+    { re: /(\d{1,3}(?:,\d{3})+|\d+)\s*원/g, f: function (m) { return num(String(m[1]).replace(/,/g, '')); } }
+  ];
+  var PRICE_COST_PRE = ['배송비', '배송료', '택배비', '주차비', '주차', '왕복', '교통비',
+                        '추가결제', '추가 결제', '차액', '배송'];
+  var PRICE_COND_POST = ['이상', '이하', '미만', '부터', '초과'];
+  function parsePriceText(text) {
+    var s = String(text == null ? '' : text);
+    if (s.indexOf('원') < 0) return null;
+    var taken = [], hits = [], i, j, m, re;
+    for (i = 0; i < PRICE_PATTERNS.length; i++) {
+      re = new RegExp(PRICE_PATTERNS[i].re.source, 'g');
+      while ((m = re.exec(s))) {
+        var a = m.index, b = a + m[0].length, over = false;
+        for (j = 0; j < taken.length; j++) { if (a >= taken[j][0] && b <= taken[j][1]) { over = true; break; } }
+        if (over) continue;
+        taken.push([a, b]);
+        hits.push({ a: a, b: b, v: PRICE_PATTERNS[i].f(m), raw: m[0].trim() });
+      }
+    }
+    var best = null;
+    for (i = 0; i < hits.length; i++) {
+      var h = hits[i], skip = false;
+      var pre = s.slice(Math.max(0, h.a - 5), h.a), post = s.slice(h.b, h.b + 8);
+      for (j = 0; j < PRICE_COST_PRE.length; j++) { if (pre.indexOf(PRICE_COST_PRE[j]) >= 0) { skip = true; break; } }
+      if (skip) continue;
+      for (j = 0; j < PRICE_COND_POST.length; j++) { if (post.indexOf(PRICE_COND_POST[j]) >= 0) { skip = true; break; } }
+      if (skip) continue;
+      if (h.v < 1000 || h.v > 50000000) continue;
+      if (!best || h.v > best.v) best = h;
+    }
+    return best ? { v: Math.round(best.v), raw: best.raw } : null;
+  }
+  function parsePriceRow(r) { return parsePriceText(r.offer) || parsePriceText(r.title); }
   function josa(word, withB, withoutB) {
     var s = String(word == null ? '' : word).trim();
     if (!s) return withoutB;
@@ -1292,10 +1353,12 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
       }
       if (o.due && typeof o.due === 'object') S.due = o.due;
       if (o.ui && typeof o.ui === 'object') {
-        if (o.ui.sorts) S.ui.sorts = { popular: !!o.ui.sorts.popular, rate: !!o.ui.sorts.rate, value: !!o.ui.sorts.value };
+        if (o.ui.sorts) S.ui.sorts = { popular: !!o.ui.sorts.popular, rate: !!o.ui.sorts.rate, value: !!o.ui.sorts.value,
+                                       benefit: o.ui.sorts.benefit === undefined ? true : !!o.ui.sorts.benefit };
         if (o.ui.cat) S.ui.cat = o.ui.cat;
         if (o.ui.plat) S.ui.plat = o.ui.plat;
         if (o.ui.type) S.ui.type = o.ui.type;
+        if (o.ui.price) S.ui.price = String(o.ui.price);
         if (o.ui.region && (o.ui.region === 'all' || REGION_ORDER.indexOf(o.ui.region) >= 0)) S.ui.region = o.ui.region;
         /* 구버전 저장값은 기본 제외 3종이 꺼진 상태였다 — 이번 스키마부터 기본 ON으로 올린다.
            이번 스키마(2)에서 사용자가 내린 선택(false)은 그대로 유지된다. */
@@ -1322,7 +1385,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
         savings: { manual: S.savings.manual }, prices: S.prices,
         blogSpec: S.blogSpec, due: S.due,
         ui: { sorts: S.ui.sorts, cat: S.ui.cat, plat: S.ui.plat, type: S.ui.type, region: S.ui.region,
-              flags: S.ui.flags, tab: S.ui.tab, schema: UI_SCHEMA }
+              price: S.ui.price, flags: S.ui.flags, tab: S.ui.tab, schema: UI_SCHEMA }
       }));
     } catch (e) {}
   }
@@ -1381,6 +1444,11 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     row.regionDetail = c.regionDetail || null;
     row.missions = c.missions || null;
     row.keywords = Array.isArray(c.keywords) ? c.keywords.filter(function (v) { return !!v; }) : [];
+    /* 혜택가 — 데이터에 없을 때만 원문 표기에서 보조 파싱(수집기와 같은 규칙) */
+    if (!(row.price > 0)) {
+      var pp = parsePriceRow(row);
+      if (pp) { row.price = pp.v; row.priceSource = row.priceSource || 'text'; if (!row.priceNote) row.priceNote = "'" + pp.raw + "' 표기"; }
+    }
     return row;
   }
   function byId(id) {
@@ -1567,6 +1635,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     if (skip !== 'type' && u.type !== 'all' && r.type !== u.type) return false;
     if (skip !== 'region' && u.region !== 'all' && r.region !== u.region) return false;
     if (skip !== 'cat' && u.cat !== 'all' && (r.category || '기타') !== u.cat) return false;
+    if (skip !== 'price' && u.price && u.price !== 'all' && !priceHit(r, u.price)) return false;
     if (flagActive('ai') && skip !== 'flag:ai' && r.flags.aiBanned === true) return false;
     if (flagActive('cost') && skip !== 'flag:cost' && r.flags.extraCost === true) return false;
     if (flagActive('visit') && skip !== 'flag:visit' && r.type === '방문형') return false;
@@ -1582,6 +1651,34 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     }
     return true;
   }
+  /* 혜택가 필터 — 'all' 전체 · 'any' 금액이 확인된 캠페인만 · 숫자는 그 금액 이상 */
+  function priceHit(r, v) {
+    if (v === 'all') return true;
+    var p = providerPrice(r);
+    if (v === 'any') return p > 0;
+    return p > 0 && p >= num(v);
+  }
+  var PRICE_DEF = [
+    { k: '10000', t: '1만원↑' },
+    { k: '30000', t: '3만원↑' },
+    { k: '50000', t: '5만원↑' },
+    { k: '100000', t: '10만원↑' },
+    { k: 'any', t: '💵 금액 표기만' }
+  ];
+  function renderPriceChips() {
+    var box = $('priceChips');
+    if (!box) return;
+    var all = countExcept('price');
+    var html = '<button class="chip' + (S.ui.price === 'all' ? ' on' : (all ? '' : ' off')) +
+      '" data-pr="all" type="button">💰 가격 전체 <span class="c">' + all + '</span></button>';
+    PRICE_DEF.forEach(function (d) {
+      var n = facetCount('price', d.k), on = S.ui.price === d.k;
+      html += '<button class="chip' + (on ? ' on' : (n ? '' : ' off')) + '" data-pr="' + d.k +
+        '" type="button">' + d.t + ' <span class="c">' + n + '</span></button>';
+    });
+    box.innerHTML = html;
+  }
+
   function flagHit(r, k) {
     if (k === 'ai') return r.flags.aiBanned === true;
     if (k === 'cost') return r.flags.extraCost === true;
@@ -1599,6 +1696,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
       var r = S.rows[i];
       if (kind === 'type' && r.type !== val) continue;
       if (kind === 'region' && r.region !== val) continue;
+      if (kind === 'price' && !priceHit(r, val)) continue;
       if (passRow(r, kind)) n++;
     }
     return n;
@@ -1830,12 +1928,14 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     var statusChip = st
       ? '<span class="done' + (st === 'dropped' ? ' off' : '') + '">' + statusLabel(st) + '</span>'
       : '';
+    var pv = providerPrice(r);
     return '<article class="' + cls + '" data-id="' + esc(r.id) + '">' +
       '<div class="ctop">' +
         platBadge(r) +
         '<span class="cat ' + catClass(r.category) + '">' + esc(r.category || '기타') + '</span>' +
         (r.type ? '<span class="flag plain">' + esc(r.type) + '</span>' : '') +
         (r.region && r.region !== REGION_ALL ? '<span class="flag plain">📍 ' + esc(r.region) + '</span>' : '') +
+        (pv > 0 ? '<span class="flag price" title="제공내역 표기 기준 혜택가">💰 ' + esc(wonLabel(pv)) + '</span>' : '') +
         newBadge(r) +
         '<span class="dday ' + ddayClass(r.d) + '">' + ddayChipText(r.d) + '</span>' +
       '</div>' +
@@ -1866,7 +1966,15 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
         var br = b.rate === null ? 999 : b.rate;
         return (ar - br) || (b.capacity - a.capacity);
       });
-    } else {
+    } else if (mode === 'benefit') {
+      /* 💰 혜택가 높은 순 — 금액이 확인된 캠페인을 먼저, 큰 금액 순, 같으면 마감 임박 순 */
+      list.sort(function (a, b) {
+        var ap = providerPrice(a), bp = providerPrice(b);
+        if (!!ap !== !!bp) return ap ? -1 : 1;
+        if (bp !== ap) return bp - ap;
+        return (a.d === null ? 99 : a.d) - (b.d === null ? 99 : b.d);
+      });
+    } else if (mode === 'value') {
       list.sort(function (a, b) {
         var aw = catWeight(a.category), bw = catWeight(b.category);
         if (aw !== bw) return bw - aw;
@@ -1874,13 +1982,16 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
         if (ar !== br) return ar - br;
         return (b.price || 0) - (a.price || 0);
       });
+    } else {
+      list.sort(function (a, b) { return (a.d === null ? 99 : a.d) - (b.d === null ? 99 : b.d); });
     }
     return list;
   }
   var SORT_DEF = [
     { k: 'popular', t: '🔥 인기순', d: '신청자가 많은 순 — 지금 반응이 뜨거운 캠페인' },
     { k: 'rate', t: '🎯 경쟁률 낮은 순', d: '신청자 ÷ 모집정원이 낮은 순 — 첫 당첨 노리기 좋은 순서' },
-    { k: 'value', t: '🏠 실속 리스트', d: '육아·식품·생활 우선 + 경쟁률·제공가치 순' }
+    { k: 'value', t: '🏠 실속 리스트', d: '육아·식품·생활 우선 + 경쟁률·제공가치 순' },
+    { k: 'benefit', t: '💰 혜택가 높은 순', d: '제공내역에 적힌 금액이 큰 순 — 금액 미표기는 뒤로' }
   ];
   function renderMain() {
     if (!S.loaded) return;
@@ -1930,7 +2041,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     $('sortHint').textContent = active.length
       ? (active.length > 1 ? active.length + '개 정렬을 함께 보는 중 — 같은 캠페인이 여러 묶음에 나올 수 있어요.' : '한 가지 정렬로 보고 있어요.')
       : '정렬을 모두 끄면 마감 임박 순 전체 목록으로 보여요.';
-    renderTypeChips(); renderRegionChips(); renderFlagChips();
+    renderTypeChips(); renderRegionChips(); renderPriceChips(); renderFlagChips();
   }
 
   /* ------------------------------------------------------------------ detail */
@@ -1968,14 +2079,16 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
         '<span class="dday ' + ddayClass(r.d) + '">' + ddayText(r.d) + '</span>' +
       '</div>' +
       '<h3 style="font-size:15px;margin-top:9px;letter-spacing:-.03em;line-height:1.4">' + esc(r.title) + '</h3>' +
-      '<div class="flagrow" style="margin-top:8px">' + winBadge(r) + flagsHtml(r) + '</div>' +
+      '<div class="flagrow" style="margin-top:8px">' + winBadge(r) +
+        (providerPrice(r) > 0 ? '<span class="flag price">💰 ' + esc(wonLabel(providerPrice(r))) + '</span>' : '') +
+        flagsHtml(r) + '</div>' +
       '<dl class="kv">' +
         '<dt>플랫폼</dt><dd>' + esc(platOf(r).name) + (r.platformName ? '' : '') + ' · ' + esc(r.type || '유형 미표기') + '</dd>' +
         '<dt>지역</dt><dd>' + (r.region ? esc(r.region) + (r.regionDetail && r.region !== REGION_ALL ? ' <span style="color:var(--mut);font-weight:700">(' + esc(r.regionDetail) + ')</span>' : '') : '미확인') +
           (r.region === REGION_ALL ? ' <span style="color:var(--mut);font-weight:700">— 집으로 배송되는 캠페인</span>' : '') + '</dd>' +
         '<dt>브랜드</dt><dd>' + esc(r.brand || '미확인') + '</dd>' +
         '<dt>제공내역</dt><dd>' + esc(r.offer || '미확인') + '</dd>' +
-        '<dt>추정가</dt><dd>' + (providerPrice(r) ? money(providerPrice(r)) + (r.priceNote ? ' <span style="color:var(--mut);font-weight:700">(' + esc(r.priceNote) + ')</span>' : '') : '미확인 <button class="btn xs ghost" data-price="' + esc(r.id) + '" type="button">직접 입력</button>') + '</dd>' +
+        '<dt>혜택가</dt><dd>' + (providerPrice(r) ? '<b>' + money(providerPrice(r)) + '</b>' + (r.priceNote ? ' <span style="color:var(--mut);font-weight:700">(' + esc(r.priceNote) + ')</span>' : '') : '미확인 <button class="btn xs ghost" data-price="' + esc(r.id) + '" type="button">직접 입력</button>') + '</dd>' +
         '<dt>신청/모집</dt><dd>' + (r.applicants !== null && r.applicants !== undefined ? r.applicants : '–') + '명 / ' + (r.capacity || '–') + '명 · <b>' + rateText(r.rate) + '</b></dd>' +
         '<dt>당첨 확률</dt><dd>' + winBadge(r) + ' <span style="color:var(--mut);font-weight:700;font-size:11px">' + esc(winInfo(r).why) + '</span></dd>' +
         '<dt>접수 기간</dt><dd>' + (r.deadline ? '~ ' + esc(r.deadline) + ' (' + ddayText(r.d) + ')' + (r.deadlineDerived ? ' <span style="color:var(--mut)">· D-day 역산</span>' : '') : '미확인') + '</dd>' +
@@ -3014,6 +3127,10 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
       S.ui.type = c.getAttribute('data-type');
       save(); renderMain(); return;
     }
+    if ((c = closest('[data-pr]'))) {
+      S.ui.price = c.getAttribute('data-pr');
+      save(); renderMain(); return;
+    }
     if ((c = closest('[data-region]'))) {
       S.ui.region = c.getAttribute('data-region');
       regionOpen(false); save(); renderMain(); return;
@@ -3060,7 +3177,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
       return;
     }
     if (el.id === 'dueBtn') {
-      S.ui.sorts = { popular: false, rate: false, value: false };
+      S.ui.sorts = { popular: false, rate: false, value: false, benefit: false };
       document.querySelectorAll('#sortChips .chip').forEach(function (b) { b.classList.remove('on'); });
       setTab('main'); renderMain(); return;
     }
@@ -3092,8 +3209,8 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
       return;
     }
     if (el.id === 'resetBtn') {
-      S.ui = { tab: S.ui.tab, sorts: { popular: true, rate: true, value: true }, cat: 'all', plat: 'all', type: 'all', region: 'all',
-               flags: { cost: true, payback: true, jigan: true, face: true }, q: '' };
+      S.ui = { tab: S.ui.tab, sorts: { popular: true, rate: true, value: true, benefit: true }, cat: 'all', plat: 'all', type: 'all', region: 'all',
+               price: 'all', flags: { cost: true, payback: true, jigan: true, face: true }, q: '' };
       $('q').value = '';
       document.querySelectorAll('#sortChips .chip').forEach(function (b) { b.classList.add('on'); });
       regionOpen(false);

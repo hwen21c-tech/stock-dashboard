@@ -31,7 +31,9 @@ NORMALIZE_RULE = ('type = 원본 type → categoryRaw(기자단·원고료/페�
                   'flags.extraCost = 제공내역·제목·미션·주의 문구의 배송비·초과·자부담·본인부담·페이백 자동 감지, '
                   'flags.faceRequired = 문장 단위로 얼굴 노출·공개·정면/셀카/인물 촬영/본인 출연/착용샷 요건이 '
                   '있는 경우만(부정·선택 표현과 플랫폼 초상권 동의만 있는 경우는 제외, 동의는 flags.portraitConsent), '
-                  'region = 플랫폼 지역(city) → categoryRaw 지역 표기 → 제목 지역 표기(방문형) → 전국·배송/지역 미표기')
+                  'region = 플랫폼 지역(city) → categoryRaw 지역 표기 → 제목 지역 표기(방문형) → 전국·배송/지역 미표기, '
+                  'price = 플랫폼이 준 금액이 없을 때 제공내역 → 제목의 "N만원·N만N천원·N,NNN원" 표기에서 가장 큰 금액 '
+                  '(배송비·주차비 같은 내는 돈과 "N원 이상 구매" 조건 문구는 제외, 인원·글자수·수량은 보지 않음)')
 
 # 노출 순서 — 권역 → 배송 → 미표기
 REGION_ORDER = ['서울', '경기', '인천', '강원', '충청', '전라', '경상', '제주',
@@ -104,6 +106,76 @@ _T3 = {
              '동래', '연제', '부산진', '영도', '기장'],
     '전라': ['상무', '첨단', '수완', '둔산', '유성'],
 }
+
+# ---------------------------------------------------------------- 혜택가(price)
+# 제공내역·제목에 적힌 한국어 금액을 보수적으로 뽑는다.
+#  · '원'이 붙은 표기만 본다 → '10명'·'2인'·'1,000자'·'5개입' 은 걸리지 않는다.
+#  · 사용자가 내는 돈(배송비·주차비)과 조건 문구('5만원 이상 구매 시')는 혜택가가 아니므로 뺀다.
+#  · 한 문구에 금액이 여럿이면 가장 큰 금액을 쓴다(1인 25,000원 / 2인 40,000원 → 40,000원).
+PRICE_RULE = ('price = 플랫폼이 준 금액이 없을 때만 제공내역 → 제목의 "N만원·N만N천원·N,NNN원" 표기에서 '
+              '가장 큰 금액을 원 단위 정수로 채운다. 배송비·주차비·교통비처럼 사용자가 내는 돈과 '
+              '"N원 이상 구매" 같은 조건 문구는 제외하고, 인원(명·인)·글자수(자)·수량(개·입)은 보지 않는다. '
+              '원본 문구에 금액이 없으면 비워 둔다(추정 금액을 만들지 않는다).')
+_PRICE_PATTERNS = (
+    (re.compile(r'(\d+(?:\.\d+)?)\s*만\s*(\d+(?:\.\d+)?)\s*천\s*원'),
+     lambda m: float(m.group(1)) * 10000 + float(m.group(2)) * 1000),
+    (re.compile(r'(\d+(?:\.\d+)?)\s*만\s*원'), lambda m: float(m.group(1)) * 10000),
+    (re.compile(r'(\d+(?:\.\d+)?)\s*천\s*원'), lambda m: float(m.group(1)) * 1000),
+    (re.compile(r'(\d{1,3}(?:,\d{3})+|\d+)\s*원'), lambda m: float(m.group(1).replace(',', ''))),
+)
+_PRICE_COST_PRE = ('배송비', '배송료', '택배비', '주차비', '주차', '왕복', '교통비',
+                   '추가결제', '추가 결제', '차액', '배송')
+_PRICE_COND_POST = ('이상', '이하', '미만', '부터', '초과')
+PRICE_MIN = 1000
+PRICE_MAX = 50000000
+
+
+def parse_price(text):
+    """문구 하나에서 금액 후보를 뽑는다 → [(금액, 표기원문, 위치)] (보수적)."""
+    s = str(text or '')
+    if '원' not in s:
+        return []
+    taken = []
+    hits = []
+    for pat, fn in _PRICE_PATTERNS:
+        for m in pat.finditer(s):
+            a, b = m.span()
+            if any(a >= x and b <= y for x, y in taken):
+                continue      # 긴 표기(3만5천원)가 이미 잡은 구간은 다시 보지 않는다
+            taken.append((a, b))
+            hits.append((a, b, fn(m), m.group(0).strip()))
+    out = []
+    for a, b, val, raw in hits:
+        pre = s[max(0, a - 5):a]
+        post = s[b:b + 8]
+        if any(k in pre for k in _PRICE_COST_PRE):
+            continue
+        if any(k in post for k in _PRICE_COND_POST):
+            continue
+        if val < PRICE_MIN or val > PRICE_MAX:
+            continue
+        out.append((int(round(val)), raw, a))
+    return out
+
+
+def price_of(row):
+    """행의 혜택가를 정한다 → (금액, 표기원문, 출처) 또는 (None, None, None).
+
+    플랫폼이 준 price 가 있으면 그것을 쓰고(출처 'platform'), 없을 때만 제공내역 → 제목 순서로 본다.
+    """
+    try:
+        given = int(row.get('price') or 0)
+    except (TypeError, ValueError):
+        given = 0
+    if given > 0:
+        return given, None, 'platform'
+    for key in ('offer', 'title'):
+        hits = parse_price(row.get(key))
+        if hits:
+            val, raw, _pos = max(hits, key=lambda h: h[0])
+            return val, raw, key
+    return None, None, None
+
 
 REGION_TOKENS = []          # (token, region, tier)
 for _tier, _table in ((1, _T1), (2, _T2), (3, _T3)):
@@ -465,6 +537,15 @@ def normalize_row(row):
         flags['faceRequired'] = False if _face_text(row) else None
     row['region'] = region_of(row, t)
     row['regionDetail'] = region_detail(row)
+    # 혜택가 — 플랫폼 값이 있으면 그대로, 없으면 원문 표기에서 (원본 금액은 덮어쓰지 않는다)
+    val, raw, src = price_of(row)
+    if val:
+        if src != 'platform':
+            row['price'] = val
+            row['priceNote'] = "'%s' 표기" % raw
+            row['priceSource'] = src
+        elif row.get('priceSource') is None:
+            row['priceSource'] = 'platform'
     return row
 
 
@@ -481,6 +562,7 @@ def summarize(rows):
         'region': collections.Counter(r.get('region') for r in rows),
         'extraCost': collections.Counter(str((r.get('flags') or {}).get('extraCost')) for r in rows),
         'faceRequired': collections.Counter(str((r.get('flags') or {}).get('faceRequired')) for r in rows),
+        'price': collections.Counter('금액 있음' if (r.get('price') or 0) > 0 else '금액 없음' for r in rows),
     }
 
 
