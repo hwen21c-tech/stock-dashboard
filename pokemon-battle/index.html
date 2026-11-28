@@ -399,15 +399,46 @@
     box-shadow:0 3px 0 rgba(70,120,30,.22)}
   .dxempty{margin:16px 4px;text-align:center;font-size:clamp(10px,2.8vw,12px);font-weight:900;color:#7d8a63;line-height:1.65}
   /* 도감 하단 — 아빠 바로 잠그기 · 도감 초기화 */
-  .dxfoot{flex:0 0 auto;display:flex;gap:6px;align-items:center;padding:8px 12px 10px;border-top:2px solid #eef6dd;
+  .dxfoot{flex:0 0 auto;display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px 10px;border-top:2px solid #eef6dd;
     background:linear-gradient(180deg,#f9ffef,#f1fbe0);border-radius:0 0 17px 17px}
-  .dxfoot button{flex:1 1 0;min-width:0;padding:8px 6px;border-radius:12px;font-weight:900;letter-spacing:-.03em;
+  .dxfoot button{flex:1 1 auto;min-width:84px;padding:8px 6px;border-radius:12px;font-weight:900;letter-spacing:-.03em;
     font-size:clamp(9.5px,2.6vw,11.5px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     box-shadow:0 3px 0 rgba(70,120,30,.22)}
   .dxfoot button:active{transform:translateY(2px);box-shadow:none}
   .dxfoot #dexLockBtn{background:linear-gradient(180deg,#fff5db,#ffdf87);border:2px solid #e5b53c;color:#7a4400}
   .dxfoot #dexResetBtn{background:linear-gradient(180deg,#fff,#ffe7df);border:2px solid #efbda9;color:#a83a17}
   .dxfoot #dexAddBtn{background:linear-gradient(180deg,#eaffcc,#cdf3a2);border:2px solid #9fd46f;color:#2f5c14}
+  .dxfoot #dexGiftBtn{background:linear-gradient(180deg,#e8f4ff,#bfe0ff);border:2px solid #7fb4e6;color:#134a78}
+
+  /* ---------- 🎫 아빠 선물 (소환권 · 야생 등장 밸런스) ---------- */
+  #giftModal{z-index:78}
+  .dxgift .msheet{width:min(420px,100%)}
+  .dxgift .gSub{margin:0 0 11px;text-align:center;font-size:clamp(10px,2.7vw,12px);font-weight:900;color:#6b8547;line-height:1.6}
+  .dxgift .gTabs{display:flex;gap:6px;margin:0 0 10px}
+  .dxgift .gTabs button{flex:1 1 0;min-width:0;padding:9px 4px;border-radius:12px;font-weight:900;letter-spacing:-.03em;
+    font-size:clamp(11px,3vw,13px);background:#fff;border:2px solid #dbe7c2;color:#3b5c22}
+  .dxgift .gTabs button.on{background:linear-gradient(180deg,#d9f7bd,#a8e86b);border-color:#79c94a;color:#1c4a0e}
+  .dxgift .gCard{margin:0 0 10px;padding:10px 11px;border-radius:14px;background:#f8fcef;border:1.8px solid #e2eecd}
+  .dxgift .gTop{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:5px}
+  .dxgift .gTop b{font-size:clamp(12px,3.2vw,14px);color:#22400f;letter-spacing:-.03em}
+  .dxgift .gTop span{font-size:clamp(10px,2.7vw,11.5px);font-weight:900;color:#2f7a1f}
+  .dxgift .gNote{margin:0 0 8px;font-size:clamp(9.5px,2.6vw,11px);font-weight:900;color:#7d8a63;line-height:1.55}
+  .dxgift .gBtns{display:flex;gap:6px}
+  .dxgift .gBtns button{flex:1 1 0;min-width:0;padding:9px 4px;border-radius:12px;font-weight:900;letter-spacing:-.03em;
+    font-size:clamp(11px,3vw,13px);background:linear-gradient(180deg,#fff,#e6f6cf);border:2px solid #b9dd8c;color:#2f5c14;
+    box-shadow:0 3px 0 rgba(70,120,30,.2)}
+  .dxgift .gBtns button.take{background:linear-gradient(180deg,#fff,#ffe7df);border-color:#efbda9;color:#a83a17}
+  .dxgift .gBtns button:active{transform:translateY(2px);box-shadow:none}
+  .dxgift .gOpt{display:flex;align-items:center;gap:8px;width:100%;margin:0 0 6px;padding:9px 10px;border-radius:12px;text-align:left;
+    background:#fff;border:2px solid #dbe7c2;color:#3b5c22}
+  .dxgift .gOpt.on{background:linear-gradient(180deg,#fff8dc,#ffe6a3);border-color:#e3b53c;color:#6b4100}
+  .dxgift .gOpt:last-child{margin-bottom:0}
+  .dxgift .gOpt .em{font-size:15px;line-height:1}
+  .dxgift .gOpt .tx{flex:1 1 auto;min-width:0;font-weight:900;font-size:clamp(11px,3vw,12.5px);letter-spacing:-.03em}
+  .dxgift .gOpt .tx small{display:block;font-size:.82em;font-weight:800;opacity:.72}
+  .dxgift .gOpt .ck{font-size:12px;font-weight:900}
+  .dxgift .gFoot{margin:2px 0 0;font-size:clamp(9px,2.5vw,10.5px);font-weight:900;color:#8a9a72;line-height:1.6;text-align:center}
+  .dxfoot button[hidden]{display:none !important}
   .dxfoot button[hidden]{display:none !important}
   /* 🧹 도감 초기화 확인 */
   #dexResetModal{z-index:78}
@@ -583,10 +614,19 @@
       <div class="dxmore" id="dexMoreWrap" hidden><button type="button" id="dexMore">더 보기</button></div>
     </div>
     <div class="dxfoot">
+      <button type="button" id="dexGiftBtn" hidden>🎫 아빠 선물</button>
       <button type="button" id="dexAddBtn" hidden>➕ 포켓몬 추가</button>
       <button type="button" id="dexLockBtn" hidden>🔒 바로 잠그기</button>
       <button type="button" id="dexResetBtn">🗑️ 도감 초기화</button>
     </div>
+  </div>
+</div>
+
+<!-- 🎫 아빠 선물 — 소환권 선물 · 야생 등장 밸런스 (PIN 을 풀어야 열린다) -->
+<div class="modal dxgift" id="giftModal" hidden>
+  <div class="msheet" role="dialog" aria-modal="true" aria-labelledby="gftTitle">
+    <div class="mhead"><h2 id="gftTitle">🎫 아빠 선물</h2><button class="mx" data-close="giftModal" aria-label="닫기">✕</button></div>
+    <div class="mbody" id="giftBody"></div>
   </div>
 </div>
 
@@ -1742,6 +1782,7 @@
     openM('dexModal');
     dexScrollTop();
     loadDB();
+    try { paintLockBtn(); } catch (e) { /* */ }
   }
   function openDexDetail(id) {
     var p = byId(Number(id));
@@ -1845,6 +1886,9 @@
     var b = document.getElementById('dexLockBtn');
     if (!b) return;
     var left = lockLeft();
+    /* 🎫 아빠 선물 — PIN 을 통과한 2분 동안만 (+ 포켓몬 추가와 같은 규칙) */
+    var gb = document.getElementById('dexGiftBtn');
+    if (gb) gb.hidden = left <= 0;
     if (left > 0) {
       b.hidden = false;
       b.textContent = '🔒 바로 잠그기 · ' + left + '초';
@@ -1916,6 +1960,113 @@
   function onResetDex() {
     gate('🗑️ 도감 초기화', slotName(Dex.slot) + '의 도감을 비우려면 가족 PIN 4자리를 눌러 주세요.', askResetDex);
   }
+
+  /* ---------- 🎫 아빠 선물 — 위시 소환권 · 🌱 야생 등장 밸런스 ----------
+     · 소환권은 게임(수학·한글·영어)의 "도감 10마리마다 1장"과 같은 저장소(pkm.ticket.v1.<slot>)를 쓴다.
+     · 야생 등장 밸런스(pkm.spawn.v1)는 pokemon-battle2.js 가 읽는다 — 새 포켓몬 우선 / 진화 해금 우선 / 예전 그대로.
+     · 둘 다 PIN 을 통과한 2분 동안만 보이는 '🎫 아빠 선물' 버튼에서만 바뀐다. */
+  var TICKET_KEY = 'pkm.ticket.v1.';
+  var SPAWN_KEY = 'pkm.spawn.v1';
+  var SPAWN_MODES = [
+    { k: 'fresh', emoji: '🌱', name: '새 포켓몬 우선', sub: '기본 · 안 가진 친구가 제일 자주' },
+    { k: 'unlock', emoji: '🧬', name: '진화 해금 우선', sub: '1마리만 잡은 친구를 2마리째로 더 자주' },
+    { k: 'classic', emoji: '🕰️', name: '예전 그대로', sub: '11/28 이전 규칙' },
+  ];
+  var Gift = {
+    slot: 'p1',
+    ticketOf: function (slot) {
+      var o = jget(TICKET_KEY + slot, null);
+      return Math.max(0, Math.floor(Number(o && o.n) || 0));
+    },
+    addTicket: function (slot, n) {
+      var o = jget(TICKET_KEY + slot, null);
+      var out = {
+        granted: (o && Array.isArray(o.granted)) ? o.granted.map(Number).filter(function (v) { return Number.isFinite(v); }) : [],
+        n: Math.max(0, Math.floor(Number(o && o.n) || 0)) + Number(n || 0)
+      };
+      if (out.n < 0) out.n = 0;
+      lsSet(TICKET_KEY + slot, JSON.stringify(out));
+      return out.n;
+    },
+    mode: function () {
+      var v = jget(SPAWN_KEY, 'fresh');
+      for (var i = 0; i < SPAWN_MODES.length; i += 1) if (SPAWN_MODES[i].k === v) return v;
+      return 'fresh';
+    },
+    setMode: function (k) {
+      var ok = false;
+      for (var i = 0; i < SPAWN_MODES.length; i += 1) if (SPAWN_MODES[i].k === k) ok = true;
+      if (!ok) return this.mode();
+      lsSet(SPAWN_KEY, JSON.stringify(k));
+      return k;
+    },
+    open: function () {
+      if (lockLeft() <= 0) { toast('먼저 아빠 PIN 을 열어 주세요'); return false; }
+      this.slot = Dex.slot === 'p2' ? 'p2' : 'p1';
+      this.paint();
+      openM('giftModal');
+      return true;
+    },
+    paint: function () {
+      var body = document.getElementById('giftBody');
+      if (!body) return;
+      var mode = this.mode();
+      var tabs = ['p1', 'p2'].map(function (s) {
+        return '<button type="button" class="' + (s === this.slot ? 'on' : '') + '" data-gslot="' + s + '">'
+          + (s === 'p1' ? '🐣' : '🐥') + ' ' + slotName(s) + '</button>';
+      }, this).join('');
+      var opts = SPAWN_MODES.map(function (m) {
+        return '<button type="button" class="gOpt' + (m.k === mode ? ' on' : '') + '" data-gspawn="' + m.k + '">'
+          + '<span class="em">' + m.emoji + '</span>'
+          + '<span class="tx">' + m.name + '<small>' + m.sub + '</small></span>'
+          + '<span class="ck">' + (m.k === mode ? '✓' : '') + '</span></button>';
+      }).join('');
+      body.innerHTML =
+        '<p class="gSub"><b>' + slotName(this.slot) + '</b>에게 소환권을 선물하고,<br>야생에 어떤 친구가 자주 나올지 정해요.</p>'
+        + '<div class="gTabs">' + tabs + '</div>'
+        + '<div class="gCard">'
+          + '<div class="gTop"><b>🎫 위시 소환권</b><span>지금 ' + this.ticketOf(this.slot) + '장</span></div>'
+          + '<div class="gNote">도감 10마리마다 1장씩 받는 그 소환권이에요 · 배틀 중에 원하는 포켓몬을 바로 소환</div>'
+          + '<div class="gBtns">'
+            + '<button type="button" data-gticket="1">+1장 선물</button>'
+            + '<button type="button" data-gticket="3">+3장 선물</button>'
+            + '<button type="button" class="take" data-gticket="-1">-1장</button>'
+          + '</div>'
+        + '</div>'
+        + '<div class="gCard">'
+          + '<div class="gTop"><b>🌱 야생 등장 밸런스</b><span>' + (mode === 'fresh' ? '새 포켓몬 우선' : mode === 'unlock' ? '진화 해금 우선' : '예전 그대로') + '</span></div>'
+          + opts
+        + '</div>'
+        + '<p class="gFoot">바꾸면 다음 야생부터 바로 적용돼요 · 도감 10마리 소환권 규칙은 그대로</p>';
+      var self = this;
+      body.querySelectorAll('[data-gslot]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.preventDefault();
+          self.slot = b.getAttribute('data-gslot');
+          self.paint();
+        });
+      });
+      body.querySelectorAll('[data-gticket]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.preventDefault();
+          var n = parseInt(b.getAttribute('data-gticket'), 10) || 0;
+          var left = self.addTicket(self.slot, n);
+          toast((n > 0 ? '🎫 위시 소환권 +' + n + '장' : '🎫 소환권 ' + n + '장') + ' → ' + slotName(self.slot) + ' · 지금 ' + left + '장');
+          self.paint();
+          refreshHome();
+        });
+      });
+      body.querySelectorAll('[data-gspawn]').forEach(function (b) {
+        b.addEventListener('click', function (e) {
+          e.preventDefault();
+          var k = self.setMode(b.getAttribute('data-gspawn'));
+          var m = SPAWN_MODES.filter(function (x) { return x.k === k; })[0];
+          toast('🌱 야생 등장 · ' + (m ? m.name : k));
+          self.paint();
+        });
+      });
+    }
+  };
 
   /* ---------- 도감 넣기/빼기 ---------- */
   function purgeVillage(id) {
@@ -2066,6 +2217,15 @@
         isUnlocked: function () { return lockLeft() > 0; },
         getSlot: function () { return Dex.slot; },
         onDone: function () { renderDex(); refreshHome(); }
+      });
+    }
+    /* 🎫 아빠 선물 — 소환권 선물 · 야생 등장 밸런스 (PIN 통과 후) */
+    var gbtn = document.getElementById('dexGiftBtn');
+    if (gbtn) gbtn.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); Gift.open(); });
+    var gmod = document.getElementById('giftModal');
+    if (gmod) {
+      gmod.addEventListener('click', function (e) {
+        if (e.target === gmod || e.target.closest('[data-close="giftModal"]')) closeM('giftModal');
       });
     }
     var rm = document.getElementById('dexResetModal');

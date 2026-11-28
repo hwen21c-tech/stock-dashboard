@@ -138,10 +138,26 @@
     return list[list.length - 1];
   }
 
-  /* 5장 뽑기. boosted: 오늘의 팩 여부
+  /* ---------- 카드 한 장의 무게 (보유 상황반영) ----------
+     아이 피드백(11/28): "같은 카드만 계속 나온다".
+       · 아직 없는 카드     ×5     (새 카드가 잘 나오게)
+       · 1장 있는 카드      ×1     (2장째·진화 라인 수집은 그대로 가능하게)
+       · 2장 이상 있는 카드 ×0.2   (이미 쌓인 카드는 거의 안 나오게)
+       · 그중 미보유 진화 카드는 ×1.5 (진화 라인이 자연스럽게 이어지게, 강제는 아님) */
+  const EVO_KIND = /^(1진화|2진화|V진화|M진화|BREAK진화)/;
+  function isEvoCard(c) { return EVO_KIND.test(String((c && c.k) || '')); }
+  function cardWeight(c, own) {
+    const n = Number(own && own[c.id]) || 0;
+    if (n >= 2) return 0.2;
+    if (n === 1) return 1;
+    return isEvoCard(c) ? 7.5 : 5;     /* 미보유 5 × 진화 1.5 */
+  }
+
+  /* 5장 뽑기. boosted: 오늘의 팩 여부 / own: 프로필 보유 카드 수({카드id: 장수})
      · 같은 팩 안에서 같은 카드(c.id)는 절대 두 번 나오지 않는다.
-     · 해당 티어 풀이 모자라면 아래/위 티어 → 팩 전체 순으로 미중복 카드를 고른다. */
-  function pull(packData, boosted) {
+     · 해당 티어 풀이 모자라면 아래/위 티어 → 팩 전체 순으로 미중복 카드를 고른다.
+     · 티어 안에서는 보유 가중치(미보유 5배 · 1장 1배 · 2장 이상 0.2배)로 고른다. */
+  function pull(packData, boosted, own) {
     const cards = (packData && packData.cards) || [];
     if (!cards.length) return [];
     const byTier = { 1: [], 2: [], 4: [], 5: [] };
@@ -158,7 +174,12 @@
       if (!pool || !pool.length) return null;
       const free = pool.filter(c => !used[c.id]);
       if (!free.length) return null;
-      return weightedPick(free, rng);
+      /* 보유 가중치로 한 장 */
+      const total = free.reduce((s, c) => s + cardWeight(c, own), 0);
+      if (!(total > 0)) return free[Math.floor(rng() * free.length)];
+      let r = rng() * total;
+      for (const c of free) { r -= cardWeight(c, own); if (r <= 0) return c; }
+      return free[free.length - 1];
     }
 
     for (let i = 0; i < 5; i++) {
@@ -193,6 +214,6 @@
     BACK, ERAS, ERA_MARK,
     img, sym, loadIndex, loadPack, packMeta, seriesList, packsOf, erasOf, eraOf, eraName, allPacks,
     todayPack, stars, tierName, rarityKo, tierFromRarity, typeColor, typeEmoji, TYPES,
-    pull, ownedInPack, daySeed
+    pull, cardWeight, isEvoCard, ownedInPack, daySeed
   };
 })();

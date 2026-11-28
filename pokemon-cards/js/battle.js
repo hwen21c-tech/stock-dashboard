@@ -24,8 +24,9 @@
       plan: [[0, 0.66], [1.5, 0.27], [2, 0.06], [3, 0.01]] },
     { k: 'normal', name: '보통', emoji: '⚔️', desc: '가끔은 맞히는 보통 실력',
       plan: [[0, 0.30], [1.5, 0.42], [2, 0.20], [3, 0.08]] },
-    { k: 'hard', name: '어려움', emoji: '🔥', desc: '×2·×3을 잘 노려요',
-      plan: [[0, 0.08], [1.5, 0.30], [2, 0.37], [3, 0.25]] }
+    /* 어려움(11/28 상향): ×2·×3를 거의 놓치지 않고, 덱도 제일 센 조합으로 꾸린다 */
+    { k: 'hard', name: '어려움', emoji: '🔥', desc: '×2·×3을 거의 다 맞히고 제일 센 덱으로 나와요',
+      plan: [[0, 0.02], [1.5, 0.14], [2, 0.34], [3, 0.50]] }
   ];
   function diffOf(k) { return DIFFS.find(d => d.k === k) || DIFFS[1]; }
   function getDiff() {
@@ -941,7 +942,39 @@
   }
 
   /* ---------------- 아레나 ---------------- */
-  async function aiDeckIds() {
+  /* ---------------- 🤖 컴퓨터 덱 — 난이도별 ----------------
+     · 보통: 예전처럼 3팩을 섞어 무작위로 (강한 카드 1장 포함)
+     · 어려움: 후보 카드 중 '코스트 12 안에서 전투력 합이 가장 큰 5장'을 고른다.
+       상성(불꽃>풀…)은 상대 카드를 보고 고르므로 아래 hardPickFoe 가 처리한다. */
+  function rawPower(c) { return (c.hp || 40) + (TIER_BONUS[c.r] || 0); }
+  function bestDeckIds(pool) {
+    /* 코스트 12 · 5장 정확히 — (코스트, 장수) 배낭 DP 로 '전투력 합 최대' 조합을 찾는다.
+       (탐욕적으로 세다 보면 12 예산에 5장이 안 맞아 더 약한 조합이 뽑히는 일이 있어 DP 로 정확히) */
+    const N = 5;
+    const dp = [];
+    for (let c = 0; c <= BUDGET; c += 1) { const row = []; for (let n = 0; n <= N; n += 1) row.push(null); dp.push(row); }
+    dp[0][0] = { pow: 0, ids: [] };
+    for (const c of pool) {
+      const st = D.stars(c.r);
+      if (!(st <= BUDGET)) continue;
+      for (let cost = BUDGET; cost >= st; cost -= 1) {
+        for (let n = N; n >= 1; n -= 1) {
+          const prev = dp[cost - st][n - 1];
+          if (!prev) continue;
+          if (prev.ids.indexOf(c.id) >= 0) continue;
+          const val = prev.pow + rawPower(c);
+          if (!dp[cost][n] || val > dp[cost][n].pow) dp[cost][n] = { pow: val, ids: prev.ids.concat([c.id]) };
+        }
+      }
+    }
+    let best = null;
+    for (let cost = 0; cost <= BUDGET; cost += 1) {
+      const cur = dp[cost][N];
+      if (cur && (!best || cur.pow > best.pow)) best = cur;
+    }
+    return best ? best.ids : [];
+  }
+  async function aiDeckIds(level) {
     const packs = D.allPacks();
     const picks = [];
     for (let i = 0; i < 3 && picks.length < 9; i++) {
@@ -951,9 +984,15 @@
         picks.push.apply(picks, d.cards.slice(0, 220));
       } catch (e) { }
     }
+    const pool = picks.filter(c => c && D.stars(c.r) <= BUDGET);
+    /* 어려움 — 예산 12 안에서 가장 센 5장 */
+    if (level === 'hard' && pool.length >= 5) {
+      const strong = bestDeckIds(pool);
+      if (strong.length === 5) return strong;
+    }
     const out = [];
     let left = BUDGET;
-    const shuffled = picks.filter(c => D.stars(c.r) <= left).sort(() => Math.random() - 0.5);
+    const shuffled = pool.filter(c => D.stars(c.r) <= left).sort(() => Math.random() - 0.5);
     const strong = shuffled.filter(c => D.stars(c.r) >= 4).slice(0, 1);
     strong.forEach(c => { if (D.stars(c.r) <= left) { out.push(c); left -= D.stars(c.r); } });
     for (const c of shuffled) {
@@ -981,7 +1020,7 @@
     if (mine.length < 5) mine = (await deckFor(meId));
     let foe, foeName, foeProfile = null;
     if (ui.mode === 'ai') {
-      foe = (await aiDeckIds()).map(id => window.PKDex.findCard(id)).filter(Boolean);
+      foe = (await aiDeckIds(ui.diff)).map(id => window.PKDex.findCard(id)).filter(Boolean);
       if (foe.length < 5) {
         const p = await deckFor(meId);
         foe = p.slice();
@@ -992,7 +1031,7 @@
       const ord = ui.p2Order && ui.p2Order.length === 5 ? ui.p2Order : [];
       foe = ord.map(id => window.PKDex.findCard(id)).filter(Boolean);
       if (foe.length < 5) foe = await deckFor(ui.p2);
-      if (foe.length < 5) foe = (await aiDeckIds()).map(id => window.PKDex.findCard(id)).filter(Boolean);
+      if (foe.length < 5) foe = (await aiDeckIds(ui.diff)).map(id => window.PKDex.findCard(id)).filter(Boolean);
       foeName = P.prof(ui.p2).name;
     }
     if (mine.length < 5 || foe.length < 5) { P.toast('5장 덱이 필요해요'); ui.step = 'deck'; render(); return; }
@@ -1146,11 +1185,35 @@
   function clearCta() { const az = q('#actionZone'); if (az) az.innerHTML = ''; }
 
   /* 라운드 준비: 배틀존 비우고 대기열 재도색 */
+  /* 🤖 어려움 — 상대 카드를 보고 상성 유리 카드를 골라 낸다(60%), 아니면 계획된 순서대로 */
+  function hardPickFoe(b) {
+    const cur = b.foe.deck[b.round];
+    const left = b.foe.deck.filter((c, i) => c && i >= b.round);
+    if (!left.length || !b.pickA) return cur;
+    if (Math.random() >= 0.6) return cur;
+    const mine = b.pickA;
+    let best = null, bestScore = -1e9;
+    for (const c of left) {
+      const adv = advantage(c, mine) ? 1 : 0;
+      const hurt = advantage(mine, c) ? 1 : 0;
+      const sc = adv * 1000 + rawPower(c) - hurt * 400;
+      if (sc > bestScore) { bestScore = sc; best = c; }
+    }
+    return best || cur;
+  }
   function enterRound() {
     const b = ui.bt;
     if (!alive()) return;
     b.phase = 'ready';
     b.pickA = b.me.deck[b.round];
+    /* 어려움 — 상성 좋은 카드를 이번 순서 자리로 끌어온다(남은 카드끼리 자리만 바꾼다) */
+    if (b.mode === 'ai' && ui.diff === 'hard') {
+      const pick = hardPickFoe(b);
+      if (pick && b.foe.deck[b.round] && pick.id !== b.foe.deck[b.round].id) {
+        const j = b.foe.deck.findIndex(c => c && c.id === pick.id);
+        if (j > b.round) { b.foe.deck[j] = b.foe.deck[b.round]; b.foe.deck[b.round] = pick; }
+      }
+    }
     b.pickC = b.foe.deck[b.round];
     b.mult = [1, 1];
     b.base = [0, 0];
@@ -1810,6 +1873,30 @@
   window.PKBattle = {
     render, power, advantage,
     diff: function () { return ui.diff; }, setDiff: setDiff, DIFFS: DIFFS, aiPlan: aiPlan,
-    cardPower: function (id, ownerId) { return P.cardWinCount(ownerId || P.state.active, id) * CARD_WIN_POWER; }
+    cardPower: function (id, ownerId) { return P.cardWinCount(ownerId || P.state.active, id) * CARD_WIN_POWER; },
+    /* ---- 검증용 ---- */
+    /* 타이밍 바 확률표를 n번 뽑아 본 결과 */
+    aiStats: function (k, n) {
+      const N = Math.max(1, Math.min(4000, Number(n) || 600));
+      const out = { n: N, miss: 0, z15: 0, z2: 0, z3: 0 };
+      for (let i = 0; i < N; i += 1) {
+        const m = aiPlan(k || ui.diff);
+        if (m === 1.5) out.z15 += 1;
+        else if (m === 2) out.z2 += 1;
+        else if (m === 3) out.z3 += 1;
+        else out.miss += 1;
+      }
+      return out;
+    },
+    /* 난이도별 컴퓨터 덱(카드 id 5장) */
+    aiDeck: async function (k) { return aiDeckIds(k || ui.diff); },
+    /* 상대 카드 1장을 주면 어려움이 고를 카드 — 상성 우선인지 확인 */
+    counterPick: function (foeIds, mineId) {
+      const deck = (foeIds || []).map((id) => window.PKDex.findCard(id)).filter(Boolean);
+      const mine = mineId ? window.PKDex.findCard(mineId) : null;
+      const b = { round: 0, foe: { deck: deck }, pickA: mine };
+      return hardPickFoe(b);
+    },
+    rawPower: rawPower
   };
 })();

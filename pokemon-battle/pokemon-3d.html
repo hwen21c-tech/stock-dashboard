@@ -691,6 +691,14 @@
     padding:8px 12px;background:#e6efff;color:#3f6fd8;cursor:pointer;white-space:nowrap;
   }
   .prGames{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px 12px 4px}
+  /* 🤖 컴퓨터(야생) 난이도 — 혼자 연습 모드 안에서 고른다 */
+  .prDiff{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px 12px 2px}
+  .prDiff button{
+    appearance:none;border:2px solid #dbe6f5;background:#fff;border-radius:12px;font-family:inherit;
+    font-weight:900;font-size:10.5px;color:#4a5f7c;padding:9px 2px;cursor:pointer;line-height:1.3;
+  }
+  .prDiff button.on{background:linear-gradient(180deg,#ffe3e0,#ffb3a8);border-color:#e8604a;color:#7a1c0a}
+  .prDiffNote{padding:2px 14px 2px;font-size:10px;font-weight:900;color:#8497ad;line-height:1.5}
   .prGames button{
     appearance:none;border:2px solid #dbe6f5;background:#fff;border-radius:12px;font-family:inherit;
     font-weight:900;font-size:10.5px;color:#4a5f7c;padding:9px 2px;cursor:pointer;line-height:1.3;
@@ -712,6 +720,7 @@
     .modeCard .mcEmo{font-size:22px}
     .modeCard b{font-size:12px}
     .prGames button{font-size:9.5px;padding:8px 1px}
+    .prDiff button{font-size:9.5px;padding:8px 1px}
     #dexViewModal,#gymModeModal,#practiceModal,#dadPinModal{padding-left:6px;padding-right:6px}
     .seg button{font-size:11.5px;padding:5px 7px}
     button.chip{font-size:11.5px;padding:6px 9px}
@@ -960,6 +969,13 @@
       <button type="button" data-prgame="tap">⚡ 움직이는 원</button>
       <button type="button" data-prgame="mole">🕳️ 두더지+폭탄</button>
     </div>
+    <div class="prLabel">④ 컴퓨터 난이도</div>
+    <div class="prDiff" id="prDiff">
+      <button type="button" data-prdiff="easy">🌱 쉬움</button>
+      <button type="button" data-prdiff="normal">⚔️ 보통</button>
+      <button type="button" data-prdiff="hard">🔥 어려움</button>
+    </div>
+    <div class="prDiffNote" id="prDiffNote">어려움 — 목표 존 한가운데를 노리고, 공격·방어도 세요 · 지난번 선택으로 기억해요</div>
     <div class="mFoot">
       <button class="ghost" id="prClose2">취소</button>
       <button class="primary" id="prStart">연습 시작! ▶</button>
@@ -1026,6 +1042,7 @@
 
 <div id="gymBar" hidden>
   <button class="chip" id="btnGymMode">🎯 모드</button>
+  <button class="chip" id="btnGymDiff">🔥 난이도</button>
   <button class="chip" id="btnMiniSet">🎮 미니게임</button>
   <button class="chip" id="btnGymRematch">🔁 다시 배틀</button>
   <button class="chip" id="btnGymExit">🚪 체육관 나가기</button>
@@ -6427,6 +6444,7 @@ async function startMatch() {
   setBattleHud(true);
   const bar = document.getElementById('gymBar');
   if (bar) bar.hidden = false;
+  paintGymDiffChip();
   switchBgm('music_battle');
   refreshMiniNames();
   if (gymIsPractice()) {
@@ -6542,9 +6560,9 @@ function startTiming() {
     }
   });
   gym.stage = 'timing'; gym.t = 0; gym.autoPressT = 0;
-  /* 혼자 연습 — 야생은 1.0~3.4초 사이에 스스로 멈춘다 */
-  if (gymIsPractice()) gym.practice.botStopAt = 1.0 + Math.random() * 2.4;
   setTimingPad(true);
+  /* 🤖 야생은 난이도에 맞춰 스스로 멈춘다 (쉬움은 흘려 넘기고, 어려움은 존 한가운데) */
+  if (gymIsPractice()) gym.practice.botStopAt = botDeadline();
   [0, 1].forEach((i) => {
     T.pos[i] = 50 + 46 * Math.sin(T.phase[i]);
     const z = document.querySelector(`[data-tgzone="${i}"]`);
@@ -7190,8 +7208,15 @@ function updateTiming(dt) {
     T.pos[i] = 50 + 46 * Math.sin(T.t * w + T.phase[i]);
     moveCursorEl(i, T.pos[i]);
   }
-  /* 혼자 연습 — 야생 쪽은 정해진 순간에 스스로 멈춘다 */
-  if (gymIsPractice() && !T.done[1] && T.t >= (gym.practice.botStopAt || 2.2)) stopTiming(1, true, true);
+  /* 🤖 혼자 연습 — 야생은 지금 겹침이 난이도 목표를 넘는 순간 스스로 멈춘다.
+     (쉬움 34% · 보통 62% · 어려움 94% — 어려움은 목표 존 한가운데에서 멈춘다) */
+  if (gymIsPractice() && !T.done[1]) {
+    const tune = aiTuning();
+    const overlap = timingOverlapPct(1) / 100;
+    if (T.t >= (gym.practice.botStopAt || 3.6) || (T.t >= 0.45 && overlap >= tune.acc)) {
+      stopTiming(1, true, true);
+    }
+  }
   /* 한쪽만 누르고 있으면 10초 뒤 자동 입력 */
   gym.autoPressT += dt;
   if (gym.autoPressT > 10) {
@@ -7202,8 +7227,12 @@ function stopTiming(i, auto, bot) {
   const T = gym.timing;
   if (!T || !T.run || T.done[i]) return false;
   T.done[i] = true;
-  /* 승패는 공과 목표 존의 겹침 면적 비율(0~100%)로 결정한다 */
-  const acc = timingOverlapPct(i);
+  /* 승패는 공과 목표 존의 겹침 면적 비율(0~100%)로 결정한다.
+     🤖 야생은 난이도 점수 계수를 곱한다(쉬움 ×0.55 · 보통 ×0.85 · 어려움 ×1.0) */
+  let acc = timingOverlapPct(i);
+  if (bot) {
+    try { acc = Math.round(acc * aiTuning().score * 10) / 10; } catch (e) { /* */ }
+  }
   T.acc[i] = acc;
   const btn = document.getElementById('tgBtn' + i);
   if (btn) { btn.classList.add('done'); btn.disabled = true; btn.textContent = '✓ 멈춤'; }
@@ -7276,7 +7305,12 @@ function updateAttack(dt) {
     if (!gym.hitDone) {
       gym.hitDone = true;
       const pw = gym.lastPower != null ? gym.lastPower : 60;
-      const dmg = Math.round(22 + pw * 0.3);
+      let dmg = Math.round(22 + pw * 0.3);
+      /* 🤖 난이도 — 야생이 때리면 더 세게, 야생이 맞으면 덜 아프게 */
+      if (gymIsPractice()) {
+        const tune = aiTuning();
+        dmg = Math.round(dmg * (w === 1 ? tune.dmg : tune.def));
+      }
       gym.hp[1 - w] = Math.max(0, gym.hp[1 - w] - dmg);
       updateHpBars();
       const hx = D.baseX + dirD * 1.6, hz = D.baseZ + 0.55;
@@ -7330,6 +7364,11 @@ function updateAttack(dt) {
     }
     burstStars(new THREE.Vector3(0, 2.0, 0), 16, 2.0, 1.8);
     gymCheer(0.9);
+    /* 🤖 어려움 — 야생이 위기(HP 55 이하)에서 라운드를 이기면 숨을 고르며 조금 회복 */
+    if (gymIsPractice() && gym.roundWinner === 1 && gymDiff().k === 'hard' && gym.hp[1] < 55) {
+      gym.hp[1] = Math.min(100, gym.hp[1] + 8);
+      battleLogLine(`💚 야생이 숨을 고르며 회복 (+8 · HP ${Math.round(gym.hp[1])})`);
+    }
     updateScoreboard();
     /* 진 라운드의 포켓몬은 오늘 기절(💤) — 센터에서 회복해야 다시 고를 수 있다
        (혼자 연습은 연습이므로 기절을 남기지 않는다) */
@@ -7435,14 +7474,14 @@ function sideNm(i) {
 }
 /* 야생 기록 — 연타·두더지는 상대 차례를 기다리지 않고 바로 채운다 */
 function practiceBotTaps() {
-  const adv = sideAdv(1);
-  const base = 16 + Math.round(Math.random() * 20);
-  return clamp(base + (adv > 0 ? 7 : adv < 0 ? -7 : 0), 6, 48);
+  const t = aiTuning();
+  const base = t.tap[0] + Math.round(Math.random() * (t.tap[1] - t.tap[0]));
+  return clamp(base, 4, 48);
 }
 function practiceBotMoles() {
-  const adv = sideAdv(1);
-  const base = 3 + Math.round(Math.random() * 9);
-  return clamp(base + (adv > 0 ? 3 : adv < 0 ? -2 : 0), 1, 14);
+  const t = aiTuning();
+  const base = t.mole[0] + Math.round(Math.random() * (t.mole[1] - t.mole[0]));
+  return clamp(base, 1, 18);
 }
 function prWildRandom() {
   let id = 0, guard = 0;
@@ -7547,6 +7586,20 @@ function buildPracticeModal() {
     b.classList.toggle('on', on);
     b.setAttribute('aria-pressed', on ? 'true' : 'false');
   });
+  /* 🤖 컴퓨터 난이도 — 고른 값 표시 + 설명 */
+  m.querySelectorAll('#prDiff button').forEach((b) => {
+    const on = b.dataset.prdiff === gymDiffKey();
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  const dn = document.getElementById('prDiffNote');
+  if (dn) {
+    const d = aiTuning();
+    dn.textContent = d.emoji + ' ' + d.name + ' — ' +
+      (!gymIsPractice() ? '연습을 시작하면 야생이 이 난이도로 나와요' :
+        d.key === 'hard' ? '목표 존 한가운데를 노리고, 공격 1.35배 · 방어 0.72배' :
+        d.key === 'normal' ? '11/28 이전 그대로의 실력' : '야생이 자주 빗나가고 점수도 낮아요');
+  }
   const st = document.getElementById('prStart');
   if (st) {
     st.disabled = !prDraft.id;
@@ -7558,6 +7611,7 @@ function setPracticeBar(on) {
   if (a) a.textContent = on ? '🎮 게임·친구 바꾸기' : '🎮 미니게임';
   if (b) b.textContent = on ? '🔁 다시 연습' : '🔁 다시 배틀';
   if (c) c.textContent = on ? '🚪 연습 그만두기' : '🚪 체육관 나가기';
+  paintGymDiffChip();
 }
 function endPractice() {
   if (!gymIsPractice()) return false;
@@ -7586,6 +7640,65 @@ function startPractice() {
   setPracticeBar(true);
   startMatch();
   return true;
+}
+
+/* ---------- 10-e-4. 🤖 컴퓨터(야생) 난이도 — 혼자 연습·체육관 ----------
+   11/28 피드백: "컴퓨터 난이도가 어려움인데도 쉽다" → 어려움을 확실히 세게 만든다.
+   · 쉬움: 자주 빗나가고 점수도 낮다 (둘째용)
+   · 보통: 11/28 이전 그대로의 실력
+   · 어려움: 타이밍은 목표 존 한가운데(겹침 94%), 연타·두더지도 최대치,
+             야생의 공격 1.35배 · 방어(받는 데미지) 0.72배, 위기엔 방어 강화 + 회복.
+   난이도는 localStorage(pkm.gym.diff.v1)에 기억되고 기본은 어려움. */
+const GYM_DIFF_KEY = 'pkm.gym.diff.v1';
+const GYM_DIFFS = [
+  { k: 'easy', name: '쉬움', emoji: '🌱', tap: [6, 18], mole: [1, 5], acc: 0.34, score: 0.55, dmg: 0.85, def: 1.12 },
+  { k: 'normal', name: '보통', emoji: '⚔️', tap: [16, 36], mole: [3, 11], acc: 0.62, score: 0.85, dmg: 1.0, def: 1.0 },
+  { k: 'hard', name: '어려움', emoji: '🔥', tap: [30, 44], mole: [9, 15], acc: 0.94, score: 1.0, dmg: 1.35, def: 0.72 },
+];
+function gymDiffKey() {
+  let k = '';
+  try { k = localStorage.getItem(GYM_DIFF_KEY) || ''; } catch (e) { k = ''; }
+  return GYM_DIFFS.some((d) => d.k === k) ? k : 'hard';
+}
+function gymDiff() { return GYM_DIFFS.find((d) => d.k === gymDiffKey()) || GYM_DIFFS[2]; }
+function setGymDiff(k) {
+  if (!GYM_DIFFS.some((d) => d.k === k)) return gymDiffKey();
+  try { localStorage.setItem(GYM_DIFF_KEY, k); } catch (e) { /* */ }
+  return k;
+}
+function gymDiffLabel() { const d = gymDiff(); return d.emoji + ' ' + d.name; }
+/* 위기 — 야생이 지고 있으면(HP 40% 이하 또는 라운드 열세) 방어·정확도를 더 올린다 */
+function gymCrisis() {
+  if (!gymIsPractice()) return false;
+  return gym.hp[1] < 40 || gym.wins[1] < gym.wins[0];
+}
+/* 이번 미니게임에 적용할 야생의 실력 — 난이도 × 상성 × 위기 */
+function aiTuning() {
+  const d = gymDiff();
+  const adv = sideAdv(1);                    /* 야생이 상성 유리면 1, 불리하면 -1 */
+  const crisis = gymCrisis();
+  const up = (adv > 0 ? 1 : adv < 0 ? -1 : 0) + (crisis ? 1 : 0);
+  const clampN = (v, lo, hi) => Math.max(lo, Math.min(hi, Math.round(v)));
+  return {
+    key: d.k, name: d.name, emoji: d.emoji, adv, crisis,
+    tap: [clampN(d.tap[0] + up * 3, 4, 48), clampN(d.tap[1] + up * 3, 4, 48)],
+    mole: [clampN(d.mole[0] + up, 1, 18), clampN(d.mole[1] + up, 1, 18)],
+    acc: clamp(d.acc + up * 0.04, 0.05, 0.99),
+    score: clamp(d.score + up * 0.03, 0.2, 1),
+    dmg: d.dmg * (crisis ? 1.1 : 1),
+    def: d.def * (crisis ? 0.92 : 1),
+  };
+}
+/* 🤖 야생이 늦어도 이 시각에는 멈춘다 — 목표 겹침을 끝내 못 찾았을 때의 안전장치.
+   실제로는 아래 updateTiming 이 '지금 공이 목표 존에 얼마나 겹쳤는지'를 매 프레임 보고
+   난이도 목표(aiTuning().acc)를 넘는 순간 멈춘다(60fps에서 사실상 그 자리에서 멈춤). */
+function botDeadline() { return +(3.4 + Math.random() * 0.8).toFixed(2); }
+/* 체육관 바 칩 — 지금 난이도를 보여 주고, 누르면 쉬움→보통→어려움 순회 */
+function paintGymDiffChip() {
+  const b = document.getElementById('btnGymDiff');
+  if (!b) return;
+  b.textContent = gymDiffLabel();
+  b.setAttribute('aria-label', '컴퓨터 난이도 ' + gymDiff().name + ' — 누르면 바뀌어요');
 }
 
 /* ---------- 11. 하트 파티클 (야외·실내 공통 — scene 에 매단다) ---------- */
@@ -8943,6 +9056,15 @@ if (prModalEl) {
     if (tile) { prDraft.id = Number(tile.dataset.prid) || 0; buildPracticeModal(); return; }
     const g = e.target.closest('[data-prgame]');
     if (g) { prDraft.game = g.dataset.prgame; buildPracticeModal(); return; }
+    const df = e.target.closest('[data-prdiff]');
+    if (df) {
+      const k = setGymDiff(df.dataset.prdiff);
+      const d = gymDiff();
+      toast('🤖 컴퓨터 난이도 · ' + d.emoji + ' ' + d.name);
+      paintGymDiffChip();
+      buildPracticeModal();
+      return;
+    }
   });
 }
 const prCloseA = document.getElementById('prClose');
@@ -8997,6 +9119,15 @@ document.getElementById('btnMiniClose').addEventListener('click', (e) => {
 document.getElementById('gymBar').addEventListener('click', (e) => {
   if (e.target.id === 'btnGymMode') {
     openGymMode();
+  } else if (e.target.id === 'btnGymDiff') {
+    /* 🔥 난이도 칩 — 쉬움 → 보통 → 어려움 순회 */
+    const order = GYM_DIFFS.map((d) => d.k);
+    const i = order.indexOf(gymDiffKey());
+    const k = setGymDiff(order[(i + 1) % order.length]);
+    const d = GYM_DIFFS.find((x) => x.k === k);
+    paintGymDiffChip();
+    toast('🤖 컴퓨터 난이도 · ' + d.emoji + ' ' + d.name);
+    if (gymIsPractice()) buildPracticeModal();
   } else if (e.target.id === 'btnGymRematch') {
     if (gymIsPractice()) { startPractice(); return; }
     if (gym.entries[0].length && gym.entries[1].length) startMatch();
@@ -9773,7 +9904,7 @@ window.__AJIT = {
       planText: miniPlanText(),
       lastPower: gym.lastPower,
       tapPhase: gym.tap ? gym.tap.phase : null,
-      timing: gym.timing ? { run: gym.timing.run, pos: gym.timing.pos.slice(), acc: gym.timing.acc.slice(), done: gym.timing.done.slice(), zone: gym.timing.zone.slice(), zoneL: gym.timing.zoneL.slice(), speed: gym.timing.speed.slice(), tag: gym.timing.tag.slice() } : null,
+      timing: gym.timing ? { run: gym.timing.run, t: +gym.timing.t.toFixed(3), pos: gym.timing.pos.slice(), acc: gym.timing.acc.slice(), done: gym.timing.done.slice(), zone: gym.timing.zone.slice(), zoneL: gym.timing.zoneL.slice(), speed: gym.timing.speed.slice(), tag: gym.timing.tag.slice() } : null,
       result: gym.result ? { winner: gym.result.winner, wins: gym.result.wins.slice() } : null,
       fighterNames: gym.fighters.filter(Boolean).map((f) => ({ name: f.name, id: f.id, side: f.side, fx: f.fx })),
       bgm: bgmName,
@@ -10160,6 +10291,35 @@ window.__AJIT = {
   dadReset() { return dadReviveAll(); },
   /* ---- 🎯 혼자 연습 모드 ---- */
   openGymMode() { return openGymMode(); },
+  get gymDiff() {
+    const d = gymDiff();
+    return {
+      key: d.k, name: d.name, emoji: d.emoji,
+      list: GYM_DIFFS.map((x) => ({ k: x.k, name: x.name, emoji: x.emoji })),
+      stored: (function () { try { return localStorage.getItem(GYM_DIFF_KEY); } catch (e) { return null; } })(),
+      chip: (document.getElementById('btnGymDiff') || {}).textContent || '',
+      buttons: [...document.querySelectorAll('#prDiff button')].map((b) => ({ k: b.dataset.prdiff, on: b.classList.contains('on') })),
+      note: (document.getElementById('prDiffNote') || {}).textContent || '',
+    };
+  },
+  setGymDiff(k) { setGymDiff(k); paintGymDiffChip(); return this.gymDiff; },
+  get gymAI() {
+    const t = aiTuning();
+    return { key: t.key, name: t.name, adv: t.adv, crisis: t.crisis, tap: t.tap.slice(), mole: t.mole.slice(), acc: +t.acc.toFixed(3), score: +t.score.toFixed(2), dmg: +t.dmg.toFixed(2), def: +t.def.toFixed(2) };
+  },
+  botStopPreview() {
+    const t = aiTuning();
+    return { acc: +t.acc.toFixed(3), deadline: botDeadline() };
+  },
+  /* 검증용 — 연타·두더지 봇이 낼 점수를 n번 뽑아 본다 */
+  botScores(n) {
+    const N = Math.max(1, Math.min(300, Number(n) || 40));
+    const taps = [], moles = [];
+    for (let i = 0; i < N; i += 1) { taps.push(practiceBotTaps()); moles.push(practiceBotMoles()); }
+    const avg = (a) => +(a.reduce((s, v) => s + v, 0) / a.length).toFixed(2);
+    const mm = (a) => [Math.min.apply(null, a), Math.max.apply(null, a)];
+    return { n: N, tapAvg: avg(taps), tapRange: mm(taps), moleAvg: avg(moles), moleRange: mm(moles) };
+  },
   get gymModeOpen() {
     const m = document.getElementById('gymModeModal');
     return !!(m && !m.hidden);
@@ -10191,7 +10351,7 @@ window.__AJIT = {
       info: gym.practice ? {
         kidSlot: gym.practice.kidSlot, kidName: gym.practice.kidName,
         wildId: gym.practice.wildId, wildName: gym.practice.wildName,
-        game: gym.practice.game, n: gym.practice.n,
+        game: gym.practice.game, n: gym.practice.n, botStopAt: gym.practice.botStopAt,
       } : null,
       stage: gym.stage, round: gym.round,
       names: { s0: sideNm(0), s1: sideNm(1) },

@@ -17,7 +17,9 @@
       if (!m) return '';
       return '<button class="free-row" data-freepack="' + esc(fp.id) + '">' +
         '<div class="free-art">' + U.packArt(m, { tiny: true }) + '</div>' +
-        '<div class="free-txt"><b>' + esc(m.name) + '</b><small>1:1 ' + esc(fp.reason || '5승') + ' 보상 · 무료</small></div>' +
+        '<div class="free-txt"><b>' + esc(m.name) + '</b><small>' +
+          (fp.reason === '아빠 선물' ? '🎁 아빠 선물 · 무료' : '1:1 ' + esc(fp.reason || '5승') + ' 보상 · 무료') +
+          '</small></div>' +
         '<span class="btn gold sm">무료로 뜯기</span></button>';
     }).join('');
     if (!rows) return '';
@@ -215,7 +217,7 @@
       }
       p.opened[packId] = (p.opened[packId] || 0) + 1;
       P.state.profiles[P.state.active] = p;
-      cards = D.pull(packData, !!o.boosted);
+      cards = D.pull(packData, !!o.boosted, p.cards);
       isNew = cards.map(c => !p.cards[c.id]);
       cards.forEach(c => U.addCard(P.state.active, c, packId, 1));
       P.save();

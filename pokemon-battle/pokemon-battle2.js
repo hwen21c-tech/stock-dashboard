@@ -1424,7 +1424,7 @@
         a.onerror = () => { /* 조용히 무시 */ };
         a.onstalled = a.onerror;
         a.volume = 0.92 * voiceLevel();
-        a.src = 'https://stock-dashboard-live-bice.vercel.app/api/tts?lang=ko&text=' + encodeURIComponent(w);
+        a.src = '/api/tts?lang=ko&text=' + encodeURIComponent(w);
         const pr = a.play();
         if (pr && pr.catch) pr.catch(() => { /* 자동재생 차단은 무시 */ });
         return true;
@@ -1621,6 +1621,134 @@
     }
   }
 
+  /* ---------- 10-1-b. 🌱 야생 등장 밸런스 — 새 포켓몬 우선(기본) ---------- */
+  /* 아이들 피드백(11/28): "같은 포켓몬이 너무 자주 나온다".
+     진화 해금 규칙(이전 단계 2마리 포획 → 다음 진화형 해금)을 막지 않도록 세 갈래로 나눈다.
+       · fresh : 아직 도감에 없는 포켓몬                              → 가장 자주 (기본 70%)
+       · evo   : 1마리만 잡았고 다음 진화 단계가 남아 있는 포켓몬        → 2마리째를 잡아 진화를 열 수 있게 정상 이상 (기본 24%)
+       · dup   : 2마리 이상 잡았거나 더 진화할 단계가 없는 포켓몬       → 크게 낮춤 (기본 6%)
+     아빠 PIN(0623) 설정에서 '예전 그대로'로 되돌리거나 '진화 해금 우선'으로 바꿀 수 있다. */
+  const SPAWN_MODE_KEY = 'pkm.spawn.v1';
+  const SPAWN_SPECS = [
+    { k: 'fresh', name: '새 포켓몬 우선', emoji: '🌱', fresh: 0.70, evo: 0.24, dup: 0.06 },
+    { k: 'unlock', name: '진화 해금 우선', emoji: '🧬', fresh: 0.50, evo: 0.42, dup: 0.08 },
+    { k: 'classic', name: '예전 그대로', emoji: '🕰️', fresh: null },
+  ];
+  function spawnSpecOf(k) { return SPAWN_SPECS.find((s) => s.k === k) || SPAWN_SPECS[0]; }
+  function spawnModeNow() {
+    const k = lsGet(SPAWN_MODE_KEY, 'fresh');
+    return SPAWN_SPECS.some((s) => s.k === k) ? k : 'fresh';
+  }
+  function spawnModeSet(k) {
+    if (!SPAWN_SPECS.some((s) => s.k === k)) return spawnModeNow();
+    lsSet(SPAWN_MODE_KEY, k);
+    return k;
+  }
+  /* 다음 진화 후보 — evo-map.json 이 아직 안 왔으면 도감 DB(pokemon-db.json)의 evoFrom 으로 거꾸로 만든다 */
+  let evoNextCache = null;
+  function nextStagesOf(id) {
+    try {
+      if (PB.evo && PB.evo[String(id)]) return PB.evo[String(id)];
+      if (!evoNextCache) {
+        evoNextCache = {};
+        POKEMON.forEach((q) => {
+          const f = Number(q && q.evoFrom) || 0;
+          if (f) (evoNextCache[f] = evoNextCache[f] || []).push(q.id);
+        });
+      }
+      return evoNextCache[String(id)] || [];
+    } catch (e) { return []; }
+  }
+  /* 이 포켓몬을 2마리째 잡으면 열리는 다음 진화형이 아직 도감에 없나 = 지금 한 마리 더 잡아 둘 이유 */
+  function needsSecondCatch(id) {
+    try {
+      const nexts = nextStagesOf(id);
+      if (!nexts.length) return false;
+      const ids = (S && S.dex && S.dex.ids) ? S.dex.ids : null;
+      if (!ids || !ids.has) return true;
+      return nexts.some((n) => !ids.has(Number(n)));
+    } catch (e) { return false; }
+  }
+  /* 게임 본체의 진화 해금 규칙 그대로 — 이전 단계를 2마리 잡기 전에는 진화형이 야생에 나오지 않는다 */
+  function evoOpenFor(p) {
+    try { if (typeof window.evoUnlocked === 'function') return !!window.evoUnlocked(p); } catch (e) { /* */ }
+    const from = Number(p && p.evoFrom) || 0;
+    if (!from) return true;
+    if (p && (p.leg || p.myth)) return true;
+    try { if (S.dex.ids.has(Number(p.id))) return true; } catch (e) { /* */ }
+    return caughtTimesOf({ id: from }) >= 2;
+  }
+  const spawnRecent = [];
+  /* 갈래 안에서 한 마리 — 직전·최근 등장은 피한다 */
+  function spawnDraw(list, excludeId) {
+    let cand = list.filter((p) => String(p.id) !== String(excludeId) && spawnRecent.indexOf(p.id) < 0);
+    if (cand.length < 3) cand = list.filter((p) => String(p.id) !== String(excludeId));
+    if (!cand.length) cand = list.slice();
+    if (!cand.length) return null;
+    const p = pick(cand);
+    spawnRecent.push(p.id);
+    if (spawnRecent.length > 14) spawnRecent.shift();
+    return p;
+  }
+  function spawnFinish(p) { return Object.assign({}, p, { level: rand(2, 9), cp: rand(8, 140) }); }
+  const SpawnMode = {
+    key: () => spawnModeNow(),
+    spec: () => spawnSpecOf(spawnModeNow()),
+    list: () => SPAWN_SPECS.map((s) => ({ k: s.k, name: s.name, emoji: s.emoji })),
+    set: (k) => spawnModeSet(String(k || '')),
+    /* 등장 1회 — fresh/evo/dup 갈래를 확률대로 고르고 그 안에서 균등 추첨 */
+    pick(orig, args, opts) {
+      const o = opts || {};
+      const k = spawnModeNow();
+      if (k === 'classic') return pickWildRecatch(orig, args, o);   /* 예전 규칙 그대로 */
+      const spec = spawnSpecOf(k);
+      try {
+        if (typeof POKEMON === 'undefined' || !Array.isArray(POKEMON) || !POKEMON.length) return orig.apply(null, args);
+        const excludeId = args && args[0];
+        const all = POKEMON.filter((p) => p && !p.form && evoOpenFor(p) && caughtTimesOf(p) < CAPTURE_LIMIT
+          && (!o.noRare || !(p.leg || p.myth)));
+        let pool = all;
+        if (typeof S !== 'undefined' && S && S.range === 'gen1') {
+          const g1 = all.filter((p) => p.gen === 1);
+          if (g1.length) pool = g1;
+        }
+        if (!pool.length) return orig.apply(null, args);
+        /* 전설·환상은 본체와 같은 2% 확률로만 따로 뽑는다 — 일반 갈래에는 섞지 않는다 */
+        const rare = pool.filter((p) => p.leg || p.myth);
+        if (!o.noRare) {
+          const rate = (typeof LEGEND_RATE === 'number') ? LEGEND_RATE : 0.02;
+          if (rare.length && Math.random() < rate) {
+            const rp = spawnDraw(rare, excludeId);
+            if (rp) return spawnFinish(rp);
+          }
+        }
+        const plain = pool.filter((p) => !p.leg && !p.myth);
+        const groups = { fresh: [], evo: [], dup: [] };
+        (plain.length ? plain : pool).forEach((p) => {
+          const n = caughtTimesOf(p);
+          if (n <= 0) groups.fresh.push(p);
+          else if (n === 1 && needsSecondCatch(p.id)) groups.evo.push(p);
+          else groups.dup.push(p);
+        });
+        const keys = Object.keys(groups).filter((g) => groups[g].length);
+        if (!keys.length) return orig.apply(null, args);
+        const total = keys.reduce((s, g) => s + (spec[g] || 0), 0);
+        let r = Math.random() * total;
+        let g = keys[keys.length - 1];
+        for (let i = 0; i < keys.length; i += 1) {
+          r -= (spec[keys[i]] || 0);
+          if (r <= 0) { g = keys[i]; break; }
+        }
+        const p = spawnDraw(groups[g], excludeId);
+        if (!p) return orig.apply(null, args);
+        return spawnFinish(p);
+      } catch (e) {
+        warn('spawn fresh', e);
+        try { return orig.apply(null, args); } catch (e2) { throw e2; }
+      }
+    },
+  };
+
   /* ---------- 10-2. 전설·환상·보스 쿨다운 (5판에 최대 1마리) ---------- */
   /* 희귀(전설·환상·보스)가 한 번 나오면 그 뒤 4판은 추가 희귀 스폰을 막는다.
      → 최근 5판 안에 희귀는 최대 1마리. 새로고침해도 이어지게 프로필 슬롯에 저장. */
@@ -1802,7 +1930,7 @@
               if (boost) return boost;
             }
           } catch (e) { warn('pickWild pre', e); }
-          const w = pickWildRecatch(origPick, arguments, { noRare: cooling });
+          const w = SpawnMode.pick(origPick, arguments, { noRare: cooling });
           try {
             if (w && Math.random() < (SHINY_RATE + Streak.shinyBonus())) w.shiny = true;
           } catch (e) { /* */ }
@@ -2854,7 +2982,7 @@
         + '<div class="pkq-acts" id="pkqActs">'
         + '<button type="button" class="pkq-main" data-act="switch" id="pkqSwitch">➡️ 둘째 차례로 바꾸기</button>'
         + '<button type="button" class="pkq-pin" data-act="pin">🔓 아빠 PIN (횟수 초기화·추가)</button>'
-        + '<a class="pkq-home" href="./">🏠 처음 화면으로</a>'
+        + '<a class="pkq-home" href="./pokemon-battle.html">🏠 처음 화면으로</a>'
         + '</div>'
         + '<div class="pkq-admin" id="pkqAdmin" hidden>'
         + '<p class="pkq-adminh">🔓 아빠 확인 완료 — 어떻게 할까요?</p>'
@@ -3626,6 +3754,33 @@
         try { out.push(pickWildRecatch(basePickOrigin, [-1])); } catch (e) { break; }
       }
       return out.map((p) => (p && p.id) || 0);
+    },
+    /* 🌱 야생 등장 밸런스 — 설정·분포 검증 */
+    spawnMode: {
+      get: () => spawnModeNow(),
+      set: (k) => spawnModeSet(String(k || '')),
+      list: () => SpawnMode.list(),
+      spec: () => { const s = spawnSpecOf(spawnModeNow()); return { k: s.k, fresh: s.fresh, evo: s.evo, dup: s.dup }; },
+      needsSecond: (id) => needsSecondCatch(Number(id)),
+      /* 보스·진화·전설 보정 없이 이 규칙만으로 n번 뽑아 갈래 분포를 센다 */
+      sample(n) {
+        const out = { n: 0, fresh: 0, evo: 0, dup: 0, rare: 0, ids: {} };
+        if (!basePickOrigin) return out;
+        const N = Math.max(1, Math.min(1200, Number(n) || 300));
+        for (let i = 0; i < N; i += 1) {
+          let p = null;
+          try { p = SpawnMode.pick(basePickOrigin, [-1], {}); } catch (e) { break; }
+          if (!p) break;
+          out.n += 1;
+          const c = caughtTimesOf(p);
+          if (p.leg || p.myth) out.rare += 1;
+          if (c <= 0) out.fresh += 1;
+          else if (c === 1 && needsSecondCatch(p.id)) out.evo += 1;
+          else out.dup += 1;
+          out.ids[p.id] = (out.ids[p.id] || 0) + 1;
+        }
+        return out;
+      },
     },
   };
 })();

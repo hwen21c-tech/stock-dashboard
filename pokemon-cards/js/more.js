@@ -388,8 +388,15 @@
           '<div class="btn-row">' +
             '<button class="btn ghost sm" data-tk="normal">🎟️ 일반 +1</button>' +
             '<button class="btn ghost sm" data-tk="high">✨ 하이클래스 +1</button>' +
+            '<button class="btn ghost sm" data-tk="normal:3">일반 +3</button>' +
+            '<button class="btn ghost sm" data-tk="high:3">하이클래스 +3</button>' +
             '<button class="btn ghost sm" data-tk="normal:-1">일반 -1</button>' +
             '<button class="btn ghost sm" data-tk="high:-1">하이클래스 -1</button>' +
+          '</div></div>' +
+        '<div class="field"><label>🎁 무료팩 선물 (랜덤 팩 · 코인 0으로 바로 뜯기)</label>' +
+          '<div class="btn-row">' +
+            '<button class="btn ghost sm" data-fp="1">🎁 무료팩 +1</button>' +
+            '<button class="btn ghost sm" data-fp="3">+3</button>' +
           '</div></div>' +
         '<div class="field"><label>도감 카드 선물 (+1장 / 삭제)</label>' +
           '<div class="search-row"><input class="input" id="cardQ" placeholder="카드 이름 검색 (예: 피카츄)"><button class="btn ghost sm" id="cardSearch">검색</button></div>' +
@@ -410,12 +417,33 @@
         P.toast(P.prof(target).name + ' 코인 ' + P.won(v) + ' 차감'); paint(); U.refreshHeader();
       });
       body.querySelectorAll('[data-tk]').forEach(b => b.addEventListener('click', () => {
-        const [k, sign] = b.dataset.tk.split(':');
+        const parts = String(b.dataset.tk).split(':');
+        const k = parts[0];
+        const d = parts[1] ? (parseInt(parts[1], 10) || 0) : 1;
+        if (!d) return;
         const pr = P.prof(target);
-        const d = sign === '-1' ? -1 : 1;
         pr.tickets[k] = Math.max(0, (pr.tickets[k] || 0) + d);
         P.save(); A.sfx.coin();
-        P.toast((k === 'high' ? '하이클래스' : '일반') + ' 팩 티켓 ' + (d > 0 ? '+1' : '-1'));
+        P.toast((k === 'high' ? '하이클래스' : '일반') + ' 팩 티켓 ' + (d > 0 ? '+' + d : String(d)), true);
+        paint();
+      }));
+      /* 🎁 무료팩 선물 — 랜덤 팩을 골라 무료로 뜯을 수 있게 (코인 0) */
+      body.querySelectorAll('[data-fp]').forEach(b => b.addEventListener('click', () => {
+        const n = Math.max(1, Math.min(5, parseInt(b.dataset.fp, 10) || 1));
+        const pr = P.prof(target);
+        const packs = D.allPacks();
+        if (!packs.length) { P.toast('팩 목록을 아직 못 불러왔어요'); return; }
+        const add = [];
+        for (let i = 0; i < n; i += 1) {
+          const pack = packs[Math.floor(Math.random() * packs.length)];
+          add.push({
+            id: 'fp' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            packId: pack.id, at: Date.now(), reason: '아빠 선물'
+          });
+        }
+        pr.freePacks = P.freePacksOf(pr).concat(add).slice(-40);
+        P.save(); A.sfx.levelUp();
+        P.toast(pr.name + '에게 무료팩 +' + n + '개 선물! (카드팩 상점에서 무료로 뜯기)', true);
         paint();
       }));
       const doSearch = async () => {
