@@ -7697,6 +7697,8 @@ function botDeadline() { return +(3.4 + Math.random() * 0.8).toFixed(2); }
 function paintGymDiffChip() {
   const b = document.getElementById('btnGymDiff');
   if (!b) return;
+  /* 2인 대전에는 컴퓨터가 없다 — 난이도 칩은 혼자 연습에서만 보인다 */
+  b.hidden = !gymIsPractice();
   b.textContent = gymDiffLabel();
   b.setAttribute('aria-label', '컴퓨터 난이도 ' + gymDiff().name + ' — 누르면 바뀌어요');
 }
