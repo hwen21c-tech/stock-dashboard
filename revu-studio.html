@@ -1105,32 +1105,59 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
 
   /* 목록에 뜨는 문구에서 '얼굴이 사진·영상에 나와야 하는' 요건을 찾는다.
      '얼굴' 한 글자만 보면 '얼굴or바디 케어' 같은 시술 문구까지 걸리므로, 노출·공개·촬영을 뜻하는
-     결합어와 초상권·셀카·착용샷만 본다. ('얼굴 노출 없음'처럼 부정한 문구는 먼저 지운다.) */
+     결합어와 셀카·착용샷만 본다. 부정·선택·동의 표현은 구절 단위로 먼저 걸러낸다. */
   var FACE_KW = ['얼굴노출', '얼굴 노출', '얼굴공개', '얼굴 공개', '얼굴정면', '얼굴 정면',
                  '얼굴나오', '얼굴 나오', '얼굴이 나', '얼굴사진', '얼굴 사진', '얼굴포함', '얼굴 포함',
                  '얼굴출연', '얼굴 출연', '셀카', '셀피', 'selfie', '인물촬영', '인물 촬영',
-                 '인물사진', '인물 사진', '초상권', '본인출연', '본인 출연', '착용샷', '착용 컷', '착용컷',
+                 '인물사진', '인물 사진', '본인출연', '본인 출연', '착용샷', '착용 컷', '착용컷',
                  '정면사진', '정면 사진', '프로필사진', '프로필 사진'];
-  var FACE_NEG = ['얼굴노출 없음', '얼굴 노출 없음', '얼굴공개 없음', '얼굴 공개 없음',
-                  '얼굴없이', '얼굴 없이', '얼굴 필요없', '얼굴 필요 없', '얼굴미노출', '얼굴 미노출',
-                  '얼굴 제외', '얼굴제외', '얼굴가리', '얼굴 가리', '얼굴안나', '얼굴 안 나'];
+  /* 부정·선택·동의 표현 — 구절에서 이걸 먼저 지우고도 키워드가 남아야 '요건'으로 본다.
+     (얼굴 노출 선택 / 얼굴 노출 불가 / 얼굴 모자이크 / 셀카봉 / 얼굴이 나온 이미지 활용 동의 …) */
+  var FACE_NEG = ['얼굴노출 없', '얼굴 노출 없', '얼굴공개 없', '얼굴 공개 없',
+                  '얼굴없이', '얼굴 없이', '얼굴 필요없', '얼굴 필요 없', '얼굴 필요하지 않',
+                  '얼굴미노출', '얼굴 미노출', '얼굴 제외', '얼굴제외', '얼굴가리', '얼굴 가리',
+                  '얼굴안나', '얼굴 안 나', '얼굴 안나', '얼굴 비공개', '얼굴비공개',
+                  '얼굴 미포함', '얼굴미포함', '얼굴 모자이크', '얼굴모자이크',
+                  '얼굴 노출 불가', '얼굴노출 불가', '얼굴 공개 불가', '얼굴공개 불가',
+                  '얼굴 노출 금지', '얼굴노출 금지', '얼굴 비노출', '얼굴비노출',
+                  '얼굴 노출 선택', '얼굴노출 선택', '얼굴 공개 선택', '얼굴공개 선택',
+                  '얼굴 노출 필수 아님', '얼굴 공개 필수 아님',
+                  '모자이크 가능', '모자이크 진행', '모자이크 처리', '모자이크',
+                  '셀카봉', '셀피봉',
+                  '얼굴이 나온 이미지', '얼굴이 나온 사진', '얼굴 나온 이미지', '얼굴 나온 사진',
+                  '얼굴이 포함된 이미지', '얼굴이 포함된 사진'];
+  /* 같은 구절에 이 표현이 있으면 '선택 사항·가림'으로 본다 */
+  var FACE_SOFT = ['선택', '옵션', '희망', '필요시', '필요 시', '가능하면', '경우에 따라', 'optional',
+                   '모자이크', '가림 처리'];
+  var FACE_SPLIT = /[.。!?·/|,;\n()\[\]{}★※•→]/;
   function faceText(r) {
     var m = r.missions, ms = '';
     if (m && typeof m === 'object') ms = String(m.summary || '');
     return [r.title, r.offer, r.missionSummary, r.caution, r.note, ms]
       .filter(function (v) { return !!v; }).join(' ');
   }
+  /* 구절(문장) 단위 판별 — 같은 구절에 선택·모자이크 같은 표현이 있으면 요건이 아니다. */
   function detectFace(r) {
     var txt = faceText(r);
     if (!txt) return false;
-    var probe = txt;
-    FACE_NEG.forEach(function (neg) { probe = probe.split(neg).join(' '); });
-    for (var i = 0; i < FACE_KW.length; i++) { if (probe.indexOf(FACE_KW[i]) >= 0) return true; }
+    var clauses = String(txt).replace(/\s+/g, ' ').split(FACE_SPLIT);
+    for (var c = 0; c < clauses.length; c++) {
+      var raw = clauses[c], probe = raw;
+      for (var n = 0; n < FACE_NEG.length; n++) { probe = probe.split(FACE_NEG[n]).join(' '); }
+      var has = false;
+      for (var i = 0; i < FACE_KW.length; i++) { if (probe.indexOf(FACE_KW[i]) >= 0) { has = true; break; } }
+      if (!has) continue;
+      var soft = false;
+      for (var s = 0; s < FACE_SOFT.length; s++) { if (raw.indexOf(FACE_SOFT[s]) >= 0) { soft = true; break; } }
+      if (soft) continue;
+      return true;
+    }
     return false;
   }
+  /* 얼굴노출 제외 판정은 문구 근거만 쓴다.
+     플랫폼 기본 초상권 동의(isPortraitRights → flags.portraitConsent)는 요건이 아니므로 보지 않는다. */
   function faceHit(r) {
-    /* 플랫폼이 준 초상권 동의 항목(레뷰 isPortraitRights → flags.faceRequired) 또는 문구 판별 */
-    return (r.flags || {}).faceRequired === true || detectFace(r);
+    return detectFace(r);
   }
 
   var DEFAULT_FLAGS = { cost: true, payback: true, jigan: true, face: true };   /* 기본으로 빼고 보는 4종 */
@@ -1346,7 +1373,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     for (var fk in cf) { if (Object.prototype.hasOwnProperty.call(cf, fk)) row.flags[fk] = cf[fk]; }
     row.type = typeOf(c);                       /* 원문·보정 규칙으로 유형 확정 */
     if (row.flags.extraCost !== true && detectCost(row)) row.flags.extraCost = true;
-    if (row.flags.faceRequired !== true && detectFace(row)) row.flags.faceRequired = true;
+    row.flags.faceRequired = detectFace(row);   /* 원문 문구 근거만 — 플랫폼 초상권 동의는 portraitConsent 에만 남긴다 */
     if (row.flags.visitRequired === undefined || row.flags.visitRequired === null) {
       row.flags.visitRequired = (row.type === '방문형');
     }
@@ -1915,17 +1942,21 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     var ck = S.checks[r.id] || {};
     var missions = r.missions || {};
     var mlines = [];
-    if (missions.chars) mlines.push('<li>본문 <b>' + missions.chars + '자 이상</b></li>');
+    if (missions.posts) mlines.push('<li>포스팅 <b>' + missions.posts + '건</b></li>');
+    if (missions.chars) mlines.push('<li>본문 <b>' + Number(missions.chars).toLocaleString('ko-KR') + '자 이상</b></li>');
     if (missions.photos) mlines.push('<li>사진 <b>' + missions.photos + '장 이상</b></li>');
     if (missions.video) mlines.push('<li><b>동영상 첨부</b></li>');
+    if (missions.map) mlines.push('<li>네이버 <b>지도 삽입</b></li>');
+    if (missions.reserve) mlines.push('<li><b>방문 예약</b> 필요</li>');
     if (missions.storeWish) mlines.push('<li>스토어 <b>알림·찜</b> 필요</li>');
     if (missions.guideLink) mlines.push('<li>가이드/링크 <b>삽입</b></li>');
     if (Array.isArray(missions.keywords) && missions.keywords.length) {
       mlines.push('<li>필수 키워드: <b>' + esc(missions.keywords.join(' · ')) + '</b></li>');
     }
-    if (!r.missions) {
-      mlines.length = 0;
-      mlines.push('<li>미션 글자수·사진 장수는 <b>' + esc(platOf(r).name) + ' 상세 페이지</b>에서 확인해 주세요 (수집 데이터에 미포함)</li>');
+    /* 상세 미션을 확인한 경우에만 체크리스트를 보여 주고, 아니면 원문으로 바로 보낸다 */
+    var missionKnown = mlines.length > 0;
+    if (!missionKnown) {
+      mlines.push('<li><b>상세 미션은 ' + esc(platOf(r).name) + ' 원문에서 확인</b>해 주세요 — 글자수·사진 장수·키워드는 상세 페이지 안내가 기준입니다.</li>');
     }
 
     var html = '' +
@@ -1953,8 +1984,11 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
       '</dl>' +
       ((r.keywords && r.keywords.length) ? '<div class="kwbox"><div class="hd">🔑 플랫폼 필수 키워드 <span class="src">' + esc(platOf(r).name) + ' 공지</span></div><div class="kwlist">' +
         r.keywords.map(function (k) { return '<button class="kwtag must" data-kwcopy="' + esc(k) + '" type="button">' + esc(k) + '<span class="cp">복사</span></button>'; }).join('') + '</div></div>' : '') +
-      '<div class="missionbox"><div class="ttl">📌 미션 체크리스트</div><ul style="margin:0;padding-left:17px;font-size:12px;line-height:1.85;color:var(--txt2)">' + mlines.join('') + '</ul>' +
-      (r.missionSummary ? '<div class="srcnote" style="margin-top:6px">' + esc(r.missionSummary) + '</div>' : '') + '</div>' +
+      '<div class="missionbox"><div class="ttl">📌 미션 체크리스트 ' +
+        (missionKnown ? '<span class="src">' + esc(platOf(r).name) + ' 상세 실측</span>' : '<span class="src">수집 데이터에 미포함</span>') + '</div>' +
+        '<ul style="margin:0;padding-left:17px;font-size:12px;line-height:1.85;color:var(--txt2)">' + mlines.join('') + '</ul>' +
+      (r.missionSummary ? '<div class="srcnote" style="margin-top:6px">' + esc(r.missionSummary) + '</div>' : '') +
+      (!missionKnown ? '<div style="margin-top:8px"><a class="btn sm pri" href="' + esc(r.applyUrl || r.url || '#') + '" target="_blank" rel="noopener">' + esc(platOf(r).name) + ' 원문에서 상세 미션 보기 ↗</a></div>' : '') + '</div>' +
       (r.caution ? '<div class="tip warn" style="margin-top:9px">' + nl2br(r.caution) + '</div>' : '') +
       (r.note ? '<div class="tip info" style="margin-top:9px">' + nl2br(r.note) + '</div>' : '') +
       '<div class="metaline" style="margin-top:10px">' +
@@ -1966,7 +2000,7 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
     $('mDetailBody').innerHTML = html;
 
     var foot = '<button class="btn ' + (inCart ? 'ok' : 'pri') + '" data-add="' + esc(r.id) + '" type="button">' +
-      (inCart ? '✓ 지원함에서 빼기' : '+ 지원함 담기') + '</button>';
+      (inCart ? '🗑️ 담기 취소 (지원함에서 빼기)' : '+ 지원함 담기') + '</button>';
     if (!st) {
       foot += '<button class="btn ok" data-mark="' + esc(r.id) + '" data-markto="applied" type="button">이미 신청했어요</button>';
     } else if (st === 'dropped') {
@@ -1989,13 +2023,17 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
   /* ------------------------------------------------------------------ mission text */
   function missionLine(r) {
     var m = r.missions || {}, out = [];
-    if (!r.missions) return '상세 페이지에서 확인';
-    if (m.chars) out.push(m.chars + '자');
+    if (!r.missions) return '상세 미션은 ' + platOf(r).name + ' 원문에서 확인';
+    if (m.posts) out.push('포스팅 ' + m.posts + '건');
+    if (m.chars) out.push(Number(m.chars).toLocaleString('ko-KR') + '자');
     if (m.photos) out.push('사진 ' + m.photos + '장');
     if (m.video) out.push('동영상');
+    if (m.map) out.push('지도 삽입');
+    if (m.reserve) out.push('방문 예약');
     if (m.storeWish) out.push('스토어 찜');
     if (m.guideLink) out.push('가이드 링크');
-    return out.length ? out.join(' · ') : '상세 미션은 레뷰에서 확인';
+    if (Array.isArray(m.keywords) && m.keywords.length) out.push('키워드 ' + m.keywords.length + '개');
+    return out.length ? out.join(' · ') : '상세 미션은 ' + platOf(r).name + ' 원문에서 확인';
   }
 
   /* ------------------------------------------------------------------ templates: 신청 멘트 */
@@ -2136,7 +2174,10 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
 
     var html = '';
     html += '<div class="panel" style="margin-top:12px">' +
-      '<div class="phead"><h2>📝 아직 신청 전 (지원함)</h2><span class="sub">' + pendingRows.length + '건 · 멘트 3종을 만든 뒤 지원창을 열어 신청하세요</span></div>' +
+      '<div class="phead"><h2>📝 아직 신청 전 (지원함)</h2>' +
+        '<span class="sub">' + pendingRows.length + '건 · 멘트 3종을 만든 뒤 지원창을 열어 신청하세요</span>' +
+        (pendingRows.length ? '<button class="btn sm ghost" data-cartclear="1" type="button" style="margin-left:auto">🗑️ 지원함 비우기 (' + pendingRows.length + ')</button>' : '') +
+      '</div>' +
       (pendingRows.length
         ? '<div class="items">' + pendingRows.map(applyItemHtml).join('') + '</div>'
         : '<div class="empty" style="padding:18px 12px">지원함이 비어 있습니다. 메인 탭에서 <b>[+ 지원함 담기]</b>를 눌러 담아 보세요.</div>') +
@@ -2213,10 +2254,13 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
         '<span class="dday ' + ddayClass(r.d) + '">' + ddayChipText(r.d) + '</span></div>' +
       '<div class="meta">' + esc(r.category || '기타') + ' · 신청 ' + (r.applicants || '–') + '/' + (r.capacity || '–') +
         ' · 경쟁 ' + rateText(r.rate) + (r.announce ? ' · 발표 ' + mdLabel(r.announce) : '') + '</div>' +
+      '<div class="meta" style="color:var(--mut)">📌 ' + esc(missionLine(r)) +
+        (r.deadline ? ' · 마감 ' + esc(mdLabel(r.deadline)) : '') + '</div>' +
       '<div class="missionbox"><div class="ttl">📌 신청 전 미션 체크</div>' + checksHtml(r) + '</div>' +
       '<div class="toolrow">' +
         '<button class="btn sm pri" data-gen="' + esc(r.id) + '" type="button">' + (msg ? '🔄 다시 생성' : '✨ 신청 한마디 3종 생성') + '</button>' +
         '<button class="btn sm" data-copyopen="' + esc(r.id) + '" type="button">📋 멘트 복사 &amp; 지원창 열기</button>' +
+        '<button class="btn sm ghost danger" data-cartdel="' + esc(r.id) + '" type="button" title="지원함에서 바로 빠집니다">🗑️ 담기 취소</button>' +
         (st ? '<button class="btn sm ok" data-mark="' + esc(r.id) + '" data-markto="" type="button">✓ 신청완료 (해제)</button>'
             : '<button class="btn sm ghost" data-mark="' + esc(r.id) + '" data-markto="applied" type="button">신청완료로 표시</button>') +
         '<a class="btn sm ghost" href="' + esc(r.applyUrl || r.url) + '" target="_blank" rel="noopener">신청 페이지 ↗</a>' +
@@ -2866,6 +2910,26 @@ html[data-theme="light"] .gate{background:rgba(16,44,78,.04);border-color:rgba(1
       else { S.cart.push(id); toast('지원함에 담았어요 — ✍️ 지원 탭에서 확인', 'ok'); }
       save(); renderStats(); renderMain(); renderApply();
       if ($('mDetail').classList.contains('on')) openDetail(id);
+      return;
+    }
+
+    /* ✍️ 지원 탭·상세 모달에서 한 번에 담기 취소 — S.cart 에서 바로 빼고 저장·화면 갱신 */
+    if ((c = closest('[data-cartdel]'))) {
+      var cid = c.getAttribute('data-cartdel');
+      var ci = S.cart.indexOf(cid);
+      if (ci >= 0) { S.cart.splice(ci, 1); toast('🗑️ 지원함에서 뺐어요'); }
+      save(); renderStats(); renderMain(); renderApply(); renderReview();
+      if ($('mDetail').classList.contains('on')) { if (byId(cid)) openDetail(cid); else closeModal('mDetail'); }
+      return;
+    }
+    if ((c = closest('[data-cartclear]'))) {
+      var keep = S.cart.filter(function (k) { return !!S.status[k]; });
+      if (!S.cart.length) return;
+      if (window.confirm('지원함에 담은 ' + (S.cart.length - keep.length) + '건을 모두 뺄까요?\n(신청완료·발표 대기 중인 캠페인은 그대로 둡니다)')) {
+        S.cart = keep;
+        save(); renderStats(); renderMain(); renderApply();
+        toast('🗑️ 지원함을 비웠어요');
+      }
       return;
     }
     if ((c = closest('[data-detail]'))) { openDetail(c.getAttribute('data-detail')); return; }

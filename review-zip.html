@@ -976,15 +976,29 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
 
   /* 목록에 뜨는 문구에서 '얼굴이 사진·영상에 나와야 하는' 요건을 찾는다.
      '얼굴' 한 글자만 보면 '얼굴or바디 케어' 같은 시술 문구까지 걸리므로, 노출·공개·촬영을 뜻하는
-     결합어와 초상권·셀카·착용샷만 본다. ('얼굴 노출 없음'처럼 부정한 문구는 먼저 지운다.) */
+     결합어와 셀카·착용샷만 본다. 부정·선택·동의 표현(얼굴 모자이크, 표정 선택, 셀카봉 …)은 구절 단위로 먼저 걸러낸다. */
   var FACE_KW = ['얼굴노출', '얼굴 노출', '얼굴공개', '얼굴 공개', '얼굴정면', '얼굴 정면',
                  '얼굴나오', '얼굴 나오', '얼굴이 나', '얼굴사진', '얼굴 사진', '얼굴포함', '얼굴 포함',
                  '얼굴출연', '얼굴 출연', '셀카', '셀피', 'selfie', '인물촬영', '인물 촬영',
-                 '인물사진', '인물 사진', '초상권', '본인출연', '본인 출연', '착용샷', '착용 컷', '착용컷',
+                 '인물사진', '인물 사진', '본인출연', '본인 출연', '착용샷', '착용 컷', '착용컷',
                  '정면사진', '정면 사진', '프로필사진', '프로필 사진'];
-  var FACE_NEG = ['얼굴노출 없음', '얼굴 노출 없음', '얼굴공개 없음', '얼굴 공개 없음',
-                  '얼굴없이', '얼굴 없이', '얼굴 필요없', '얼굴 필요 없', '얼굴미노출', '얼굴 미노출',
-                  '얼굴 제외', '얼굴제외', '얼굴가리', '얼굴 가리', '얼굴안나', '얼굴 안 나'];
+  /* 부정·선택·동의 표현 — 구절에서 이걸 먼저 지우고도 키워드가 남아야 '요건'으로 본다. */
+  var FACE_NEG = ['얼굴노출 없', '얼굴 노출 없', '얼굴공개 없', '얼굴 공개 없',
+                  '얼굴없이', '얼굴 없이', '얼굴 필요없', '얼굴 필요 없', '얼굴 필요하지 않',
+                  '얼굴미노출', '얼굴 미노출', '얼굴 제외', '얼굴제외', '얼굴가리', '얼굴 가리',
+                  '얼굴안나', '얼굴 안 나', '얼굴 안나', '얼굴 비공개', '얼굴비공개',
+                  '얼굴 미포함', '얼굴미포함', '얼굴 모자이크', '얼굴모자이크',
+                  '얼굴 노출 불가', '얼굴노출 불가', '얼굴 공개 불가', '얼굴공개 불가',
+                  '얼굴 노출 금지', '얼굴노출 금지', '얼굴 비노출', '얼굴비노출',
+                  '얼굴 노출 선택', '얼굴노출 선택', '얼굴 공개 선택', '얼굴공개 선택',
+                  '얼굴 노출 필수 아님', '얼굴 공개 필수 아님',
+                  '모자이크 가능', '모자이크 진행', '모자이크 처리', '모자이크',
+                  '셀카봉', '셀피봉',
+                  '얼굴이 나온 이미지', '얼굴이 나온 사진', '얼굴 나온 이미지', '얼굴 나온 사진',
+                  '얼굴이 포함된 이미지', '얼굴이 포함된 사진'];
+  var FACE_SOFT = ['선택', '옵션', '희망', '필요시', '필요 시', '가능하면', '경우에 따라', 'optional',
+                   '모자이크', '가림 처리'];
+  var FACE_SPLIT = /[.。!?·/|,;\n()\[\]{}★※•→]/;
   function faceText(r) {
     var m = r.missions, ms = '';
     if (m && typeof m === 'object') ms = String(m.summary || '');
@@ -994,14 +1008,23 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
   function detectFace(r) {
     var txt = faceText(r);
     if (!txt) return false;
-    var probe = txt;
-    FACE_NEG.forEach(function (neg) { probe = probe.split(neg).join(' '); });
-    for (var i = 0; i < FACE_KW.length; i++) { if (probe.indexOf(FACE_KW[i]) >= 0) return true; }
+    var clauses = String(txt).replace(/\s+/g, ' ').split(FACE_SPLIT);
+    for (var c = 0; c < clauses.length; c++) {
+      var raw = clauses[c], probe = raw;
+      for (var n = 0; n < FACE_NEG.length; n++) { probe = probe.split(FACE_NEG[n]).join(' '); }
+      var has = false;
+      for (var i = 0; i < FACE_KW.length; i++) { if (probe.indexOf(FACE_KW[i]) >= 0) { has = true; break; } }
+      if (!has) continue;
+      var soft = false;
+      for (var s = 0; s < FACE_SOFT.length; s++) { if (raw.indexOf(FACE_SOFT[s]) >= 0) { soft = true; break; } }
+      if (soft) continue;
+      return true;
+    }
     return false;
   }
+  /* 플랫폼 기본 초상권 동의(isPortraitRights → flags.portraitConsent)는 요건이 아니므로 보지 않는다. */
   function faceHit(r) {
-    /* 플랫폼이 준 초상권 동의 항목(레뷰 isPortraitRights → flags.faceRequired) 또는 문구 판별 */
-    return (r.flags || {}).faceRequired === true || detectFace(r);
+    return detectFace(r);
   }
 
   /* 기본으로 빼고 보는 4종(자부담·페이백·기자단·얼굴노출) — 사용자가 해제하면 그 선택을 localStorage 에 기억 */
@@ -1207,7 +1230,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
     var under = (r.applicants !== null && r.capacity > 0 && r.applicants < r.capacity)
       ? '<span class="flag under">미달</span>' : '';
     var faceFlag = faceHit(r)
-      ? '<span class="flag face" title="플랫폼 초상권 동의 항목 또는 얼굴 노출 문구가 있는 캠페인">🙂 얼굴노출</span>' : '';
+      ? '<span class="flag face" title="원문에 얼굴 노출·공개·셀카·착용샷 요건이 있는 캠페인">🙂 얼굴노출</span>' : '';
     var badge = cardBadge(r);
     var ddChip = (badge && !r.isNew)
       ? ''   /* 마감임박 뱃지가 마감을 말하므로 오른쪽 D-day 칩은 생략 */
@@ -1245,7 +1268,7 @@ html[data-theme="light"] .pubtheme{ color:#4a4438; background:#f7f3ec; border-co
       for (var fk in cf) { if (Object.prototype.hasOwnProperty.call(cf, fk)) r.flags[fk] = cf[fk]; }
       r.type = typeOf(r);                       /* 원문·보정 규칙으로 유형 확정 */
       if (r.flags.extraCost !== true && detectCost(r)) r.flags.extraCost = true;
-      if (r.flags.faceRequired !== true && detectFace(r)) r.flags.faceRequired = true;
+      r.flags.faceRequired = detectFace(r);   /* 원문 문구 근거만 — 플랫폼 초상권 동의는 portraitConsent 에만 남는다 */
       r.region = (c.region && REGION_ORDER.indexOf(c.region) >= 0) ? c.region : regionOf(r, r.type);
       r.regionDetail = c.regionDetail || null;
       r.applicants = (c.applicants === null || c.applicants === undefined) ? null : num(c.applicants);
