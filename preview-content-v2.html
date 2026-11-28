@@ -10758,6 +10758,38 @@ var CSVoice = (function () {
     toast('선택을 초기화했습니다.');
   });
 
+  /* ================= 🦁 유튜브 링크 → 안드로이드 Brave 브라우저 =================
+     갤럭시(Android)에서 youtube.com 링크를 누르면 YouTube 앱이 열린다.
+     영상 확인은 브라우저가 편하므로 intent:// 로 com.brave.browser 를 지정해 연다.
+     · Android 이외(PC·iOS)는 원래 URL 그대로 — target="_blank" 유지
+     · Brave 미설치 단말은 browser_fallback_url 로 기본 브라우저가 받는다
+     ================= */
+  function isAndroidUA(){ return /Android/i.test((navigator && navigator.userAgent) || ''); }
+
+  function toBraveYoutubeUrl(rawUrl){
+    var raw = String(rawUrl == null ? '' : rawUrl);
+    if (!raw) return '';
+    if (!isAndroidUA()) return raw;
+    try {
+      var u = new URL(raw, location.href);
+      if (!/^https?:$/i.test(u.protocol)) return raw;
+      /* intent URI 의 # 뒤는 Intent 명세 자리이므로 원본 #조각은 %23 으로 바꿔 붙인다 */
+      var frag = u.hash ? u.hash.replace('#', '%23') : '';
+      return 'intent://' + u.host + u.pathname + u.search + frag +
+        '#Intent;scheme=https;package=com.brave.browser;S.browser_fallback_url=' +
+        encodeURIComponent(raw) + ';end';
+    } catch (_){ return raw; }
+  }
+
+  /* Android: 현재 창에서 intent 실행(target 생략 — 빈 탭 방지) / PC: 새 탭 */
+  function ytOpenLinkHtml(rawUrl, cls){
+    var href = toBraveYoutubeUrl(rawUrl);
+    if (!href) return '';
+    var label = isAndroidUA() ? '🦁 Brave로 열기 ↗' : '원본 열기 ↗';
+    var attrs = isAndroidUA() ? '' : ' target="_blank" rel="noopener"';
+    return '<a class="' + cls + '" href="' + esc(href) + '"' + attrs + '>' + label + '</a>';
+  }
+
   function renderYt(){
     ytGrid.innerHTML = '';
     YT.forEach(function(v, i){
@@ -10818,7 +10850,7 @@ var CSVoice = (function () {
       meta.push('발췌 구간은 AI 분석 후 결정');
       html += '<div class="pitem"><span class="role">' + roles[k] + '</span><span class="pt">' +
         esc(p.title) + '<small>' + esc(meta.join(' · ')) + '</small>' +
-        (p.url ? '<a class="popen" href="' + esc(p.url) + '" target="_blank" rel="noopener">↗ 실제 영상 확인</a>' : '') +
+        (p.url ? ytOpenLinkHtml(p.url, 'popen') : '') +
         '</span></div>';
     });
     html += '</div>';
