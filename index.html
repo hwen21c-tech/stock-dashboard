@@ -6213,6 +6213,7 @@
 
 <!-- 🍔 장중매매 후보 (불개미 · 햄버거) — 2026-11-27 신설 · 1번 메인 탭 · 홍인기 D+0 박스 바로 아래
      원전: 부자회사원 채널 「불개미님 햄버거 기법」 2편(AHSUB-eAxxA · 9EVBKc25TTI)
+     2026-11-28 사용자 확정: 성립이 없으면 종목도 후보도 표시하지 않는다('성립 종목 없음' 한 줄)
        · 과거 그 종목이 '윗꼬리 짧은 장대양봉'을 냈던 날의 '시동 3분봉 거래대금'을 기준으로 기억한다
        · 오늘 그 종목이 속한 테마가 주도 섹터로 살아 있을 때, 장초반 3분봉 대금이 기준을 압도하면 후보
        · 긴 위꼬리 · 도지 · 음봉 · 역배열은 대금이 넘어도 뺀다
@@ -6276,8 +6277,9 @@
       <b>② 조건</b> 오늘 그 종목이 속한 섹터가 주도 섹터로 살아 있고(테마 평균 +1%↑ · 종목 +5%↑),
       <b>장초반 3분봉 대금이 그 기준을 넘을 때</b>만 후보로 봅니다. 장전에는 NXT 첫 3분봉(08:00~08:02)으로 봅니다.<br>
       <b>③ 자리</b> +10% 미만 낮은 자리는 <b>⚡ 돌파</b>, +10% 이상 높은 자리는 <b>🎯 3분봉 20선 눌림</b>으로 봅니다.<br>
-      <b>④ 표시</b> <b>성립한 종목만 카드로 올립니다</b>. 기준 없음·기준 미달·오늘 대금 미달·긴 위꼬리·도지·음봉·일봉 역배열은
-      목록에서 빼고 <b>제외 종목 수만</b> 요약에 적습니다(임의 완화 없음).
+      <b>④ 표시</b> <b>성립한 종목만 카드로 올립니다</b>. 성립이 하나도 없으면 <b>종목도 후보도 표시하지 않고</b>
+      '성립 종목 없음' 한 줄만 남깁니다. 기준 없음·기준 미달·오늘 대금 미달·긴 위꼬리·도지·음봉·일봉 역배열은
+      목록에서 빼며, 제외된 후보의 개수도 화면에 적지 않습니다(임의 완화 없음).
     </div>
   </div>
   <div class="op-foot" id="hbFoot"></div>
@@ -6380,14 +6382,13 @@
     var d = DATA;
     if (!d) {
       body.innerHTML = '';
-      if (noteEl) noteEl.textContent = FAIL ? ('햄버거 후보를 불러오지 못했습니다 — ' + FAIL) : '햄버거 후보를 불러오는 중입니다…';
+      if (noteEl) { noteEl.style.display = ''; noteEl.textContent = FAIL ? ('햄버거 후보를 불러오지 못했습니다 — ' + FAIL) : '햄버거 후보를 불러오는 중입니다…'; }
       if ($('hbFoot')) $('hbFoot').textContent = '';
       return;
     }
     var all = (d.items || []).filter(function (x) { return x && x.code; });
-    var counts = d.counts || {};
     /* 🍔 2026-11-27 사용자 확정 — 기준에 맞지 않는 종목(기준 없음·기준 미달·대금 미달·실패 패턴)은
-       카드로 만들지 않는다. 성립한 종목만 올리고, 나머지는 숫자로만 남긴다. */
+       카드로 만들지 않는다. 성립한 종목만 올린다(2026-11-28: 미성립 후보 개수도 표시하지 않는다). */
     var items = all.filter(function (x) { return x.verdict && x.verdict.pass; });
     items.sort(function (a, b) {
       var ma = a.verdict && isNum(a.verdict.passMultiple) ? a.verdict.passMultiple : -1;
@@ -6397,40 +6398,32 @@
       var pb = isNum(b.pctNow) ? b.pctNow : -1;
       return pb - pa;
     });
-    var cand = isNum(counts.candidates) && counts.candidates ? counts.candidates : all.length;
-    var excluded = Math.max(0, cand - items.length);
+    /* 🍔 2026-11-28 사용자 확정 — "불개미 햄버거는 성립이 안 되면 종목을 표시하지 말아줘 후보도".
+       성립 0종목이면 후보 개수 배지·제외 요약 줄·에러 문구까지 전부 지우고 '성립 종목 없음' 한 줄만 남긴다.
+       성립이 있어도 성립 종목만 올리고 미성립 후보/제외 종목의 목록·개수는 화면에 쓰지 않는다. */
     $('hbTimeBadge').textContent = '⏱ ' + (d.generatedAtKst || '') + ' 기준';
-    $('hbCountBadge').textContent = '🍔 성립 ' + items.length + ' / 후보 ' + cand + '종목';
-    $('hbCountBadge').className = 'op-badge' + (items.length ? '' : ' closed');
-
-    function excludedLine() {
-      var parts = [];
-      if (isNum(counts.valueShort) && counts.valueShort) parts.push('오늘 대금 미달 ' + counts.valueShort);
-      if (isNum(counts.blocked) && counts.blocked) parts.push('실패 패턴 ' + counts.blocked);
-      if (isNum(counts.noBase) && counts.noBase) parts.push('기준 없음/미달 ' + counts.noBase);
-      if (isNum(counts.wait) && counts.wait) parts.push('분봉 대기 ' + counts.wait);
-      var head = '후보 ' + cand + '종목 중 ' + items.length + '종목 성립';
-      if (!excluded) return head + '.';
-      return head + ' (나머지 ' + excluded + '종목 제외' + (parts.length ? ': ' + parts.join(' · ') : '') + ') — 기준 미달·실패 패턴은 카드로 올리지 않습니다.';
-    }
-    /* 성립 0종목 카드 — 요약 줄(excludedLine)과 같은 문장이 서버 note 앞머리에 또 있어 떼어 낸다 */
-    function noteRest(n) {
-      return String(n || '').replace(/^후보\s*\d+종목 중\s*(?:<b>)?\s*\d+종목 성립(?:<\/b>)?[^.]*\.\s*/, '');
+    var cntBadge = $('hbCountBadge');
+    if (cntBadge) {
+      cntBadge.hidden = !items.length;
+      cntBadge.textContent = items.length ? ('🍔 성립 ' + items.length + '종목') : '';
+      cntBadge.className = 'op-badge' + (items.length ? '' : ' closed');
     }
 
     if (!items.length) {
-      body.innerHTML = '<div class="op-card" style="opacity:.95;"><div style="font-size:11px;color:#94a3b8;line-height:1.6;">' +
-        '<b style="color:#fdba74;">성립 종목 0</b> — ' + (noteRest(d.note) || '기준을 임의로 완화하지 않습니다.') +
-        (d.errors && d.errors.length ? '<br>' + esc(d.errors.join(' / ')) : '') + '</div></div>';
-      if (noteEl) noteEl.innerHTML = '';
-      if ($('hbFoot')) $('hbFoot').innerHTML = '<b style="color:#fdba74;">' + esc(excludedLine()) + '</b>';
+      body.innerHTML = '<div style="font-size:11px;font-weight:800;color:#94a3b8;padding:2px 0;">성립 종목 없음</div>';
+      if (noteEl) { noteEl.innerHTML = ''; noteEl.style.display = 'none'; }
+      if ($('hbFoot')) $('hbFoot').textContent = '';
       return;
     }
     body.innerHTML = '<div class="op-grid">' + items.map(card).join('') + '</div>';
-    if (noteEl) noteEl.innerHTML = d.note || '';
+    if (noteEl) {
+      /* 서버·엣지 캐시에 옛 note('후보 N종목 중 M종목 성립 (나머지 …)')가 남아 있어도 지운다 */
+      var noteTxt = String(d.note || '').replace(/^후보\s*\d+종목 중[\s\S]*?\.\s*/, '');
+      noteEl.innerHTML = noteTxt;
+      noteEl.style.display = noteTxt ? '' : 'none';
+    }
     if ($('hbFoot')) {
-      $('hbFoot').innerHTML = '<div style="margin-bottom:4px;color:#fdba74;font-weight:800;">' + esc(excludedLine()) + '</div>' +
-        '※ 카드를 누르면 종목 팝업이 열리고, 1분봉 차트와 함께 「이전 장대양봉 날 3분봉 대금 vs 오늘 장초반 3분봉 대금」이 나란히 표시됩니다. 기준 대금은 KIS 공식 API(일봉 FHKST03010100 · 과거 분봉 FHKST03010230) + 네이버 정규장 일봉 실측입니다.';
+      $('hbFoot').innerHTML = '※ 카드를 누르면 종목 팝업이 열리고, 1분봉 차트와 함께 「이전 장대양봉 날 3분봉 대금 vs 오늘 장초반 3분봉 대금」이 나란히 표시됩니다. 기준 대금은 KIS 공식 API(일봉 FHKST03010100 · 과거 분봉 FHKST03010230) + 네이버 정규장 일봉 실측입니다.';
     }
   }
 
