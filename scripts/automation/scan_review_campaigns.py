@@ -38,8 +38,8 @@ import requests
 from urllib.parse import quote
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from review_normalize import (NORMALIZE_RULE, find_region,  # noqa: E402
-                              normalize_rows)
+from review_normalize import (NORMALIZE_RULE, build_missions, find_region,  # noqa: E402
+                              mission_summary, normalize_rows, section_text)
 
 KST = timezone(timedelta(hours=9))
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -278,7 +278,11 @@ def scan_revu():
         flags = {'aiBanned': None, 'extraCost': None,
                  'visitRequired': (ctype == '방문형') if ctype else None, 'faceRequired': None}
         if (it.get('campaignData') or {}).get('isPortraitRights'):
-            flags['faceRequired'] = True
+            # isPortraitRights 는 레뷰 기본 초상권 '동의' 약관 — 얼굴노출 '요건'이 아니므로
+            # faceRequired 로 쓰지 않는다(11/28 오탑 수정). 동의 여부만 portraitConsent 에 남김.
+            flags['portraitConsent'] = True
+        posts = to_int(it.get('requiredPostCount'))
+        missions = {'posts': posts} if posts else None
         rows.append(base_row(
             id=str(cid), title=title,
             brand=(re.match(r'\[([^\]]+)\]', title or '') or [None, None])[1] if title else None,
@@ -289,6 +293,7 @@ def scan_revu():
             # 모집(신청) 시작일 — 레뷰 공개 API 의 requestStartedOn(모집 시작)을 그대로 쓴다
             openedAt=iso_date(it.get('requestStartedOn')) or iso_date(str(it.get('createdAt') or '')),
             flags=flags,
+            missions=missions, missionSummary=mission_summary(missions),
             url='https://www.revu.net/campaign/%s' % cid,
             applyUrl='https://www.revu.net/campaign/%s/request' % cid,
             thumbnail=it.get('thumbnail'),
@@ -422,7 +427,7 @@ def _dq_parse_list(html_text):
     return out
 
 
-def _dq_detail(cid):
+def _dq_detail(cid, media=None):
     url = 'https://dinnerqueen.net/taste/%s' % cid
     r = get(url)
     if r.status_code != 200:
@@ -460,9 +465,18 @@ def _dq_detail(cid):
             offer = re.split(r'참여 전 필수|필수 확인사항|★\s*추가금액', offer)[0].strip(' -·')
             out['offer'] = offer[:200] or None
 
-    kws = re.findall(r'<span class="hash-block">([^<]+)</span>', h)
-    if kws:
-        out['keywords'] = [clean(k) for k in kws if clean(k)]
+    km = re.search(r'id="MainKeyword"[\s\S]{0,1500}?</p>', h)
+    ks = re.search(r'id="SubKeyword"[\s\S]{0,1500}?</p>', h)
+    main = [clean(k) for k in re.findall(r'class="hash-block"\s*>([^<]+)</span>', km.group(0))] if km else []
+    sub = [clean(k) for k in re.findall(r'class="hash-block"\s*>([^<]+)</span>', ks.group(0))] if ks else []
+    main = [k for k in main if k]
+    sub = [k for k in sub if k]
+    out['keywordsMain'] = main
+    out['keywordsSub'] = sub
+    # 릴스·클립은 인스타 해시태그(Sub), 블로그는 메인 키워드 — 확인된 쪽만 넣는다
+    use = sub if (media in ('릴스', '클립', '인스타그램') and sub) else (main or sub)
+    if use:
+        out['keywords'] = use
 
     if '생성형 AI' in h or 'AI 작성' in h or '인공지능' in h:
         seg = h[max(0, h.find('생성형 AI') - 200): h.find('생성형 AI') + 200]
@@ -471,6 +485,24 @@ def _dq_detail(cid):
     tm = re.search(r'<div class="dq-taste-detail__thumb[\s\S]*?<img[^>]+src="([^"]+)"', h)
     if tm:
         out['thumbnail'] = tm.group(1)
+
+    # ── 상세 미션·주의사항 (11/28 추가) — 이미 받아 둔 상세 HTML 에서 더 뽑아 쓴다
+    x = text_of(h)
+    _stop = ('추가 안내사항', '별도 안내가 없는 경우', '블로그 위젯', '직접 URL 등록',
+             'URL 등록 오류', '모집 기간', '리뷰 등록 기간')
+    mission_seg = section_text(x, ('리뷰어 미션',), _stop, 900)
+    mission_seg, msum = build_missions(mission_seg, out.get('keywords'))
+    out['missions'] = mission_seg
+    out['missionSummary'] = msum
+    cbits = []
+    seg = section_text(x, ('참여 전 필수 확인사항',), _stop, 320)
+    if seg:
+        cbits.append(seg)
+    seg = section_text(x, ('추가 안내사항',), ('별도 안내가 없는 경우', '블로그 위젯', '직접 URL 등록',
+                                            '모집 기간', '리뷰 등록 기간'), 320)
+    if seg:
+        cbits.append(seg)
+    out['caution'] = ' / '.join(cbits)[:520] or None
     return out
 
 def scan_dinnerqueen(with_detail=True):
@@ -503,7 +535,7 @@ def scan_dinnerqueen(with_detail=True):
 
         def _work(it):
             try:
-                d = _dq_detail(it['id']) or {}
+                d = _dq_detail(it['id'], it.get('media')) or {}
             except Exception as e:                   # noqa: BLE001
                 log('  · 상세 실패 %s: %s' % (it['id'], e))
                 d = {}
@@ -538,6 +570,7 @@ def scan_dinnerqueen(with_detail=True):
             openedAt=det.get('deadlineFrom'),
             dday=it['ddayText'], deadlineDerived=derived,
             keywords=det.get('keywords') or [],
+            missions=det.get('missions'), missionSummary=det.get('missionSummary'),
             flags={'aiBanned': (True if det.get('aiMention') and '불가' in det.get('aiMention', '') else None),
                    'extraCost': None,
                    'visitRequired': (it['type'] == '방문형') if it['type'] else None,
@@ -546,7 +579,7 @@ def scan_dinnerqueen(with_detail=True):
             applyUrl='https://dinnerqueen.net/taste/%s' % it['id'],
             thumbnail=det.get('thumbnail') or it.get('thumbnail'),
             note=('디너의여왕 목록 실측' + ('' if det else ' (상세 페이지 미수집)')),
-            caution=det.get('aiMention') if det.get('aiMention') and '불가' in det.get('aiMention', '') else None,
+            caution=det.get('caution') or (det.get('aiMention') if det.get('aiMention') and '불가' in det.get('aiMention', '') else None),
             source='dinnerqueen:taste',
         ))
     note = ('캠페인 목록 %d페이지에서 %d건 수집. 마감일·발표일·리뷰기간·제공내역·필수 키워드는 '
@@ -732,6 +765,7 @@ def scan_popomon():
             thumbnail=clean(it.get('thumb_img')) or clean(it.get('C_thumb_img_path')),
             note='포포몬 홈 공개 API 실측 · 지원 %s명 / 모집 %s명' % (
                 it.get('C_volunteer_count') or '?', it.get('C_choice_count') or '?'),
+            caution=('참여 자격: ' + clean(it.get('C_qualification'))) if clean(it.get('C_qualification')) else None,
             source='popomon:main-api',
         ))
     note = ('홈페이지가 스스로 불러오는 공개 API(api_p/main)의 플래티넘·신규·인기·오픈예정·'
@@ -817,6 +851,66 @@ def scan_ohmyblog():
 TM_LIST = 'https://www.themukja.com/review_campaign_list.php'
 
 
+def _tm_detail(cid):
+    """더먹자 상세(review_campaign.php) — 비로그인 열람. 키워드·이용 안내에서 미션·예약 안내를 뽑는다."""
+    r = get('https://www.themukja.com/review_campaign.php?cp_id=%s' % cid)
+    if r.status_code != 200:
+        return {}
+    x = text_of(r.text)
+    out = {}
+    kw_seg = section_text(x, ('키워드복사', '키워드'), ('업체 상세정보', '이용 안내'), 400)
+    kws = []
+    for k in re.findall(r'#([0-9A-Za-z가-힣_]{2,20})', kw_seg):
+        k = k.strip()
+        if k and k not in kws:
+            kws.append(k)
+    if kws:
+        out['keywords'] = kws[:10]
+    use_seg = section_text(x, ('이용 안내',), ('추가 안내사항', '모집 기간', '블로그 방문형'), 600)
+    extra_seg = section_text(x, ('추가 안내사항',), ('블로그 방문형', '모집 기간', '리뷰 미션'), 400)
+    missions, msum = build_missions(' '.join([use_seg, extra_seg]), out.get('keywords'))
+    out['missions'] = missions
+    out['missionSummary'] = msum
+    out['caution'] = extra_seg[:420] or None
+    return out
+
+
+def _apply_detail(row, d):
+    """상세에서 뽑은 미션·키워드·주의사항을 행에 합친다(상세에서 온 값이 이김)."""
+    if d.get('keywords'):
+        row['keywords'] = d['keywords']
+    if d.get('missions'):
+        row['missions'] = d['missions']
+    if d.get('missionSummary'):
+        row['missionSummary'] = d['missionSummary']
+    if d.get('caution'):
+        row['caution'] = d['caution']
+    if d.get('aiBanned'):
+        row['flags']['aiBanned'] = True
+    return row
+
+
+def _fetch_details(rows, fn, workers=4, pause=0.15):
+    """행 목록의 상세를 병렬로 모아 {id: dict} 로 돌려준다(상한은 호출 쪽에서)."""
+    if not rows:
+        return {}
+    from concurrent.futures import ThreadPoolExecutor
+
+    def _work(row):
+        try:
+            d = fn(row['id']) or {}
+        except Exception:                            # noqa: BLE001
+            d = {}
+        time.sleep(pause)
+        return row['id'], d
+
+    done = {}
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        for cid, d in ex.map(_work, rows):
+            done[cid] = d
+    return done
+
+
 def scan_themukja():
     """더먹자(수원·화성·평택 맛집 특화) 목록 HTML — 서버렌더 카드."""
     r = get(TM_LIST)
@@ -879,14 +973,40 @@ def scan_themukja():
         ))
         if len(rows) >= CAP_THEMUKJA:
             break
+    det = _fetch_details(rows, _tm_detail)
+    for row in rows:
+        _apply_detail(row, det.get(row['id']) or {})
     note = ('목록 페이지(review_campaign_list.php)에서 %d건 수집. 수원·화성·평택 등 경기 남부 맛집 '
-            '방문형 중심이며 마감일은 화면 D-day 표기에서 역산합니다.' % len(rows))
+            '방문형 중심이며 마감일은 화면 D-day 표기에서 역산. '
+            '상세(review_campaign.php)에서 키워드·미션·방문 예약 안내 보강.' % len(rows))
     return rows, note
 
 
 # ---------------------------------------------------------------- 9) 원픽체험단
 ONEPIK_LIST = 'https://onepik.kr/campaigns'
 ONEPIK_TYPE = {'방문형': '방문형', '배송형': '배송형', '기자단': '기자단', '촬영형': '방문형'}
+
+
+def _op_detail(cid):
+    """원픽체험단 상세(/campaigns/{id}) — 리뷰 미션·필수 해시태그·신청 전 확인사항."""
+    r = get('https://onepik.kr/campaigns/%s' % cid)
+    if r.status_code != 200:
+        return {}
+    x = text_of(r.text)
+    out = {}
+    seg = section_text(x, ('리뷰 미션',), ('원픽 체험단 신청 전 확인사항', '리뷰어 유의사항', '모집 방식'), 600)
+    kws = []
+    for k in re.findall(r'#([0-9A-Za-z가-힣_]{2,20})', seg):
+        k = k.strip()
+        if k and k not in kws:
+            kws.append(k)
+    if kws:
+        out['keywords'] = kws[:10]
+    missions, msum = build_missions(seg, out.get('keywords'))
+    out['missions'] = missions
+    out['missionSummary'] = msum
+    out['caution'] = section_text(x, ('원픽 체험단 신청 전 확인사항',), ('모집 방식', '리뷰어 유의사항'), 320) or None
+    return out
 
 
 def scan_onepik():
@@ -948,8 +1068,12 @@ def scan_onepik():
             break
         page += 1
         time.sleep(PAUSE)
+    det = _fetch_details(rows, _op_detail)
+    for row in rows:
+        _apply_detail(row, det.get(row['id']) or {})
     note = ('목록(/campaigns) 서버렌더 카드에서 최신 %d건 수집(전체 2,800여 건 중 최신순 상한). '
-            '마감일은 화면 D-day 표기에서 역산. 우리동네체험단(wowdan.kr)은 같은 캠페인을 '
+            '마감일은 화면 D-day 표기에서 역산, 상세에서 리뷰 미션·해시태그 보강. '
+            '우리동네체험단(wowdan.kr)은 같은 캠페인을 '
             '97%% 중복으로 제공해 중복 카드 방지를 위해 넣지 않았습니다.' % len(rows))
     return rows, note
 
@@ -1003,6 +1127,33 @@ def _rp_detail(cid):
         out['keywords'] = kws[:8]
     if 'AI 사용 불가' in x or 'AI 사용 금지' in x or 'AI 생성' in x:
         out['aiBanned'] = True
+
+    # ── 상세 미션·방문 예약·주의사항 (11/28 추가) — 이미 받아 둔 상세 HTML 에서 더 뽑아 쓴다
+    body_kws = []
+    m = re.search(r'본문키워드\s*([\s\S]{1,300}?)#', x)
+    if m:
+        body_kws = [clean(k) for k in re.split(r'[,·]', m.group(1)) if clean(k)]
+    kws_all = []
+    for k in (out.get('keywords') or []) + body_kws:
+        if k and k not in kws_all:
+            kws_all.append(k)
+    if kws_all:
+        out['keywords'] = kws_all[:12]
+
+    mission_seg = section_text(x, ('리뷰어 미션',), ('캠페인 추가정보', '모집기간', '리뷰 신청하기'), 700)
+    visit_seg = section_text(x, ('방문 및 예약안내',), ('캠페인 안내', '리뷰어 미션'), 240)
+    if visit_seg and not re.search(r'예약|방문', visit_seg):
+        visit_seg = ''
+    msrc = ' '.join([mission_seg, visit_seg])
+    missions, msum = build_missions(msrc, out.get('keywords'))
+    if visit_seg:
+        missions = missions or {}
+        missions['reserve'] = True
+        msum = mission_summary(missions) or msum
+    out['missions'] = missions
+    out['missionSummary'] = msum
+    caution_seg = section_text(x, ('캠페인 추가정보',), ('모집기간', '방문주소', '리뷰 신청하기'), 520)
+    out['caution'] = caution_seg or None
     return out
 
 
@@ -1091,11 +1242,18 @@ def scan_reviewplace():
                 row['offer'] = d['offer']
             if d.get('keywords'):
                 row['keywords'] = d['keywords']
+            if d.get('missions'):
+                row['missions'] = d['missions']
+            if d.get('missionSummary'):
+                row['missionSummary'] = d['missionSummary']
+            if d.get('caution'):
+                row['caution'] = d['caution']
             if d.get('aiBanned'):
                 row['flags']['aiBanned'] = True
-                row['caution'] = 'AI 사용 불가 캠페인(상세 안내)'
+                row['caution'] = ('AI 사용 불가 캠페인(상세 안내)' +
+                                  ((' / ' + row['caution']) if row.get('caution') else ''))
             row['note'] = (row['note'] + ' · 상세 모집기간 확인') if d.get('deadline') else row['note']
-    note = ('리뷰플레이스 목록(제품·지역) %d건 + 상세의 모집기간·발표일·제공내역·키워드 보강. '
+    note = ('리뷰플레이스 목록(제품·지역) %d건 + 상세의 모집기간·발표일·제공내역·키워드·미션·주의사항 보강. '
             '마감일은 목록 D-day 역산, 상세에서 확인되면 상세 값 우선.' % len(rows))
     return rows, note
 
@@ -1135,6 +1293,13 @@ def _rb_detail(cid):
         out['keywords'] = [clean(k) for k in re.split(r',', m.group(1)) if clean(k)][:8]
     if 'AI 생성' in x and '불가' in x:
         out['aiBanned'] = True
+
+    # ── 상세 미션·유의사항 (11/28 추가) — 이미 받아 둔 상세 HTML 에서 더 뽑아 쓴다
+    mission_seg = section_text(x, ('리뷰어 미션',), ('추가 안내사항',), 900)
+    missions, msum = build_missions(mission_seg, out.get('keywords'))
+    out['missions'] = missions
+    out['missionSummary'] = msum
+    out['caution'] = section_text(x, ('유의사항',), ('상세 URL', '리뷰어 미션'), 420) or None
     return out
 
 
@@ -1226,10 +1391,17 @@ def scan_ringble():
                 row['offer'] = d['offer']
             if d.get('keywords'):
                 row['keywords'] = d['keywords']
+            if d.get('missions'):
+                row['missions'] = d['missions']
+            if d.get('missionSummary'):
+                row['missionSummary'] = d['missionSummary']
+            if d.get('caution'):
+                row['caution'] = d['caution']
             if d.get('aiBanned'):
                 row['flags']['aiBanned'] = True
-                row['caution'] = 'AI 생성 이미지 사용 불가 캠페인(상세 안내)'
-    note = ('카테고리(제품·방문·기자단) 목록 %d건 + 상세의 모집기간·발표일·제공내역·키워드 보강. '
+                row['caution'] = ('AI 생성 이미지 사용 불가 캠페인(상세 안내)' +
+                                  ((' / ' + row['caution']) if row.get('caution') else ''))
+    note = ('카테고리(제품·방문·기자단) 목록 %d건 + 상세의 모집기간·발표일·제공내역·키워드·미션·유의사항 보강. '
             '인스타·유튜브 카테고리는 유형(배송/방문) 표기가 없어 제외.' % len(rows))
     return rows, note
 

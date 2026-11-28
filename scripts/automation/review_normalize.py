@@ -11,13 +11,17 @@ revu-studio.html · review-zip.html 의 앱 보정 로직도 아래 규칙을 �
   · 유형      원본 type → categoryRaw 키워드 → flags.visitRequired → 지역명 → 미확인
   · 자부담    제공내역·제목·미션·주의 문구에 배송비/초과/자부담/본인부담/페이백 이 있으면 True
   · 지역      categoryRaw 의 지역 표기(미블) 우선, 방문형이면 제목의 지역 표기 → 권역 묶음
-  · 얼굴노출  플랫폼 초상권 동의 항목(isPortraitRights) 또는 제목·제공내역·미션·주의 문구의
-              '얼굴 노출·공개·정면·사진', 셀카, 인물 촬영, 초상권, 본인 출연, 착용샷 → flags.faceRequired
+  · 얼굴노출  제목·제공내역·미션·주의 문구에 '얼굴 노출·공개·정면·사진', 셀카, 인물 촬영, 본인 출연,
+              착용샷 같은 요건 문구가 있을 때만 → flags.faceRequired
+              (플랫폼 초상권 동의 isPortraitRights 같은 기본 약관은 flags.portraitConsent 로만 남긴다.
+               '얼굴 노출 선택'·'얼굴 모자이크'·'셀카봉'·'얼굴이 나온 이미지 활용' 같은 부정·선택 표현은 요건이 아니다)
 
 [11/20] 권역을 8개(서울·경기·인천·강원·충청·전라·경상·제주)로 나눴다 — '경기도만', '강원도만'
 처럼 광역 단위로 고를 수 있게. 예전 표기('경기·인천'·'영남'·'호남')는 다시 계산하면 각각
 경기/인천 · 경상 · 전라가 된다.
 """
+
+import re
 
 REGION_ALL = '전국·배송'
 REGION_UNKNOWN = '지역 미표기'
@@ -25,7 +29,8 @@ REGION_UNKNOWN = '지역 미표기'
 # meta.normalizeRule 로 데이터에 남기는 설명 (수집기·후처리가 같은 문구를 쓴다)
 NORMALIZE_RULE = ('type = 원본 type → categoryRaw(기자단·원고료/페이백·구매평/배송) → 지역명 → 미확인, '
                   'flags.extraCost = 제공내역·제목·미션·주의 문구의 배송비·초과·자부담·본인부담·페이백 자동 감지, '
-                  'flags.faceRequired = 플랫폼 초상권 동의 항목 또는 얼굴 노출·공개·정면·사진/셀카/인물 촬영/초상권/본인 출연/착용샷 문구 자동 감지, '
+                  'flags.faceRequired = 문장 단위로 얼굴 노출·공개·정면/셀카/인물 촬영/본인 출연/착용샷 요건이 '
+                  '있는 경우만(부정·선택 표현과 플랫폼 초상권 동의만 있는 경우는 제외, 동의는 flags.portraitConsent), '
                   'region = 플랫폼 지역(city) → categoryRaw 지역 표기 → 제목 지역 표기(방문형) → 전국·배송/지역 미표기')
 
 # 노출 순서 — 권역 → 배송 → 미표기
@@ -127,16 +132,35 @@ COST_NEGATIONS = ('배송비 포함', '배송비포함', '배송비 무료', '�
                   '자부담 없음', '본인부담 없음', '추가금액 발생없음', '추가금 발생없음',
                   '추가비용 없음', '추가비용없음', '추가비용 발생없음')
 
-# 얼굴 노출 요건 — '얼굴' 한 글자만 보면 '얼굴or바디 케어' 같은 시술 문구까지 걸리므로
-# 노출·공개·촬영을 뜻하는 결합어와 초상권·셀카·착용샷만 본다.
+# 얼굴 노출 "요건" — '얼굴' 한 글자만 보면 '얼굴or바디 케어' 같은 시술 문구까지 걸리므로
+# 노출·공개·촬영을 뜻하는 결합어와 셀카·착용샷만 본다.
+#  · '초상권'은 뺐다(11/28) — 대부분 캠페인의 기본 동의 약관 문구라 요건이 아니다.
+#  · 플랫폼 필드(isPortraitRights 등)도 요건이 아니라 동의 여부이므로 faceRequired 로 쓰지 않는다
+#    (flags.portraitConsent 에만 남긴다).
 FACE_KEYWORDS = ('얼굴노출', '얼굴 노출', '얼굴공개', '얼굴 공개', '얼굴정면', '얼굴 정면',
                  '얼굴나오', '얼굴 나오', '얼굴이 나', '얼굴사진', '얼굴 사진', '얼굴포함', '얼굴 포함',
                  '얼굴출연', '얼굴 출연', '셀카', '셀피', 'selfie', '인물촬영', '인물 촬영',
-                 '인물사진', '인물 사진', '초상권', '본인출연', '본인 출연', '착용샷', '착용 컷', '착용컷',
+                 '인물사진', '인물 사진', '본인출연', '본인 출연', '착용샷', '착용 컷', '착용컷',
                  '정면사진', '정면 사진', '프로필사진', '프로필 사진')
-FACE_NEGATIONS = ('얼굴노출 없음', '얼굴 노출 없음', '얼굴공개 없음', '얼굴 공개 없음',
-                  '얼굴없이', '얼굴 없이', '얼굴 필요없', '얼굴 필요 없', '얼굴미노출', '얼굴 미노출',
-                  '얼굴 제외', '얼굴제외', '얼굴가리', '얼굴 가리', '얼굴안나', '얼굴 안 나')
+# 부정·선택·동의 표현 — 문장에서 이 표현을 먼저 지운 뒤에도 키워드가 남아야 요건으로 본다.
+# (예: '얼굴 정면은 모자이크', '얼굴 노출 선택', '셀카봉', '얼굴이 나온 이미지는 홍보에 활용')
+FACE_NEGATIONS = ('얼굴노출 없', '얼굴 노출 없', '얼굴공개 없', '얼굴 공개 없',
+                  '얼굴없이', '얼굴 없이', '얼굴 필요없', '얼굴 필요 없', '얼굴 필요하지 않',
+                  '얼굴미노출', '얼굴 미노출', '얼굴 제외', '얼굴제외', '얼굴가리', '얼굴 가리',
+                  '얼굴안나', '얼굴 안 나', '얼굴 안나', '얼굴 비공개', '얼굴비공개',
+                  '얼굴 미포함', '얼굴미포함', '얼굴 모자이크', '얼굴모자이크',
+                  '얼굴 노출 불가', '얼굴노출 불가', '얼굴 공개 불가', '얼굴공개 불가',
+                  '얼굴 노출 금지', '얼굴노출 금지', '얼굴 비노출', '얼굴비노출',
+                  '얼굴 노출 선택', '얼굴노출 선택', '얼굴 공개 선택', '얼굴공개 선택',
+                  '얼굴 노출 필수 아님', '얼굴 공개 필수 아님',
+                  '모자이크 가능', '모자이크 진행', '모자이크 처리', '모자이크',
+                  '셀카봉', '셀피봉',
+                  '얼굴이 나온 이미지', '얼굴이 나온 사진', '얼굴 나온 이미지', '얼굴 나온 사진',
+                  '얼굴이 포함된 이미지', '얼굴이 포함된 사진')
+# 같은 문장(구)에 이 표현이 있으면 '선택 사항'으로 본다.
+FACE_OPTIONAL = ('선택', '옵션', '희망', '필요시', '필요 시', '가능하면', '경우에 따라', 'optional',
+                 '모자이크', '가림 처리')
+FACE_SENT_SPLIT = re.compile(r'[.。!?·/|,;\n()\[\]{}★※•→]')
 
 
 def find_region(text):
@@ -235,17 +259,132 @@ def _face_text(row):
 
 
 def detect_face(row):
-    """얼굴이 사진·영상에 나와야 하는 요건이면 True, 아니면 None(모른다 — 지어내지 않는다)."""
+    """얼굴이 사진·영상에 나와야 하는 요건이면 True, 아니면 None(모른다 — 지어내지 않는다).
+
+    문장(구) 단위로 본다: 그 구에 얼굴 키워드가 있고, 같은 구에 선택·부정 표현이 없을 때만 요건.
+    """
     txt = _face_text(row)
     if not txt:
         return None
-    probe = txt
-    for neg in FACE_NEGATIONS:
-        probe = probe.replace(neg, ' ')
-    for kw in FACE_KEYWORDS:
-        if kw in probe:
-            return True
+    probe = re.sub(r'\s+', ' ', str(txt))
+    for raw in FACE_SENT_SPLIT.split(probe):
+        clause = raw
+        for neg in FACE_NEGATIONS:
+            clause = clause.replace(neg, ' ')
+        if not any(kw in clause for kw in FACE_KEYWORDS):
+            continue
+        if any(soft in raw for soft in FACE_OPTIONAL):
+            continue
+        return True
     return None
+
+
+# ---------------------------------------------------------------- 상세 미션 문구 파싱
+# 플랫폼 상세 페이지의 '리뷰어 미션'·'이용 안내' 문구에서 글자수·사진 장수·동영상·지도·
+# 예약 안내를 뽑는다. 문구에 없는 값은 None 으로 둔다(지어내지 않는다).
+_M_CHARS = (re.compile(r'([\d,]{2,6})\s*자\s*(?:이상|이상은|이상으로)'),
+            re.compile(r'글자\s*수\s*(?:는|가)?\s*([\d,]{2,6})\s*자'),
+            re.compile(r'([\d,]{2,6})\s*자\s*이상의\s*본문'))
+_M_PHOTOS = (re.compile(r'사진\s*(?:은|이|를|:)?\s*([\d,]{1,3})\s*(?:장|개|컷)\s*(?:이상|이상의|이상,)'),
+             re.compile(r'([\d,]{1,3})\s*(?:장|개|컷)\s*이상\s*(?:의\s*)?사진'),
+             re.compile(r'최소\s*([\d,]{1,3})\s*(?:장|개|컷)'),
+             re.compile(r'사진\s*([\d,]{1,3})\s*(?:장|개|컷)'),
+             # '고화질 이미지 15장 이상' 처럼 사진이라는 단어 없이 장수만 적는 경우
+             re.compile(r'([\d,]{1,3})\s*장\s*이상'))
+_M_VIDEO = re.compile(r'동영상|영상\s*(?:첨부|삽입|촬영)|릴스|숏폼|유튜브')
+_M_POSTS = re.compile(r'포스팅\s*([\d,]{1,2})\s*(?:건|개|회)|필수\s*포스팅\s*([\d,]{1,2})')
+_M_MAPLINK = re.compile(r'지도\s*(?:삽입|첨부|적용)|네이버\s*지도')
+_M_RESERVE = re.compile(r'예약|방문\s*최소|노쇼|방문\s*전|당일\s*취소|방문\s*인원|대리\s*체험\s*불가')
+_M_AI = re.compile(r'생성형\s*AI|인공지능|AI\s*작성|AI\s*사용|ChatGPT|챗GPT')
+
+
+def _first_int(patterns, text):
+    for pat in patterns:
+        m = pat.search(text)
+        if m:
+            for g in m.groups():
+                if g:
+                    try:
+                        return int(str(g).replace(',', ''))
+                    except ValueError:
+                        continue
+    return None
+
+
+def parse_mission_text(text):
+    """미션 문구 → {'chars','photos','video','posts','map','reserve'} (확인된 값만)."""
+    t = str(text or '')
+    if not t.strip():
+        return None
+    # 상세 페이지에 남은 주석 흔적 '1,100자 이상 --> 1,000자 이상' → 수정된 뒤 값만 남긴다
+    t = re.sub(r'[\d,]+\s*(?:자|장|개|컷)\s*이상\s*-->\s*', ' ', t)
+    out = {'chars': _first_int(_M_CHARS, t), 'photos': _first_int(_M_PHOTOS, t)}
+    out['video'] = True if _M_VIDEO.search(t) else None
+    out['posts'] = _first_int((_M_POSTS,), t)
+    out['map'] = True if _M_MAPLINK.search(t) else None
+    out['reserve'] = True if _M_RESERVE.search(t) else None
+    return out if any(v for v in out.values()) else None
+
+
+def mission_summary(missions, extra=None):
+    """미션 dict → 카드·상세에 쓰는 한 줄 요약."""
+    if not missions:
+        return None
+    bits = []
+    if missions.get('posts'):
+        bits.append('포스팅 %d건' % missions['posts'])
+    if missions.get('chars'):
+        bits.append('본문 %s자 이상' % format(missions['chars'], ','))
+    if missions.get('photos'):
+        bits.append('사진 %d장 이상' % missions['photos'])
+    if missions.get('video'):
+        bits.append('동영상 첨부')
+    if missions.get('map'):
+        bits.append('지도 삽입')
+    if missions.get('reserve'):
+        bits.append('방문 예약 필요')
+    kws = missions.get('keywords') or []
+    if kws:
+        bits.append('필수 키워드 %d개' % len(kws))
+    if extra:
+        bits.append(str(extra))
+    return ' · '.join(bits) if bits else None
+
+
+def section_text(text, starts, ends, limit=700):
+    """본문(text-of 로 편 텍스트)에서 시작 표지와 끝 표지 사이 문구를 잘라 낸다.
+
+    starts/ends 는 표지 문자열 튜플. 시작 표지가 없으면 빈 문자열(지어내지 않는다).
+    """
+    x = str(text or '')
+    i = -1
+    for m in starts:
+        p = x.find(m)
+        if p >= 0 and (i < 0 or p < i):
+            i = p
+    if i < 0:
+        return ''
+    j = len(x)
+    for m in ends:
+        p = x.find(m, i + 1)
+        if p > i and p < j:
+            j = p
+    return x[i:min(j, i + limit)].strip()
+
+
+def build_missions(text, keywords=None, extra_bits=None):
+    """미션 문구 하나로 missions dict + missionSummary 를 만든다(없으면 (None, None))."""
+    m = parse_mission_text(text)
+    kws = [str(k).strip() for k in (keywords or []) if str(k).strip()]
+    if not m and not kws:
+        return None, None
+    out = dict(m or {})
+    if kws:
+        out['keywords'] = kws
+    summ = mission_summary(out)
+    if summ and extra_bits:
+        summ = ' · '.join([summ] + [str(b) for b in extra_bits if b])
+    return out, summ
 
 
 def detect_extra_cost(row):
@@ -319,10 +458,11 @@ def normalize_row(row):
             flags['extraCost'] = True
         elif flags.get('extraCost') is None:
             flags['extraCost'] = False if _cost_text(row) else None
-    if flags.get('faceRequired') is not True:
-        hit = detect_face(row)
-        if hit:
-            flags['faceRequired'] = True
+    hit = detect_face(row)
+    if hit:
+        flags['faceRequired'] = True
+    else:
+        flags['faceRequired'] = False if _face_text(row) else None
     row['region'] = region_of(row, t)
     row['regionDetail'] = region_detail(row)
     return row
