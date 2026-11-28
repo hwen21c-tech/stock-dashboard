@@ -2533,7 +2533,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 <!-- ===== 🧭 스튜디오 통합 이동 바 — 쇼츠 · 이모티콘 · 작곡 · 수익화 ===== -->
 <nav class="ss-nav" id="studioSwitch" aria-label="스튜디오 이동">
   <span class="ss-lead">Studio</span>
-  <a class="ss-item" href="https://hwen21c-tech.github.io/shorts-studio-pro/" target="_blank" rel="noopener" title="쇼츠">🎬 쇼츠</a>
+  <a class="ss-item" href="https://hwen21c-tech.github.io/shorts-studio-pro/" target="_blank" rel="noopener" title="쇼츠 편집기 — 내 영상 1개(자동 요약)·여러 개를 컷편집·자막·성우">🎬 쇼츠 편집기</a>
   <a class="ss-item" href="https://hwen21c-tech.github.io/emoticon-studio-pro/" target="_blank" rel="noopener" title="이모티콘">🎨 이모티콘</a>
   <a class="ss-item" href="https://hwen21c-tech.github.io/aura-studio-pro/" target="_blank" rel="noopener" title="작곡">🎵 작곡</a>
   <span class="ss-item ss-money is-on" aria-current="page" title="수익화">💰 수익화</span>
@@ -2707,8 +2707,9 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 </div>
 
 <nav class="tabs" role="tablist" aria-label="모드 전환">
-  <button class="tab on" id="tabVideo" role="tab" aria-selected="true" aria-controls="panelVideo" title="AI 영상 스튜디오 — 클립 합치기·유튜브"><span class="tl">🎬 영상</span></button>
-  <button class="tab" id="tabShorts" role="tab" aria-selected="false" aria-controls="panelShorts" title="쇼츠 스튜디오 — 대본 → 1080×1920 영상"><span class="tl">📱 쇼츠</span></button>
+  <!-- 🎬 AI 영상 스튜디오 탭은 숨김 — 내 영상 클립 편집은 상단 [🎬 쇼츠 편집기]에서 합니다 -->
+  <button class="tab" id="tabVideo" role="tab" aria-selected="false" aria-controls="panelVideo" style="display:none" aria-hidden="true" tabindex="-1" title="(숨김) 내 영상 클립 편집은 🎬 쇼츠 편집기에서 합니다"><span class="tl">🎬 영상</span></button>
+  <button class="tab on" id="tabShorts" role="tab" aria-selected="true" aria-controls="panelShorts" title="쇼츠 스튜디오 — 대본 → 1080×1920 영상"><span class="tl">📱 쇼츠</span></button>
   <button class="tab" id="tabBlog" role="tab" aria-selected="false" aria-controls="panelBlog" title="블로그 자동 작성기 — 테마 → 본문 → 변환·복사"><span class="tl">✍️ 블로그</span></button>
   <button class="tab" id="tabSum" role="tab" aria-selected="false" aria-controls="panelSum" title="요약 — 유튜브·문서·영상 → 3줄/타임라인/표 · 🧭 BRIEF 멀티소스 리포트(차트·3관점)"><span class="tl">📋 요약</span></button>
 </nav>
@@ -2795,7 +2796,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 </details>
 
 <!-- ================= VIDEO ================= -->
-<section id="panelVideo" role="tabpanel" aria-labelledby="tabVideo">
+<section id="panelVideo" role="tabpanel" aria-labelledby="tabVideo" hidden>
   <div class="submodes">
     <button class="submode on" id="smMerge" aria-pressed="true">
       <span>① 내 영상 합치기</span><span class="st">2~3개 업로드</span>
@@ -2809,10 +2810,11 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
   <div id="modeMerge">
     <div class="wvbridge">
       <div class="wb-t">
-        <b>✂️ 이 탭은 영상 편집기 — 내가 찍은 클립을 자르고 이어 붙이는 곳</b>
-        <span>클립 2~3개를 올려 순서·길이·자막·훅을 설계합니다. <b>대본 → 🦊 폭스시그널 → 1080×1920 완성 영상</b>은 <b>📱 쇼츠 스튜디오</b> 탭에서 한 번에 만듭니다(크레딧 0).</span>
+        <b>✂️ 이 화면은 컷 설계도 — 실제 영상 편집은 🎬 쇼츠 편집기에서</b>
+        <span>여기서는 <b>MP4를 실제로 자르지 않습니다</b>. 내가 올린 영상을 실제로 잘라 붙이고 성우·자막을 입혀 쇼츠로 완성하는 편집은 <b>🎬 쇼츠 전용 편집기</b>에서 바로 진행됩니다(올린 영상 1개도 3~5컷 자동 요약 · 가족 PIN 0623).</span>
       </div>
-      <button class="btn primary" id="bridgeWv" type="button">📱 쇼츠 스튜디오 열기</button>
+      <a class="btn primary" id="bridgePro" href="https://hwen21c-tech.github.io/shorts-studio-pro/" target="_blank" rel="noopener noreferrer" style="text-decoration:none">🎬 쇼츠 전용 편집기 열기 ↗</a>
+      <button class="btn small ghost" id="bridgeWv" type="button" title="카드·슬라이드형 쇼츠(폭스시그널 대본 → 1080×1920)를 만드는 곳으로 이동합니다">📱 카드·슬라이드 쇼츠 만들기 (폭스시그널)</button>
       <button class="btn small ghost" id="bridgeWvShort" type="button">✍️ 쇼츠 대본부터 만들기</button>
     </div>
     <div class="merge-cols">
@@ -2860,7 +2862,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
         <div class="card">
           <div class="card-head"><span class="num">3</span><h2>편집 실행</h2></div>
           <button class="btn primary big" id="runEdit">편집 실행 (Gemini 컷 설계)</button>
-          <p class="hint" style="margin-top:8px">누르면 Gemini가 <b>클립 구간 안에서</b> 컷 설계도 · 후킹 3종 · BGM 덕킹을 만듭니다(8~20초). 영상 파일은 서버로 올리지 않고 파일명·길이·In/Out만 보냅니다. 실제 MP4 합성은 아직 없습니다.</p>
+          <p class="hint" style="margin-top:8px">누르면 Gemini가 <b>클립 구간 안에서</b> 컷 설계도 · 후킹 3종 · BGM 덕킹을 만듭니다(8~20초). 영상 파일은 서버로 올리지 않고 파일명·길이·In/Out만 보냅니다. 이 화면은 <b>설계도까지만</b> — 실제로 자르고 성우·자막을 입혀 MP4로 만드는 편집은 <b>🎬 쇼츠 전용 편집기</b>에서 합니다.</p>
         </div>
       </div>
     </div>
@@ -2873,7 +2875,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
         <button class="presh" data-preset="letter"><b>③ 3단 블랙 레터박스</b><span>제목·클립·포인트</span></button>
       </div>
       <div class="stage"><div class="phone pv1" id="subPhone"></div></div>
-      <p class="hint" style="margin-top:9px">미리보기는 <b>선택한 비율</b>로 그려집니다. 이 영상 파일을 컷편집하는 자막 렌더링·폰트 합성은 ffmpeg 단계 일 — <b style="color:#fbbf24">아직 없습니다</b>.</p>
+      <p class="hint" style="margin-top:9px">미리보기는 <b>선택한 비율</b>로 그려집니다. 올린 영상에 자막·성우를 실제로 입히는 렌더링은 <b>🎬 쇼츠 전용 편집기</b>에서 한 번에 끝납니다(MP4/WebM 내보내기).</p>
     </div>
 
     <div class="card">
@@ -3953,7 +3955,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 </section>
 
 <!-- ================= 📱 쇼츠 스튜디오 (대본 → 🦊 폭스시그널 → 1080×1920 영상) ================= -->
-<section id="panelShorts" role="tabpanel" aria-labelledby="tabShorts" hidden>
+<section id="panelShorts" role="tabpanel" aria-labelledby="tabShorts">
   <!-- ⚡ 생성 직전까지 원클릭 세팅 — 시간대 초안(없으면 관제탑 실측) + 🎨 내용 맞춤(스마트) + 현수 1.20x + [▶ 생성] 스크롤까지 한 번에 -->
   <div class="csauto" id="csAutoBar">
     <div class="csauto-t">
@@ -4642,6 +4644,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.0 — 🦊 2차 고퀄 연출 6종: ① <b>실제 지수 꺾은선</b>(/api/index-chart) 왼→오 드로잉 + 변곡점 Ring·화살표·2.2배 줌인 렌즈(API 실패 시 컷 수치 흐름 폴백) ② 상단 <b>시장 위험 게이지</b> HUD(신호·등락률 → 빨강/노랑/초록으로 차오름) ③ 핵심 숫자 <b>펀치 줌 1.12→1.00 + 효과음 싱크</b>(0.58초) ④ 여우 <b>눈 깜빡임·호흡·흔들림·점프·끄덕임</b> ⑤ 컷 사이 <b>0.30초 여백 + BGM 덕킹(0.12/0.28)</b> ⑥ 블로그 <b>'3초 요약 대표 카드' PNG</b>(1080×1080 · 1200×675)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.9 — ✍️ <b>쇼츠 대본 영역 접기</b>(기본 접힘 · [🎬 쇼츠 대본 생성]·[📱 쇼츠로 변환] 때 자동 펼침) · 🎬 웹 영상 생성기 <b>📝 컷별 화면 배치 메모 + 📋 피클 수정요청 복사</b> · 🦊 폭스시그널에서 <b>📈 모션 차트/비교표형이 실제 막대 차트</b>로 그려짐(수치 없으면 빅넘버 카드) · 녹화 <b>진행률 %</b> 0.5초 갱신 · <b>📝 자막 SRT 복사</b>(캡컷용)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.8 — ✍️ 블로그 <b>2종</b>(🌅 장전 · 🌙 통합 마감(정규+애프터): ① 정규장 결산 → ② NXT 애프터장 15:30~20:00 유지/이탈·신규 재료 → ③ 야간선물·미 선물·환율 → ④ 중요 일정 → ⑤ 리스크 괄호 표기) · 📱 쇼츠·🎬 영상 생성기 <b>4종</b>(🌅 장전 · ☀️ 점심 · 🌆 정규마감 · 🌙 애프터장) <b>1클릭</b> — 실측·NXT·뉴스로 공식·레이아웃 자동 전환, 블로그 글 없이도 동작</div>
+  <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v3.3 — <b>탭 정리</b>: 🎬 AI 영상 스튜디오 탭은 숨기고 <b>📱 쇼츠 · ✍️ 블로그</b> 중심으로 — 내 영상 클립을 실제로 자르고 성우·자막을 입히는 편집은 상단 <b>[🎬 쇼츠 편집기]</b>에서 합니다(올린 영상 1개도 3~5컷 자동 요약)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.7 — <b>역할별 3탭</b>(🎬 AI 영상 스튜디오=클립 편집 · 📱 쇼츠 스튜디오=대본→영상 · ✍️ 블로그 작성) — <b>🎬 웹 영상 생성기를 📱 쇼츠 스튜디오 탭 안으로 통합</b>(대본·붙여넣기 → 🦊 폭스시그널 → ▶ 생성) · 블로그 결과 카드 <b>[📱 쇼츠로 변환]</b>(글 → 50초 5컷 · 복사 + 쇼츠 스튜디오 + 웹 영상 생성기 동시 전송)</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.6 — 🎬 웹 영상 생성기 <b>📋 대본 직접 붙여넣기</b>(타임스탬프·컷·SRT·문장 대본을 컷 3~8로 자동 변환 · 해시태그·음성 노트 자동 정리) · <b>🧪 샘플로 바로 만들기</b>(11/20 시황 5컷 즉시 로드 → 바로 [▶ 생성])</div>
   <div style="color:#86efac;font-weight:900;margin-bottom:6px">🆕 v2.5 — 🎬 웹 영상 생성기 <b>쇼츠 세이프 존 잠금</b>(상단 180·하단 380·좌 60·우 120 · 안전 영역 x 60~960 · y 180~1540) · <b>글자 폭 실측 자동 줄바꿈·자동 축소</b>(칸 밖 이탈 0) · <b>3단 고정 그리드</b>(훅 → 메인 → 자막, gap 28) · <b>영상 양식 3종</b>(📊 정보 카드형 · 📈 모션 차트/비교표형 · 🖼️ 사진 줌인형)</div>
@@ -8421,9 +8424,11 @@ var CSVoice = (function () {
   /* ================= tabs + guide ================= */
   var tabVideo = $('#tabVideo'), tabBlog = $('#tabBlog'), tabSum = $('#tabSum'), tabShorts = $('#tabShorts');
   var panelVideo = $('#panelVideo'), panelBlog = $('#panelBlog'), panelSum = $('#panelSum'), panelShorts = $('#panelShorts');
-  /* 탭 = 역할 — 🎬 AI 영상 스튜디오(클립 편집) · 📱 쇼츠 스튜디오(대본→영상) · ✍️ 블로그 작성 · 📋 요약 */
+  /* 탭 = 역할 — 📱 쇼츠 스튜디오(대본→영상) · ✍️ 블로그 작성 · 📋 요약
+     (🎬 AI 영상 스튜디오 탭은 숨김 — 내 영상 클립 편집은 🎬 쇼츠 편집기(shorts-studio-pro)에서 한다) */
   function setTab(which){
-    var v = which === 'video', b = which === 'blog', sm = which === 'sum', sh = which === 'shorts';
+    /* 🎬 AI 영상 스튜디오 탭은 숨김(2탭 체제) — 'video' 요청은 쇼츠 탭으로 보낸다 */
+    var v = false, b = which === 'blog', sm = which === 'sum', sh = (which === 'shorts' || which === 'video');
     if (!v && !b && !sm && !sh) b = true;
     if (tabVideo){ tabVideo.classList.toggle('on', v); tabVideo.setAttribute('aria-selected', v ? 'true' : 'false'); }
     if (tabShorts){ tabShorts.classList.toggle('on', sh); tabShorts.setAttribute('aria-selected', sh ? 'true' : 'false'); }
