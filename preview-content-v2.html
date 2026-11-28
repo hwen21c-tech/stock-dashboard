@@ -2973,7 +2973,8 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
         <a class="btn small" href="https://hwen21c-tech.github.io/stock-dashboard/checker.html" target="_blank" rel="noopener" title="1초 체커 — 종목 진단">⚡ 1초 체커</a>
         <a class="btn small ghost" href="https://stock-dashboard-live-bice.vercel.app/" target="_blank" rel="noopener" title="관제탑 — 실시간 시황">📈 관제탑</a>
         <a class="btn small ghost" href="https://hwen21c-tech.github.io/stock-dashboard/deals.html" target="_blank" rel="noopener" title="패밀리 특가 레이더">🏷️ 특가 레이더</a>
-        <button class="btn small ghost" id="fxBriefBtn" type="button" title="관제탑 최신 브리핑을 [참고 자료]에 넣습니다">📰 최신 브리핑</button>
+        <button class="btn small ghost" id="fxMktBtn" type="button" title="관제탑 실시간(지수·수급·주도 테마·대장주)을 읽어 [참고 자료]에 넣습니다">📡 관제탑 실측</button>
+        <button class="btn small ghost" id="fxBriefBtn" type="button" title="관제탑 최신 브리핑 파일을 [참고 자료]에 넣습니다">📰 최신 브리핑</button>
         <button class="btn small primary" id="fxToShorts" type="button" title="지금 시간대로 📱 쇼츠 스튜디오 대본 자리를 세팅합니다">🎬 쇼츠 대본으로 →</button>
       </div>
       <div class="slotstate" id="fxSlotState" hidden></div>
@@ -33515,6 +33516,12 @@ var CSVoice = (function () {
   if (rd) rd.addEventListener('change', function(){ save(); update(); });
 
   /* 🦊 폭스시그널 탭 보조 버튼 */
+  var mk = document.getElementById('fxMktBtn');
+  if (mk) mk.addEventListener('click', function(){
+    var t = document.getElementById('mktBtn');
+    if (t) t.click();
+    else { var dp = document.getElementById('detailPanel'); if (dp) dp.open = true; }
+  });
   var bf = document.getElementById('fxBriefBtn');
   if (bf) bf.addEventListener('click', function(){
     var t = document.getElementById('briefFeedBtn');
