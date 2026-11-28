@@ -2586,7 +2586,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
 <!-- ===== 🧩 카테고리 · 페르소나 OS + 추천 키워드 (creator-studio 이식 · 2026-11-28) ===== -->
 <details class="pcat" id="pCat" open>
   <summary>
-    <span>🧩 카테고리 · 페르소나 OS</span><span class="cnt" id="pCatCount">8개</span>
+    <span>🧩 카테고리 · 페르소나 OS</span><span class="cnt" id="pCatCount">12개</span>
     <span class="pcatchip mng" id="pCatManage" role="button" tabindex="0" aria-label="카테고리 추가·관리">＋ 카테고리 추가·관리</span>
     <span class="arw">▾</span>
   </summary>
@@ -2643,7 +2643,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
         <button class="btn small primary" id="pcmAdd" type="button">추가하기</button>
         <button class="btn small ghost" type="button" data-pcmclose="1">닫기</button>
       </div>
-      <p class="hint">추가한 카테고리는 <b>이 브라우저에만</b> 저장됩니다. 기본 8개는 지울 수 없고, 내가 만든 것만 ✕로 삭제됩니다.</p>
+      <p class="hint">추가한 카테고리는 <b>이 브라우저에만</b> 저장됩니다. 기본 12개는 지울 수 없고, 내가 만든 것만 ✕로 삭제됩니다.</p>
     </div>
   </div>
 </div>
@@ -3593,7 +3593,7 @@ html[data-theme="light"] .pcatcard .tone{color:#15803d}
           <button class="monchip" type="button" data-idea="longtail">④ 롱테일</button>
         </div>
         <div class="monidea-in" id="ideaInSeason">
-          <label class="monf"><span>분야</span><input type="text" id="ideaCat" maxlength="30" placeholder="예) 캠핑+육아 · 여행 · IT/가전"></label>
+          <label class="monf"><span>분야</span><input type="text" id="ideaCat" maxlength="30" placeholder="예) 폭스 시그널 · 폭스 경제·도서 · 폭스 특가·리뷰 · 폭스 라이프"></label>
           <label class="monf"><span>시즌 (2~4주 선행)</span>
             <select id="ideaMonth">
               <option value="auto">자동 — 오늘부터 2~4주 선행</option>
@@ -5829,7 +5829,7 @@ function promptIdeaSources(b) {
   if (tool === 'season') {
     const m = Math.trunc(num(b.month, 0));
     const month = m >= 1 && m <= 12 ? m : 0;
-    const cat = s(b.category, 40) || '생활·살림';
+    const cat = s(b.category, 40) || '폭스 라이프';
     task = `분야 '${cat}'에서 ${month ? month + '월' : '지금부터 2~4주 뒤'}에 검색이 늘어날 수익화 소재 6개를 뽑아라.
 - 태그는 시즌 포인트(예: 시즌 선점 / 품절 주의 / 실수 방지 / 가성비 / 재구매 / 안전·관리)로 다양하게.
 - "미리 준비", "지금 사면 vs 나중에 사면" 같은 선행 수요 각도를 섞는다.`;
@@ -17900,6 +17900,23 @@ var CSVoice = (function () {
 
     /* ---------- 🧩 카테고리 · 페르소나 OS ---------- */
     var DEFAULT_CATS = [
+      /* 🦊 폭스로그(FOX LOG) 4대 카테고리 — 2026-11-28 네이버 블로그 리뉴얼 기준 */
+      { id:'cat-fox-signal', emoji:'🦊', name:'폭스 시그널', theme:'stock',
+        persona:'국내 증시 시황과 수급·거래대금을 직접 확인하며 실전 매매 기준을 세우려는 개인 투자자',
+        tone:'직설적 비교 분석형',
+        keywords:['오늘 증시 시황 핵심 3줄','외국인·기관 수급 주도 업종 읽는 법','거래대금 실측으로 종가베팅 후보 고르기','장 마감 후 다음 날 시초가 대비 체크리스트'] },
+      { id:'cat-fox-money', emoji:'💰', name:'폭스 경제·도서', theme:'economy',
+        persona:'월급 관리·절세와 경제·자기계발 독서를 함께 챙기는 직장인',
+        tone:'깔끔한 정보 요약형',
+        keywords:['직장인 연말정산 환급 체크리스트','금리 방향이 예적금·대출에 주는 영향','경제 책 한 권 3줄 요약 루틴','장바구니 체감 물가 확인법'] },
+      { id:'cat-fox-deal', emoji:'🛍️', name:'폭스 특가·리뷰', theme:'hottem',
+        persona:'아이·가족이 쓸 물건을 실사용 후기와 가격 비교로 고르는 실속형 소비자',
+        tone:'친근한 경험담 구어체',
+        keywords:['체험단 후기 꼭 남기는 항목','행사 특가와 정가 비교 계산법','가족용 생활가전 3주 실사용 후기','온라인 최저가 확인 순서'] },
+      { id:'cat-fox-life', emoji:'✈️', name:'폭스 라이프', theme:'travel',
+        persona:'주말마다 아이와 떠나는 실속 여행과 일상 루틴을 기록하는 3040 가장',
+        tone:'감성 스토리텔링형',
+        keywords:['동탄 근교 아이와 당일치기 코스','가족여행 경비 실측 정리','주말 나들이 짐 꾸리기 체크리스트','일상을 바꾼 작은 습관 3가지'] },
       { id:'cat-camp-parent', emoji:'⛺', name:'캠핑+육아', theme:'parenting',
         persona:'아이와 함께 안전하고 따뜻한 가족 캠핑을 즐기고 싶은 3040 부모',
         tone:'친근한 육아/생활 구어체',
@@ -24752,7 +24769,7 @@ var CSVoice = (function () {
     var tool = MONIdea.tool;
     var payload = { tool: tool };
     if (tool === 'season'){
-      payload.category = String((monEl('ideaCat') && monEl('ideaCat').value) || '').trim() || '생활·살림';
+      payload.category = String((monEl('ideaCat') && monEl('ideaCat').value) || '').trim() || '폭스 라이프';
       payload.month = String((monEl('ideaMonth') && monEl('ideaMonth').value) || 'auto');
     } else if (tool === 'matrix'){
       payload.item = String((monEl('ideaItem') && monEl('ideaItem').value) || '').trim();
